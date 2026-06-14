@@ -20,6 +20,7 @@ const VERDICTS: [&str; 5] = [
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
+const MAX_BOUNDARY_RESIDUE_VARIABLES: usize = 16;
 const MAX_LAPLACIAN_CELLS: usize = 16;
 const MAX_PERIOD_CYCLES: usize = 16;
 const MAX_TRANSFER_TARGETS: usize = 16;
@@ -333,6 +334,29 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.boundary-residue@1" {
+            validate_boundary_residue_profile_v1(&profile)?;
+            let measurement = evaluate_boundary_residue_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.boundary-residue".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                depends_on_assumptions,
+                reason: Some(measurement.reason),
+            });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
@@ -575,6 +599,46 @@ struct SectionForbiddenSupportV1 {
 struct SectionAssignmentV1 {
     assignment_id: String,
     assigned: BTreeMap<String, bool>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct BoundaryResidueMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct BoundaryResidueRoleV1 {
+    atom_ref: String,
+    context_ref: String,
+    role: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct BoundaryResidueColumnV1 {
+    column_id: String,
+    source_context: String,
+    boundary_context: String,
+    support: Vec<String>,
+    vector: Vec<u8>,
+    context_refs: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct BoundaryResidueMismatchV1 {
+    atom_refs: Vec<String>,
+    support: Vec<String>,
+    vector: Vec<u8>,
+    context_refs: Vec<String>,
     source_refs: Vec<String>,
 }
 
@@ -1432,6 +1496,123 @@ fn evaluate_section_factorization_v1(
             &violated_supports,
         )],
         assumptions: section_assumptions(profile, method_status, &forbidden_supports),
+    })
+}
+
+fn evaluate_boundary_residue_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<BoundaryResidueMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let witness_variables = boundary_residue_witness_variables(profile);
+    let roles = boundary_residue_roles(normalized, &selected_contexts)?;
+    let role_map = boundary_residue_role_map(&roles);
+    let roles_complete = boundary_residue_roles_complete(&roles, &selected_contexts);
+    let (columns, mismatch) = if roles_complete {
+        (
+            boundary_residue_columns(
+                normalized,
+                &selected_contexts,
+                &witness_variables,
+                &role_map,
+            )?,
+            boundary_residue_mismatch(
+                normalized,
+                &selected_contexts,
+                &witness_variables,
+                &role_map,
+            )?,
+        )
+    } else {
+        (Vec::new(), None)
+    };
+    let coefficient_is_f2 = profile.coefficient == "F2";
+    let method_status = if !roles_complete {
+        "boundary_classification_absent"
+    } else if mismatch.is_none() {
+        "boundary_mismatch_section_absent"
+    } else if columns.is_empty() {
+        "boundary_restriction_matrix_absent"
+    } else if coefficient_is_f2 {
+        "finite_mayer_vietoris_d0_computed"
+    } else {
+        "finite_mayer_vietoris_d0_obstruction_only"
+    };
+    let image_membership = if matches!(
+        method_status,
+        "finite_mayer_vietoris_d0_computed" | "finite_mayer_vietoris_d0_obstruction_only"
+    ) {
+        mismatch.as_ref().map(|mismatch| {
+            let rows = boundary_residue_matrix_rows(&columns, witness_variables.len());
+            vector_in_span_f2(&rows, &mismatch.vector)
+        })
+    } else {
+        None
+    };
+    let (verdict, zero, non_zero, reason) = match method_status {
+        "boundary_classification_absent" => (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected cover lacks core / feature / boundary patch classification atoms for ag.boundary-residue@1".to_string(),
+        ),
+        "boundary_mismatch_section_absent" => (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected boundary mismatch section is absent; boundary residue remains silent".to_string(),
+        ),
+        "boundary_restriction_matrix_absent" => (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected core/feature to boundary restriction matrix columns are absent".to_string(),
+        ),
+        _ if image_membership == Some(true) && coefficient_is_f2 => (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "boundary mismatch section lies in im(d^0), so the selected F2 boundary residue is absorbed".to_string(),
+        ),
+        _ if image_membership == Some(true) => (
+            "unknown".to_string(),
+            false,
+            false,
+            "F2 parity boundary residue lies in im(d^0), but non-F2 coefficient mode only supports one-way obstruction statements".to_string(),
+        ),
+        _ => (
+            "measured_nonzero".to_string(),
+            false,
+            true,
+            if coefficient_is_f2 {
+                "boundary mismatch section is outside im(d^0), so the selected F2 boundary residue produces a global H1 class".to_string()
+            } else {
+                "boundary mismatch section is outside im(d^0) after F2 parity projection, yielding a one-way obstruction statement under the non-F2 coefficient profile".to_string()
+            },
+        ),
+    };
+    let cert_ref = matches!(verdict.as_str(), "measured_zero" | "measured_nonzero")
+        .then(|| format!("computedInvariants/boundary-residue:{}", profile.profile_id));
+
+    Ok(BoundaryResidueMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status: method_status.to_string(),
+        cert_ref,
+        reason,
+        computed_invariants: vec![boundary_residue_invariant_json(
+            profile,
+            method_status,
+            &witness_variables,
+            &roles,
+            &columns,
+            mismatch.as_ref(),
+            image_membership,
+        )],
+        assumptions: boundary_residue_assumptions(profile, method_status),
     })
 }
 
@@ -5103,6 +5284,62 @@ fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
     Ok(())
 }
 
+fn validate_boundary_residue_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-mayer-vietoris-d0@1",
+        ),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "boundary-residue-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "boundary-residue-nonzero@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+        ("domain", profile.domain.as_str(), "finite-poset-site"),
+        (
+            "verdictDiscipline",
+            profile.verdict_discipline.as_str(),
+            "five-valued-structural-verdict@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.boundary-residue@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if profile.resolution_selector != "mayer-vietoris-d0@1" {
+        return Err(format!(
+            "ag.boundary-residue@1 requires MeasurementProfile resolutionSelector=mayer-vietoris-d0@1, found {}",
+            profile.resolution_selector
+        ));
+    }
+    if boundary_residue_witness_variables(profile).is_empty() {
+        return Err(format!(
+            "ag.boundary-residue@1 requires MeasurementProfile {} witnessFamily law ag.boundary-residue",
+            profile.profile_id
+        ));
+    }
+    if boundary_residue_witness_variables(profile).len() > MAX_BOUNDARY_RESIDUE_VARIABLES {
+        return Err(format!(
+            "ag.boundary-residue@1 supports at most {MAX_BOUNDARY_RESIDUE_VARIABLES} witness variables for finite F2 image membership"
+        ));
+    }
+    Ok(())
+}
+
 fn validate_square_free_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
     let expected = [
         ("coefficient", profile.coefficient.as_str(), "F2"),
@@ -6944,6 +7181,374 @@ fn section_assumptions(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/P0-3-boundary".to_string(),
             assumption: "No-Cancellation/exactness boundary for reading s^* I_Ob^U=0 as section-relative lawful".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
+fn boundary_residue_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    let mut variables = profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.boundary-residue")
+        .map(|witness| witness.variable.clone())
+        .collect::<Vec<_>>();
+    variables.sort();
+    variables.dedup();
+    variables
+}
+
+fn boundary_residue_roles(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Vec<BoundaryResidueRoleV1>, String> {
+    let mut roles = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "boundary-residue")
+        .filter(|atom| matches!(atom.predicate.as_str(), "patchRole" | "patchClassification"))
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        if !selected_contexts.contains(&atom.subject) {
+            return Err(format!(
+                "ag.boundary-residue@1 patch role {} subject must be a selected context",
+                atom.normalized_atom_id
+            ));
+        }
+        let role = atom.object.as_deref().unwrap_or_default().trim();
+        if !matches!(role, "core" | "feature" | "boundary") {
+            return Err(format!(
+                "ag.boundary-residue@1 patch role {} must be core, feature, or boundary",
+                atom.normalized_atom_id
+            ));
+        }
+        roles.push(BoundaryResidueRoleV1 {
+            atom_ref: atom.normalized_atom_id.clone(),
+            context_ref: atom.subject.clone(),
+            role: role.to_string(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    roles.sort_by(|left, right| {
+        left.role
+            .cmp(&right.role)
+            .then_with(|| left.context_ref.cmp(&right.context_ref))
+    });
+    Ok(roles)
+}
+
+fn boundary_residue_role_map(roles: &[BoundaryResidueRoleV1]) -> BTreeMap<String, String> {
+    let mut role_map = BTreeMap::new();
+    for role in roles {
+        role_map
+            .entry(role.context_ref.clone())
+            .and_modify(|existing| {
+                if existing != &role.role {
+                    *existing = "conflicted".to_string();
+                }
+            })
+            .or_insert_with(|| role.role.clone());
+    }
+    role_map
+}
+
+fn boundary_residue_roles_complete(
+    roles: &[BoundaryResidueRoleV1],
+    selected_contexts: &BTreeSet<String>,
+) -> bool {
+    if roles.len() != selected_contexts.len() {
+        return false;
+    }
+    if selected_contexts.iter().any(|context| {
+        roles
+            .iter()
+            .filter(|role| role.context_ref == *context)
+            .count()
+            != 1
+    }) {
+        return false;
+    }
+    let role_set = roles
+        .iter()
+        .map(|role| role.role.as_str())
+        .collect::<BTreeSet<_>>();
+    ["core", "feature", "boundary"]
+        .iter()
+        .all(|role| role_set.contains(role))
+}
+
+fn boundary_residue_columns(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+    role_map: &BTreeMap<String, String>,
+) -> Result<Vec<BoundaryResidueColumnV1>, String> {
+    let mut columns = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "boundary-residue" && atom.predicate == "restrictionColumn")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        if !selected_contexts.contains(&atom.subject) {
+            return Err(format!(
+                "ag.boundary-residue@1 restrictionColumn {} subject must be a selected source context",
+                atom.normalized_atom_id
+            ));
+        }
+        let source_role = role_map.get(&atom.subject).map(String::as_str);
+        if !matches!(source_role, Some("core" | "feature")) {
+            return Err(format!(
+                "ag.boundary-residue@1 restrictionColumn {} source context must be core or feature",
+                atom.normalized_atom_id
+            ));
+        }
+        let boundary_contexts = atom
+            .context_memberships
+            .iter()
+            .filter(|context| role_map.get(*context).map(String::as_str) == Some("boundary"))
+            .cloned()
+            .collect::<Vec<_>>();
+        if boundary_contexts.len() != 1 {
+            return Err(format!(
+                "ag.boundary-residue@1 restrictionColumn {} must target exactly one boundary context",
+                atom.normalized_atom_id
+            ));
+        }
+        let support = boundary_residue_atom_support(atom, witness_variables)?;
+        columns.push(BoundaryResidueColumnV1 {
+            column_id: atom.normalized_atom_id.clone(),
+            source_context: atom.subject.clone(),
+            boundary_context: boundary_contexts[0].clone(),
+            vector: boundary_residue_vector(&support, witness_variables),
+            support,
+            context_refs: atom.context_memberships.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    columns.sort_by(|left, right| left.column_id.cmp(&right.column_id));
+    Ok(columns)
+}
+
+fn boundary_residue_mismatch(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+    role_map: &BTreeMap<String, String>,
+) -> Result<Option<BoundaryResidueMismatchV1>, String> {
+    let mut atom_refs = Vec::new();
+    let mut context_refs = BTreeSet::new();
+    let mut source_refs = BTreeSet::new();
+    let mut vector = vec![0u8; witness_variables.len()];
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "boundary-residue" && atom.predicate == "mismatchSection")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let selected_memberships = atom
+            .context_memberships
+            .iter()
+            .filter(|context| selected_contexts.contains(*context))
+            .collect::<Vec<_>>();
+        if selected_memberships.is_empty()
+            || selected_memberships
+                .iter()
+                .any(|context| role_map.get(*context).map(String::as_str) != Some("boundary"))
+        {
+            return Err(format!(
+                "ag.boundary-residue@1 mismatchSection {} must belong only to selected boundary contexts",
+                atom.normalized_atom_id
+            ));
+        }
+        let support = boundary_residue_atom_support(atom, witness_variables)?;
+        let atom_vector = boundary_residue_vector(&support, witness_variables);
+        for (target, value) in vector.iter_mut().zip(atom_vector.iter()) {
+            *target ^= *value;
+        }
+        atom_refs.push(atom.normalized_atom_id.clone());
+        context_refs.extend(atom.context_memberships.iter().cloned());
+        source_refs.extend(atom.source_refs.iter().cloned());
+    }
+    if atom_refs.is_empty() {
+        return Ok(None);
+    }
+    let support = witness_variables
+        .iter()
+        .zip(vector.iter())
+        .filter_map(|(variable, value)| (*value == 1).then_some(variable.clone()))
+        .collect::<Vec<_>>();
+    Ok(Some(BoundaryResidueMismatchV1 {
+        atom_refs,
+        support,
+        vector,
+        context_refs: context_refs.into_iter().collect(),
+        source_refs: source_refs.into_iter().collect(),
+    }))
+}
+
+fn boundary_residue_atom_support(
+    atom: &NormalizedAtomV2,
+    witness_variables: &[String],
+) -> Result<Vec<String>, String> {
+    let support = parse_csv_values(atom.object.as_deref().unwrap_or_default())
+        .into_iter()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let unknown = support
+        .iter()
+        .filter(|variable| !witness_set.contains(*variable))
+        .cloned()
+        .collect::<Vec<_>>();
+    if !unknown.is_empty() {
+        return Err(format!(
+            "ag.boundary-residue@1 atom {} contains variables outside witnessFamily: {}",
+            atom.normalized_atom_id,
+            unknown.join(",")
+        ));
+    }
+    Ok(support)
+}
+
+fn boundary_residue_vector(support: &[String], witness_variables: &[String]) -> Vec<u8> {
+    witness_variables
+        .iter()
+        .map(|variable| support.contains(variable) as u8)
+        .collect()
+}
+
+fn boundary_residue_matrix_rows(
+    columns: &[BoundaryResidueColumnV1],
+    row_count: usize,
+) -> Vec<Vec<u8>> {
+    (0..row_count)
+        .map(|row| columns.iter().map(|column| column.vector[row]).collect())
+        .collect()
+}
+
+fn boundary_residue_invariant_json(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+    witness_variables: &[String],
+    roles: &[BoundaryResidueRoleV1],
+    columns: &[BoundaryResidueColumnV1],
+    mismatch: Option<&BoundaryResidueMismatchV1>,
+    image_membership: Option<bool>,
+) -> Value {
+    let matrix_rows = boundary_residue_matrix_rows(columns, witness_variables.len());
+    json!({
+        "invariantId": format!("boundary-residue:{}", profile.profile_id),
+        "evaluator": "ag.boundary-residue@1",
+        "method": "finite-mayer-vietoris-d0@1",
+        "claimScope": "selected-cover core/feature/boundary F2 Mayer-Vietoris boundary residue",
+        "selectedCoverRef": profile.cover_ref,
+        "coefficient": profile.coefficient,
+        "methodStatus": method_status,
+        "patchRoles": roles.iter().map(|role| json!({
+            "atomRef": role.atom_ref,
+            "contextRef": role.context_ref,
+            "role": role.role,
+            "sourceRefs": role.source_refs
+        })).collect::<Vec<_>>(),
+        "restrictionMatrix": {
+            "rowBasis": witness_variables,
+            "columnCount": columns.len(),
+            "rank": matrix_rank_f2(matrix_rows),
+            "columns": columns.iter().map(|column| json!({
+                "columnId": column.column_id,
+                "sourceContext": column.source_context,
+                "boundaryContext": column.boundary_context,
+                "support": column.support,
+                "vector": column.vector,
+                "contextRefs": column.context_refs,
+                "sourceRefs": column.source_refs
+            })).collect::<Vec<_>>()
+        },
+        "mismatchSection": mismatch.map(|mismatch| json!({
+            "atomRefs": mismatch.atom_refs,
+            "support": mismatch.support,
+            "vector": mismatch.vector,
+            "contextRefs": mismatch.context_refs,
+            "sourceRefs": mismatch.source_refs
+        })),
+        "imageMembership": image_membership,
+        "boundaryNote": "Boundary residue is measured only as an F2 Mayer-Vietoris d0 image-membership reading over the selected finite cover; Z-zero lifting is assumed, and no pi1 or monodromy verdict is generated.",
+        "nonConclusions": [
+            "This evaluator does not generate a period-Stokes or modelRelative reading.",
+            "This evaluator does not generate a pi1 or monodromy verdict.",
+            "Z-zero holonomy lifting is recorded only as an assumption over the F2 parity reading."
+        ]
+    })
+}
+
+fn boundary_residue_assumptions(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    let classification_checked = method_status != "boundary_classification_absent";
+    let matrix_checked = matches!(
+        method_status,
+        "finite_mayer_vietoris_d0_computed" | "finite_mayer_vietoris_d0_obstruction_only"
+    );
+    let coefficient_checked = profile.coefficient == "F2";
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P1-2-classification".to_string(),
+            assumption:
+                "selected cover supplies core, feature, and boundary patch classification atoms"
+                    .to_string(),
+            status: if classification_checked {
+                "checked"
+            } else {
+                "violated"
+            }
+            .to_string(),
+            checked_by: classification_checked
+                .then(|| format!("measurement-profile:{}.coverRef", profile.profile_id)),
+            assumed_by: (!classification_checked)
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P1-2-d0".to_string(),
+            assumption:
+                "selected boundary mismatch section and finite core/feature restriction columns define Mayer-Vietoris d0 over F2"
+                    .to_string(),
+            status: if matrix_checked { "checked" } else { "violated" }.to_string(),
+            checked_by: matrix_checked
+                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+            assumed_by: (!matrix_checked).then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P1-2-coefficient".to_string(),
+            assumption: "F2 parity coefficient reading is fixed or explicitly projected for boundary residue".to_string(),
+            status: if coefficient_checked { "checked" } else { "assumed" }.to_string(),
+            checked_by: coefficient_checked.then(|| {
+                format!(
+                    "measurement-profile:{}.coefficient=F2",
+                    profile.profile_id
+                )
+            }),
+            assumed_by: (!coefficient_checked)
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P1-2-z-zero".to_string(),
+            assumption: "Z-zero holonomy lifting is assumed from the F2 parity reading only"
+                .to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P1-2-pi1-boundary".to_string(),
+            assumption:
+                "boundary residue is a finite restriction-structure reading, not a pi1 or monodromy verdict"
+                    .to_string(),
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),

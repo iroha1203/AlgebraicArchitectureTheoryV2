@@ -1364,6 +1364,296 @@ fn cli_analyze_v2_restriction_compatibility_measures_support_inclusion() {
 }
 
 #[test]
+fn cli_analyze_v2_boundary_residue_measures_mayer_vietoris_d0() {
+    let root_out = temp_dir("ag-measurement-boundary-residue");
+
+    let zero_dir = root_out.join("zero");
+    fs::create_dir_all(&zero_dir).expect("zero dir exists");
+    let zero_archmap = zero_dir.join("archmap.json");
+    let zero_policy = zero_dir.join("law_policy.json");
+    fs::write(
+        &zero_archmap,
+        serde_json::to_vec_pretty(&boundary_residue_archmap("zero")).expect("archmap serializes"),
+    )
+    .expect("zero archmap is written");
+    fs::write(
+        &zero_policy,
+        serde_json::to_vec_pretty(&boundary_residue_policy()).expect("policy serializes"),
+    )
+    .expect("zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap.to_str().unwrap(),
+        "--law-policy",
+        zero_policy.to_str().unwrap(),
+        "--out-dir",
+        zero_dir.to_str().unwrap(),
+    ]);
+    let zero_packet = read_json(&zero_dir.join("archsig-measurement-packet.json"));
+    let zero_row = boundary_residue_row(&zero_packet);
+    assert_eq!(zero_row["verdict"], "measured_zero");
+    assert_eq!(zero_row["verdictData"]["zero"], true);
+    assert_eq!(
+        zero_row["verdictData"]["methodStatus"],
+        "finite_mayer_vietoris_d0_computed"
+    );
+    let zero_invariant = invariant_by_id(
+        &zero_packet,
+        "boundary-residue:profile:ag-boundary-residue@1",
+    );
+    assert_eq!(zero_invariant["method"], "finite-mayer-vietoris-d0@1");
+    assert_eq!(zero_invariant["imageMembership"], true);
+    assert_eq!(zero_invariant["restrictionMatrix"]["rank"], Value::from(1));
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/P1-2-coefficient" && row["status"] == "checked"),
+        "F2 coefficient must be checked in the ledger"
+    );
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/P1-2-z-zero" && row["status"] == "assumed"),
+        "Z-zero lifting must stay assumed"
+    );
+
+    let sum_dir = root_out.join("sum-zero");
+    fs::create_dir_all(&sum_dir).expect("sum-zero dir exists");
+    let sum_archmap = sum_dir.join("archmap.json");
+    let sum_policy = sum_dir.join("law_policy.json");
+    fs::write(
+        &sum_archmap,
+        serde_json::to_vec_pretty(&boundary_residue_archmap("sum-zero"))
+            .expect("archmap serializes"),
+    )
+    .expect("sum-zero archmap is written");
+    fs::write(
+        &sum_policy,
+        serde_json::to_vec_pretty(&boundary_residue_policy()).expect("policy serializes"),
+    )
+    .expect("sum-zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        sum_archmap.to_str().unwrap(),
+        "--law-policy",
+        sum_policy.to_str().unwrap(),
+        "--out-dir",
+        sum_dir.to_str().unwrap(),
+    ]);
+    let sum_packet = read_json(&sum_dir.join("archsig-measurement-packet.json"));
+    let sum_row = boundary_residue_row(&sum_packet);
+    assert_eq!(sum_row["verdict"], "measured_zero");
+    let sum_invariant = invariant_by_id(
+        &sum_packet,
+        "boundary-residue:profile:ag-boundary-residue@1",
+    );
+    assert_eq!(sum_invariant["imageMembership"], true);
+    assert_eq!(sum_invariant["restrictionMatrix"]["rank"], Value::from(2));
+
+    let nonzero_dir = root_out.join("nonzero");
+    fs::create_dir_all(&nonzero_dir).expect("nonzero dir exists");
+    let nonzero_archmap = nonzero_dir.join("archmap.json");
+    let nonzero_policy = nonzero_dir.join("law_policy.json");
+    fs::write(
+        &nonzero_archmap,
+        serde_json::to_vec_pretty(&boundary_residue_archmap("nonzero"))
+            .expect("archmap serializes"),
+    )
+    .expect("nonzero archmap is written");
+    fs::write(
+        &nonzero_policy,
+        serde_json::to_vec_pretty(&boundary_residue_policy()).expect("policy serializes"),
+    )
+    .expect("nonzero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        nonzero_archmap.to_str().unwrap(),
+        "--law-policy",
+        nonzero_policy.to_str().unwrap(),
+        "--out-dir",
+        nonzero_dir.to_str().unwrap(),
+    ]);
+    let nonzero_packet = read_json(&nonzero_dir.join("archsig-measurement-packet.json"));
+    let nonzero_row = boundary_residue_row(&nonzero_packet);
+    assert_eq!(nonzero_row["verdict"], "measured_nonzero");
+    assert_eq!(nonzero_row["verdictData"]["nonZero"], true);
+    let nonzero_invariant = invariant_by_id(
+        &nonzero_packet,
+        "boundary-residue:profile:ag-boundary-residue@1",
+    );
+    assert_eq!(nonzero_invariant["imageMembership"], false);
+    assert!(
+        nonzero_invariant["boundaryNote"]
+            .as_str()
+            .is_some_and(|note| note.contains("no pi1 or monodromy verdict")),
+        "boundary note must not revive pi1 / monodromy verdicts"
+    );
+    assert!(
+        nonzero_packet["analyticReadings"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["evaluator"] != "ag.boundary-residue@1"),
+        "boundary-residue must be structural only and not a period/modelRelative analytic reading"
+    );
+    assert_eq!(
+        nonzero_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|row| row["evaluator"] == "ag.boundary-residue@1")
+            .count(),
+        1,
+        "M6 must generate exactly one structural verdict row"
+    );
+
+    for (case, expected_status) in [
+        ("missing-classification", "boundary_classification_absent"),
+        ("missing-mismatch", "boundary_mismatch_section_absent"),
+        ("missing-matrix", "boundary_restriction_matrix_absent"),
+        ("duplicate-role", "boundary_classification_absent"),
+    ] {
+        let out_dir = root_out.join(case);
+        fs::create_dir_all(&out_dir).expect("case dir exists");
+        let archmap_path = out_dir.join("archmap.json");
+        let policy_path = out_dir.join("law_policy.json");
+        fs::write(
+            &archmap_path,
+            serde_json::to_vec_pretty(&boundary_residue_archmap(case)).expect("archmap serializes"),
+        )
+        .expect("case archmap is written");
+        fs::write(
+            &policy_path,
+            serde_json::to_vec_pretty(&boundary_residue_policy()).expect("policy serializes"),
+        )
+        .expect("case policy is written");
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().unwrap(),
+            "--law-policy",
+            policy_path.to_str().unwrap(),
+            "--out-dir",
+            out_dir.to_str().unwrap(),
+        ]);
+        let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+        let row = boundary_residue_row(&packet);
+        assert_eq!(row["verdict"], "not_computed");
+        assert_eq!(row["verdictData"]["methodStatus"], expected_status);
+        if case == "missing-classification" {
+            assert!(
+                packet["assumptions"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|row| row["theoremRef"] == "part8/P1-2-d0" && row["status"] == "violated"),
+                "d0 assumption must not be checked when classification is absent"
+            );
+        }
+    }
+
+    for case in [
+        "invalid-boundary-column",
+        "invalid-core-mismatch",
+        "unknown-variable",
+    ] {
+        let out_dir = root_out.join(case);
+        fs::create_dir_all(&out_dir).expect("invalid case dir exists");
+        let archmap_path = out_dir.join("archmap.json");
+        let policy_path = out_dir.join("law_policy.json");
+        fs::write(
+            &archmap_path,
+            serde_json::to_vec_pretty(&boundary_residue_archmap(case)).expect("archmap serializes"),
+        )
+        .expect("invalid case archmap is written");
+        fs::write(
+            &policy_path,
+            serde_json::to_vec_pretty(&boundary_residue_policy()).expect("policy serializes"),
+        )
+        .expect("invalid case policy is written");
+        run_sig0_expect_code(
+            &[
+                "analyze",
+                "--archmap",
+                archmap_path.to_str().unwrap(),
+                "--law-policy",
+                policy_path.to_str().unwrap(),
+                "--out-dir",
+                out_dir.to_str().unwrap(),
+            ],
+            2,
+        );
+    }
+
+    let z_zero_dir = root_out.join("z-zero");
+    fs::create_dir_all(&z_zero_dir).expect("z-zero dir exists");
+    let z_zero_policy = z_zero_dir.join("law_policy.json");
+    let mut policy = boundary_residue_policy();
+    policy["measurementProfiles"][0]["coefficient"] = Value::String("Z".to_string());
+    fs::write(
+        &z_zero_policy,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("z-zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap.to_str().unwrap(),
+        "--law-policy",
+        z_zero_policy.to_str().unwrap(),
+        "--out-dir",
+        z_zero_dir.to_str().unwrap(),
+    ]);
+    let z_zero_packet = read_json(&z_zero_dir.join("archsig-measurement-packet.json"));
+    let z_zero_row = boundary_residue_row(&z_zero_packet);
+    assert_eq!(z_zero_row["verdict"], "unknown");
+    assert_eq!(
+        z_zero_row["verdictData"]["methodStatus"],
+        "finite_mayer_vietoris_d0_obstruction_only"
+    );
+    assert!(
+        z_zero_packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["theoremRef"] == "part8/P1-2-coefficient" && row["status"] == "assumed"),
+        "non-F2 coefficient mode must record the F2 parity projection as assumed"
+    );
+
+    let z_nonzero_dir = root_out.join("z-nonzero");
+    fs::create_dir_all(&z_nonzero_dir).expect("z-nonzero dir exists");
+    let z_nonzero_policy = z_nonzero_dir.join("law_policy.json");
+    fs::write(
+        &z_nonzero_policy,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("z-nonzero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        nonzero_archmap.to_str().unwrap(),
+        "--law-policy",
+        z_nonzero_policy.to_str().unwrap(),
+        "--out-dir",
+        z_nonzero_dir.to_str().unwrap(),
+    ]);
+    let z_nonzero_packet = read_json(&z_nonzero_dir.join("archsig-measurement-packet.json"));
+    let z_nonzero_row = boundary_residue_row(&z_nonzero_packet);
+    assert_eq!(z_nonzero_row["verdict"], "measured_nonzero");
+    assert_eq!(
+        z_nonzero_row["verdictData"]["methodStatus"],
+        "finite_mayer_vietoris_d0_obstruction_only"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_section_factorization_checks_selected_section() {
     let root_out = temp_dir("ag-measurement-section-factorization");
 
@@ -12564,6 +12854,15 @@ fn section_row(packet: &Value) -> &Value {
         .expect("section factorization row exists")
 }
 
+fn boundary_residue_row(packet: &Value) -> &Value {
+    packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.boundary-residue@1")
+        .expect("boundary residue row exists")
+}
+
 fn restriction_policy() -> Value {
     json!({
         "schema": "law-policy/v1",
@@ -12590,6 +12889,39 @@ fn restriction_policy() -> Value {
         "policies": [{
             "law": "ag.restriction-compatibility",
             "evaluator": "ag.restriction-compatibility@1",
+            "basis": ["policy-basis:layering"],
+            "scope": ["src/"],
+            "severity": "high"
+        }]
+    })
+}
+
+fn boundary_residue_policy() -> Value {
+    json!({
+        "schema": "law-policy/v1",
+        "id": "ag-boundary-residue-policy",
+        "measurementProfileRef": "profile:ag-boundary-residue@1",
+        "measurementProfiles": [{
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:ag-boundary-residue@1",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:boundary-residue",
+            "coefficient": "F2",
+            "effCoeff": "finite-mayer-vietoris-d0@1",
+            "witnessFamily": [
+                {"law": "ag.boundary-residue", "variable": "b0"},
+                {"law": "ag.boundary-residue", "variable": "b1"}
+            ],
+            "resolutionSelector": "mayer-vietoris-d0@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "boundary-residue-zero@1",
+            "nonZeroPredicate": "boundary-residue-nonzero@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        }],
+        "policies": [{
+            "law": "ag.boundary-residue",
+            "evaluator": "ag.boundary-residue@1",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "high"
@@ -12728,6 +13060,225 @@ fn restriction_archmap(case: &str) -> Value {
             "id": "cover:restriction",
             "contexts": ["ctx:source", "ctx:target"],
             "refs": ["ctx:source", "ctx:target"]
+        }]
+    })
+}
+
+fn boundary_residue_archmap(case: &str) -> Value {
+    let include_roles = case != "missing-classification";
+    let include_mismatch = case != "missing-mismatch";
+    let include_columns = case != "missing-matrix";
+    let mismatch_support = match case {
+        "zero"
+        | "missing-classification"
+        | "missing-mismatch"
+        | "missing-matrix"
+        | "duplicate-role"
+        | "invalid-boundary-column"
+        | "invalid-core-mismatch" => "b0",
+        "sum-zero" => "b0,b1",
+        "nonzero" => "b1",
+        "unknown-variable" => "b2",
+        _ => panic!("unknown boundary residue fixture case: {case}"),
+    };
+    let mut atoms = vec![
+        atom_json(
+            "atom:core-component",
+            "component",
+            "ctx:core",
+            "static",
+            "component",
+            None,
+            vec!["ctx:core", "src:core"],
+        ),
+        atom_json(
+            "atom:feature-component",
+            "component",
+            "ctx:feature",
+            "static",
+            "component",
+            None,
+            vec!["ctx:feature", "src:feature"],
+        ),
+        atom_json(
+            "atom:boundary-component",
+            "component",
+            "ctx:boundary",
+            "static",
+            "component",
+            None,
+            vec!["ctx:boundary", "src:boundary"],
+        ),
+    ];
+    if include_roles {
+        atoms.extend([
+            atom_json(
+                "atom:role-core",
+                "semantic",
+                "ctx:core",
+                "boundary-residue",
+                "patchRole",
+                Some("core"),
+                vec!["ctx:core", "src:role"],
+            ),
+            atom_json(
+                "atom:role-feature",
+                "semantic",
+                "ctx:feature",
+                "boundary-residue",
+                "patchRole",
+                Some("feature"),
+                vec!["ctx:feature", "src:role"],
+            ),
+            atom_json(
+                "atom:role-boundary",
+                "semantic",
+                "ctx:boundary",
+                "boundary-residue",
+                "patchRole",
+                Some("boundary"),
+                vec!["ctx:boundary", "src:role"],
+            ),
+        ]);
+        if case == "duplicate-role" {
+            atoms.push(atom_json(
+                "atom:role-core-duplicate",
+                "semantic",
+                "ctx:core",
+                "boundary-residue",
+                "patchRole",
+                Some("feature"),
+                vec!["ctx:core", "src:role"],
+            ));
+        }
+    }
+    if include_columns {
+        atoms.push(atom_json(
+            "atom:d0-core-b0",
+            "relation",
+            if case == "invalid-boundary-column" {
+                "ctx:boundary"
+            } else {
+                "ctx:core"
+            },
+            "boundary-residue",
+            "restrictionColumn",
+            Some("b0"),
+            if case == "invalid-boundary-column" {
+                vec!["ctx:boundary", "src:d0-core"]
+            } else {
+                vec!["ctx:core", "ctx:boundary", "src:d0-core"]
+            },
+        ));
+        if case == "sum-zero" {
+            atoms.push(atom_json(
+                "atom:d0-feature-b1",
+                "relation",
+                "ctx:feature",
+                "boundary-residue",
+                "restrictionColumn",
+                Some("b1"),
+                vec!["ctx:feature", "ctx:boundary", "src:d0-feature"],
+            ));
+        }
+    }
+    if include_mismatch {
+        atoms.push(atom_json(
+            "atom:boundary-mismatch",
+            "relation",
+            "boundary:mismatch",
+            "boundary-residue",
+            "mismatchSection",
+            Some(mismatch_support),
+            if case == "invalid-core-mismatch" {
+                vec!["ctx:core", "src:mismatch"]
+            } else {
+                vec!["ctx:boundary", "src:mismatch"]
+            },
+        ));
+    }
+
+    let core_atoms = atoms
+        .iter()
+        .filter_map(|atom| {
+            let id = atom["id"].as_str().unwrap();
+            atom["refs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|source_ref| source_ref == "ctx:core")
+                .then_some(id)
+        })
+        .collect::<Vec<_>>();
+    let feature_atoms = atoms
+        .iter()
+        .filter_map(|atom| {
+            let id = atom["id"].as_str().unwrap();
+            atom["refs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|source_ref| source_ref == "ctx:feature")
+                .then_some(id)
+        })
+        .collect::<Vec<_>>();
+    let boundary_atoms = atoms
+        .iter()
+        .filter_map(|atom| {
+            let id = atom["id"].as_str().unwrap();
+            atom["refs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|source_ref| source_ref == "ctx:boundary")
+                .then_some(id)
+        })
+        .collect::<Vec<_>>();
+
+    json!({
+        "schema": "archmap/v2",
+        "id": format!("ag-boundary-residue-fixture-{case}"),
+        "extractionDoctrineRef": {
+            "doctrineId": "doctrine:ag-fixture@1",
+            "fingerprint": "sha256:ag-boundary-residue-fixture",
+            "components": ["V", "Gamma", "R", "rho", "E", "N"]
+        },
+        "sources": {
+            "src:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 core patch"},
+            "src:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 feature patch"},
+            "src:boundary": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary patch"},
+            "src:role": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 patch role"},
+            "src:d0-core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:d0-feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:mismatch": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary mismatch"},
+            "ctx:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
+            "ctx:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
+            "ctx:boundary": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"}
+        },
+        "atoms": atoms,
+        "contexts": [
+            {
+                "id": "ctx:core",
+                "atoms": core_atoms,
+                "restrictsTo": ["ctx:boundary"],
+                "refs": ["ctx:core"]
+            },
+            {
+                "id": "ctx:feature",
+                "atoms": feature_atoms,
+                "restrictsTo": ["ctx:boundary"],
+                "refs": ["ctx:feature"]
+            },
+            {
+                "id": "ctx:boundary",
+                "atoms": boundary_atoms,
+                "refs": ["ctx:boundary"]
+            }
+        ],
+        "covers": [{
+            "id": "cover:boundary-residue",
+            "contexts": ["ctx:core", "ctx:feature", "ctx:boundary"],
+            "refs": ["ctx:core", "ctx:feature", "ctx:boundary"]
         }]
     })
 }

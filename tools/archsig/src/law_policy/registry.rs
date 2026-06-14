@@ -265,6 +265,7 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_coherence_manifest(),
         ag_restriction_manifest(),
         ag_section_manifest(),
+        ag_boundary_residue_manifest(),
         ag_manifest("ag.square-free-repair@1", "ag.square-free-repair"),
         ag_manifest("ag.law-conflict-tor@1", "ag.law-conflict-tor"),
         ag_manifest("ag.sheaf-laplacian@1", "ag.sheaf-laplacian"),
@@ -302,6 +303,43 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
             "/computedInvariants".to_string(),
         ],
         negative_fixtures: vec!["ag_coherence_obstruction_negative.json".to_string()],
+    }
+}
+
+fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.boundary-residue@1".to_string(),
+        law_id: "ag.boundary-residue".to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: vec![
+            "boundary-residue.patchRole".to_string(),
+            "boundary-residue.restrictionColumn".to_string(),
+            "boundary-residue.mismatchSection".to_string(),
+        ],
+        required_molecule_condition:
+            "archmap/v2 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite cover and witnessFamily from MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing patch classification, mismatch section, or restriction matrix is not_computed"
+                .to_string(),
+        pass_criteria:
+            "selected boundary mismatch section lies in the F2 image of Mayer-Vietoris d0"
+                .to_string(),
+        violation_criteria:
+            "selected boundary mismatch section is outside the F2 image of Mayer-Vietoris d0"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v1".to_string(),
+        distance_contribution:
+            "structural boundary residue verdict remains selected-cover and F2-relative"
+                .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: Vec::new(),
     }
 }
 
