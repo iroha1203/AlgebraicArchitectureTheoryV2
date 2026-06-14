@@ -382,6 +382,89 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
                     .any(|scope_ref| scope_ref == "candidate-regime:stability-placeholder")),
         "analytic-only theorem candidate must be represented as a not_applicable boundary"
     );
+    let boundary_kinds = packet["boundaryStatements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|statement| statement["kind"].as_str().expect("boundary kind"))
+        .collect::<BTreeSet<_>>();
+    assert!(
+        boundary_kinds.is_subset(&BTreeSet::from([
+            "silence_by_design",
+            "out_of_selected_vocabulary",
+            "unmeasured_support",
+            "violated_assumption",
+            "blocked_method",
+            "not_applicable",
+        ])),
+        "M8 must reuse existing BoundaryStatementV1 kinds"
+    );
+    for (id, kind, reason_text, scope_text) in [
+        (
+            "boundary:m8:higher-hn-silence",
+            "silence_by_design",
+            "higher_hn_n_ge_3_part_iv_scope_boundary",
+            "Higher H^n for n>=3",
+        ),
+        (
+            "boundary:m8:non-abelian-stack-gerbe-vocabulary",
+            "out_of_selected_vocabulary",
+            "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
+            "Non-abelian stack/gerbe",
+        ),
+        (
+            "boundary:m8:higher-tor-unmeasured-support",
+            "unmeasured_support",
+            "higher_tor_i_ge_2_unmeasured_support",
+            "Higher Tor_i for i>=2",
+        ),
+    ] {
+        assert!(
+            packet["boundaryStatements"].as_array().unwrap().iter().any(
+                |statement| statement["id"] == id
+                    && statement["kind"] == kind
+                    && statement["reason"] == reason_text
+                    && statement["scopeRefs"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|scope_ref| scope_ref == packet["packetId"].as_str().unwrap())
+                    && statement["text"]
+                        .as_str()
+                        .is_some_and(|text| text.contains(scope_text))
+            ),
+            "M8 typed boundary {id} must keep its own kind and scope"
+        );
+    }
+    assert!(
+        packet["nonConclusions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(Value::as_str)
+            .all(|text| {
+                !text.contains("Higher H^n")
+                    && !text.contains("Non-abelian stack/gerbe")
+                    && !text.contains("Higher Tor_i")
+            }),
+        "M8 silence must be a typed boundary, not a nonConclusions headline"
+    );
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .len(),
+        1,
+        "M8 typed boundary must not generate a structural verdict"
+    );
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .iter()
+            .all(|row| row["verdictData"]["methodStatus"] != "depends_on_violated_assumption"),
+        "M8 typed boundary must not trigger assumption dependency propagation"
+    );
     assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
     assert_eq!(cech["dimensions"]["H1"], Value::from(0));
