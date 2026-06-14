@@ -1039,13 +1039,17 @@ tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV
 PRD-6 は tracking Issue [#2128](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2128)
 で管理する。初回実装 Issue [#2129](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2129)
 では AC1/R0 と AC2/R1 を対象にし、`Formal/AG/SingularityMonodromyStack` の entrypoint と
-architecture stratum / reading parameter を追加した。PRD 本体の checkbox は prd-loop の
+architecture stratum / reading parameter を追加した。Issue [#2131](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2131)
+では AC3-AC4/R2 を対象にし、cotangent / tangent deformation-obstruction interface と
+smooth / singular / normal cone reading を追加した。PRD 本体の checkbox は prd-loop の
 不変条件として編集せず、達成状態は tracking Issue とこの台帳で同期する。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| `VI.R0` Formal/AG/SingularityMonodromyStack entrypoint | `defined only`. `Formal/AG/SingularityMonodromyStack.lean` が `Formal/AG/SingularityMonodromyStack/Stratum.lean` を束ね、`Formal/AG.lean` から import される。PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived` の後段 module として build 対象に入る。 | R2 以降の deformation-obstruction interface、operation homotopy、monodromy、stack、gerbe、finite examples は後続 Issue で扱う。 |
-| `VI.定義2.1 / 原則2.2` Architecture Stratum and reading parameter | `defined only` / `proved accessor`. `StratumRole`、`StratumReadingParameter`、`StratumReadingParameter.coverageTopology`、`lawUniverse_eq`、`selectedCoeff_eq`、`ArchitectureStratum`、`ArchitectureStratum.Mem`、`mem_iff`、`selectedSubobject_holds`、`locallyClosed_holds`、`decorationCompatible_holds`、`readingCompatible_holds` を持つ。 | stratum は selected carrier / compatibility certificate として置く。一般 stratification theory、cotangent / tangent complex、smooth / singular criterion はまだ主張しない。 |
+| `VI.R0` Formal/AG/SingularityMonodromyStack entrypoint | `defined only`. `Formal/AG/SingularityMonodromyStack.lean` が `Stratum.lean`、`CotangentInterface.lean`、`SmoothSingular.lean` を束ね、`Formal/AG.lean` から import される。PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived` の後段 module として build 対象に入る。 | R3 以降の singularity theorem、operation homotopy、monodromy、stack、gerbe、finite examples は後続 Issue で扱う。 |
+| `VI.定義2.1 / 原則2.2` Architecture Stratum and reading parameter | `defined only` / `proved accessor`. `StratumRole`、`StratumReadingParameter`、`StratumReadingParameter.coverageTopology`、`lawUniverse_eq`、`selectedCoeff_eq`、`ArchitectureStratum`、`ArchitectureStratum.Mem`、`mem_iff`、`selectedSubobject_holds`、`locallyClosed_holds`、`decorationCompatible_holds`、`readingCompatible_holds` を持つ。 | stratum は selected carrier / compatibility certificate として置く。一般 stratification theory は主張しない。 |
+| `VI.定義3.1 / 定義3.2` Cotangent and tangent interface | `defined only` / `proved accessor`. `CotangentData`、`CotangentData.baseMap_eq`、`TangentData`、`TangentData.zeroObstruction_eq` を持つ。 | selected interface であり、一般余接複体構成、RHom 一般構成、Ext 一般理論は主張しない。 |
+| `VI.定義4.1 / 定義5.1 / 定義5.2` Smooth, singular, normal cone reading | `defined only` / `proved under explicit selected effectiveness/soundness interface`. `DeformationObstructionTheory`、`not_liftFill_of_ob_ne_zero`、`liftFill_of_ob_eq_zero`、`USmooth`、`USingular`、`USmooth.obstruction_eq_zero`、`USmooth.liftFill`、`uSmooth_of_all_obstruction_zero`、`uSmooth_iff_all_obstruction_zero`、`not_uSmooth_of_uSingular`、`NormalConeReading`、`NormalConeReading.lawfulLocus_eq_flatU_holds`、`NormalConeReading.obstructionIdealCarrier_eq_I_U_holds`、`StructuralRepairDirection`、`selected_pointsTowardVanishing_holds` を持つ。 | deformation-obstruction theory は selected test / obstruction map / effectiveness / soundness に相対化する。normal cone reading は PRD-3 の `Flat_U` / `I_U` に型レベルで接続する。一般 deformation theory、Kuranishi theorem、定理6.1 / 6.2 / 系6.5 はまだ主張しない。 |
 | `CotangentComplexGeneralConstruction` | `future proof obligation` / `unassigned` | PRD-6 では `CotangentData` interface の後続実装に留め、一般余接複体構成は証明しない。 |
 | `RHomGeneralConstruction` | `future proof obligation` / `unassigned` | PRD-6 では tangent interface の field として扱い、RHom 一般構成は証明しない。 |
 | `AlgebraicStackGeneralTheory` | `future proof obligation` / `unassigned` | PRD-6 では ArchitectureStack / AlgebraicArchitectureStack predicate を AAT 側 data として扱い、algebraic stack 一般論は証明しない。 |
@@ -1057,7 +1061,7 @@ architecture stratum / reading parameter を追加した。PRD 本体の checkbo
 | --- | --- |
 | `VI.R0` | `defined only` |
 | `VI.定義2.1 / 原則2.2` | `defined only` / `proved accessor` |
-| `VI.定義3.1-5.2` | `future proof obligation` |
+| `VI.定義3.1-5.2` | `defined only` / `proved under explicit selected effectiveness/soundness interface` |
 | `VI.定理6.1 / 定理6.2 / 系6.5` | `future proof obligation` |
 | `VI.定義6.3 / 定理候補6.4` | `future proof obligation` |
 | `VI.定義8.1-9.5` | `future proof obligation` |
