@@ -371,7 +371,7 @@
 
     .detail {
       position: absolute;
-      z-index: 5;
+      z-index: 9;
       right: 12px;
       top: 188px;
       bottom: auto;
@@ -561,13 +561,18 @@
         0 0 0 1px rgba(100, 214, 190, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
       transform: translateY(calc(100% + 24px));
-      transition: transform 180ms ease;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 180ms ease, visibility 0ms linear 180ms;
       backdrop-filter: blur(18px);
       clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
     }
 
     .app.report-open .report {
       transform: translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+      transition: transform 180ms ease;
     }
 
     .panel {
@@ -824,16 +829,16 @@
           <span class="toolbar-label">View</span>
           <select id="view-mode" title="View mode">
             <option value="families">Families</option>
-            <option value="curvature">Curvature field</option>
-            <option value="holonomy">Holonomy paths</option>
-            <option value="obstructionLoops">Obstruction loops</option>
-            <option value="obstructions">Forbidden support cages</option>
-            <option value="spectrum">Spectrum landscape</option>
-            <option value="flatness">Flatness surface</option>
-            <option value="aatAxes">AAT law axes</option>
+            <option value="curvature">AG Curvature field</option>
+            <option value="holonomy" selected>AG Cover & Gluing</option>
+            <option value="obstructionLoops">AG Obstruction loops</option>
+            <option value="obstructions">AG Forbidden support cages</option>
+            <option value="spectrum">AG Spectrum landscape</option>
+            <option value="flatness">AG Flatness surface</option>
+            <option value="aatAxes">AG Site / Cover</option>
             <option value="molecules">Molecule map</option>
             <option value="sources">Source map</option>
-            <option value="projection">Projection map</option>
+            <option value="projection">AG Projection map</option>
             <option value="evidence">Evidence map</option>
             <option value="risk">Boundary review</option>
             <option value="density">Density</option>
@@ -979,19 +984,23 @@
 
     const colorByFamily = {
       authority: 0xef6767,
-      trust: 0xe0b84e,
-      permission: 0xff8f5a,
-      state: 0x66a6ff,
-      effect: 0x4cc3a7,
-      relation: 0xb087ff,
-      semantic: 0xd8dee9,
       capability: 0x8bd46e,
+      component: 0x73b7ff,
+      contract: 0xf2c15f,
+      contractSpecification: 0xf2cf66,
+      effect: 0x4cc3a7,
       existence: 0x9aa8b8,
-      contractSpecification: 0xf2cf66
+      permission: 0xff8f5a,
+      relation: 0xb087ff,
+      runtime: 0xff8f5a,
+      semantic: 0xd8dee9,
+      state: 0x66a6ff,
+      trust: 0xe0b84e
     };
 
     async function createRenderer() {
-      if (navigator.gpu) {
+      const preferWebGpu = new URLSearchParams(window.location.search).get("renderer") === "webgpu";
+      if (preferWebGpu && navigator.gpu) {
         try {
           const module = await import("three/addons/renderers/webgpu/WebGPURenderer.js");
           const webgpu = new module.default({ antialias: true });
@@ -1036,9 +1045,22 @@
     function clearGroup(group) {
       while (group.children.length) {
         const child = group.children.pop();
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) child.material.dispose();
+        disposeObject(child);
       }
+    }
+
+    function disposeObject(object) {
+      if (object.geometry) object.geometry.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material].filter(Boolean);
+      materials.forEach((material) => {
+        Object.values(material).forEach((value) => {
+          if (value && typeof value === "object" && typeof value.dispose === "function" && value.isTexture) {
+            value.dispose();
+          }
+        });
+        material.dispose();
+      });
+      if (object.children) object.children.forEach(disposeObject);
     }
 
     async function loadCompanionReports() {
@@ -1098,7 +1120,9 @@
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
       renderAtomInstances(renderedAtoms, positions);
-      renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
+      if (shouldRenderAtomGlyphs(viewModeEl.value)) {
+        renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
+      }
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
       renderViewerDistanceBonds(positions, activeLayoutContext);
       renderedEdgeCount = renderEdges(edges, positions);
@@ -1169,6 +1193,18 @@
         mesh.userData = { kind: "atomInternalGlyph", item: glyph, node };
         atomGroup.add(mesh);
       });
+    }
+
+    function shouldRenderAtomGlyphs(mode) {
+      return !new Set([
+        "aatAxes",
+        "curvature",
+        "flatness",
+        "holonomy",
+        "obstructionLoops",
+        "obstructions",
+        "spectrum"
+      ]).has(mode);
     }
 
     function atomGlyphGeometry(fiber, baseSize, blockedAnchor) {
@@ -1432,68 +1468,144 @@
       const vertices = Array.isArray(nerve.vertices) ? nerve.vertices : [];
       const edges = Array.isArray(nerve.edges) ? nerve.edges : [];
       const triangles = Array.isArray(nerve.triangles) ? nerve.triangles : [];
+      const vertexCenters = nerveVertexCenters(scene, vertices);
       vertices.forEach((vertex, index) => {
-        const center = sceneAxisPosition(scene, vertex.contextRef, index, Math.max(vertices.length, 1), positions.get(vertex.contextRef), {
-          xValue: index / Math.max(vertices.length - 1, 1),
-          yValue: Math.min((vertex.atomRefs || []).length, 12),
-          zValue: Math.min((vertex.atomRefs || []).length, 12)
-        });
+        const center = vertexCenters.get(String(vertex.contextRef || ""));
         if (!center) return;
+        const supportSize = Math.min((vertex.atomRefs || []).length, 18);
         const patch = new THREE.Mesh(
-          new THREE.CircleGeometry(5.4 + Math.min((vertex.atomRefs || []).length, 8) * 0.4, 24),
+          new THREE.CircleGeometry(8.2 + supportSize * 0.34, 36),
           new THREE.MeshStandardMaterial({
             color: 0x64d6be,
             transparent: true,
-            opacity: 0.24,
+            opacity: 0.34,
             roughness: 0.52,
             side: THREE.DoubleSide
           })
         );
         patch.position.copy(center);
-        patch.position.y += 4 + index * 0.2;
+        patch.position.y += 1;
         patch.rotation.x = -Math.PI / 2;
         patch.userData = { kind: "nerveVertexPatch", item: vertex };
         edgeGroup.add(patch);
+        const label = createTextSprite(contextLabel(vertex.contextRef), "#d8dee9", "rgba(13,16,21,0.68)");
+        label.position.copy(center).add(new THREE.Vector3(0, 11 + supportSize * 0.08, 0));
+        label.userData = { kind: "nerveVertexLabel", item: vertex };
+        edgeGroup.add(label);
       });
-      renderNerveEdges(scene, edges, positions, encoding);
+      renderNerveEdges(edges, vertexCenters, encoding);
       const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
       triangles.slice(0, triangleLimit).forEach((triangle, index) => {
-        const points = (triangle.contextRefs || []).map((ref, refIndex) =>
-          sceneAxisPosition(scene, ref, index * 3 + refIndex, Math.max(triangles.length * 3, 1), positions.get(ref), {
-            xValue: refIndex / 3,
-            yValue: Math.min((triangle.sharedAtomRefs || []).length, 12),
-            zValue: Math.min((triangle.edgeRefs || []).length, 3)
-          })
-        ).filter(Boolean);
+        const points = (triangle.contextRefs || [])
+          .map((ref) => vertexCenters.get(String(ref || ""))?.clone().add(new THREE.Vector3(0, 5.5 + index * 0.35, 0)))
+          .filter(Boolean);
         if (points.length !== 3) return;
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y + 2, p.z]), 3));
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y, p.z]), 3));
         geometry.computeVertexNormals();
         const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
           color: 0x73b7ff,
           transparent: true,
-          opacity: 0.18,
+          opacity: 0.34,
           side: THREE.DoubleSide,
           roughness: 0.6
         }));
-        mesh.userData = { kind: "nerveTriangle", item: triangle, nonClaim: "H2 coherence is not visualized" };
+        mesh.userData = { kind: "nerveTriangle", item: triangle };
         edgeGroup.add(mesh);
+        addTriangleOutline(points, "nerveTriangleOutline");
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(2.8 + Math.min((triangle.sharedAtomRefs || []).length, 6) * 0.38, 18, 12),
+          new THREE.MeshStandardMaterial({
+            color: 0x73b7ff,
+            emissive: 0x0b2f46,
+            transparent: true,
+            opacity: 0.92,
+            roughness: 0.44
+          })
+        );
+        marker.position.copy(centroid(points)).add(new THREE.Vector3(0, 4, 0));
+        marker.userData = { kind: "nerveSharedAtomMarker", item: triangle };
+        edgeGroup.add(marker);
+        const sharedLabel = createTextSprite(`${(triangle.sharedAtomRefs || []).length} shared atom`, "#ffffff", "rgba(27,75,105,0.72)");
+        sharedLabel.position.copy(marker.position).add(new THREE.Vector3(0, 7, 0));
+        sharedLabel.userData = { kind: "nerveSharedAtomLabel", item: triangle };
+        edgeGroup.add(sharedLabel);
       });
     }
 
-    function renderNerveEdges(scene, edges, positions, encoding) {
+    function nerveVertexCenters(scene, vertices) {
+      const centers = new Map();
+      vertices.forEach((vertex, index) => {
+        const center = sceneAxisPosition(scene, vertex.contextRef, index, Math.max(vertices.length, 1), null, {
+          xValue: index / Math.max(vertices.length - 1, 1),
+          yValue: Math.min((vertex.atomRefs || []).length, 12),
+          zValue: Math.min((vertex.atomRefs || []).length, 12)
+        });
+        centers.set(String(vertex.contextRef || ""), center);
+      });
+      return centers;
+    }
+
+    function renderNerveEdges(edges, vertexCenters, encoding) {
       const solid = [];
       const mismatch = [];
-      edges.forEach((edge, index) => {
-        const metrics = { xValue: index / Math.max(edges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
-        const source = sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(edges.length * 2, 1), positions.get(edge.sourceContextRef), metrics);
-        const target = sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(edges.length * 2, 1), positions.get(edge.targetContextRef), metrics);
+      edges.forEach((edge) => {
+        const source = vertexCenters.get(String(edge.sourceContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
+        const target = vertexCenters.get(String(edge.targetContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
         if (!source || !target) return;
         const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
-        bucket.push(source.x, source.y + 3, source.z, target.x, target.y + 3, target.z);
+        bucket.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
-      addLineSegments(solid, sceneColorHex("checked"), 0.52, "nerveEdge", { lineRole: "solid", thicknessRole: "thin" });
+      addLineSegments(solid, sceneColorHex("checked"), 0.72, "nerveEdge", { lineRole: "solid", thicknessRole: "thick" });
       addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
+    }
+
+    function addTriangleOutline(points, kind) {
+      addLineSegments([
+        points[0].x, points[0].y + 0.4, points[0].z, points[1].x, points[1].y + 0.4, points[1].z,
+        points[1].x, points[1].y + 0.4, points[1].z, points[2].x, points[2].y + 0.4, points[2].z,
+        points[2].x, points[2].y + 0.4, points[2].z, points[0].x, points[0].y + 0.4, points[0].z
+      ], 0x73b7ff, 0.9, kind, { lineRole: "solid", thicknessRole: "thick" });
+    }
+
+    function contextLabel(ref) {
+      const text = String(ref || "context").replace(/^ctx:/, "");
+      return text.length > 18 ? `${text.slice(0, 17)}...` : text;
+    }
+
+    function createTextSprite(text, color = "#d8dee9", background = "rgba(13,16,21,0.62)") {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 128;
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = background;
+      roundRect(context, 14, 22, canvas.width - 28, 84, 18);
+      context.fill();
+      context.font = "600 38px Inter, system-ui, sans-serif";
+      context.fillStyle = color;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(String(text || ""), canvas.width / 2, canvas.height / 2 + 1, canvas.width - 64);
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(20, 5, 1);
+      return sprite;
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      context.beginPath();
+      context.moveTo(x + radius, y);
+      context.lineTo(x + width - radius, y);
+      context.quadraticCurveTo(x + width, y, x + width, y + radius);
+      context.lineTo(x + width, y + height - radius);
+      context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      context.lineTo(x + radius, y + height);
+      context.quadraticCurveTo(x, y + height, x, y + height - radius);
+      context.lineTo(x, y + radius);
+      context.quadraticCurveTo(x, y, x + radius, y);
+      context.closePath();
     }
 
     function renderCocycleRibbon(scene, ribbon, positions, encoding, limits = {}) {
@@ -2300,15 +2412,18 @@
     function familyRank(family) {
       const ordered = [
         "authority",
-        "trust",
-        "permission",
-        "state",
-        "effect",
-        "contractSpecification",
-        "relation",
         "capability",
+        "component",
+        "contract",
+        "contractSpecification",
+        "effect",
+        "existence",
+        "permission",
+        "relation",
+        "runtime",
         "semantic",
-        "existence"
+        "state",
+        "trust"
       ];
       const index = ordered.indexOf(String(family || ""));
       return index >= 0 ? index : hashText(family || "atom") % ordered.length;
@@ -2460,41 +2575,123 @@
       if (!activeLayoutContext) return "";
       const aat = activeLayoutContext.aat;
       if (viewModeEl.value === "aatAxes") {
-        return `, ${aat.atomToAxes.size} axis-support atoms, ${aat.axes.length} axes`;
+        return coverGluingStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "curvature") {
-        return `, ${aat.atomToCurvature.size} curvature-support atoms, ${aat.curvatureItems.length} curvature readings`;
+        return hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "holonomy") {
-        return `, ${aat.atomToHolonomy.size} path/holonomy atoms, ${aat.holonomyItems.length} path readings`;
+        return coverGluingStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions") {
-        return `, ${aat.atomToObstructionLoops.size || aat.atomToObstructions.size} loop-support atoms, ${aat.obstructionLoopItems.length || aat.obstructions.length} loop readings`;
+        return viewModeEl.value === "obstructionLoops"
+          ? h1MismatchStatusText(aat.gluingGeometry)
+          : forbiddenSupportStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "flatness") {
-        const boundaryAtoms = renderedAtoms.filter((node) =>
-          (aat.atomToAxes.get(node.nodeId) || []).some((item) => String(item.axis.coverageStatus || "").includes("gap")) ||
-          (aat.atomToCurvature.get(node.nodeId) || []).length ||
-          (aat.atomToHolonomy.get(node.nodeId) || []).length
-        ).length;
-        return `, ${boundaryAtoms} flatness-boundary atoms`;
+        return hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "spectrum") {
         const hotAtoms = renderedAtoms.filter((node) => (aat.atomToSpectrum.get(node.nodeId) || []).length || (aat.atomToAxes.get(node.nodeId) || []).some((item) => aat.hotspotByAxis.has(item.axis.axisRef))).length;
-        return `, ${hotAtoms} spectrum-support atoms, ${aat.spectrumItems.length || aat.hotspots.length} spectral readings`;
+        const spectralReadings = aat.spectrumItems.length || aat.hotspots.length;
+        return spectralReadings
+          ? `, ${hotAtoms} spectrum-support atoms, ${spectralReadings} spectral readings`
+          : hodgeFieldStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "molecules") {
         return `, ${aat.atomToViewerDistances.size} distance-positioned atoms, ${aat.viewerDistances.length} AtomShape distance inputs`;
       }
+      if (viewModeEl.value === "projection") {
+        return repairMorphStatusText(aat.gluingGeometry);
+      }
       return "";
     }
 
+    function coverGluingStatusText(gluingGeometry) {
+      const nerve = gluingGeometry?.nerve || {};
+      const vertices = Array.isArray(nerve.vertices) ? nerve.vertices.length : 0;
+      const edges = Array.isArray(nerve.edges) ? nerve.edges.length : 0;
+      const triangles = Array.isArray(nerve.triangles) ? nerve.triangles.length : 0;
+      const nonzeroEdges = Array.isArray(nerve.edges)
+        ? nerve.edges.filter((edge) => Number(edge.value || 0) > 0).length
+        : 0;
+      return `, ${vertices} cover patches, ${edges} gluing edges, ${triangles} shared faces, ${nonzeroEdges} nonzero gluing edges`;
+    }
+
+    function hodgeFieldStatusText(gluingGeometry) {
+      const field = gluingGeometry?.locusField || {};
+      const rows = Array.isArray(field.fieldRows) ? field.fieldRows.length : 0;
+      const measuredZero = Array.isArray(field.measuredZeroRegions) ? field.measuredZeroRegions.length : 0;
+      const blocked = Array.isArray(field.blockedRegions) ? field.blockedRegions.length : 0;
+      return `, ${rows} field rows, ${measuredZero} measured-zero regions, ${blocked} blocked regions`;
+    }
+
+    function h1MismatchStatusText(gluingGeometry) {
+      const ribbon = gluingGeometry?.cocycleRibbon || {};
+      const supportEdges = Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges.length : 0;
+      const markers = Array.isArray(ribbon.markers) ? ribbon.markers.length : 0;
+      const closureVisible = ribbon.closureGapEncoding?.visible ? 1 : 0;
+      return `, ${supportEdges} H1 mismatch support edges, ${markers + closureVisible} closure markers`;
+    }
+
+    function forbiddenSupportStatusText(gluingGeometry) {
+      const cages = Array.isArray(gluingGeometry?.forbiddenCages) ? gluingGeometry.forbiddenCages.length : 0;
+      return `, ${cages} forbidden support cages`;
+    }
+
+    function repairMorphStatusText(gluingGeometry) {
+      const morphs = Array.isArray(gluingGeometry?.repairMorphs) ? gluingGeometry.repairMorphs.length : 0;
+      return `, ${morphs} repair morphs`;
+    }
+
     function renderLegend() {
+      if (viewModeEl.value === "holonomy" || viewModeEl.value === "aatAxes") {
+        renderSimpleLegend([
+          ["64d6be", "context patch"],
+          ["d8dee9", "selected cover gluing edge"],
+          ["73b7ff", "shared cover face"],
+          ["f2c15f", "nonzero gluing edge"]
+        ]);
+        return;
+      }
+      if (["curvature", "flatness", "spectrum"].includes(viewModeEl.value)) {
+        renderSimpleLegend([
+          ["64d6be", "measured-zero region"],
+          ["f2c15f", "field row"],
+          ["ff6b6b", "blocked region"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "obstructionLoops") {
+        renderSimpleLegend([
+          ["f2c15f", "H1 support ribbon"],
+          ["ff6b6b", "closure marker"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "obstructions") {
+        renderSimpleLegend([
+          ["ff9468", "forbidden support cage"],
+          ["d8dee9", "support edge"]
+        ]);
+        return;
+      }
+      if (viewModeEl.value === "projection") {
+        renderSimpleLegend([
+          ["b087ff", "repair morph"],
+          ["d8dee9", "candidate target"]
+        ]);
+        return;
+      }
+      if (usesFamilyLegend(viewModeEl.value)) {
+        renderFamilyLegend();
+        return;
+      }
       const scene = sceneForMode(viewModeEl.value);
       const sceneLegend = Array.isArray(scene?.visualEncodingLegend) ? scene.visualEncodingLegend : [];
       if (sceneLegend.length) {
         legendEl.innerHTML = sceneLegend.slice(0, 8).map((item) =>
-          `<span class="legend-item"><span class="swatch" style="background:#${legendSwatchColor(item.channel)}"></span>${escapeHtml(item.channel || "encoding")}: ${escapeHtml(item.meaning || "")} ${legendValueText(item.values)}</span>`
+          `<span class="legend-item"><span class="swatch" style="background:#${legendSwatchColor(item.channel)}"></span>${escapeHtml(item.channel || "encoding")}: ${escapeHtml(item.meaning || "")} ${escapeHtml(legendValueText(item.values))}</span>`
         ).join("");
         return;
       }
@@ -2502,6 +2699,24 @@
       legendEl.innerHTML = items.slice(0, 12).map(([label, color]) =>
         `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`
       ).join("");
+    }
+
+    function renderSimpleLegend(items) {
+      legendEl.innerHTML = items.map(([color, label]) =>
+        `<span class="legend-item"><span class="swatch" style="background:#${color}"></span>${escapeHtml(label)}</span>`
+      ).join("");
+    }
+
+    function usesFamilyLegend(mode) {
+      return ["families", "density", "evidence", "molecules"].includes(mode);
+    }
+
+    function renderFamilyLegend() {
+      const families = uniqueSorted(renderedAtoms.map((node) => node.atomFamily || "unknown"));
+      legendEl.innerHTML = families.slice(0, 12).map((label) => {
+        const color = colorByFamily[label] || 0xb087ff;
+        return `<span class="legend-item"><span class="swatch" style="background:#${Number(color).toString(16).padStart(6, "0")}"></span>${escapeHtml(label)}</span>`;
+      }).join("");
     }
 
     function legendSwatchColor(channel) {
@@ -2554,10 +2769,10 @@
           z: "AAT geometry support"
         },
         holonomy: {
-          title: "Holonomy paths",
-          x: "path support + loop phase",
-          y: "holonomy distance",
-          z: "path support + loop phase"
+          title: "Cover & Gluing",
+          x: "context neighborhood",
+          y: "restriction depth",
+          z: "gluing mismatch intensity"
         },
         obstructionLoops: {
           title: "Obstruction loops",
@@ -2578,10 +2793,10 @@
           z: "spectral support"
         },
         aatAxes: {
-          title: "AAT law axes",
-          x: "selected law axis cluster",
-          y: "coverage gap / support",
-          z: "selected law axis cluster"
+          title: "Site / Cover",
+          x: "source neighborhood",
+          y: "poset rank",
+          z: "coverage density or context size"
         },
         molecules: {
           title: "Molecule map",
@@ -2682,7 +2897,10 @@
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
     [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
-    searchEl.addEventListener("input", debounce(renderScene, 90));
+    const debouncedRenderScene = debounce(renderScene, 90);
+    searchEl.addEventListener("input", debouncedRenderScene);
+    searchEl.addEventListener("search", debouncedRenderScene);
+    searchEl.addEventListener("change", debouncedRenderScene);
     resetEl.addEventListener("click", resetCamera);
     reportToggleEl.addEventListener("click", toggleReport);
     reportEl.addEventListener("click", handleReportAction);
@@ -2726,7 +2944,11 @@
     }
 
     function toggleReport() {
-      const isOpen = appEl.classList.toggle("report-open");
+      setReportOpen(!appEl.classList.contains("report-open"));
+    }
+
+    function setReportOpen(isOpen) {
+      appEl.classList.toggle("report-open", isOpen);
       reportToggleEl.textContent = isOpen ? "Hide report" : "Show report";
       reportToggleEl.setAttribute("aria-expanded", String(isOpen));
       window.setTimeout(resize, 190);
@@ -2746,7 +2968,10 @@
         renderDetail("Atom", node);
         return;
       }
-      const sceneHits = raycaster.intersectObjects(edgeGroup.children, true)
+      const selectableSceneObjects = edgeGroup.children.filter((child) =>
+        child.userData?.kind === "sceneLayer" || child.userData?.kind === "sceneLayerRefs"
+      );
+      const sceneHits = raycaster.intersectObjects(selectableSceneObjects, true)
         .filter((hit) => hit.object?.userData?.kind === "sceneLayer" || hit.object?.userData?.kind === "sceneLayerRefs");
       if (sceneHits.length) {
         const { scene, layer, encoding } = sceneHits[0].object.userData;
@@ -2814,8 +3039,10 @@
     async function handleReportAction(event) {
       const button = event.target.closest("[data-tour-id], [data-scene-id], [data-copy-source-refs]");
       if (!button) return;
+      event.preventDefault();
       if (button.dataset.tourId) {
         startGuidedTour(button.dataset.tourId);
+        return;
       }
       if (button.dataset.sceneId) {
         viewModeEl.value = modeForScene(button.dataset.sceneId);
@@ -2823,6 +3050,7 @@
         const scene = (currentData?.viewerVisualScenes || []).find((item) => item.sceneId === button.dataset.sceneId);
         if (scene) renderDetail("Scene", sceneDetailItem(scene, scene.layers?.[0], scene.visualEncodings?.[0]));
         status(`Scene: ${button.dataset.sceneId}`);
+        return;
       }
       if (button.dataset.copySourceRefs) {
         await copyText(button.dataset.copySourceRefs);
@@ -2836,6 +3064,7 @@
         status(`Tour not found: ${tourId}`);
         return;
       }
+      setReportOpen(false);
       activeTourState = { tour, stepIndex: 0 };
       showTourStep();
     }
@@ -2843,6 +3072,12 @@
     function showTourStep() {
       if (!activeTourState) return;
       const { tour, stepIndex } = activeTourState;
+      if (stepIndex < 0 || stepIndex >= tour.steps.length) {
+        activeTourState = null;
+        detailEl.hidden = true;
+        status("Tour complete");
+        return;
+      }
       const step = tour.steps[stepIndex];
       viewModeEl.value = modeForScene(step.sceneId);
       renderScene();
@@ -2858,10 +3093,13 @@
       const next = event.target.closest("[data-tour-next]");
       const end = event.target.closest("[data-tour-end]");
       if (next && activeTourState) {
+        event.preventDefault();
         activeTourState.stepIndex += 1;
         showTourStep();
+        return;
       }
       if (end) {
+        event.preventDefault();
         activeTourState = null;
         detailEl.hidden = true;
         status("Tour complete");
@@ -2873,6 +3111,7 @@
         await navigator.clipboard.writeText(text);
         status("Copied source refs");
       } catch (_error) {
+        setReportOpen(false);
         detailEl.innerHTML = `<h2>Copy source refs</h2><p>${escapeHtml(text)}</p>`;
         detailEl.hidden = false;
         status("Source refs shown in detail panel");
@@ -3059,7 +3298,8 @@
         ].filter(Boolean).join(" / ");
         const tourId = Array.isArray(item.tourRefs) && item.tourRefs.length ? item.tourRefs[0] : null;
         const actions = [
-          tourId ? `<button type="button" data-tour-id="${escapeAttr(tourId)}">Start tour</button>` : sceneId ? `<button type="button" data-scene-id="${escapeAttr(sceneId)}">Open scene</button>` : "",
+          tourId ? `<button type="button" data-tour-id="${escapeAttr(tourId)}">Start tour</button>` : "",
+          sceneId ? `<button type="button" data-scene-id="${escapeAttr(sceneId)}">Open scene</button>` : "",
           Array.isArray(sourceRefs) && sourceRefs.length ? `<button type="button" data-copy-source-refs="${escapeAttr(sourceRefs.join("\\n"))}">copy source refs</button>` : ""
         ].filter(Boolean).join("");
         return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p>${refs ? `<p>${escapeHtml(refs)}</p>` : ""}${actions ? `<div class="chips">${actions}</div>` : ""}</div>`;

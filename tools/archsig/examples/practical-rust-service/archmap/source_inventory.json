@@ -1,141 +1,103 @@
 {
   "schemaVersion": "archmap-source-inventory-v0",
-  "inventoryId": "practical-rust-service-source-inventory",
-  "root": ".",
-  "includedRefs": [
+  "inventoryId": "practical-rust-commerce-fulfillment-source-inventory",
+  "sources": [
     {
-      "artifactId": "example-readme",
-      "kind": "docSection",
-      "path": "tools/archsig/examples/practical-rust-service/README.md",
-      "section": "ArchSig Reading Targets"
+      "sourceId": "src:domain",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs"
     },
     {
-      "artifactId": "sample-cargo",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/Cargo.toml"
+      "sourceId": "src:app",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs"
     },
     {
-      "artifactId": "sample-lib",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/lib.rs",
-      "line": 1
+      "sourceId": "src:store",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs"
     },
     {
-      "artifactId": "sample-domain-order",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
-      "symbol": "Order",
-      "line": 66
+      "sourceId": "src:policy",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/policy.rs"
     },
     {
-      "artifactId": "sample-domain-reservation",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
-      "symbol": "InventoryReservation",
-      "line": 123
+      "sourceId": "src:telemetry",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/telemetry.rs"
     },
     {
-      "artifactId": "sample-domain-invariant-tests",
-      "kind": "test",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
-      "symbol": "order_requires_at_least_one_line",
-      "line": 185
+      "sourceId": "src:scenario",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/scenario.rs"
     },
     {
-      "artifactId": "sample-app-port",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
-      "symbol": "InventoryStore",
-      "line": 6
+      "sourceId": "src:main",
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs"
     },
     {
-      "artifactId": "sample-app-service",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
-      "symbol": "OrderService",
-      "line": 11
-    },
-    {
-      "artifactId": "sample-app-place-order",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
-      "symbol": "place_order",
-      "line": 23
-    },
-    {
-      "artifactId": "sample-app-service-tests",
-      "kind": "test",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs",
-      "symbol": "place_order_reserves_inventory",
-      "line": 168
-    },
-    {
-      "artifactId": "sample-store-adapter",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
-      "symbol": "InMemoryInventoryStore",
-      "line": 6
-    },
-    {
-      "artifactId": "sample-store-reserve",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
-      "symbol": "reserve",
-      "line": 44
-    },
-    {
-      "artifactId": "sample-store-tests",
-      "kind": "test",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
-      "symbol": "reserve_decrements_stock",
-      "line": 71
-    },
-    {
-      "artifactId": "sample-store-conflict-test",
-      "kind": "test",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs",
-      "symbol": "reserve_rejects_stale_reservation_after_stock_changes",
-      "line": 89
-    },
-    {
-      "artifactId": "sample-main-smoke",
-      "kind": "file",
-      "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs",
-      "symbol": "main",
-      "line": 7
-    },
-    {
-      "artifactId": "runtime-place-order-trace",
+      "sourceId": "runtime:demo",
       "kind": "runtimeTrace",
       "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
     },
     {
-      "artifactId": "runtime-concurrent-reservation-trace",
+      "sourceId": "runtime:concurrent",
       "kind": "runtimeTrace",
       "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
     },
     {
-      "artifactId": "sample-production-inventory-config",
-      "kind": "productionConfig",
-      "path": "tools/archsig/examples/practical-rust-service/production/inventory-store.toml"
-    }
-  ],
-  "excludedRefs": [
+      "sourceId": "policy:cover",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/law_policy/law_policy.json",
+      "section": "measurementProfiles[profile:commerce-fulfillment@1]"
+    },
     {
-      "kind": "directory",
-      "path": "tools/archsig/examples/practical-rust-service/sample/target"
+      "sourceId": "ctx:domain",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:domain"
+    },
+    {
+      "sourceId": "ctx:application",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:application"
+    },
+    {
+      "sourceId": "ctx:ports",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:ports"
+    },
+    {
+      "sourceId": "ctx:infrastructure",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:infrastructure"
+    },
+    {
+      "sourceId": "ctx:policy",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:policy"
+    },
+    {
+      "sourceId": "ctx:runtime",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:runtime"
+    },
+    {
+      "sourceId": "ctx:shared",
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:shared"
     }
   ],
-  "unavailableRefs": [],
-  "privateRefs": [],
-  "hashes": [],
-  "knownBlindSpots": [
-    "the sample deployment profile uses an in-memory adapter and does not model an external database",
-    "the stale-reservation trace is a bounded unit-test trace, not a parallel production trace"
-  ],
-  "selectionBoundary": "bounded ArchMap source inventory for the practical Rust service sample under tools/archsig/examples/practical-rust-service/sample",
   "nonConclusions": [
-    "source inventory is a bounded review universe, not a complete repository mirror",
-    "runtime and deployment refs are bounded sample evidence, not production telemetry or SLO evidence"
+    "Inventory lists the bounded source universe used by this demo ArchMap; it is not a repository-wide source extraction proof.",
+    "Atom kinds are limited to the AAT atom vocabulary accepted by archmap/v2 validation."
   ]
 }

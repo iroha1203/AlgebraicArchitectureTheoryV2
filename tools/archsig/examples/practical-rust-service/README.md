@@ -1,13 +1,31 @@
-# Practical Rust Service Example
+# Practical Rust Commerce Fulfillment Example
 
-This example is a small source universe for practical ArchSig validation. The
-sample application is intentionally ordinary Rust code: a domain model, an
-application service, and an in-memory infrastructure adapter.
+This example is a production-shaped ArchSig demo target. It is a 3,000+ line
+Rust commerce fulfillment service with domain objects, application ports,
+in-memory infrastructure adapters, policy evaluation, telemetry, and an
+executable demo scenario.
 
-The first use of this directory is source-grounded ArchMap v1 authoring. The
-Rust sample gives an agent concrete source refs for atoms and explicit molecule
-membership. ArchSig analysis artifacts should be generated under the repository
-`.tmp/` directory rather than inside this example tree.
+ArchSig itself is not modified by this example. The demo supplies source code,
+an `archmap/v2` observation artifact, and a `law-policy/v1` selector, then runs
+the existing `archsig analyze` workflow.
+
+## What This Demonstrates
+
+- A realistic Rust application using layered architecture, dependency inversion,
+  port/adapter boundaries, value objects, and explicit policy rules.
+- ArchMap atom extraction constrained to the current AAT atom vocabulary:
+  `component`, `relation`, `capability`, `state`, `effect`, `authority`,
+  `contract`, `semantic`, and `runtime`.
+- ArchMap atoms are source-grounded observations only. They do not pre-label
+  mismatch, obstruction, violation, safety, or lawfulness; those readings belong
+  to LawPolicy-selected evaluators and generated ArchSig artifacts.
+- A latest-shape `archmap/v2` finite poset site with contexts and a selected
+  cover.
+- A `law-policy/v1` policy that selects SOLID/layering rules and an AG
+  measurement profile for `archsig-measurement-packet/v1`.
+- Rich viewer output through `archsig-atom-viewer-data-v2`: 60 atom nodes,
+  78 atom edges, 7 context groups, 10 visual scenes, guided tours, an insight
+  queue, and an action queue.
 
 ## Layout
 
@@ -15,77 +33,93 @@ membership. ArchSig analysis artifacts should be generated under the repository
 sample/
   Cargo.toml
   src/
-    domain.rs  # domain invariants and order / reservation objects
-    app.rs     # OrderService and InventoryStore port
-    store.rs   # InMemoryInventoryStore adapter
-    main.rs    # executable smoke flow
+    domain.rs     # value objects, aggregates, events, decisions
+    app.rs        # application service and port traits
+    store.rs      # in-memory adapter bundle implementing the ports
+    policy.rs     # production-style policy catalog and evaluator
+    telemetry.rs  # trace and presentation surface
+    scenario.rs   # executable demo scenario
 archmap/
   source_inventory.json
-  archmap.json
+  archmap.json    # latest archmap/v2 source-grounded observation
 law_policy/
-  law_policy.json
+  law_policy.json # law-policy/v1 selector and measurement profile
 runtime/
   place_order_trace.json
   concurrent_reservation_trace.json
-production/
-  inventory-store.toml
+scripts/
+  run_archsig_demo.sh
 ```
 
-## Run
+## Run The Application
 
 ```bash
 cargo test --manifest-path tools/archsig/examples/practical-rust-service/sample/Cargo.toml
 cargo run --manifest-path tools/archsig/examples/practical-rust-service/sample/Cargo.toml
 ```
 
-Expected smoke output includes a reserved order and remaining stock snapshot.
+The smoke run prints the released order, reservation count, payment,
+shipment, risk score, trace count, satisfied policy count, and insight tags.
 
-## Validate ArchMap And LawPolicy
+## Run ArchSig
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/examples/practical-rust-service/archmap/archmap.json \
-  --out .tmp/archsig-practical-rust-service/archmap-validation.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
-  --input tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --out .tmp/archsig-practical-rust-service/law-policy-validation.json
+tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 ```
 
-## Analyze
+Or run the core analysis directly:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
-  --out-dir .tmp/archsig-practical-rust-service \
-  --emit-raw-artifacts
+  --out-dir .tmp/archsig-practical-rust-service
 ```
 
-The output is the v1 typed evaluator and architecture distance artifact chain:
-`normalized-archmap.json`, `typed-evaluator-results.json`,
-`architecture-distance.json`, `archsig-analysis-summary.json`,
-`archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` by default,
-plus raw packet / detail / LLM artifacts with `--emit-raw-artifacts`. The public
-summary, viewer data, and LLM packet are conclusion-first and use architecture
-distance naming. The artifacts are bounded to the example ArchMap and LawPolicy
-and are not a Lean proof or architecture lawfulness certificate.
+The generated artifacts include:
 
-## Strict distance guard
+- `.tmp/archsig-practical-rust-service/archsig-measurement-packet.json`
+- `.tmp/archsig-practical-rust-service/archsig-analysis-summary.json`
+- `.tmp/archsig-practical-rust-service/archsig-insight-report.json`
+- `.tmp/archsig-practical-rust-service/archsig-insight-brief.md`
+- `.tmp/archsig-practical-rust-service/archsig-atom-viewer-data.json`
+- `.tmp/archsig-practical-rust-service/archsig-run-manifest.json`
 
-The example is intentionally a full-output reading fixture, not a fully measured
-strict-distance fixture. Running the same command with `--strict-distance`
-should fail closed with `incomplete canonical distance family states` while
-still making the partial canonical family state explicit in
-`architecture-distance.json`.
+## Viewer
 
-## ArchSig Reading Targets
+Open the fixed viewer app:
 
-- `domain.rs`: source-grounded domain atoms and invariant observations.
-- `app.rs`: application orchestration, repository port, and contract boundary.
-- `store.rs`: infrastructure adapter and mutable inventory state.
-- `main.rs`: bounded executable scenario for smoke evidence.
+```text
+tools/archsig/viewer/archsig-atom-viewer.html
+```
 
-The sample, ArchMap, and LawPolicy do not claim runtime completeness or
-architecture lawfulness by themselves. ArchSig can read bounded diagnostic
-conclusions only inside this `ArchMap + LawPolicy + evidence contract`.
+Load:
+
+```text
+.tmp/archsig-practical-rust-service/archsig-atom-viewer-data.json
+```
+
+The viewer data is a projection of the supplied ArchMap, LawPolicy, and
+measurement packet. It is not a new analyzer and does not infer facts outside
+the selected evidence contract.
+
+## Current Insight
+
+For the bundled demo, `archsig analyze` reports:
+
+```text
+NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
+```
+
+This means the selected commerce fulfillment cover produced a profile-relative
+positive reading: no selected H1 glue mismatch was measured under the supplied
+MeasurementProfile. That mismatch vocabulary is not authored into ArchMap; it is
+introduced by the selected LawPolicy evaluator. The useful engineering insight
+is that the checkout service, ports, infrastructure adapter, policy catalog,
+runtime trace, and shared interpretation overlap are visible in one bounded
+viewer surface, while the summary preserves the measurement boundary and
+assumption ledger.
+
+The result is bounded to this `ArchMap + LawPolicy + evidence contract`. It is
+not a Lean proof, not a source extraction completeness proof, and not a global
+claim about all possible runtime behavior.
