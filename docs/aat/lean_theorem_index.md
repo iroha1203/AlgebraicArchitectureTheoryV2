@@ -4865,7 +4865,9 @@ File: `Formal/AG/RepresentationAnalysis.lean`,
 `Formal/AG/RepresentationAnalysis/Bootstrap.lean`,
 `Formal/AG/RepresentationAnalysis/AATSch.lean`,
 `Formal/AG/RepresentationAnalysis/PreservationReflection.lean`,
-`Formal/AG/RepresentationAnalysis/GraphMatrix.lean`.
+`Formal/AG/RepresentationAnalysis/GraphMatrix.lean`,
+`Formal/AG/RepresentationAnalysis/Period.lean`,
+`Formal/AG/RepresentationAnalysis/FiniteHomology.lean`.
 
 PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
 の AC1/R0、AC2/R1、AC3/R2、AC4/R3、AC5/R3 に対応する entrypoint である。現時点では
@@ -4891,6 +4893,9 @@ cycle witness exactness assumption package と命題3.4 Acyclicity Preservation 
 reading theorem、および acyclic finite graph の card cutoff nilpotence theorem を追加している。
 AC7/R4 として、representation reading、broad period convention、strict period data、
 strict obstruction period、period family surface を追加している。
+AC8/R4 として、finite Cech strict-period representative、finite poset Cech bridge、
+boundary-square-zero / differential-square-zero accessor、strict period representative
+well-definedness theorem を追加している。
 
 Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
 Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
@@ -4900,6 +4905,7 @@ AC4 implementation Issue: [#2168](https://github.com/iroha1203/AlgebraicArchitec
 AC5 implementation Issue: [#2171](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2171).
 AC6 implementation Issue: [#2174](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2174).
 AC7 implementation Issue: [#2177](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2177).
+AC8 implementation Issue: [#2179](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2179).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -4910,10 +4916,11 @@ AC7 implementation Issue: [#2177](https://github.com/iroha1203/AlgebraicArchitec
 | `VII.命題3.4` | `AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile`, `DependencyAcyclicityProfile.selectedCycleObstructionWitness_of_graphCycle`, `DependencyAcyclicityProfile.no_selectedCycleObstructionWitness_of_obstructionZero`, `DependencyAcyclicityProfile.acyclicityPreservation` | `structure` / `theorem` | dependency-axis graph reading が選択され、graph cycle が selected cycle obstruction witness を与え、structural dependency obstruction zero がその witness を排除するという片方向 exactness package の下で、selected graph reading が acyclic であることを証明する。 | `proved` |
 | `VII.命題3.6` | `AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk`, `CountedDirectedWalk.toDirectedWalk`, `CountedDirectedWalk.vertices_nodup_of_acyclic`, `CountedDirectedWalk.length_lt_card_of_acyclic`, `adjacencyMatrixPower`, `matrixWalkCount`, `adjacencyMatrixPower_apply_eq_matrixWalkCount`, `adjacencyMatrix_pos_iff_hasEdge`, `matrixWalkCount_pos_iff_countedDirectedWalk`, `matrixWalkCount_eq_zero_at_card_of_acyclic`, `adjacencyMatrixPower_eq_zero_at_card_of_acyclic`, `exists_adjacencyMatrixPower_eq_zero_of_acyclic`, `MatrixWalkReadingProfile`, `MatrixWalkReadingProfile.matrixWalkReading` | `inductive` / `def` / `structure` / `theorem` | selected length-`n` counted walk と walk count を adjacency relation の標準再帰で定義し、`(adjacencyMatrixPower G n) i j` がその count と一致することを帰納法で証明する。positive count と concrete counted walk witness の同値を証明し、acyclic graph では counted walk の頂点列が重複しないことから `Fintype.card Vertex` cutoff で `A^N = 0` と `∃ N, A^N = 0` を導く。profile 版 theorem は selected count がこの再帰 count と一致する場合に matrix power entry が selected count を読む。 | `proved` |
 | `VII.定義5.1-5.3` | `AAT.AG.RepresentationAnalysis.RepresentationFamily.RepresentationReading`, `RepresentationFamily.representationReading_eq_read`, `BroadPeriodConvention`, `BroadPeriodConvention.aliasAvailable_holds`, `BroadPeriodConvention.BroadPeriod`, `BroadPeriodConvention.broadPeriod_eq_read`, `StrictPeriodData`, `StrictPeriodData.reading`, `StrictPeriodData.strictObstructionPeriod`, `StrictPeriodData.strictObstructionPeriod_eq_traceEvaluation`, `StrictPeriodData.boundaryCompatible_holds`, `StrictPeriodData.coboundaryCompatible_holds`, `PeriodFamily`, `PeriodFamily.Read`, `PeriodFamily.PeriodMember`, `PeriodFamily.memberOfRead`, `PeriodFamily.memberOfRead_value`, `PeriodFamily.PeriodSet`, `PeriodFamily.mem_periodSet_iff` | `structure` / `def` / `theorem` | `Read_R(X)` の representation reading 入口、明示的 convention 下でだけ使える broad period alias、coefficient object / cohomology class / homology model / cycle / additive target / trace evaluation / boundary-coboundary compatibility を持つ strict period data、strict obstruction period reading、selected representation readings の period family surface を定義する。 | `defined only` / `proved accessor` |
+| `VII.定義5.2A` | `AAT.AG.RepresentationAnalysis.RepresentsCohomologyClass`, `FiniteCechCycleClosed`, `FiniteCechStrictPeriodRepresentative`, `FiniteCechStrictPeriodRepresentative.strictPeriodValue`, `FiniteCechStrictPeriodRepresentative.cocycle_condition`, `FiniteCechStrictPeriodRepresentative.representsCohomologyClass_holds`, `FiniteCechStrictPeriodRepresentative.cycle_boundary_zero_holds`, `FiniteCechStrictPeriodRepresentative.boundaryCompatible_holds`, `FiniteCechStrictPeriodRepresentative.coboundaryCompatible_holds`, `FiniteCechStrictPeriodRepresentative.toStrictPeriodData`, `FiniteCechStrictPeriodRepresentative.toStrictPeriodData_strictObstructionPeriod`, `FiniteCechStrictPeriodRepresentativeCompatibility`, `FiniteCechStrictPeriodRepresentativeCompatibility.strictPeriodValue_wellDefined`, `FiniteCechStrictPeriodRepresentativeCompatibility.strictObstructionPeriod_wellDefined`, `FiniteCechStrictPeriodContext`, `FiniteCechStrictPeriodContext.strictPeriodData`, `FiniteCechStrictPeriodContext.strictPeriodData_value`, `FiniteCechBoundary.cech_d_comp_d_eq_zero`, `FiniteCechBoundary.boundary_comp_zero`, `FinitePosetCechStrictPeriodContext`, `FinitePosetCechStrictPeriodContext.comparison_d_comp_d_eq_zero`, `FinitePosetCechStrictPeriodContext.finitePosetChainModel_holds`, `FinitePosetCechStrictPeriodContext.finitePosetPairingModel_holds`, `FinitePosetCechStrictPeriodContext.strictPeriodData`, `FinitePosetCechStrictPeriodContext.strictPeriodData_value` | `structure` / `def` / `theorem` | PRD-4 の cover-relative Cech complex、finite Cech chain complex、cochain-chain pairing、および finite poset comparison data を第VII部の strict period surface に接続する。`d²=0` / `∂²=0` は既存 PRD-4 theorem の accessor として再公開し、strict period value は selected cochain-chain pairing で読む。representative well-definedness は cohomology-class representative、cycle-closedness、coefficient / boundary / coboundary compatibility、および selected pairing-invariance package の下で証明する。 | `proved under explicit finite Cech data and selected pairing-invariance assumptions` |
 
-Non-conclusions: この entrypoint は finite poset / Cech homology model、boundary-square-zero、
-strict period representative well-definedness、period separation、metric enrichment、margin / observation gap theorem、
-detecting representation conservativity theorem、synthesis theorem、finite golden examples をまだ実装しない。
+Non-conclusions: この entrypoint は general singular homology、canonical realization、
+period separation、metric enrichment、margin / observation gap theorem、detecting representation
+conservativity theorem、synthesis theorem、finite golden examples をまだ実装しない。
 measurement verdict / finite computability profile は
 PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
 
