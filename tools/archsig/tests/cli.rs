@@ -3408,18 +3408,19 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "finite_degree1_shared_support_conflict_computed"
+        "finite_monomial_tor_taylor_computed"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
         "atom:tor-common-ambient"
     );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
-    assert_eq!(tor["method"], "finite-degree1-shared-support-conflict@1");
+    assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
     assert_eq!(
         tor["claimScope"],
-        "degree-1 shared-support conflict detector over the selected common ambient pair"
+        "degree-1 square-free monomial Tor over the selected common ambient pair"
     );
+    assert_eq!(tor["resolutionSelectorEffective"], true);
     assert_eq!(
         tor["commonAmbient"]["ambientRef"],
         "ambient:checkout-inventory"
@@ -3430,6 +3431,7 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
             "conflictId": "LawConflict_1:1",
             "degree": 1,
             "support": ["x_checkout", "x_inventory", "x_payment"],
+            "multidegree": ["x_checkout", "x_inventory", "x_payment"],
             "sharedSupport": ["x_inventory"],
             "leftLaw": "law:checkout",
             "leftGeneratorRef": "atom:checkout-law-generator",
@@ -3444,8 +3446,17 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         serde_json::json!([{
             "degree": 1,
             "classCount": 1,
-            "scope": "detected shared witness-variable support only"
+            "coefficient": "F2",
+            "scope": "H_1 of Taylor(I_left) tensor R/I_right by square-free multidegree"
         }])
+    );
+    assert_eq!(tor["proxyComparison"]["proxyClassCount"], Value::from(1));
+    assert_eq!(tor["proxyComparison"]["taylorClassCount"], Value::from(1));
+    assert!(
+        tor["boundaryNote"]
+            .as_str()
+            .is_some_and(|note| note.contains("higher Tor_i") && note.contains("F2")),
+        "Tor boundary note must keep higher Tor and field-coefficient boundaries visible"
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
@@ -3528,6 +3539,154 @@ fn cli_analyze_v2_law_conflict_tor_nested_common_factor_is_nonzero() {
     assert_eq!(
         tor["lawConflicts"][0]["sharedSupport"],
         serde_json::json!(["x_inventory"])
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_taylor_reduces_proxy_overcount() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-taylor-overcount");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][2]["object"] = Value::String("x_checkout,x_inventory,x_payment".to_string());
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(json!({
+            "id": "atom:checkout-law-generator-2",
+            "kind": "relation",
+            "subject": "law:checkout",
+            "object": "x_inventory,x_payment",
+            "axis": "tor",
+            "predicate": "lawIdealGenerator",
+            "refs": ["src:checkout-policy"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String("atom:checkout-law-generator-2".to_string()));
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_taylor_overcount.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdict"],
+        "measured_nonzero"
+    );
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
+    assert_eq!(tor["proxyComparison"]["proxyClassCount"], Value::from(2));
+    assert_eq!(tor["proxyComparison"]["taylorClassCount"], Value::from(1));
+    assert_eq!(
+        tor["lawConflicts"][0]["multidegree"],
+        serde_json::json!(["x_checkout", "x_inventory", "x_payment"])
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_preserves_common_ambient_law_pair_order() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-reversed-law-pair");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][0]["object"] = Value::String("law:inventory,law:checkout".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_reversed_law_pair.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(
+        tor["commonAmbient"]["lawPair"],
+        serde_json::json!(["law:inventory", "law:checkout"])
+    );
+    assert_eq!(tor["lawConflicts"][0]["leftLaw"], "law:inventory");
+    assert_eq!(tor["lawConflicts"][0]["rightLaw"], "law:checkout");
+    assert_eq!(
+        tor["lawConflicts"][0]["leftGeneratorRef"],
+        "atom:inventory-law-generator"
+    );
+    assert_eq!(
+        tor["lawConflicts"][0]["rightGeneratorRef"],
+        "atom:checkout-law-generator"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_law_conflict_tor_non_square_free_is_unmeasured() {
+    let out_dir = temp_dir("ag-measurement-law-conflict-tor-non-square-free");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
+    archmap["atoms"][1]["object"] = Value::String("x_inventory,x_inventory".to_string());
+    let archmap_path = out_dir.join("archmap_v2_law_conflict_tor_non_square_free.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_tor.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unmeasured");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "non_square_free_monomial"
+    );
+    let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
+    assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
+    assert_eq!(tor["torByDegree"][0]["status"], "unmeasured");
+    assert_eq!(tor["torByDegree"][0]["classCount"], Value::Null);
+    assert_eq!(tor["proxyComparison"]["taylorClassCount"], Value::Null);
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("assumptions is array")
+            .iter()
+            .any(|row| row["theoremRef"] == "part5/5.5"
+                && row["assumption"]
+                    == "finite square-free monomial law ideals selected for degree-1 Taylor Tor"
+                && row["status"] == "violated"),
+        "non-square-free generators must violate the square-free Taylor premise"
     );
 }
 
