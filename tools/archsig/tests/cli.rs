@@ -13842,6 +13842,28 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V8 must keep support repair as a lower-bound inspection aid without unsupported repair claims"
     );
     assert!(
+        html.contains("previousAtomLayoutPositions")
+            && html.contains("activeAtomLayoutPositions")
+            && html.contains("atomLayoutMorphState")
+            && html.contains("updateAtomLayoutMorph()")
+            && html.contains("easeInOutCubic"),
+        "viewer V9 must preserve atom layout positions and animate view-mode morphs"
+    );
+    assert!(
+        html.contains("demotedHashJitter")
+            && html.contains("axisMetricBindings-primary/hash-demoted-jitter")
+            && html.contains("metricDominantLayout: true")
+            && html.contains("hashRole: \"demoted-jitter\"")
+            && !html.contains("const xScale = 46 + (hashText"),
+        "viewer V9 must demote hash jitter behind axisMetricBindings-driven scene positions"
+    );
+    assert!(
+        html.contains("Morph trajectories are visual projections, not verdicts.")
+            && html.contains("visual trajectory only; not semantic distance, causality, equivalence, or verdict")
+            && html.contains("geometryOverlayMorphCrossfade: true"),
+        "viewer V9 must expose morph trajectory and overlay crossfade non-claims"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
