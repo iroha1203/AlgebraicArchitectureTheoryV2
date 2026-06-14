@@ -12,3 +12,4 @@ import Formal.AG.SingularityMonodromyStack.MonodromyTheorems
 import Formal.AG.SingularityMonodromyStack.RefactorGalois
 import Formal.AG.SingularityMonodromyStack.ArchitectureStack
 import Formal.AG.SingularityMonodromyStack.CodebaseEssence
+import Formal.AG.SingularityMonodromyStack.DecompositionGerbe
