@@ -270,6 +270,7 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_manifest("ag.law-conflict-tor@1", "ag.law-conflict-tor"),
         ag_manifest("ag.sheaf-laplacian@1", "ag.sheaf-laplacian"),
         ag_manifest("ag.period-stokes@1", "ag.period-stokes"),
+        ag_period_stokes_audit_manifest(),
         ag_manifest("ag.support-transfer@1", "ag.support-transfer"),
     ]);
     manifests
@@ -338,6 +339,41 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
         detail_output_refs: vec![
             "/assumptions".to_string(),
             "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: Vec::new(),
+    }
+}
+
+fn ag_period_stokes_audit_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.period-stokes-audit@1".to_string(),
+        law_id: "ag.period-stokes-audit".to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: vec![
+            "period.dOmegaIntegral".to_string(),
+            "period.boundaryPeriod".to_string(),
+        ],
+        required_molecule_condition:
+            "archmap/v2 selected cover with supplied dOmegaIntegral and boundaryPeriod audit values"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite cover and fixed coefficient MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing audit pairs or unresolved strict coefficient data yields unknown/not_computed, not a crash"
+                .to_string(),
+        pass_criteria:
+            "all supplied fixed-coefficient Stokes audit residuals are zero".to_string(),
+        violation_criteria:
+            "at least one supplied fixed-coefficient Stokes audit residual is nonzero".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v1".to_string(),
+        distance_contribution:
+            "structural verdict is scoped to supplied independent Stokes accounting values only"
+                .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/computedInvariants".to_string(),
+            "/analyticReadings".to_string(),
+            "/assumptions".to_string(),
         ],
         negative_fixtures: Vec::new(),
     }

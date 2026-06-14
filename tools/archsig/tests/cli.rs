@@ -4853,7 +4853,7 @@ fn cli_analyze_v2_period_stokes_outputs_pairing_and_audit_reading() {
 }
 
 #[test]
-fn cli_analyze_v2_period_stokes_audit_mismatch_fails_fast() {
+fn cli_analyze_v2_period_stokes_audit_mismatch_is_analytic_residual() {
     let out_dir = temp_dir("ag-measurement-period-stokes-audit-mismatch");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
@@ -4865,7 +4865,7 @@ fn cli_analyze_v2_period_stokes_audit_mismatch_fails_fast() {
     )
     .expect("archmap fixture can be written");
 
-    let output = run_sig0_output(&[
+    run_sig0(&[
         "analyze",
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
@@ -4876,16 +4876,127 @@ fn cli_analyze_v2_period_stokes_audit_mismatch_fails_fast() {
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
-    assert_eq!(output.status.code(), Some(2));
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("Stokes audit failed"),
-        "Stokes audit mismatch must fail as evaluator error\n{stderr}"
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        0,
+        "legacy analytic period-stokes residual must not generate structural verdict rows"
     );
-    assert!(
-        !out_dir.join("archsig-measurement-packet.json").exists(),
-        "Stokes audit fail-fast must not leave a success packet"
+    let invariant = invariant_by_id(&packet, "period-stokes:profile:ag-period-stokes@1");
+    assert_eq!(
+        invariant["stokesAudit"]["status"], "residual_nonzero",
+        "legacy analytic period-stokes must report nonzero residual without crashing"
     );
+}
+
+#[test]
+fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
+    let root_out = temp_dir("ag-measurement-period-stokes-audit");
+    let root = ag_measurement_root();
+
+    for (case, coefficient, boundary_value, expected_verdict, expected_status) in [
+        (
+            "zero",
+            "Q",
+            "chain:sigma=3",
+            "measured_zero",
+            "fixed_coefficient_stokes_audit_computed",
+        ),
+        (
+            "nonzero",
+            "Q",
+            "chain:sigma=4",
+            "measured_nonzero",
+            "fixed_coefficient_stokes_audit_computed",
+        ),
+        (
+            "float-only",
+            "R",
+            "chain:sigma=3",
+            "unknown",
+            "strict_coefficient_unresolved",
+        ),
+    ] {
+        let out_dir = root_out.join(case);
+        fs::create_dir_all(&out_dir).expect("case dir exists");
+        let mut archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+        archmap["atoms"][3]["object"] = Value::String(boundary_value.to_string());
+        let archmap_path = out_dir.join("archmap.json");
+        fs::write(
+            &archmap_path,
+            serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+        )
+        .expect("archmap fixture can be written");
+        let mut policy = read_json(&root.join("law_policy_period.json"));
+        policy["measurementProfiles"][0]["coefficient"] = Value::String(coefficient.to_string());
+        policy["measurementProfiles"][0]["effCoeff"] =
+            Value::String("fixed-coefficient-stokes-audit@1".to_string());
+        policy["measurementProfiles"][0]["resolutionSelector"] =
+            Value::String("finite-poset-period-stokes-audit@1".to_string());
+        policy["measurementProfiles"][0]["zeroPredicate"] =
+            Value::String("stokes-residual-zero@1".to_string());
+        policy["measurementProfiles"][0]["nonZeroPredicate"] =
+            Value::String("stokes-residual-nonzero@1".to_string());
+        policy["measurementProfiles"][0]["certSelector"] =
+            Value::String("finite-certificate@1".to_string());
+        for witness in policy["measurementProfiles"][0]["witnessFamily"]
+            .as_array_mut()
+            .expect("witnessFamily is array")
+        {
+            witness["law"] = Value::String("ag.period-stokes-audit".to_string());
+        }
+        policy["policies"][0]["law"] = Value::String("ag.period-stokes-audit".to_string());
+        policy["policies"][0]["evaluator"] = Value::String("ag.period-stokes-audit@1".to_string());
+        let policy_path = out_dir.join("law_policy.json");
+        fs::write(
+            &policy_path,
+            serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+        )
+        .expect("policy fixture can be written");
+
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().unwrap(),
+            "--law-policy",
+            policy_path.to_str().unwrap(),
+            "--out-dir",
+            out_dir.to_str().unwrap(),
+        ]);
+
+        let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+        let structural = packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array");
+        assert_eq!(
+            structural.len(),
+            1,
+            "period-stokes-audit must add exactly one structural verdict row"
+        );
+        assert_eq!(structural[0]["evaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(structural[0]["verdict"], expected_verdict);
+        assert_eq!(
+            structural[0]["verdictData"]["methodStatus"],
+            expected_status
+        );
+        let invariant = invariant_by_id(&packet, "period-stokes-audit:profile:ag-period-stokes@1");
+        assert_eq!(invariant["evaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(invariant["stokesAudit"]["coefficient"], coefficient);
+        assert!(
+            packet["analyticReadings"]
+                .as_array()
+                .expect("analytic readings is array")
+                .iter()
+                .any(|reading| reading["evaluator"] == "ag.period-stokes@1"
+                    && reading["structuralVerdictRef"] == Value::Null
+                    && reading["value"]["readingKind"] == "strict-period-pairing@1"),
+            "strict-period-pairing must remain an analytic reading separate from the structural verdict"
+        );
+    }
 }
 
 #[test]
