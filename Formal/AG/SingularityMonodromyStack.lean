@@ -5,3 +5,4 @@ import Formal.AG.SingularityMonodromyStack.CotangentInterface
 import Formal.AG.SingularityMonodromyStack.SmoothSingular
 import Formal.AG.SingularityMonodromyStack.SingularityTheorems
 import Formal.AG.SingularityMonodromyStack.Kuranishi
+import Formal.AG.SingularityMonodromyStack.OperationCategory
