@@ -3592,6 +3592,55 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
                 .is_some_and(|text| text.contains("does not evaluate section-specific"))),
         "lawful locus arrangement must not become a section-level verdict"
     );
+    let nsdepth_monotone = invariant_by_id(&packet, "nsdepth-monotone:profile:ag-square-free@1");
+    assert_eq!(
+        nsdepth_monotone["method"],
+        "finite-square-free-nsdepth-monotone-proxy@1"
+    );
+    assert_eq!(nsdepth_monotone["monotone"], Value::Bool(true));
+    assert_eq!(nsdepth_monotone["generatorExtension"], Value::Bool(true));
+    assert_eq!(
+        nsdepth_monotone["scopePair"],
+        serde_json::json!({
+            "baseScopeRef": "law-scope:U",
+            "extendedScopeRef": "law-scope:U-prime",
+            "baseAtomRef": "atom:nsdepth-scope-u",
+            "extendedAtomRef": "atom:nsdepth-scope-u-prime"
+        })
+    );
+    assert_eq!(nsdepth_monotone["nsdepthProxy"], Value::Null);
+    assert_eq!(nsdepth_monotone["nsdepthProxyByScope"], Value::Null);
+    let nsdepth_reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "ag.nullstellensatz-depth-monotone@1")
+        .expect("NSdepth monotone analytic reading exists");
+    assert_eq!(nsdepth_reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(nsdepth_reading["regime"], "analytic-measurement");
+    assert_eq!(
+        nsdepth_reading["value"]["nsdepthProxyByScope"],
+        serde_json::json!([
+            {
+                "scopeRef": "law-scope:U",
+                "nsdepthProxy": 2,
+                "generatorCount": 2,
+                "atomRef": "atom:nsdepth-scope-u"
+            },
+            {
+                "scopeRef": "law-scope:U-prime",
+                "nsdepthProxy": 1,
+                "generatorCount": 3,
+                "atomRef": "atom:nsdepth-scope-u-prime"
+            }
+        ])
+    );
+    assert!(
+        nsdepth_reading["value"]["proxyBoundary"]
+            .as_str()
+            .is_some_and(|text| text.contains("not structural verdict data")),
+        "NSdepth scalar must stay proxy analytic data"
+    );
     let repair_reading = packet["analyticReadings"]
         .as_array()
         .expect("analytic readings is array")

@@ -30,6 +30,11 @@
       "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
       "section": "B.3-B.4"
     },
+    "src:nsdepth-monotone": {
+      "kind": "policy",
+      "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
+      "section": "M12"
+    },
     "src:cover": {
       "kind": "policy",
       "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
@@ -87,6 +92,24 @@
       "axis": "square-free",
       "predicate": "nsdepthCertificate",
       "refs": ["src:certificate"]
+    },
+    {
+      "id": "atom:nsdepth-scope-u",
+      "kind": "semantic",
+      "subject": "law-scope:U",
+      "object": "nsdepth=2;generators=x_checkout+x_inventory|x_inventory+x_payment",
+      "axis": "square-free",
+      "predicate": "nsdepthMonotoneScope",
+      "refs": ["src:nsdepth-monotone"]
+    },
+    {
+      "id": "atom:nsdepth-scope-u-prime",
+      "kind": "semantic",
+      "subject": "law-scope:U-prime",
+      "object": "extends=law-scope:U;nsdepth=1;generators=x_checkout+x_inventory|x_inventory+x_payment|x_checkout+x_payment",
+      "axis": "square-free",
+      "predicate": "nsdepthMonotoneScope",
+      "refs": ["src:nsdepth-monotone"]
     }
   ],
   "contexts": [
@@ -98,7 +121,9 @@
         "atom:payment",
         "atom:ob-checkout-inventory",
         "atom:ob-inventory-payment",
-        "atom:nsdepth-certificate"
+        "atom:nsdepth-certificate",
+        "atom:nsdepth-scope-u",
+        "atom:nsdepth-scope-u-prime"
       ],
       "refs": ["src:cover"]
     }
