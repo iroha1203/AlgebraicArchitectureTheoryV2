@@ -27,6 +27,12 @@ inductive SquareFreeSupportVertex where
   | r
   deriving DecidableEq
 
+/-- R11(b): the two minimal repair targets for `{p,q}` / `{q,r}`. -/
+inductive SquareFreeRepairTarget where
+  | singletonQ
+  | pairPR
+  deriving DecidableEq
+
 /-- R11(c): a two-object finite site used by the computability fixture. -/
 inductive TinyMeasurementSite where
   | u
@@ -201,6 +207,90 @@ def finiteComputabilityExamplePackage :
 theorem finiteComputabilityExample_verified :
     Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) :=
   ⟨finiteComputabilityExamplePackage⟩
+
+/-- R11(b): selected PRD-3 square-free witness regime for the repair fixture. -/
+def squareFreeSourceWitnessRegime :
+    UsesSquareFreeWitnessRegime SquareFreeSupportVertex where
+  Forb := Set.univ
+
+/-- R11(b): Part VIII square-free repair regime for the `{p,q}` / `{q,r}` example. -/
+def squareFreeRepairRegime :
+    SquareFreeRepairRegime pseudoCircleMeasurementProfile where
+  finiteRegime := tinyFiniteMeasurementRegime
+  sourceWitnessRegime := squareFreeSourceWitnessRegime
+  Witness := SquareFreeSupportVertex
+  witnessOfProfileWitness := fun witness => witness
+  ForbiddenSupport := List SquareFreeSupportVertex
+  MinimalForbiddenSupport := List SquareFreeSupportVertex
+  ObstructionIdeal := Unit
+  StanleyReisnerIdeal := Unit
+  Delta := Unit
+  profileWitnessesLifted := True
+  profileWitnessesLifted_cert := trivial
+  forbiddenSupportReadsSourceRegime := True
+  forbiddenSupportReadsSourceRegime_cert := trivial
+  finiteWitness := True
+  finiteWitness_cert := trivial
+  forbiddenSupportsFinite := True
+  forbiddenSupportsFinite_cert := trivial
+  minimalForbiddenSupportsFinite := True
+  minimalForbiddenSupportsFinite_cert := trivial
+  obstructionIdealGeneratedByMinimalForbidden := True
+  obstructionIdealGeneratedByMinimalForbidden_cert := trivial
+  deltaAvoidsForbiddenSupports := True
+  deltaAvoidsForbiddenSupports_cert := trivial
+
+/-- R11(b): selected Alexander dual carrier for the finite repair fixture. -/
+def squareFreeAlexanderDual :
+    AlexanderDualComplex squareFreeRepairRegime where
+  Dual := SquareFreeRepairTarget
+  dualOfDelta := True
+  dualOfDelta_cert := trivial
+
+/-- R11(b): selected minimal vertex covers. -/
+def squareFreeMinimalVertexCovers :
+    MinimalVertexCover squareFreeRepairRegime where
+  Cover := SquareFreeRepairTarget
+  minimalVertexCover := fun target =>
+    target = SquareFreeRepairTarget.singletonQ ∨
+      target = SquareFreeRepairTarget.pairPR
+
+/-- R11(b): selected minimal witness hitting sets. -/
+def squareFreeMinimalWitnessHittingSets :
+    MinimalWitnessHittingSet squareFreeRepairRegime where
+  HittingSet := SquareFreeRepairTarget
+  minimalWitnessHittingSet := fun target =>
+    target = SquareFreeRepairTarget.singletonQ ∨
+      target = SquareFreeRepairTarget.pairPR
+
+/-- R11(b): selected minimal repair hitting sets `{q}` and `{p,r}`. -/
+def squareFreeMinimalRepairHittingSets :
+    MinimalRepairHittingSet squareFreeRepairRegime where
+  RepairTarget := SquareFreeRepairTarget
+  minimalRepairHittingSet := fun target =>
+    target = SquareFreeRepairTarget.singletonQ ∨
+      target = SquareFreeRepairTarget.pairPR
+  notOperationSemantics := True
+  notOperationSemantics_cert := trivial
+
+/-- R11(b): theorem 5.2 instantiated on the finite repair hitting-set fixture. -/
+def squareFreeRepairExamplePackage :
+    StanleyReisnerAlexanderDualRepair squareFreeRepairRegime :=
+  stanleyReisnerAlexanderDualRepairPackage squareFreeAlexanderDual
+    squareFreeMinimalVertexCovers squareFreeMinimalWitnessHittingSets
+    squareFreeMinimalRepairHittingSets True trivial True trivial True trivial True trivial
+
+/-- R11(b): `{q}` is a selected minimal repair hitting set. -/
+theorem squareFree_singletonQ_minimalRepairHittingSet :
+    squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+      SquareFreeRepairTarget.singletonQ := by
+  exact Or.inl rfl
+
+/-- R11(b): `{p,r}` is a selected minimal repair hitting set. -/
+theorem squareFree_pairPR_minimalRepairHittingSet :
+    squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+      SquareFreeRepairTarget.pairPR := by
+  exact Or.inr rfl
 
 /-- R11(d): identity refactor of the pseudo-circle measurement profile. -/
 def pseudoCircleIdentityRefactor :
@@ -824,6 +914,13 @@ structure PartVIIIFiniteExampleSuite where
   prHitsForbiddenSupports :
     SquareFreeSupportVertex.p ∈ forbiddenSupportPQ ∧
       SquareFreeSupportVertex.r ∈ forbiddenSupportQR
+  squareFreeRepairPackage : StanleyReisnerAlexanderDualRepair squareFreeRepairRegime
+  singletonQMinimalRepair :
+    squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+      SquareFreeRepairTarget.singletonQ
+  pairPRMinimalRepair :
+    squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+      SquareFreeRepairTarget.pairPR
   finiteComputability :
     Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile)
   refactorInvariance : RefactorInvarianceFiniteExample
@@ -839,6 +936,9 @@ def partVIIIFiniteExampleSuite : PartVIIIFiniteExampleSuite where
   unmeasuredAxisNotZero := pseudoCircle_unmeasuredAxis_not_zero
   qHitsBothForbiddenSupports := squareFreeHittingSet_q_hits_forbiddenSupports
   prHitsForbiddenSupports := squareFreeHittingSet_pr_hits_forbiddenSupports
+  squareFreeRepairPackage := squareFreeRepairExamplePackage
+  singletonQMinimalRepair := squareFree_singletonQ_minimalRepairHittingSet
+  pairPRMinimalRepair := squareFree_pairPR_minimalRepairHittingSet
   finiteComputability := finiteComputabilityExample_verified
   refactorInvariance := refactorInvarianceFiniteExample
   cellularHodge := cellularHodgeFiniteExample
@@ -859,19 +959,23 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
         SquareFreeSupportVertex.q ∈ forbiddenSupportQR) ∧
         (SquareFreeSupportVertex.p ∈ forbiddenSupportPQ ∧
           SquareFreeSupportVertex.r ∈ forbiddenSupportQR) ∧
-          Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) ∧
-            S.refactorInvariance.selectedFiniteSiteEquivalence ∧
-              S.refactorInvariance.coefficientIso ∧
-                S.refactorInvariance.selectedObstructionClassZeroVerdictPreserved ∧
-                  S.cellularHodge.kerL1_equiv_H1 ∧
-                    S.cellularHodge.harmonicDebtMinimal ∧
-                      S.supportTransfer.nontrivialPairingResidue ∧
-                        S.supportTransfer.nontrivialTransferredResidue ∧
-                          S.packetGAGA.certifiedReadingsSeparated ∧
-                            S.packetGAGA.candidateInterfacesSeparated ∧
-                              S.packetGAGA.boundedPacketConstructed ∧
-                                S.packetGAGA.finiteGAGAComparisonConstructed ∧
-                                  S.staticFixturesReusableForPartIX
+          squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+            SquareFreeRepairTarget.singletonQ ∧
+            squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
+              SquareFreeRepairTarget.pairPR ∧
+              Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) ∧
+                S.refactorInvariance.selectedFiniteSiteEquivalence ∧
+                  S.refactorInvariance.coefficientIso ∧
+                    S.refactorInvariance.selectedObstructionClassZeroVerdictPreserved ∧
+                      S.cellularHodge.kerL1_equiv_H1 ∧
+                        S.cellularHodge.harmonicDebtMinimal ∧
+                          S.supportTransfer.nontrivialPairingResidue ∧
+                            S.supportTransfer.nontrivialTransferredResidue ∧
+                              S.packetGAGA.certifiedReadingsSeparated ∧
+                                S.packetGAGA.candidateInterfacesSeparated ∧
+                                  S.packetGAGA.boundedPacketConstructed ∧
+                                    S.packetGAGA.finiteGAGAComparisonConstructed ∧
+                                      S.staticFixturesReusableForPartIX
 
 /-- R11 / AC25: all requested finite example families are fully certified. -/
 theorem partVIIIFiniteExampleSuite_complete :
@@ -881,6 +985,8 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.unmeasuredAxisNotZero,
     partVIIIFiniteExampleSuite.qHitsBothForbiddenSupports,
     partVIIIFiniteExampleSuite.prHitsForbiddenSupports,
+    partVIIIFiniteExampleSuite.singletonQMinimalRepair,
+    partVIIIFiniteExampleSuite.pairPRMinimalRepair,
     partVIIIFiniteExampleSuite.finiteComputability,
     partVIIIFiniteExampleSuite.refactorInvariance.selectedFiniteSiteEquivalence_cert,
     partVIIIFiniteExampleSuite.refactorInvariance.coefficientIso_cert,
