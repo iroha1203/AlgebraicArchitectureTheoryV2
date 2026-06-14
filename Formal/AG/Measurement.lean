@@ -1,3 +1,5 @@
 import Formal.AG.Measurement.Bootstrap
 import Formal.AG.Measurement.Profile
 import Formal.AG.Measurement.Verdict
+import Formal.AG.Measurement.FiniteRegime
+import Formal.AG.Measurement.Computability
