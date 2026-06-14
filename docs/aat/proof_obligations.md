@@ -1034,6 +1034,38 @@ tracking Issue [#2076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV
 | `V.R11 finite examples` | `proved examples under explicit certificates / selected audit data` |
 | `V.R12 final ledger / scan` | `proved final ledger sync` |
 
+## AG版AAT Lean形式化 PRD-6 / 第VI部 Singularity・Monodromy・Stack
+
+PRD-6 は tracking Issue [#2128](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2128)
+で管理する。初回実装 Issue [#2129](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2129)
+では AC1/R0 と AC2/R1 を対象にし、`Formal/AG/SingularityMonodromyStack` の entrypoint と
+architecture stratum / reading parameter を追加した。PRD 本体の checkbox は prd-loop の
+不変条件として編集せず、達成状態は tracking Issue とこの台帳で同期する。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `VI.R0` Formal/AG/SingularityMonodromyStack entrypoint | `defined only`. `Formal/AG/SingularityMonodromyStack.lean` が `Formal/AG/SingularityMonodromyStack/Stratum.lean` を束ね、`Formal/AG.lean` から import される。PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived` の後段 module として build 対象に入る。 | R2 以降の deformation-obstruction interface、operation homotopy、monodromy、stack、gerbe、finite examples は後続 Issue で扱う。 |
+| `VI.定義2.1 / 原則2.2` Architecture Stratum and reading parameter | `defined only` / `proved accessor`. `StratumRole`、`StratumReadingParameter`、`StratumReadingParameter.coverageTopology`、`lawUniverse_eq`、`selectedCoeff_eq`、`ArchitectureStratum`、`ArchitectureStratum.Mem`、`mem_iff`、`selectedSubobject_holds`、`locallyClosed_holds`、`decorationCompatible_holds`、`readingCompatible_holds` を持つ。 | stratum は selected carrier / compatibility certificate として置く。一般 stratification theory、cotangent / tangent complex、smooth / singular criterion はまだ主張しない。 |
+| `CotangentComplexGeneralConstruction` | `future proof obligation` / `unassigned` | PRD-6 では `CotangentData` interface の後続実装に留め、一般余接複体構成は証明しない。 |
+| `RHomGeneralConstruction` | `future proof obligation` / `unassigned` | PRD-6 では tangent interface の field として扱い、RHom 一般構成は証明しない。 |
+| `AlgebraicStackGeneralTheory` | `future proof obligation` / `unassigned` | PRD-6 では ArchitectureStack / AlgebraicArchitectureStack predicate を AAT 側 data として扱い、algebraic stack 一般論は証明しない。 |
+| `NonAbelianGerbeCohomologyGeneralTheory` | `future proof obligation` / `unassigned` | PRD-6 では non-abelian gerbe obstruction を abstract class として扱い、一般 non-abelian gerbe cohomology は証明しない。 |
+
+第VI部 PRD-6 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `VI.R0` | `defined only` |
+| `VI.定義2.1 / 原則2.2` | `defined only` / `proved accessor` |
+| `VI.定義3.1-5.2` | `future proof obligation` |
+| `VI.定理6.1 / 定理6.2 / 系6.5` | `future proof obligation` |
+| `VI.定義6.3 / 定理候補6.4` | `future proof obligation` |
+| `VI.定義8.1-9.5` | `future proof obligation` |
+| `VI.定義10.1-10.6 / 定理10.5 / 定理10.7 / 定理11.1` | `future proof obligation` |
+| `VI.定義12.1 / 定義12.3 / 定理12.4` | `future proof obligation` |
+| `VI.定義13.1-16.1 / 定理16.2` | `future proof obligation` |
+| `VI.R12 finite examples` | `future proof obligation` |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |

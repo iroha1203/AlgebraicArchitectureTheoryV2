@@ -17,3 +17,4 @@ import Formal.AG.LawAlgebra
 import Formal.AG.Cohomology
 import Formal.AG.Derived
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.SingularityMonodromyStack
