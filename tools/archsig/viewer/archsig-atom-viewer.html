@@ -1446,68 +1446,144 @@
       const vertices = Array.isArray(nerve.vertices) ? nerve.vertices : [];
       const edges = Array.isArray(nerve.edges) ? nerve.edges : [];
       const triangles = Array.isArray(nerve.triangles) ? nerve.triangles : [];
+      const vertexCenters = nerveVertexCenters(scene, vertices);
       vertices.forEach((vertex, index) => {
-        const center = sceneAxisPosition(scene, vertex.contextRef, index, Math.max(vertices.length, 1), positions.get(vertex.contextRef), {
-          xValue: index / Math.max(vertices.length - 1, 1),
-          yValue: Math.min((vertex.atomRefs || []).length, 12),
-          zValue: Math.min((vertex.atomRefs || []).length, 12)
-        });
+        const center = vertexCenters.get(String(vertex.contextRef || ""));
         if (!center) return;
+        const supportSize = Math.min((vertex.atomRefs || []).length, 18);
         const patch = new THREE.Mesh(
-          new THREE.CircleGeometry(5.4 + Math.min((vertex.atomRefs || []).length, 8) * 0.4, 24),
+          new THREE.CircleGeometry(8.2 + supportSize * 0.34, 36),
           new THREE.MeshStandardMaterial({
             color: 0x64d6be,
             transparent: true,
-            opacity: 0.24,
+            opacity: 0.34,
             roughness: 0.52,
             side: THREE.DoubleSide
           })
         );
         patch.position.copy(center);
-        patch.position.y += 4 + index * 0.2;
+        patch.position.y += 1;
         patch.rotation.x = -Math.PI / 2;
         patch.userData = { kind: "nerveVertexPatch", item: vertex };
         edgeGroup.add(patch);
+        const label = createTextSprite(contextLabel(vertex.contextRef), "#d8dee9", "rgba(13,16,21,0.68)");
+        label.position.copy(center).add(new THREE.Vector3(0, 11 + supportSize * 0.08, 0));
+        label.userData = { kind: "nerveVertexLabel", item: vertex };
+        edgeGroup.add(label);
       });
-      renderNerveEdges(scene, edges, positions, encoding);
+      renderNerveEdges(edges, vertexCenters, encoding);
       const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
       triangles.slice(0, triangleLimit).forEach((triangle, index) => {
-        const points = (triangle.contextRefs || []).map((ref, refIndex) =>
-          sceneAxisPosition(scene, ref, index * 3 + refIndex, Math.max(triangles.length * 3, 1), positions.get(ref), {
-            xValue: refIndex / 3,
-            yValue: Math.min((triangle.sharedAtomRefs || []).length, 12),
-            zValue: Math.min((triangle.edgeRefs || []).length, 3)
-          })
-        ).filter(Boolean);
+        const points = (triangle.contextRefs || [])
+          .map((ref) => vertexCenters.get(String(ref || ""))?.clone().add(new THREE.Vector3(0, 5.5 + index * 0.35, 0)))
+          .filter(Boolean);
         if (points.length !== 3) return;
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y + 2, p.z]), 3));
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y, p.z]), 3));
         geometry.computeVertexNormals();
         const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
           color: 0x73b7ff,
           transparent: true,
-          opacity: 0.18,
+          opacity: 0.34,
           side: THREE.DoubleSide,
           roughness: 0.6
         }));
-        mesh.userData = { kind: "nerveTriangle", item: triangle, nonClaim: "H2 coherence is not visualized" };
+        mesh.userData = { kind: "nerveTriangle", item: triangle };
         edgeGroup.add(mesh);
+        addTriangleOutline(points, "nerveTriangleOutline");
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(2.8 + Math.min((triangle.sharedAtomRefs || []).length, 6) * 0.38, 18, 12),
+          new THREE.MeshStandardMaterial({
+            color: 0x73b7ff,
+            emissive: 0x0b2f46,
+            transparent: true,
+            opacity: 0.92,
+            roughness: 0.44
+          })
+        );
+        marker.position.copy(centroid(points)).add(new THREE.Vector3(0, 4, 0));
+        marker.userData = { kind: "nerveSharedAtomMarker", item: triangle };
+        edgeGroup.add(marker);
+        const sharedLabel = createTextSprite(`${(triangle.sharedAtomRefs || []).length} shared atom`, "#ffffff", "rgba(27,75,105,0.72)");
+        sharedLabel.position.copy(marker.position).add(new THREE.Vector3(0, 7, 0));
+        sharedLabel.userData = { kind: "nerveSharedAtomLabel", item: triangle };
+        edgeGroup.add(sharedLabel);
       });
     }
 
-    function renderNerveEdges(scene, edges, positions, encoding) {
+    function nerveVertexCenters(scene, vertices) {
+      const centers = new Map();
+      vertices.forEach((vertex, index) => {
+        const center = sceneAxisPosition(scene, vertex.contextRef, index, Math.max(vertices.length, 1), null, {
+          xValue: index / Math.max(vertices.length - 1, 1),
+          yValue: Math.min((vertex.atomRefs || []).length, 12),
+          zValue: Math.min((vertex.atomRefs || []).length, 12)
+        });
+        centers.set(String(vertex.contextRef || ""), center);
+      });
+      return centers;
+    }
+
+    function renderNerveEdges(edges, vertexCenters, encoding) {
       const solid = [];
       const mismatch = [];
-      edges.forEach((edge, index) => {
-        const metrics = { xValue: index / Math.max(edges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
-        const source = sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(edges.length * 2, 1), positions.get(edge.sourceContextRef), metrics);
-        const target = sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(edges.length * 2, 1), positions.get(edge.targetContextRef), metrics);
+      edges.forEach((edge) => {
+        const source = vertexCenters.get(String(edge.sourceContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
+        const target = vertexCenters.get(String(edge.targetContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
         if (!source || !target) return;
         const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
-        bucket.push(source.x, source.y + 3, source.z, target.x, target.y + 3, target.z);
+        bucket.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
-      addLineSegments(solid, sceneColorHex("checked"), 0.52, "nerveEdge", { lineRole: "solid", thicknessRole: "thin" });
+      addLineSegments(solid, sceneColorHex("checked"), 0.72, "nerveEdge", { lineRole: "solid", thicknessRole: "thick" });
       addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
+    }
+
+    function addTriangleOutline(points, kind) {
+      addLineSegments([
+        points[0].x, points[0].y + 0.4, points[0].z, points[1].x, points[1].y + 0.4, points[1].z,
+        points[1].x, points[1].y + 0.4, points[1].z, points[2].x, points[2].y + 0.4, points[2].z,
+        points[2].x, points[2].y + 0.4, points[2].z, points[0].x, points[0].y + 0.4, points[0].z
+      ], 0x73b7ff, 0.9, kind, { lineRole: "solid", thicknessRole: "thick" });
+    }
+
+    function contextLabel(ref) {
+      const text = String(ref || "context").replace(/^ctx:/, "");
+      return text.length > 18 ? `${text.slice(0, 17)}...` : text;
+    }
+
+    function createTextSprite(text, color = "#d8dee9", background = "rgba(13,16,21,0.62)") {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 128;
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = background;
+      roundRect(context, 14, 22, canvas.width - 28, 84, 18);
+      context.fill();
+      context.font = "600 38px Inter, system-ui, sans-serif";
+      context.fillStyle = color;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(String(text || ""), canvas.width / 2, canvas.height / 2 + 1, canvas.width - 64);
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(34, 8.5, 1);
+      return sprite;
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      context.beginPath();
+      context.moveTo(x + radius, y);
+      context.lineTo(x + width - radius, y);
+      context.quadraticCurveTo(x + width, y, x + width, y + radius);
+      context.lineTo(x + width, y + height - radius);
+      context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      context.lineTo(x + radius, y + height);
+      context.quadraticCurveTo(x, y + height, x, y + height - radius);
+      context.lineTo(x, y + radius);
+      context.quadraticCurveTo(x, y, x + radius, y);
+      context.closePath();
     }
 
     function renderCocycleRibbon(scene, ribbon, positions, encoding, limits = {}) {
