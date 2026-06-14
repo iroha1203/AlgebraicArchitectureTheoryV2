@@ -1,3 +1,9 @@
+> **このファイルは archive です。** プロジェクトの核となる思想は
+> [`PHILOSOPHY.md`](../../PHILOSOPHY.md) に統合・刷新されました。
+> 以下は退避された旧 VISION 文書であり、現行の source of truth ではありません。
+
+---
+
 # VISION
 
 ## Making software evolution computable.
