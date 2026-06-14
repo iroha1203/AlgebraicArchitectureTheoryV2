@@ -2,13 +2,14 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA,
-    ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapAtomV1,
-    ArchMapAtomicObservationSummary, ArchMapDocumentV0, ArchMapDocumentV1, ArchMapDocumentV2,
-    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry,
-    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
-    ArchMapValidationReportV1, ArchMapValidationReportV2, ArchMapValidationSummary,
-    ArchMapValidationSummaryV1, ArchMapValidationSummaryV2, ValidationCheck, ValidationExample,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
+    ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
+    AatAtomVocabularyEntryV1, AatAtomVocabularyV1, ArchMapAtomV1, ArchMapAtomicObservationSummary,
+    ArchMapDocumentV0, ArchMapDocumentV1, ArchMapDocumentV2, ArchMapLeanPreservationChecklistEntry,
+    ArchMapLeanPreservationVocabularyEntry, ArchMapSourceInventoryV0, ArchMapSourceRef,
+    ArchMapValidationReportV0, ArchMapValidationReportV1, ArchMapValidationReportV2,
+    ArchMapValidationSummary, ArchMapValidationSummaryV1, ArchMapValidationSummaryV2,
+    ValidationCheck, ValidationExample,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -47,6 +48,7 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_doctrine(document),
         check_archmap_v2_sources(document),
         check_archmap_v2_atom_ids(document),
+        check_archmap_v2_atom_kind_vocabulary(document),
         check_archmap_v2_atom_shapes(document),
         check_archmap_v2_contexts(document),
         check_archmap_v2_covers(document),
@@ -78,6 +80,41 @@ pub fn validate_archmap_v2_report(
         non_conclusions: vec![
             "ArchMap v2 validation checks the finite poset site observation contract; it does not prove source extraction soundness, U-adequacy, architecture lawfulness, or Lean theorem discharge.".to_string(),
             "Contexts and covers are source-grounded observations; selected measurement coefficients, witnesses, and verdict predicates belong to MeasurementProfile.".to_string(),
+        ],
+    }
+}
+
+pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
+    let doctrine_ref = "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md";
+    AatAtomVocabularyV1 {
+        schema: AAT_ATOM_VOCABULARY_V1_SCHEMA.to_string(),
+        vocabulary_id: "aat-atom-vocabulary:ag-archmap@1".to_string(),
+        doctrine_ref: doctrine_ref.to_string(),
+        required_doctrine_components: ["V", "Gamma", "R", "rho", "E", "N"]
+            .into_iter()
+            .map(str::to_string)
+            .collect(),
+        entries: [
+            "component",
+            "relation",
+            "capability",
+            "state",
+            "effect",
+            "authority",
+            "contract",
+            "semantic",
+            "runtime",
+        ]
+        .into_iter()
+        .map(|kind| AatAtomVocabularyEntryV1 {
+            kind: kind.to_string(),
+            doctrine_ref: doctrine_ref.to_string(),
+            provenance_ref: doctrine_ref.to_string(),
+        })
+        .collect(),
+        non_conclusions: vec![
+            "AAT atom vocabulary is an artifact-side authoring contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
+            "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
         ],
     }
 }
@@ -188,6 +225,77 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
         "atom ids are non-empty and unique",
         examples,
     )
+}
+
+fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let vocabulary = static_aat_atom_vocabulary_v1();
+    let vocabulary_ref = vocabulary.vocabulary_id.as_str();
+    let declared_components = document
+        .extraction_doctrine_ref
+        .components
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let missing_components = vocabulary
+        .required_doctrine_components
+        .iter()
+        .filter(|component| !declared_components.contains(component.as_str()))
+        .cloned()
+        .collect::<Vec<_>>();
+    let allowed = vocabulary
+        .entries
+        .iter()
+        .map(|entry| entry.kind.as_str())
+        .collect::<BTreeSet<_>>();
+    let unknown_atoms = document
+        .atoms
+        .iter()
+        .filter(|atom| !allowed.contains(atom.kind.as_str()))
+        .collect::<Vec<_>>();
+    let mut examples = Vec::new();
+    if !missing_components.is_empty() {
+        examples.push(ValidationExample {
+            component_id: Some("extractionDoctrineRef.components".to_string()),
+            path: Some("extractionDoctrineRef.components".to_string()),
+            source: Some(document.extraction_doctrine_ref.components.join(",")),
+            target: Some(vocabulary_ref.to_string()),
+            evidence: Some(format!(
+                "extraction doctrine does not resolve required AAT atom vocabulary components: {}",
+                missing_components.join(",")
+            )),
+        });
+    }
+    examples.extend(unknown_atoms.iter().map(|atom| ValidationExample {
+        component_id: Some(atom.id.clone()),
+        path: Some("atoms[].kind".to_string()),
+        source: Some(atom.kind.clone()),
+        target: Some(vocabulary_ref.to_string()),
+        evidence: Some("declared AAT atom vocabulary does not contain this token".to_string()),
+    }));
+    let mut check = check_from_examples(
+        "archmap-v2-atom-kind-vocabulary",
+        "ATOMS_WITHIN_DECLARED_VOCABULARY: atom kinds are members of aat-atom-vocabulary/v1",
+        examples,
+    );
+    check.metric = Some(vocabulary_ref.to_string());
+    if check.result == "fail" {
+        check.reason = Some(match (unknown_atoms.is_empty(), missing_components.is_empty()) {
+            (false, true) => {
+                "declared AAT atom vocabulary does not contain one or more atom kind tokens"
+                    .to_string()
+            }
+            (true, false) => {
+                "extraction doctrine does not resolve the declared AAT atom vocabulary"
+                    .to_string()
+            }
+            (false, false) => {
+                "declared AAT atom vocabulary does not contain one or more atom kind tokens and the extraction doctrine does not resolve the vocabulary"
+                    .to_string()
+            }
+            (true, true) => unreachable!("failed vocabulary check must have examples"),
+        });
+    }
+    check
 }
 
 fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck {
@@ -1672,4 +1780,60 @@ fn is_promoted_truth_status(status: &str) -> bool {
         status,
         "proved" | "certified" | "theorem" | "lawful" | "zeroCurvature"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn static_aat_atom_vocabulary_has_provenance_refs() {
+        let vocabulary = static_aat_atom_vocabulary_v1();
+        let expected_kinds = [
+            "component",
+            "relation",
+            "capability",
+            "state",
+            "effect",
+            "authority",
+            "contract",
+            "semantic",
+            "runtime",
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+        let actual_kinds = vocabulary
+            .entries
+            .iter()
+            .map(|entry| entry.kind.as_str())
+            .collect::<BTreeSet<_>>();
+
+        assert_eq!(vocabulary.schema, AAT_ATOM_VOCABULARY_V1_SCHEMA);
+        assert_eq!(
+            vocabulary.doctrine_ref,
+            "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+        );
+        assert_eq!(actual_kinds, expected_kinds);
+        assert_eq!(
+            vocabulary.required_doctrine_components,
+            ["V", "Gamma", "R", "rho", "E", "N"]
+        );
+        assert!(vocabulary.entries.iter().all(|entry| {
+            entry.doctrine_ref == "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+                && entry.provenance_ref
+                    == "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+        }));
+        assert!(
+            vocabulary
+                .non_conclusions
+                .iter()
+                .any(|text| text.contains("token membership only"))
+        );
+        assert!(
+            vocabulary
+                .non_conclusions
+                .iter()
+                .any(|text| text.contains("does not prove source extraction soundness"))
+        );
+    }
 }

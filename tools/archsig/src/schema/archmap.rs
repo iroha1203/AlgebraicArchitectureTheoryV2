@@ -43,6 +43,25 @@ pub struct ArchMapExtractionDoctrineRefV2 {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatAtomVocabularyV1 {
+    pub schema: String,
+    pub vocabulary_id: String,
+    pub doctrine_ref: String,
+    pub required_doctrine_components: Vec<String>,
+    pub entries: Vec<AatAtomVocabularyEntryV1>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatAtomVocabularyEntryV1 {
+    pub kind: String,
+    pub doctrine_ref: String,
+    pub provenance_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArchMapAtomV2 {
     pub id: String,
