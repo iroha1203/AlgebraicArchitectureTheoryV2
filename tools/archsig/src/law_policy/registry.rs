@@ -263,6 +263,7 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
     manifests.extend([
         ag_manifest("ag.cech-obstruction@1", "ag.cech-obstruction"),
         ag_coherence_manifest(),
+        ag_restriction_manifest(),
         ag_manifest("ag.square-free-repair@1", "ag.square-free-repair"),
         ag_manifest("ag.law-conflict-tor@1", "ag.law-conflict-tor"),
         ag_manifest("ag.sheaf-laplacian@1", "ag.sheaf-laplacian"),
@@ -300,6 +301,40 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
             "/computedInvariants".to_string(),
         ],
         negative_fixtures: vec!["ag_coherence_obstruction_negative.json".to_string()],
+    }
+}
+
+fn ag_restriction_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.restriction-compatibility@1".to_string(),
+        law_id: "ag.restriction-compatibility".to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: vec![
+            "restriction-compatibility.restrictionIdealGenerator".to_string(),
+        ],
+        required_molecule_condition:
+            "archmap/v2 contexts, selected cover restriction edges, and finite ideal generator supports"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite poset site and cover from MeasurementProfile".to_string(),
+        missing_blocker_rule:
+            "missing restriction edges or endpoint generator contracts are not_computed".to_string(),
+        pass_criteria:
+            "every selected restriction edge carries source ideal generators into the target ideal"
+                .to_string(),
+        violation_criteria:
+            "some selected restriction edge has a source generator with no target generator dividing its support"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v1".to_string(),
+        distance_contribution:
+            "structural restriction compatibility verdict remains selected-cover and presentation-relative"
+                .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
+        ],
+        negative_fixtures: vec!["ag_restriction_compatibility_negative.json".to_string()],
     }
 }
 

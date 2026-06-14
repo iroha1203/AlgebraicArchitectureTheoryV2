@@ -1112,6 +1112,198 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
 }
 
 #[test]
+fn cli_analyze_v2_restriction_compatibility_measures_support_inclusion() {
+    let root_out = temp_dir("ag-measurement-restriction-compatibility");
+
+    let zero_dir = root_out.join("zero");
+    fs::create_dir_all(&zero_dir).expect("zero dir exists");
+    let zero_archmap = zero_dir.join("archmap.json");
+    let zero_policy = zero_dir.join("law_policy.json");
+    fs::write(
+        &zero_archmap,
+        serde_json::to_vec_pretty(&restriction_archmap("compatible")).expect("archmap serializes"),
+    )
+    .expect("zero archmap is written");
+    fs::write(
+        &zero_policy,
+        serde_json::to_vec_pretty(&restriction_policy()).expect("policy serializes"),
+    )
+    .expect("zero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap.to_str().unwrap(),
+        "--law-policy",
+        zero_policy.to_str().unwrap(),
+        "--out-dir",
+        zero_dir.to_str().unwrap(),
+    ]);
+    let zero_packet = read_json(&zero_dir.join("archsig-measurement-packet.json"));
+    let zero_row = restriction_row(&zero_packet);
+    assert_eq!(zero_row["verdict"], "measured_zero");
+    assert_eq!(zero_row["verdictData"]["zero"], true);
+    assert_eq!(
+        zero_row["verdictData"]["methodStatus"],
+        "finite_support_inclusion_computed"
+    );
+    let zero_invariant = invariant_by_id(
+        &zero_packet,
+        "restriction-compatibility:profile:ag-restriction@1",
+    );
+    assert_eq!(zero_invariant["method"], "finite-support-inclusion@1");
+    assert_eq!(zero_invariant["edgeChecks"][0]["status"], "compatible");
+
+    let nonzero_dir = root_out.join("nonzero");
+    fs::create_dir_all(&nonzero_dir).expect("nonzero dir exists");
+    let nonzero_archmap = nonzero_dir.join("archmap.json");
+    let nonzero_policy = nonzero_dir.join("law_policy.json");
+    fs::write(
+        &nonzero_archmap,
+        serde_json::to_vec_pretty(&restriction_archmap("violated")).expect("archmap serializes"),
+    )
+    .expect("nonzero archmap is written");
+    fs::write(
+        &nonzero_policy,
+        serde_json::to_vec_pretty(&restriction_policy()).expect("policy serializes"),
+    )
+    .expect("nonzero policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        nonzero_archmap.to_str().unwrap(),
+        "--law-policy",
+        nonzero_policy.to_str().unwrap(),
+        "--out-dir",
+        nonzero_dir.to_str().unwrap(),
+    ]);
+    let nonzero_packet = read_json(&nonzero_dir.join("archsig-measurement-packet.json"));
+    let nonzero_row = restriction_row(&nonzero_packet);
+    assert_eq!(nonzero_row["verdict"], "measured_nonzero");
+    assert_eq!(nonzero_row["verdictData"]["nonZero"], true);
+    let nonzero_invariant = invariant_by_id(
+        &nonzero_packet,
+        "restriction-compatibility:profile:ag-restriction@1",
+    );
+    assert_eq!(nonzero_invariant["edgeChecks"][0]["status"], "violated");
+    assert_eq!(
+        nonzero_invariant["edgeChecks"][0]["violations"][0]["generatorRef"],
+        "atom:gen-source-x"
+    );
+    assert!(
+        nonzero_invariant["edgeChecks"][0]["violations"][0]["sourceRefs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|source_ref| source_ref == "src:source-generator"),
+        "violated edge must carry source refs"
+    );
+    assert!(
+        nonzero_invariant["boundaryNote"].as_str().is_some_and(
+            |note| note.contains("sheaf image 再定義で消えうる、理論対象の defect ではない")
+        ),
+        "presentation-relative boundary must be explicit"
+    );
+    assert!(
+        nonzero_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| matches!(
+                row["verdict"].as_str().unwrap(),
+                "measured_zero" | "measured_nonzero" | "unmeasured" | "unknown" | "not_computed"
+            )),
+        "restriction evaluator must reuse the existing five verdict values"
+    );
+
+    let missing_dir = root_out.join("missing");
+    fs::create_dir_all(&missing_dir).expect("missing dir exists");
+    let missing_archmap = missing_dir.join("archmap.json");
+    let missing_policy = missing_dir.join("law_policy.json");
+    fs::write(
+        &missing_archmap,
+        serde_json::to_vec_pretty(&restriction_archmap("missing-target"))
+            .expect("archmap serializes"),
+    )
+    .expect("missing archmap is written");
+    fs::write(
+        &missing_policy,
+        serde_json::to_vec_pretty(&restriction_policy()).expect("policy serializes"),
+    )
+    .expect("missing policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        missing_archmap.to_str().unwrap(),
+        "--law-policy",
+        missing_policy.to_str().unwrap(),
+        "--out-dir",
+        missing_dir.to_str().unwrap(),
+    ]);
+    let missing_packet = read_json(&missing_dir.join("archsig-measurement-packet.json"));
+    let missing_row = restriction_row(&missing_packet);
+    assert_eq!(missing_row["verdict"], "not_computed");
+    assert_eq!(
+        missing_row["verdictData"]["methodStatus"],
+        "restriction_generator_missing"
+    );
+
+    let empty_dir = root_out.join("empty");
+    fs::create_dir_all(&empty_dir).expect("empty dir exists");
+    let empty_archmap = empty_dir.join("archmap.json");
+    let empty_policy = empty_dir.join("law_policy.json");
+    fs::write(
+        &empty_archmap,
+        serde_json::to_vec_pretty(&restriction_archmap("empty-edges")).expect("archmap serializes"),
+    )
+    .expect("empty archmap is written");
+    fs::write(
+        &empty_policy,
+        serde_json::to_vec_pretty(&restriction_policy()).expect("policy serializes"),
+    )
+    .expect("empty policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        empty_archmap.to_str().unwrap(),
+        "--law-policy",
+        empty_policy.to_str().unwrap(),
+        "--out-dir",
+        empty_dir.to_str().unwrap(),
+    ]);
+    let empty_packet = read_json(&empty_dir.join("archsig-measurement-packet.json"));
+    let empty_row = restriction_row(&empty_packet);
+    assert_eq!(empty_row["verdict"], "not_computed");
+    assert_eq!(
+        empty_row["verdictData"]["methodStatus"],
+        "empty_selected_restriction_edges"
+    );
+
+    let bad_profile_dir = root_out.join("bad-profile");
+    fs::create_dir_all(&bad_profile_dir).expect("bad profile dir exists");
+    let bad_policy = bad_profile_dir.join("law_policy.json");
+    let mut policy = restriction_policy();
+    policy["measurementProfiles"][0]["effCoeff"] =
+        Value::String("finite-linear-algebra@1".to_string());
+    fs::write(
+        &bad_policy,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("bad policy is written");
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            zero_archmap.to_str().unwrap(),
+            "--law-policy",
+            bad_policy.to_str().unwrap(),
+            "--out-dir",
+            bad_profile_dir.to_str().unwrap(),
+        ],
+        2,
+    );
+}
+
+#[test]
 fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative() {
     let out_dir = temp_dir("ag-measurement-coherence-h2-nonzero");
     let archmap_path = out_dir.join("archmap_coherence_h2_nonzero.json");
@@ -11878,6 +12070,150 @@ fn coherence_row(packet: &Value) -> &Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.coherence-obstruction@1")
         .expect("coherence row exists")
+}
+
+fn restriction_row(packet: &Value) -> &Value {
+    packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.restriction-compatibility@1")
+        .expect("restriction compatibility row exists")
+}
+
+fn restriction_policy() -> Value {
+    json!({
+        "schema": "law-policy/v1",
+        "id": "ag-restriction-policy",
+        "measurementProfileRef": "profile:ag-restriction@1",
+        "measurementProfiles": [{
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:ag-restriction@1",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:restriction",
+            "coefficient": "F2",
+            "effCoeff": "finite-support-inclusion@1",
+            "witnessFamily": [
+                {"law": "ag.restriction-compatibility", "variable": "x"},
+                {"law": "ag.restriction-compatibility", "variable": "y"}
+            ],
+            "resolutionSelector": "support-inclusion@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "all-inclusions-hold@1",
+            "nonZeroPredicate": "some-inclusion-fails@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        }],
+        "policies": [{
+            "law": "ag.restriction-compatibility",
+            "evaluator": "ag.restriction-compatibility@1",
+            "basis": ["policy-basis:layering"],
+            "scope": ["src/"],
+            "severity": "high"
+        }]
+    })
+}
+
+fn restriction_archmap(case: &str) -> Value {
+    let source_generator = match case {
+        "compatible" => Some(("atom:gen-source-xy", "x,y", "src:source-generator")),
+        "violated" | "missing-target" => Some(("atom:gen-source-x", "x", "src:source-generator")),
+        "empty-edges" => Some(("atom:gen-source-x", "x", "src:source-generator")),
+        _ => panic!("unknown restriction fixture case: {case}"),
+    };
+    let target_generator = match case {
+        "compatible" => Some(("atom:gen-target-x", "x", "src:target-generator")),
+        "violated" => Some(("atom:gen-target-xy", "x,y", "src:target-generator")),
+        "empty-edges" => Some(("atom:gen-target-x", "x", "src:target-generator")),
+        "missing-target" => None,
+        _ => panic!("unknown restriction fixture case: {case}"),
+    };
+    let mut atoms = vec![
+        atom_json(
+            "atom:source",
+            "component",
+            "src:source",
+            "static",
+            "component",
+            None,
+            vec!["src:source"],
+        ),
+        atom_json(
+            "atom:target",
+            "component",
+            "src:target",
+            "static",
+            "component",
+            None,
+            vec!["src:target"],
+        ),
+    ];
+    if let Some((atom_id, support, source_ref)) = source_generator {
+        atoms.push(atom_json(
+            atom_id,
+            "relation",
+            "ctx:source",
+            "restriction-compatibility",
+            "restrictionIdealGenerator",
+            Some(support),
+            vec!["ctx:source", source_ref],
+        ));
+    }
+    if let Some((atom_id, support, source_ref)) = target_generator {
+        atoms.push(atom_json(
+            atom_id,
+            "relation",
+            "ctx:target",
+            "restriction-compatibility",
+            "restrictionIdealGenerator",
+            Some(support),
+            vec!["ctx:target", source_ref],
+        ));
+    }
+    let mut source_atoms = vec!["atom:source"];
+    if let Some((atom_id, _, _)) = source_generator {
+        source_atoms.push(atom_id);
+    }
+    let mut target_atoms = vec!["atom:target"];
+    if let Some((atom_id, _, _)) = target_generator {
+        target_atoms.push(atom_id);
+    }
+    json!({
+        "schema": "archmap/v2",
+        "id": format!("ag-restriction-fixture-{case}"),
+        "extractionDoctrineRef": {
+            "doctrineId": "doctrine:ag-fixture@1",
+            "fingerprint": "sha256:ag-restriction-fixture",
+            "components": ["V", "Gamma", "R", "rho", "E", "N"]
+        },
+        "sources": {
+            "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
+            "src:target": {"kind": "rust", "path": "src/target.rs", "symbol": "Target", "line": 1},
+            "src:source-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2 source generator"},
+            "src:target-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2 target generator"},
+            "ctx:source": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2"},
+            "ctx:target": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M2"}
+        },
+        "atoms": atoms,
+        "contexts": [
+            {
+                "id": "ctx:source",
+                "atoms": source_atoms,
+                "restrictsTo": if case == "empty-edges" { json!([]) } else { json!(["ctx:target"]) },
+                "refs": ["ctx:source"]
+            },
+            {
+                "id": "ctx:target",
+                "atoms": target_atoms,
+                "refs": ["ctx:target"]
+            }
+        ],
+        "covers": [{
+            "id": "cover:restriction",
+            "contexts": ["ctx:source", "ctx:target"],
+            "refs": ["ctx:source", "ctx:target"]
+        }]
+    })
 }
 
 fn coherence_policy(coefficient: &str, include_cech: bool) -> Value {
