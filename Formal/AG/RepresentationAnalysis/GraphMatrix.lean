@@ -1,5 +1,6 @@
 import Formal.AG.RepresentationAnalysis.PreservationReflection
 import Mathlib.Data.Matrix.Basic
+import Mathlib.Data.Matrix.Mul
 
 noncomputable section
 
@@ -48,6 +49,68 @@ inductive DirectedWalk {Vertex Edge RelationLabel : Type z}
       (hrest : DirectedWalk G (G.target e) finish tail) :
       DirectedWalk G start finish (e :: tail)
 
+/-- VII.命題3.6 precursor: directed walk indexed by its selected edge length. -/
+inductive CountedDirectedWalk {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
+    Vertex -> Vertex -> Nat -> Type z where
+  | nil (v : Vertex) : CountedDirectedWalk G v v 0
+  | cons {start finish : Vertex} (e : Edge) (n : Nat)
+      (hsource : G.source e = start)
+      (tail : CountedDirectedWalk G (G.target e) finish n) :
+      CountedDirectedWalk G start finish (n + 1)
+
+namespace CountedDirectedWalk
+
+/-- The edge list underlying a counted directed walk. -/
+def edges {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish : Vertex} {n : Nat} :
+    CountedDirectedWalk G start finish n -> List Edge
+  | nil _ => []
+  | cons e _ _ tail => e :: edges tail
+
+/-- The vertex trace underlying a counted directed walk. -/
+def vertices {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish : Vertex} {n : Nat} :
+    CountedDirectedWalk G start finish n -> List Vertex
+  | nil v => [v]
+  | cons e _ _ tail => G.source e :: vertices tail
+
+/-- A counted directed walk forgets to the list-indexed directed walk. -/
+def toDirectedWalk {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G start finish n) :
+    DirectedWalk G start finish (edges w) :=
+  match w with
+  | nil v => DirectedWalk.nil v
+  | cons e _ hsource tail => DirectedWalk.cons e (edges tail) hsource tail.toDirectedWalk
+
+/-- The counted walk edge list has the counted length. -/
+theorem edges_length {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G start finish n) :
+    (edges w).length = n := by
+  induction w with
+  | nil v => rfl
+  | cons e n hsource tail ih =>
+      simp [edges, ih]
+
+/-- The counted walk vertex trace has one more vertex than the edge length. -/
+theorem vertices_length {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G start finish n) :
+    (vertices w).length = n + 1 := by
+  induction w with
+  | nil v => simp [vertices]
+  | cons e n hsource tail ih =>
+      simp [vertices, ih]
+
+end CountedDirectedWalk
+
 /-- VII.命題3.4 precursor: selected directed cycle witness. -/
 structure DirectedCycle {Vertex Edge RelationLabel : Type z}
     (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) where
@@ -60,6 +123,84 @@ structure DirectedCycle {Vertex Edge RelationLabel : Type z}
 def Acyclic {Vertex Edge RelationLabel : Type z}
     (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) : Prop :=
   IsEmpty (DirectedCycle G)
+
+namespace CountedDirectedWalk
+
+/-- A counted closed walk of positive length gives a selected directed cycle. -/
+def toDirectedCycle {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {v : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G v v (n + 1)) :
+    DirectedCycle G where
+  start := v
+  edges := edges w
+  nonempty := by
+    cases w with
+    | cons e n hsource tail =>
+        simp [edges]
+  closedWalk := w.toDirectedWalk
+
+/-- A vertex appearing in the trace of a counted walk is reached by a prefix. -/
+theorem exists_prefix_of_mem_vertices {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {start finish x : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G start finish n)
+    (hmem : x ∈ vertices w) :
+    ∃ m : Nat, Nonempty (CountedDirectedWalk G start x m) := by
+  induction w with
+  | nil v =>
+      have hx : x = v := by
+        simpa [vertices] using hmem
+      subst x
+      exact ⟨0, ⟨CountedDirectedWalk.nil v⟩⟩
+  | cons e n hsource tail ih =>
+      have hx : x = G.source e ∨ x ∈ vertices tail := by
+        simpa [vertices] using hmem
+      cases hx with
+      | inl hxHead =>
+          subst x
+          exact ⟨0, ⟨by simpa [hsource] using CountedDirectedWalk.nil (G.source e)⟩⟩
+      | inr hxTail =>
+          rcases ih hxTail with ⟨m, ⟨pref⟩⟩
+          exact ⟨m + 1, ⟨CountedDirectedWalk.cons e m hsource pref⟩⟩
+
+/-- In an acyclic selected graph, counted directed walks have no repeated vertices. -/
+theorem vertices_nodup_of_acyclic {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (hacyclic : Acyclic G) :
+    ∀ {start finish : Vertex} {n : Nat}
+      (w : CountedDirectedWalk G start finish n), (vertices w).Nodup
+  | _, _, _, CountedDirectedWalk.nil v => by
+      simp [vertices]
+  | _, _, _, CountedDirectedWalk.cons e n hsource tail => by
+      have hTail : (vertices tail).Nodup :=
+        vertices_nodup_of_acyclic hacyclic tail
+      have hFresh : G.source e ∉ vertices tail := by
+        intro hmem
+        rcases exists_prefix_of_mem_vertices tail hmem with ⟨m, ⟨pref⟩⟩
+        have closed :
+            CountedDirectedWalk G (G.source e) (G.source e) (m + 1) :=
+          CountedDirectedWalk.cons e m rfl pref
+        exact hacyclic.false closed.toDirectedCycle
+      show (G.source e :: vertices tail).Nodup
+      exact List.nodup_cons.mpr ⟨hFresh, hTail⟩
+
+/-- In an acyclic finite selected graph, a counted walk is shorter than the vertex count. -/
+theorem length_lt_card_of_acyclic {Vertex Edge RelationLabel : Type z}
+    [Fintype Vertex]
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (hacyclic : Acyclic G)
+    {start finish : Vertex} {n : Nat}
+    (w : CountedDirectedWalk G start finish n) :
+    n < Fintype.card Vertex := by
+  classical
+  have hlen :
+      (vertices w).length ≤ Fintype.card Vertex :=
+    List.Nodup.length_le_card (vertices_nodup_of_acyclic hacyclic w)
+  rw [vertices_length] at hlen
+  omega
+
+end CountedDirectedWalk
 
 end FiniteDirectedGraphTarget
 
@@ -311,6 +452,225 @@ theorem ofGraph_transition {Vertex Edge RelationLabel : Type z}
   rfl
 
 end MatrixRepresentationTarget
+
+/-- VII.命題3.6 precursor: selected `n`th adjacency-matrix power. -/
+def adjacencyMatrixPower {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) (n : Nat) :
+    Matrix Vertex Vertex Nat :=
+  by
+    classical
+    letI := G.vertexFintype
+    letI := G.vertexDecidableEq
+    exact adjacencyMatrix G ^ n
+
+/--
+VII.命題3.6 precursor: selected length-`n` walk count read by matrix powers.
+
+The recursion is the usual adjacency-matrix walk recursion: length zero is the
+identity walk, and a length `n + 1` walk is a length `n` walk followed by one
+selected edge relation.
+-/
+def matrixWalkCount {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
+    Nat -> Vertex -> Vertex -> Nat := by
+  classical
+  letI := G.vertexFintype
+  letI := G.vertexDecidableEq
+  exact
+    Nat.rec
+      (motive := fun _ => Vertex -> Vertex -> Nat)
+      (fun i j => if i = j then 1 else 0)
+      (fun _ previous i j =>
+        ∑ k : Vertex, adjacencyMatrix G i k * previous k j)
+
+/--
+VII.命題3.6: matrix powers read the selected recursive length-`n` walk count.
+-/
+theorem adjacencyMatrixPower_apply_eq_matrixWalkCount
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel)
+    (n : Nat) (i j : Vertex) :
+    (adjacencyMatrixPower G n) i j = matrixWalkCount G n i j := by
+  classical
+  letI := G.vertexFintype
+  letI := G.vertexDecidableEq
+  induction n generalizing i j with
+  | zero =>
+      simp [adjacencyMatrixPower, matrixWalkCount, Matrix.one_apply]
+  | succ n ih =>
+      calc
+        (adjacencyMatrixPower G (n + 1)) i j =
+            ∑ k : Vertex, adjacencyMatrix G i k * (adjacencyMatrixPower G n) k j := by
+          simp [adjacencyMatrixPower, pow_succ', Matrix.mul_apply]
+        _ = ∑ k : Vertex, adjacencyMatrix G i k * matrixWalkCount G n k j := by
+          simp [ih]
+        _ = matrixWalkCount G (n + 1) i j := by
+          simp [matrixWalkCount]
+
+/-- VII.命題3.6 precursor: positive adjacency entry is exactly a selected edge. -/
+theorem adjacencyMatrix_pos_iff_hasEdge {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) (i j : Vertex) :
+    0 < adjacencyMatrix G i j ↔ G.HasEdge i j := by
+  classical
+  letI := G.edgeFintype
+  letI := G.edgeDecidableEq
+  constructor
+  · intro hpos
+    rcases Fintype.card_pos_iff.mp (by simpa [adjacencyMatrix] using hpos) with
+      ⟨⟨e, hsource, htarget⟩⟩
+    exact ⟨e, hsource, htarget⟩
+  · rintro ⟨e, hsource, htarget⟩
+    exact by
+      simpa [adjacencyMatrix] using
+        (Fintype.card_pos_iff.mpr
+          (show Nonempty { e : Edge // G.source e = i ∧ G.target e = j } from
+            ⟨⟨e, hsource, htarget⟩⟩))
+
+/--
+VII.命題3.6 precursor: positive recursive walk count has a concrete counted
+directed-walk witness, and conversely.
+-/
+theorem matrixWalkCount_pos_iff_countedDirectedWalk
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) :
+    ∀ (n : Nat) (i j : Vertex),
+      0 < matrixWalkCount G n i j ↔
+        Nonempty (FiniteDirectedGraphTarget.CountedDirectedWalk G i j n) := by
+  classical
+  letI := G.vertexFintype
+  letI := G.vertexDecidableEq
+  intro n
+  induction n with
+  | zero =>
+      intro i j
+      constructor
+      · intro hpos
+        by_cases hij : i = j
+        · subst j
+          exact ⟨FiniteDirectedGraphTarget.CountedDirectedWalk.nil i⟩
+        · simp [matrixWalkCount, hij] at hpos
+      · rintro ⟨w⟩
+        cases w with
+        | nil v =>
+            simp [matrixWalkCount]
+  | succ n ih =>
+      intro i j
+      constructor
+      · intro hpos
+        have hExists :
+            ∃ k : Vertex,
+              adjacencyMatrix G i k * matrixWalkCount G n k j ≠ 0 := by
+          by_contra hno
+          have hAll :
+              ∀ k : Vertex,
+                adjacencyMatrix G i k * matrixWalkCount G n k j = 0 := by
+            intro k
+            by_contra hk
+            exact hno ⟨k, hk⟩
+          have hsum :
+              (∑ k : Vertex,
+                adjacencyMatrix G i k * matrixWalkCount G n k j) = 0 := by
+            simp [hAll]
+          have hcount : matrixWalkCount G (n + 1) i j = 0 := by
+            simpa [matrixWalkCount] using hsum
+          omega
+        rcases hExists with ⟨k, hprodNe⟩
+        have hadjPos : 0 < adjacencyMatrix G i k := by
+          apply Nat.pos_of_ne_zero
+          intro hzero
+          exact hprodNe (by simp [hzero])
+        have hcountPos : 0 < matrixWalkCount G n k j := by
+          apply Nat.pos_of_ne_zero
+          intro hzero
+          exact hprodNe (by simp [hzero])
+        rcases (adjacencyMatrix_pos_iff_hasEdge G i k).mp hadjPos with
+          ⟨e, hsource, htarget⟩
+        rcases (ih k j).mp hcountPos with ⟨tail⟩
+        have tail' :
+            FiniteDirectedGraphTarget.CountedDirectedWalk G (G.target e) j n := by
+          simpa [htarget] using tail
+        exact ⟨FiniteDirectedGraphTarget.CountedDirectedWalk.cons e n hsource tail'⟩
+      · rintro ⟨w⟩
+        cases w with
+        | cons e n hsource tail =>
+            have hadjPos : 0 < adjacencyMatrix G i (G.target e) := by
+              apply (adjacencyMatrix_pos_iff_hasEdge G i (G.target e)).mpr
+              exact ⟨e, hsource, rfl⟩
+            have htailPos : 0 < matrixWalkCount G n (G.target e) j :=
+              (ih (G.target e) j).mpr ⟨tail⟩
+            have hterm :
+                0 <
+                  adjacencyMatrix G i (G.target e) *
+                    matrixWalkCount G n (G.target e) j :=
+              Nat.mul_pos hadjPos htailPos
+            have hle :
+                adjacencyMatrix G i (G.target e) *
+                    matrixWalkCount G n (G.target e) j ≤
+                  ∑ k : Vertex,
+                    adjacencyMatrix G i k * matrixWalkCount G n k j :=
+              Finset.single_le_sum
+                (fun k _ => Nat.zero_le
+                  (adjacencyMatrix G i k * matrixWalkCount G n k j))
+                (Finset.mem_univ (G.target e))
+            exact Nat.lt_of_lt_of_le hterm (by
+              simpa [matrixWalkCount] using hle)
+
+/-- VII.命題3.6: acyclic finite selected graphs have no walks at the vertex-card cutoff. -/
+theorem matrixWalkCount_eq_zero_at_card_of_acyclic
+    {Vertex Edge RelationLabel : Type z} [Fintype Vertex]
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (hacyclic : FiniteDirectedGraphTarget.Acyclic G) (i j : Vertex) :
+    matrixWalkCount G (Fintype.card Vertex) i j = 0 := by
+  classical
+  by_contra hne
+  have hpos : 0 < matrixWalkCount G (Fintype.card Vertex) i j :=
+    Nat.pos_of_ne_zero hne
+  rcases (matrixWalkCount_pos_iff_countedDirectedWalk G
+    (Fintype.card Vertex) i j).mp hpos with ⟨w⟩
+  have hlt :
+      Fintype.card Vertex < Fintype.card Vertex :=
+    FiniteDirectedGraphTarget.CountedDirectedWalk.length_lt_card_of_acyclic
+      hacyclic w
+  omega
+
+/-- VII.命題3.6: at the vertex-card cutoff, an acyclic finite graph has zero matrix power. -/
+theorem adjacencyMatrixPower_eq_zero_at_card_of_acyclic
+    {Vertex Edge RelationLabel : Type z} [Fintype Vertex]
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (hacyclic : FiniteDirectedGraphTarget.Acyclic G) :
+    adjacencyMatrixPower G (Fintype.card Vertex) = 0 := by
+  ext i j
+  rw [adjacencyMatrixPower_apply_eq_matrixWalkCount]
+  exact matrixWalkCount_eq_zero_at_card_of_acyclic hacyclic i j
+
+/-- VII.命題3.6: finite DAG readings have some zero adjacency-matrix power. -/
+theorem exists_adjacencyMatrixPower_eq_zero_of_acyclic
+    {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (hacyclic : FiniteDirectedGraphTarget.Acyclic G) :
+    ∃ N : Nat, adjacencyMatrixPower G N = 0 := by
+  classical
+  letI := G.vertexFintype
+  exact ⟨Fintype.card Vertex, adjacencyMatrixPower_eq_zero_at_card_of_acyclic hacyclic⟩
+
+/-- VII.命題3.6: selected walk-count profile for adjacency matrix powers. -/
+structure MatrixWalkReadingProfile {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) where
+  lengthNWalkCount : Nat -> Vertex -> Vertex -> Nat
+  lengthNWalkCount_eq_matrixWalkCount :
+    ∀ (n : Nat) (i j : Vertex), lengthNWalkCount n i j = matrixWalkCount G n i j
+
+namespace MatrixWalkReadingProfile
+
+/-- VII.命題3.6: matrix powers read selected length-`n` walk counts. -/
+theorem matrixWalkReading {Vertex Edge RelationLabel : Type z}
+    {G : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (P : MatrixWalkReadingProfile G) (n : Nat) (i j : Vertex) :
+    (adjacencyMatrixPower G n) i j = P.lengthNWalkCount n i j :=
+  (adjacencyMatrixPower_apply_eq_matrixWalkCount G n i j).trans
+    (P.lengthNWalkCount_eq_matrixWalkCount n i j).symm
+
+end MatrixWalkReadingProfile
 
 /-- VII.定義3.5: selected morphism between matrix representation targets. -/
 structure MatrixRepresentationHom {Vertex Edge RelationLabel : Type z}
