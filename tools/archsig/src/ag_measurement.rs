@@ -716,6 +716,22 @@ struct SquareFreeCertificateV1 {
 }
 
 #[derive(Debug, Clone)]
+struct NsdepthMonotoneMeasurementV1 {
+    computed_invariant: Value,
+    analytic_reading: AgAnalyticReadingV1,
+}
+
+#[derive(Debug, Clone)]
+struct NsdepthMonotoneScopeV1 {
+    scope_ref: String,
+    extends_ref: Option<String>,
+    nsdepth: usize,
+    generators: Vec<Vec<String>>,
+    atom_ref: String,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
 struct TorMeasurementV1 {
     verdict: String,
     zero: bool,
@@ -1175,6 +1191,8 @@ fn evaluate_square_free_repair_v1(
         &generators,
         witness_variables.len(),
     )?;
+    let nsdepth_monotone =
+        nsdepth_monotone_measurement_v1(normalized, &selected_contexts, profile)?;
     let has_obstruction = !minimal_forbidden_supports.is_empty();
     let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
         (
@@ -1218,14 +1236,8 @@ fn evaluate_square_free_repair_v1(
         )
     };
 
-    Ok(SquareFreeMeasurementV1 {
-        verdict,
-        zero,
-        non_zero,
-        method_status,
-        cert_ref,
-        reason,
-        computed_invariants: vec![json!({
+    let mut computed_invariants = vec![
+        json!({
             "invariantId": format!("square-free-repair:{}", profile.profile_id),
             "evaluator": "ag.square-free-repair@1",
             "method": "finite-square-free-monomial-repair@1",
@@ -1272,22 +1284,37 @@ fn evaluate_square_free_repair_v1(
             &witness_variables,
             &delta_facets,
             &minimal_forbidden_supports,
-        )],
-        analytic_readings: vec![AgAnalyticReadingV1 {
-            reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
-            evaluator: "ag.foundation@1".to_string(),
-            value: json!({
-                "readingKind": "repair-lower-bound-inspection@1",
-                "selectedCoverRef": profile.cover_ref,
-                "minimalForbiddenSupports": minimal_forbidden_supports,
-                "minimalHittingSets": repair_hitting_sets,
-                "lowerBoundSource": "alexanderDualRepair.minimalHittingSets",
-                "nonClaim": "not automatic repair; not operation semantics",
-                "reason": "repair inspection glyphs are viewer lower-bound markers grounded in the packet repair enumeration"
-            }),
-            regime: Some("theorem-candidate".to_string()),
-            structural_verdict_ref: None,
-        }],
+        ),
+    ];
+    let mut analytic_readings = vec![AgAnalyticReadingV1 {
+        reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
+        evaluator: "ag.foundation@1".to_string(),
+        value: json!({
+            "readingKind": "repair-lower-bound-inspection@1",
+            "selectedCoverRef": profile.cover_ref,
+            "minimalForbiddenSupports": minimal_forbidden_supports,
+            "minimalHittingSets": repair_hitting_sets,
+            "lowerBoundSource": "alexanderDualRepair.minimalHittingSets",
+            "nonClaim": "not automatic repair; not operation semantics",
+            "reason": "repair inspection glyphs are viewer lower-bound markers grounded in the packet repair enumeration"
+        }),
+        regime: Some("theorem-candidate".to_string()),
+        structural_verdict_ref: None,
+    }];
+    if let Some(nsdepth_monotone) = nsdepth_monotone {
+        computed_invariants.push(nsdepth_monotone.computed_invariant);
+        analytic_readings.push(nsdepth_monotone.analytic_reading);
+    }
+
+    Ok(SquareFreeMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status,
+        cert_ref,
+        reason,
+        computed_invariants,
+        analytic_readings,
         assumptions: vec![
             AgAssumptionLedgerEntryV1 {
                 theorem_ref: "part8/5.1".to_string(),
@@ -1380,6 +1407,184 @@ fn lawful_locus_arrangement_invariant(
             "irreducibleComponentCount is not a safety score or structural verdict."
         ]
     })
+}
+
+fn nsdepth_monotone_measurement_v1(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    profile: &MeasurementProfileV1,
+) -> Result<Option<NsdepthMonotoneMeasurementV1>, String> {
+    let scopes = nsdepth_monotone_scopes(normalized, selected_contexts)?;
+    if scopes.is_empty() {
+        return Ok(None);
+    }
+    if scopes.len() != 2 {
+        return Err(format!(
+            "ag.nullstellensatz-depth-monotone@1 expects exactly two selected nsdepthMonotoneScope atoms, found {}",
+            scopes.len()
+        ));
+    }
+    let extended = scopes
+        .iter()
+        .find(|scope| scope.extends_ref.is_some())
+        .ok_or_else(|| {
+            "ag.nullstellensatz-depth-monotone@1 requires one scope with extends=<base-scope>"
+                .to_string()
+        })?;
+    let base_ref = extended.extends_ref.as_deref().unwrap_or_default();
+    let base = scopes
+        .iter()
+        .find(|scope| scope.scope_ref == base_ref)
+        .ok_or_else(|| {
+            format!("ag.nullstellensatz-depth-monotone@1 unresolved base scope {base_ref}")
+        })?;
+    let generator_extension = base.generators.iter().all(|generator| {
+        extended
+            .generators
+            .iter()
+            .any(|candidate| candidate == generator)
+    });
+    let monotone = extended.nsdepth <= base.nsdepth;
+    let scope_pair = json!({
+        "baseScopeRef": base.scope_ref.clone(),
+        "extendedScopeRef": extended.scope_ref.clone(),
+        "baseAtomRef": base.atom_ref.clone(),
+        "extendedAtomRef": extended.atom_ref.clone()
+    });
+    let source_refs = base
+        .source_refs
+        .iter()
+        .chain(extended.source_refs.iter())
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    Ok(Some(NsdepthMonotoneMeasurementV1 {
+        computed_invariant: json!({
+            "invariantId": format!("nsdepth-monotone:{}", profile.profile_id),
+            "evaluator": "ag.nullstellensatz-depth-monotone@1",
+            "method": "finite-square-free-nsdepth-monotone-proxy@1",
+            "selectedCoverRef": profile.cover_ref,
+            "scopePair": scope_pair.clone(),
+            "monotone": monotone,
+            "generatorExtension": generator_extension,
+            "nonConclusions": [
+                "NSdepth scalar values are omitted from this structural invariant and appear only in the analytic reading.",
+                "monotone is scoped to the supplied two square-free law-universe scopes, not all law universes.",
+                "generatorExtension is a finite generator-set inclusion check, not a Nullstellensatz theorem over arbitrary k."
+            ]
+        }),
+        analytic_reading: AgAnalyticReadingV1 {
+            reading_id: format!(
+                "analytic:ag.nullstellensatz-depth-monotone:{}",
+                profile.profile_id
+            ),
+            evaluator: "ag.nullstellensatz-depth-monotone@1".to_string(),
+            value: json!({
+                "readingKind": "ag.nullstellensatz-depth-monotone@1",
+                "selectedCoverRef": profile.cover_ref,
+                "scopePair": scope_pair,
+                "nsdepthProxyByScope": [
+                    {
+                        "scopeRef": base.scope_ref.clone(),
+                        "nsdepthProxy": base.nsdepth,
+                        "generatorCount": base.generators.len(),
+                        "atomRef": base.atom_ref.clone()
+                    },
+                    {
+                        "scopeRef": extended.scope_ref.clone(),
+                        "nsdepthProxy": extended.nsdepth,
+                        "generatorCount": extended.generators.len(),
+                        "atomRef": extended.atom_ref.clone()
+                    }
+                ],
+                "proxyBoundary": "NSdepth values are author-supplied / hitting-set upper-bound proxy readings, not structural verdict data.",
+                "sourceRefs": source_refs,
+                "nonConclusion": "This reading does not prove a general Nullstellensatz, exact minimal representation degree, or all-universe monotonicity."
+            }),
+            regime: Some("analytic-measurement".to_string()),
+            structural_verdict_ref: None,
+        },
+    }))
+}
+
+fn nsdepth_monotone_scopes(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+) -> Result<Vec<NsdepthMonotoneScopeV1>, String> {
+    let mut scopes = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthMonotoneScope")
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let raw = atom.object.as_deref().ok_or_else(|| {
+            format!(
+                "ag.nullstellensatz-depth-monotone@1 scope {} requires semicolon payload",
+                atom.normalized_atom_id
+            )
+        })?;
+        let fields = parse_semicolon_key_values(raw).map_err(|reason| {
+            format!(
+                "ag.nullstellensatz-depth-monotone@1 scope {} invalid payload: {reason}",
+                atom.normalized_atom_id
+            )
+        })?;
+        let nsdepth = fields
+            .get("nsdepth")
+            .and_then(|value| value.parse::<usize>().ok())
+            .filter(|value| *value > 0)
+            .ok_or_else(|| {
+                format!(
+                    "ag.nullstellensatz-depth-monotone@1 scope {} requires positive nsdepth",
+                    atom.normalized_atom_id
+                )
+            })?;
+        let generators = fields
+            .get("generators")
+            .map(|raw| parse_square_free_support_payload(raw))
+            .filter(|generators| !generators.is_empty())
+            .ok_or_else(|| {
+                format!(
+                    "ag.nullstellensatz-depth-monotone@1 scope {} requires non-empty generators",
+                    atom.normalized_atom_id
+                )
+            })?;
+        scopes.push(NsdepthMonotoneScopeV1 {
+            scope_ref: atom.subject.clone(),
+            extends_ref: fields.get("extends").cloned(),
+            nsdepth,
+            generators,
+            atom_ref: atom.normalized_atom_id.clone(),
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    scopes.sort_by(|left, right| left.scope_ref.cmp(&right.scope_ref));
+    Ok(scopes)
+}
+
+fn parse_semicolon_key_values(raw: &str) -> Result<BTreeMap<String, String>, String> {
+    let mut fields = BTreeMap::new();
+    for segment in raw.split(';') {
+        let segment = segment.trim();
+        if segment.is_empty() {
+            continue;
+        }
+        let Some((key, value)) = segment.split_once('=') else {
+            return Err(format!("payload segment {segment} must be key=value"));
+        };
+        let key = key.trim();
+        let value = value.trim();
+        if key.is_empty() || value.is_empty() {
+            return Err("payload keys and values must be non-empty".to_string());
+        }
+        if fields.insert(key.to_string(), value.to_string()).is_some() {
+            return Err(format!("payload field {key} appears more than once"));
+        }
+    }
+    Ok(fields)
 }
 
 fn maximal_faces(faces: &[Vec<String>]) -> Vec<Vec<String>> {
