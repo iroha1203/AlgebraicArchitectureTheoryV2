@@ -13636,6 +13636,31 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer must prefer WebGPU and keep a WebGL fallback"
     );
     assert!(
+        html.contains("RoomEnvironment.js")
+            && html.contains("PMREMGenerator")
+            && html.contains("scene.environment")
+            && html.contains("ACESFilmicToneMapping")
+            && html.contains("toneMappingExposure = 1.05")
+            && html.contains("SRGBColorSpace"),
+        "viewer V1 PBR foundation must configure ACES tone mapping and RoomEnvironment IBL"
+    );
+    assert!(
+        html.contains("HemisphereLight")
+            && html.contains("keyLight")
+            && html.contains("rimLight")
+            && html.contains("PCFSoftShadowMap")
+            && html.contains("ShadowMaterial")
+            && html.contains("castShadow = true")
+            && html.contains("receiveShadow = true")
+            && html.contains("scene.fog = new THREE.Fog"),
+        "viewer V1 PBR foundation must include three-point lighting, contact shadows, and fog"
+    );
+    assert!(
+        html.contains("viewerPixelRatio()")
+            && html.contains("renderer.setPixelRatio(viewerPixelRatio())"),
+        "viewer V1 must cap and reapply pixel ratio across renderer resize paths"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),

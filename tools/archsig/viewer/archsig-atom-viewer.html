@@ -918,6 +918,7 @@
   <script type="module">
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
     const container = document.getElementById("scene");
     const appEl = document.querySelector(".app");
@@ -944,17 +945,32 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0d1015);
+    scene.fog = new THREE.Fog(0x0d1015, 600, 2600);
     const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 4000);
     const atomGroup = new THREE.Group();
     const moleculeGroup = new THREE.Group();
     const edgeGroup = new THREE.Group();
     scene.add(atomGroup, moleculeGroup, edgeGroup);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.76));
-    const light = new THREE.DirectionalLight(0xffffff, 1.2);
-    light.position.set(70, 120, 90);
-    scene.add(light);
+    const ambientFillLight = new THREE.HemisphereLight(0xdfe9ff, 0x171d25, 0.7);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.15);
+    keyLight.position.set(120, 180, 95);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.camera.near = 20;
+    keyLight.shadow.camera.far = 620;
+    keyLight.shadow.camera.left = -420;
+    keyLight.shadow.camera.right = 420;
+    keyLight.shadow.camera.top = 320;
+    keyLight.shadow.camera.bottom = -320;
+    keyLight.shadow.bias = -0.00018;
+    const rimLight = new THREE.DirectionalLight(0x9bc7ff, 0.9);
+    rimLight.position.set(-170, 105, -150);
+    scene.add(ambientFillLight, keyLight, rimLight);
+    const groundShadow = createGroundShadow();
+    scene.add(groundShadow);
 
     let renderer = await createRenderer();
+    configureSceneEnvironment(renderer);
     container.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -1006,6 +1022,7 @@
           const module = await import("three/addons/renderers/webgpu/WebGPURenderer.js");
           const webgpu = new module.default({ antialias: true });
           await webgpu.init();
+          configureRendererQuality(webgpu);
           status("WebGPU renderer");
           return webgpu;
         } catch (error) {
@@ -1013,9 +1030,54 @@
         }
       }
       const webgl = new THREE.WebGLRenderer({ antialias: true });
-      webgl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      configureRendererQuality(webgl);
       status("WebGL renderer");
       return webgl;
+    }
+
+    function viewerPixelRatio() {
+      return Math.min(window.devicePixelRatio || 1, 2);
+    }
+
+    function configureRendererQuality(targetRenderer) {
+      if (typeof targetRenderer.setPixelRatio === "function") {
+        targetRenderer.setPixelRatio(viewerPixelRatio());
+      }
+      targetRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+      targetRenderer.toneMappingExposure = 1.05;
+      targetRenderer.outputColorSpace = THREE.SRGBColorSpace;
+      if (targetRenderer.shadowMap) {
+        targetRenderer.shadowMap.enabled = true;
+        targetRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      }
+    }
+
+    function configureSceneEnvironment(targetRenderer) {
+      try {
+        const pmrem = new THREE.PMREMGenerator(targetRenderer);
+        const room = new RoomEnvironment();
+        scene.environment = pmrem.fromScene(room, 0.04).texture;
+        scene.userData.environmentSource = "RoomEnvironment PMREM";
+        room.dispose();
+        pmrem.dispose();
+      } catch (_error) {
+        scene.userData.environmentSource = "RoomEnvironment PMREM unavailable";
+      }
+    }
+
+    function createGroundShadow() {
+      const geometry = new THREE.PlaneGeometry(2200, 2200);
+      const material = new THREE.ShadowMaterial({
+        color: 0x06080c,
+        opacity: 0.28,
+        transparent: true
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.y = -24;
+      mesh.receiveShadow = true;
+      mesh.userData.kind = "groundShadowReceiver";
+      return mesh;
     }
 
     function status(text) {
@@ -1024,6 +1086,9 @@
 
     function resize() {
       const rect = container.getBoundingClientRect();
+      if (typeof renderer.setPixelRatio === "function") {
+        renderer.setPixelRatio(viewerPixelRatio());
+      }
       renderer.setSize(rect.width, rect.height, false);
       camera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1);
       camera.updateProjectionMatrix();
@@ -1130,6 +1195,7 @@
       const activeScene = sceneForMode(viewModeEl.value);
       const edgeChildrenBeforeSceneLayers = edgeGroup.children.length;
       renderSceneLayers(activeScene, positions);
+      applySceneShadowFlags();
       window.__archsigViewerDebug = {
         ...(window.__archsigViewerDebug || {}),
         activeSceneId: activeScene?.sceneId || null,
@@ -1142,6 +1208,19 @@
       renderAxisHud();
       updateVisibility();
       statusText(allNodes, edges);
+    }
+
+    function applySceneShadowFlags() {
+      [atomGroup, moleculeGroup, edgeGroup].forEach((group) => {
+        group.traverse((object) => {
+          if (object.isMesh || object.isInstancedMesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+          }
+        });
+      });
+      groundShadow.receiveShadow = true;
+      groundShadow.castShadow = false;
     }
 
     function renderAtomInstances(nodes, positions) {
