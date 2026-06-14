@@ -3,3 +3,4 @@ import Formal.AG.RepresentationAnalysis.AATSch
 import Formal.AG.RepresentationAnalysis.PreservationReflection
 import Formal.AG.RepresentationAnalysis.GraphMatrix
 import Formal.AG.RepresentationAnalysis.Period
+import Formal.AG.RepresentationAnalysis.FiniteHomology
