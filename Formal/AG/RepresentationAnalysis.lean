@@ -1,3 +1,4 @@
 import Formal.AG.RepresentationAnalysis.Bootstrap
 import Formal.AG.RepresentationAnalysis.AATSch
 import Formal.AG.RepresentationAnalysis.PreservationReflection
+import Formal.AG.RepresentationAnalysis.GraphMatrix

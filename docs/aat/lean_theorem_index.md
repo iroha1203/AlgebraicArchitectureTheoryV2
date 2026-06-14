@@ -4864,10 +4864,11 @@ non-abelian gerbe cohomology 一般論、全 decomposition 分類、finite witne
 File: `Formal/AG/RepresentationAnalysis.lean`,
 `Formal/AG/RepresentationAnalysis/Bootstrap.lean`,
 `Formal/AG/RepresentationAnalysis/AATSch.lean`,
-`Formal/AG/RepresentationAnalysis/PreservationReflection.lean`.
+`Formal/AG/RepresentationAnalysis/PreservationReflection.lean`,
+`Formal/AG/RepresentationAnalysis/GraphMatrix.lean`.
 
 PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
-の AC1/R0、AC2/R1、AC3/R2 に対応する entrypoint である。現時点では
+の AC1/R0、AC2/R1、AC3/R2、AC4/R3 に対応する entrypoint である。現時点では
 `Formal/AG/RepresentationAnalysis` を build 対象へ追加し、PRD-3 `LawAlgebra`、
 PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
 を第VII部の前提 module として import する。最初の surface として、
@@ -4882,20 +4883,24 @@ Lean-facing status として保持する。`PartVIINoMeasurementVerdictBoundary`
 functor-like `AnalyticRepresentation` も追加している。AC3/R2 として、
 indexed `RepresentationFamily`、selected structural / analytic notion package、
 reflection assumption package、preservation / reflection / conservative / faithful
-predicate を追加している。
+predicate を追加している。AC4/R3 として、finite directed graph target、
+selected graph representation profile、adjacency / incidence / transition matrix、
+matrix representation target / profile を追加している。
 
 Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
 Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
 AC2 implementation Issue: [#2162](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2162).
 AC3 implementation Issue: [#2165](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2165).
+AC4 implementation Issue: [#2168](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2168).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
 | `VII.R0` | `Formal.AG.RepresentationAnalysis`, `Formal.AG.RepresentationAnalysis.Bootstrap`, `AAT.AG.RepresentationAnalysis.UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `PrerequisiteStatus`, `PartVIIDependencyStatus`, `currentDependencyStatus`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `PartVIINoMeasurementVerdictBoundary`, `noMeasurementVerdictBoundary`, `PartVIINoMeasurementVerdictBoundary.readingLayer_holds`, `PartVIINoMeasurementVerdictBoundary.measurementVerdictReservedForPartVIII_holds` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第VII部 Representation・Periods・Analysis module を `Formal/AG.lean` から import し、PRD-3〜6 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、measurement verdict は第VII部に導入しない境界を保持する。 | `defined only` / `proved accessor` |
 | `VII.定義2.1` | `AAT.AG.RepresentationAnalysis.AATSchReadingParameter`, `AATSch`, `AATSch.underlyingScheme`, `AATSch.underlyingScheme_eq`, `AATSchMorphism`, `AATSchMorphism.atomLabelsCompatible_holds`, `AATSchMorphism.lawReadingCompatible_holds`, `AATSchMorphism.obstructionIdealCompatible_holds`, `AATSchMorphism.signatureReadingCompatible_holds`, `AATSchMorphism.interpretationMapCompatible_holds`, `AATSchIdentityData`, `AATSchCompositionData`, `AATSchFiberProductData`, `AATSchFiberProductData.underlyingPullback_holds`, `AATSchFiberProductData.decorationPullbackCompatible_holds`, `AnalyticTargetCategory`, `AnalyticRepresentation`, `AnalyticRepresentation.map_identity`, `AnalyticRepresentation.map_composition` | `structure` / `def` / `theorem` | fixed reading parameter `p` に相対化された decorated architecture scheme、selected morphism interface、optional fiber product data、target category interface、functor-like analytic representation を定義する。identity / composition は selected data と representation law fields として保持し、Mathlib functor bridge はまだ主張しない。 | `defined only` / `proved accessor` |
 | `VII.定義3.1 / 定義4.1-4.3` | `AAT.AG.RepresentationAnalysis.RepresentationFamily`, `RepresentationFamily.Read`, `RepresentationFamily.Rep`, `RepresentationFamily.read_eq_obj`, `RepresentationNotions`, `ReflectionAssumptions`, `ReflectionAssumptions.Holds`, `ReflectionAssumptions.coverage_holds`, `ReflectionAssumptions.witnessCompleteness_holds`, `ReflectionAssumptions.axisExactness_holds`, `ReflectionAssumptions.coefficientDiscipline_holds`, `RepresentationNotions.ZeroPreserving`, `ZeroReflecting`, `ObstructionPreserving`, `ObstructionReflecting`, `IsoPreserving`, `IsoReflecting`, `MorphismEqPreserving`, `MorphismEqReflecting`, `Conservative`, `Faithful`, `analyticZero_of_structuralZero`, `structuralZero_of_analyticZero`, `analyticObstruction_of_structuralObstruction`, `structuralObstruction_of_analyticObstruction`, `analyticIso_of_selectedIso`, `selectedIso_of_analyticIso`, `analyticMorphismEq_of_selectedMorphismEq`, `selectedMorphismEq_of_analyticMorphismEq`, `structuralZero_of_conservative`, `selectedMorphismEq_of_faithful` | `structure` / `def` / `theorem` | indexed representation family、selected structural / analytic notion package、coverage / witness completeness / axis exactness / coefficient discipline を明示する reflection assumption package、zero / obstruction / selected iso / selected morphism equality の preservation / reflection predicate、conservative / faithful predicate を定義する。reflection は assumption package の `Holds` を受ける場合だけ使える。 | `defined only` / `proved accessor` |
+| `VII.定義3.3 / 定義3.5` | `AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget`, `FiniteDirectedGraphTarget.HasEdge`, `FiniteDirectedGraphTarget.DirectedWalk`, `FiniteDirectedGraphTarget.DirectedCycle`, `FiniteDirectedGraphTarget.Acyclic`, `FiniteDirectedGraphHom`, `FiniteDirectedGraphHom.id`, `FiniteDirectedGraphHom.comp`, `FiniteDirectedGraphHom.relationLabelCompatible_holds`, `finiteDirectedGraphTargetCategory`, `GraphRepresentationProfile`, `GraphRepresentationProfile.toAnalyticRepresentation`, `GraphRepresentationProfile.relationEdge_selected_holds`, `adjacencyMatrix`, `incidenceMatrix`, `transitionMatrix`, `MatrixRepresentationTarget`, `MatrixRepresentationTarget.ofGraph`, `MatrixRepresentationTarget.ofGraph_adjacency`, `MatrixRepresentationTarget.ofGraph_incidence`, `MatrixRepresentationTarget.ofGraph_transition`, `MatrixRepresentationHom`, `MatrixRepresentationHom.id`, `MatrixRepresentationHom.comp`, `MatrixRepresentationHom.adjacencyCompatible_holds`, `MatrixRepresentationHom.incidenceCompatible_holds`, `MatrixRepresentationHom.transitionCompatible_holds`, `matrixRepresentationTargetCategory`, `MatrixRepresentationProfile`, `MatrixRepresentationProfile.toAnalyticRepresentation` | `structure` / `def` / `theorem` | fixed carrier 上の finite directed graph target、selected relation から edge への graph representation profile、自然数 adjacency matrix、符号付き incidence matrix、transition relation matrix、matrix representation target / profile を定義する。命題3.4/3.6 の acyclicity / walk-count theorem はまだ主張しない。 | `defined only` / `proved accessor` |
 
-Non-conclusions: この entrypoint は graph / matrix representation、
+Non-conclusions: この entrypoint は命題3.4/3.6 の acyclicity / walk-count theorem、
 period family、strict period、metric enrichment、margin / observation gap theorem、
 detecting representation conservativity theorem、synthesis theorem、finite golden examples をまだ実装しない。
 measurement verdict / finite computability profile は
