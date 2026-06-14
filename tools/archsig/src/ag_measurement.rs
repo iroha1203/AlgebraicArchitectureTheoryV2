@@ -460,6 +460,30 @@ pub fn build_foundation_measurement_packet_v1(
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
+        } else if evaluator == "ag.period-stokes-audit@1" {
+            validate_period_audit_profile_v1(&profile)?;
+            let measurement = evaluate_period_stokes_audit_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
+            computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.period-stokes-audit".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                depends_on_assumptions,
+                reason: Some(measurement.reason),
+            });
         } else if evaluator == "ag.support-transfer@1" {
             validate_transfer_profile_v1(&profile)?;
             let measurement = evaluate_support_transfer_v1(normalized, &profile)?;
@@ -753,6 +777,19 @@ struct LaplacianEdgeV1 {
 
 #[derive(Debug, Clone)]
 struct PeriodMeasurementV1 {
+    computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct PeriodAuditMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
     computed_invariants: Vec<Value>,
     analytic_readings: Vec<AgAnalyticReadingV1>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
@@ -2156,6 +2193,177 @@ fn evaluate_period_stokes_v1(
         }],
         assumptions: period_assumptions(profile, "checked"),
     })
+}
+
+fn evaluate_period_stokes_audit_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<PeriodAuditMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let cycle_basis = period_audit_witness_cycles(profile);
+    let pairings = period_integrals(normalized, &selected_contexts, &cycle_basis)?;
+    let d_omega = stokes_audit_values(
+        normalized,
+        &selected_contexts,
+        "dOmegaIntegral",
+        "ag.period-stokes-audit@1 d omega audit",
+    )?;
+    let boundary = stokes_audit_values(
+        normalized,
+        &selected_contexts,
+        "boundaryPeriod",
+        "ag.period-stokes-audit@1 boundary audit",
+    )?;
+
+    let audit = fixed_coefficient_stokes_audit_report(&d_omega, &boundary, &profile.coefficient);
+    let (forms, matrix, analytic_reading) =
+        period_pairing_analytic_reading(profile, &cycle_basis, &pairings, Some(audit.clone()));
+    let source_refs = pairings
+        .iter()
+        .flat_map(|pairing| pairing.source_refs.iter())
+        .chain(d_omega.iter().flat_map(|entry| entry.source_refs.iter()))
+        .chain(boundary.iter().flat_map(|entry| entry.source_refs.iter()))
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let computed_invariant = json!({
+        "invariantId": format!("period-stokes-audit:{}", profile.profile_id),
+        "evaluator": "ag.period-stokes-audit@1",
+        "method": "fixed-coefficient-stokes-audit@1",
+        "selectedCoverRef": profile.cover_ref,
+        "coefficient": profile.coefficient,
+        "forms": forms,
+        "cycleBasis": cycle_basis,
+        "periodPairingMatrix": rounded_matrix(&matrix),
+        "stokesAudit": audit,
+        "claimScope": "supplied independent dOmega/boundary accounting values under the selected fixed coefficient reading",
+        "analyticReadingRef": analytic_reading.reading_id,
+        "sourceRefs": source_refs
+    });
+
+    let status = computed_invariant["stokesAudit"]["status"]
+        .as_str()
+        .unwrap_or("unknown");
+    let (verdict, zero, non_zero, method_status, cert_ref, reason, assumption_status) =
+        match status {
+            "checked" => (
+                "measured_zero".to_string(),
+                true,
+                false,
+                "fixed_coefficient_stokes_audit_computed".to_string(),
+                Some(format!(
+                    "computedInvariants/period-stokes-audit:{}",
+                    profile.profile_id
+                )),
+                "all supplied Stokes audit residuals are zero under the selected fixed coefficient reading".to_string(),
+                "checked",
+            ),
+            "residual_nonzero" => (
+                "measured_nonzero".to_string(),
+                false,
+                true,
+                "fixed_coefficient_stokes_audit_computed".to_string(),
+                Some(format!(
+                    "computedInvariants/period-stokes-audit:{}",
+                    profile.profile_id
+                )),
+                "at least one supplied Stokes audit residual is nonzero under the selected fixed coefficient reading".to_string(),
+                "checked",
+            ),
+            "unknown" => (
+                "unknown".to_string(),
+                false,
+                false,
+                "strict_coefficient_unresolved".to_string(),
+                None,
+                computed_invariant["stokesAudit"]["reason"]
+                    .as_str()
+                    .unwrap_or("strict coefficient Stokes audit is unresolved")
+                    .to_string(),
+                "assumed",
+            ),
+            _ => (
+                "unknown".to_string(),
+                false,
+                false,
+                "period_audit_model_missing".to_string(),
+                None,
+                computed_invariant["stokesAudit"]["reason"]
+                    .as_str()
+                    .unwrap_or("period Stokes audit model is incomplete")
+                    .to_string(),
+                "violated",
+            ),
+        };
+
+    Ok(PeriodAuditMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status,
+        cert_ref,
+        reason,
+        computed_invariants: vec![computed_invariant],
+        analytic_readings: vec![analytic_reading],
+        assumptions: period_audit_assumptions(profile, assumption_status),
+    })
+}
+
+fn period_pairing_analytic_reading(
+    profile: &MeasurementProfileV1,
+    cycle_basis: &[String],
+    pairings: &[PeriodIntegralV1],
+    stokes_audit: Option<Value>,
+) -> (Vec<String>, Vec<Vec<f64>>, AgAnalyticReadingV1) {
+    let forms = pairings
+        .iter()
+        .map(|pairing| pairing.form_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let form_index = forms
+        .iter()
+        .enumerate()
+        .map(|(index, form)| (form.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let cycle_index = cycle_basis
+        .iter()
+        .enumerate()
+        .map(|(index, cycle)| (cycle.clone(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut matrix = vec![vec![0.0; cycle_basis.len()]; forms.len()];
+    for pairing in pairings {
+        if let (Some(form), Some(cycle)) = (
+            form_index.get(&pairing.form_id),
+            cycle_index.get(&pairing.cycle_id),
+        ) {
+            matrix[*form][*cycle] = pairing.value;
+        }
+    }
+    let analytic_value = json!({
+        "readingKind": "strict-period-pairing@1",
+        "selectedCoverRef": profile.cover_ref,
+        "modelRelative": true,
+        "forms": forms,
+        "cycleBasis": cycle_basis,
+        "periodPairingMatrix": rounded_matrix(&matrix),
+        "stokesAudit": stokes_audit,
+        "nonConclusion": "period pairing is a model-relative analytic reading and is not a structural lawfulness verdict"
+    });
+    (
+        form_index.keys().cloned().collect(),
+        matrix,
+        AgAnalyticReadingV1 {
+            reading_id: format!("analytic:period-stokes:{}", profile.profile_id),
+            evaluator: "ag.period-stokes@1".to_string(),
+            value: analytic_value,
+            regime: Some("analytic-measurement".to_string()),
+            structural_verdict_ref: None,
+        },
+    )
 }
 
 fn evaluate_support_transfer_v1(
@@ -5745,6 +5953,67 @@ fn validate_period_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Stri
     Ok(())
 }
 
+fn validate_period_audit_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "fixed-coefficient-stokes-audit@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "finite-poset-period-stokes-audit@1",
+        ),
+        ("domain", profile.domain.as_str(), "finite-poset-site"),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "stokes-residual-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "stokes-residual-nonzero@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+        (
+            "verdictDiscipline",
+            profile.verdict_discipline.as_str(),
+            "five-valued-structural-verdict@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.period-stokes-audit@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if !matches!(profile.coefficient.as_str(), "F2" | "Q" | "R") {
+        return Err(format!(
+            "ag.period-stokes-audit@1 requires MeasurementProfile coefficient F2, Q, or R, found {}",
+            profile.coefficient
+        ));
+    }
+    if period_audit_witness_cycles(profile).is_empty() {
+        return Err(format!(
+            "ag.period-stokes-audit@1 requires MeasurementProfile {} witnessFamily law ag.period-stokes-audit",
+            profile.profile_id
+        ));
+    }
+    if period_audit_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
+        return Err(format!(
+            "ag.period-stokes-audit@1 supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
+        ));
+    }
+    Ok(())
+}
+
 fn validate_transfer_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
     let expected = [
         ("coefficient", profile.coefficient.as_str(), "R"),
@@ -5811,6 +6080,17 @@ fn period_witness_cycles(profile: &MeasurementProfileV1) -> Vec<String> {
         .witness_family
         .iter()
         .filter(|witness| witness.law == "ag.period-stokes")
+        .map(|witness| witness.variable.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn period_audit_witness_cycles(profile: &MeasurementProfileV1) -> Vec<String> {
+    profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.period-stokes-audit")
         .map(|witness| witness.variable.clone())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -6068,12 +6348,6 @@ fn stokes_audit_report(
         let right = boundary_map[&key];
         let residual = left.value - right.value;
         max_abs_residual = max_abs_residual.max(residual.abs());
-        if residual.abs() > 1.0e-9 {
-            return Err(format!(
-                "ag.period-stokes@1 Stokes audit failed for form {} chain {}: dOmega={} boundary={} residual={}",
-                left.form_id, left.chain_id, left.value, right.value, residual
-            ));
-        }
         pairs.push(json!({
             "form": left.form_id,
             "chain": left.chain_id,
@@ -6086,10 +6360,131 @@ fn stokes_audit_report(
     }
     Ok(json!({
         "identity": "<d omega, gamma> = <omega, boundary gamma>",
-        "status": "checked",
+        "status": if max_abs_residual > 1.0e-9 {
+            "residual_nonzero"
+        } else {
+            "checked"
+        },
         "maxAbsoluteResidual": round_f64(max_abs_residual),
         "pairs": pairs
     }))
+}
+
+fn fixed_coefficient_stokes_audit_report(
+    d_omega: &[StokesAuditValueV1],
+    boundary: &[StokesAuditValueV1],
+    coefficient: &str,
+) -> Value {
+    if !matches!(coefficient, "F2" | "Q") {
+        return json!({
+            "identity": "<d omega, gamma> = <omega, boundary gamma>",
+            "status": "unknown",
+            "methodStatus": "strict_coefficient_unresolved",
+            "coefficient": coefficient,
+            "reason": "strict coefficient ring is unresolved; float/model-relative period data remains analytic-only",
+            "pairs": []
+        });
+    }
+    if d_omega.is_empty() || boundary.is_empty() {
+        return json!({
+            "identity": "<d omega, gamma> = <omega, boundary gamma>",
+            "status": "not_computed",
+            "methodStatus": "period_audit_model_missing",
+            "coefficient": coefficient,
+            "reason": "period Stokes audit requires non-empty dOmegaIntegral and boundaryPeriod values",
+            "pairs": []
+        });
+    }
+    let d_map = d_omega
+        .iter()
+        .map(|entry| ((entry.form_id.clone(), entry.chain_id.clone()), entry))
+        .collect::<BTreeMap<_, _>>();
+    let boundary_map = boundary
+        .iter()
+        .map(|entry| ((entry.form_id.clone(), entry.chain_id.clone()), entry))
+        .collect::<BTreeMap<_, _>>();
+    if d_map.keys().collect::<Vec<_>>() != boundary_map.keys().collect::<Vec<_>>() {
+        return json!({
+            "identity": "<d omega, gamma> = <omega, boundary gamma>",
+            "status": "not_computed",
+            "methodStatus": "period_audit_key_mismatch",
+            "coefficient": coefficient,
+            "reason": "period Stokes audit requires matching dOmegaIntegral and boundaryPeriod keys",
+            "pairs": []
+        });
+    }
+
+    let mut nonzero_count = 0usize;
+    let mut max_abs_residual = 0.0f64;
+    let mut pairs = Vec::new();
+    for (key, left) in d_map {
+        let right = boundary_map[&key];
+        let Some(residual) = fixed_coefficient_residual(left.value, right.value, coefficient)
+        else {
+            return json!({
+                "identity": "<d omega, gamma> = <omega, boundary gamma>",
+                "status": "unknown",
+                "methodStatus": "strict_coefficient_unresolved",
+                "coefficient": coefficient,
+                "reason": "fixed coefficient Stokes audit requires exact Q values or integer F2 representatives",
+                "pairs": []
+            });
+        };
+        if residual.abs() > 1.0e-9 {
+            nonzero_count += 1;
+        }
+        max_abs_residual = max_abs_residual.max(residual.abs());
+        pairs.push(json!({
+            "form": left.form_id,
+            "chain": left.chain_id,
+            "dOmegaIntegral": fixed_coefficient_value(left.value, coefficient),
+            "boundaryPeriod": fixed_coefficient_value(right.value, coefficient),
+            "residual": fixed_coefficient_value(residual, coefficient),
+            "dOmegaAtomRef": left.atom_ref,
+            "boundaryAtomRef": right.atom_ref
+        }));
+    }
+    json!({
+        "identity": "<d omega, gamma> = <omega, boundary gamma>",
+        "status": if nonzero_count == 0 {
+            "checked"
+        } else {
+            "residual_nonzero"
+        },
+        "methodStatus": "fixed_coefficient_stokes_audit_computed",
+        "coefficient": coefficient,
+        "maxAbsoluteResidual": fixed_coefficient_value(max_abs_residual, coefficient),
+        "nonzeroPairCount": nonzero_count,
+        "pairs": pairs
+    })
+}
+
+fn fixed_coefficient_residual(left: f64, right: f64, coefficient: &str) -> Option<f64> {
+    match coefficient {
+        "F2" => {
+            let left_int = f2_integer_representative(left)?;
+            let right_int = f2_integer_representative(right)?;
+            Some(((left_int - right_int).rem_euclid(2)) as f64)
+        }
+        "Q" => Some(round_f64(left - right)),
+        _ => None,
+    }
+}
+
+fn f2_integer_representative(value: f64) -> Option<i64> {
+    if !value.is_finite() {
+        return None;
+    }
+    let rounded = value.round();
+    ((value - rounded).abs() < 1.0e-9).then_some(rounded as i64)
+}
+
+fn fixed_coefficient_value(value: f64, coefficient: &str) -> Value {
+    if coefficient == "F2" {
+        json!(f2_integer_representative(value).unwrap_or(0).rem_euclid(2))
+    } else {
+        json!(round_f64(value))
+    }
 }
 
 fn transfer_pairings(
@@ -6441,6 +6836,36 @@ fn period_assumptions(
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
+fn period_audit_assumptions(
+    profile: &MeasurementProfileV1,
+    fixed_coefficient_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/13.2".to_string(),
+            assumption:
+                "supplied finite Stokes accounting values share a fixed coefficient reading"
+                    .to_string(),
+            status: fixed_coefficient_status.to_string(),
+            checked_by: (fixed_coefficient_status == "checked").then(|| {
+                format!(
+                    "measurement-profile:{}.coefficient={}",
+                    profile.profile_id, profile.coefficient
+                )
+            }),
+            assumed_by: (fixed_coefficient_status != "checked")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part7/5.2A".to_string(),
+            assumption: "strict-period-pairing remains analytic and model-relative".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some("strict-period-pairing@1".to_string()),
+            assumed_by: None,
         },
     ]
 }
