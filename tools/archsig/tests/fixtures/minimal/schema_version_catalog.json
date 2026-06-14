@@ -400,7 +400,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v1 carries profile, structuralVerdict, computedInvariants, analyticReadings, assumptions, and nonConclusions as the AG Definition 11.1-aligned output contract.",
+        "fieldMappingPolicy": "ArchSig measurement packet v1 carries profile, structuralVerdict, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -412,7 +412,35 @@
         "nonConclusions": [
           "Structural verdicts are limited to measured_zero, measured_nonzero, unmeasured, unknown, and not_computed.",
           "Analytic readings do not generate structural verdicts unless a certified evaluator explicitly emits one.",
+          "BoundaryStatements are typed scoped qualifiers; nonConclusions remains a string compatibility view.",
           "Theorem-candidate readings are analytic-only."
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-boundary-statement-v1",
+      "artifactName": "ArchSig BoundaryStatement v1",
+      "schemaVersionName": "archsig-boundary-statement/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_improvement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "BoundaryStatement v1 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
+          "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero."
         ]
       }
     },

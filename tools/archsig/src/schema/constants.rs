@@ -10,6 +10,7 @@ pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-valida
 pub const NORMALIZED_ARCHMAP_V1_SCHEMA: &str = "normalized-archmap/v1";
 pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v2";
 pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v1";
+pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-statement/v1";
 pub const TYPED_EVALUATOR_RESULTS_V1_SCHEMA: &str = "typed-evaluator-results/v1";
 pub const ARCHITECTURE_DISTANCE_V1_SCHEMA: &str = "archsig-architecture-distance/v1";
 pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v1";

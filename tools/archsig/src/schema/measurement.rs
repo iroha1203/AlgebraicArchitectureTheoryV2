@@ -13,7 +13,19 @@ pub struct ArchSigMeasurementPacketV1 {
     pub computed_invariants: Vec<Value>,
     pub analytic_readings: Vec<AgAnalyticReadingV1>,
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
+    #[serde(default)]
+    pub boundary_statements: Vec<BoundaryStatementV1>,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BoundaryStatementV1 {
+    pub id: String,
+    pub kind: String,
+    pub scope_refs: Vec<String>,
+    pub reason: String,
+    pub text: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

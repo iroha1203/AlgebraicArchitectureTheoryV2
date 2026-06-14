@@ -353,7 +353,35 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert!(packet["computedInvariants"].is_array());
     assert!(packet["analyticReadings"].is_array());
     assert!(packet["assumptions"].is_array());
+    assert!(packet["boundaryStatements"].is_array());
     assert!(packet["nonConclusions"].is_array());
+    let boundary_texts = packet["boundaryStatements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|statement| statement["text"].as_str().expect("boundary text"))
+        .collect::<BTreeSet<_>>();
+    assert!(
+        packet["nonConclusions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|text| { boundary_texts.contains(text.as_str().expect("nonConclusion text")) }),
+        "compat nonConclusions must be reproduced as boundaryStatements text"
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|statement| statement["kind"] == "not_applicable"
+                && statement["scopeRefs"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|scope_ref| scope_ref == "candidate-regime:stability-placeholder")),
+        "analytic-only theorem candidate must be represented as a not_applicable boundary"
+    );
     assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
     assert_eq!(cech["dimensions"]["H1"], Value::from(0));
@@ -438,6 +466,42 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
                     && entry["assumption"] == "U-adequate cover selects a non-empty Cech 1-skeleton"
             }),
         "empty selected Cech skeleton must be recorded as a violated evaluator precondition"
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|statement| statement["kind"] == "blocked_method"
+                && statement["reason"] == "empty_selected_scope"
+                && statement["scopeRefs"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|scope_ref| scope_ref
+                        .as_str()
+                        .is_some_and(|value| value.starts_with("structuralVerdict/")))),
+        "empty selected Cech scope must be represented as a blocked_method boundary scoped to the not_computed verdict"
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|statement| statement["kind"] == "violated_assumption"
+                && statement["scopeRefs"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|scope_ref| scope_ref == "part8/B.8.2-empty-selected-scope")
+                && statement["scopeRefs"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|scope_ref| scope_ref
+                        .as_str()
+                        .is_some_and(|value| value.starts_with("structuralVerdict/")))),
+        "violated assumption boundary must scope to the affected not_computed verdict"
     );
 
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
@@ -11094,6 +11158,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "typed-evaluator-results-v1",
             "architecture-distance-v1",
             "archsig-measurement-packet-v1",
+            "archsig-boundary-statement-v1",
             "archsig-analysis-packet",
             "archsig-analysis-packet-v1",
             "archsig-analysis-packet-validation-report",
@@ -11138,6 +11203,27 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     })
         }),
         "schema catalog must describe the AAT atom vocabulary artifact boundary"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-boundary-statement-v1"
+                && entry["schemaVersionName"] == "archsig-boundary-statement/v1"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains("typed scoped qualifier contract")
+                            && description.contains("nonConclusions as a compatibility view")
+                    })
+                && entry["compatibilityBoundary"]["nonConclusions"]
+                    .as_array()
+                    .is_some_and(|items| {
+                        items.iter().any(|item| {
+                            item.as_str()
+                                .is_some_and(|text| text.contains("measured_zero"))
+                        })
+                    })
+        }),
+        "schema catalog must describe the BoundaryStatement v1 artifact boundary"
     );
     assert!(
         artifacts.iter().any(|entry| {
