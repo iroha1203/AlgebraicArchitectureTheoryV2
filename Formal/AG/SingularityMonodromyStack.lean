@@ -3,3 +3,5 @@ import Formal.AG.Derived
 import Formal.AG.SingularityMonodromyStack.Stratum
 import Formal.AG.SingularityMonodromyStack.CotangentInterface
 import Formal.AG.SingularityMonodromyStack.SmoothSingular
+import Formal.AG.SingularityMonodromyStack.SingularityTheorems
+import Formal.AG.SingularityMonodromyStack.Kuranishi
