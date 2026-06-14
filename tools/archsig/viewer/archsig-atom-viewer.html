@@ -825,7 +825,7 @@
           <select id="view-mode" title="View mode">
             <option value="families">Families</option>
             <option value="curvature">Curvature field</option>
-            <option value="holonomy">Holonomy paths</option>
+            <option value="holonomy">Cover & Gluing</option>
             <option value="obstructionLoops">Obstruction loops</option>
             <option value="obstructions">Forbidden support cages</option>
             <option value="spectrum">Spectrum landscape</option>
@@ -1098,7 +1098,9 @@
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
       renderAtomInstances(renderedAtoms, positions);
-      renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
+      if (shouldRenderAtomGlyphs(viewModeEl.value)) {
+        renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
+      }
       renderMoleculeGroups(renderedGroups, positions, activeLayoutContext);
       renderViewerDistanceBonds(positions, activeLayoutContext);
       renderedEdgeCount = renderEdges(edges, positions);
@@ -1169,6 +1171,18 @@
         mesh.userData = { kind: "atomInternalGlyph", item: glyph, node };
         atomGroup.add(mesh);
       });
+    }
+
+    function shouldRenderAtomGlyphs(mode) {
+      return !new Set([
+        "aatAxes",
+        "curvature",
+        "flatness",
+        "holonomy",
+        "obstructionLoops",
+        "obstructions",
+        "spectrum"
+      ]).has(mode);
     }
 
     function atomGlyphGeometry(fiber, baseSize, blockedAnchor) {
@@ -2466,7 +2480,7 @@
         return `, ${aat.atomToCurvature.size} curvature-support atoms, ${aat.curvatureItems.length} curvature readings`;
       }
       if (viewModeEl.value === "holonomy") {
-        return `, ${aat.atomToHolonomy.size} path/holonomy atoms, ${aat.holonomyItems.length} path readings`;
+        return coverGluingStatusText(aat.gluingGeometry);
       }
       if (viewModeEl.value === "obstructionLoops" || viewModeEl.value === "obstructions") {
         return `, ${aat.atomToObstructionLoops.size || aat.atomToObstructions.size} loop-support atoms, ${aat.obstructionLoopItems.length || aat.obstructions.length} loop readings`;
@@ -2489,7 +2503,29 @@
       return "";
     }
 
+    function coverGluingStatusText(gluingGeometry) {
+      const nerve = gluingGeometry?.nerve || {};
+      const vertices = Array.isArray(nerve.vertices) ? nerve.vertices.length : 0;
+      const edges = Array.isArray(nerve.edges) ? nerve.edges.length : 0;
+      const triangles = Array.isArray(nerve.triangles) ? nerve.triangles.length : 0;
+      const nonzeroEdges = Array.isArray(nerve.edges)
+        ? nerve.edges.filter((edge) => Number(edge.value || 0) > 0).length
+        : 0;
+      return `, ${vertices} cover patches, ${edges} gluing edges, ${triangles} shared faces, ${nonzeroEdges} nonzero gluing edges`;
+    }
+
     function renderLegend() {
+      if (viewModeEl.value === "holonomy") {
+        legendEl.innerHTML = [
+          ["64d6be", "context patch"],
+          ["d8dee9", "selected cover gluing edge"],
+          ["73b7ff", "shared cover face"],
+          ["f2c15f", "nonzero gluing edge"]
+        ].map(([color, label]) =>
+          `<span class="legend-item"><span class="swatch" style="background:#${color}"></span>${label}</span>`
+        ).join("");
+        return;
+      }
       const scene = sceneForMode(viewModeEl.value);
       const sceneLegend = Array.isArray(scene?.visualEncodingLegend) ? scene.visualEncodingLegend : [];
       if (sceneLegend.length) {
