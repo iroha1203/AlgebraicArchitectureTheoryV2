@@ -678,9 +678,25 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
     ]);
 
     let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
         .expect("insight brief is generated");
+    assert_eq!(
+        summary["conclusion"].as_str(),
+        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
+        "measured_zero H1 must stay conclusion-first even when boundary digest is present"
+    );
+    assert_eq!(
+        report["headline"]["conclusionCode"].as_str(),
+        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
+        "insight headline must keep the profile-relative zero conclusion as the product-facing verdict"
+    );
+    assert_eq!(
+        viewer["decisionBar"]["conclusion"].as_str(),
+        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
+        "viewer Decision Bar must lead with the useful H1 zero conclusion, not the boundary"
+    );
     assert!(
         report["insightCards"]
             .as_array()
@@ -704,8 +720,8 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
         .position(|kind| *kind == "no_measured_glue_mismatch")
         .expect("fixture must surface a measured_zero card");
     assert!(
-        boundary_index < zero_index,
-        "measurement boundary card must rank before measured_zero confirmation when both are present"
+        zero_index < boundary_index,
+        "measured_zero confirmation must rank before measurement boundary when both are present"
     );
     assert!(
         viewer["viewerVisualScenes"]
@@ -726,8 +742,8 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
             .expect("viewer visual scenes are array")
             .iter()
             .any(|scene| scene["sceneId"] == "overview"
-                && scene["visualEncodings"][0]["colorRole"] == "unknown"),
-        "measurement boundary top insight must render overview as boundary/unknown, not a false clean or nonzero beacon"
+                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
+        "measured_zero top insight must render overview as the selected-support zero conclusion"
     );
     assert!(
         viewer["viewerVisualScenes"]

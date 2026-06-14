@@ -1232,10 +1232,15 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     let cech_nonzero = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.cech-obstruction@1" && verdict.verdict == "measured_nonzero"
     });
+    let cech_zero = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.cech-obstruction@1" && verdict.verdict == "measured_zero"
+    });
     let conclusion = if cech_nonzero {
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     } else if nonzero_count > 0 {
         "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+    } else if cech_zero {
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     } else if unmeasured_count > 0 {
         "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     } else if packet.structural_verdict.is_empty() {
@@ -1255,6 +1260,8 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
                 "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
             } else if nonzero_count > 0 {
                 "ArchSig measured a selected AG obstruction under the profile."
+            } else if cech_zero {
+                "No selected H1 glue mismatch was measured under the profile."
             } else if unmeasured_count > 0 {
                 "ArchSig produced a profile-relative foundation result with unmeasured, unknown, or not_computed rows still visible."
             } else {
@@ -3579,8 +3586,8 @@ fn insight_rank(card: &Value) -> usize {
         "repair_lower_bound" | "minimal_repair_candidate" => 600,
         "policy_conflict" => 500,
         "architecture_debt_mass" => 400,
-        "measurement_boundary" => 300,
-        "no_measured_glue_mismatch" => 250,
+        "no_measured_glue_mismatch" => 300,
+        "measurement_boundary" => 200,
         _ => 100,
     }
 }
