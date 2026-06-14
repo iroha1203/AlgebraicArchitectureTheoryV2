@@ -180,6 +180,136 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
 }
 
 #[test]
+fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
+    let out_dir = temp_dir("ag-measurement-cech-empty-selected-scope");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    for context in archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are an array")
+    {
+        context["restrictsTo"] = json!([]);
+    }
+    let archmap_path = out_dir.join("archmap_v2_empty_cech_skeleton.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech_row = &packet["structuralVerdict"][0];
+    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(cech_row["verdict"], "not_computed");
+    assert_eq!(cech_row["verdictData"]["zero"], false);
+    assert_eq!(cech_row["verdictData"]["nonZero"], false);
+    assert_eq!(
+        cech_row["verdictData"]["methodStatus"],
+        "empty_selected_scope"
+    );
+    assert_eq!(cech_row["verdictData"].get("certRef"), None);
+    let reason = cech_row["reason"].as_str().expect("reason is present");
+    assert!(reason.contains("empty_selected_scope"));
+    assert!(!reason.contains("should"));
+    assert!(!reason.contains("author"));
+    assert!(!reason.contains("intent"));
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part8/B.8.2-empty-selected-scope"
+                    && entry["status"] == "violated"
+                    && entry["assumption"] == "U-adequate cover selects a non-empty Cech 1-skeleton"
+            }),
+        "empty selected Cech skeleton must be recorded as a violated evaluator precondition"
+    );
+
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["status"], "not_computed");
+    assert_eq!(cech["methodStatus"], "empty_selected_scope");
+    assert_eq!(cech["restrictionEdgeCount"], Value::from(0));
+    assert_eq!(cech["selectedH2"]["dimension"], Value::Null);
+    assert_eq!(cech["selectedH2"]["status"], "not_computed");
+    assert_eq!(
+        cech["selectedH2"]["reason"],
+        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+    );
+
+    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert_eq!(validation["summary"]["result"], "pass");
+
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+    );
+    assert_eq!(
+        summary["structuralVerdictSummary"]["nonTerminalCount"],
+        Value::from(1)
+    );
+    assert_eq!(
+        summary["assumptionSummary"]["violatedCount"],
+        Value::from(1)
+    );
+
+    let insight = read_json(&out_dir.join("archsig-insight-report.json"));
+    assert_eq!(
+        insight["boundaryDigest"]["blockingCount"],
+        Value::from(2),
+        "violated precondition plus not_computed Cech row are blockers"
+    );
+    assert!(
+        insight["boundaryDigest"]["blocking"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["reasonCode"] == "empty_selected_scope"),
+        "viewer/report boundary digest must expose empty scope as a blocker"
+    );
+
+    let strict_out_dir = temp_dir("ag-measurement-cech-empty-selected-scope-strict");
+    let strict_output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        strict_out_dir.to_str().expect("path is utf-8"),
+        "--strict-distance",
+    ]);
+    assert_eq!(
+        strict_output.status.code(),
+        Some(1),
+        "strict-distance must reject empty selected Cech scope\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&strict_output.stdout),
+        String::from_utf8_lossy(&strict_output.stderr)
+    );
+    let strict_stderr = String::from_utf8_lossy(&strict_output.stderr);
+    assert!(
+        strict_stderr.contains("unmeasured structural verdict rows")
+            && strict_stderr.contains("violated assumptions"),
+        "strict-distance stderr must identify non-terminal rows and violated assumptions\n{strict_stderr}"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     let out_dir = temp_dir("ag-measurement-cech-h1-visible");
     let root = ag_measurement_root();

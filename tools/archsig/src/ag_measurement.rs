@@ -110,24 +110,15 @@ pub fn build_foundation_measurement_packet_v1(
                     .law
                     .clone()
                     .unwrap_or_else(|| "ag.cech-obstruction".to_string()),
-                verdict: if measurement.h1_class_nonzero {
-                    "measured_nonzero".to_string()
-                } else {
-                    "measured_zero".to_string()
-                },
+                verdict: measurement.verdict,
                 verdict_data: AgVerdictDataV1 {
                     in_scope: true,
-                    zero: !measurement.h1_class_nonzero,
-                    non_zero: measurement.h1_class_nonzero,
-                    method_status: "finite_f2_cech_computed".to_string(),
-                    cert_ref: Some(measurement.cert_ref),
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
                 },
-                reason: Some(if measurement.h1_class_nonzero {
-                    "finite F2 Cech 1-cocycle is not a coboundary on the selected cover".to_string()
-                } else {
-                    "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover"
-                        .to_string()
-                }),
+                reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
@@ -3667,8 +3658,12 @@ fn slug(value: &str) -> String {
 
 #[derive(Debug, Clone)]
 struct CechMeasurementV1 {
-    h1_class_nonzero: bool,
-    cert_ref: String,
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    reason: String,
+    cert_ref: Option<String>,
     computed_invariants: Vec<Value>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
@@ -3700,7 +3695,9 @@ fn evaluate_cech_obstruction_v1(
         .len()
         .saturating_add(component_count)
         .saturating_sub(selected_contexts.len());
-    let h1_class_nonzero = !edge_cochain_is_coboundary(&selected_contexts, &edges);
+    let empty_selected_scope = selected_contexts.is_empty() || edges.is_empty();
+    let h1_class_nonzero =
+        !empty_selected_scope && !edge_cochain_is_coboundary(&selected_contexts, &edges);
     let representative = edges
         .iter()
         .filter(|edge| edge.value == 1)
@@ -3723,14 +3720,106 @@ fn evaluate_cech_obstruction_v1(
     let witness_support_refs = witness_violation_support_refs(normalized);
     let witness_violation_count = witness_support_refs.len();
 
+    let mut assumptions = vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2".to_string(),
+            assumption: "F2 finite coefficient field".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some(format!(
+                "measurement-profile:{}.coefficient={}",
+                profile.profile_id, profile.coefficient
+            )),
+            assumed_by: None,
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2".to_string(),
+            assumption: "cover-relative Cech reading".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some(format!(
+                "measurement-profile:{}.coverRef",
+                profile.profile_id
+            )),
+            assumed_by: None,
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2".to_string(),
+            assumption: "Leray / acyclicity comparison to sheaf cohomology".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ];
+    if empty_selected_scope {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2-empty-selected-scope".to_string(),
+            assumption: "U-adequate cover selects a non-empty Cech 1-skeleton".to_string(),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+    }
+
+    let (verdict, zero, non_zero, method_status, reason) = if empty_selected_scope {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "empty_selected_scope".to_string(),
+            "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1".to_string(),
+        )
+    } else if h1_class_nonzero {
+        (
+            "measured_nonzero".to_string(),
+            false,
+            true,
+            "finite_f2_cech_computed".to_string(),
+            "finite F2 Cech 1-cocycle is not a coboundary on the selected cover".to_string(),
+        )
+    } else {
+        (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "finite_f2_cech_computed".to_string(),
+            "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover".to_string(),
+        )
+    };
+    let cert_ref = if empty_selected_scope {
+        None
+    } else {
+        Some(format!(
+            "computedInvariants/cech-cohomology:{}",
+            profile.profile_id
+        ))
+    };
+
     CechMeasurementV1 {
-        h1_class_nonzero,
-        cert_ref: format!("computedInvariants/cech-cohomology:{}", profile.profile_id),
+        verdict,
+        zero,
+        non_zero,
+        method_status,
+        reason,
+        cert_ref,
         computed_invariants: vec![
             json!({
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
                 "evaluator": "ag.cech-obstruction@1",
                 "method": "finite-f2-incidence-graph-cochain@1",
+                "status": if empty_selected_scope {
+                    "not_computed"
+                } else {
+                    "computed"
+                },
+                "methodStatus": if empty_selected_scope {
+                    "empty_selected_scope"
+                } else {
+                    "finite_f2_cech_computed"
+                },
+                "reason": if empty_selected_scope {
+                    "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                } else {
+                    "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                },
                 "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
                 "selectedCoverRef": profile.cover_ref,
                 "coefficient": profile.coefficient,
@@ -3743,13 +3832,21 @@ fn evaluate_cech_obstruction_v1(
                     "H1": h1_dimension
                 },
                 "selectedH2": {
-                    "dimension": if cover_nerve_face_count == 0 { json!(0) } else { Value::Null },
-                    "status": if cover_nerve_face_count == 0 {
+                    "dimension": if empty_selected_scope || cover_nerve_face_count > 0 {
+                        Value::Null
+                    } else {
+                        json!(0)
+                    },
+                    "status": if empty_selected_scope {
+                        "not_computed"
+                    } else if cover_nerve_face_count == 0 {
                         "computed_for_selected_1_skeleton"
                     } else {
                         "not_measured_for_triple_overlap_faces"
                     },
-                    "reason": if cover_nerve_face_count == 0 {
+                    "reason": if empty_selected_scope {
+                        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                    } else if cover_nerve_face_count == 0 {
                         "no selected 2-simplices are present in the finite incidence graph complex"
                     } else {
                         "triple-overlap faces are projected for viewer geometry only; H2 coherence remains outside this measurement"
@@ -3774,35 +3871,7 @@ fn evaluate_cech_obstruction_v1(
                 "nonConclusion": "Witness counting is reported as a fixture discriminator and does not determine Cech H1."
             }),
         ],
-        assumptions: vec![
-            AgAssumptionLedgerEntryV1 {
-                theorem_ref: "part8/B.8.2".to_string(),
-                assumption: "F2 finite coefficient field".to_string(),
-                status: "checked".to_string(),
-                checked_by: Some(format!(
-                    "measurement-profile:{}.coefficient={}",
-                    profile.profile_id, profile.coefficient
-                )),
-                assumed_by: None,
-            },
-            AgAssumptionLedgerEntryV1 {
-                theorem_ref: "part8/B.8.2".to_string(),
-                assumption: "cover-relative Cech reading".to_string(),
-                status: "checked".to_string(),
-                checked_by: Some(format!(
-                    "measurement-profile:{}.coverRef",
-                    profile.profile_id
-                )),
-                assumed_by: None,
-            },
-            AgAssumptionLedgerEntryV1 {
-                theorem_ref: "part8/B.8.2".to_string(),
-                assumption: "Leray / acyclicity comparison to sheaf cohomology".to_string(),
-                status: "assumed".to_string(),
-                checked_by: None,
-                assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
-            },
-        ],
+        assumptions,
     }
 }
 
@@ -6612,6 +6681,26 @@ mod tests {
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-v1-theorem-candidate-analytic-only"
                 && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn cech_empty_selected_cover_contexts_are_not_computed() {
+        let mut normalized = normalized_fixture();
+        normalized.covers[0].context_ids.clear();
+        let profile = packet_fixture().profile;
+
+        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile);
+
+        assert_eq!(measurement.verdict, "not_computed");
+        assert!(!measurement.zero);
+        assert!(!measurement.non_zero);
+        assert_eq!(measurement.method_status, "empty_selected_scope");
+        assert!(measurement.reason.contains("empty_selected_scope"));
+        assert!(measurement.assumptions.iter().any(|entry| {
+            entry.theorem_ref == "part8/B.8.2-empty-selected-scope"
+                && entry.status == "violated"
+                && entry.assumption == "U-adequate cover selects a non-empty Cech 1-skeleton"
         }));
     }
 
