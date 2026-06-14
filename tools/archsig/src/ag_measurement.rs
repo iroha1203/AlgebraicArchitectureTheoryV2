@@ -310,6 +310,29 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.section-factorization@1" {
+            validate_section_profile_v1(&profile)?;
+            let measurement = evaluate_section_factorization_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.section-factorization".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                depends_on_assumptions,
+                reason: Some(measurement.reason),
+            });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
@@ -526,6 +549,32 @@ struct RestrictionEdgeCheckV1 {
 struct RestrictionViolationV1 {
     generator_id: String,
     support: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct SectionMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct SectionForbiddenSupportV1 {
+    support_id: String,
+    support: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct SectionAssignmentV1 {
+    assignment_id: String,
+    assigned: BTreeMap<String, bool>,
     source_refs: Vec<String>,
 }
 
@@ -1263,6 +1312,124 @@ fn evaluate_restriction_compatibility_v1(
             &edge_checks,
         )],
         assumptions: restriction_assumptions(profile, method_status),
+    })
+}
+
+fn evaluate_section_factorization_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<SectionMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let witness_variables = section_witness_variables(profile);
+    let forbidden_supports =
+        section_forbidden_supports(normalized, &selected_contexts, &witness_variables)?;
+    let minimal_forbidden_supports = minimal_section_forbidden_supports(&forbidden_supports);
+    let assignment = section_assignment(normalized, &selected_contexts, &witness_variables)?;
+    let assignment_status = if let Some(assignment) = &assignment {
+        if assignment.assigned.len() == witness_variables.len() {
+            "total"
+        } else {
+            "partial"
+        }
+    } else {
+        "absent"
+    };
+    let active_support = assignment
+        .as_ref()
+        .map(|assignment| {
+            assignment
+                .assigned
+                .iter()
+                .filter_map(|(variable, value)| value.then_some(variable.clone()))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let violated_supports = if assignment.is_some() {
+        minimal_forbidden_supports
+            .iter()
+            .filter(|support| {
+                support.support.iter().all(|variable| {
+                    assignment.as_ref().unwrap().assigned.get(variable) == Some(&true)
+                })
+            })
+            .cloned()
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+    let method_status = if assignment.is_none() {
+        "section_assignment_absent"
+    } else if forbidden_supports.is_empty() {
+        "obstruction_generators_absent"
+    } else if !violated_supports.is_empty() || assignment_status == "total" {
+        "finite_section_pullback_computed"
+    } else {
+        "section_assignment_partial_undecidable"
+    };
+    let (verdict, zero, non_zero, reason) = if assignment.is_none() {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected section witnessAssignment atom is absent; ag.section-factorization@1 remains silent".to_string(),
+        )
+    } else if forbidden_supports.is_empty() {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected obstructionGenerator atoms are absent; ArchSig does not infer an empty I_Ob^U presentation".to_string(),
+        )
+    } else if !violated_supports.is_empty() {
+        (
+            "measured_nonzero".to_string(),
+            false,
+            true,
+            "selected section active support contains a minimal forbidden support, so s^* I_Ob^U is nonzero".to_string(),
+        )
+    } else if assignment_status == "total" {
+        (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "selected total Boolean section avoids all minimal forbidden supports, so s^* I_Ob^U=0 under the finite profile".to_string(),
+        )
+    } else {
+        (
+            "unknown".to_string(),
+            false,
+            false,
+            "partial witnessAssignment does not yet decide whether activeSupport contains a minimal forbidden support".to_string(),
+        )
+    };
+    let cert_ref = matches!(verdict.as_str(), "measured_zero" | "measured_nonzero").then(|| {
+        format!(
+            "computedInvariants/section-factorization:{}",
+            profile.profile_id
+        )
+    });
+
+    Ok(SectionMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status: method_status.to_string(),
+        cert_ref,
+        reason,
+        computed_invariants: vec![section_invariant_json(
+            profile,
+            method_status,
+            &witness_variables,
+            &forbidden_supports,
+            &minimal_forbidden_supports,
+            assignment.as_ref(),
+            assignment_status,
+            &active_support,
+            &violated_supports,
+        )],
+        assumptions: section_assumptions(profile, method_status, &forbidden_supports),
     })
 }
 
@@ -4763,6 +4930,62 @@ fn validate_restriction_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
     Ok(())
 }
 
+fn validate_section_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "F2"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-section-evaluation@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "section-factorization@1",
+        ),
+        ("domain", profile.domain.as_str(), "finite-poset-site"),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "pullback-zero@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "pullback-nonzero@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+        (
+            "verdictDiscipline",
+            profile.verdict_discipline.as_str(),
+            "five-valued-structural-verdict@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.section-factorization@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if section_witness_variables(profile).is_empty() {
+        return Err(
+            "ag.section-factorization@1 requires MeasurementProfile witnessFamily law ag.section-factorization"
+                .to_string(),
+        );
+    }
+    if section_witness_variables(profile).len() > MAX_SQUARE_FREE_WITNESS_VARIABLES {
+        return Err(format!(
+            "ag.section-factorization@1 supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
+        ));
+    }
+    Ok(())
+}
+
 fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
     let expected = [
         (
@@ -6195,6 +6418,270 @@ fn restriction_assumptions(
             theorem_ref: "part8/P0-2-boundary".to_string(),
             assumption: "measured nonzero restriction incompatibility is presentation-relative"
                 .to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
+fn section_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    let mut variables = profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.section-factorization")
+        .map(|witness| witness.variable.clone())
+        .collect::<Vec<_>>();
+    variables.sort();
+    variables.dedup();
+    variables
+}
+
+fn section_forbidden_supports(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Vec<SectionForbiddenSupportV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let mut supports = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "section-factorization" && atom.predicate == "obstructionGenerator"
+        })
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+    {
+        let support = parse_csv_values(atom.object.as_deref().unwrap_or_default());
+        if support.is_empty() {
+            return Err(format!(
+                "ag.section-factorization@1 obstruction generator {} has no finite support variables",
+                atom.normalized_atom_id
+            ));
+        }
+        let unknown = support
+            .iter()
+            .filter(|variable| !witness_set.contains(*variable))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unknown.is_empty() {
+            return Err(format!(
+                "ag.section-factorization@1 obstruction generator {} contains variables outside witnessFamily: {}",
+                atom.normalized_atom_id,
+                unknown.join(",")
+            ));
+        }
+        supports.push(SectionForbiddenSupportV1 {
+            support_id: atom.normalized_atom_id.clone(),
+            support,
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    supports.sort_by(|left, right| left.support_id.cmp(&right.support_id));
+    Ok(supports)
+}
+
+fn minimal_section_forbidden_supports(
+    supports: &[SectionForbiddenSupportV1],
+) -> Vec<SectionForbiddenSupportV1> {
+    let minimal = minimal_supports(
+        supports
+            .iter()
+            .map(|support| support.support.clone())
+            .collect(),
+    );
+    minimal
+        .into_iter()
+        .map(|support| {
+            supports
+                .iter()
+                .filter(|candidate| candidate.support == support)
+                .min_by(|left, right| left.support_id.cmp(&right.support_id))
+                .cloned()
+                .unwrap_or_else(|| SectionForbiddenSupportV1 {
+                    support_id: format!("support:{}", support.join("+")),
+                    support,
+                    source_refs: Vec::new(),
+                })
+        })
+        .collect()
+}
+
+fn section_assignment(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Option<SectionAssignmentV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let atoms = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "section-factorization" && atom.predicate == "witnessAssignment"
+        })
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+        .collect::<Vec<_>>();
+    if atoms.is_empty() {
+        return Ok(None);
+    }
+    if atoms.len() > 1 {
+        return Err(format!(
+            "ag.section-factorization@1 expects one selected witnessAssignment atom, found {}",
+            atoms.len()
+        ));
+    }
+    let atom = atoms[0];
+    let mut assigned = BTreeMap::new();
+    for field in atom
+        .object
+        .as_deref()
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|field| !field.is_empty())
+    {
+        let Some((variable, raw_value)) = field.split_once('=') else {
+            return Err(format!(
+                "ag.section-factorization@1 witnessAssignment {} segment must be variable=value: {}",
+                atom.normalized_atom_id, field
+            ));
+        };
+        let variable = variable.trim().to_string();
+        if !witness_set.contains(&variable) {
+            return Err(format!(
+                "ag.section-factorization@1 witnessAssignment {} contains variable outside witnessFamily: {}",
+                atom.normalized_atom_id, variable
+            ));
+        }
+        let value = match raw_value.trim() {
+            "1" | "true" | "True" => true,
+            "0" | "false" | "False" => false,
+            other => {
+                return Err(format!(
+                    "ag.section-factorization@1 witnessAssignment {} has non-Boolean value for {}: {}",
+                    atom.normalized_atom_id, variable, other
+                ));
+            }
+        };
+        if assigned.insert(variable.clone(), value).is_some() {
+            return Err(format!(
+                "ag.section-factorization@1 witnessAssignment {} repeats variable {}",
+                atom.normalized_atom_id, variable
+            ));
+        }
+    }
+    if assigned.is_empty() {
+        return Err(format!(
+            "ag.section-factorization@1 witnessAssignment {} has no Boolean assignments",
+            atom.normalized_atom_id
+        ));
+    }
+    Ok(Some(SectionAssignmentV1 {
+        assignment_id: atom.normalized_atom_id.clone(),
+        assigned,
+        source_refs: atom.source_refs.clone(),
+    }))
+}
+
+fn section_invariant_json(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+    witness_variables: &[String],
+    forbidden_supports: &[SectionForbiddenSupportV1],
+    minimal_forbidden_supports: &[SectionForbiddenSupportV1],
+    assignment: Option<&SectionAssignmentV1>,
+    assignment_status: &str,
+    active_support: &[String],
+    violated_supports: &[SectionForbiddenSupportV1],
+) -> Value {
+    json!({
+        "invariantId": format!("section-factorization:{}", profile.profile_id),
+        "evaluator": "ag.section-factorization@1",
+        "method": "finite-section-pullback@1",
+        "status": if method_status == "finite_section_pullback_computed" { "computed" } else { method_status },
+        "methodStatus": method_status,
+        "claimScope": "selected Boolean section only; finite s^* I_Ob^U pullback check over the chosen witness family",
+        "selectedCoverRef": profile.cover_ref,
+        "witnessVariables": witness_variables,
+        "obstructionIdeal": {
+            "id": "I_Ob^U",
+            "generators": forbidden_supports.iter().map(section_support_json).collect::<Vec<_>>()
+        },
+        "minimalForbiddenSupports": minimal_forbidden_supports.iter().map(section_support_json).collect::<Vec<_>>(),
+        "sectionAssignment": assignment.map(|assignment| json!({
+            "assignmentRef": assignment.assignment_id,
+            "assignmentStatus": assignment_status,
+            "assigned": assignment.assigned,
+            "activeSupport": active_support,
+            "sourceRefs": assignment.source_refs
+        })).unwrap_or_else(|| json!({
+            "assignmentStatus": "absent",
+            "activeSupport": [],
+            "sourceRefs": []
+        })),
+        "violatedForbiddenSupports": violated_supports.iter().map(section_support_json).collect::<Vec<_>>(),
+        "boundaryNote": "section-relative lawful only: this finite check does not prove all sections lawful, exactness without No-Cancellation, runtime safety, or semantic safety.",
+        "assumptionBoundary": [
+            "No-Cancellation/exactness is recorded as assumed, not discharged by ArchSig.",
+            "The evaluator reuses measured_zero, measured_nonzero, unknown, and not_computed from the existing five-valued structural verdict vocabulary."
+        ]
+    })
+}
+
+fn section_support_json(support: &SectionForbiddenSupportV1) -> Value {
+    json!({
+        "supportRef": support.support_id,
+        "support": support.support,
+        "sourceRefs": support.source_refs
+    })
+}
+
+fn section_assumptions(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+    forbidden_supports: &[SectionForbiddenSupportV1],
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    let support_refs = forbidden_supports
+        .iter()
+        .map(|support| support.support_id.clone())
+        .collect::<Vec<_>>();
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "Lean/FiniteExamples.lawful_iff_factorsThroughLawfulLocus".to_string(),
+            assumption: "selected witnessAssignment atom supplies the Boolean section for finite pullback evaluation".to_string(),
+            status: if method_status == "section_assignment_absent" {
+                "violated"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (method_status != "section_assignment_absent")
+                .then(|| "section-factorization.witnessAssignment".to_string()),
+            assumed_by: (method_status == "section_assignment_absent")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P0-3".to_string(),
+            assumption: "selected obstructionGenerator atoms supply the finite I_Ob^U presentation within the selected witness family".to_string(),
+            status: if method_status == "obstruction_generators_absent" {
+                "violated"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (!support_refs.is_empty()).then(|| {
+                format!(
+                    "ag.section-factorization@1:{}:{}",
+                    profile.profile_id,
+                    support_refs.join(",")
+                )
+            }),
+            assumed_by: (method_status == "obstruction_generators_absent")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P0-3-boundary".to_string(),
+            assumption: "No-Cancellation/exactness boundary for reading s^* I_Ob^U=0 as section-relative lawful".to_string(),
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
