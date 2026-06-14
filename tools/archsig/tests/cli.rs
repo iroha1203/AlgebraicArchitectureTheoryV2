@@ -8704,6 +8704,7 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "axisMapping",
         "sceneForMode",
         "modeForScene",
+        "escapeHtml(legendValueText(item.values))",
         "sceneNodeColor",
         "renderSceneLayers",
         "sceneLayerMesh",

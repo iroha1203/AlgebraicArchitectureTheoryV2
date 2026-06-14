@@ -2691,7 +2691,7 @@
       const sceneLegend = Array.isArray(scene?.visualEncodingLegend) ? scene.visualEncodingLegend : [];
       if (sceneLegend.length) {
         legendEl.innerHTML = sceneLegend.slice(0, 8).map((item) =>
-          `<span class="legend-item"><span class="swatch" style="background:#${legendSwatchColor(item.channel)}"></span>${escapeHtml(item.channel || "encoding")}: ${escapeHtml(item.meaning || "")} ${legendValueText(item.values)}</span>`
+          `<span class="legend-item"><span class="swatch" style="background:#${legendSwatchColor(item.channel)}"></span>${escapeHtml(item.channel || "encoding")}: ${escapeHtml(item.meaning || "")} ${escapeHtml(legendValueText(item.values))}</span>`
         ).join("");
         return;
       }
