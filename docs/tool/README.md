@@ -88,6 +88,7 @@ Forward design PRDs:
 - [ArchSig Output / Viewer PRD](archsig_output_report_prd.md)
 - [ArchSig v0.3.0 Measurement Expansion PRD](archsig_v0_3_0_measurement_expansion_prd.md)
 - [ArchSig v0.4.0 Algebraic Geometry Measurement PRD](archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
+- [ArchSig v0.4.0 改善 PRD(measured_zero 純度 / 行レベル assumption 依存 / 境界の機械可読化 / ArchMap atom 語彙 lint)](archsig_v0_4_0_improvement_prd.md)
 - [ArchSig Monodromy / Boundary Holonomy Measurement PRD](archsig_monodromy_boundary_holonomy_prd.md)
 - [ArchSig Curvature / Transfer Spectrum PRD](archsig_curvature_transfer_spectrum_prd.md)
 - [ArchSig Homotopy / Holonomy Stokes PRD](archsig_homotopy_holonomy_stokes_prd.md)
