@@ -2842,7 +2842,10 @@
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
     [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
-    searchEl.addEventListener("input", debounce(renderScene, 90));
+    const debouncedRenderScene = debounce(renderScene, 90);
+    searchEl.addEventListener("input", debouncedRenderScene);
+    searchEl.addEventListener("search", debouncedRenderScene);
+    searchEl.addEventListener("change", debouncedRenderScene);
     resetEl.addEventListener("click", resetCamera);
     reportToggleEl.addEventListener("click", toggleReport);
     reportEl.addEventListener("click", handleReportAction);
@@ -3011,6 +3014,12 @@
     function showTourStep() {
       if (!activeTourState) return;
       const { tour, stepIndex } = activeTourState;
+      if (stepIndex < 0 || stepIndex >= tour.steps.length) {
+        activeTourState = null;
+        detailEl.hidden = true;
+        status("Tour complete");
+        return;
+      }
       const step = tour.steps[stepIndex];
       viewModeEl.value = modeForScene(step.sceneId);
       renderScene();
@@ -3026,10 +3035,13 @@
       const next = event.target.closest("[data-tour-next]");
       const end = event.target.closest("[data-tour-end]");
       if (next && activeTourState) {
+        event.preventDefault();
         activeTourState.stepIndex += 1;
         showTourStep();
+        return;
       }
       if (end) {
+        event.preventDefault();
         activeTourState = null;
         detailEl.hidden = true;
         status("Tour complete");
