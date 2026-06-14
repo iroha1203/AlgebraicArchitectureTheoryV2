@@ -1168,6 +1168,10 @@ Issue [#2194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では AC15/R9 を対象にし、observation map の selected Lipschitz bound と
 filling generator cost / filling cost comparison に相対化した定理12.7
 Observation Gap Lower Bound を証明した。
+Issue [#2196](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2196)
+では AC16/R10 を対象にし、PRD-6 の stratum / tangent / normal cone /
+lifting failure / monodromy action data を第VII部の analytic reading として束ねる
+`SingularityProfile` と `MonodromyIndex` を追加した。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -1186,6 +1190,7 @@ Observation Gap Lower Bound を証明した。
 | `VII.定義12.1-12.4 / 12.6 / 12.8` Repair route / margin / Dehn / bi-Lipschitz representation | `defined only` / `proved accessor`. `RepairRoute` は AC12 `DistanceFlatnessMassContext` 上の selected flat candidate、operation path、route cost、PRD-3 lawful-locus factorization certificate を保持する。`RepairProfileReading` は shortest / safest / structural / stable repair profile を selected predicate と certificate として保持し、structural は normal-cone reading carrier、stable は cohomology / derived conflict / monodromy-debt control reading carrier を記録する。`MarginProfile` は selected safe region と unsafe boundary までの distance reading、`ArchitecturalDehnProfile` は selected presentation two-complex reading と filling-area bound、`BiLipschitzRepresentationProfile` は selected comparable state pair 上の lower / upper bound を保持する。 | 定理12.5 Margin Stability と定理12.7 Observation Gap Lower Bound は別行で証明済み。global repair optimality、universal Dehn function completeness、全 state pair の metric completeness、measurement verdict は主張しない。 |
 | `VII.定理12.5` Margin Stability | `proved under explicit margin assumptions`. `MarginStabilityProfile` は selected margin profile に対して start / endpoint、path length、endpoint distance、margin budget、`M.Margin start = measured marginBudget`、selected boundary distance の Nat reading、start safe、`endpointDistance <= pathLength < marginBudget`、margin lower bound、selected boundary distance triangle inequality、boundary self-distance zero、safe-region / boundary separation を明示仮定として保持する。`endpointDistance_lt_margin` が strict margin bound を合成し、`marginBudget_reads_margin_holds` が margin definition certificate を公開し、`marginStability_no_boundary_crossing` が selected boundary を越えないことを contradiction proof で証明し、`marginStability_endpoint_safe` が endpoint が selected safe region に残ることを証明する。 | theorem は selected margin profile と明示仮定に相対化される。任意 metric 空間の一般三角不等式、global repair success、global safety guarantee、measurement verdict は主張しない。 |
 | `VII.定理12.7` Observation Gap Lower Bound | `proved under explicit Lipschitz filling assumptions`. `ObservationGapLowerBoundProfile` は selected paths `P,Q`、pair loop `P . Q^{-1}`、selected filler、observation gap、filling generator cost、filling cost、positive Lipschitz constant、`observationGap <= L * generatorCost`、`generatorCost <= fillCost`、および explicit quotient-style lower-bound predicate を保持する。`observationGap_le_lipschitz_fillCost` は Nat 除算の丸めを勝手に主張せず `observationGap <= L * fillCost` を証明し、`quotientLowerBound_certificate` は明示 predicate に相対化して quotient-style reading を返す。 | theorem は selected Lipschitz / filling assumptions に相対化される。一般 Dehn function completeness、全 filling universe の最適性、任意 observation map の Lipschitz 性、measurement verdict は主張しない。 |
+| `VII.定義13.1 / 13.2` SingularityProfile and MonodromyIndex | `defined only` / `proved accessor`. `SingularityProfile` は PRD-6 の `ArchitectureStratum`、`CotangentData`、`TangentData`、`DeformationObstructionTheory`、`NormalConeReading` を parameter に持ち、selected point、非零 obstruction による lifting failure、normal cone 上の derived conflict concentration、repair difficulty reading、measurement verdict reserved carrier を束ねる。`MonodromyIndex` は PRD-6 の `MonodromyAction` と selected loop `gamma` に相対化され、`Mon_gamma`、obstruction / semantic / effect action、period change、loop residue bound、finite `ArchitecturalMonodromyIndex` reading、measurement verdict reserved carrier を束ねる。 | analytic reading layer であり、一般 deformation theory、一般 normal cone construction、全 loop universe の measurement verdict は主張しない。 |
 
 第VII部 PRD-7 の証明対象ラベルは次の現在状態である。
 
@@ -1206,7 +1211,7 @@ Observation Gap Lower Bound を証明した。
 | `VII.定義12.1-12.4 / 12.6 / 12.8` repair route / repair profiles / margin / Dehn / bi-Lipschitz representation | `defined only` / `proved accessor` |
 | `VII.定理12.5` Margin Stability | `proved under explicit margin assumptions` |
 | `VII.定理12.7` Observation Gap Lower Bound | `proved under explicit Lipschitz filling assumptions` |
-| `VII.定義13.1 / 13.2` SingularityProfile and MonodromyIndex | `future proof obligation` / `unassigned` |
+| `VII.定義13.1 / 13.2` SingularityProfile and MonodromyIndex | `defined only` / `proved accessor` |
 | `VII.定義14.1 / 15.1 / 15.3 / 定理15.4` analytic context and conservativity | `future proof obligation` / `unassigned` |
 | `VII.定理16.1` Algebraic-Geometric AAT Synthesis | `future proof obligation` / `unassigned` |
 | `VII.R13 finite examples` graph/matrix toy model, pseudo-circle period, margin, observation gap, detecting representation, and golden-example packaging beyond the AC9 selected period-separation witness | `future proof obligation` / `unassigned` |

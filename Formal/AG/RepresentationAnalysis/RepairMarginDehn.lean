@@ -6,7 +6,7 @@ noncomputable section
 namespace AAT.AG
 namespace RepresentationAnalysis
 
-universe u v w z
+universe u v w x y z
 
 /--
 VII.定義12.1: selected repair route from a state to a flat candidate.
@@ -404,6 +404,197 @@ theorem upper_bound_holds
   P.upper_bound h
 
 end BiLipschitzRepresentationProfile
+
+/--
+VII.定義13.1: singularity profile as an analytic reading of PRD-6
+singularity data.
+
+The profile bundles a selected stratum, tangent/deformation interface, normal
+cone reading, lifting-failure witness, derived-conflict concentration, and
+repair-difficulty reading.  It is a reading layer; it does not construct a
+general normal cone or deformation theory, and it does not emit a measurement
+verdict.
+-/
+structure SingularityProfile {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+    {S : Site.AATSite Obj}
+    {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    (X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k)
+    (L : SingularityMonodromyStack.CotangentData.{u, v, w, x, y, z} X)
+    (T : SingularityMonodromyStack.TangentData.{u, v, w, x, y, z} X L)
+    (D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, w, x, y, z} T)
+    (N : SingularityMonodromyStack.NormalConeReading.{u, v, w, x, y, z} X) where
+  selectedPoint : X.Point
+  selectedPoint_mem : X.Mem selectedPoint
+  selectedTest : D.DeformationTest
+  selectedObstruction_nonzero : D.ob selectedTest ≠ T.zeroObstruction
+  selectedNormalCone : N.normalCone
+  selectedNormalCone_overFlat : N.normalConeOverFlat selectedNormalCone
+  DerivedConflictConcentration : Type z
+  selectedDerivedConflict : DerivedConflictConcentration
+  derivedConflictSupportedOnNormalCone :
+    DerivedConflictConcentration -> N.normalCone -> Prop
+  selectedDerivedConflict_supported :
+    derivedConflictSupportedOnNormalCone selectedDerivedConflict selectedNormalCone
+  RepairDifficulty : Type z
+  selectedRepairDifficulty : RepairDifficulty
+  repairDifficultyReadsSingularity : RepairDifficulty -> Prop
+  selectedRepairDifficulty_holds :
+    repairDifficultyReadsSingularity selectedRepairDifficulty
+  measurementVerdictReserved : Type z
+
+namespace SingularityProfile
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj}
+variable {P : SingularityMonodromyStack.StratumReadingParameter S}
+variable {k : Type v} [CommRing k]
+variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
+variable {L : SingularityMonodromyStack.CotangentData.{u, v, w, x, y, z} X}
+variable {T : SingularityMonodromyStack.TangentData.{u, v, w, x, y, z} X L}
+variable {D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, w, x, y, z} T}
+variable {N : SingularityMonodromyStack.NormalConeReading.{u, v, w, x, y, z} X}
+
+/-- VII.定義13.1: expose the selected stratum membership certificate. -/
+theorem selectedPoint_mem_holds
+    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    X.Mem P.selectedPoint :=
+  P.selectedPoint_mem
+
+/-- VII.定義13.1: nonzero selected obstruction refutes the selected lift/fill. -/
+theorem liftingFailure
+    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    ¬ D.LiftFill P.selectedTest :=
+  SingularityMonodromyStack.DeformationObstructionTheory.not_liftFill_of_ob_ne_zero D
+    P.selectedObstruction_nonzero
+
+/-- VII.定義13.1: expose selected support of the derived conflict on the normal cone. -/
+theorem selectedDerivedConflict_supported_holds
+    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    P.derivedConflictSupportedOnNormalCone P.selectedDerivedConflict P.selectedNormalCone :=
+  P.selectedDerivedConflict_supported
+
+/-- VII.定義13.1: expose the selected repair-difficulty reading. -/
+theorem selectedRepairDifficulty_certificate
+    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    P.repairDifficultyReadsSingularity P.selectedRepairDifficulty :=
+  P.selectedRepairDifficulty_holds
+
+end SingularityProfile
+
+/--
+VII.定義13.2: bounded monodromy index as an analytic reading of PRD-6
+monodromy data.
+
+The index is relative to one selected loop `gamma` and a supplied PRD-6
+`MonodromyAction`.  It records the obstruction / semantic / effect actions,
+period change, loop residue, and an underlying finite AMI-style bounded
+reading.  Measurement verdicts remain reserved for later measurement-facing
+work.
+-/
+structure MonodromyIndex {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+    {S : Site.AATSite Obj}
+    {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : SingularityMonodromyStack.OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+    {base : G.State}
+    {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
+      H base}
+    (M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi)
+    (gamma : Pi.Pi1) where
+  monodromyAction : SingularityMonodromyStack.CoefficientAutomorphism M.coefficient
+  monodromyAction_eq_Mon_gamma : monodromyAction = M.Mon_gamma gamma
+  obstructionAction : M.coefficient.Ob ≃ M.coefficient.Ob
+  obstructionAction_eq :
+    obstructionAction = M.obstructionMonodromy gamma
+  semanticAction : M.coefficient.Sem ≃ M.coefficient.Sem
+  semanticAction_eq : semanticAction = (M.Mon_gamma gamma).semAut
+  effectAction : M.coefficient.Eff ≃ M.coefficient.Eff
+  effectAction_eq : effectAction = (M.Mon_gamma gamma).effAut
+  PeriodReading : Type z
+  periodBefore : PeriodReading
+  periodAfter : PeriodReading
+  PeriodChange : PeriodReading -> PeriodReading -> Type z
+  selectedPeriodChange : PeriodChange periodBefore periodAfter
+  LoopResidue : Type z
+  selectedLoopResidue : LoopResidue
+  loopResidueBound : LoopResidue -> Nat
+  residueBound : Nat
+  loopResidueBound_le :
+    loopResidueBound selectedLoopResidue ≤ residueBound
+  architecturalMonodromyIndex :
+    SingularityMonodromyStack.ArchitecturalMonodromyIndex.{z}
+  boundedReading : Prop
+  boundedReading_holds : boundedReading
+  measurementVerdictReserved : Type z
+
+namespace MonodromyIndex
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj}
+variable {P : SingularityMonodromyStack.StratumReadingParameter S}
+variable {k : Type v} [CommRing k]
+variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : SingularityMonodromyStack.OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+variable {base : G.State}
+variable {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
+  H base}
+variable {M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {gamma : Pi.Pi1}
+
+/-- VII.定義13.2: expose the selected PRD-6 monodromy action. -/
+theorem monodromyAction_eq_Mon_gamma_holds
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.monodromyAction = M.Mon_gamma gamma :=
+  I.monodromyAction_eq_Mon_gamma
+
+/-- VII.定義13.2: expose the obstruction action reading. -/
+theorem obstructionAction_eq_holds
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.obstructionAction = M.obstructionMonodromy gamma :=
+  I.obstructionAction_eq
+
+/-- VII.定義13.2: expose the semantic action reading. -/
+theorem semanticAction_eq_holds
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.semanticAction = (M.Mon_gamma gamma).semAut :=
+  I.semanticAction_eq
+
+/-- VII.定義13.2: expose the effect action reading. -/
+theorem effectAction_eq_holds
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.effectAction = (M.Mon_gamma gamma).effAut :=
+  I.effectAction_eq
+
+/-- VII.定義13.2: expose the selected loop-residue bound. -/
+theorem loopResidueBound_le_holds
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.loopResidueBound I.selectedLoopResidue ≤ I.residueBound :=
+  I.loopResidueBound_le
+
+/-- VII.定義13.2: expose the selected bounded-reading certificate. -/
+theorem boundedReading_certificate
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.boundedReading :=
+  I.boundedReading_holds
+
+/-- VII.定義13.2: expose the underlying PRD-6 finite AMI weighted-sum reading. -/
+theorem architecturalMonodromyIndex_value_eq_weighted_sum
+    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    I.architecturalMonodromyIndex.value =
+      ∑ square : I.architecturalMonodromyIndex.Square,
+        I.architecturalMonodromyIndex.weight square *
+          I.architecturalMonodromyIndex.mu square
+            I.architecturalMonodromyIndex.selectedAxis :=
+  SingularityMonodromyStack.ArchitecturalMonodromyIndex.value_eq_weighted_sum_holds
+    I.architecturalMonodromyIndex
+
+end MonodromyIndex
 
 /-- VII.R9 / AC13: combined repair, margin, Dehn, and bi-Lipschitz surface. -/
 structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
