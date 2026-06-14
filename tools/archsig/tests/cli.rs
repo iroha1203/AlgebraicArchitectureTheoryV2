@@ -426,15 +426,37 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
     )
     .expect("write archmap fixture");
+    let mut law_policy = read_json(&root.join("law_policy_ag.json"));
+    law_policy["measurementProfiles"][0]["witnessFamily"]
+        .as_array_mut()
+        .expect("witnessFamily is an array")
+        .push(json!({
+            "law": "ag.square-free-repair",
+            "variable": "x_order_inventory"
+        }));
+    law_policy["policies"]
+        .as_array_mut()
+        .expect("policies is an array")
+        .push(json!({
+            "law": "ag.square-free-repair",
+            "evaluator": "ag.square-free-repair@1",
+            "basis": ["policy-basis:layering"],
+            "scope": ["src/"],
+            "severity": "medium"
+        }));
+    let law_policy_path = out_dir.join("law_policy_ag_with_independent_square_free.json");
+    fs::write(
+        &law_policy_path,
+        serde_json::to_string_pretty(&law_policy).expect("law policy serializes"),
+    )
+    .expect("write law policy fixture");
 
     run_sig0(&[
         "analyze",
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
-        root.join("law_policy_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
+        law_policy_path.to_str().expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
@@ -448,6 +470,14 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
     assert_eq!(
         cech_row["verdictData"]["methodStatus"],
         "empty_selected_scope"
+    );
+    assert!(
+        cech_row["dependsOnAssumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|theorem_ref| theorem_ref == "part8/B.8.2-empty-selected-scope"),
+        "Cech verdict must depend on its empty-scope precondition"
     );
     assert_eq!(cech_row["verdictData"].get("certRef"), None);
     let reason = cech_row["reason"].as_str().expect("reason is present");
@@ -466,6 +496,25 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
                     && entry["assumption"] == "U-adequate cover selects a non-empty Cech 1-skeleton"
             }),
         "empty selected Cech skeleton must be recorded as a violated evaluator precondition"
+    );
+    let square_free_row = packet["structuralVerdict"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["evaluator"] == "ag.square-free-repair@1")
+        .expect("independent square-free row exists");
+    assert_eq!(
+        square_free_row["verdict"], "measured_zero",
+        "independent measured_zero row must not be downgraded by unrelated violated Cech precondition"
+    );
+    assert_eq!(square_free_row["verdictData"]["zero"], true);
+    assert!(
+        !square_free_row["dependsOnAssumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|theorem_ref| theorem_ref == "part8/B.8.2-empty-selected-scope"),
+        "independent square-free row must not depend on the Cech empty-scope precondition"
     );
     assert!(
         packet["boundaryStatements"]
@@ -502,6 +551,17 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
                         .as_str()
                         .is_some_and(|value| value.starts_with("structuralVerdict/")))),
         "violated assumption boundary must scope to the affected not_computed verdict"
+    );
+    assert!(
+        !packet["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|statement| statement["kind"] == "violated_assumption")
+            .flat_map(|statement| statement["scopeRefs"].as_array().unwrap())
+            .filter_map(|scope_ref| scope_ref.as_str())
+            .any(|scope_ref| scope_ref.contains("square-free-repair")),
+        "violated Cech precondition boundary must not scope to independent square-free measured_zero"
     );
 
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
@@ -553,9 +613,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
-        root.join("law_policy_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
+        law_policy_path.to_str().expect("path is utf-8"),
         "--out-dir",
         strict_out_dir.to_str().expect("path is utf-8"),
         "--strict-distance",
