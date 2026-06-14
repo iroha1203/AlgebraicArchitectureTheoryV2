@@ -43,7 +43,7 @@
       "id": "atom:transfer-repair-path-core",
       "kind": "semantic",
       "subject": "repair:path:core",
-      "object": "selected",
+      "object": "support:api,support:data",
       "axis": "transfer",
       "predicate": "repairPath",
       "refs": ["src:repair-path"]

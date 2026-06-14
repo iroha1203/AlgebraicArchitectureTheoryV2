@@ -3523,6 +3523,14 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
         "atom:nsdepth-certificate"
     );
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        1,
+        "repair inspection reading must not add a structural verdict row"
+    );
     let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
     assert_eq!(repair["obstructionIdeal"]["id"], "I_Ob^U");
     assert_eq!(
@@ -3545,6 +3553,22 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(
         repair["nsdepthCertificate"]["verifiedMinimalForbiddenSupports"],
         serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
+    );
+    let repair_reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "repair-lower-bound-inspection@1")
+        .expect("repair lower-bound inspection reading exists");
+    assert_eq!(repair_reading["regime"], "theorem-candidate");
+    assert_eq!(repair_reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(
+        repair_reading["value"]["minimalHittingSets"],
+        serde_json::json!([["x_inventory"], ["x_checkout", "x_payment"]])
+    );
+    assert_eq!(
+        repair_reading["value"]["nonClaim"],
+        "not automatic repair; not operation semantics"
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
@@ -3979,6 +4003,14 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
         "atom:tor-common-ambient"
     );
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        1,
+        "Hilbert interference reading must not add a structural verdict row"
+    );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
     assert_eq!(tor["method"], "finite-monomial-tor-taylor@1");
     assert_eq!(
@@ -4022,6 +4054,22 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
             .as_str()
             .is_some_and(|note| note.contains("higher Tor_i") && note.contains("F2")),
         "Tor boundary note must keep higher Tor and field-coefficient boundaries visible"
+    );
+    let hilbert = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "hilbert-interference-series@1")
+        .expect("Hilbert interference audit reading exists");
+    assert_eq!(hilbert["regime"], "analytic-measurement");
+    assert_eq!(hilbert["structuralVerdictRef"], Value::Null);
+    assert_eq!(
+        hilbert["value"]["regimeBoundary"],
+        "audit-only in the selected graded square-free monomial Taylor regime"
+    );
+    assert_eq!(
+        hilbert["value"]["series"],
+        serde_json::json!([{"degree": 1, "coefficient": 1}])
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
@@ -4242,6 +4290,14 @@ fn cli_analyze_v2_law_conflict_tor_non_square_free_is_unmeasured() {
     assert_eq!(tor["torByDegree"][0]["status"], "unmeasured");
     assert_eq!(tor["torByDegree"][0]["classCount"], Value::Null);
     assert_eq!(tor["proxyComparison"]["taylorClassCount"], Value::Null);
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["value"]["readingKind"] != "hilbert-interference-series@1"),
+        "Hilbert interference reading must stay absent outside the square-free monomial regime"
+    );
     assert!(
         packet["assumptions"]
             .as_array()
@@ -4483,6 +4539,14 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
         packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
         "finite_laplacian_analytic_reading_computed"
     );
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        1,
+        "curvature hotspot reading must not add a structural verdict row"
+    );
     let invariant = invariant_by_id(&packet, "sheaf-laplacian:profile:ag-sheaf-laplacian@1");
     assert_eq!(
         invariant["claimScope"],
@@ -4549,6 +4613,25 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
     assert_eq!(
         candidate["value"]["essentialRepairLowerBound"],
         Value::from(0.707107)
+    );
+    let hotspot = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "curvature-transfer-perron-hotspot@1")
+        .expect("curvature hotspot theorem-candidate reading exists");
+    assert_eq!(hotspot["regime"], "theorem-candidate");
+    assert_eq!(hotspot["structuralVerdictRef"], Value::Null);
+    assert_eq!(
+        hotspot["value"]["sourceProxyReadingKind"],
+        "graph-laplacian-hodge-proxy@1"
+    );
+    assert_eq!(
+        hotspot["value"]["hotspots"],
+        serde_json::json!([
+            {"cell": "cell:left", "hotspotWeight": 0.707107},
+            {"cell": "cell:right", "hotspotWeight": 0.707107}
+        ])
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
@@ -5318,6 +5401,22 @@ fn cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost() {
     );
     assert_eq!(invariant["transferResidue"], Value::from(0.790569));
     assert_eq!(invariant["wassersteinTransferCost"], Value::from(3.5));
+    assert_eq!(
+        invariant["supportLocalizedPremise"]["matrixCompletion"],
+        "only supplied repairPath x target support pairings are admitted; any missing pairing blocks computation"
+    );
+    assert_eq!(
+        invariant["supportLocalizedPremise"]["requiredPairingCount"],
+        Value::from(2)
+    );
+    assert_eq!(
+        invariant["supportLocalizedPremise"]["repairPathSupports"],
+        serde_json::json!([{
+            "repairPath": "repair:path:core",
+            "supportTargets": ["support:api", "support:data"],
+            "atomRef": "atom:transfer-repair-path-core"
+        }])
+    );
     let reading = packet["analyticReadings"]
         .as_array()
         .expect("analytic readings is array")
@@ -5334,6 +5433,10 @@ fn cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost() {
     assert_eq!(
         reading["value"]["wassersteinTransferCost"],
         Value::from(3.5)
+    );
+    assert_eq!(
+        reading["value"]["supportLocalizedPremise"]["nonConclusion"],
+        "no unconditional transfer matrix is inferred for support-disjoint or unobserved paths"
     );
     assert_eq!(
         reading["value"]["nonConclusion"],
@@ -5369,6 +5472,161 @@ fn cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost() {
 }
 
 #[test]
+fn cli_analyze_v2_support_transfer_blocks_support_disjoint_pairing() {
+    let out_dir = temp_dir("ag-measurement-support-transfer-support-disjoint");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
+    archmap["atoms"][0]["object"] = Value::String("support:api".to_string());
+    let archmap_path = out_dir.join("archmap_v2_support_transfer_support_disjoint.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_transfer.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
+    assert_eq!(invariant["status"], "not_computed");
+    assert!(
+        invariant["reason"]
+            .as_str()
+            .is_some_and(|reason| reason.contains("support_localized_premise_violated"))
+    );
+    assert_eq!(invariant["supportLocalizedPremise"]["status"], "violated");
+    assert_eq!(
+        invariant["supportLocalizedPremise"]["blockedPairings"],
+        serde_json::json!(["repair:path:core/support:data"])
+    );
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["value"]["readingKind"] != "support-localized-transfer@1"),
+        "support-disjoint pairings must not fill a transfer matrix"
+    );
+}
+
+#[test]
+fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
+    let out_dir = temp_dir("ag-measurement-refactor-transport");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
+    archmap["sources"]["src:refactor"] = serde_json::json!({
+        "kind": "policy",
+        "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
+        "section": "AC-M10"
+    });
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .push(serde_json::json!({
+            "id": "atom:refactor-transport",
+            "kind": "semantic",
+            "subject": "refactor:extract-square-free-repair-module",
+            "object": "ag.square-free-repair@1",
+            "axis": "refactor",
+            "predicate": "functorialityWitness",
+            "refs": ["src:refactor"]
+        }));
+    archmap["contexts"][0]["atoms"]
+        .as_array_mut()
+        .expect("context atoms is array")
+        .push(Value::String("atom:refactor-transport".to_string()));
+    let archmap_path = out_dir.join("archmap_v2_refactor_transport.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is array")
+            .len(),
+        1,
+        "refactor transport witness must not add a verdict row"
+    );
+    let reading = packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings is array")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "refactor-invariant-transport@1")
+        .expect("refactor transport reading exists when functoriality witness is supplied");
+    assert_eq!(reading["evaluator"], "ag.foundation@1");
+    assert_eq!(reading["structuralVerdictRef"], Value::Null);
+    assert_eq!(
+        reading["value"]["witnessAtomRef"],
+        "atom:refactor-transport"
+    );
+    assert_eq!(
+        reading["value"]["transportedEvaluator"],
+        "ag.square-free-repair@1"
+    );
+    assert!(
+        reading["value"]["nonConclusion"]
+            .as_str()
+            .is_some_and(|text| text.contains("creates no new verdict"))
+    );
+}
+
+#[test]
+fn cli_analyze_v2_refactor_transport_absent_without_functoriality_witness() {
+    let out_dir = temp_dir("ag-measurement-refactor-transport-absent");
+    let root = ag_measurement_root();
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2_square_free_repair.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_square_free.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["value"]["readingKind"] != "refactor-invariant-transport@1"),
+        "refactor transport reading must be absent without supplied functoriality witness data"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed() {
     let out_dir = temp_dir("ag-measurement-support-transfer-missing-cell");
     let root = ag_measurement_root();
@@ -5380,7 +5638,7 @@ fn cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed() {
             "id": "atom:transfer-repair-path-secondary",
             "kind": "semantic",
             "subject": "repair:path:secondary",
-            "object": "selected",
+            "object": "support:api,support:data",
             "axis": "transfer",
             "predicate": "repairPath",
             "refs": ["src:repair-path"]
@@ -5455,7 +5713,7 @@ fn cli_analyze_v2_support_transfer_missing_repair_path_row_is_not_computed() {
             "id": "atom:transfer-repair-path-secondary",
             "kind": "semantic",
             "subject": "repair:path:secondary",
-            "object": "selected",
+            "object": "support:api,support:data",
             "axis": "transfer",
             "predicate": "repairPath",
             "refs": ["src:repair-path"]

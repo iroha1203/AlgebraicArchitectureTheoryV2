@@ -389,6 +389,7 @@ pub fn build_foundation_measurement_packet_v1(
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -412,6 +413,7 @@ pub fn build_foundation_measurement_packet_v1(
             let measurement = evaluate_law_conflict_tor_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
+            analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -509,6 +511,15 @@ pub fn build_foundation_measurement_packet_v1(
             });
         }
     }
+    let selected_contexts = selected_cover_contexts(normalized, &profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    analytic_readings.extend(refactor_transport_readings(
+        normalized,
+        &profile,
+        &selected_contexts,
+        &structural_verdict,
+    ));
 
     let non_conclusions = vec![
         format!(
@@ -543,6 +554,7 @@ struct SquareFreeMeasurementV1 {
     cert_ref: Option<String>,
     reason: String,
     computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
 
@@ -712,6 +724,7 @@ struct TorMeasurementV1 {
     cert_ref: Option<String>,
     reason: String,
     computed_invariants: Vec<Value>,
+    analytic_readings: Vec<AgAnalyticReadingV1>,
     assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
 
@@ -832,6 +845,7 @@ struct TransferPairingV1 {
 #[derive(Debug, Clone)]
 struct TransferRepairPathV1 {
     path_id: String,
+    support_targets: Vec<String>,
     atom_ref: String,
     source_refs: Vec<String>,
 }
@@ -1226,7 +1240,7 @@ fn evaluate_square_free_repair_v1(
                     })
                 }).collect::<Vec<_>>()
             },
-            "minimalForbiddenSupports": minimal_forbidden_supports,
+            "minimalForbiddenSupports": minimal_forbidden_supports.clone(),
             "stanleyReisnerComplex": {
                 "id": "Delta_U",
                 "faces": delta_faces,
@@ -1237,7 +1251,7 @@ fn evaluate_square_free_repair_v1(
                 }
             },
             "alexanderDualRepair": {
-                "minimalHittingSets": repair_hitting_sets,
+                "minimalHittingSets": repair_hitting_sets.clone(),
                 "minimality": "checked_by_finite_support_enumeration"
             },
             "nsdepthCertificate": certificate.as_ref().map(|certificate| json!({
@@ -1252,6 +1266,21 @@ fn evaluate_square_free_repair_v1(
                 "effect": "structural verdict remains unknown when obstruction generators are present"
             }))
         })],
+        analytic_readings: vec![AgAnalyticReadingV1 {
+            reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
+            evaluator: "ag.foundation@1".to_string(),
+            value: json!({
+                "readingKind": "repair-lower-bound-inspection@1",
+                "selectedCoverRef": profile.cover_ref,
+                "minimalForbiddenSupports": minimal_forbidden_supports,
+                "minimalHittingSets": repair_hitting_sets,
+                "lowerBoundSource": "alexanderDualRepair.minimalHittingSets",
+                "nonClaim": "not automatic repair; not operation semantics",
+                "reason": "repair inspection glyphs are viewer lower-bound markers grounded in the packet repair enumeration"
+            }),
+            regime: Some("theorem-candidate".to_string()),
+            structural_verdict_ref: None,
+        }],
         assumptions: vec![
             AgAssumptionLedgerEntryV1 {
                 theorem_ref: "part8/5.1".to_string(),
@@ -1706,6 +1735,7 @@ fn evaluate_law_conflict_tor_v1(
                 "status": "not_computed",
                 "reason": "no_common_ambient"
             })],
+            analytic_readings: Vec::new(),
             assumptions: tor_assumptions(profile, None, "violated", "checked"),
         });
     };
@@ -1779,10 +1809,10 @@ fn evaluate_law_conflict_tor_v1(
                 "resolutionSelector": profile.resolution_selector,
                 "witnessVariables": witness_variables,
                 "commonAmbient": {
-                    "ambientRef": ambient.ambient_ref,
-                    "atomRef": ambient.atom_ref,
-                    "lawPair": ambient.law_pair,
-                    "sourceRefs": ambient.source_refs
+                    "ambientRef": ambient.ambient_ref.clone(),
+                    "atomRef": ambient.atom_ref.clone(),
+                    "lawPair": ambient.law_pair.clone(),
+                    "sourceRefs": ambient.source_refs.clone()
                 },
                 "lawIdeals": law_ideals,
                 "lawConflicts": [],
@@ -1801,6 +1831,7 @@ fn evaluate_law_conflict_tor_v1(
                 },
                 "boundaryNote": "Taylor Tor_1 is only measured for selected square-free monomial generators over F2; higher Tor_i and flat base change stability are not concluded."
             })],
+            analytic_readings: Vec::new(),
             assumptions: tor_assumptions(profile, Some(&ambient), "checked", "violated"),
         });
     }
@@ -1857,12 +1888,12 @@ fn evaluate_law_conflict_tor_v1(
                 "resolutionSelectorEffective": true,
             "selectedCoverRef": profile.cover_ref,
             "witnessVariables": witness_variables,
-            "commonAmbient": {
-                "ambientRef": ambient.ambient_ref,
-                "atomRef": ambient.atom_ref,
-                "lawPair": ambient.law_pair,
-                "sourceRefs": ambient.source_refs
-            },
+                "commonAmbient": {
+                    "ambientRef": ambient.ambient_ref.clone(),
+                    "atomRef": ambient.atom_ref.clone(),
+                    "lawPair": ambient.law_pair.clone(),
+                    "sourceRefs": ambient.source_refs.clone()
+                },
             "lawIdeals": law_ideals,
             "lawConflicts": conflict_json,
             "torByDegree": [{
@@ -1884,8 +1915,93 @@ fn evaluate_law_conflict_tor_v1(
                 "Flat base change stability is a theorem-candidate reading and is not concluded by this structural verdict."
             ]
         })],
+        analytic_readings: vec![hilbert_interference_reading(profile, &ambient, &conflicts)],
         assumptions: tor_assumptions(profile, Some(&ambient), "checked", "checked"),
     })
+}
+
+fn hilbert_interference_reading(
+    profile: &MeasurementProfileV1,
+    ambient: &TorCommonAmbientV1,
+    conflicts: &[TorConflictClassV1],
+) -> AgAnalyticReadingV1 {
+    let mut by_degree = BTreeMap::<usize, usize>::new();
+    for conflict in conflicts {
+        *by_degree.entry(conflict.degree).or_default() += 1;
+    }
+    let series = by_degree
+        .into_iter()
+        .map(|(degree, coefficient)| {
+            json!({
+                "degree": degree,
+                "coefficient": coefficient
+            })
+        })
+        .collect::<Vec<_>>();
+
+    AgAnalyticReadingV1 {
+        reading_id: format!("analytic:hilbert-interference:{}", profile.profile_id),
+        evaluator: "ag.law-conflict-tor@1".to_string(),
+        value: json!({
+            "readingKind": "hilbert-interference-series@1",
+            "seriesSymbol": "Int_{U,V}(t)",
+            "selectedCoverRef": profile.cover_ref.clone(),
+            "lawPair": ambient.law_pair.clone(),
+            "commonAmbientRef": ambient.ambient_ref.clone(),
+            "regimeBoundary": "audit-only in the selected graded square-free monomial Taylor regime",
+            "series": series,
+            "sourceRefs": ambient.source_refs.clone(),
+            "nonConclusion": "Hilbert interference is an audit reading only; it does not add or change structural verdicts"
+        }),
+        regime: Some("analytic-measurement".to_string()),
+        structural_verdict_ref: None,
+    }
+}
+
+fn principal_eigenvector_hotspots(matrix: &[Vec<f64>], cell_ids: &[String]) -> Vec<Value> {
+    if matrix.is_empty() {
+        return Vec::new();
+    }
+    let n = matrix.len();
+    let mut vector = vec![1.0 / (n as f64).sqrt(); n];
+    for _ in 0..32 {
+        let mut next = vec![0.0; n];
+        for (row_index, row) in matrix.iter().enumerate() {
+            next[row_index] = row
+                .iter()
+                .zip(vector.iter())
+                .map(|(entry, value)| entry.abs() * value)
+                .sum::<f64>();
+        }
+        let norm = squared_norm(&next).sqrt();
+        if norm <= 1.0e-12 {
+            break;
+        }
+        for value in &mut next {
+            *value /= norm;
+        }
+        vector = next;
+    }
+    let mut hotspots = cell_ids
+        .iter()
+        .zip(vector.iter())
+        .map(|(cell, weight)| (cell.clone(), weight.abs()))
+        .collect::<Vec<_>>();
+    hotspots.sort_by(|left, right| {
+        right
+            .1
+            .total_cmp(&left.1)
+            .then_with(|| left.0.cmp(&right.0))
+    });
+    hotspots
+        .into_iter()
+        .map(|(cell, weight)| {
+            json!({
+                "cell": cell,
+                "hotspotWeight": round_f64(weight)
+            })
+        })
+        .collect()
 }
 
 fn evaluate_sheaf_laplacian_v1(
@@ -1982,6 +2098,7 @@ fn evaluate_sheaf_laplacian_v1(
             })
         })
         .collect::<Vec<_>>();
+    let curvature_hotspots = principal_eigenvector_hotspots(&laplacian, &cell_ids);
     let source_refs = cells
         .iter()
         .flat_map(|cell| cell.source_refs.iter())
@@ -1995,7 +2112,7 @@ fn evaluate_sheaf_laplacian_v1(
         "readingKind": "graph-laplacian-hodge-proxy@1",
         "modelScope": "finite graph Laplacian over selected cochain cells and boundary edges",
         "selectedCoverRef": profile.cover_ref,
-        "cells": cell_ids,
+        "cells": cell_ids.clone(),
         "cochain": rounded_vec(&cochain),
         "hodgeDecomposition": {
             "exact": rounded_vec(&exact),
@@ -2042,6 +2159,19 @@ fn evaluate_sheaf_laplacian_v1(
                     "readingKind": "harmonic-debt-minimality-candidate@1",
                     "essentialRepairLowerBound": round_f64(distance_to_flatness.sqrt()),
                     "reason": "harmonic debt minimality remains theorem-candidate and cannot generate a structural verdict"
+                }),
+                regime: Some("theorem-candidate".to_string()),
+                structural_verdict_ref: None,
+            },
+            AgAnalyticReadingV1 {
+                reading_id: format!("theorem-candidate:curvature-hotspot:{}", profile.profile_id),
+                evaluator: "ag.foundation@1".to_string(),
+                value: json!({
+                    "readingKind": "curvature-transfer-perron-hotspot@1",
+                    "sourceProxyReadingKind": "graph-laplacian-hodge-proxy@1",
+                    "modelScope": "finite graph Laplacian absolute-transfer principal eigenvector over selected cochain cells",
+                    "hotspots": curvature_hotspots,
+                    "nonConclusion": "Perron-Frobenius hotspot ranking is a theorem-candidate analytic reading, not a structural verdict"
                 }),
                 regime: Some("theorem-candidate".to_string()),
                 structural_verdict_ref: None,
@@ -2374,7 +2504,7 @@ fn evaluate_support_transfer_v1(
         .into_iter()
         .collect::<BTreeSet<_>>();
     let targets = transfer_witness_targets(profile);
-    let repair_paths = transfer_repair_paths(normalized, &selected_contexts)?;
+    let repair_paths = transfer_repair_paths(normalized, &selected_contexts, &targets)?;
     let pairings = transfer_pairings(normalized, &selected_contexts, &targets)?;
     let ground_costs = transfer_ground_costs(normalized, &selected_contexts, &targets)?;
     let observed_targets = pairings
@@ -2445,6 +2575,49 @@ fn evaluate_support_transfer_v1(
         .iter()
         .map(|pairing| (pairing.path_id.clone(), pairing.target_id.clone()))
         .collect::<BTreeSet<_>>();
+    let support_by_path = repair_paths
+        .iter()
+        .map(|path| {
+            (
+                path.path_id.clone(),
+                path.support_targets
+                    .iter()
+                    .cloned()
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let support_disjoint_pairings = pairings
+        .iter()
+        .filter(|pairing| {
+            support_by_path
+                .get(&pairing.path_id)
+                .is_none_or(|support| !support.contains(&pairing.target_id))
+        })
+        .map(|pairing| format!("{}/{}", pairing.path_id, pairing.target_id))
+        .collect::<Vec<_>>();
+    if !support_disjoint_pairings.is_empty() {
+        return Ok(TransferMeasurementV1 {
+            computed_invariants: vec![json!({
+                "invariantId": format!("support-transfer:{}", profile.profile_id),
+                "evaluator": "ag.support-transfer@1",
+                "status": "not_computed",
+                "reason": format!("support_localized_premise_violated:{}", support_disjoint_pairings.join(",")),
+                "supportLocalizedPremise": {
+                    "status": "violated",
+                    "repairPathSupports": repair_paths.iter().map(|path| json!({
+                        "repairPath": path.path_id.clone(),
+                        "supportTargets": path.support_targets.clone(),
+                        "atomRef": path.atom_ref.clone()
+                    })).collect::<Vec<_>>(),
+                    "blockedPairings": support_disjoint_pairings,
+                    "nonConclusion": "no transfer matrix is filled for pairings outside the supplied repair-path support"
+                }
+            })],
+            analytic_readings: Vec::new(),
+            assumptions: transfer_assumptions(profile, "violated"),
+        });
+    }
     let mut missing_pairings = Vec::new();
     for path in &paths {
         for target in &targets {
@@ -2503,11 +2676,26 @@ fn evaluate_support_transfer_v1(
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
+    let support_localized_premise = json!({
+        "status": "checked",
+        "repairPathCount": repair_paths.len(),
+        "targetCount": targets.len(),
+        "observedPairingCount": pairings.len(),
+        "requiredPairingCount": repair_paths.len() * targets.len(),
+        "repairPathSupports": repair_paths.iter().map(|path| json!({
+            "repairPath": path.path_id.clone(),
+            "supportTargets": path.support_targets.clone(),
+            "atomRef": path.atom_ref.clone()
+        })).collect::<Vec<_>>(),
+        "matrixCompletion": "only supplied repairPath x target support pairings are admitted; any missing pairing blocks computation",
+        "nonConclusion": "no unconditional transfer matrix is inferred for support-disjoint or unobserved paths"
+    });
 
     let analytic_value = json!({
         "readingKind": "support-localized-transfer@1",
         "selectedCoverRef": profile.cover_ref,
         "modelRelative": true,
+        "supportLocalizedPremise": support_localized_premise.clone(),
         "repairPaths": paths,
         "transferTargets": targets,
         "transferMeasurementPairing": rounded_matrix(&matrix),
@@ -2539,6 +2727,7 @@ fn evaluate_support_transfer_v1(
             "transferMeasurementPairing": rounded_matrix(&matrix),
             "transferResidue": round_f64(transfer_residue),
             "wassersteinTransferCost": round_f64(wasserstein_cost),
+            "supportLocalizedPremise": support_localized_premise,
             "sourceRefs": source_refs
         })],
         analytic_readings: vec![
@@ -2566,6 +2755,63 @@ fn evaluate_support_transfer_v1(
         ],
         assumptions: transfer_assumptions(profile, "checked"),
     })
+}
+
+fn refactor_transport_readings(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+    selected_contexts: &BTreeSet<String>,
+    structural_verdict: &[AgStructuralVerdictV1],
+) -> Vec<AgAnalyticReadingV1> {
+    let verdict_refs = structural_verdict
+        .iter()
+        .map(|row| (row.evaluator.clone(), structural_verdict_ref(row)))
+        .collect::<BTreeMap<_, _>>();
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "refactor")
+        .filter(|atom| {
+            matches!(
+                atom.predicate.as_str(),
+                "transportWitness" | "functorialityWitness"
+            )
+        })
+        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
+        .filter_map(|atom| {
+            let object_tokens = atom
+                .object
+                .as_deref()
+                .map(parse_csv_values)
+                .unwrap_or_default()
+                .into_iter()
+                .collect::<BTreeSet<_>>();
+            let (transported_evaluator, transported_ref) = verdict_refs
+                .iter()
+                .find(|(evaluator, verdict_ref)| {
+                    object_tokens.contains(*evaluator) || object_tokens.contains(*verdict_ref)
+                })?;
+            Some(AgAnalyticReadingV1 {
+                reading_id: format!("analytic:refactor-transport:{}", atom.normalized_atom_id),
+                evaluator: "ag.foundation@1".to_string(),
+                value: json!({
+                    "readingKind": "refactor-invariant-transport@1",
+                    "selectedCoverRef": profile.cover_ref.clone(),
+                    "witnessAtomRef": atom.normalized_atom_id.clone(),
+                    "transportSubject": atom.subject.clone(),
+                    "transportObject": atom.object.clone(),
+                    "transportedEvaluator": transported_evaluator.clone(),
+                    "transportedStructuralVerdictRef": transported_ref.clone(),
+                    "predicate": atom.predicate.clone(),
+                    "contextRefs": atom.context_memberships.clone(),
+                    "sourceRefs": atom.source_refs.clone(),
+                    "nonConclusion": "refactor transport is emitted only from supplied functoriality witness data tied to an existing structural verdict; it creates no new verdict or evaluator"
+                }),
+                regime: Some("analytic-measurement".to_string()),
+                structural_verdict_ref: None,
+            })
+        })
+        .collect()
 }
 
 pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Value {
@@ -6544,7 +6790,9 @@ fn transfer_pairings(
 fn transfer_repair_paths(
     normalized: &NormalizedArchMapV2,
     selected_contexts: &BTreeSet<String>,
+    targets: &[String],
 ) -> Result<Vec<TransferRepairPathV1>, String> {
+    let target_set = targets.iter().cloned().collect::<BTreeSet<_>>();
     let mut paths = Vec::new();
     for atom in normalized
         .atoms
@@ -6561,8 +6809,30 @@ fn transfer_repair_paths(
                 atom.subject
             ));
         }
+        let support_targets = atom
+            .object
+            .as_deref()
+            .map(parse_csv_values)
+            .unwrap_or_default()
+            .into_iter()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let unknown_support_targets = support_targets
+            .iter()
+            .filter(|target| !target_set.contains(*target))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unknown_support_targets.is_empty() {
+            return Err(format!(
+                "ag.support-transfer@1 repair path {} uses support targets outside witnessFamily: {}",
+                atom.normalized_atom_id,
+                unknown_support_targets.join(",")
+            ));
+        }
         paths.push(TransferRepairPathV1 {
             path_id: atom.subject.clone(),
+            support_targets,
             atom_ref: atom.normalized_atom_id.clone(),
             source_refs: atom.source_refs.clone(),
         });
