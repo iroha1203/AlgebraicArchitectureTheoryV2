@@ -13714,6 +13714,40 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V3 must remove red error encoding from blocked regions and closure gap marker"
     );
     assert!(
+        html.contains("labelTextureAtlas")
+            && html.contains("sharedLabelAtlas")
+            && html.contains("updateLabelVisibility()")
+            && html.contains("boxesOverlap")
+            && html.contains("labelPriorityScore")
+            && html.contains("alwaysVisibleLabel")
+            && html.contains("__archsigViewerLabelStats"),
+        "viewer V4 must use shared label atlas with distance fade and collision priority"
+    );
+    assert!(
+        html.contains("createSpatialContextGroup")
+            && html.contains("visualProjectionGrid")
+            && html.contains("coordinateNonClaimPlate")
+            && html.contains("visual projection only; not semantic distance, causality, or equivalence")
+            && html.contains("Coordinates are a visual projection, not semantic distance, causality, or equivalence."),
+        "viewer V4 must add grid, coordinate plate, and non-claim HUD copy"
+    );
+    assert!(
+        html.contains("createVignettePass")
+            && html.contains("vignettePass")
+            && html.contains("startCameraTween")
+            && html.contains("updateCameraTween")
+            && html.contains("handleViewModeChange")
+            && html.contains("camera.position.copy(cameraTween.fromPosition).lerp"),
+        "viewer V4 must add vignette postprocess and camera target tweening"
+    );
+    assert!(
+        html.contains("holonomyLikeGapLabel")
+            && html.contains("derivedFrom: \"cocycleRibbon.closureGapEncoding\"")
+            && !html.contains("derivedFrom: \"nonzeroHolonomyLoops")
+            && !html.contains("derivedFrom: \"spectrumReport"),
+        "viewer V4 H1 top insight label must derive from closureGapEncoding only"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
