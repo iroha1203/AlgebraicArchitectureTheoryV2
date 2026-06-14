@@ -8701,6 +8701,7 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "Start tour",
         "Open scene",
         "AG Curvature field",
+        r#"value="holonomy" selected>AG Cover & Gluing"#,
         "AG Cover & Gluing",
         "AG Obstruction loops",
         "AG Forbidden support cages",
