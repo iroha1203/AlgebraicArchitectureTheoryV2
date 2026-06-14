@@ -17,6 +17,17 @@ const VERDICTS: [&str; 5] = [
     "unknown",
     "not_computed",
 ];
+const STRUCTURAL_VERDICT_EVALUATORS: [&str; 9] = [
+    "ag.cech-obstruction@1",
+    "ag.restriction-compatibility@1",
+    "ag.section-factorization@1",
+    "ag.boundary-residue@1",
+    "ag.square-free-repair@1",
+    "ag.law-conflict-tor@1",
+    "ag.coherence-obstruction@1",
+    "ag.sheaf-laplacian@1",
+    "ag.period-stokes-audit@1",
+];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
 const MAX_TOR_WITNESS_VARIABLES: usize = 12;
@@ -10788,6 +10799,7 @@ pub fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Ve
     vec![
         check_packet_schema(packet),
         check_structural_verdict_values(packet),
+        check_structural_verdict_evaluators(packet),
         check_structural_verdict_data(packet),
         check_analytic_regime_boundary(packet),
         check_assumption_ledger(packet),
@@ -10834,6 +10846,26 @@ fn check_structural_verdict_values(packet: &ArchSigMeasurementPacketV1) -> Valid
     )
 }
 
+fn check_structural_verdict_evaluators(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let examples = packet
+        .structural_verdict
+        .iter()
+        .filter(|row| !STRUCTURAL_VERDICT_EVALUATORS.contains(&row.evaluator.as_str()))
+        .map(|row| {
+            generic_validation_example(
+                &row.evaluator,
+                &row.law,
+                "structural verdict evaluators must stay within the registered AG measurement surface",
+            )
+        })
+        .collect::<Vec<_>>();
+    check_examples(
+        "measurement-packet-v1-structural-verdict-evaluators",
+        "structural verdict rows are limited to registered AG measurement evaluators",
+        examples,
+    )
+}
+
 fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let mut examples = Vec::new();
     for row in &packet.structural_verdict {
@@ -10849,6 +10881,20 @@ fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> Validat
                 &row.evaluator,
                 "measured_zero",
                 "measured_zero requires zero=true in VerdictData",
+            ));
+        }
+        if row.verdict == "measured_zero" && row.verdict_data.non_zero {
+            examples.push(generic_validation_example(
+                &row.evaluator,
+                "measured_zero",
+                "measured_zero requires nonZero=false in VerdictData",
+            ));
+        }
+        if row.verdict == "measured_zero" && !row.verdict_data.in_scope {
+            examples.push(generic_validation_example(
+                &row.evaluator,
+                "measured_zero",
+                "measured_zero requires inScope=true in VerdictData",
             ));
         }
         if row.verdict == "measured_nonzero" && !row.verdict_data.non_zero {
@@ -11341,8 +11387,40 @@ mod tests {
     }
 
     #[test]
+    fn unregistered_structural_verdict_evaluator_fails_validation() {
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].evaluator = "ag.synthetic-new-verdict@1".to_string();
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-structural-verdict-evaluators"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
     fn zero_and_nonzero_verdict_data_fails_validation() {
         let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict_data.zero = true;
+        packet.structural_verdict[0].verdict_data.non_zero = true;
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-verdict-data-boundary" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn measured_zero_requires_unhedged_verdict_data() {
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict = "measured_zero".to_string();
+        packet.structural_verdict[0].verdict_data.zero = true;
+        packet.structural_verdict[0].verdict_data.in_scope = false;
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-verdict-data-boundary" && check.result == "fail"
+        }));
+
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict = "measured_zero".to_string();
         packet.structural_verdict[0].verdict_data.zero = true;
         packet.structural_verdict[0].verdict_data.non_zero = true;
         let checks = validate_measurement_packet_v1(&packet);

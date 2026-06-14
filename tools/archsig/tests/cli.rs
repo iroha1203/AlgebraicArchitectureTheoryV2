@@ -5458,6 +5458,88 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
 }
 
 #[test]
+fn cli_analyze_v2_common_structural_verdict_discipline_locks_prd_m_evaluators() {
+    let root_out = temp_dir("ag-measurement-common-structural-verdict-discipline");
+    let mut observed_new_structural_evaluators = BTreeSet::new();
+
+    for (case, evaluator, archmap, policy) in [
+        (
+            "restriction",
+            "ag.restriction-compatibility@1",
+            restriction_archmap("compatible"),
+            restriction_policy(),
+        ),
+        (
+            "section",
+            "ag.section-factorization@1",
+            section_archmap("lawful"),
+            section_policy(),
+        ),
+        (
+            "coherence",
+            "ag.coherence-obstruction@1",
+            coherence_triangle_archmap(true),
+            coherence_policy("F2", false),
+        ),
+        (
+            "boundary-residue",
+            "ag.boundary-residue@1",
+            boundary_residue_archmap("zero"),
+            boundary_residue_policy(),
+        ),
+    ] {
+        let packet = run_generated_ag_measurement_case(&root_out, case, archmap, policy);
+        assert_common_structural_verdict_discipline(&packet, evaluator);
+        observed_new_structural_evaluators.insert(evaluator.to_string());
+    }
+
+    let root = ag_measurement_root();
+    let mut period_archmap = read_json(&root.join("archmap_v2_period_stokes.json"));
+    period_archmap["atoms"][3]["object"] = Value::String("chain:sigma=3".to_string());
+    let mut period_policy = read_json(&root.join("law_policy_period.json"));
+    period_policy["measurementProfiles"][0]["coefficient"] = Value::String("Q".to_string());
+    period_policy["measurementProfiles"][0]["effCoeff"] =
+        Value::String("fixed-coefficient-stokes-audit@1".to_string());
+    period_policy["measurementProfiles"][0]["resolutionSelector"] =
+        Value::String("finite-poset-period-stokes-audit@1".to_string());
+    period_policy["measurementProfiles"][0]["zeroPredicate"] =
+        Value::String("stokes-residual-zero@1".to_string());
+    period_policy["measurementProfiles"][0]["nonZeroPredicate"] =
+        Value::String("stokes-residual-nonzero@1".to_string());
+    period_policy["measurementProfiles"][0]["certSelector"] =
+        Value::String("finite-certificate@1".to_string());
+    for witness in period_policy["measurementProfiles"][0]["witnessFamily"]
+        .as_array_mut()
+        .expect("witnessFamily is array")
+    {
+        witness["law"] = Value::String("ag.period-stokes-audit".to_string());
+    }
+    period_policy["policies"][0]["law"] = Value::String("ag.period-stokes-audit".to_string());
+    period_policy["policies"][0]["evaluator"] =
+        Value::String("ag.period-stokes-audit@1".to_string());
+    let period_packet = run_generated_ag_measurement_case(
+        &root_out,
+        "period-stokes-audit",
+        period_archmap,
+        period_policy,
+    );
+    assert_common_structural_verdict_discipline(&period_packet, "ag.period-stokes-audit@1");
+    observed_new_structural_evaluators.insert("ag.period-stokes-audit@1".to_string());
+
+    assert_eq!(
+        observed_new_structural_evaluators,
+        BTreeSet::from([
+            "ag.restriction-compatibility@1".to_string(),
+            "ag.section-factorization@1".to_string(),
+            "ag.coherence-obstruction@1".to_string(),
+            "ag.boundary-residue@1".to_string(),
+            "ag.period-stokes-audit@1".to_string(),
+        ]),
+        "PRD M common must limit new structural verdict evaluators to M2/M3/M5/M6/M9"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_period_stokes_without_audit_is_not_computed() {
     let out_dir = temp_dir("ag-measurement-period-stokes-no-audit");
     let root = ag_measurement_root();
@@ -13927,6 +14009,103 @@ fn boundary_residue_row(packet: &Value) -> &Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.boundary-residue@1")
         .expect("boundary residue row exists")
+}
+
+fn run_generated_ag_measurement_case(
+    root_out: &Path,
+    case: &str,
+    archmap: Value,
+    policy: Value,
+) -> Value {
+    let out_dir = root_out.join(case);
+    fs::create_dir_all(&out_dir).expect("case dir exists");
+    let archmap_path = out_dir.join("archmap.json");
+    let policy_path = out_dir.join("law_policy.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("case archmap is written");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
+    )
+    .expect("case policy is written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    read_json(&out_dir.join("archsig-measurement-packet.json"))
+}
+
+fn assert_common_structural_verdict_discipline(packet: &Value, evaluator: &str) {
+    let allowed_verdicts = BTreeSet::from([
+        "measured_zero",
+        "measured_nonzero",
+        "unmeasured",
+        "unknown",
+        "not_computed",
+    ]);
+    let structural = packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array");
+    assert_eq!(
+        structural
+            .iter()
+            .filter(|row| row["evaluator"] == evaluator)
+            .count(),
+        1,
+        "{evaluator} must emit exactly one structural verdict row"
+    );
+
+    let violated = packet["assumptions"]
+        .as_array()
+        .expect("assumptions is array")
+        .iter()
+        .filter(|row| row["status"] == "violated")
+        .filter_map(|row| row["theoremRef"].as_str())
+        .collect::<BTreeSet<_>>();
+
+    for row in structural {
+        let verdict = row["verdict"].as_str().expect("verdict is string");
+        assert!(
+            allowed_verdicts.contains(verdict),
+            "structural verdict must stay in the five-value vocabulary"
+        );
+        if verdict == "measured_zero" {
+            assert_eq!(row["verdictData"]["inScope"], true);
+            assert_eq!(row["verdictData"]["zero"], true);
+            assert_eq!(row["verdictData"]["nonZero"], false);
+            assert!(
+                row["verdictData"]["certRef"]
+                    .as_str()
+                    .is_some_and(|cert_ref| !cert_ref.is_empty()),
+                "measured_zero must carry a certificate reference in PRD M common fixtures"
+            );
+        }
+        if matches!(verdict, "measured_zero" | "measured_nonzero") {
+            let depends_on = row["dependsOnAssumptions"]
+                .as_array()
+                .map(|dependencies| {
+                    dependencies
+                        .iter()
+                        .filter_map(|dependency| dependency.as_str())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default();
+            assert!(
+                depends_on
+                    .iter()
+                    .all(|dependency| !violated.contains(dependency)),
+                "measured structural verdicts must not depend on violated assumptions"
+            );
+        }
+    }
 }
 
 fn restriction_policy() -> Value {
