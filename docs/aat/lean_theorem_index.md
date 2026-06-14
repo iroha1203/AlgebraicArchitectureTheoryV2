@@ -4775,28 +4775,34 @@ PRD-4 の `DerOb_U` は type-signature-only placeholder のまま維持する。
 ## AG版AAT Lean形式化 PRD-6 / 第VI部 Singularity・Monodromy・Stack
 
 File: `Formal/AG/SingularityMonodromyStack.lean`,
-`Formal/AG/SingularityMonodromyStack/Stratum.lean`.
+`Formal/AG/SingularityMonodromyStack/Stratum.lean`,
+`Formal/AG/SingularityMonodromyStack/CotangentInterface.lean`,
+`Formal/AG/SingularityMonodromyStack/SmoothSingular.lean`.
 
 PRD-6 [第VI部 Singularity・Monodromy・Stack](lean_ag_part_6_singularity_monodromy_stack_prd.md)
-の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
+の AC1/R0 と AC2/R1、および AC3-AC4/R2 に対応する entrypoint である。現時点では
 `Formal/AG/SingularityMonodromyStack` を build 対象へ追加し、PRD-3〜5 の
 `LawAlgebra` / `Cohomology` / `Derived` tower の後段として import される。
 最初の surface として、architecture stratum の role label、Atom vocabulary、
 law universe、coverage topology、signature axes、coefficient structure に相対化された
 `StratumReadingParameter`、および selected subobject / locally closed / decoration compatibility /
 reading compatibility の certificate を持つ `ArchitectureStratum` を Lean 上に置く。
+R2 として、selected cotangent / tangent deformation-obstruction interface、
+`USmooth` / `USingular`、normal cone reading、structural repair direction、および
+effectiveness / soundness に相対化した smoothness criterion と singular-not-smooth 補題も追加している。
 
 Tracking Issue: [#2128](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2128).
 Initial implementation Issue: [#2129](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2129).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
-| `VI.R0` | `Formal.AG.SingularityMonodromyStack`, `Formal.AG.SingularityMonodromyStack.Stratum` | `import` | 第VI部 Singularity・Monodromy・Stack module を `Formal/AG.lean` から import し、PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived` の成果物上に立ち上げる。 | `defined only` |
+| `VI.R0` | `Formal.AG.SingularityMonodromyStack`, `Formal.AG.SingularityMonodromyStack.Stratum`, `Formal.AG.SingularityMonodromyStack.CotangentInterface`, `Formal.AG.SingularityMonodromyStack.SmoothSingular` | `import` | 第VI部 Singularity・Monodromy・Stack module を `Formal/AG.lean` から import し、PRD-3 `LawAlgebra`、PRD-4 `Cohomology`、PRD-5 `Derived` の成果物上に立ち上げる。 | `defined only` |
 | `VI.定義2.1 / 原則2.2` | `AAT.AG.SingularityMonodromyStack.StratumRole`, `StratumReadingParameter`, `StratumReadingParameter.coverageTopology`, `StratumReadingParameter.lawUniverse_eq`, `StratumReadingParameter.selectedCoeff_eq`, `ArchitectureStratum`, `ArchitectureStratum.Mem`, `ArchitectureStratum.mem_iff`, `ArchitectureStratum.selectedSubobject_holds`, `ArchitectureStratum.locallyClosed_holds`, `ArchitectureStratum.decorationCompatible_holds`, `ArchitectureStratum.readingCompatible_holds` | `inductive` / `structure` / `def` / `theorem` | architecture stratum を selected role、carrier subset、selected subobject、locally closed reading、decoration compatibility、reading compatibility の proof-carrying data として定義する。reading parameter は Atom vocabulary、law universe、coverage topology、signature axes、coefficient structure に相対化される。 | `defined only` / `proved accessor` |
+| `VI.定義3.1 / 定義3.2` | `AAT.AG.SingularityMonodromyStack.CotangentData`, `CotangentData.baseMap_eq`, `TangentData`, `TangentData.zeroObstruction_eq` | `structure` / `theorem` | selected cotangent complex object、base map、pullback complex、selected tangent complex、`H0` / `H1` / obstruction target、zero obstruction、RHom interface certificate を明示 data として保持する。一般 cotangent complex / RHom 構成は主張しない。 | `defined only` / `proved accessor` |
+| `VI.定義4.1 / 定義5.1 / 定義5.2` | `AAT.AG.SingularityMonodromyStack.DeformationObstructionTheory`, `DeformationObstructionTheory.not_liftFill_of_ob_ne_zero`, `DeformationObstructionTheory.liftFill_of_ob_eq_zero`, `USmooth`, `USingular`, `USmooth.obstruction_eq_zero`, `USmooth.liftFill`, `DeformationObstructionTheory.uSmooth_of_all_obstruction_zero`, `DeformationObstructionTheory.uSmooth_iff_all_obstruction_zero`, `DeformationObstructionTheory.not_uSmooth_of_uSingular`, `NormalConeReading`, `NormalConeReading.lawfulLocus_eq_flatU_holds`, `NormalConeReading.obstructionIdealCarrier_eq_I_U_holds`, `StructuralRepairDirection`, `StructuralRepairDirection.selected_pointsTowardVanishing_holds` | `structure` / `def` / `theorem` | selected deformation tests、lift/fill predicate、obstruction map、effectiveness、soundness を interface として固定し、`USmooth` を全 selected test の lift/fill と obstruction zero、`USingular` を selected nonzero obstruction の存在として定義する。normal cone reading は PRD-3 の `Flat_U` / `I_U` に接続し、structural repair direction は selected carrier/predicate data として置く。 | `defined only` / `proved under explicit selected effectiveness/soundness interface` |
 
-Non-conclusions: この entrypoint は cotangent / tangent complex、smooth / singular predicate、
-Kuranishi data、operation homotopy、monodromy、stack、gerbe obstruction、finite Part6 examples を
-まだ形式化しない。余接複体一般構成、RHom 一般構成、algebraic stack 一般論、
+Non-conclusions: この entrypoint は Kuranishi data、operation homotopy、monodromy、stack、
+gerbe obstruction、finite Part6 examples をまだ形式化しない。余接複体一般構成、RHom 一般構成、algebraic stack 一般論、
 non-abelian gerbe cohomology 一般論は PRD-6 の claim boundary どおり future proof obligation として扱う。
 
 ## Reverse-Import Theorem Packages
