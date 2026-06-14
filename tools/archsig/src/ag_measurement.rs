@@ -4201,6 +4201,9 @@ fn evaluate_cech_obstruction_v1(
         .saturating_add(component_count)
         .saturating_sub(selected_contexts.len());
     let empty_selected_scope = selected_contexts.is_empty() || edges.is_empty();
+    let nerve_is_forest = !empty_selected_scope
+        && edges.len().saturating_add(component_count) == selected_contexts.len();
+    let has_triple_overlap_faces = cover_nerve_face_count > 0;
     let h1_class_nonzero =
         !empty_selected_scope && !edge_cochain_is_coboundary(&selected_contexts, &edges);
     let representative = edges
@@ -4254,6 +4257,11 @@ fn evaluate_cech_obstruction_v1(
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
         },
     ];
+    assumptions.extend(cech_effectivity_assumptions_v1(
+        profile,
+        nerve_is_forest,
+        has_triple_overlap_faces,
+    ));
     if empty_selected_scope {
         assumptions.push(AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/B.8.2-empty-selected-scope".to_string(),
@@ -4378,6 +4386,60 @@ fn evaluate_cech_obstruction_v1(
         ],
         assumptions,
     }
+}
+
+fn cech_effectivity_assumptions_v1(
+    profile: &MeasurementProfileV1,
+    nerve_is_forest: bool,
+    has_triple_overlap_faces: bool,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    let profile_ref = format!("measurement-profile:{}", profile.profile_id);
+    let forest_checked = nerve_is_forest && !has_triple_overlap_faces;
+    let forest_checked_by = forest_checked.then(|| {
+        format!(
+            "cover-nerve:{}:forest=true:no-triple-overlap-faces=true",
+            profile.cover_ref
+        )
+    });
+    let forest_assumed_by = (!forest_checked).then(|| profile_ref.clone());
+
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/11.1".to_string(),
+            assumption: "local lawful sections form an effective Ob_U-torsor".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(profile_ref.clone()),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/11.1".to_string(),
+            assumption: "local adjustment action is fixed and effective".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(profile_ref.clone()),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/11.1".to_string(),
+            assumption: "coefficient object satisfies descent".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(profile_ref.clone()),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/12.4".to_string(),
+            assumption: "restriction maps are surjective".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(profile_ref.clone()),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/12.4".to_string(),
+            assumption: "selected Cech nerve is a forest with no triple-overlap faces".to_string(),
+            status: if forest_checked { "checked" } else { "assumed" }.to_string(),
+            checked_by: forest_checked_by,
+            assumed_by: forest_assumed_by,
+        },
+    ]
 }
 
 fn selected_cover_contexts(
