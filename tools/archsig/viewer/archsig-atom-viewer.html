@@ -1578,6 +1578,25 @@
       });
     }
 
+    function registerReadingBloom(object, role, intensity = 0.45) {
+      if (!object || !object.layers) return;
+      object.layers.enable(BLOOM_LAYER);
+      object.userData = {
+        ...(object.userData || {}),
+        readingBloom: true,
+        measuredBloom: false,
+        bloomRole: role
+      };
+      bloomRegisteredCount += 1;
+      const materials = Array.isArray(object.material) ? object.material : [object.material].filter(Boolean);
+      materials.forEach((material) => {
+        if (!("emissive" in material)) return;
+        material.emissive = material.emissive || new THREE.Color(0x000000);
+        material.emissive.lerp(new THREE.Color(0xf2c15f), 0.48);
+        material.emissiveIntensity = Math.max(Number(material.emissiveIntensity || 0), intensity);
+      });
+    }
+
     function createSilenceGlassMaterial(opacity = 0.12) {
       return new THREE.MeshPhysicalMaterial({
         color: 0x8a94a3,
@@ -1980,6 +1999,25 @@
         patch.userData = { kind: "nerveVertexPatch", item: vertex };
         tagCohomologyLayer(patch, "h0", "nerve.vertices");
         edgeGroup.add(patch);
+        const sphere = new THREE.Mesh(
+          new THREE.SphereGeometry(3.2 + supportSize * 0.22, 24, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0x64d6be,
+            emissive: 0x082f2a,
+            transparent: true,
+            opacity: 0.68,
+            roughness: 0.42
+          })
+        );
+        sphere.position.copy(pointOnCohomologyLayer(center, "h0", 4.8 + supportSize * 0.08));
+        sphere.userData = {
+          kind: "nerveContextSphere",
+          item: vertex,
+          radiusDrivenBy: "nerve.vertices[].atomRefs.length",
+          atomRefCount: (vertex.atomRefs || []).length
+        };
+        tagCohomologyLayer(sphere, "h0", "nerve.vertices.atomRefs");
+        edgeGroup.add(sphere);
         const label = createTextSprite(contextLabel(vertex.contextRef), "#d8dee9", "rgba(13,16,21,0.68)");
         label.position.copy(pointOnCohomologyLayer(center, "h0", 11 + supportSize * 0.08));
         label.userData = { kind: "nerveVertexLabel", item: vertex };
@@ -2032,6 +2070,7 @@
         sharedLabel.userData = { kind: "nerveSharedAtomLabel", item: triangle };
         edgeGroup.add(sharedLabel);
       });
+      renderNerveGraphCycles(edges, triangles, vertexCenters);
     }
 
     function nerveVertexCenters(scene, vertices) {
@@ -2056,11 +2095,184 @@
         const source = sourceBase ? pointOnCohomologyLayer(sourceBase, "h1", 0) : null;
         const target = targetBase ? pointOnCohomologyLayer(targetBase, "h1", 0) : null;
         if (!source || !target) return;
+        const supportAtomCount = (edge.supportAtomRefs || []).length;
+        const curve = new THREE.CatmullRomCurve3([source, target]);
+        const tube = new THREE.Mesh(
+          new THREE.TubeGeometry(curve, 12, 0.28 + Math.min(supportAtomCount, 10) * 0.09, 8, false),
+          new THREE.MeshStandardMaterial({
+            color: Number(edge.value || 0) > 0 ? sceneColorHex(encoding.colorRole || "measured_nonzero") : sceneColorHex("checked"),
+            emissive: Number(edge.value || 0) > 0 ? 0x3f2d08 : 0x071f18,
+            transparent: true,
+            opacity: Number(edge.value || 0) > 0 ? 0.68 : 0.44,
+            roughness: 0.44,
+            metalness: 0.02
+          })
+        );
+        tube.userData = {
+          kind: "nerveSimplicialEdgeTube",
+          item: edge,
+          radiusDrivenBy: "nerve.edges[].supportAtomRefs.length",
+          supportAtomCount,
+          edgeValue: Number(edge.value || 0),
+          graphCycleReading: false
+        };
+        tagCohomologyLayer(tube, "h1", "nerve.edges.supportAtomRefs");
+        edgeGroup.add(tube);
         const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
         bucket.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
       addLineSegments(solid, sceneColorHex("checked"), 0.72, "nerveEdge", { lineRole: "solid", thicknessRole: "thick", cohomologyDegree: "h1" });
       addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick", cohomologyDegree: "h1" });
+    }
+
+    function nerveEdgeKey(source, target) {
+      return [String(source || ""), String(target || "")].sort().join("::");
+    }
+
+    function triangleBoundaryKeys(triangle) {
+      const refs = (triangle.contextRefs || []).map((ref) => String(ref || "")).filter(Boolean);
+      if (refs.length !== 3) return null;
+      return [
+        nerveEdgeKey(refs[0], refs[1]),
+        nerveEdgeKey(refs[1], refs[2]),
+        nerveEdgeKey(refs[2], refs[0])
+      ].sort().join("|");
+    }
+
+    function findTreePath(treeAdjacency, source, target) {
+      const queue = [source];
+      const previous = new Map([[source, null]]);
+      while (queue.length) {
+        const current = queue.shift();
+        if (current === target) break;
+        for (const next of treeAdjacency.get(current) || []) {
+          if (previous.has(next)) continue;
+          previous.set(next, current);
+          queue.push(next);
+        }
+      }
+      if (!previous.has(target)) return [];
+      const path = [];
+      for (let cursor = target; cursor !== null; cursor = previous.get(cursor)) {
+        path.push(cursor);
+      }
+      return path.reverse();
+    }
+
+    function extractNerveGraphCycleBasis(edges, triangles, vertexCenters) {
+      const parent = new Map();
+      const treeAdjacency = new Map();
+      const triangleBoundaries = new Set(
+        triangles.map(triangleBoundaryKeys).filter(Boolean)
+      );
+      const ensure = (ref) => {
+        if (!parent.has(ref)) parent.set(ref, ref);
+        if (!treeAdjacency.has(ref)) treeAdjacency.set(ref, []);
+      };
+      const find = (ref) => {
+        ensure(ref);
+        let root = ref;
+        while (parent.get(root) !== root) root = parent.get(root);
+        while (parent.get(ref) !== ref) {
+          const next = parent.get(ref);
+          parent.set(ref, root);
+          ref = next;
+        }
+        return root;
+      };
+      const cycles = [];
+      edges.slice(0, 80).forEach((edge) => {
+        const source = String(edge.sourceContextRef || "");
+        const target = String(edge.targetContextRef || "");
+        if (!source || !target || !vertexCenters.has(source) || !vertexCenters.has(target)) return;
+        ensure(source);
+        ensure(target);
+        const sourceRoot = find(source);
+        const targetRoot = find(target);
+        if (sourceRoot !== targetRoot) {
+          parent.set(sourceRoot, targetRoot);
+          treeAdjacency.get(source).push(target);
+          treeAdjacency.get(target).push(source);
+          return;
+        }
+        const path = findTreePath(treeAdjacency, source, target);
+        if (path.length < 2) return;
+        const refs = [...path, source];
+        const edgeKeys = [];
+        for (let index = 0; index < refs.length - 1; index += 1) {
+          edgeKeys.push(nerveEdgeKey(refs[index], refs[index + 1]));
+        }
+        const boundaryKey = edgeKeys.slice().sort().join("|");
+        cycles.push({
+          edge,
+          refs,
+          edgeKeys,
+          filledByTriangleBoundary: triangleBoundaries.has(boundaryKey)
+        });
+      });
+      return cycles;
+    }
+
+    function renderNerveGraphCycles(edges, triangles, vertexCenters) {
+      const cycles = extractNerveGraphCycleBasis(edges, triangles, vertexCenters);
+      cycles.slice(0, 12).forEach((cycle, index) => {
+        const points = cycle.refs.slice(0, -1)
+          .map((ref, pointIndex) => {
+            const point = vertexCenters.get(String(ref || ""));
+            return point ? pointOnCohomologyLayer(point, "h1", 6 + index * 1.8 + pointIndex * 0.12) : null;
+          })
+          .filter(Boolean);
+        if (points.length < 3) return;
+        const curve = new THREE.CatmullRomCurve3(points, true, "centripetal", 0.45);
+        const ring = new THREE.Mesh(
+          new THREE.TubeGeometry(curve, 96, cycle.filledByTriangleBoundary ? 0.34 : 0.72, 8, true),
+          new THREE.MeshStandardMaterial({
+            color: cycle.filledByTriangleBoundary ? 0x8a94a3 : 0xf2c15f,
+            emissive: cycle.filledByTriangleBoundary ? 0x15181f : 0x3f2d08,
+            transparent: true,
+            opacity: cycle.filledByTriangleBoundary ? 0.36 : 0.82,
+            roughness: 0.38,
+            metalness: 0.03
+          })
+        );
+        ring.userData = {
+          kind: "nerveB1GraphCycleRing",
+          graphCycleReading: true,
+          h1StructuralVerdict: false,
+          projectionBoundary: "graph cycle reading only; no new structural verdict",
+          nonClaim: "graph cycle != H1 structural verdict; constant coefficient nerve reading only",
+          filledByTriangleBoundary: cycle.filledByTriangleBoundary,
+          edgeKeys: cycle.edgeKeys
+        };
+        tagCohomologyLayer(ring, "h1", "viewer.graphCycleBasis");
+        if (!cycle.filledByTriangleBoundary) {
+          registerReadingBloom(ring, "b1_graph_cycle_reading", 0.58);
+        }
+        edgeGroup.add(ring);
+        const sourcePoint = vertexCenters.get(String(cycle.edge?.sourceContextRef || ""));
+        const targetPoint = vertexCenters.get(String(cycle.edge?.targetContextRef || ""));
+        const mismatchPoint = Number(cycle.edge?.value || 0) > 0 && sourcePoint && targetPoint
+          ? centroid([
+            pointOnCohomologyLayer(sourcePoint, "h1", 8 + index * 1.8),
+            pointOnCohomologyLayer(targetPoint, "h1", 8 + index * 1.8)
+          ])
+          : centroid(points);
+        const label = createTextSprite(
+          cycle.filledByTriangleBoundary ? "graph cycle filled by triangle; not H1 verdict" : "b1 graph cycle reading; not H1 verdict",
+          "#ffffff",
+          "rgba(63,45,8,0.72)"
+        );
+        label.position.copy(mismatchPoint).add(new THREE.Vector3(0, 8, 0));
+        label.userData = {
+          kind: "nerveB1GraphCycleNonClaim",
+          graphCycleReading: true,
+          h1StructuralVerdict: false,
+          labelPriorityScore: 88,
+          nonClaim: "graph cycle != H1 structural verdict"
+        };
+        tagCohomologyLayer(label, "h1", "viewer.graphCycleBasis");
+        edgeGroup.add(label);
+      });
     }
 
     function addTriangleOutline(points, kind, color = 0x73b7ff, opacity = 0.9, lineRole = "solid") {
@@ -3479,6 +3691,7 @@
           ["64d6be", "context patch"],
           ["d8dee9", "selected cover gluing edge"],
           ["73b7ff", "shared cover face"],
+          ["f2c15f", "b1 graph cycle reading, not H1 verdict"],
           ["f2c15f", "nonzero gluing edge"]
         ]);
         return;

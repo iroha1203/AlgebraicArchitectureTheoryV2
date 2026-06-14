@@ -13796,6 +13796,29 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V6 must replace curvature columns with basins anchored by measured zero curvature cells"
     );
     assert!(
+        html.contains("registerReadingBloom")
+            && html.contains("nerveContextSphere")
+            && html.contains("radiusDrivenBy: \"nerve.vertices[].atomRefs.length\"")
+            && html.contains("nerveSimplicialEdgeTube")
+            && html.contains("radiusDrivenBy: \"nerve.edges[].supportAtomRefs.length\""),
+        "viewer V7 must render the Cech nerve as context spheres and support-sized edge tubes"
+    );
+    assert!(
+        html.contains("extractNerveGraphCycleBasis")
+            && html.contains("findTreePath")
+            && html.contains("nerveB1GraphCycleRing")
+            && html.contains("b1_graph_cycle_reading")
+            && html.contains("filledByTriangleBoundary"),
+        "viewer V7 must derive graph-cycle b1 rings with triangle-boundary awareness"
+    );
+    assert!(
+        html.contains("graph cycle != H1 structural verdict")
+            && html.contains("graph cycle reading only; no new structural verdict")
+            && html.contains("b1 graph cycle reading, not H1 verdict")
+            && html.contains("h1StructuralVerdict: false"),
+        "viewer V7 must keep graph-cycle readings separate from H1 structural verdicts"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
