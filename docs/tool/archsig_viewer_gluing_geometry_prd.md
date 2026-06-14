@@ -75,8 +75,6 @@ tools/archsig/viewer/archsig-atom-viewer.html の実測（語の出現数）:
 - 依存・距離は `LineSegments`(均質な線分）として描かれる。
 - cover / context / overlap / cocycle / curvature / repair は、専用の幾何オブジェクトを持たない。
 
-結果として、Viewer は 3D だが、まだ scatter plot である。VISION が掲げる「アーキテクチャを図から幾何へ」は、画面の上ではまだ実現していない。
-
 座標系も同様である。`axisMapping` フィールドは存在するが、軸の意味が幾何配置を駆動していない（insight viewer PRD P2「3D 空間は装飾ではなく意味を持つ座標系にする」が表面的にしか満たされていない）。
 
 `aat_geometry_overlays`(viewer data schema の代数幾何オーバーレイ用フィールド）は空き器のまま残っている。

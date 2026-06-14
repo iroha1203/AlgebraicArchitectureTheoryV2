@@ -18,7 +18,7 @@ ArchSig makes architecture observable.
 SFT makes software evolution computable.
 ```
 
-The project vision is summarized in [VISION](VISION.md).
+The project's core philosophy and guiding question are stated in [PHILOSOPHY](PHILOSOPHY.md).
 The main entry point for the overall research program is
 [Research Goal](docs/research_goal.md).
 
@@ -64,7 +64,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## Reading Order
 
-1. [VISION](VISION.md)
+1. [PHILOSOPHY](PHILOSOPHY.md)
 2. [Research Goal](docs/research_goal.md)
 3. [AAT Mathematical Theory](docs/aat/mathematical_theory/README.md)
 4. [AAT / SFT Interface](docs/sft/aat_interface.md)
