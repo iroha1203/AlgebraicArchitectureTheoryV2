@@ -13661,6 +13661,35 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V1 must cap and reapply pixel ratio across renderer resize paths"
     );
     assert!(
+        html.contains("EffectComposer.js")
+            && html.contains("RenderPass.js")
+            && html.contains("UnrealBloomPass.js")
+            && html.contains("OutputPass.js")
+            && html.contains("const BLOOM_LAYER = 1")
+            && html.contains("bloomLayer.set(BLOOM_LAYER)")
+            && html.contains("bloomComposer.render()")
+            && html.contains("finalComposer.render()")
+            && html.contains("function renderFrame()")
+            && html.contains("renderFrame();"),
+        "viewer V2 must route frames through selective bloom composers"
+    );
+    assert!(
+        html.contains("registerMeasuredBloom(tube, \"headline_h1_cocycle_seam\"")
+            && html.contains("registerMeasuredBloom(gap, \"headline_h1_closure_gap\"")
+            && html.contains("registerMeasuredBloom(marker, \"shared_atom_overlap_marker\"")
+            && html.contains("registerMeasuredBloom(mesh, \"candidate_forbidden_cage\"")
+            && html.contains("registerMeasuredBloom(arrowHead, \"candidate_repair_arrow\"")
+            && html.contains("registerMeasuredBloom(marker, \"candidate_repair_marker\""),
+        "viewer V2 bloom must be registered only on measured evidence glyphs"
+    );
+    assert!(
+        html.contains("darkenNonBloomed")
+            && html.contains("restoreBloomMaterials")
+            && html.contains("selectiveBloomStatus")
+            && html.contains("bloomRegisteredCount"),
+        "viewer V2 must mask non-bloom objects and expose bloom diagnostics"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),

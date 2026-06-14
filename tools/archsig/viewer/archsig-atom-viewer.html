@@ -919,6 +919,11 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+    import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+    import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+    import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
     const container = document.getElementById("scene");
     const appEl = document.querySelector(".app");
@@ -969,12 +974,24 @@
     const groundShadow = createGroundShadow();
     scene.add(groundShadow);
 
+    const BLOOM_LAYER = 1;
+    const bloomLayer = new THREE.Layers();
+    bloomLayer.set(BLOOM_LAYER);
+    const darkBloomMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const darkBloomLineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const darkBloomSpriteMaterial = new THREE.SpriteMaterial({ color: 0x000000 });
+    const bloomMaskedMaterials = new Map();
+    let bloomComposer = null;
+    let finalComposer = null;
+    let bloomRegisteredCount = 0;
+
     let renderer = await createRenderer();
     configureSceneEnvironment(renderer);
     container.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     resetCamera();
+    configureSelectiveBloomComposers(renderer);
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -1065,6 +1082,52 @@
       }
     }
 
+    function configureSelectiveBloomComposers(targetRenderer) {
+      try {
+        const baseRenderPass = new RenderPass(scene, camera);
+        const bloomRenderPass = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.7, 0.55, 0.12);
+        bloomPass.threshold = 0.08;
+        bloomPass.strength = 0.7;
+        bloomPass.radius = 0.48;
+        bloomComposer = new EffectComposer(targetRenderer);
+        bloomComposer.renderToScreen = false;
+        bloomComposer.addPass(bloomRenderPass);
+        bloomComposer.addPass(bloomPass);
+        const finalPass = new ShaderPass(new THREE.ShaderMaterial({
+          uniforms: {
+            baseTexture: { value: null },
+            bloomTexture: { value: bloomComposer.renderTarget2.texture }
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform sampler2D baseTexture;
+            uniform sampler2D bloomTexture;
+            varying vec2 vUv;
+            void main() {
+              gl_FragColor = texture2D(baseTexture, vUv) + vec4(1.0) * texture2D(bloomTexture, vUv);
+            }
+          `
+        }), "baseTexture");
+        finalPass.needsSwap = true;
+        finalComposer = new EffectComposer(targetRenderer);
+        finalComposer.addPass(baseRenderPass);
+        finalComposer.addPass(finalPass);
+        finalComposer.addPass(new OutputPass());
+        scene.userData.selectiveBloomStatus = "enabled";
+      } catch (_error) {
+        bloomComposer = null;
+        finalComposer = null;
+        scene.userData.selectiveBloomStatus = "unavailable";
+      }
+    }
+
     function createGroundShadow() {
       const geometry = new THREE.PlaneGeometry(2200, 2200);
       const material = new THREE.ShadowMaterial({
@@ -1090,6 +1153,12 @@
         renderer.setPixelRatio(viewerPixelRatio());
       }
       renderer.setSize(rect.width, rect.height, false);
+      if (bloomComposer && finalComposer) {
+        if (typeof bloomComposer.setPixelRatio === "function") bloomComposer.setPixelRatio(viewerPixelRatio());
+        if (typeof finalComposer.setPixelRatio === "function") finalComposer.setPixelRatio(viewerPixelRatio());
+        bloomComposer.setSize(rect.width, rect.height);
+        finalComposer.setSize(rect.width, rect.height);
+      }
       camera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1);
       camera.updateProjectionMatrix();
     }
@@ -1105,7 +1174,41 @@
       requestAnimationFrame(animate);
       controls.update();
       updateRepairMorphAnimation();
-      renderer.render(scene, camera);
+      renderFrame();
+    }
+
+    function renderFrame() {
+      if (!bloomComposer || !finalComposer) {
+        renderWithoutComposer(renderer, scene, camera);
+        return;
+      }
+      scene.traverse(darkenNonBloomed);
+      bloomComposer.render();
+      scene.traverse(restoreBloomMaterials);
+      finalComposer.render();
+    }
+
+    function renderWithoutComposer(targetRenderer, targetScene, targetCamera) {
+      targetRenderer.render(targetScene, targetCamera);
+    }
+
+    function darkenNonBloomed(object) {
+      if (!object.material || bloomLayer.test(object.layers)) return;
+      bloomMaskedMaterials.set(object.uuid, object.material);
+      object.material = darkMaterialForObject(object);
+    }
+
+    function restoreBloomMaterials(object) {
+      const material = bloomMaskedMaterials.get(object.uuid);
+      if (!material) return;
+      object.material = material;
+      bloomMaskedMaterials.delete(object.uuid);
+    }
+
+    function darkMaterialForObject(object) {
+      if (object.isLine || object.isLineSegments) return darkBloomLineMaterial;
+      if (object.isSprite) return darkBloomSpriteMaterial;
+      return darkBloomMaterial;
     }
 
     function clearGroup(group) {
@@ -1181,6 +1284,7 @@
       renderedAtoms = filterNodes(allNodes);
       renderedGroups = filterGroups(allGroups);
       renderedEdgeCount = 0;
+      bloomRegisteredCount = 0;
 
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
@@ -1202,7 +1306,10 @@
         activeSceneStatus: activeScene?.sceneStatus || null,
         activeSceneLayerCount: Array.isArray(activeScene?.layers) ? activeScene.layers.length : 0,
         hasGluingGeometry: Boolean(activeLayoutContext?.aat?.gluingGeometry?.schema),
-        sceneLayerObjectDelta: edgeGroup.children.length - edgeChildrenBeforeSceneLayers
+        sceneLayerObjectDelta: edgeGroup.children.length - edgeChildrenBeforeSceneLayers,
+        selectiveBloomStatus: scene.userData.selectiveBloomStatus || "unknown",
+        bloomLayer: BLOOM_LAYER,
+        bloomRegisteredCount
       };
       renderLegend();
       renderAxisHud();
@@ -1221,6 +1328,24 @@
       });
       groundShadow.receiveShadow = true;
       groundShadow.castShadow = false;
+    }
+
+    function registerMeasuredBloom(object, role, intensity = 0.55) {
+      if (!object || !object.layers) return;
+      object.layers.enable(BLOOM_LAYER);
+      object.userData = {
+        ...(object.userData || {}),
+        measuredBloom: true,
+        bloomRole: role
+      };
+      bloomRegisteredCount += 1;
+      const materials = Array.isArray(object.material) ? object.material : [object.material].filter(Boolean);
+      materials.forEach((material) => {
+        if (!("emissive" in material)) return;
+        material.emissive = material.emissive || new THREE.Color(0x000000);
+        material.emissive.lerp(new THREE.Color(material.color || 0xffffff), 0.52);
+        material.emissiveIntensity = Math.max(Number(material.emissiveIntensity || 0), intensity);
+      });
     }
 
     function renderAtomInstances(nodes, positions) {
@@ -1608,6 +1733,9 @@
         );
         marker.position.copy(centroid(points)).add(new THREE.Vector3(0, 4, 0));
         marker.userData = { kind: "nerveSharedAtomMarker", item: triangle };
+        if ((triangle.sharedAtomRefs || []).length > 0) {
+          registerMeasuredBloom(marker, "shared_atom_overlap_marker", 0.58);
+        }
         edgeGroup.add(marker);
         const sharedLabel = createTextSprite(`${(triangle.sharedAtomRefs || []).length} shared atom`, "#ffffff", "rgba(27,75,105,0.72)");
         sharedLabel.position.copy(marker.position).add(new THREE.Vector3(0, 7, 0));
@@ -1716,6 +1844,9 @@
         })
       );
       tube.userData = { kind: "cocycleRibbon", item: ribbon };
+      if (ribbon.closureGapEncoding?.visible) {
+        registerMeasuredBloom(tube, "headline_h1_cocycle_seam", 0.82);
+      }
       edgeGroup.add(tube);
       if (ribbon.closureGapEncoding?.visible) {
         const gap = new THREE.Mesh(
@@ -1724,6 +1855,7 @@
         );
         gap.position.copy(points[points.length - 1]);
         gap.userData = { kind: "holonomyLikeGapMarker", item: ribbon.closureGapEncoding };
+        registerMeasuredBloom(gap, "headline_h1_closure_gap", 0.9);
         edgeGroup.add(gap);
       }
     }
@@ -1872,6 +2004,7 @@
         mesh.position.copy(center);
         mesh.position.y += 12;
         mesh.userData = { kind: "forbiddenSupportCage", item: cage };
+        registerMeasuredBloom(mesh, "candidate_forbidden_cage", 0.38);
         edgeGroup.add(mesh);
         addLineSegments(points.flatMap((p) => [center.x, center.y + 12, center.z, p.x, p.y, p.z]), 0xff9468, 0.68, "forbiddenSimplexEdge", { lineRole: "broken_line", thicknessRole: "thick" });
       });
@@ -1902,12 +2035,14 @@
         arrowHead.position.copy(targetPoint.clone().addScaledVector(direction, -3.2));
         arrowHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         arrowHead.userData = { kind: "repairMorphArrow", item: morph, lineRole: "arrow", visualEncodingChannel: "line" };
+        registerMeasuredBloom(arrowHead, "candidate_repair_arrow", 0.42);
         edgeGroup.add(arrowHead);
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8, 16, 10),
           new THREE.MeshStandardMaterial({ color: 0xb087ff, emissive: 0x160a28, roughness: 0.36 })
         );
         marker.userData = { kind: "repairMorphMarker", item: morph, nonClaim: "not automatic repair", start, target: targetPoint, phase: index * 0.17 };
+        registerMeasuredBloom(marker, "candidate_repair_marker", 0.44);
         edgeGroup.add(marker);
       });
     }
