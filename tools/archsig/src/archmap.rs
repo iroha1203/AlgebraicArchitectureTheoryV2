@@ -98,7 +98,7 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
             "component",
             "relation",
             "capability",
-            "dataState",
+            "state",
             "effect",
             "authority",
             "contract",
@@ -247,6 +247,11 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
         .iter()
         .map(|entry| entry.kind.as_str())
         .collect::<BTreeSet<_>>();
+    let unknown_atoms = document
+        .atoms
+        .iter()
+        .filter(|atom| !allowed.contains(atom.kind.as_str()))
+        .collect::<Vec<_>>();
     let mut examples = Vec::new();
     if !missing_components.is_empty() {
         examples.push(ValidationExample {
@@ -260,21 +265,13 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
             )),
         });
     }
-    examples.extend(
-        document
-            .atoms
-            .iter()
-            .filter(|atom| !allowed.contains(atom.kind.as_str()))
-            .map(|atom| ValidationExample {
-                component_id: Some(atom.id.clone()),
-                path: Some("atoms[].kind".to_string()),
-                source: Some(atom.kind.clone()),
-                target: Some(vocabulary_ref.to_string()),
-                evidence: Some(
-                    "declared AAT atom vocabulary does not contain this token".to_string(),
-                ),
-            }),
-    );
+    examples.extend(unknown_atoms.iter().map(|atom| ValidationExample {
+        component_id: Some(atom.id.clone()),
+        path: Some("atoms[].kind".to_string()),
+        source: Some(atom.kind.clone()),
+        target: Some(vocabulary_ref.to_string()),
+        evidence: Some("declared AAT atom vocabulary does not contain this token".to_string()),
+    }));
     let mut check = check_from_examples(
         "archmap-v2-atom-kind-vocabulary",
         "ATOMS_WITHIN_DECLARED_VOCABULARY: atom kinds are members of aat-atom-vocabulary/v1",
@@ -282,10 +279,21 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
     );
     check.metric = Some(vocabulary_ref.to_string());
     if check.result == "fail" {
-        check.reason = Some(
-            "declared AAT atom vocabulary does not contain one or more atom kind tokens or the extraction doctrine does not resolve the vocabulary"
-                .to_string(),
-        );
+        check.reason = Some(match (unknown_atoms.is_empty(), missing_components.is_empty()) {
+            (false, true) => {
+                "declared AAT atom vocabulary does not contain one or more atom kind tokens"
+                    .to_string()
+            }
+            (true, false) => {
+                "extraction doctrine does not resolve the declared AAT atom vocabulary"
+                    .to_string()
+            }
+            (false, false) => {
+                "declared AAT atom vocabulary does not contain one or more atom kind tokens and the extraction doctrine does not resolve the vocabulary"
+                    .to_string()
+            }
+            (true, true) => unreachable!("failed vocabulary check must have examples"),
+        });
     }
     check
 }
@@ -1785,7 +1793,7 @@ mod tests {
             "component",
             "relation",
             "capability",
-            "dataState",
+            "state",
             "effect",
             "authority",
             "contract",

@@ -134,7 +134,7 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
     assert_eq!(check["result"], "fail");
     assert_eq!(
         check["reason"],
-        "declared AAT atom vocabulary does not contain one or more atom kind tokens or the extraction doctrine does not resolve the vocabulary"
+        "declared AAT atom vocabulary does not contain one or more atom kind tokens"
     );
     let example = &check["examples"][0];
     assert_eq!(example["componentId"], "atom:order");
@@ -177,6 +177,40 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
 }
 
 #[test]
+fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
+    let out_dir = temp_dir("archmap-v2-state-atom-kind-vocabulary");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["kind"] = json!("state");
+    let archmap_path = out_dir.join("archmap_v2_state_atom_kind.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    let check = json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
+        .expect("atom vocabulary check is present");
+    assert_eq!(check["result"], "pass");
+    assert_eq!(check["metric"], "aat-atom-vocabulary:ag-archmap@1");
+}
+
+#[test]
 fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
     let out_dir = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine");
     let root = ag_measurement_root();
@@ -212,7 +246,7 @@ fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
     assert_eq!(check["result"], "fail");
     assert_eq!(
         check["reason"],
-        "declared AAT atom vocabulary does not contain one or more atom kind tokens or the extraction doctrine does not resolve the vocabulary"
+        "extraction doctrine does not resolve the declared AAT atom vocabulary"
     );
     let example = &check["examples"][0];
     assert_eq!(example["componentId"], "extractionDoctrineRef.components");
