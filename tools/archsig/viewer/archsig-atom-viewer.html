@@ -1604,6 +1604,33 @@
       };
     }
 
+    function cohomologyDegreeLayer(degree) {
+      const layers = {
+        h0: { y: -20, label: "H0 ground context layer" },
+        h1: { y: 16, label: "H1 cocycle ribbon layer" },
+        h2: { y: 55, label: "H2 silent glass ceiling" }
+      };
+      return layers[degree] || layers.h0;
+    }
+
+    function pointOnCohomologyLayer(point, degree, offset = 0) {
+      const layer = cohomologyDegreeLayer(degree);
+      const next = point.clone();
+      next.y = layer.y + offset;
+      return next;
+    }
+
+    function tagCohomologyLayer(object, degree, source) {
+      const layer = cohomologyDegreeLayer(degree);
+      object.userData = {
+        ...(object.userData || {}),
+        cohomologyDegree: degree,
+        cohomologyLayerY: layer.y,
+        cohomologyLayerLabel: layer.label,
+        cohomologyLayerSource: source
+      };
+    }
+
     function renderAtomInstances(nodes, positions) {
       if (!nodes.length) return;
       const geometry = new THREE.SphereGeometry(1, nodes.length > 8000 ? 8 : 12, nodes.length > 8000 ? 6 : 8);
@@ -1948,20 +1975,25 @@
           })
         );
         patch.position.copy(center);
-        patch.position.y += 1;
+        patch.position.y = cohomologyDegreeLayer("h0").y + 1;
         patch.rotation.x = -Math.PI / 2;
         patch.userData = { kind: "nerveVertexPatch", item: vertex };
+        tagCohomologyLayer(patch, "h0", "nerve.vertices");
         edgeGroup.add(patch);
         const label = createTextSprite(contextLabel(vertex.contextRef), "#d8dee9", "rgba(13,16,21,0.68)");
-        label.position.copy(center).add(new THREE.Vector3(0, 11 + supportSize * 0.08, 0));
+        label.position.copy(pointOnCohomologyLayer(center, "h0", 11 + supportSize * 0.08));
         label.userData = { kind: "nerveVertexLabel", item: vertex };
+        tagCohomologyLayer(label, "h0", "nerve.vertices");
         edgeGroup.add(label);
       });
       renderNerveEdges(edges, vertexCenters, encoding);
       const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
       triangles.slice(0, triangleLimit).forEach((triangle, index) => {
         const points = (triangle.contextRefs || [])
-          .map((ref) => vertexCenters.get(String(ref || ""))?.clone().add(new THREE.Vector3(0, 5.5 + index * 0.35, 0)))
+          .map((ref) => {
+            const point = vertexCenters.get(String(ref || ""));
+            return point ? pointOnCohomologyLayer(point, "h2", index * 0.35) : null;
+          })
           .filter(Boolean);
         if (points.length !== 3) return;
         const geometry = new THREE.BufferGeometry();
@@ -1975,6 +2007,7 @@
           h2CoherenceVisualized: false,
           silenceBoundary: "H^2 coherence is not visualized by this viewer layer"
         };
+        tagCohomologyLayer(mesh, "h2", "nerve.triangles");
         biasObjectIntoSilenceDepth(mesh, 34, "coherenceClaim:not_visualized");
         edgeGroup.add(mesh);
         addTriangleOutline(points, "nerveTriangleSilenceOutline", 0x8a94a3, 0.34, "dashed_silence");
@@ -1988,7 +2021,7 @@
             roughness: 0.44
           })
         );
-        marker.position.copy(centroid(points)).add(new THREE.Vector3(0, 4, 0));
+        marker.position.copy(centroid(points)).add(new THREE.Vector3(0, 3.5, 0));
         marker.userData = { kind: "nerveSharedAtomMarker", item: triangle };
         if ((triangle.sharedAtomRefs || []).length > 0) {
           registerMeasuredBloom(marker, "shared_atom_overlap_marker", 0.58);
@@ -2009,7 +2042,7 @@
           yValue: Math.min((vertex.atomRefs || []).length, 12),
           zValue: Math.min((vertex.atomRefs || []).length, 12)
         });
-        centers.set(String(vertex.contextRef || ""), center);
+        centers.set(String(vertex.contextRef || ""), pointOnCohomologyLayer(center, "h0"));
       });
       return centers;
     }
@@ -2018,14 +2051,16 @@
       const solid = [];
       const mismatch = [];
       edges.forEach((edge) => {
-        const source = vertexCenters.get(String(edge.sourceContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
-        const target = vertexCenters.get(String(edge.targetContextRef || ""))?.clone().add(new THREE.Vector3(0, 4, 0));
+        const sourceBase = vertexCenters.get(String(edge.sourceContextRef || ""));
+        const targetBase = vertexCenters.get(String(edge.targetContextRef || ""));
+        const source = sourceBase ? pointOnCohomologyLayer(sourceBase, "h1", 0) : null;
+        const target = targetBase ? pointOnCohomologyLayer(targetBase, "h1", 0) : null;
         if (!source || !target) return;
         const bucket = Number(edge.value || 0) > 0 ? mismatch : solid;
         bucket.push(source.x, source.y, source.z, target.x, target.y, target.z);
       });
-      addLineSegments(solid, sceneColorHex("checked"), 0.72, "nerveEdge", { lineRole: "solid", thicknessRole: "thick" });
-      addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick" });
+      addLineSegments(solid, sceneColorHex("checked"), 0.72, "nerveEdge", { lineRole: "solid", thicknessRole: "thick", cohomologyDegree: "h1" });
+      addLineSegments(mismatch, sceneColorHex(encoding.colorRole || "measured_nonzero"), 0.9, "nerveMismatchEdge", { lineRole: "thick_glowing_line", thicknessRole: "thick", cohomologyDegree: "h1" });
     }
 
     function addTriangleOutline(points, kind, color = 0x73b7ff, opacity = 0.9, lineRole = "solid") {
@@ -2087,18 +2122,22 @@
       const supportEdgeLimit = limits.cocycleSupportEdges || 80;
       const supportEdges = (Array.isArray(ribbon.supportEdges) ? ribbon.supportEdges : []).slice(0, supportEdgeLimit);
       const points = [];
+      let maxEdgeValue = 0;
       supportEdges.forEach((edge, index) => {
-        const metrics = { xValue: index / Math.max(supportEdges.length - 1, 1), yValue: Number(edge.value || 0), zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
-        const source = sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(supportEdges.length * 2, 1), positions.get(edge.sourceContextRef), metrics);
-        const target = sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(supportEdges.length * 2, 1), positions.get(edge.targetContextRef), metrics);
+        const edgeValue = Number(edge.value || 0);
+        maxEdgeValue = Math.max(maxEdgeValue, edgeValue);
+        const metrics = { xValue: index / Math.max(supportEdges.length - 1, 1), yValue: edgeValue, zValue: Math.min((edge.supportAtomRefs || []).length, 12) };
+        const source = pointOnCohomologyLayer(sceneAxisPosition(scene, edge.sourceContextRef, index * 2, Math.max(supportEdges.length * 2, 1), positions.get(edge.sourceContextRef), metrics), "h1", 0);
+        const target = pointOnCohomologyLayer(sceneAxisPosition(scene, edge.targetContextRef, index * 2 + 1, Math.max(supportEdges.length * 2, 1), positions.get(edge.targetContextRef), metrics), "h1", edgeValue * 7);
         if (!source || !target) return;
-        if (!points.length) points.push(source.clone().add(new THREE.Vector3(0, 8, 0)));
-        points.push(target.clone().add(new THREE.Vector3(0, 8 + Number(edge.value || 0) * 7, 0)));
+        if (!points.length) points.push(source.clone());
+        points.push(target.clone());
       });
       if (points.length < 2) return;
       const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.45);
+      const ribbonRadius = THREE.MathUtils.lerp(0.4, 2.2, THREE.MathUtils.clamp(maxEdgeValue, 0, 1));
       const tube = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, 80, 0.92, 8, false),
+        new THREE.TubeGeometry(curve, 80, ribbonRadius, 8, false),
         new THREE.MeshStandardMaterial({
           color: sceneColorHex(encoding.colorRole || "measured_nonzero"),
           transparent: true,
@@ -2108,6 +2147,7 @@
         })
       );
       tube.userData = { kind: "cocycleRibbon", item: ribbon };
+      tagCohomologyLayer(tube, "h1", "cocycleRibbon.supportEdges.value");
       if (ribbon.closureGapEncoding?.visible) {
         registerMeasuredBloom(tube, "headline_h1_cocycle_seam", 0.82);
       }
@@ -2128,6 +2168,7 @@
           measuredFocus: true,
           redErrorEncodingRemoved: true
         };
+        tagCohomologyLayer(gap, "h1", "cocycleRibbon.closureGapEncoding");
         registerMeasuredBloom(gap, "headline_h1_closure_gap", 0.9);
         edgeGroup.add(gap);
         const gapLabel = createTextSprite("H1 closure gap", "#ffffff", "rgba(63,45,8,0.72)");
@@ -2139,6 +2180,7 @@
           alwaysVisibleLabel: true,
           derivedFrom: "cocycleRibbon.closureGapEncoding"
         };
+        tagCohomologyLayer(gapLabel, "h1", "cocycleRibbon.closureGapEncoding");
         edgeGroup.add(gapLabel);
       }
     }
@@ -2355,6 +2397,7 @@
       const lines = new THREE.LineSegments(geometry, material);
       if (dashed && typeof lines.computeLineDistances === "function") lines.computeLineDistances();
       lines.userData = { kind, lineRole, thicknessRole, dashed };
+      if (style.cohomologyDegree) tagCohomologyLayer(lines, style.cohomologyDegree, kind);
       edgeGroup.add(lines);
       if (thicknessRole === "thick") {
         const shadowGeometry = geometry.clone();
@@ -2371,6 +2414,7 @@
         if (dashed && typeof shadow.computeLineDistances === "function") shadow.computeLineDistances();
         shadow.position.set(0.9, 0.55, 0.9);
         shadow.userData = { kind: `${kind}Thickness`, lineRole, thicknessRole, dashed, visualEncodingChannel: "thickness" };
+        if (style.cohomologyDegree) tagCohomologyLayer(shadow, style.cohomologyDegree, `${kind}:thickness`);
         edgeGroup.add(shadow);
       }
     }
@@ -3246,7 +3290,8 @@
       if (viewModeEl.value === "obstructionLoops") {
         renderSimpleLegend([
           ["f2c15f", "H1 support ribbon"],
-          ["f2c15f", "measured closure marker"]
+          ["f2c15f", "measured closure marker"],
+          ["9fb3c8", "edge.value is mismatch parity, not continuous cohomology magnitude"]
         ]);
         return;
       }
