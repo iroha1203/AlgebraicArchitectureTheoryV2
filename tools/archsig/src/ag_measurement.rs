@@ -104,13 +104,17 @@ fn boundary_statements_for_measurement_packet(
         }
     }
 
-    let not_computed_scope_refs = not_computed_scope_refs(packet)
-        .into_iter()
-        .collect::<Vec<_>>();
     for (index, assumption) in packet.assumptions.iter().enumerate() {
         if assumption.status == "violated" {
             let mut scope_refs = vec![assumption.theorem_ref.clone()];
-            scope_refs.extend(not_computed_scope_refs.clone());
+            let mut dependent_scope_refs =
+                dependent_not_computed_scope_refs(packet, &assumption.theorem_ref);
+            if dependent_scope_refs.is_empty() {
+                dependent_scope_refs = not_computed_scope_refs(packet)
+                    .into_iter()
+                    .collect::<Vec<_>>();
+            }
+            scope_refs.extend(dependent_scope_refs);
             statements.push(BoundaryStatementV1 {
                 id: format!("boundary:violated-assumption:{index}"),
                 kind: "violated_assumption".to_string(),
@@ -125,6 +129,56 @@ fn boundary_statements_for_measurement_packet(
     }
 
     statements
+}
+
+fn assumption_theorem_refs(assumptions: &[AgAssumptionLedgerEntryV1]) -> Vec<String> {
+    assumptions
+        .iter()
+        .map(|assumption| assumption.theorem_ref.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn is_measured_verdict(verdict: &str) -> bool {
+    matches!(verdict, "measured_zero" | "measured_nonzero")
+}
+
+fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacketV1) {
+    let violated = packet
+        .assumptions
+        .iter()
+        .filter(|assumption| assumption.status == "violated")
+        .map(|assumption| assumption.theorem_ref.as_str())
+        .collect::<BTreeSet<_>>();
+    if violated.is_empty() {
+        return;
+    }
+
+    for row in &mut packet.structural_verdict {
+        if !is_measured_verdict(&row.verdict) {
+            continue;
+        }
+        let violated_dependencies = row
+            .depends_on_assumptions
+            .iter()
+            .filter(|theorem_ref| violated.contains(theorem_ref.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        if violated_dependencies.is_empty() {
+            continue;
+        }
+
+        row.verdict = "not_computed".to_string();
+        row.verdict_data.zero = false;
+        row.verdict_data.non_zero = false;
+        row.verdict_data.method_status = "depends_on_violated_assumption".to_string();
+        row.verdict_data.cert_ref = None;
+        row.reason = Some(format!(
+            "depends_on violated {}",
+            violated_dependencies.join(",")
+        ));
+    }
 }
 
 pub fn build_foundation_measurement_packet_v1(
@@ -189,6 +243,7 @@ pub fn build_foundation_measurement_packet_v1(
         if evaluator == "ag.cech-obstruction@1" {
             validate_cech_profile_v1(&profile)?;
             let measurement = evaluate_cech_obstruction_v1(normalized, &profile);
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
@@ -205,11 +260,13 @@ pub fn build_foundation_measurement_packet_v1(
                     method_status: measurement.method_status,
                     cert_ref: measurement.cert_ref,
                 },
+                depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
@@ -226,11 +283,13 @@ pub fn build_foundation_measurement_packet_v1(
                     method_status: measurement.method_status,
                     cert_ref: measurement.cert_ref,
                 },
+                depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.law-conflict-tor@1" {
             validate_tor_profile_v1(&profile)?;
             let measurement = evaluate_law_conflict_tor_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
             structural_verdict.push(AgStructuralVerdictV1 {
@@ -247,11 +306,13 @@ pub fn build_foundation_measurement_packet_v1(
                     method_status: measurement.method_status,
                     cert_ref: measurement.cert_ref,
                 },
+                depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.sheaf-laplacian@1" {
             validate_laplacian_profile_v1(&profile)?;
             let measurement = evaluate_sheaf_laplacian_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
@@ -269,6 +330,7 @@ pub fn build_foundation_measurement_packet_v1(
                     method_status: measurement.method_status,
                     cert_ref: measurement.cert_ref,
                 },
+                depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
         } else if evaluator == "ag.period-stokes@1" {
@@ -295,6 +357,7 @@ pub fn build_foundation_measurement_packet_v1(
                     method_status: "schema_foundation_only".to_string(),
                     cert_ref: None,
                 },
+                depends_on_assumptions: Vec::new(),
                 reason: Some(
                     "AG evaluator schema is registered; mathematical computation is implemented by follow-up evaluator issues".to_string(),
                 ),
@@ -321,6 +384,7 @@ pub fn build_foundation_measurement_packet_v1(
         boundary_statements: Vec::new(),
         non_conclusions,
     };
+    apply_assumption_dependency_propagation(&mut packet);
     packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
     Ok(packet)
 }
@@ -6531,10 +6595,17 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
 }
 
 fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
+    let assumption_refs = packet
+        .assumptions
+        .iter()
+        .map(|entry| entry.theorem_ref.as_str())
+        .collect::<BTreeSet<_>>();
     let violated = packet
         .assumptions
         .iter()
-        .any(|entry| entry.status == "violated");
+        .filter(|entry| entry.status == "violated")
+        .map(|entry| entry.theorem_ref.as_str())
+        .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
     for entry in &packet.assumptions {
         if !matches!(entry.status.as_str(), "checked" | "assumed" | "violated") {
@@ -6559,20 +6630,32 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
             ));
         }
     }
-    if violated {
-        for row in &packet.structural_verdict {
-            if row.verdict != "not_computed" {
+    for row in &packet.structural_verdict {
+        for theorem_ref in &row.depends_on_assumptions {
+            if !assumption_refs.contains(theorem_ref.as_str()) {
                 examples.push(generic_validation_example(
                     &row.evaluator,
-                    &row.verdict,
-                    "violated assumptions require dependent structural verdicts to be not_computed",
+                    theorem_ref,
+                    "dependsOnAssumptions entries must resolve to assumption theoremRef values",
                 ));
             }
+        }
+        if is_measured_verdict(&row.verdict)
+            && row
+                .depends_on_assumptions
+                .iter()
+                .any(|theorem_ref| violated.contains(theorem_ref.as_str()))
+        {
+            examples.push(generic_validation_example(
+                &row.evaluator,
+                &row.verdict,
+                "measured structural verdicts must not depend on violated assumptions",
+            ));
         }
     }
     check_examples(
         "measurement-packet-v1-assumption-ledger",
-        "assumption ledger records checked / assumed / violated and fail-closed verdicts",
+        "assumption ledger records checked / assumed / violated and row-level verdict dependencies",
         examples,
     )
 }
@@ -6729,6 +6812,26 @@ fn not_computed_scope_refs(packet: &ArchSigMeasurementPacketV1) -> BTreeSet<Stri
         }
     }
     refs
+}
+
+fn dependent_not_computed_scope_refs(
+    packet: &ArchSigMeasurementPacketV1,
+    theorem_ref: &str,
+) -> Vec<String> {
+    packet
+        .structural_verdict
+        .iter()
+        .filter(|row| {
+            row.verdict == "not_computed"
+                && row
+                    .depends_on_assumptions
+                    .iter()
+                    .any(|dependency| dependency == theorem_ref)
+        })
+        .map(structural_verdict_ref)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
 }
 
 fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
@@ -6910,14 +7013,90 @@ mod tests {
     }
 
     #[test]
-    fn violated_assumption_requires_not_computed_verdict() {
+    fn measured_verdict_depending_on_violated_assumption_fails_validation() {
         let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict = "measured_zero".to_string();
+        packet.structural_verdict[0].verdict_data.zero = true;
+        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
         packet.assumptions[0].status = "violated".to_string();
         packet.assumptions[0].checked_by = None;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-v1-assumption-ledger" && check.result == "fail"
         }));
+    }
+
+    #[test]
+    fn unresolved_assumption_dependency_fails_validation() {
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].depends_on_assumptions = vec!["missing/theorem".to_string()];
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-v1-assumption-ledger" && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn structural_verdict_dependency_field_is_serde_backward_compatible() {
+        let packet = packet_fixture();
+        assert!(
+            packet.structural_verdict[0]
+                .depends_on_assumptions
+                .is_empty()
+        );
+
+        let serialized = serde_json::to_value(&packet).expect("packet serializes");
+        assert!(
+            serialized["structuralVerdict"][0]
+                .get("dependsOnAssumptions")
+                .is_none(),
+            "empty dependsOnAssumptions stays additive and omitted from legacy-shaped rows"
+        );
+    }
+
+    #[test]
+    fn assumption_dependency_propagation_only_updates_dependent_measured_rows() {
+        let mut packet = packet_fixture();
+        packet.structural_verdict[0].verdict = "measured_zero".to_string();
+        packet.structural_verdict[0].verdict_data.zero = true;
+        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
+        packet.structural_verdict.push(AgStructuralVerdictV1 {
+            evaluator: "ag.square-free-repair@1".to_string(),
+            law: "ag.square-free-repair".to_string(),
+            verdict: "measured_zero".to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: true,
+                non_zero: false,
+                method_status: "square_free_ideal_computed".to_string(),
+                cert_ref: None,
+            },
+            depends_on_assumptions: vec!["part8/5.1".to_string()],
+            reason: Some("independent square-free row remains measured zero".to_string()),
+        });
+        packet.assumptions[0].status = "violated".to_string();
+        packet.assumptions[0].checked_by = None;
+        packet.assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/5.1".to_string(),
+            assumption: "square-free witness variables selected by MeasurementProfile".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some("test".to_string()),
+            assumed_by: None,
+        });
+
+        apply_assumption_dependency_propagation(&mut packet);
+
+        assert_eq!(packet.structural_verdict[0].verdict, "not_computed");
+        assert_eq!(
+            packet.structural_verdict[0].verdict_data.method_status,
+            "depends_on_violated_assumption"
+        );
+        assert_eq!(
+            packet.structural_verdict[0].reason.as_deref(),
+            Some("depends_on violated part8/4.2")
+        );
+        assert_eq!(packet.structural_verdict[1].verdict, "measured_zero");
+        assert!(packet.structural_verdict[1].verdict_data.zero);
     }
 
     #[test]
@@ -7001,6 +7180,7 @@ mod tests {
         packet.structural_verdict[0].verdict = "not_computed".to_string();
         packet.structural_verdict[0].verdict_data.method_status =
             "empty_selected_scope".to_string();
+        packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
         packet.assumptions[0].status = "violated".to_string();
         packet.assumptions[0].checked_by = None;
         packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);

@@ -35,6 +35,8 @@ pub struct AgStructuralVerdictV1 {
     pub law: String,
     pub verdict: String,
     pub verdict_data: AgVerdictDataV1,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub depends_on_assumptions: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
 }

@@ -28,11 +28,12 @@ Current source-of-truth boundaries:
   packet. The packet has `profile`, `structuralVerdict`,
   `computedInvariants`, `analyticReadings`, `assumptions`,
   `boundaryStatements`, and legacy-compatible `nonConclusions`. Structural
-  verdicts are limited to `measured_zero`, `measured_nonzero`, `unmeasured`,
-  `unknown`, and `not_computed`; analytic readings, including theorem-candidate
-  readings, are separate from structural verdicts. `boundaryStatements` carries
-  typed scoped qualifiers, while `nonConclusions` remains a string
-  compatibility view.
+  verdict rows may carry `dependsOnAssumptions` refs into the packet assumption
+  ledger. Verdict values are limited to `measured_zero`, `measured_nonzero`,
+  `unmeasured`, `unknown`, and `not_computed`; analytic readings, including
+  theorem-candidate readings, are separate from structural verdicts.
+  `boundaryStatements` carries typed scoped qualifiers, while `nonConclusions`
+  remains a string compatibility view.
 - v0.4.0 non-compatibility is scoped to the AG measurement path: `archmap/v2`
   plus `measurement-profile/v1` produces `archsig-measurement-packet/v1` and
   does not accept or emit the v1 typed evaluator artifact chain as that path's
