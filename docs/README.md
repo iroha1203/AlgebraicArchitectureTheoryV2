@@ -41,6 +41,11 @@ source of truth として扱わない。
 - [Tooling guideline](tool/guideline.md): ArchMap / LawPolicy / ArchSig / FieldSig の編集方針。
 - [Website guideline](website/guideline.md): website public surface と内部運用メモの編集方針。
 
+## 研究アイデアの蓄積
+
+- [研究アイデアの蓄積](research/README.md): 帰納的に貯める定理候補・予想・反例・数値実験の inbox。
+  一定量たまったら棚卸しし、数学本文への取り込みと Lean 形式化を判断する。完成した体系ではなく進行中の発見を置く場。
+
 ## 層の分担
 
 ```text
