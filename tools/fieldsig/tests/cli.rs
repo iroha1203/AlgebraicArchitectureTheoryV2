@@ -802,6 +802,78 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
 }
 
 #[test]
+fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
+    let out_dir = temp_dir("archsig-measurement-capacity-not-cert");
+    let packet = out_dir.join("archsig-measurement-packet.json");
+    let estimate = out_dir.join("operation-support-estimate.json");
+    let packet_json = serde_json::json!({
+        "schema": "archsig-measurement-packet/v1",
+        "packetId": "measurement:capacity-not-cert",
+        "profile": {
+            "schema": "measurement-profile/v1",
+            "profileId": "profile:capacity-not-cert",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:test",
+            "coefficient": "F2",
+            "effCoeff": "finite-linear-algebra@1",
+            "witnessFamily": [],
+            "resolutionSelector": "cech@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "rank-zero@1",
+            "nonZeroPredicate": "rank-positive@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1"
+        },
+        "structuralVerdict": [{
+            "evaluator": "ag.cech-obstruction@1",
+            "law": "ag.cech-obstruction",
+            "verdict": "measured_nonzero",
+            "verdictData": {
+                "inScope": true,
+                "zero": false,
+                "nonZero": true,
+                "methodStatus": "finite_f2_cech_computed"
+            }
+        }],
+        "computedInvariants": [{
+            "invariantId": "topological-debt-capacity:profile:capacity-not-cert",
+            "evaluator": "ag.cech-obstruction@1",
+            "status": "computed",
+            "structuralVerdictRef": null,
+            "capacityLowerBound": 1
+        }],
+        "analyticReadings": [],
+        "assumptions": [{
+            "theoremRef": "part4/12.3",
+            "assumption": "constant coefficient nerve b1 comparison",
+            "status": "checked",
+            "checkedBy": "measurement-profile:profile:capacity-not-cert.coefficient=F2"
+        }],
+        "boundaryStatements": [],
+        "nonConclusions": []
+    });
+    fs::write(
+        &packet,
+        serde_json::to_string_pretty(&packet_json).expect("measurement packet serializes"),
+    )
+    .expect("measurement packet fixture is written");
+
+    let output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        packet.to_str().expect("measurement packet path is utf-8"),
+        "--out",
+        estimate.to_str().expect("estimate path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("requires certRef or matching computed invariant evidence"),
+        "M7 capacity reading must not act as fallback certificate for a measured Cech verdict"
+    );
+}
+
+#[test]
 fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let out_dir = temp_dir("archsig-measurement-sft-input-rejected");
     let schema_only = out_dir.join("schema-only-measurement-packet.json");
@@ -896,7 +968,11 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
                 "certRef": "computedInvariants/square-free-repair:profile:semantic-validation"
             }
         }],
-        "computedInvariants": [],
+        "computedInvariants": [{
+            "invariantId": "square-free-repair:profile:semantic-validation",
+            "evaluator": "ag.square-free-repair@1",
+            "status": "computed"
+        }],
         "analyticReadings": [],
         "assumptions": [{
             "theoremRef": "part3/7.2B",
@@ -973,6 +1049,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         .as_object_mut()
         .expect("verdictData is object")
         .remove("certRef");
+    missing_evidence_json["computedInvariants"] = serde_json::json!([]);
     fs::write(
         &missing_evidence_packet,
         serde_json::to_string_pretty(&missing_evidence_json)

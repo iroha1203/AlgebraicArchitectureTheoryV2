@@ -574,6 +574,13 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         cech["selectedH2"]["reason"],
         "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
     );
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(capacity["status"], "not_computed");
+    assert_eq!(capacity["methodStatus"], "empty_selected_scope");
+    assert_eq!(capacity["capacityLowerBound"], Value::Null);
+    assert_eq!(capacity["eulerCharacteristic"], Value::Null);
+    assert_eq!(capacity["b1NerveReading"]["oneSkeletonB1"], Value::Null);
+    assert_eq!(capacity["b1NerveReading"]["nerveComplexB1"], Value::Null);
 
     let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
     assert_eq!(validation["summary"]["result"], "pass");
@@ -718,8 +725,17 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         .join("archmap_v2_cech_h1_visible.json")
         .to_string_lossy()
         .to_string();
+    let computed_without_capacity = Value::Array(
+        packet["computedInvariants"]
+            .as_array()
+            .expect("computedInvariants is array")
+            .iter()
+            .filter(|row| row["invariantId"] != "topological-debt-capacity:profile:ag-default@1")
+            .cloned()
+            .collect(),
+    );
     assert_eq!(
-        packet["computedInvariants"],
+        computed_without_capacity,
         json!([
             {
                 "archmapRef": cech_fixture_path,
@@ -841,6 +857,45 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             }
         ]),
         "ledger transparency must not change computed invariants for the same Cech input"
+    );
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(capacity["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(capacity["status"], "computed");
+    assert_eq!(capacity["structuralVerdictRef"], Value::Null);
+    assert_eq!(capacity["dimensions"]["dimC0"], Value::from(4));
+    assert_eq!(capacity["dimensions"]["dimC1"], Value::from(4));
+    assert_eq!(capacity["dimensions"]["dimC2"], Value::from(0));
+    assert_eq!(capacity["capacityLowerBound"], Value::from(0));
+    assert_eq!(capacity["eulerCharacteristic"], Value::from(0));
+    assert_eq!(capacity["b1NerveReading"]["oneSkeletonB1"], Value::from(1));
+    assert_eq!(capacity["b1NerveReading"]["nerveComplexB1"], Value::from(1));
+    assert_eq!(
+        capacity["measuredCechVerdictEcho"]["h1ClassNonzero"],
+        Value::Bool(true)
+    );
+    assert!(
+        capacity["b1NerveReading"]["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("not concrete H1 class existence claims")),
+        "capacity reading must not claim concrete H1 class existence"
+    );
+    assert!(
+        capacity["boundaryNote"]
+            .as_str()
+            .is_some_and(|text| text.contains("Part IV principle 11.3")),
+        "cohomological non-claim boundary must be scoped to Part IV"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part4/12.3"
+                    && entry["assumption"] == "constant coefficient nerve b1 comparison"
+                    && entry["status"] == "checked"
+            }),
+        "b1 nerve reading must be relative to a checked constant coefficient assumption"
     );
     assert_eq!(
         packet["analyticReadings"],
@@ -1017,6 +1072,51 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
             .expect("context atoms is array")
             .push(Value::String("atom:triple-overlap".to_string()));
     }
+    let incomplete_dir = out_dir.join("incomplete-boundary-face");
+    fs::create_dir_all(&incomplete_dir).expect("incomplete face dir exists");
+    let incomplete_archmap_path = incomplete_dir.join("archmap_v2_cech_triple_overlap.json");
+    fs::write(
+        &incomplete_archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("incomplete face archmap fixture can be written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        incomplete_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        incomplete_dir.to_str().expect("path is utf-8"),
+    ]);
+    let incomplete_packet = read_json(&incomplete_dir.join("archsig-measurement-packet.json"));
+    let incomplete_capacity = invariant_by_id(
+        &incomplete_packet,
+        "topological-debt-capacity:profile:ag-default@1",
+    );
+    assert_eq!(incomplete_capacity["dimensions"]["dimC1"], Value::from(4));
+    assert_eq!(incomplete_capacity["dimensions"]["dimC2"], Value::from(1));
+    assert_eq!(
+        incomplete_capacity["b1NerveReading"]["oneSkeletonB1"],
+        Value::from(1)
+    );
+    assert_eq!(
+        incomplete_capacity["b1NerveReading"]["nerveComplexB1"],
+        Value::from(1),
+        "incomplete projected face boundary must not silently add missing selected C1 edges"
+    );
+    let top_context = archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts is array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:top")
+        .expect("ctx:top exists");
+    top_context["restrictsTo"]
+        .as_array_mut()
+        .expect("ctx:top restrictsTo is array")
+        .push(Value::String("ctx:bottom".to_string()));
     let archmap_path = out_dir.join("archmap_v2_cech_triple_overlap.json");
     fs::write(
         &archmap_path,
@@ -1037,6 +1137,16 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structuralVerdict is array")
+            .iter()
+            .filter(|row| row["evaluator"] == "ag.cech-obstruction@1")
+            .count(),
+        1,
+        "Topological Debt Capacity must not add a structural verdict row"
+    );
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
     let faces = cech["coverNerveProjection"]["faces"]
         .as_array()
@@ -1062,6 +1172,33 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     assert_eq!(
         cech["coverNerveProjection"]["faceSource"],
         "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer"
+    );
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(
+        capacity["structuralVerdictRef"],
+        Value::Null,
+        "Topological Debt Capacity must remain a computedInvariant reading"
+    );
+    assert_eq!(capacity["dimensions"]["dimC0"], Value::from(4));
+    assert_eq!(capacity["dimensions"]["dimC1"], Value::from(5));
+    assert_eq!(capacity["dimensions"]["dimC2"], Value::from(1));
+    assert_eq!(capacity["capacityLowerBound"], Value::from(0));
+    assert_eq!(capacity["eulerCharacteristic"], Value::from(0));
+    assert_eq!(
+        capacity["b1NerveReading"]["oneSkeletonB1"],
+        Value::from(2),
+        "extra top-bottom edge creates an additional graph cycle before the selected 2-face is quotiented"
+    );
+    assert_eq!(
+        capacity["b1NerveReading"]["nerveComplexB1"],
+        Value::from(1),
+        "selected triple-overlap face must fill one graph cycle in the nerve complex reading"
+    );
+    assert!(
+        capacity["b1NerveReading"]["distinction"]
+            .as_str()
+            .is_some_and(|text| text.contains("oneSkeletonB1 counts graph cycles")),
+        "b1 reading must label the graph-vs-complex distinction"
     );
     assert_eq!(cech["coverNerveProjection"]["h2CoherenceVisualized"], false);
     assert_eq!(cech["selectedH2"]["dimension"], Value::Null);
@@ -3209,6 +3346,61 @@ fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
             .expect("mismatch support refs is array")
             .len(),
         0
+    );
+}
+
+#[test]
+fn cli_analyze_v2_topological_debt_capacity_does_not_claim_h1_class() {
+    let out_dir = temp_dir("ag-measurement-cech-positive-capacity-no-class");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    archmap["atoms"][4]["object"] = Value::String("ctx:right".to_string());
+    let top_context = archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts is array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:top")
+        .expect("ctx:top exists");
+    top_context["restrictsTo"]
+        .as_array_mut()
+        .expect("ctx:top restrictsTo is array")
+        .push(Value::String("ctx:bottom".to_string()));
+    let archmap_path = out_dir.join("archmap_v2_positive_capacity_no_class.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(cech["observedCocycle"]["classNonzero"], false);
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(capacity["capacityLowerBound"], Value::from(1));
+    assert_eq!(capacity["b1NerveReading"]["oneSkeletonB1"], Value::from(2));
+    assert_eq!(capacity["b1NerveReading"]["nerveComplexB1"], Value::from(2));
+    assert_eq!(
+        capacity["measuredCechVerdictEcho"]["h1ClassNonzero"],
+        Value::Bool(false)
+    );
+    assert!(
+        capacity["b1NerveReading"]["nonClaim"]
+            .as_str()
+            .is_some_and(|text| text.contains("not concrete H1 class existence claims")),
+        "positive capacity must remain a non-claim about concrete H1 class existence"
     );
 }
 
