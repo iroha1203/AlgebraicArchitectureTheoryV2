@@ -991,7 +991,8 @@
     };
 
     async function createRenderer() {
-      if (navigator.gpu) {
+      const preferWebGpu = new URLSearchParams(window.location.search).get("renderer") === "webgpu";
+      if (preferWebGpu && navigator.gpu) {
         try {
           const module = await import("three/addons/renderers/webgpu/WebGPURenderer.js");
           const webgpu = new module.default({ antialias: true });
@@ -1036,9 +1037,22 @@
     function clearGroup(group) {
       while (group.children.length) {
         const child = group.children.pop();
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) child.material.dispose();
+        disposeObject(child);
       }
+    }
+
+    function disposeObject(object) {
+      if (object.geometry) object.geometry.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material].filter(Boolean);
+      materials.forEach((material) => {
+        Object.values(material).forEach((value) => {
+          if (value && typeof value === "object" && typeof value.dispose === "function" && value.isTexture) {
+            value.dispose();
+          }
+        });
+        material.dispose();
+      });
+      if (object.children) object.children.forEach(disposeObject);
     }
 
     async function loadCompanionReports() {
@@ -1568,7 +1582,7 @@
       const texture = new THREE.CanvasTexture(canvas);
       const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(34, 8.5, 1);
+      sprite.scale.set(20, 5, 1);
       return sprite;
     }
 
@@ -2858,7 +2872,10 @@
         renderDetail("Atom", node);
         return;
       }
-      const sceneHits = raycaster.intersectObjects(edgeGroup.children, true)
+      const selectableSceneObjects = edgeGroup.children.filter((child) =>
+        child.userData?.kind === "sceneLayer" || child.userData?.kind === "sceneLayerRefs"
+      );
+      const sceneHits = raycaster.intersectObjects(selectableSceneObjects, true)
         .filter((hit) => hit.object?.userData?.kind === "sceneLayer" || hit.object?.userData?.kind === "sceneLayerRefs");
       if (sceneHits.length) {
         const { scene, layer, encoding } = sceneHits[0].object.userData;
