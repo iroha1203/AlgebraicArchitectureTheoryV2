@@ -80,7 +80,9 @@
 
 ## 主要な入口
 
-- `VISION.md`: プロジェクト全体の VISION。
+- `PHILOSOPHY.md`: プロジェクトの核となる思想と問い(なぜ)。旧 VISION.md を統合。
+  原理を述べるのが役割で、作業規律としての規範効力はこの AGENTS.md を正とし、両者が食い違う場合は AGENTS.md に従う。
+  数学的精密さは AG版本文(`docs/aat/algebraic_geometric_theory/`)が担う。
 - `docs/README.md`: 研究 docs 全体の読み方。
 - `docs/aat/mathematical_theory/README.md`: AAT 数学本文の入口。
 - `docs/aat/proof_obligations.md`: Lean proof obligation と empirical hypothesis の台帳。
