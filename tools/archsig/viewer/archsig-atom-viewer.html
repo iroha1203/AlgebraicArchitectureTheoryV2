@@ -948,6 +948,7 @@
       groups: document.getElementById("toggle-groups"),
       edges: document.getElementById("toggle-edges")
     };
+    const labelTextureAtlas = new Map();
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0d1015);
@@ -956,7 +957,8 @@
     const atomGroup = new THREE.Group();
     const moleculeGroup = new THREE.Group();
     const edgeGroup = new THREE.Group();
-    scene.add(atomGroup, moleculeGroup, edgeGroup);
+    const spatialContextGroup = createSpatialContextGroup();
+    scene.add(spatialContextGroup, atomGroup, moleculeGroup, edgeGroup);
     const ambientFillLight = new THREE.HemisphereLight(0xdfe9ff, 0x171d25, 0.7);
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.15);
     keyLight.position.set(120, 180, 95);
@@ -986,7 +988,9 @@
     let bloomComposer = null;
     let finalComposer = null;
     let bokehPass = null;
+    let vignettePass = null;
     let bloomRegisteredCount = 0;
+    let cameraTween = null;
 
     let renderer = await createRenderer();
     configureSceneEnvironment(renderer);
@@ -1131,15 +1135,47 @@
         });
         finalComposer.addPass(bokehPass);
         finalComposer.addPass(new OutputPass());
+        vignettePass = createVignettePass();
+        finalComposer.addPass(vignettePass);
         scene.userData.selectiveBloomStatus = "enabled";
         scene.userData.silenceDepthStatus = "fog-exp2-bokeh";
       } catch (_error) {
         bloomComposer = null;
         finalComposer = null;
         bokehPass = null;
+        vignettePass = null;
         scene.userData.selectiveBloomStatus = "unavailable";
         scene.userData.silenceDepthStatus = "fallback-no-bokeh";
       }
+    }
+
+    function createVignettePass() {
+      return new ShaderPass(new THREE.ShaderMaterial({
+        uniforms: {
+          tDiffuse: { value: null },
+          offset: { value: 1.08 },
+          darkness: { value: 0.28 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D tDiffuse;
+          uniform float offset;
+          uniform float darkness;
+          varying vec2 vUv;
+          void main() {
+            vec4 color = texture2D(tDiffuse, vUv);
+            vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
+            color.rgb = mix(color.rgb, color.rgb * (1.0 - darkness), dot(uv, uv));
+            gl_FragColor = color;
+          }
+        `
+      }), "tDiffuse");
     }
 
     function createSilenceHatchAlphaMap() {
@@ -1179,6 +1215,63 @@
       return mesh;
     }
 
+    function createSpatialContextGroup() {
+      const group = new THREE.Group();
+      group.userData.kind = "visualProjectionContext";
+      const gridVertices = [];
+      const gridSize = 520;
+      const step = 40;
+      for (let value = -gridSize; value <= gridSize; value += step) {
+        gridVertices.push(-gridSize, -23.8, value, gridSize, -23.8, value);
+        gridVertices.push(value, -23.8, -gridSize, value, -23.8, gridSize);
+      }
+      const gridGeometry = new THREE.BufferGeometry();
+      gridGeometry.setAttribute("position", new THREE.Float32BufferAttribute(gridVertices, 3));
+      const grid = new THREE.LineSegments(
+        gridGeometry,
+        new THREE.LineBasicMaterial({
+          color: 0x385063,
+          transparent: true,
+          opacity: 0.22,
+          depthWrite: false
+        })
+      );
+      grid.userData = {
+        kind: "visualProjectionGrid",
+        nonClaim: "visual projection only; not semantic distance, causality, or equivalence"
+      };
+      group.add(grid);
+
+      const axisVertices = [
+        -gridSize, -23.4, 0, gridSize, -23.4, 0,
+        0, -23.2, -gridSize, 0, -23.2, gridSize,
+        0, -24, 0, 0, 140, 0
+      ];
+      const axisGeometry = new THREE.BufferGeometry();
+      axisGeometry.setAttribute("position", new THREE.Float32BufferAttribute(axisVertices, 3));
+      const axes = new THREE.LineSegments(
+        axisGeometry,
+        new THREE.LineBasicMaterial({ color: 0x9fb3c8, transparent: true, opacity: 0.34, depthWrite: false })
+      );
+      axes.userData = { kind: "visualProjectionAxes" };
+      group.add(axes);
+
+      const plate = createTextSprite("visual projection coordinates; not distance, cause, or equivalence", "#d8dee9", "rgba(10,15,24,0.62)");
+      plate.position.set(0, -15, 118);
+      plate.scale.set(44, 7, 1);
+      plate.userData = { kind: "coordinateNonClaimPlate", labelPriorityScore: 92, alwaysVisibleLabel: true };
+      group.add(plate);
+
+      [["X", gridSize + 28, -18, 0], ["Y", 0, 142, 0], ["Z", 0, -18, gridSize + 28]].forEach(([label, x, y, z]) => {
+        const sprite = createTextSprite(label, "#f3f7fb", "rgba(56,80,99,0.58)");
+        sprite.position.set(x, y, z);
+        sprite.scale.set(8, 3, 1);
+        sprite.userData = { kind: "coordinateAxisLabel", labelPriorityScore: 72, alwaysVisibleLabel: true };
+        group.add(sprite);
+      });
+      return group;
+    }
+
     function status(text) {
       statusEl.textContent = text;
     }
@@ -1200,6 +1293,7 @@
     }
 
     function resetCamera() {
+      cameraTween = null;
       camera.position.set(180, 130, 220);
       camera.lookAt(0, 0, 0);
       controls.target.set(0, 0, 0);
@@ -1214,11 +1308,14 @@
     }
 
     function renderFrame() {
+      updateCameraTween();
       if (!bloomComposer || !finalComposer) {
+        updateLabelVisibility();
         renderWithoutComposer(renderer, scene, camera);
         return;
       }
       updateBokehFocus();
+      updateLabelVisibility();
       scene.traverse(darkenNonBloomed);
       bloomComposer.render();
       scene.traverse(restoreBloomMaterials);
@@ -1228,6 +1325,95 @@
     function updateBokehFocus() {
       if (!bokehPass?.materialBokeh?.uniforms?.focus) return;
       bokehPass.materialBokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
+    }
+
+    function startCameraTween(targetPosition, targetLookAt) {
+      cameraTween = {
+        startedAt: performance.now(),
+        duration: 620,
+        fromPosition: camera.position.clone(),
+        toPosition: targetPosition.clone(),
+        fromTarget: controls.target.clone(),
+        toTarget: targetLookAt.clone()
+      };
+    }
+
+    function updateCameraTween() {
+      if (!cameraTween) return;
+      const elapsed = performance.now() - cameraTween.startedAt;
+      const t = Math.min(elapsed / cameraTween.duration, 1);
+      const eased = t * t * (3 - 2 * t);
+      camera.position.copy(cameraTween.fromPosition).lerp(cameraTween.toPosition, eased);
+      controls.target.copy(cameraTween.fromTarget).lerp(cameraTween.toTarget, eased);
+      controls.update();
+      if (t >= 1) cameraTween = null;
+    }
+
+    function updateLabelVisibility() {
+      const sprites = [];
+      [spatialContextGroup, atomGroup, moleculeGroup, edgeGroup].forEach((group) => {
+        group.traverse((object) => {
+          if (!object.isSprite || !object.material) return;
+          sprites.push(object);
+        });
+      });
+      const rect = renderer.domElement.getBoundingClientRect();
+      const occupied = [];
+      sprites.sort((a, b) => labelPriorityScore(b) - labelPriorityScore(a));
+      sprites.forEach((sprite) => {
+        const projected = sprite.position.clone().project(camera);
+        const visible = projected.z >= -1 && projected.z <= 1;
+        const x = (projected.x * 0.5 + 0.5) * rect.width;
+        const y = (-projected.y * 0.5 + 0.5) * rect.height;
+        const box = { x: x - 48, y: y - 14, width: 96, height: 28 };
+        const collides = occupied.some((item) => boxesOverlap(box, item));
+        const keep = visible && (!collides || sprite.userData?.alwaysVisibleLabel);
+        const distance = camera.position.distanceTo(sprite.position);
+        const fade = sprite.userData?.alwaysVisibleLabel ? 1 : THREE.MathUtils.clamp(1.18 - distance / 520, 0.18, 0.92);
+        sprite.material.opacity = keep ? fade : 0;
+        sprite.material.transparent = true;
+        sprite.visible = keep;
+        if (keep) occupied.push(box);
+      });
+      window.__archsigViewerLabelStats = {
+        atlasSize: labelTextureAtlas.size,
+        labelCount: sprites.length,
+        visibleLabelCount: occupied.length
+      };
+    }
+
+    function boxesOverlap(a, b) {
+      return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    function labelPriorityScore(sprite) {
+      if (Number.isFinite(Number(sprite.userData?.labelPriorityScore))) return Number(sprite.userData.labelPriorityScore);
+      const kind = String(sprite.userData?.kind || "");
+      if (kind.includes("holonomyLikeGap") || kind.includes("coordinateNonClaim")) return 100;
+      if (kind.includes("SharedAtom")) return 82;
+      if (kind.includes("Axis")) return 72;
+      return 30;
+    }
+
+    function cameraTargetForMode(mode) {
+      const presets = {
+        holonomy: [new THREE.Vector3(155, 120, 205), new THREE.Vector3(0, 6, 0)],
+        obstructionLoops: [new THREE.Vector3(180, 115, 190), new THREE.Vector3(0, 12, 0)],
+        obstructions: [new THREE.Vector3(210, 120, 185), new THREE.Vector3(0, 8, 0)],
+        curvature: [new THREE.Vector3(160, 150, 230), new THREE.Vector3(0, 0, 0)],
+        flatness: [new THREE.Vector3(160, 150, 230), new THREE.Vector3(0, 0, 0)],
+        spectrum: [new THREE.Vector3(170, 145, 220), new THREE.Vector3(0, 0, 0)],
+        projection: [new THREE.Vector3(190, 130, 210), new THREE.Vector3(0, 8, 0)],
+        molecules: [new THREE.Vector3(200, 150, 230), new THREE.Vector3(0, 0, 0)]
+      };
+      const [position, target] = presets[mode] || [new THREE.Vector3(180, 130, 220), new THREE.Vector3(0, 0, 0)];
+      return { position, target };
+    }
+
+    function handleViewModeChange() {
+      const target = cameraTargetForMode(viewModeEl.value);
+      renderScene();
+      startCameraTween(target.position, target.target);
     }
 
     function renderWithoutComposer(targetRenderer, targetScene, targetCamera) {
@@ -1265,7 +1451,7 @@
       const materials = Array.isArray(object.material) ? object.material : [object.material].filter(Boolean);
       materials.forEach((material) => {
         Object.values(material).forEach((value) => {
-          if (value && typeof value === "object" && typeof value.dispose === "function" && value.isTexture) {
+          if (value && typeof value === "object" && typeof value.dispose === "function" && value.isTexture && !value.userData?.sharedLabelAtlas) {
             value.dispose();
           }
         });
@@ -1357,7 +1543,7 @@
       renderLegend();
       renderAxisHud();
       updateVisibility();
-      window.__archsigViewerSceneGroups = [atomGroup, moleculeGroup, edgeGroup];
+      window.__archsigViewerSceneGroups = [spatialContextGroup, atomGroup, moleculeGroup, edgeGroup];
       statusText(allNodes, edges);
     }
 
@@ -1856,23 +2042,30 @@
     }
 
     function createTextSprite(text, color = "#d8dee9", background = "rgba(13,16,21,0.62)") {
-      const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 128;
-      const context = canvas.getContext("2d");
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.fillStyle = background;
-      roundRect(context, 14, 22, canvas.width - 28, 84, 18);
-      context.fill();
-      context.font = "600 38px Inter, system-ui, sans-serif";
-      context.fillStyle = color;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText(String(text || ""), canvas.width / 2, canvas.height / 2 + 1, canvas.width - 64);
-      const texture = new THREE.CanvasTexture(canvas);
+      const key = `${String(text || "")}\n${color}\n${background}`;
+      let texture = labelTextureAtlas.get(key);
+      if (!texture) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 128;
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = background;
+        roundRect(context, 14, 22, canvas.width - 28, 84, 18);
+        context.fill();
+        context.font = "600 38px Inter, system-ui, sans-serif";
+        context.fillStyle = color;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(String(text || ""), canvas.width / 2, canvas.height / 2 + 1, canvas.width - 64);
+        texture = new THREE.CanvasTexture(canvas);
+        texture.userData = { atlasKey: key, sharedLabelAtlas: true };
+        labelTextureAtlas.set(key, texture);
+      }
       const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
       const sprite = new THREE.Sprite(material);
       sprite.scale.set(20, 5, 1);
+      sprite.userData = { sharedLabelAtlas: true };
       return sprite;
     }
 
@@ -1937,6 +2130,16 @@
         };
         registerMeasuredBloom(gap, "headline_h1_closure_gap", 0.9);
         edgeGroup.add(gap);
+        const gapLabel = createTextSprite("H1 closure gap", "#ffffff", "rgba(63,45,8,0.72)");
+        gapLabel.position.copy(gap.position).add(new THREE.Vector3(0, 7.5, 0));
+        gapLabel.userData = {
+          kind: "holonomyLikeGapLabel",
+          item: ribbon.closureGapEncoding,
+          labelPriorityScore: 100,
+          alwaysVisibleLabel: true,
+          derivedFrom: "cocycleRibbon.closureGapEncoding"
+        };
+        edgeGroup.add(gapLabel);
       }
     }
 
@@ -3036,14 +3239,14 @@
         renderSimpleLegend([
           ["64d6be", "measured-zero region"],
           ["f2c15f", "field row"],
-          ["ff6b6b", "blocked region"]
+          ["8a94a3", "blocked silence"]
         ]);
         return;
       }
       if (viewModeEl.value === "obstructionLoops") {
         renderSimpleLegend([
           ["f2c15f", "H1 support ribbon"],
-          ["ff6b6b", "closure marker"]
+          ["f2c15f", "measured closure marker"]
         ]);
         return;
       }
@@ -3120,7 +3323,8 @@
       axisHudEl.innerHTML = `<strong>${escapeHtml(layout.title)}</strong>` +
         ["x", "y", "z"].map((axis) =>
           `<div><b>${axis.toUpperCase()}</b><span>${escapeHtml(layout[axis])}</span></div>`
-        ).join("");
+        ).join("") +
+        `<div><b>NOTE</b><span>Coordinates are a visual projection, not semantic distance, causality, or equivalence.</span></div>`;
     }
 
     function axisHudText(mode) {
@@ -3276,7 +3480,8 @@
     }
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
-    [viewModeEl, familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
+    viewModeEl.addEventListener("change", handleViewModeChange);
+    [familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
     const debouncedRenderScene = debounce(renderScene, 90);
     searchEl.addEventListener("input", debouncedRenderScene);
     searchEl.addEventListener("search", debouncedRenderScene);
@@ -3426,7 +3631,7 @@
       }
       if (button.dataset.sceneId) {
         viewModeEl.value = modeForScene(button.dataset.sceneId);
-        renderScene();
+        handleViewModeChange();
         const scene = (currentData?.viewerVisualScenes || []).find((item) => item.sceneId === button.dataset.sceneId);
         if (scene) renderDetail("Scene", sceneDetailItem(scene, scene.layers?.[0], scene.visualEncodings?.[0]));
         status(`Scene: ${button.dataset.sceneId}`);
@@ -3460,7 +3665,7 @@
       }
       const step = tour.steps[stepIndex];
       viewModeEl.value = modeForScene(step.sceneId);
-      renderScene();
+      handleViewModeChange();
       const nextButton = stepIndex + 1 < tour.steps.length
         ? `<button type="button" data-tour-next="true">Next</button>`
         : `<button type="button" data-tour-end="true">Done</button>`;
