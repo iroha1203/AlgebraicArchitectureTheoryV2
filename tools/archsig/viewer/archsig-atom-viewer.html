@@ -2185,58 +2185,262 @@
       }
     }
 
+    function locusFieldNumeric(value, fallback = 0) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : fallback;
+    }
+
+    function locusFieldSignedCurvature(row) {
+      const signed = Number(row?.signedCurvature);
+      if (Number.isFinite(signed)) return signed;
+      return null;
+    }
+
+    function locusFieldSamplePoint(scene, row, index, count) {
+      const signed = locusFieldSignedCurvature(row) ?? locusFieldNumeric(row?.height, 0);
+      return sceneAxisPosition(scene, row?.fieldId || `field:${index}`, index, Math.max(count, 1), groupPosition(index, Math.max(count, 1), 58), {
+        xValue: index / Math.max(count - 1, 1),
+        yValue: signed,
+        zValue: locusFieldNumeric(row?.harmonicMass, locusFieldNumeric(row?.height, 0))
+      });
+    }
+
+    function curvatureHeightY(signedCurvature) {
+      return THREE.MathUtils.clamp(signedCurvature, -2.5, 2.5) * 14;
+    }
+
+    function coolToWarmColor(value, minValue, maxValue) {
+      const t = THREE.MathUtils.clamp((value - minValue) / Math.max(maxValue - minValue, 1.0e-9), 0, 1);
+      const color = new THREE.Color();
+      color.setHSL(0.62 - t * 0.58, 0.74, 0.52);
+      return color;
+    }
+
+    function idwLocusValue(samples, x, z, key) {
+      let numerator = 0;
+      let denominator = 0;
+      samples.forEach((sample) => {
+        const dx = x - sample.point.x;
+        const dz = z - sample.point.z;
+        const weight = 1 / (dx * dx + dz * dz + 120);
+        numerator += sample[key] * weight;
+        denominator += weight;
+      });
+      return denominator ? numerator / denominator : 0;
+    }
+
+    function isInsideBlockedLocusHole(holes, x, z) {
+      return holes.some((hole) => {
+        const dx = x - hole.center.x;
+        const dz = z - hole.center.z;
+        return dx * dx + dz * dz < hole.radius * hole.radius;
+      });
+    }
+
+    function createBlockedHoleRim(center, radius, index, item) {
+      const vertices = [];
+      const segments = 36;
+      for (let step = 0; step < segments; step += 2) {
+        const a0 = (step / segments) * Math.PI * 2;
+        const a1 = ((step + 1) / segments) * Math.PI * 2;
+        vertices.push(
+          center.x + Math.cos(a0) * radius, -1.6, center.z + Math.sin(a0) * radius,
+          center.x + Math.cos(a1) * radius, -1.6, center.z + Math.sin(a1) * radius
+        );
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+      const rim = new THREE.LineSegments(
+        geometry,
+        new THREE.LineBasicMaterial({
+          color: 0x8a94a3,
+          transparent: true,
+          opacity: 0.62,
+          depthWrite: false
+        })
+      );
+      rim.userData = {
+        kind: "blockedLocusHoleRim",
+        item,
+        blockedHoleIndex: index,
+        interpolationExcluded: true,
+        silenceBoundary: "blocked region is left as a hole; not interpolated or red-error encoded",
+        redErrorEncodingRemoved: true
+      };
+      biasObjectIntoSilenceDepth(rim, 58, "locusField.status:blocked");
+      return rim;
+    }
+
+    function createLocusFieldMembrane(scene, samples, blockedHoles) {
+      const xs = samples.map((sample) => sample.point.x);
+      const zs = samples.map((sample) => sample.point.z);
+      const minX = Math.min(...xs) - 34;
+      const maxX = Math.max(...xs) + 34;
+      const minZ = Math.min(...zs) - 30;
+      const maxZ = Math.max(...zs) + 30;
+      const columns = Math.max(6, Math.min(22, samples.length * 4));
+      const rows = Math.max(5, Math.min(16, Math.ceil(samples.length * 2.5)));
+      const masses = samples.map((sample) => sample.harmonicMass);
+      const minMass = Math.min(...masses);
+      const maxMass = Math.max(...masses);
+      const positions = [];
+      const colors = [];
+      const indices = [];
+      for (let zIndex = 0; zIndex < rows; zIndex += 1) {
+        const z = THREE.MathUtils.lerp(minZ, maxZ, zIndex / Math.max(rows - 1, 1));
+        for (let xIndex = 0; xIndex < columns; xIndex += 1) {
+          const x = THREE.MathUtils.lerp(minX, maxX, xIndex / Math.max(columns - 1, 1));
+          const signed = idwLocusValue(samples, x, z, "signedCurvature");
+          const mass = idwLocusValue(samples, x, z, "harmonicMass");
+          const y = curvatureHeightY(signed);
+          const color = coolToWarmColor(mass, minMass, maxMass);
+          positions.push(x, y, z);
+          colors.push(color.r, color.g, color.b);
+        }
+      }
+      for (let zIndex = 0; zIndex < rows - 1; zIndex += 1) {
+        for (let xIndex = 0; xIndex < columns - 1; xIndex += 1) {
+          const cx = THREE.MathUtils.lerp(minX, maxX, (xIndex + 0.5) / Math.max(columns - 1, 1));
+          const cz = THREE.MathUtils.lerp(minZ, maxZ, (zIndex + 0.5) / Math.max(rows - 1, 1));
+          if (isInsideBlockedLocusHole(blockedHoles, cx, cz)) continue;
+          const a = zIndex * columns + xIndex;
+          const b = a + 1;
+          const c = a + columns;
+          const d = c + 1;
+          indices.push(a, c, b, b, c, d);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const membrane = new THREE.Mesh(
+        geometry,
+        new THREE.MeshStandardMaterial({
+          vertexColors: true,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.54,
+          metalness: 0.02
+        })
+      );
+      membrane.userData = {
+        kind: "curvatureHeightmapMembrane",
+        sceneId: scene.sceneId,
+        source: "locusField.fieldRows.signedCurvature",
+        colorRole: "analytic_reading",
+        projectionBoundary: "viewer projection only; no new structural verdict",
+        interpolationNonClaim: "IDW interpolation is a window between measured cells, not a measured value between them",
+        blockedHoleCount: blockedHoles.length
+      };
+      return membrane;
+    }
+
     function renderLocusField(scene, field, positions, limits) {
       const rows = Array.isArray(field.fieldRows) ? field.fieldRows : [];
       const zeroRegions = Array.isArray(field.measuredZeroRegions) ? field.measuredZeroRegions : [];
       const blockedRegions = Array.isArray(field.blockedRegions) ? field.blockedRegions : [];
-      rows.slice(0, limits.curvatureFieldRows || 64).forEach((row, index) => {
-        const center = sceneAxisPosition(scene, row.fieldId || `field:${index}`, index, Math.max(rows.length, 1), groupPosition(index, Math.max(rows.length, 1), 48), {
-          xValue: index / Math.max(rows.length - 1, 1),
-          yValue: Number(row.height || 0),
-          zValue: Number(row.height || 0)
-        });
-        const height = 3 + Math.min(Number(row.height || 0), 12) * 7;
-        const mesh = new THREE.Mesh(
-          new THREE.CylinderGeometry(3.6, 6.2, height, 18),
+      const limitedRows = rows.slice(0, limits.curvatureFieldRows || 64);
+      const signedRows = limitedRows.filter((row) => locusFieldSignedCurvature(row) !== null);
+      const samples = signedRows.map((row, index) => {
+        const point = locusFieldSamplePoint(scene, row, index, signedRows.length);
+        const signedCurvature = locusFieldSignedCurvature(row) ?? 0;
+        point.y = curvatureHeightY(signedCurvature);
+        return {
+          row,
+          point,
+          signedCurvature,
+          harmonicMass: locusFieldNumeric(row.harmonicMass, Math.abs(signedCurvature)),
+          distanceToFlatness: locusFieldNumeric(row.distanceToFlatness, Math.abs(signedCurvature))
+        };
+      });
+      const blockedHoles = blockedRegions.slice(0, limits.curvatureRegions || 24).map((region, index) => ({
+        center: sceneAxisPosition(scene, region.regionId || `blocked:${index}`, index, Math.max(blockedRegions.length, 1), groupPosition(index, Math.max(blockedRegions.length, 1), 60), { xValue: index / Math.max(blockedRegions.length - 1, 1), yValue: 2, zValue: 2 }),
+        radius: 18,
+        region
+      }));
+      if (samples.length) {
+        edgeGroup.add(createLocusFieldMembrane(scene, samples, blockedHoles));
+      }
+      samples.forEach((sample, index) => {
+        const radius = 2.4 + THREE.MathUtils.clamp(sample.distanceToFlatness, 0, 4) * 0.42;
+        const markerColor = Math.abs(sample.signedCurvature) < 1.0e-9
+          ? 0x64d6be
+          : sample.signedCurvature > 0 ? 0xf2c15f : 0x73b7ff;
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(radius, 18, 12),
           new THREE.MeshStandardMaterial({
-            color: sceneColorHex(row.colorRole || "analytic_reading"),
-            transparent: true,
-            opacity: 0.46,
-            roughness: 0.5
+            color: markerColor,
+            emissive: Math.abs(sample.signedCurvature) < 1.0e-9 ? 0x0b3d35 : 0x151515,
+            roughness: 0.42,
+            metalness: 0.02
           })
         );
-        mesh.position.set(center.x, height / 2 - 20, center.z);
-        mesh.userData = { kind: "curvatureHeightField", item: row };
-        edgeGroup.add(mesh);
+        marker.position.copy(sample.point);
+        marker.userData = {
+          kind: "curvatureMeasuredCell",
+          item: sample.row,
+          measuredPoint: true,
+          signedCurvature: sample.signedCurvature,
+          colorRole: sample.row.colorRole || "analytic_reading",
+          interpolationNonClaim: "this marker is measured; membrane between markers is IDW projection only"
+        };
+        edgeGroup.add(marker);
       });
-      zeroRegions.slice(0, limits.curvatureRegions || 24).forEach((region, index) => {
-        const center = sceneAxisPosition(scene, region.regionId || `zero:${index}`, index, Math.max(zeroRegions.length, 1), groupPosition(index, Math.max(zeroRegions.length, 1), 34), { xValue: index / Math.max(zeroRegions.length - 1, 1), yValue: 0, zValue: 0 });
+      const zeroSamples = samples.filter((sample) => Math.abs(sample.signedCurvature) < 1.0e-9);
+      zeroSamples.slice(0, Math.max(zeroRegions.length, 1)).forEach((sample, index) => {
         const mesh = new THREE.Mesh(
-          new THREE.CircleGeometry(7.5, 32),
-          new THREE.MeshStandardMaterial({ color: 0x64d6be, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+          new THREE.CircleGeometry(8.8, 36),
+          new THREE.MeshStandardMaterial({
+            color: 0x64d6be,
+            emissive: 0x082f2a,
+            transparent: true,
+            opacity: 0.24,
+            side: THREE.DoubleSide,
+            roughness: 0.62
+          })
         );
-        mesh.position.set(center.x, -24, center.z);
+        mesh.position.set(sample.point.x, 0.05, sample.point.z);
         mesh.rotation.x = -Math.PI / 2;
-        mesh.userData = { kind: "measuredZeroLocusPatch", item: region };
+        mesh.userData = {
+          kind: "measuredZeroLocusBasin",
+          item: zeroRegions[index] || sample.row,
+          source: "signedCurvature≈0 measured cell; measuredZeroRegions do not provide an x-range",
+          measuredZeroRegionAnchoredByMeasuredCell: true
+        };
         edgeGroup.add(mesh);
       });
-      blockedRegions.slice(0, limits.curvatureRegions || 24).forEach((region, index) => {
-        const center = sceneAxisPosition(scene, region.regionId || `blocked:${index}`, index, Math.max(blockedRegions.length, 1), groupPosition(index, Math.max(blockedRegions.length, 1), 60), { xValue: index / Math.max(blockedRegions.length - 1, 1), yValue: 2, zValue: 2 });
+      blockedHoles.forEach((hole, index) => {
         const mesh = new THREE.Mesh(
-          new THREE.BoxGeometry(8, 18, 1.2),
+          new THREE.RingGeometry(hole.radius * 0.72, hole.radius, 36),
           createSilenceGlassMaterial(0.16)
         );
-        mesh.position.set(center.x, 2, center.z);
-        mesh.rotation.y = index * 0.45;
+        mesh.position.set(hole.center.x, -1.8, hole.center.z);
+        mesh.rotation.x = -Math.PI / 2;
         mesh.userData = {
           kind: "blockedUnmeasuredRegion",
-          item: region,
-          silenceBoundary: "unmeasured support stays in fog; not a failure glyph",
+          item: hole.region,
+          blockedHole: true,
+          interpolationExcluded: true,
+          silenceBoundary: "unmeasured support stays as a torn hole; not a failure glyph",
           redErrorEncodingRemoved: true
         };
         biasObjectIntoSilenceDepth(mesh, 58, "locusField.status:blocked");
         edgeGroup.add(mesh);
+        edgeGroup.add(createBlockedHoleRim(hole.center, hole.radius, index, hole.region));
       });
+      if (samples.length) {
+        const note = createTextSprite("IDW surface: measured cells only; between-cell membrane is not a new measurement", "#e8f3ff", "rgba(14,35,58,0.72)");
+        note.position.copy(samples[0].point).add(new THREE.Vector3(0, 18, 0));
+        note.userData = {
+          kind: "locusFieldInterpolationNonClaim",
+          interpolationNonClaim: true,
+          projectionBoundary: "no new structural verdict"
+        };
+        edgeGroup.add(note);
+      }
     }
 
     function renderAnalyticOverlays(scene, bundle, positions, encoding, limits = {}) {
@@ -3281,9 +3485,11 @@
       }
       if (["curvature", "flatness", "spectrum"].includes(viewModeEl.value)) {
         renderSimpleLegend([
-          ["64d6be", "measured-zero region"],
-          ["f2c15f", "field row"],
-          ["8a94a3", "blocked silence"]
+          ["64d6be", "measured-zero basin"],
+          ["f2c15f", "signed curvature measured cell"],
+          ["73b7ff", "negative curvature valley"],
+          ["8a94a3", "blocked torn hole"],
+          ["9fb3c8", "IDW membrane is a projection window, not between-cell measurement"]
         ]);
         return;
       }

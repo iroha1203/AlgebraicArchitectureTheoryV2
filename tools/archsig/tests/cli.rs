@@ -13771,6 +13771,31 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V5 must size H1 ribbon by parity marker and keep bloom off H2 glass"
     );
     assert!(
+        html.contains("createLocusFieldMembrane")
+            && html.contains("curvatureHeightmapMembrane")
+            && html.contains("locusField.fieldRows.signedCurvature")
+            && html.contains("coolToWarmColor")
+            && html.contains("vertexColors: true")
+            && html.contains("curvatureMeasuredCell"),
+        "viewer V6 must render locusField signedCurvature as an analytic heatmap membrane with measured cell markers"
+    );
+    assert!(
+        html.contains("IDW interpolation is a window between measured cells")
+            && html.contains("IDW membrane is a projection window, not between-cell measurement")
+            && html.contains("blockedLocusHoleRim")
+            && html.contains("blockedHole: true")
+            && html.contains("interpolationExcluded: true")
+            && html.contains("no new structural verdict"),
+        "viewer V6 must mark interpolation as a non-claim and leave blocked regions as torn holes"
+    );
+    assert!(
+        html.contains("measuredZeroLocusBasin")
+            && html.contains("signedCurvature≈0 measured cell")
+            && !html.contains("new THREE.CylinderGeometry(3.6, 6.2")
+            && !html.contains("curvatureHeightField"),
+        "viewer V6 must replace curvature columns with basins anchored by measured zero curvature cells"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
