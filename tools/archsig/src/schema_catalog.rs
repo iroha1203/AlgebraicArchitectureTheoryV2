@@ -1,7 +1,8 @@
 use crate::{
-    ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION,
+    ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
+    ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
     ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
     LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, MEASUREMENT_PROFILE_V1_SCHEMA,
@@ -58,6 +59,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "ArchMap v1 validation does not run the v1 evaluator pipeline.",
                     "ArchMap v1 validation does not prove architecture lawfulness, source completeness, Lean theorem discharge, or global semantic truth.",
+                ],
+            ),
+            artifact(
+                "aat-atom-vocabulary-v1",
+                "AAT atom vocabulary v1",
+                AAT_ATOM_VOCABULARY_V1_SCHEMA,
+                "primary",
+                "ArchSig v0.4.0 Algebraic Geometry Measurement",
+                vec!["docs/tool/archsig_v0_4_0_improvement_prd.md"],
+                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from extractionDoctrineRef components before checking atoms[].kind membership.",
+                vec![
+                    "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
+                    "The linter does not decide whether a new atom kind should be added to the doctrine.",
                 ],
             ),
             artifact(
@@ -404,6 +418,7 @@ mod tests {
                 "archmap",
                 "archmap-validation-report",
                 "archmap-v1",
+                "aat-atom-vocabulary-v1",
                 "archmap-v2",
                 "law-policy",
                 "law-policy-validation-report",

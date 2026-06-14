@@ -16,8 +16,8 @@ pub use ag_measurement::{
     selected_measurement_profile_v1, validate_measurement_packet_v1,
 };
 pub use archmap::{
-    ArchMapSourceInventoryInput, compare_archmap_v2_doctrine, validate_archmap_report,
-    validate_archmap_v1_report, validate_archmap_v2_report,
+    ArchMapSourceInventoryInput, compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1,
+    validate_archmap_report, validate_archmap_v1_report, validate_archmap_v2_report,
 };
 pub use archsig_analysis_packet::{
     build_archsig_analysis_packet, validate_archsig_analysis_packet_report,
@@ -29,18 +29,19 @@ pub use law_policy::{
 pub use normalizer::{normalize_archmap_v1, normalize_archmap_v2};
 pub(crate) use schema::*;
 pub use schema::{
-    ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_SCHEMA_VERSION,
     ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION, ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
-    AgStructuralVerdictV1, AgVerdictDataV1, ArchMapAtomObservationV0, ArchMapAtomV1, ArchMapAtomV2,
-    ArchMapContextV2, ArchMapCoverV2, ArchMapDocumentV0, ArchMapDocumentV1, ArchMapDocumentV2,
-    ArchMapExtractionDoctrineRefV2, ArchMapMoleculeObservationV0, ArchMapMoleculeV1,
-    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapSourceV1, ArchMapValidationReportV0,
-    ArchMapValidationReportV1, ArchMapValidationReportV2, ArchMapValidationSummaryV1,
-    ArchMapValidationSummaryV2, ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationReportV0,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, AatAtomVocabularyEntryV1, AatAtomVocabularyV1,
+    AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
+    ArchMapAtomObservationV0, ArchMapAtomV1, ArchMapAtomV2, ArchMapContextV2, ArchMapCoverV2,
+    ArchMapDocumentV0, ArchMapDocumentV1, ArchMapDocumentV2, ArchMapExtractionDoctrineRefV2,
+    ArchMapMoleculeObservationV0, ArchMapMoleculeV1, ArchMapSourceInventoryV0, ArchMapSourceRef,
+    ArchMapSourceV1, ArchMapValidationReportV0, ArchMapValidationReportV1,
+    ArchMapValidationReportV2, ArchMapValidationSummaryV1, ArchMapValidationSummaryV2,
+    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationReportV0,
     ArchSigArtifactValidationResultV0, ArchSigAtomViewerAtomNodeV0, ArchSigAtomViewerDataV0,
     ArchSigAtomViewerEdgeV0, ArchSigAtomViewerLayoutSettingsV0, ArchSigAtomViewerMoleculeGroupV0,
     ArchSigAtomViewerOmittedDetailCountsV0, ArchSigAtomViewerSourceArtifactRefsV0,

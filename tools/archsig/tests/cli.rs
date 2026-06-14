@@ -86,6 +86,174 @@ fn cli_validates_archmap_v2_finite_poset_site_contract() {
     assert_eq!(json["summary"]["atomCount"], 3);
     assert_eq!(json["summary"]["contextCount"], 3);
     assert_eq!(json["summary"]["coverCount"], 1);
+    assert!(
+        json["checks"].as_array().unwrap().iter().any(|check| {
+            check["id"] == "archmap-v2-atom-kind-vocabulary"
+                && check["result"] == "pass"
+                && check["title"]
+                    .as_str()
+                    .is_some_and(|title| title.contains("ATOMS_WITHIN_DECLARED_VOCABULARY"))
+                && check["metric"] == "aat-atom-vocabulary:ag-archmap@1"
+        }),
+        "ArchMap v2 lint must expose the declared atom vocabulary pass conclusion"
+    );
+}
+
+#[test]
+fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
+    let out_dir = temp_dir("archmap-v2-atom-kind-vocabulary");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["kind"] = json!("externalForecast");
+    let archmap_path = out_dir.join("archmap_v2_unknown_atom_kind.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
+        .expect("atom vocabulary check is present");
+    assert_eq!(check["result"], "fail");
+    assert_eq!(
+        check["reason"],
+        "declared AAT atom vocabulary does not contain one or more atom kind tokens or the extraction doctrine does not resolve the vocabulary"
+    );
+    let example = &check["examples"][0];
+    assert_eq!(example["componentId"], "atom:order");
+    assert_eq!(example["path"], "atoms[].kind");
+    assert_eq!(example["source"], "externalForecast");
+    assert_eq!(example["target"], "aat-atom-vocabulary:ag-archmap@1");
+    assert_eq!(
+        example["evidence"],
+        "declared AAT atom vocabulary does not contain this token"
+    );
+    let reason = check["reason"].as_str().expect("reason is text");
+    assert!(!reason.contains("should"));
+    assert!(!reason.contains("semantic correctness"));
+
+    let analyze_out = temp_dir("archmap-v2-atom-kind-vocabulary-analyze");
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        analyze_out.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "analyze must fail closed before measurement for vocabulary errors\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        analyze_out.join("archsig-measurement-packet.json").exists() == false,
+        "failed ArchMap v2 vocabulary preflight must not emit a measurement packet"
+    );
+    let analyze_validation = read_json(&analyze_out.join("archmap-validation.json"));
+    assert_eq!(analyze_validation["summary"]["result"], "fail");
+}
+
+#[test]
+fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
+    let out_dir = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["extractionDoctrineRef"]["components"] = json!(["custom"]);
+    let archmap_path = out_dir.join("archmap_v2_unresolved_atom_vocabulary.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
+        .expect("atom vocabulary check is present");
+    assert_eq!(check["result"], "fail");
+    assert_eq!(
+        check["reason"],
+        "declared AAT atom vocabulary does not contain one or more atom kind tokens or the extraction doctrine does not resolve the vocabulary"
+    );
+    let example = &check["examples"][0];
+    assert_eq!(example["componentId"], "extractionDoctrineRef.components");
+    assert_eq!(example["path"], "extractionDoctrineRef.components");
+    assert_eq!(example["source"], "custom");
+    assert_eq!(example["target"], "aat-atom-vocabulary:ag-archmap@1");
+    assert!(example["evidence"].as_str().is_some_and(|evidence| {
+        evidence.contains(
+            "extraction doctrine does not resolve required AAT atom vocabulary components",
+        ) && evidence.contains("Gamma")
+            && evidence.contains("rho")
+    }));
+    let reason = check["reason"].as_str().expect("reason is text");
+    assert!(!reason.contains("should"));
+    assert!(!reason.contains("semantic correctness"));
+
+    let analyze_out = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine-analyze");
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        analyze_out.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "analyze must fail closed before measurement when doctrine components do not resolve vocabulary\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        analyze_out.join("archsig-measurement-packet.json").exists() == false,
+        "failed ArchMap v2 vocabulary doctrine preflight must not emit a measurement packet"
+    );
+    let analyze_validation = read_json(&analyze_out.join("archmap-validation.json"));
+    assert_eq!(analyze_validation["summary"]["result"], "fail");
 }
 
 #[test]
@@ -10880,6 +11048,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archmap",
             "archmap-validation-report",
             "archmap-v1",
+            "aat-atom-vocabulary-v1",
             "archmap-v2",
             "law-policy",
             "law-policy-v1",
@@ -10915,6 +11084,27 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "unexpected artifact role for {artifact_id}"
         );
     }
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "aat-atom-vocabulary-v1"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains("artifact-side projection")
+                            && description.contains("allowed ArchMap atom kind tokens")
+                            && description.contains("extractionDoctrineRef components")
+                    })
+                && entry["compatibilityBoundary"]["nonConclusions"]
+                    .as_array()
+                    .is_some_and(|items| {
+                        items.iter().any(|item| {
+                            item.as_str()
+                                .is_some_and(|text| text.contains("semantic correctness"))
+                        })
+                    })
+        }),
+        "schema catalog must describe the AAT atom vocabulary artifact boundary"
+    );
     assert!(
         artifacts.iter().any(|entry| {
             entry["artifactId"] == "architecture-distance-v1"

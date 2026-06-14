@@ -13,6 +13,12 @@ Current source-of-truth boundaries:
   `sources`, subject / axis-decorated `atoms`, finite-poset `contexts`,
   selected `covers`, and `extractionDoctrineRef`. `molecules` are not a v2
   primary field; context membership replaces them for AG measurement.
+- `aat-atom-vocabulary/v1` is the artifact-side projection of allowed ArchMap
+  atom kind tokens with provenance back to the AAT doctrine. ArchMap v2
+  validation checks that `extractionDoctrineRef.components` resolves the
+  vocabulary and that `atoms[].kind` is a member before measurement; the check
+  does not prove source extraction soundness, semantic correctness, or whether a
+  new atom kind should be added to the doctrine.
 - MeasurementProfile v1 is the first-class selected measurement regime. It
   declares site / cover refs, coefficient, EffCoeff procedure, witness family,
   resolution selector, Dom / Zero / NonZero / Cert predicates, and the

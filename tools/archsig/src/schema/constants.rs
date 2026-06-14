@@ -1,4 +1,5 @@
 pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-observation-map-v0";
+pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v1";
 pub const ARCHMAP_V1_SCHEMA: &str = "archmap/v1";
 pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v2";
 pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";

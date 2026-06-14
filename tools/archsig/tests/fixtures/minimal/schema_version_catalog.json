@@ -87,6 +87,33 @@
       }
     },
     {
+      "artifactId": "aat-atom-vocabulary-v1",
+      "artifactName": "AAT atom vocabulary v1",
+      "schemaVersionName": "aat-atom-vocabulary/v1",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_v0_4_0_improvement_prd.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from extractionDoctrineRef components before checking atoms[].kind membership.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
+          "The linter does not decide whether a new atom kind should be added to the doctrine."
+        ]
+      }
+    },
+    {
       "artifactId": "archmap-v2",
       "artifactName": "ArchMap v2 finite poset site artifact",
       "schemaVersionName": "archmap/v2",
