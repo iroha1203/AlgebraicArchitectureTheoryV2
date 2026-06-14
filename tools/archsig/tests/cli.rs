@@ -13748,6 +13748,29 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V4 H1 top insight label must derive from closureGapEncoding only"
     );
     assert!(
+        html.contains("cohomologyDegreeLayer")
+            && html.contains("H0 ground context layer")
+            && html.contains("H1 cocycle ribbon layer")
+            && html.contains("H2 silent glass ceiling")
+            && html.contains("pointOnCohomologyLayer")
+            && html.contains("tagCohomologyLayer"),
+        "viewer V5 must define fixed cohomology degree layers"
+    );
+    assert!(
+        html.contains("tagCohomologyLayer(patch, \"h0\", \"nerve.vertices\")")
+            && html.contains("tagCohomologyLayer(tube, \"h1\", \"cocycleRibbon.supportEdges.value\")")
+            && html.contains("tagCohomologyLayer(mesh, \"h2\", \"nerve.triangles\")")
+            && html.contains("h2CoherenceVisualized: false"),
+        "viewer V5 must place H0/H1/H2 geometry on degree bands without H2 verdict color"
+    );
+    assert!(
+        html.contains("THREE.MathUtils.lerp(0.4, 2.2")
+            && html.contains("edge.value is mismatch parity, not continuous cohomology magnitude")
+            && html.contains("registerMeasuredBloom(tube, \"headline_h1_cocycle_seam\"")
+            && !html.contains("registerMeasuredBloom(mesh, \"h2"),
+        "viewer V5 must size H1 ribbon by parity marker and keep bloom off H2 glass"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
