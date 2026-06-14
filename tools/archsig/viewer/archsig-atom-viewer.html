@@ -1936,7 +1936,7 @@
         renderForbiddenCages(scene, geometry.forbiddenCages || [], positions, encoding, geometry.renderLimits || {});
       }
       if (scene.sceneId === "repair-dual") {
-        renderRepairMorphs(scene, geometry.repairMorphs || [], positions, encoding, geometry.renderLimits || {});
+        renderRepairMorphs(scene, geometry.repairMorphs || [], positions, encoding, geometry.renderLimits || {}, geometry.forbiddenCages || []);
       }
       const created = edgeGroup.children.slice(before);
       window.__archsigViewerDebug = {
@@ -2729,14 +2729,157 @@
       return label.length > 26 ? `${label.slice(0, 25)}...` : label;
     }
 
+    function supportVariableList(...collections) {
+      const variables = new Set();
+      collections.flat().forEach((item) => {
+        (item?.supportVariables || []).forEach((variable) => variables.add(String(variable || "")));
+      });
+      return [...variables].filter(Boolean).sort();
+    }
+
+    function supportVariableAxis(variable, index, total) {
+      const scale = 32;
+      const baseAxes = [
+        new THREE.Vector3(scale, 0, 0),
+        new THREE.Vector3(0, 0, scale),
+        new THREE.Vector3(0, scale * 0.82, 0)
+      ];
+      if (index < baseAxes.length) return baseAxes[index].clone();
+      const angle = (index * Math.PI * 2) / Math.max(total, 4);
+      const folded = new THREE.Vector3(Math.cos(angle) * scale * 0.82, ((index % 3) - 1) * scale * 0.22, Math.sin(angle) * scale * 0.82);
+      return folded;
+    }
+
+    function supportCoordinateFrame(items) {
+      const variables = supportVariableList(items);
+      const origin = new THREE.Vector3(-72, -14, -54);
+      const axes = new Map();
+      variables.forEach((variable, index) => axes.set(variable, supportVariableAxis(variable, index, variables.length)));
+      return { variables, axes, origin };
+    }
+
+    function supportCoordinate(variables, frame, lift = 0) {
+      const point = frame.origin.clone();
+      (variables || []).forEach((variable) => {
+        const axis = frame.axes.get(String(variable || ""));
+        if (axis) point.add(axis);
+      });
+      point.y += lift;
+      return point;
+    }
+
+    function supportSimplexPoints(variables, frame, lift = 0) {
+      const unique = [...new Set((variables || []).map((variable) => String(variable || "")).filter(Boolean))];
+      return unique.map((variable, index) => supportCoordinate([variable], frame, lift + index * 0.22));
+    }
+
+    function renderSupportCoordinateFrame(frame, source) {
+      if (!frame.variables.length) return;
+      frame.variables.forEach((variable, index) => {
+        const axis = frame.axes.get(variable);
+        const end = frame.origin.clone().add(axis);
+        addLineSegments([frame.origin.x, frame.origin.y, frame.origin.z, end.x, end.y, end.z], 0x9fb3c8, 0.48, "supportVariableAxis", {
+          lineRole: "solid",
+          thicknessRole: "thin",
+          supportCoordinateFrame: true
+        });
+        const label = createTextSprite(variable.replace(/^x_/, ""), "#d8dee9", "rgba(13,16,21,0.68)");
+        label.position.copy(end).add(new THREE.Vector3(0, 5 + index * 0.4, 0));
+        label.userData = {
+          kind: "supportVariableAxisLabel",
+          variable,
+          source,
+          supportCoordinateFrame: true,
+          hashFallback: false
+        };
+        edgeGroup.add(label);
+      });
+      const plate = new THREE.Mesh(
+        new THREE.CircleGeometry(18, 40),
+        new THREE.MeshStandardMaterial({
+          color: 0x64d6be,
+          emissive: 0x082f2a,
+          transparent: true,
+          opacity: 0.18,
+          side: THREE.DoubleSide,
+          roughness: 0.62
+        })
+      );
+      plate.position.copy(frame.origin).add(new THREE.Vector3(0, -0.8, 0));
+      plate.rotation.x = -Math.PI / 2;
+      plate.userData = {
+        kind: "lawfulFlatLandingPlane",
+        label: "Flat_U",
+        supportCoordinateFrame: true,
+        nonClaim: "support repair landing plane is a lower-bound inspection aid, not automatic repair"
+      };
+      edgeGroup.add(plate);
+      const note = createTextSprite("support repair: drop support variables; not automatic repair; lower-bound inspection aid", "#ffffff", "rgba(40,26,78,0.74)");
+      note.position.copy(frame.origin).add(new THREE.Vector3(20, 13, 0));
+      note.userData = {
+        kind: "supportRepairNonClaim",
+        supportCoordinateFrame: true,
+        nonClaim: "not automatic repair; lower-bound inspection aid; no new structural verdict",
+        labelPriorityScore: 90
+      };
+      edgeGroup.add(note);
+    }
+
+    function addSupportSimplex(points, kind, item, color = 0xff9468) {
+      if (!points.length) return;
+      if (points.length === 1) {
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(3.2, 18, 12),
+          new THREE.MeshStandardMaterial({ color, emissive: 0x2a1008, roughness: 0.42 })
+        );
+        marker.position.copy(points[0]);
+        marker.userData = {
+          kind,
+          item,
+          supportSimplexDimension: 0,
+          supportCoordinateFrame: true,
+          hashFallback: false
+        };
+        edgeGroup.add(marker);
+        return;
+      }
+      const vertices = [];
+      for (let index = 0; index < points.length; index += 1) {
+        const next = (index + 1) % points.length;
+        vertices.push(points[index].x, points[index].y, points[index].z, points[next].x, points[next].y, points[next].z);
+      }
+      addLineSegments(vertices, color, 0.76, kind, {
+        lineRole: "broken_line",
+        thicknessRole: "thick",
+        supportCoordinateFrame: true,
+        hashFallback: false
+      });
+      if (points.length >= 3) {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.slice(0, 3).flatMap((point) => [point.x, point.y, point.z]), 3));
+        geometry.computeVertexNormals();
+        const face = new THREE.Mesh(
+          geometry,
+          new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.16, side: THREE.DoubleSide, roughness: 0.58 })
+        );
+        face.userData = {
+          kind: "supportCoordinateSimplexFace",
+          item,
+          supportSimplexDimension: 2,
+          supportCoordinateFrame: true,
+          hashFallback: false
+        };
+        edgeGroup.add(face);
+      }
+    }
+
     function renderForbiddenCages(scene, cages, positions, encoding, limits) {
+      const frame = supportCoordinateFrame(cages);
+      renderSupportCoordinateFrame(frame, "forbiddenCages.supportVariables");
       cages.slice(0, limits.forbiddenCages || 80).forEach((cage, index) => {
         const points = (cage.atomRefs || []).map((ref) => positions.get(ref)).filter(Boolean);
-        const center = sceneAxisPosition(scene, cage.cageId || `cage:${index}`, index, Math.max(cages.length, 1), points.length ? centroid(points) : groupPosition(index, Math.max(cages.length, 1), 52), {
-          xValue: index / Math.max(cages.length - 1, 1),
-          yValue: Math.min((cage.supportVariables || cage.atomRefs || []).length, 12),
-          zValue: Math.min((cage.atomRefs || []).length, 12)
-        });
+        const simplexPoints = supportSimplexPoints(cage.supportVariables || [], frame, 7 + index * 0.3);
+        const center = simplexPoints.length ? centroid(simplexPoints) : supportCoordinate(cage.supportVariables || [], frame, 7 + index * 0.3);
         const size = 7 + Math.min(points.length, 8) * 1.2;
         const mesh = new THREE.Mesh(
           new THREE.IcosahedronGeometry(size, 1),
@@ -2749,30 +2892,37 @@
           })
         );
         mesh.position.copy(center);
-        mesh.position.y += 12;
-        mesh.userData = { kind: "forbiddenSupportCage", item: cage };
+        mesh.userData = {
+          kind: "forbiddenSupportCage",
+          item: cage,
+          supportCoordinateFrame: true,
+          supportVariables: cage.supportVariables || [],
+          hashFallback: false,
+          notTorClassDecomposedBeforeM4: true
+        };
         registerMeasuredBloom(mesh, "candidate_forbidden_cage", 0.38);
         edgeGroup.add(mesh);
-        addLineSegments(points.flatMap((p) => [center.x, center.y + 12, center.z, p.x, p.y, p.z]), 0xff9468, 0.68, "forbiddenSimplexEdge", { lineRole: "broken_line", thicknessRole: "thick" });
+        addSupportSimplex(simplexPoints, "forbiddenSupportCoordinateSimplex", cage, 0xff9468);
+        addLineSegments(points.flatMap((p) => [center.x, center.y, center.z, p.x, p.y, p.z]), 0xff9468, 0.48, "forbiddenSimplexEvidenceEdge", { lineRole: "broken_line", thicknessRole: "thin" });
       });
     }
 
-    function renderRepairMorphs(scene, morphs, positions, encoding, limits) {
+    function renderRepairMorphs(scene, morphs, positions, encoding, limits, cages = []) {
+      const frame = supportCoordinateFrame([...cages, ...morphs]);
+      renderSupportCoordinateFrame(frame, "repairMorphs.supportVariables");
+      const cageByRef = new Map(cages.map((cage) => [String(cage.cageId || ""), cage]));
+      cages.slice(0, limits.forbiddenCages || 80).forEach((cage, index) => {
+        const simplexPoints = supportSimplexPoints(cage.supportVariables || [], frame, 7 + index * 0.25);
+        addSupportSimplex(simplexPoints, "repairSceneSourceCageSimplex", cage, 0xff9468);
+      });
       morphs.slice(0, limits.repairMorphs || 50).forEach((morph, index) => {
         const fallback = groupPosition(index, Math.max(morphs.length, 1), 62);
-        const sourcePoints = (morph.fromAtomRefs || []).map((ref) => positions.get(ref)).filter(Boolean);
-        const sourceFallback = sourcePoints.length ? centroid(sourcePoints) : fallback.clone().add(new THREE.Vector3(-22 - index * 0.8, 18, -12));
-        const target = sceneAxisPosition(scene, morph.toAtomRef || morph.toCandidateRef || morph.morphId, index, Math.max(morphs.length, 1), positions.get(morph.toAtomRef) || fallback, {
-          xValue: index / Math.max(morphs.length - 1, 1),
-          yValue: Math.min((morph.supportVariables || morph.supportAtomRefs || []).length, 12),
-          zValue: Math.min((morph.lowerBoundReadingRefs || []).length + 1, 12)
-        });
-        const start = sceneAxisPosition(scene, morph.fromCageRef || morph.morphId, index, Math.max(morphs.length, 1), sourceFallback, {
-          xValue: index / Math.max(morphs.length - 1, 1),
-          yValue: Math.min((morph.fromCageRefs || []).length, 12),
-          zValue: Math.min((morph.fromAtomRefs || []).length, 12)
-        });
-        const targetPoint = target.clone().add(new THREE.Vector3(0, 5, 0));
+        const sourceCages = (morph.fromCageRefs || [morph.fromCageRef]).map((ref) => cageByRef.get(String(ref || ""))).filter(Boolean);
+        const sourceVariables = [...new Set(sourceCages.flatMap((cage) => cage.supportVariables || []))];
+        const start = sourceVariables.length
+          ? supportCoordinate(sourceVariables, frame, 14 + index * 0.45)
+          : fallback.clone().add(new THREE.Vector3(-22 - index * 0.8, 18, -12));
+        const targetPoint = supportCoordinate(morph.supportVariables || [], frame, 4 + index * 0.45);
         addLineSegments([start.x, start.y, start.z, targetPoint.x, targetPoint.y, targetPoint.z], sceneColorHex("repair_candidate"), 0.74, "repairMorphPath", { lineRole: "arrow", thicknessRole: "thick" });
         const direction = targetPoint.clone().sub(start).normalize();
         const arrowHead = new THREE.Mesh(
@@ -2781,14 +2931,31 @@
         );
         arrowHead.position.copy(targetPoint.clone().addScaledVector(direction, -3.2));
         arrowHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
-        arrowHead.userData = { kind: "repairMorphArrow", item: morph, lineRole: "arrow", visualEncodingChannel: "line" };
+        arrowHead.userData = {
+          kind: "repairMorphArrow",
+          item: morph,
+          lineRole: "arrow",
+          visualEncodingChannel: "line",
+          supportCoordinateFrame: true,
+          nonClaim: "support repair: drop support variables; not automatic repair; lower-bound inspection aid"
+        };
         registerMeasuredBloom(arrowHead, "candidate_repair_arrow", 0.42);
         edgeGroup.add(arrowHead);
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8, 16, 10),
           new THREE.MeshStandardMaterial({ color: 0xb087ff, emissive: 0x160a28, roughness: 0.36 })
         );
-        marker.userData = { kind: "repairMorphMarker", item: morph, nonClaim: "not automatic repair", start, target: targetPoint, phase: index * 0.17 };
+        marker.userData = {
+          kind: "repairMorphMarker",
+          item: morph,
+          nonClaim: "support repair: drop support variables; not automatic repair; lower-bound inspection aid",
+          supportCoordinateFrame: true,
+          supportVariables: morph.supportVariables || [],
+          hashFallback: false,
+          start,
+          target: targetPoint,
+          phase: index * 0.17
+        };
         registerMeasuredBloom(marker, "candidate_repair_marker", 0.44);
         edgeGroup.add(marker);
       });
@@ -2812,7 +2979,7 @@
         : new THREE.LineBasicMaterial({ color, transparent: true, opacity });
       const lines = new THREE.LineSegments(geometry, material);
       if (dashed && typeof lines.computeLineDistances === "function") lines.computeLineDistances();
-      lines.userData = { kind, lineRole, thicknessRole, dashed };
+      lines.userData = { kind, lineRole, thicknessRole, dashed, ...style };
       if (style.cohomologyDegree) tagCohomologyLayer(lines, style.cohomologyDegree, kind);
       edgeGroup.add(lines);
       if (thicknessRole === "thick") {
@@ -2829,7 +2996,7 @@
         const shadow = new THREE.LineSegments(shadowGeometry, shadowMaterial);
         if (dashed && typeof shadow.computeLineDistances === "function") shadow.computeLineDistances();
         shadow.position.set(0.9, 0.55, 0.9);
-        shadow.userData = { kind: `${kind}Thickness`, lineRole, thicknessRole, dashed, visualEncodingChannel: "thickness" };
+        shadow.userData = { kind: `${kind}Thickness`, lineRole, thicknessRole, dashed, visualEncodingChannel: "thickness", ...style };
         if (style.cohomologyDegree) tagCohomologyLayer(shadow, style.cohomologyDegree, `${kind}:thickness`);
         edgeGroup.add(shadow);
       }
@@ -3723,8 +3890,10 @@
       }
       if (viewModeEl.value === "projection") {
         renderSimpleLegend([
-          ["b087ff", "repair morph"],
-          ["d8dee9", "candidate target"]
+          ["b087ff", "support repair morph"],
+          ["64d6be", "Flat_U landing plane"],
+          ["9fb3c8", "supportVariables coordinate axes"],
+          ["d8dee9", "not automatic repair; lower-bound inspection aid"]
         ]);
         return;
       }

@@ -13819,6 +13819,29 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V7 must keep graph-cycle readings separate from H1 structural verdicts"
     );
     assert!(
+        html.contains("supportVariableAxis")
+            && html.contains("supportCoordinateFrame")
+            && html.contains("supportVariableAxisLabel")
+            && html.contains("lawfulFlatLandingPlane")
+            && html.contains("Flat_U landing plane"),
+        "viewer V8 must build a supportVariables coordinate frame with a Flat_U landing plane"
+    );
+    assert!(
+        html.contains("forbiddenSupportCoordinateSimplex")
+            && html.contains("repairSceneSourceCageSimplex")
+            && html.contains("supportCoordinateSimplexFace")
+            && html.contains("hashFallback: false")
+            && html.contains("notTorClassDecomposedBeforeM4: true"),
+        "viewer V8 must place cages as support-variable simplexes without hash fallback or pre-M4 class decomposition"
+    );
+    assert!(
+        html.contains("support repair: drop support variables; not automatic repair; lower-bound inspection aid")
+            && html.contains("not automatic repair; lower-bound inspection aid; no new structural verdict")
+            && !html.contains("cobordism")
+            && !html.contains("mass-preserving"),
+        "viewer V8 must keep support repair as a lower-bound inspection aid without unsupported repair claims"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
