@@ -1014,6 +1014,9 @@
     let selectedAtomKey = null;
     let activeLayoutContext = null;
     let activeTourState = null;
+    let previousAtomLayoutPositions = new Map();
+    let activeAtomLayoutPositions = new Map();
+    let atomLayoutMorphState = null;
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1304,6 +1307,7 @@
       requestAnimationFrame(animate);
       controls.update();
       updateRepairMorphAnimation();
+      updateAtomLayoutMorph();
       renderFrame();
     }
 
@@ -1482,6 +1486,9 @@
       currentData = data || {};
       currentLabel = label;
       currentCompanions = companions || {};
+      previousAtomLayoutPositions = new Map();
+      activeAtomLayoutPositions = new Map();
+      atomLayoutMorphState = null;
       if (titleEl) titleEl.textContent = label;
       appEl.classList.toggle("data-loaded", hasViewerContent(currentData));
       populateFilters(currentData);
@@ -1499,6 +1506,7 @@
 
     function renderScene() {
       if (!currentData) return;
+      previousAtomLayoutPositions = activeAtomLayoutPositions;
       clearGroup(atomGroup);
       clearGroup(moleculeGroup);
       clearGroup(edgeGroup);
@@ -1517,7 +1525,13 @@
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
       renderedAtoms.forEach((node, index) => positions.set(node.nodeId, nodePosition(node, index, renderedAtoms.length, activeLayoutContext)));
+      activeAtomLayoutPositions = positions;
       renderAtomInstances(renderedAtoms, positions);
+      edgeGroup.userData = {
+        ...(edgeGroup.userData || {}),
+        geometryOverlayMorphCrossfade: true,
+        morphNonClaim: "overlay crossfade is a visual transition only; no new structural verdict"
+      };
       if (shouldRenderAtomGlyphs(viewModeEl.value)) {
         renderAtomGlyphOverlays(renderedAtoms, positions, activeLayoutContext);
       }
@@ -1537,6 +1551,9 @@
         sceneLayerObjectDelta: edgeGroup.children.length - edgeChildrenBeforeSceneLayers,
         selectiveBloomStatus: scene.userData.selectiveBloomStatus || "unknown",
         silenceDepthStatus: scene.userData.silenceDepthStatus || "unknown",
+        layoutMorphStatus: atomLayoutMorphState ? "active" : "ready",
+        demoteHashStatus: "axisMetricBindings-primary/hash-demoted-jitter",
+        morphProjectionBoundary: "visual trajectory only; not semantic distance, causality, equivalence, or verdict",
         bloomLayer: BLOOM_LAYER,
         bloomRegisteredCount
       };
@@ -1656,17 +1673,69 @@
       const material = new THREE.MeshStandardMaterial({ roughness: 0.56, metalness: 0.04 });
       atomInstanceMesh = new THREE.InstancedMesh(geometry, material, nodes.length);
       atomInstanceMesh.userData.kind = "atomInstances";
+      atomInstanceMesh.userData.layoutMorphable = true;
       const scale = new THREE.Vector3();
+      const morphFrom = new Map();
+      const morphTo = new Map();
       nodes.forEach((node, index) => {
         const radius = nodeRadius(node);
-        const p = positions.get(node.nodeId);
+        const target = positions.get(node.nodeId);
+        const source = previousAtomLayoutPositions.get(node.nodeId) || target;
+        morphFrom.set(node.nodeId, source.clone());
+        morphTo.set(node.nodeId, target.clone());
+        const p = source;
         scratchMatrix.compose(p, new THREE.Quaternion(), scale.set(radius, radius, radius));
         atomInstanceMesh.setMatrixAt(index, scratchMatrix);
         atomInstanceMesh.setColorAt(index, scratchColor.setHex(nodeColor(node)));
       });
       atomInstanceMesh.instanceMatrix.needsUpdate = true;
       if (atomInstanceMesh.instanceColor) atomInstanceMesh.instanceColor.needsUpdate = true;
+      atomLayoutMorphState = {
+        startedAt: performance.now(),
+        duration: previousAtomLayoutPositions.size ? 900 : 0,
+        nodes: nodes.map((node) => node.nodeId),
+        from: morphFrom,
+        to: morphTo,
+        projectionBoundary: "visual trajectory only; not semantic distance, causality, equivalence, or verdict"
+      };
+      atomInstanceMesh.userData.layoutMorphState = "active";
+      atomInstanceMesh.userData.morphNonClaim = atomLayoutMorphState.projectionBoundary;
       atomGroup.add(atomInstanceMesh);
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function updateAtomLayoutMorph() {
+      if (!atomInstanceMesh || !atomLayoutMorphState) return;
+      const elapsed = performance.now() - atomLayoutMorphState.startedAt;
+      const raw = atomLayoutMorphState.duration ? Math.min(elapsed / atomLayoutMorphState.duration, 1) : 1;
+      const eased = easeInOutCubic(raw);
+      const scale = new THREE.Vector3();
+      atomLayoutMorphState.nodes.forEach((nodeId, index) => {
+        const node = renderedAtoms[index];
+        const from = atomLayoutMorphState.from.get(nodeId);
+        const to = atomLayoutMorphState.to.get(nodeId);
+        if (!node || !from || !to) return;
+        const p = from.clone().lerp(to, eased);
+        const radius = nodeRadius(node);
+        scratchMatrix.compose(p, new THREE.Quaternion(), scale.set(radius, radius, radius));
+        atomInstanceMesh.setMatrixAt(index, scratchMatrix);
+      });
+      atomInstanceMesh.instanceMatrix.needsUpdate = true;
+      window.__archsigViewerLayoutMorph = {
+        active: raw < 1,
+        progress: Number(raw.toFixed(3)),
+        easedProgress: Number(eased.toFixed(3)),
+        atomCount: atomLayoutMorphState.nodes.length,
+        projectionBoundary: atomLayoutMorphState.projectionBoundary
+      };
+      atomInstanceMesh.userData.layoutMorphProgress = Number(raw.toFixed(3));
+      if (raw >= 1) {
+        atomInstanceMesh.userData.layoutMorphState = "complete";
+        atomLayoutMorphState = null;
+      }
     }
 
     function renderAtomGlyphOverlays(nodes, positions, layoutContext) {
@@ -1908,6 +1977,15 @@
       return mesh;
     }
 
+    function demotedHashJitter(key, amplitude = 2.4) {
+      const hash = hashText(key || "jitter");
+      return new THREE.Vector3(
+        (((hash % 101) / 100) - 0.5) * amplitude,
+        ((((hash >> 3) % 101) / 100) - 0.5) * amplitude * 0.32,
+        ((((hash >> 7) % 101) / 100) - 0.5) * amplitude
+      );
+    }
+
     function renderGluingGeometry(scene, positions, encoding) {
       const geometry = activeLayoutContext?.aat?.gluingGeometry || {};
       if (!window.__archsigViewerDebug) {
@@ -1963,13 +2041,24 @@
       const xValue = Number.isFinite(Number(metrics[xKey])) ? Number(metrics[xKey]) : rank;
       const yValue = Number.isFinite(Number(metrics[yKey])) ? Number(metrics[yKey]) : 0;
       const zValue = Number.isFinite(Number(metrics[zKey])) ? Number(metrics[zKey]) : 0;
-      const xScale = 46 + (hashText(axes.x || "x") % 17);
-      const yScale = 9 + (hashText(axes.y || "y") % 7);
-      const zScale = 32 + (hashText(axes.z || "z") % 19);
-      const phase = xValue * Math.PI * 2 + index * 0.11;
-      const radius = zScale + Math.sqrt(index + 1) * 1.8 + Math.min(Math.abs(zValue), 12) * 5;
+      const metricMagnitude = Math.max(Math.abs(xValue), Math.abs(yValue), Math.abs(zValue), 1);
+      const xScale = 58 + Math.min(Math.abs(xValue), 12) * 4.6;
+      const yScale = 12 + Math.min(Math.abs(yValue), 12) * 1.2;
+      const zScale = 36 + Math.min(Math.abs(zValue), 12) * 6.2;
+      const jitter = demotedHashJitter(ref || `${scene?.sceneId || "scene"}:${index}`, 2.8);
+      const phase = xValue * Math.PI * 2 + index * 0.11 + jitter.x * 0.012;
+      const radius = zScale + Math.sqrt(index + 1) * 1.2 + Math.min(Math.abs(zValue), 12) * 6 + metricMagnitude * 0.9;
       const y = -26 + yValue * yScale + rank * 18;
-      const axisPoint = new THREE.Vector3(Math.cos(phase) * (radius + xValue * xScale), y, Math.sin(phase) * radius);
+      const axisPoint = new THREE.Vector3(
+        Math.cos(phase) * (radius + xValue * xScale) + jitter.x,
+        y + jitter.y,
+        Math.sin(phase) * radius + zValue * 9 + jitter.z
+      );
+      axisPoint.userData = {
+        metricDominantLayout: true,
+        axisMetricBindings: { x: xKey, y: yKey, z: zKey },
+        hashRole: "demoted-jitter"
+      };
       if (!fallback) return axisPoint;
       return axisPoint.lerp(fallback.clone(), blend);
     }
@@ -3283,10 +3372,9 @@
       });
       p.divideScalar(Math.max(totalWeight, 1));
       const spread = weighted.length;
-      const localAngle = (index + hashText(`${salt}:${node.nodeId}`)) * 2.399963229728653;
-      const jitter = 5 + Math.sqrt((index % 233) + 1) * 1.15 + Math.min(spread, 8) * 2.2;
+      const jitter = demotedHashJitter(`${salt}:${node.nodeId}`, 3.4 + Math.min(spread, 8) * 0.28);
       const familyLift = (familyRank(node.atomFamily) - 4) * 2.1;
-      return new THREE.Vector3(p.x + Math.cos(localAngle) * jitter, familyLift, p.z + Math.sin(localAngle) * jitter);
+      return new THREE.Vector3(p.x + jitter.x, familyLift + jitter.y, p.z + jitter.z);
     }
 
     function geometryScalar(items, fallback = 0) {
@@ -3957,7 +4045,7 @@
         ["x", "y", "z"].map((axis) =>
           `<div><b>${axis.toUpperCase()}</b><span>${escapeHtml(layout[axis])}</span></div>`
         ).join("") +
-        `<div><b>NOTE</b><span>Coordinates are a visual projection, not semantic distance, causality, or equivalence.</span></div>`;
+        `<div><b>NOTE</b><span>Coordinates are a visual projection, not semantic distance, causality, or equivalence. Morph trajectories are visual projections, not verdicts.</span></div>`;
     }
 
     function axisHudText(mode) {
