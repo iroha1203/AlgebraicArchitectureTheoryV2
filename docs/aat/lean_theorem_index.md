@@ -4862,10 +4862,11 @@ non-abelian gerbe cohomology 一般論、全 decomposition 分類、finite witne
 ## AG版AAT Lean形式化 PRD-7 / 第VII部 Representation・Periods・Analysis
 
 File: `Formal/AG/RepresentationAnalysis.lean`,
-`Formal/AG/RepresentationAnalysis/Bootstrap.lean`.
+`Formal/AG/RepresentationAnalysis/Bootstrap.lean`,
+`Formal/AG/RepresentationAnalysis/AATSch.lean`.
 
 PRD-7 [第VII部 Representation・Periods・Analysis](lean_ag_part_7_representation_periods_analysis_prd.md)
-の AC1/R0 に対応する entrypoint である。現時点では
+の AC1/R0 と AC2/R1 に対応する entrypoint である。現時点では
 `Formal/AG/RepresentationAnalysis` を build 対象へ追加し、PRD-3 `LawAlgebra`、
 PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
 を第VII部の前提 module として import する。最初の surface として、
@@ -4875,19 +4876,24 @@ PRD-4 `Cohomology`、PRD-5 `Derived`、PRD-6 `SingularityMonodromyStack`
 `currentDependencyStatus` は、先行 PRD 依存が present / blocked のどちらであるかを
 Lean-facing status として保持する。`PartVIINoMeasurementVerdictBoundary` は、
 第VII部が representation / period / metric reading layer であり、measurement verdict は
-第VIII部へ残すことを明示する。
+第VIII部へ残すことを明示する。AC2/R1 として、fixed reading parameter に相対化された
+`AATSch`、selected morphism interface、optional fiber product data、
+functor-like `AnalyticRepresentation` も追加している。
 
 Tracking Issue: [#2157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2157).
 Initial implementation Issue: [#2158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2158).
+AC2 implementation Issue: [#2162](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2162).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
 | `VII.R0` | `Formal.AG.RepresentationAnalysis`, `Formal.AG.RepresentationAnalysis.Bootstrap`, `AAT.AG.RepresentationAnalysis.UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `PrerequisiteStatus`, `PartVIIDependencyStatus`, `currentDependencyStatus`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `PartVIINoMeasurementVerdictBoundary`, `noMeasurementVerdictBoundary`, `PartVIINoMeasurementVerdictBoundary.readingLayer_holds`, `PartVIINoMeasurementVerdictBoundary.measurementVerdictReservedForPartVIII_holds` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第VII部 Representation・Periods・Analysis module を `Formal/AG.lean` から import し、PRD-3〜6 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、measurement verdict は第VII部に導入しない境界を保持する。 | `defined only` / `proved accessor` |
+| `VII.定義2.1` | `AAT.AG.RepresentationAnalysis.AATSchReadingParameter`, `AATSch`, `AATSch.underlyingScheme`, `AATSch.underlyingScheme_eq`, `AATSchMorphism`, `AATSchMorphism.atomLabelsCompatible_holds`, `AATSchMorphism.lawReadingCompatible_holds`, `AATSchMorphism.obstructionIdealCompatible_holds`, `AATSchMorphism.signatureReadingCompatible_holds`, `AATSchMorphism.interpretationMapCompatible_holds`, `AATSchIdentityData`, `AATSchCompositionData`, `AATSchFiberProductData`, `AATSchFiberProductData.underlyingPullback_holds`, `AATSchFiberProductData.decorationPullbackCompatible_holds`, `AnalyticTargetCategory`, `AnalyticRepresentation`, `AnalyticRepresentation.map_identity`, `AnalyticRepresentation.map_composition` | `structure` / `def` / `theorem` | fixed reading parameter `p` に相対化された decorated architecture scheme、selected morphism interface、optional fiber product data、target category interface、functor-like analytic representation を定義する。identity / composition は selected data と representation law fields として保持し、Mathlib functor bridge はまだ主張しない。 | `defined only` / `proved accessor` |
 
-Non-conclusions: この entrypoint は `AATSch p`、`AnalyticRepresentation`、
-graph / matrix representation、period family、strict period、metric enrichment、
-margin / observation gap theorem、detecting representation conservativity、synthesis theorem、
-finite golden examples をまだ実装しない。measurement verdict / finite computability profile は
+Non-conclusions: この entrypoint は graph / matrix representation、
+representation family の preservation / reflection predicate、period family、strict period、
+metric enrichment、margin / observation gap theorem、detecting representation conservativity、
+synthesis theorem、finite golden examples をまだ実装しない。
+measurement verdict / finite computability profile は
 PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
 
 ## Reverse-Import Theorem Packages
