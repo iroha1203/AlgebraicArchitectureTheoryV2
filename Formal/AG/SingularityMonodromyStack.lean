@@ -10,3 +10,4 @@ import Formal.AG.SingularityMonodromyStack.OperationHomotopy
 import Formal.AG.SingularityMonodromyStack.Monodromy
 import Formal.AG.SingularityMonodromyStack.MonodromyTheorems
 import Formal.AG.SingularityMonodromyStack.RefactorGalois
+import Formal.AG.SingularityMonodromyStack.ArchitectureStack
