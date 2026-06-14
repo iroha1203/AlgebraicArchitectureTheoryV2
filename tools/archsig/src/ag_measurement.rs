@@ -4830,6 +4830,15 @@ fn evaluate_cech_obstruction_v1(
     let has_triple_overlap_faces = cover_nerve_face_count > 0;
     let h1_class_nonzero =
         !empty_selected_scope && !edge_cochain_is_coboundary(&selected_contexts, &edges);
+    let topological_debt_capacity = topological_debt_capacity_invariant_v1(
+        profile,
+        &selected_contexts,
+        &edges,
+        &cover_nerve_projection,
+        h1_dimension,
+        h1_class_nonzero,
+        empty_selected_scope,
+    );
     let representative = edges
         .iter()
         .filter(|edge| edge.value == 1)
@@ -4879,6 +4888,16 @@ fn evaluate_cech_obstruction_v1(
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part4/12.3".to_string(),
+            assumption: "constant coefficient nerve b1 comparison".to_string(),
+            status: "checked".to_string(),
+            checked_by: Some(format!(
+                "measurement-profile:{}.coefficient={}",
+                profile.profile_id, profile.coefficient
+            )),
+            assumed_by: None,
         },
     ];
     assumptions.extend(cech_effectivity_assumptions_v1(
@@ -4995,6 +5014,7 @@ fn evaluate_cech_obstruction_v1(
                     "mismatchSupportRefs": mismatch_support_refs
                 }
             }),
+            topological_debt_capacity,
             json!({
                 "invariantId": format!("witness-counting:{}", profile.profile_id),
                 "evaluator": "witness-counting@1",
@@ -5010,6 +5030,141 @@ fn evaluate_cech_obstruction_v1(
         ],
         assumptions,
     }
+}
+
+fn topological_debt_capacity_invariant_v1(
+    profile: &MeasurementProfileV1,
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    cover_nerve_projection: &Value,
+    one_skeleton_b1: usize,
+    h1_class_nonzero: bool,
+    empty_selected_scope: bool,
+) -> Value {
+    let dim_c0 = selected_contexts.len();
+    let dim_c1 = edges.len();
+    let dim_c2 = cover_nerve_projection["faces"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or_default();
+    let raw_capacity = dim_c1 as isize - dim_c0 as isize - dim_c2 as isize;
+    let capacity_lower_bound = raw_capacity.max(0) as usize;
+    let euler_characteristic = dim_c0 as isize - dim_c1 as isize + dim_c2 as isize;
+    let nerve_complex_b1 = nerve_complex_b1_f2(selected_contexts, edges, cover_nerve_projection);
+    json!({
+        "invariantId": format!("topological-debt-capacity:{}", profile.profile_id),
+        "evaluator": "ag.cech-obstruction@1",
+        "method": "finite-f2-rank-nullity-nerve-capacity@1",
+        "status": if empty_selected_scope {
+            "not_computed"
+        } else {
+            "computed"
+        },
+        "methodStatus": if empty_selected_scope {
+            "empty_selected_scope"
+        } else {
+            "finite_f2_nerve_capacity_computed"
+        },
+        "selectedCoverRef": profile.cover_ref,
+        "coefficient": profile.coefficient,
+        "dimensions": {
+            "dimC0": dim_c0,
+            "dimC1": dim_c1,
+            "dimC2": dim_c2
+        },
+        "capacityLowerBound": if empty_selected_scope {
+            Value::Null
+        } else {
+            json!(capacity_lower_bound)
+        },
+        "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+        "eulerCharacteristic": if empty_selected_scope {
+            Value::Null
+        } else {
+            json!(euler_characteristic)
+        },
+        "eulerFormula": "dimC0 - dimC1 + dimC2",
+        "b1NerveReading": {
+            "oneSkeletonB1": if empty_selected_scope {
+                Value::Null
+            } else {
+                json!(one_skeleton_b1)
+            },
+            "nerveComplexB1": if empty_selected_scope {
+                Value::Null
+            } else {
+                json!(nerve_complex_b1)
+            },
+            "oneSkeletonMethod": "graph-cycle-rank@1",
+            "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+            "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+            "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims."
+        },
+        "measuredCechVerdictEcho": {
+            "evaluator": "ag.cech-obstruction@1",
+            "certRef": if empty_selected_scope {
+                Value::Null
+            } else {
+                json!(format!("computedInvariants/cech-cohomology:{}", profile.profile_id))
+            },
+            "h1ClassNonzero": h1_class_nonzero,
+            "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+        },
+        "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+        "structuralVerdictRef": Value::Null
+    })
+}
+
+fn nerve_complex_b1_f2(
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    cover_nerve_projection: &Value,
+) -> usize {
+    let mut simplices = selected_contexts
+        .iter()
+        .map(|context| vec![context.clone()])
+        .collect::<Vec<_>>();
+    simplices.extend(
+        edges
+            .iter()
+            .map(|edge| sorted_simplex([edge.source_context.clone(), edge.target_context.clone()])),
+    );
+    if let Some(faces) = cover_nerve_projection["faces"].as_array() {
+        for face in faces {
+            let contexts = face["contextRefs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|value| value.as_str().map(ToOwned::to_owned))
+                .collect::<Vec<_>>();
+            if contexts.len() < 3 {
+                continue;
+            }
+            let edge_refs = face["edgeRefs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|value| value.as_str())
+                .collect::<BTreeSet<_>>();
+            if edge_refs.len() == 3 {
+                simplices.push(sorted_simplex(contexts));
+            }
+        }
+    }
+    simplices.sort();
+    simplices.dedup();
+    reduced_simplicial_homology_f2(&simplices)
+        .into_iter()
+        .find(|row| row["degree"] == 1)
+        .and_then(|row| row["dimension"].as_u64())
+        .unwrap_or(0) as usize
+}
+
+fn sorted_simplex(items: impl IntoIterator<Item = String>) -> Vec<String> {
+    let mut simplex = items.into_iter().collect::<Vec<_>>();
+    simplex.sort();
+    simplex.dedup();
+    simplex
 }
 
 fn cech_effectivity_assumptions_v1(

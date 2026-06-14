@@ -963,14 +963,21 @@ fn archsig_measurement_verdict_has_evidence(
     row: &serde_json::Value,
     evaluator: &str,
 ) -> bool {
-    if row
+    if let Some(cert_ref) = row
         .get("verdictData")
         .and_then(|data| data.get("certRef"))
         .and_then(|value| value.as_str())
-        .is_some_and(|value| !value.trim().is_empty())
     {
+        let cert_ref = cert_ref.trim();
+        if cert_ref.is_empty() {
+            return false;
+        }
+        if let Some(invariant_id) = cert_ref.strip_prefix("computedInvariants/") {
+            return archsig_measurement_computed_invariant_ids(packet).any(|id| id == invariant_id);
+        }
         return true;
     }
+    let certificate_prefixes = archsig_measurement_certificate_invariant_prefixes(evaluator);
     packet
         .get("computedInvariants")
         .and_then(|value| value.as_array())
@@ -985,9 +992,55 @@ fn archsig_measurement_verdict_has_evidence(
                     invariant
                         .get(*key)
                         .and_then(|value| value.as_str())
-                        .is_some_and(|value| !value.trim().is_empty())
+                        .is_some_and(|value| {
+                            let value = value.trim();
+                            if value.is_empty() {
+                                return false;
+                            }
+                            certificate_prefixes
+                                .map(|prefixes| {
+                                    prefixes.iter().any(|prefix| value.starts_with(prefix))
+                                })
+                                .unwrap_or(true)
+                        })
                 })
         })
+}
+
+fn archsig_measurement_computed_invariant_ids(
+    packet: &serde_json::Value,
+) -> impl Iterator<Item = &str> {
+    packet
+        .get("computedInvariants")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .flat_map(|invariant| {
+            ["invariantId", "readingId", "id"]
+                .into_iter()
+                .filter_map(|key| {
+                    invariant
+                        .get(key)
+                        .and_then(|value| value.as_str())
+                        .map(str::trim)
+                        .filter(|value| !value.is_empty())
+                })
+        })
+}
+
+fn archsig_measurement_certificate_invariant_prefixes(
+    evaluator: &str,
+) -> Option<&'static [&'static str]> {
+    match evaluator {
+        "ag.cech-obstruction@1" => Some(&["cech-cohomology:"]),
+        "ag.law-conflict-tor@1" => Some(&["law-conflict-tor:"]),
+        "ag.square-free-repair@1" => Some(&["square-free-repair:"]),
+        "ag.restriction-compatibility@1" => Some(&["restriction-compatibility:"]),
+        "ag.section-factorization@1" => Some(&["section-factorization:"]),
+        "ag.boundary-residue@1" => Some(&["boundary-residue:"]),
+        "ag.coherence-obstruction@1" => Some(&["coherence-obstruction:"]),
+        _ => None,
+    }
 }
 
 fn validate_archsig_measurement_packet_assumptions(
