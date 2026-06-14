@@ -1164,6 +1164,7 @@ fn evaluate_square_free_repair_v1(
             .collect(),
     );
     let delta_faces = stanley_reisner_faces(&witness_variables, &minimal_forbidden_supports);
+    let delta_facets = maximal_faces(&delta_faces);
     let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
     let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
     let certificate = square_free_certificate(
@@ -1265,7 +1266,13 @@ fn evaluate_square_free_repair_v1(
                 "status": "missing",
                 "effect": "structural verdict remains unknown when obstruction generators are present"
             }))
-        })],
+        }),
+        lawful_locus_arrangement_invariant(
+            profile,
+            &witness_variables,
+            &delta_facets,
+            &minimal_forbidden_supports,
+        )],
         analytic_readings: vec![AgAnalyticReadingV1 {
             reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
             evaluator: "ag.foundation@1".to_string(),
@@ -1326,6 +1333,68 @@ fn evaluate_square_free_repair_v1(
             },
         ],
     })
+}
+
+fn lawful_locus_arrangement_invariant(
+    profile: &MeasurementProfileV1,
+    witness_variables: &[String],
+    facets: &[Vec<String>],
+    minimal_forbidden_supports: &[Vec<String>],
+) -> Value {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let components = facets
+        .iter()
+        .enumerate()
+        .map(|(index, facet)| {
+            let facet_set = facet.iter().cloned().collect::<BTreeSet<_>>();
+            let vanishing_coords = witness_set
+                .difference(&facet_set)
+                .cloned()
+                .collect::<Vec<_>>();
+            json!({
+                "componentId": format!("lawful-locus-component:{}", index + 1),
+                "facet": facet,
+                "vanishingCoords": vanishing_coords,
+                "dimension": facet.len()
+            })
+        })
+        .collect::<Vec<_>>();
+    let dimension = facets.iter().map(Vec::len).max().unwrap_or(0);
+
+    json!({
+        "invariantId": format!("lawful-locus-arrangement:{}", profile.profile_id),
+        "evaluator": "ag.square-free-repair@1",
+        "method": "finite-stanley-reisner-coordinate-arrangement@1",
+        "claimScope": "selected cover and selected witness-family relative finite Stanley-Reisner arrangement",
+        "selectedCoverRef": profile.cover_ref,
+        "locusSymbol": "Flat_U(X)=V(I_Delta)",
+        "witnessVariables": witness_variables,
+        "minimalForbiddenSupports": minimal_forbidden_supports,
+        "facets": facets,
+        "components": components,
+        "dimension": dimension,
+        "irreducibleComponentCount": facets.len(),
+        "nonConclusions": [
+            "This invariant does not evaluate section-specific s^* I_Ob^U=0.",
+            "The dimension is a finite coordinate-subspace arrangement dimension, not a total-correctness or runtime-safety claim.",
+            "irreducibleComponentCount is not a safety score or structural verdict."
+        ]
+    })
+}
+
+fn maximal_faces(faces: &[Vec<String>]) -> Vec<Vec<String>> {
+    let mut facets = faces
+        .iter()
+        .filter(|face| {
+            !faces.iter().any(|candidate| {
+                face.len() < candidate.len() && is_subset(face.as_slice(), candidate.as_slice())
+            })
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    facets.sort();
+    facets.dedup();
+    facets
 }
 
 fn evaluate_restriction_compatibility_v1(
