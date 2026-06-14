@@ -1239,6 +1239,34 @@ finite examples を `Formal/AG/Examples/RepresentationAnalysisPart7.lean` に追
 | `GeneralMeasureTheoryForObstructionMass` | `future proof obligation` / explicit non-goal for PRD-7 |
 | `CompleteMetricReflectionFromDistanceZero` | `future proof obligation` / explicit non-goal for PRD-7 |
 
+## AAT Algebraic-Geometric Part VIII Measurement Theory Lean status
+
+Tracking Issue: [#2210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2210).
+Initial implementation Issue: [#2211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2211).
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `VIII.R0` Formal/AG/Measurement entrypoint | `defined only` / `proved accessor`. `Formal/AG/Measurement.lean` が `Bootstrap.lean`、`Profile.lean`、`Verdict.lean` を束ね、`Formal/AG.lean` が `Formal.AG.Measurement` を import する。`UsesAATSite`、`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、`UsesRepairComparisonProfile`、`UsesArchitectureStratum`、`UsesAnalyticReadingContext` が PRD-2〜7 の concrete Lean 型を参照する。`currentDependencyStatus` と accessor theorem 群は、現時点で先行依存が available であることを保持する。 | R2 以降の finite computability、square-free repair、Hodge、LawConflict measurement、support transfer、packet、AAT-GAGA、finite examples は後続 Issue に残る。 |
+| `VIII.定義2.1 / R1` Measurement Profile and Measured_M | `defined only` / `proved accessor`. `MeasurementProfile` が selected site、cover、coefficient、effective interface、obstruction object、law universe、witness variables、obstruction ideal、representation family、domain、certificate、method、scope、zero / nonzero / undecided / not-computed predicates を profile-relative fields として保持する。`MeasurementProfile.Measured_M` は `InScope`、selected method、certificate reference を持つ bounded predicate surface であり、`measured_inScope`、`measured_method`、`measured_certificate` が accessor として存在する。 | `Zero` と `NonZero` が補集合であることは仮定しない。R2 の finite effective interface と theorem 4.2 は未実装。 |
+| `VIII.定義3.1 / 原則3.2 / 定義3.3 / R1` Measurement Verdict discipline | `defined only` / `proved constructor disjointness`. `MeasurementVerdict` が `measured_zero`、`measured_nonzero`、`unmeasured`、`unknown`、`not_computed` を依存 payload 付き constructor として分離する。`VerdictData`、`StructuralVerdict`、`AnalyticReading` は structural verdict と analytic reading を別型として保持する。`MeasurementVerdict.unmeasured_ne_measured_zero`、`unknown_ne_measured_nonzero`、`not_computed_ne_unmeasured` が constructor disjointness を sorry なしで証明する。 | analytic value から structural verdict への暗黙変換は置かない。unmeasured を zero、unknown を nonzero として読む theorem は置かない。 |
+
+第VIII部 PRD-8 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `VIII.R0` | `defined only` / `proved accessor` |
+| `VIII.定義2.1 / R1` Measurement Profile and `Measured_M` | `defined only` / `proved accessor` |
+| `VIII.定義3.1 / 原則3.2 / 定義3.3 / R1` Measurement Verdict discipline | `defined only` / `proved constructor disjointness` |
+| `VIII.定理4.2` Finite AAT Computability | `future proof obligation` |
+| `VIII.定理5.2` Stanley-Reisner / Alexander Dual Repair Theorem | `future proof obligation` |
+| `VIII.定理7.3` Refactor Invariance under Equivalence | `future proof obligation` |
+| `VIII.定理8.5` Finite Hodge Decomposition | `future proof obligation` |
+| `VIII.定理8.6 / 系8.7` Harmonic Debt Minimality / Essential Repair Lower Bound | `future proof obligation` |
+| `VIII.定理10.3` Support-Localized Transfer | `future proof obligation` |
+| `VIII.定理12.1` Finite Measurement Synthesis | `future proof obligation` |
+| `VIII.定理12.3` AAT-GAGA Finite Measurement Comparison | `future proof obligation` |
+| `GeneralPersistenceStability` / `GeneralZigzagStability` / `GeneralFlatBaseChangeForLawConflict` / `GeneralPerronFrobeniusHotspot` / `GeneralOptimalTransportTheory` / `AnalyticSmallnessImpliesLawfulness` | `future proof obligation` / explicit non-goal for PRD-8 |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
