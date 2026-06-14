@@ -1,478 +1,1102 @@
 {
-  "schema": "archmap/v1",
-  "id": "practical-rust-service",
+  "schema": "archmap/v2",
+  "id": "practical-rust-commerce-fulfillment-v2",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:aat-atom-vocabulary@1",
+    "fingerprint": "sha256:aat-atom-vocabulary-v1-practical-rust-commerce",
+    "components": [
+      "V",
+      "Gamma",
+      "R",
+      "rho",
+      "E",
+      "N"
+    ]
+  },
   "sources": {
-    "src.domain": {
-      "kind": "file",
+    "src:domain": {
+      "kind": "rust",
       "path": "tools/archsig/examples/practical-rust-service/sample/src/domain.rs"
     },
-    "src.app": {
-      "kind": "file",
+    "src:app": {
+      "kind": "rust",
       "path": "tools/archsig/examples/practical-rust-service/sample/src/app.rs"
     },
-    "src.store": {
-      "kind": "file",
+    "src:store": {
+      "kind": "rust",
       "path": "tools/archsig/examples/practical-rust-service/sample/src/store.rs"
     },
-    "src.main": {
-      "kind": "file",
+    "src:policy": {
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/policy.rs"
+    },
+    "src:telemetry": {
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/telemetry.rs"
+    },
+    "src:scenario": {
+      "kind": "rust",
+      "path": "tools/archsig/examples/practical-rust-service/sample/src/scenario.rs"
+    },
+    "src:main": {
+      "kind": "rust",
       "path": "tools/archsig/examples/practical-rust-service/sample/src/main.rs"
     },
-    "domain.ProductId": {
+    "domain:Order": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "ProductId",
-      "line": 4
+      "source": "src:domain",
+      "symbol": "Order",
+      "line": 437
     },
-    "domain.ProductId.new": {
+    "domain:OrderLine": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "ProductId::new",
-      "line": 8
+      "source": "src:domain",
+      "symbol": "OrderLine",
+      "line": 386
     },
-    "domain.OrderId": {
+    "domain:InventoryReservation": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "OrderId",
+      "source": "src:domain",
+      "symbol": "InventoryReservation",
+      "line": 605
+    },
+    "domain:PaymentAuthorization": {
+      "kind": "symbol",
+      "source": "src:domain",
+      "symbol": "PaymentAuthorization",
+      "line": 648
+    },
+    "domain:ShipmentPlan": {
+      "kind": "symbol",
+      "source": "src:domain",
+      "symbol": "ShipmentPlan",
+      "line": 748
+    },
+    "domain:FulfillmentDecision": {
+      "kind": "symbol",
+      "source": "src:domain",
+      "symbol": "FulfillmentDecision",
+      "line": 834
+    },
+    "domain:DomainEvent": {
+      "kind": "symbol",
+      "source": "src:domain",
+      "symbol": "DomainEvent",
+      "line": 861
+    },
+    "app:CatalogPort": {
+      "kind": "symbol",
+      "source": "src:app",
+      "symbol": "CatalogPort",
+      "line": 13
+    },
+    "app:InventoryPort": {
+      "kind": "symbol",
+      "source": "src:app",
+      "symbol": "InventoryPort",
       "line": 21
     },
-    "domain.OrderId.new": {
+    "app:PaymentPort": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "OrderId::new",
-      "line": 25
+      "source": "src:app",
+      "symbol": "PaymentPort",
+      "line": 30
     },
-    "domain.OrderLine": {
+    "app:ShippingPort": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "OrderLine",
-      "line": 38
+      "source": "src:app",
+      "symbol": "ShippingPort",
+      "line": 39
     },
-    "domain.OrderLine.new": {
+    "app:RiskPort": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "OrderLine::new",
-      "line": 45
+      "source": "src:app",
+      "symbol": "RiskPort",
+      "line": 47
     },
-    "domain.Order": {
+    "app:OutboxPort": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "Order",
-      "line": 66
+      "source": "src:app",
+      "symbol": "OutboxPort",
+      "line": 52
     },
-    "domain.Order.new": {
+    "app:CheckoutService": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "Order::new",
-      "line": 73
+      "source": "src:app",
+      "symbol": "CheckoutService",
+      "line": 94
     },
-    "domain.Order.total_quantity": {
+    "app:ReservationAllocator": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "Order::total_quantity",
-      "line": 90
+      "source": "src:app",
+      "symbol": "ReservationAllocator",
+      "line": 235
     },
-    "domain.InventoryReservation": {
+    "store:InMemoryCommercePlatform": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "InventoryReservation",
-      "line": 123
+      "source": "src:store",
+      "symbol": "InMemoryCommercePlatform",
+      "line": 15
     },
-    "domain.InventoryReservation.for_order": {
+    "store:InventoryPortImpl": {
       "kind": "symbol",
-      "source": "src.domain",
-      "symbol": "InventoryReservation::for_order",
-      "line": 130
+      "source": "src:store",
+      "symbol": "impl InventoryPort for InMemoryCommercePlatform",
+      "line": 104
     },
-    "app.InventoryStore": {
+    "store:PaymentPortImpl": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "InventoryStore",
-      "line": 6
+      "source": "src:store",
+      "symbol": "impl PaymentPort for InMemoryCommercePlatform",
+      "line": 141
     },
-    "app.InventoryStore.available_units": {
+    "store:ShippingPortImpl": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "InventoryStore::available_units",
-      "line": 7
+      "source": "src:store",
+      "symbol": "impl ShippingPort for InMemoryCommercePlatform",
+      "line": 173
     },
-    "app.InventoryStore.reserve": {
+    "store:RiskPortImpl": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "InventoryStore::reserve",
-      "line": 8
+      "source": "src:store",
+      "symbol": "impl RiskPort for InMemoryCommercePlatform",
+      "line": 205
     },
-    "app.OrderService": {
+    "store:OutboxPortImpl": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "OrderService",
-      "line": 11
+      "source": "src:store",
+      "symbol": "impl OutboxPort for InMemoryCommercePlatform",
+      "line": 238
     },
-    "app.OrderService.place_order": {
+    "policy:PolicyContext": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "OrderService::place_order",
-      "line": 23
+      "source": "src:policy",
+      "symbol": "PolicyContext",
+      "line": 29
     },
-    "app.OrderReceipt": {
+    "policy:PolicyRuleSpec": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "OrderReceipt",
-      "line": 50
+      "source": "src:policy",
+      "symbol": "PolicyRuleSpec",
+      "line": 101
     },
-    "app.AppError": {
+    "policy:PolicyEngine": {
       "kind": "symbol",
-      "source": "src.app",
-      "symbol": "AppError",
-      "line": 81
+      "source": "src:policy",
+      "symbol": "PolicyEngine",
+      "line": 143
     },
-    "store.InMemoryInventoryStore": {
+    "policy:DEFAULT_POLICY_RULES": {
       "kind": "symbol",
-      "source": "src.store",
-      "symbol": "InMemoryInventoryStore",
-      "line": 6
+      "source": "src:policy",
+      "symbol": "DEFAULT_POLICY_RULES",
+      "line": 196
     },
-    "store.InMemoryInventoryStore.add_stock": {
+    "telemetry:TraceRecorder": {
       "kind": "symbol",
-      "source": "src.store",
-      "symbol": "InMemoryInventoryStore::add_stock",
-      "line": 17
+      "source": "src:telemetry",
+      "symbol": "TraceRecorder",
+      "line": 13
     },
-    "store.InMemoryInventoryStore.stock_snapshot": {
+    "scenario:run_demo": {
       "kind": "symbol",
-      "source": "src.store",
-      "symbol": "InMemoryInventoryStore::stock_snapshot",
-      "line": 26
+      "source": "src:scenario",
+      "symbol": "run_demo",
+      "line": 68
     },
-    "store.InMemoryInventoryStore.available_units": {
-      "kind": "symbol",
-      "source": "src.store",
-      "symbol": "InMemoryInventoryStore::available_units",
-      "line": 35
-    },
-    "store.InMemoryInventoryStore.reserve": {
-      "kind": "symbol",
-      "source": "src.store",
-      "symbol": "InMemoryInventoryStore::reserve",
-      "line": 44
-    },
-    "main.main": {
-      "kind": "symbol",
-      "source": "src.main",
-      "symbol": "main",
-      "line": 7
-    },
-    "runtime.place_order_trace": {
+    "runtime:demo": {
       "kind": "runtimeTrace",
       "path": "tools/archsig/examples/practical-rust-service/runtime/place_order_trace.json"
     },
-    "runtime.concurrent_reservation_trace": {
+    "runtime:concurrent": {
       "kind": "runtimeTrace",
       "path": "tools/archsig/examples/practical-rust-service/runtime/concurrent_reservation_trace.json"
     },
-    "edge.main.place_order": {
-      "kind": "runtimeEdge",
-      "source": "runtime.place_order_trace",
-      "symbol": "main->OrderService::place_order"
+    "policy:cover": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/law_policy/law_policy.json",
+      "section": "measurementProfiles[profile:commerce-fulfillment@1]"
     },
-    "edge.concurrent.reserve": {
-      "kind": "runtimeEdge",
-      "source": "runtime.concurrent_reservation_trace",
-      "symbol": "InMemoryInventoryStore::reserve stale reservation"
+    "ctx:domain": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:domain"
+    },
+    "ctx:application": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:application"
+    },
+    "ctx:ports": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:ports"
+    },
+    "ctx:infrastructure": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:infrastructure"
+    },
+    "ctx:policy": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:policy"
+    },
+    "ctx:runtime": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:runtime"
+    },
+    "ctx:shared": {
+      "kind": "policy",
+      "path": "tools/archsig/examples/practical-rust-service/archmap/archmap.json",
+      "section": "contexts.ctx:shared"
     }
   },
   "atoms": [
     {
-      "id": "atom:domain-product-id-component",
-      "kind": "component",
-      "subject": "domain.ProductId",
-      "refs": ["domain.ProductId"],
-      "label": "ProductId is a domain identity component"
-    },
-    {
       "id": "atom:domain-order-component",
       "kind": "component",
-      "subject": "domain.Order",
-      "refs": ["domain.Order"],
-      "label": "Order is the aggregate modeled by the domain module"
+      "subject": "domain:Order",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:Order"
+      ],
+      "label": "Order aggregate is declared in the domain module"
     },
     {
-      "id": "atom:inventory-store-port-component",
+      "id": "atom:domain-order-line-component",
       "kind": "component",
-      "subject": "app.InventoryStore",
-      "refs": ["app.InventoryStore"],
-      "label": "InventoryStore is the application port"
+      "subject": "domain:OrderLine",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:OrderLine"
+      ],
+      "label": "OrderLine carries catalog-derived sku, price, quantity, weight, and hazmat facts"
     },
     {
-      "id": "atom:in-memory-inventory-store-component",
+      "id": "atom:domain-reservation-component",
       "kind": "component",
-      "subject": "store.InMemoryInventoryStore",
-      "refs": ["store.InMemoryInventoryStore"],
-      "label": "InMemoryInventoryStore is the sample infrastructure adapter"
+      "subject": "domain:InventoryReservation",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:InventoryReservation"
+      ],
+      "label": "InventoryReservation is declared in the domain module"
     },
     {
-      "id": "atom:product-id-nonempty-contract",
-      "kind": "contract",
-      "diagram": "domain.ProductId.new",
-      "contract": "rejectsEmptyProductId",
-      "refs": ["domain.ProductId.new"],
-      "label": "ProductId::new rejects empty product identifiers"
+      "id": "atom:domain-payment-component",
+      "kind": "component",
+      "subject": "domain:PaymentAuthorization",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:PaymentAuthorization"
+      ],
+      "label": "PaymentAuthorization records payment authorization data"
     },
     {
-      "id": "atom:order-id-nonempty-contract",
-      "kind": "contract",
-      "diagram": "domain.OrderId.new",
-      "contract": "rejectsEmptyOrderId",
-      "refs": ["domain.OrderId.new"],
-      "label": "OrderId::new rejects empty order identifiers"
+      "id": "atom:domain-shipment-component",
+      "kind": "component",
+      "subject": "domain:ShipmentPlan",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:ShipmentPlan"
+      ],
+      "label": "ShipmentPlan records fulfillment shipment data"
     },
     {
-      "id": "atom:order-line-positive-quantity-contract",
-      "kind": "contract",
-      "diagram": "domain.OrderLine.new",
-      "contract": "requiresPositiveQuantity",
-      "refs": ["domain.OrderLine.new"],
-      "label": "OrderLine::new rejects zero quantity"
+      "id": "atom:domain-event-component",
+      "kind": "component",
+      "subject": "domain:DomainEvent",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "domain:DomainEvent"
+      ],
+      "label": "DomainEvent is the outbox message vocabulary"
     },
     {
-      "id": "atom:order-nonempty-contract",
-      "kind": "contract",
-      "diagram": "domain.Order.new",
-      "contract": "requiresAtLeastOneLine",
-      "refs": ["domain.Order.new"],
-      "label": "Order::new rejects empty order lines"
+      "id": "atom:app-checkout-service-component",
+      "kind": "component",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:CheckoutService"
+      ],
+      "label": "CheckoutService calls the application ports in the checkout workflow"
     },
     {
-      "id": "atom:order-total-quantity-semantic",
-      "kind": "semantic",
-      "diagram": "domain.Order.total_quantity",
-      "meaning": "sumsOrderLineQuantities",
-      "refs": ["domain.Order.total_quantity"],
-      "label": "Order::total_quantity sums line quantities"
+      "id": "atom:app-reservation-allocator-component",
+      "kind": "component",
+      "subject": "app:ReservationAllocator",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:ReservationAllocator"
+      ],
+      "label": "ReservationAllocator builds reservation lines from a warehouse selection callback"
     },
     {
-      "id": "atom:reservation-preserves-order-lines",
-      "kind": "semantic",
-      "diagram": "domain.InventoryReservation.for_order",
-      "meaning": "copiesOrderLinesIntoReservationLines",
-      "refs": ["domain.InventoryReservation.for_order"],
-      "label": "InventoryReservation::for_order preserves order line product and quantity"
+      "id": "atom:port-catalog-component",
+      "kind": "component",
+      "subject": "app:CatalogPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:CatalogPort"
+      ],
+      "label": "CatalogPort exposes catalog item lookup"
     },
     {
-      "id": "atom:place-order-capability",
-      "kind": "capability",
-      "subject": "app.OrderService",
-      "predicate": "placesOrder",
-      "refs": ["app.OrderService.place_order"],
-      "label": "OrderService places an order"
+      "id": "atom:port-inventory-component",
+      "kind": "component",
+      "subject": "app:InventoryPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:InventoryPort"
+      ],
+      "label": "InventoryPort exposes inventory selection and reservation methods"
     },
     {
-      "id": "atom:inventory-port-relation",
+      "id": "atom:port-payment-component",
+      "kind": "component",
+      "subject": "app:PaymentPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:PaymentPort"
+      ],
+      "label": "PaymentPort exposes payment authorization"
+    },
+    {
+      "id": "atom:port-shipping-component",
+      "kind": "component",
+      "subject": "app:ShippingPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:ShippingPort"
+      ],
+      "label": "ShippingPort exposes shipment planning"
+    },
+    {
+      "id": "atom:port-risk-component",
+      "kind": "component",
+      "subject": "app:RiskPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:RiskPort"
+      ],
+      "label": "RiskPort exposes risk assessment"
+    },
+    {
+      "id": "atom:port-outbox-component",
+      "kind": "component",
+      "subject": "app:OutboxPort",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "app:OutboxPort"
+      ],
+      "label": "OutboxPort exposes event publication"
+    },
+    {
+      "id": "atom:infra-platform-component",
+      "kind": "component",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "store:InMemoryCommercePlatform"
+      ],
+      "label": "InMemoryCommercePlatform is the demo adapter bundle"
+    },
+    {
+      "id": "atom:policy-engine-component",
+      "kind": "component",
+      "subject": "policy:PolicyEngine",
+      "axis": "static",
+      "predicate": "component",
+      "refs": [
+        "policy:PolicyEngine"
+      ],
+      "label": "PolicyEngine evaluates rule specs from source-visible catalog"
+    },
+    {
+      "id": "atom:telemetry-recorder-component",
+      "kind": "component",
+      "subject": "telemetry:TraceRecorder",
+      "axis": "runtime",
+      "predicate": "component",
+      "refs": [
+        "telemetry:TraceRecorder"
+      ],
+      "label": "TraceRecorder records workflow trace events"
+    },
+    {
+      "id": "atom:scenario-run-demo-component",
+      "kind": "component",
+      "subject": "scenario:run_demo",
+      "axis": "runtime",
+      "predicate": "component",
+      "refs": [
+        "scenario:run_demo"
+      ],
+      "label": "run_demo is the executable presentation scenario"
+    },
+    {
+      "id": "atom:checkout-depends-on-catalog-port",
       "kind": "relation",
-      "subject": "app.OrderService",
-      "predicate": "checksInventoryWith",
-      "object": "app.InventoryStore",
-      "refs": ["app.OrderService.place_order"],
-      "label": "OrderService checks inventory through the InventoryStore port"
-    },
-    {
-      "id": "atom:order-service-depends-on-inventory-port",
-      "kind": "relation",
-      "subject": "app.OrderService",
+      "subject": "app:CheckoutService",
+      "axis": "static",
       "predicate": "dependsOn",
-      "object": "app.InventoryStore",
-      "refs": ["app.OrderService.place_order", "app.InventoryStore"],
-      "label": "OrderService depends on the InventoryStore abstraction"
+      "object": "app:CatalogPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:CatalogPort"
+      ]
     },
     {
-      "id": "atom:store-implements-inventory-port",
+      "id": "atom:checkout-depends-on-inventory-port",
       "kind": "relation",
-      "subject": "store.InMemoryInventoryStore",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "dependsOn",
+      "object": "app:InventoryPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:InventoryPort"
+      ]
+    },
+    {
+      "id": "atom:checkout-depends-on-payment-port",
+      "kind": "relation",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "dependsOn",
+      "object": "app:PaymentPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:PaymentPort"
+      ]
+    },
+    {
+      "id": "atom:checkout-depends-on-shipping-port",
+      "kind": "relation",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "dependsOn",
+      "object": "app:ShippingPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:ShippingPort"
+      ]
+    },
+    {
+      "id": "atom:checkout-depends-on-risk-port",
+      "kind": "relation",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "dependsOn",
+      "object": "app:RiskPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:RiskPort"
+      ]
+    },
+    {
+      "id": "atom:checkout-depends-on-outbox-port",
+      "kind": "relation",
+      "subject": "app:CheckoutService",
+      "axis": "static",
+      "predicate": "dependsOn",
+      "object": "app:OutboxPort",
+      "refs": [
+        "app:CheckoutService",
+        "app:OutboxPort"
+      ]
+    },
+    {
+      "id": "atom:infra-implements-inventory-port",
+      "kind": "relation",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
       "predicate": "implements",
-      "object": "app.InventoryStore",
-      "refs": ["store.InMemoryInventoryStore", "app.InventoryStore"],
-      "label": "InMemoryInventoryStore implements the InventoryStore port"
+      "object": "app:InventoryPort",
+      "refs": [
+        "store:InventoryPortImpl",
+        "app:InventoryPort"
+      ]
     },
     {
-      "id": "atom:place-order-builds-reservation",
-      "kind": "effect",
-      "diagram": "app.OrderService.place_order",
-      "effect": "createsInventoryReservation",
-      "refs": ["app.OrderService.place_order", "domain.InventoryReservation.for_order"],
-      "label": "place_order builds an inventory reservation from the order"
-    },
-    {
-      "id": "atom:place-order-rejects-insufficient-inventory",
-      "kind": "effect",
-      "diagram": "app.OrderService.place_order",
-      "effect": "rejectsInsufficientInventory",
-      "refs": ["app.OrderService.place_order"],
-      "label": "place_order rejects orders whose requested quantity exceeds availability"
-    },
-    {
-      "id": "atom:place-order-calls-store-reserve",
+      "id": "atom:infra-implements-payment-port",
       "kind": "relation",
-      "subject": "app.OrderService.place_order",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
+      "predicate": "implements",
+      "object": "app:PaymentPort",
+      "refs": [
+        "store:PaymentPortImpl",
+        "app:PaymentPort"
+      ]
+    },
+    {
+      "id": "atom:infra-implements-shipping-port",
+      "kind": "relation",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
+      "predicate": "implements",
+      "object": "app:ShippingPort",
+      "refs": [
+        "store:ShippingPortImpl",
+        "app:ShippingPort"
+      ]
+    },
+    {
+      "id": "atom:infra-implements-risk-port",
+      "kind": "relation",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
+      "predicate": "implements",
+      "object": "app:RiskPort",
+      "refs": [
+        "store:RiskPortImpl",
+        "app:RiskPort"
+      ]
+    },
+    {
+      "id": "atom:infra-implements-outbox-port",
+      "kind": "relation",
+      "subject": "store:InMemoryCommercePlatform",
+      "axis": "static",
+      "predicate": "implements",
+      "object": "app:OutboxPort",
+      "refs": [
+        "store:OutboxPortImpl",
+        "app:OutboxPort"
+      ]
+    },
+    {
+      "id": "atom:policy-engine-reads-order-risk",
+      "kind": "relation",
+      "subject": "policy:PolicyEngine",
+      "axis": "semantic",
+      "predicate": "reads",
+      "object": "domain:FulfillmentDecision",
+      "refs": [
+        "policy:PolicyEngine",
+        "domain:FulfillmentDecision"
+      ]
+    },
+    {
+      "id": "atom:runtime-demo-calls-checkout",
+      "kind": "relation",
+      "subject": "scenario:run_demo",
+      "axis": "runtime",
       "predicate": "calls",
-      "object": "app.InventoryStore.reserve",
-      "refs": ["app.OrderService.place_order", "app.InventoryStore.reserve"],
-      "label": "place_order calls the InventoryStore reserve port"
+      "object": "app:CheckoutService",
+      "refs": [
+        "scenario:run_demo",
+        "app:CheckoutService",
+        "runtime:demo"
+      ]
     },
     {
-      "id": "atom:order-receipt-reports-reserved-counts",
-      "kind": "semantic",
-      "diagram": "app.OrderReceipt",
-      "meaning": "reportsReservedLineAndUnitCounts",
-      "refs": ["app.OrderReceipt", "app.OrderService.place_order"],
-      "label": "OrderReceipt reports reserved line and unit counts"
+      "id": "atom:infrastructure-policy-cover-overlap",
+      "kind": "relation",
+      "subject": "ctx:infrastructure",
+      "axis": "cover",
+      "predicate": "coSelectedInCover",
+      "object": "ctx:policy",
+      "refs": [
+        "ctx:infrastructure",
+        "ctx:policy",
+        "policy:cover"
+      ],
+      "label": "Infrastructure and policy contexts are both selected by the commerce fulfillment cover"
     },
     {
-      "id": "atom:app-error-wraps-domain-and-store-errors",
-      "kind": "semantic",
-      "diagram": "app.AppError",
-      "meaning": "wrapsDomainAndStoreErrors",
-      "refs": ["app.AppError"],
-      "label": "AppError preserves DomainError and StorePortError sources"
+      "id": "atom:capability-place-order",
+      "kind": "capability",
+      "subject": "app:CheckoutService",
+      "axis": "application",
+      "predicate": "placesOrder",
+      "refs": [
+        "app:CheckoutService"
+      ]
     },
     {
-      "id": "atom:store-stock-state",
-      "kind": "dataState",
-      "diagram": "store.InMemoryInventoryStore",
-      "state": "stockByProductId",
-      "refs": ["store.InMemoryInventoryStore"],
-      "label": "InMemoryInventoryStore keeps stock by ProductId"
+      "id": "atom:capability-reserve-inventory",
+      "kind": "capability",
+      "subject": "app:InventoryPort",
+      "axis": "application",
+      "predicate": "reservesInventory",
+      "refs": [
+        "app:InventoryPort"
+      ]
     },
     {
-      "id": "atom:store-reservation-log-state",
-      "kind": "dataState",
-      "diagram": "store.InMemoryInventoryStore",
-      "state": "reservationLog",
-      "refs": ["store.InMemoryInventoryStore"],
-      "label": "InMemoryInventoryStore records reservation history"
+      "id": "atom:capability-authorize-payment",
+      "kind": "capability",
+      "subject": "app:PaymentPort",
+      "axis": "application",
+      "predicate": "authorizesPayment",
+      "refs": [
+        "app:PaymentPort"
+      ]
     },
     {
-      "id": "atom:store-add-stock-effect",
+      "id": "atom:capability-plan-shipment",
+      "kind": "capability",
+      "subject": "app:ShippingPort",
+      "axis": "application",
+      "predicate": "plansShipment",
+      "refs": [
+        "app:ShippingPort"
+      ]
+    },
+    {
+      "id": "atom:capability-evaluate-policy",
+      "kind": "capability",
+      "subject": "policy:PolicyEngine",
+      "axis": "application",
+      "predicate": "evaluatesPolicyCatalog",
+      "refs": [
+        "policy:PolicyEngine",
+        "policy:DEFAULT_POLICY_RULES"
+      ]
+    },
+    {
+      "id": "atom:capability-present-demo",
+      "kind": "capability",
+      "subject": "scenario:run_demo",
+      "axis": "runtime",
+      "predicate": "presentsArchSigDemo",
+      "refs": [
+        "scenario:run_demo"
+      ]
+    },
+    {
+      "id": "atom:state-order-status",
+      "kind": "state",
+      "subject": "domain:Order",
+      "axis": "state",
+      "predicate": "OrderStatus",
+      "refs": [
+        "domain:Order"
+      ]
+    },
+    {
+      "id": "atom:state-reservation-status",
+      "kind": "state",
+      "subject": "domain:InventoryReservation",
+      "axis": "state",
+      "predicate": "ReservationStatus",
+      "refs": [
+        "domain:InventoryReservation"
+      ]
+    },
+    {
+      "id": "atom:state-payment-status",
+      "kind": "state",
+      "subject": "domain:PaymentAuthorization",
+      "axis": "state",
+      "predicate": "PaymentStatus",
+      "refs": [
+        "domain:PaymentAuthorization"
+      ]
+    },
+    {
+      "id": "atom:state-shipment-status",
+      "kind": "state",
+      "subject": "domain:ShipmentPlan",
+      "axis": "state",
+      "predicate": "ShipmentStatus",
+      "refs": [
+        "domain:ShipmentPlan"
+      ]
+    },
+    {
+      "id": "atom:effect-inventory-decrement",
       "kind": "effect",
-      "diagram": "store.InMemoryInventoryStore.add_stock",
-      "effect": "incrementsStock",
-      "refs": ["store.InMemoryInventoryStore.add_stock"],
-      "label": "add_stock increments stock for a product"
+      "subject": "store:InventoryPortImpl",
+      "axis": "dataflow",
+      "predicate": "decrementsAvailableInventory",
+      "refs": [
+        "store:InventoryPortImpl"
+      ]
     },
     {
-      "id": "atom:store-available-units-contract",
+      "id": "atom:effect-payment-authorized",
+      "kind": "effect",
+      "subject": "store:PaymentPortImpl",
+      "axis": "dataflow",
+      "predicate": "recordsAuthorization",
+      "refs": [
+        "store:PaymentPortImpl"
+      ]
+    },
+    {
+      "id": "atom:effect-shipment-planned",
+      "kind": "effect",
+      "subject": "store:ShippingPortImpl",
+      "axis": "dataflow",
+      "predicate": "createsShipmentPlan",
+      "refs": [
+        "store:ShippingPortImpl"
+      ]
+    },
+    {
+      "id": "atom:effect-outbox-appended",
+      "kind": "effect",
+      "subject": "store:OutboxPortImpl",
+      "axis": "dataflow",
+      "predicate": "appendsDomainEvent",
+      "refs": [
+        "store:OutboxPortImpl",
+        "domain:DomainEvent"
+      ]
+    },
+    {
+      "id": "atom:authority-catalog-price",
+      "kind": "authority",
+      "subject": "app:CatalogPort",
+      "axis": "boundary",
+      "predicate": "catalogLookupBoundary",
+      "refs": [
+        "app:CatalogPort"
+      ]
+    },
+    {
+      "id": "atom:authority-inventory-write",
+      "kind": "authority",
+      "subject": "app:InventoryPort",
+      "axis": "boundary",
+      "predicate": "inventoryReservationBoundary",
+      "refs": [
+        "app:InventoryPort"
+      ]
+    },
+    {
+      "id": "atom:authority-payment-auth",
+      "kind": "authority",
+      "subject": "app:PaymentPort",
+      "axis": "boundary",
+      "predicate": "paymentAuthorizationBoundary",
+      "refs": [
+        "app:PaymentPort"
+      ]
+    },
+    {
+      "id": "atom:authority-policy-rule-catalog",
+      "kind": "authority",
+      "subject": "policy:DEFAULT_POLICY_RULES",
+      "axis": "boundary",
+      "predicate": "policyRuleCatalogBoundary",
+      "refs": [
+        "policy:DEFAULT_POLICY_RULES"
+      ]
+    },
+    {
+      "id": "atom:contract-nonempty-order",
       "kind": "contract",
-      "diagram": "store.InMemoryInventoryStore.available_units",
-      "contract": "returnsAvailableUnitsOrProductNotFound",
-      "refs": ["store.InMemoryInventoryStore.available_units"],
-      "label": "available_units returns current stock or ProductNotFound"
+      "subject": "domain:Order",
+      "axis": "specification",
+      "predicate": "rejectsEmptyOrder",
+      "refs": [
+        "domain:Order"
+      ]
     },
     {
-      "id": "atom:store-reserve-decrements-stock",
-      "kind": "effect",
-      "diagram": "store.InMemoryInventoryStore.reserve",
-      "effect": "decrementsStockAndLogsReservation",
-      "refs": ["store.InMemoryInventoryStore.reserve"],
-      "label": "reserve decrements stock and appends the reservation log"
+      "id": "atom:contract-positive-quantity",
+      "kind": "contract",
+      "subject": "domain:OrderLine",
+      "axis": "specification",
+      "predicate": "requiresPositiveQuantity",
+      "refs": [
+        "domain:OrderLine"
+      ]
     },
     {
-      "id": "atom:store-reserve-rejects-conflict",
-      "kind": "effect",
-      "diagram": "store.InMemoryInventoryStore.reserve",
-      "effect": "rejectsReservationConflict",
-      "refs": ["store.InMemoryInventoryStore.reserve"],
-      "label": "reserve rejects stale reservations when stock changed"
+      "id": "atom:contract-payment-idempotency",
+      "kind": "contract",
+      "subject": "app:PaymentPort",
+      "axis": "specification",
+      "predicate": "authorizationKeyedByOrderId",
+      "refs": [
+        "app:PaymentPort",
+        "store:PaymentPortImpl"
+      ]
     },
     {
-      "id": "atom:store-stock-snapshot-semantic",
+      "id": "atom:contract-warehouse-locality",
+      "kind": "contract",
+      "subject": "app:ReservationAllocator",
+      "axis": "specification",
+      "predicate": "reservationCarriesWarehouse",
+      "refs": [
+        "app:ReservationAllocator",
+        "domain:InventoryReservation"
+      ]
+    },
+    {
+      "id": "atom:contract-hazmat-routing",
+      "kind": "contract",
+      "subject": "app:ShippingPort",
+      "axis": "specification",
+      "predicate": "hazmatUsesGroundCarrier",
+      "refs": [
+        "app:ShippingPort",
+        "store:ShippingPortImpl"
+      ]
+    },
+    {
+      "id": "atom:contract-platform-port-bound",
+      "kind": "contract",
+      "subject": "app:CheckoutService",
+      "axis": "specification",
+      "predicate": "platformBoundIncludesPorts",
+      "refs": [
+        "app:CheckoutService",
+        "app:CatalogPort",
+        "app:InventoryPort",
+        "app:PaymentPort",
+        "app:ShippingPort",
+        "app:RiskPort",
+        "app:OutboxPort"
+      ]
+    },
+    {
+      "id": "atom:semantic-layered-commerce",
       "kind": "semantic",
-      "diagram": "store.InMemoryInventoryStore.stock_snapshot",
-      "meaning": "projectsProductStockToStringKeyedSnapshot",
-      "refs": ["store.InMemoryInventoryStore.stock_snapshot"],
-      "label": "stock_snapshot exposes remaining stock as string-keyed data"
+      "subject": "app:CheckoutService",
+      "axis": "semantic",
+      "predicate": "commerceFulfillmentWorkflow",
+      "refs": [
+        "app:CheckoutService",
+        "domain:FulfillmentDecision"
+      ]
     },
     {
-      "id": "atom:main-calls-place-order",
-      "kind": "relation",
-      "subject": "main.main",
-      "predicate": "calls",
-      "object": "app.OrderService.place_order",
-      "refs": ["main.main", "app.OrderService.place_order"],
-      "label": "main calls OrderService::place_order in the smoke flow"
+      "id": "atom:semantic-solid-policy-catalog",
+      "kind": "semantic",
+      "subject": "policy:PolicyRuleSpec",
+      "axis": "semantic",
+      "predicate": "policyRuleSpecCatalog",
+      "refs": [
+        "policy:PolicyRuleSpec",
+        "policy:DEFAULT_POLICY_RULES"
+      ]
     },
     {
-      "id": "atom:runtime-place-order-smoke",
+      "id": "atom:runtime-checkout-trace",
       "kind": "runtime",
-      "edge": "edge.main.place_order",
-      "interaction": "reservesOrderAndPrintsRemainingStock",
-      "refs": ["runtime.place_order_trace", "main.main"],
-      "label": "place order runtime trace reserves an order and prints stock"
+      "subject": "runtime:demo",
+      "axis": "runtime",
+      "predicate": "demoCheckoutTrace",
+      "refs": [
+        "runtime:demo",
+        "scenario:run_demo"
+      ]
     },
     {
-      "id": "atom:runtime-concurrent-reservation-conflict",
+      "id": "atom:runtime-concurrency-trace",
       "kind": "runtime",
-      "edge": "edge.concurrent.reserve",
-      "interaction": "staleReservationRejectedAfterStockChange",
-      "refs": ["runtime.concurrent_reservation_trace", "store.InMemoryInventoryStore.reserve"],
-      "label": "concurrent reservation trace records stale reservation rejection"
+      "subject": "runtime:concurrent",
+      "axis": "runtime",
+      "predicate": "concurrentReservationTrace",
+      "refs": [
+        "runtime:concurrent",
+        "store:InventoryPortImpl"
+      ]
     }
   ],
-  "molecules": [
+  "contexts": [
     {
-      "id": "mol:domain-invariants",
+      "id": "ctx:domain",
       "atoms": [
-        "atom:domain-product-id-component",
         "atom:domain-order-component",
-        "atom:product-id-nonempty-contract",
-        "atom:order-id-nonempty-contract",
-        "atom:order-line-positive-quantity-contract",
-        "atom:order-nonempty-contract",
-        "atom:order-total-quantity-semantic",
-        "atom:reservation-preserves-order-lines"
+        "atom:domain-order-line-component",
+        "atom:domain-reservation-component",
+        "atom:domain-payment-component",
+        "atom:domain-shipment-component",
+        "atom:domain-event-component",
+        "atom:state-order-status",
+        "atom:state-reservation-status",
+        "atom:state-payment-status",
+        "atom:state-shipment-status",
+        "atom:contract-nonempty-order",
+        "atom:contract-positive-quantity"
       ],
-      "refs": ["src.domain"],
-      "label": "domain identity, order, quantity, and reservation invariants"
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:domain"
+      ],
+      "label": "Pure domain aggregate and event vocabulary"
     },
     {
-      "id": "mol:place-order-flow",
+      "id": "ctx:ports",
       "atoms": [
-        "atom:inventory-store-port-component",
-        "atom:place-order-capability",
-        "atom:inventory-port-relation",
-        "atom:order-service-depends-on-inventory-port",
-        "atom:place-order-builds-reservation",
-        "atom:place-order-rejects-insufficient-inventory",
-        "atom:place-order-calls-store-reserve",
-        "atom:order-receipt-reports-reserved-counts",
-        "atom:app-error-wraps-domain-and-store-errors"
+        "atom:port-catalog-component",
+        "atom:port-inventory-component",
+        "atom:port-payment-component",
+        "atom:port-shipping-component",
+        "atom:port-risk-component",
+        "atom:port-outbox-component",
+        "atom:checkout-depends-on-catalog-port",
+        "atom:checkout-depends-on-inventory-port",
+        "atom:checkout-depends-on-payment-port",
+        "atom:checkout-depends-on-shipping-port",
+        "atom:checkout-depends-on-risk-port",
+        "atom:checkout-depends-on-outbox-port",
+        "atom:capability-reserve-inventory",
+        "atom:capability-authorize-payment",
+        "atom:capability-plan-shipment",
+        "atom:authority-catalog-price",
+        "atom:authority-inventory-write",
+        "atom:authority-payment-auth",
+        "atom:contract-payment-idempotency",
+        "atom:contract-hazmat-routing"
       ],
-      "refs": ["app.OrderService.place_order"],
-      "label": "application service order placement flow"
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:ports"
+      ],
+      "label": "Application port boundary"
     },
     {
-      "id": "mol:inventory-store-adapter",
+      "id": "ctx:application",
       "atoms": [
-        "atom:in-memory-inventory-store-component",
-        "atom:store-implements-inventory-port",
-        "atom:store-stock-state",
-        "atom:store-reservation-log-state",
-        "atom:store-add-stock-effect",
-        "atom:store-available-units-contract",
-        "atom:store-reserve-decrements-stock",
-        "atom:store-reserve-rejects-conflict",
-        "atom:store-stock-snapshot-semantic"
+        "atom:app-checkout-service-component",
+        "atom:app-reservation-allocator-component",
+        "atom:checkout-depends-on-catalog-port",
+        "atom:checkout-depends-on-inventory-port",
+        "atom:checkout-depends-on-payment-port",
+        "atom:checkout-depends-on-shipping-port",
+        "atom:checkout-depends-on-risk-port",
+        "atom:checkout-depends-on-outbox-port",
+        "atom:runtime-demo-calls-checkout",
+        "atom:capability-place-order",
+        "atom:contract-warehouse-locality",
+        "atom:contract-platform-port-bound",
+        "atom:semantic-layered-commerce",
+        "atom:runtime-checkout-trace"
       ],
-      "refs": ["src.store"],
-      "label": "in-memory inventory adapter state and effects"
+      "restrictsTo": [
+        "ctx:ports",
+        "ctx:domain",
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:application"
+      ],
+      "label": "Checkout orchestration layer"
     },
     {
-      "id": "mol:runtime-smoke-flow",
+      "id": "ctx:infrastructure",
       "atoms": [
-        "atom:main-calls-place-order",
-        "atom:runtime-place-order-smoke",
-        "atom:runtime-concurrent-reservation-conflict"
+        "atom:infra-platform-component",
+        "atom:infra-implements-inventory-port",
+        "atom:infra-implements-payment-port",
+        "atom:infra-implements-shipping-port",
+        "atom:infra-implements-risk-port",
+        "atom:infra-implements-outbox-port",
+        "atom:infrastructure-policy-cover-overlap",
+        "atom:effect-inventory-decrement",
+        "atom:effect-payment-authorized",
+        "atom:effect-shipment-planned",
+        "atom:effect-outbox-appended",
+        "atom:contract-platform-port-bound",
+        "atom:runtime-concurrency-trace"
       ],
-      "refs": ["main.main", "runtime.place_order_trace", "runtime.concurrent_reservation_trace"],
-      "label": "bounded runtime and smoke-flow evidence"
+      "restrictsTo": [
+        "ctx:ports",
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:infrastructure"
+      ],
+      "label": "In-memory adapter and side-effect boundary"
+    },
+    {
+      "id": "ctx:policy",
+      "atoms": [
+        "atom:policy-engine-component",
+        "atom:policy-engine-reads-order-risk",
+        "atom:infrastructure-policy-cover-overlap",
+        "atom:capability-evaluate-policy",
+        "atom:authority-policy-rule-catalog",
+        "atom:semantic-solid-policy-catalog"
+      ],
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:policy"
+      ],
+      "label": "Policy catalog and review signal context"
+    },
+    {
+      "id": "ctx:runtime",
+      "atoms": [
+        "atom:telemetry-recorder-component",
+        "atom:scenario-run-demo-component",
+        "atom:runtime-demo-calls-checkout",
+        "atom:capability-present-demo",
+        "atom:runtime-checkout-trace",
+        "atom:runtime-concurrency-trace"
+      ],
+      "restrictsTo": [
+        "ctx:application",
+        "ctx:infrastructure",
+        "ctx:shared"
+      ],
+      "refs": [
+        "ctx:runtime"
+      ],
+      "label": "Executable demo and trace evidence"
+    },
+    {
+      "id": "ctx:shared",
+      "atoms": [
+        "atom:semantic-layered-commerce",
+        "atom:semantic-solid-policy-catalog",
+        "atom:contract-platform-port-bound"
+      ],
+      "refs": [
+        "policy:cover"
+      ],
+      "label": "Shared interpretation overlap for selected cover"
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:commerce-fulfillment",
+      "contexts": [
+        "ctx:domain",
+        "ctx:ports",
+        "ctx:application",
+        "ctx:infrastructure",
+        "ctx:policy",
+        "ctx:runtime",
+        "ctx:shared"
+      ],
+      "refs": [
+        "policy:cover"
+      ],
+      "label": "Commerce fulfillment source cover for ArchSig demo viewer"
     }
   ]
 }

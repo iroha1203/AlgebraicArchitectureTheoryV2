@@ -1,91 +1,285 @@
 use std::error::Error;
 use std::fmt;
 
-use crate::domain::{DomainError, InventoryReservation, Order, ProductId};
+use crate::domain::{
+    Address, CatalogItem, CustomerId, CustomerProfile, DomainError, DomainEvent,
+    FulfillmentDecision, InventoryReservation, Money, Order, OrderId, OrderLine,
+    PaymentAuthorization, PaymentStatus, Quantity, ReservationLine, RiskAssessment, RiskDecision,
+    ServiceLevel, ShipmentPlan, Sku, WarehouseId,
+};
+use crate::policy::{PolicyContext, PolicyEngine, PolicyEvaluation, PolicyVerdict};
+use crate::telemetry::{TraceEvent, TraceRecorder};
 
-pub trait InventoryStore {
-    fn available_units(&self, product_id: &ProductId) -> Result<u32, StorePortError>;
-    fn reserve(&mut self, reservation: &InventoryReservation) -> Result<(), StorePortError>;
+pub trait CatalogPort {
+    fn find_item(&self, sku: &Sku) -> Result<CatalogItem, AppError>;
 }
 
-pub struct OrderService<S> {
-    store: S,
+pub trait CustomerPort {
+    fn find_customer(&self, customer_id: &CustomerId) -> Result<CustomerProfile, AppError>;
 }
 
-impl<S> OrderService<S>
-where
-    S: InventoryStore,
+pub trait InventoryPort {
+    fn choose_warehouse(&self, sku: &Sku, quantity: Quantity) -> Result<WarehouseId, AppError>;
+    fn reserve(
+        &mut self,
+        order_id: &OrderId,
+        lines: &[OrderLine],
+    ) -> Result<InventoryReservation, AppError>;
+}
+
+pub trait PaymentPort {
+    fn authorize(
+        &mut self,
+        order: &Order,
+        amount: Money,
+        risk: &RiskAssessment,
+    ) -> Result<PaymentAuthorization, AppError>;
+}
+
+pub trait ShippingPort {
+    fn plan_shipment(
+        &self,
+        order: &Order,
+        reservation: &InventoryReservation,
+    ) -> Result<ShipmentPlan, AppError>;
+}
+
+pub trait RiskPort {
+    fn assess(&self, customer: &CustomerProfile, order: &Order)
+    -> Result<RiskAssessment, AppError>;
+}
+
+pub trait OutboxPort {
+    fn publish(&mut self, event: DomainEvent) -> Result<(), AppError>;
+}
+
+pub trait Platform:
+    CatalogPort + CustomerPort + InventoryPort + PaymentPort + ShippingPort + RiskPort + OutboxPort
 {
-    pub fn new(store: S) -> Self {
-        Self { store }
+}
+
+impl<T> Platform for T where
+    T: CatalogPort
+        + CustomerPort
+        + InventoryPort
+        + PaymentPort
+        + ShippingPort
+        + RiskPort
+        + OutboxPort
+{
+}
+
+#[derive(Debug, Clone)]
+pub struct CheckoutLineCommand {
+    pub sku: String,
+    pub quantity: u32,
+}
+
+#[derive(Debug, Clone)]
+pub struct CheckoutCommand {
+    pub order_id: String,
+    pub customer_id: String,
+    pub lines: Vec<CheckoutLineCommand>,
+    pub service_level: ServiceLevel,
+    pub ship_to: Option<Address>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CheckoutOutcome {
+    pub decision: FulfillmentDecision,
+    pub policy_evaluations: Vec<PolicyEvaluation>,
+    pub trace_events: Vec<TraceEvent>,
+}
+
+pub struct CheckoutService<P> {
+    platform: P,
+    policy_engine: PolicyEngine,
+    trace: TraceRecorder,
+}
+
+impl<P> CheckoutService<P>
+where
+    P: Platform,
+{
+    pub fn new(platform: P, policy_engine: PolicyEngine) -> Self {
+        Self {
+            platform,
+            policy_engine,
+            trace: TraceRecorder::new("checkout-service"),
+        }
     }
 
-    pub fn place_order(&mut self, order: Order) -> Result<OrderReceipt, AppError> {
-        let reservation = InventoryReservation::for_order(&order)?;
+    pub fn execute(&mut self, command: CheckoutCommand) -> Result<CheckoutOutcome, AppError> {
+        self.trace.record(
+            "command.accepted",
+            "checkout command accepted by application service",
+        );
+        let customer_id = CustomerId::new(command.customer_id)?;
+        let order_id = OrderId::new(command.order_id)?;
+        let customer = self.platform.find_customer(&customer_id)?;
+        self.trace
+            .record("customer.loaded", customer.email_domain());
+        let ship_to = command
+            .ship_to
+            .unwrap_or_else(|| customer.default_address().clone());
+        let mut order_lines = Vec::with_capacity(command.lines.len());
+        for line in command.lines {
+            let sku = Sku::new(line.sku)?;
+            let quantity = Quantity::new(line.quantity)?;
+            let item = self.platform.find_item(&sku)?;
+            order_lines.push(OrderLine::from_catalog(&item, quantity));
+        }
+        let mut order = Order::new(
+            order_id,
+            customer_id,
+            order_lines,
+            command.service_level,
+            ship_to,
+        )?;
+        let subtotal = order.subtotal()?;
+        self.trace.record(
+            "order.priced",
+            format!("{} {}", subtotal.cents(), subtotal.currency().code()),
+        );
+        self.platform.publish(DomainEvent::OrderPriced {
+            order_id: order.id().as_str().to_string(),
+            amount_cents: subtotal.cents(),
+        })?;
 
-        for line in reservation.lines() {
-            let available = self.store.available_units(line.product_id())?;
-            if available < line.quantity() {
-                return Err(AppError::InsufficientInventory {
-                    product_id: line.product_id().as_str().to_string(),
-                    requested: line.quantity(),
-                    available,
-                });
-            }
+        let risk = self.platform.assess(&customer, &order)?;
+        self.trace.record(
+            "risk.assessed",
+            format!("score={} decision={:?}", risk.score, risk.decision),
+        );
+        if risk.decision == RiskDecision::Reject {
+            return Err(AppError::RiskRejected { score: risk.score });
         }
 
-        self.store.reserve(&reservation)?;
-        Ok(OrderReceipt {
+        let context = PolicyContext::new(&order, &risk);
+        let policy_evaluations = self.policy_engine.evaluate(&context);
+        if self.policy_engine.blocking_count(&policy_evaluations) > 0 {
+            return Err(AppError::PolicyBlocked {
+                blocked_rules: policy_evaluations
+                    .iter()
+                    .filter(|evaluation| evaluation.verdict == PolicyVerdict::Blocked)
+                    .map(|evaluation| evaluation.rule_id.to_string())
+                    .collect(),
+            });
+        }
+        self.trace.record(
+            "policy.evaluated",
+            format!("{} rules", policy_evaluations.len()),
+        );
+
+        let reservation = self.platform.reserve(order.id(), order.lines())?;
+        order.mark_reserved();
+        self.platform.publish(DomainEvent::InventoryReserved {
             order_id: order.id().as_str().to_string(),
-            reserved_line_count: reservation.lines().len(),
-            reserved_unit_count: order.total_quantity(),
+            line_count: reservation.lines().len(),
+        })?;
+        self.trace.record(
+            "inventory.reserved",
+            format!("{} lines", reservation.lines().len()),
+        );
+
+        let payment = self.platform.authorize(&order, subtotal, &risk)?;
+        if payment.status() != PaymentStatus::Authorized {
+            return Err(AppError::PaymentDeclined {
+                order_id: order.id().as_str().to_string(),
+                message: payment.processor_message().to_string(),
+            });
+        }
+        order.mark_authorized();
+        self.platform.publish(DomainEvent::PaymentAuthorized {
+            order_id: order.id().as_str().to_string(),
+            payment_id: payment.id().as_str().to_string(),
+        })?;
+        self.trace
+            .record("payment.authorized", payment.id().as_str());
+
+        let shipment = self.platform.plan_shipment(&order, &reservation)?;
+        order.mark_planned();
+        self.platform.publish(DomainEvent::ShipmentPlanned {
+            order_id: order.id().as_str().to_string(),
+            shipment_id: shipment.id().as_str().to_string(),
+        })?;
+        self.trace
+            .record("shipment.planned", shipment.id().as_str());
+
+        order.mark_released();
+        self.platform.publish(DomainEvent::FulfillmentReleased {
+            order_id: order.id().as_str().to_string(),
+        })?;
+        self.trace
+            .record("fulfillment.released", order.id().as_str());
+
+        let decision = FulfillmentDecision {
+            order,
+            reservation,
+            payment,
+            shipment,
+            risk,
+        };
+        Ok(CheckoutOutcome {
+            decision,
+            policy_evaluations,
+            trace_events: self.trace.events().to_vec(),
         })
     }
 
-    pub fn into_store(self) -> S {
-        self.store
+    pub fn into_platform(self) -> P {
+        self.platform
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OrderReceipt {
-    pub order_id: String,
-    pub reserved_line_count: usize,
-    pub reserved_unit_count: u32,
-}
+pub struct ReservationAllocator;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StorePortError {
-    ProductNotFound { product_id: String },
-    ReservationConflict { product_id: String },
-}
-
-impl fmt::Display for StorePortError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ProductNotFound { product_id } => {
-                write!(f, "product {product_id} was not found")
-            }
-            Self::ReservationConflict { product_id } => {
-                write!(
-                    f,
-                    "inventory for product {product_id} changed before reservation"
-                )
-            }
+impl ReservationAllocator {
+    pub fn allocate(
+        order_id: &OrderId,
+        lines: &[OrderLine],
+        warehouse_for_line: impl Fn(&Sku, Quantity) -> Result<WarehouseId, AppError>,
+    ) -> Result<InventoryReservation, AppError> {
+        let mut reservation_lines = Vec::with_capacity(lines.len());
+        for line in lines {
+            let warehouse_id = warehouse_for_line(line.sku(), line.quantity())?;
+            reservation_lines.push(ReservationLine::new(
+                line.sku().clone(),
+                warehouse_id,
+                line.quantity(),
+            ));
         }
+        Ok(InventoryReservation::new(
+            order_id.clone(),
+            reservation_lines,
+        )?)
     }
 }
-
-impl Error for StorePortError {}
 
 #[derive(Debug)]
 pub enum AppError {
     Domain(DomainError),
-    Store(StorePortError),
-    InsufficientInventory {
-        product_id: String,
+    NotFound {
+        entity: &'static str,
+        key: String,
+    },
+    InventoryUnavailable {
+        sku: String,
         requested: u32,
-        available: u32,
+    },
+    PaymentDeclined {
+        order_id: String,
+        message: String,
+    },
+    RiskRejected {
+        score: u32,
+    },
+    PolicyBlocked {
+        blocked_rules: Vec<String>,
+    },
+    Integration {
+        adapter: &'static str,
+        message: String,
     },
 }
 
@@ -93,15 +287,20 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Domain(error) => write!(f, "{error}"),
-            Self::Store(error) => write!(f, "{error}"),
-            Self::InsufficientInventory {
-                product_id,
-                requested,
-                available,
-            } => write!(
-                f,
-                "product {product_id} has {available} units available, requested {requested}"
-            ),
+            Self::NotFound { entity, key } => write!(f, "{entity} {key} was not found"),
+            Self::InventoryUnavailable { sku, requested } => {
+                write!(f, "sku {sku} does not have {requested} units available")
+            }
+            Self::PaymentDeclined { order_id, message } => {
+                write!(f, "payment for order {order_id} was declined: {message}")
+            }
+            Self::RiskRejected { score } => write!(f, "risk score {score} rejected the order"),
+            Self::PolicyBlocked { blocked_rules } => {
+                write!(f, "policy blocked checkout: {}", blocked_rules.join(","))
+            }
+            Self::Integration { adapter, message } => {
+                write!(f, "{adapter} integration failed: {message}")
+            }
         }
     }
 }
@@ -110,8 +309,7 @@ impl Error for AppError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Domain(error) => Some(error),
-            Self::Store(error) => Some(error),
-            Self::InsufficientInventory { .. } => None,
+            _ => None,
         }
     }
 }
@@ -122,89 +320,34 @@ impl From<DomainError> for AppError {
     }
 }
 
-impl From<StorePortError> for AppError {
-    fn from(error: StorePortError) -> Self {
-        Self::Store(error)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use super::*;
-    use crate::domain::{OrderId, OrderLine};
-
-    struct FakeStore {
-        stock: BTreeMap<ProductId, u32>,
-        reserved: Vec<InventoryReservation>,
-    }
-
-    impl FakeStore {
-        fn with_stock(stock: BTreeMap<ProductId, u32>) -> Self {
-            Self {
-                stock,
-                reserved: Vec::new(),
-            }
-        }
-    }
-
-    impl InventoryStore for FakeStore {
-        fn available_units(&self, product_id: &ProductId) -> Result<u32, StorePortError> {
-            self.stock
-                .get(product_id)
-                .copied()
-                .ok_or_else(|| StorePortError::ProductNotFound {
-                    product_id: product_id.as_str().to_string(),
-                })
-        }
-
-        fn reserve(&mut self, reservation: &InventoryReservation) -> Result<(), StorePortError> {
-            self.reserved.push(reservation.clone());
-            Ok(())
-        }
-    }
+    use crate::scenario::build_demo_platform;
 
     #[test]
-    fn place_order_reserves_inventory() -> Result<(), AppError> {
-        let product_id = ProductId::new("sku-1")?;
-        let mut stock = BTreeMap::new();
-        stock.insert(product_id.clone(), 3);
-        let store = FakeStore::with_stock(stock);
-        let mut service = OrderService::new(store);
-        let order = Order::new(
-            OrderId::new("order-1")?,
-            vec![OrderLine::new(product_id, 2)?],
-        )?;
+    fn checkout_service_completes_happy_path() -> Result<(), AppError> {
+        let platform = build_demo_platform()?;
+        let mut service = CheckoutService::new(platform, PolicyEngine::standard());
+        let outcome = service.execute(CheckoutCommand {
+            order_id: "order-100".to_string(),
+            customer_id: "customer-1".to_string(),
+            lines: vec![CheckoutLineCommand {
+                sku: "KIT-RED".to_string(),
+                quantity: 2,
+            }],
+            service_level: ServiceLevel::Expedited,
+            ship_to: None,
+        })?;
 
-        let receipt = service.place_order(order)?;
-        let store = service.into_store();
-
-        assert_eq!(receipt.order_id, "order-1");
-        assert_eq!(receipt.reserved_line_count, 1);
-        assert_eq!(receipt.reserved_unit_count, 2);
-        assert_eq!(store.reserved.len(), 1);
-        Ok(())
-    }
-
-    #[test]
-    fn place_order_rejects_unavailable_inventory() -> Result<(), AppError> {
-        let product_id = ProductId::new("sku-1")?;
-        let mut stock = BTreeMap::new();
-        stock.insert(product_id.clone(), 1);
-        let store = FakeStore::with_stock(stock);
-        let mut service = OrderService::new(store);
-        let order = Order::new(
-            OrderId::new("order-1")?,
-            vec![OrderLine::new(product_id, 2)?],
-        )?;
-
-        let result = service.place_order(order);
-
-        assert!(matches!(
-            result,
-            Err(AppError::InsufficientInventory { .. })
-        ));
+        assert_eq!(outcome.decision.reservation.lines().len(), 1);
+        assert!(
+            outcome
+                .policy_evaluations
+                .iter()
+                .any(|evaluation| evaluation.verdict == PolicyVerdict::Satisfied)
+        );
+        assert!(outcome.trace_events.len() >= 6);
         Ok(())
     }
 }

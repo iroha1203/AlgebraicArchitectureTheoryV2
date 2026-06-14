@@ -1,20 +1,63 @@
 {
   "schema": "law-policy/v1",
-  "id": "practical-rust-service-solid-policy",
+  "id": "practical-rust-commerce-fulfillment-policy",
   "distanceProfileRef": "distance-profile:practical-rust-service@1",
+  "measurementProfileRef": "profile:commerce-fulfillment@1",
+  "measurementProfiles": [
+    {
+      "schema": "measurement-profile/v1",
+      "profileId": "profile:commerce-fulfillment@1",
+      "siteRef": "archmap:/contexts",
+      "coverRef": "cover:commerce-fulfillment",
+      "coefficient": "F2",
+      "effCoeff": "finite-linear-algebra@1",
+      "witnessFamily": [
+        {
+          "law": "ag.cech-obstruction",
+          "variable": "x_checkout_policy_infra"
+        }
+      ],
+      "resolutionSelector": "taylor@1",
+      "domain": "finite-poset-site",
+      "zeroPredicate": "rank-zero@1",
+      "nonZeroPredicate": "rank-positive@1",
+      "certSelector": "finite-certificate@1",
+      "verdictDiscipline": "five-valued-structural-verdict@1"
+    }
+  ],
   "policies": [
     {
       "pack": "solid@1",
-      "basis": ["policy-basis:solid"],
-      "scope": ["src.app"],
+      "basis": [
+        "policy-basis:solid"
+      ],
+      "scope": [
+        "tools/archsig/examples/practical-rust-service/sample/src/"
+      ],
       "severity": "review"
     },
     {
       "law": "domain.no-direct-infra-dependency",
       "evaluator": "domain.no-direct-infra-dependency@1",
-      "basis": ["policy-basis:layering"],
-      "scope": ["src.app"],
+      "basis": [
+        "policy-basis:layering"
+      ],
+      "scope": [
+        "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
+        "tools/archsig/examples/practical-rust-service/sample/src/app.rs"
+      ],
       "severity": "warning"
+    },
+    {
+      "law": "ag.cech-obstruction",
+      "evaluator": "ag.cech-obstruction@1",
+      "basis": [
+        "policy-basis:layering"
+      ],
+      "scope": [
+        "tools/archsig/examples/practical-rust-service/sample/src/"
+      ],
+      "severity": "high"
     }
   ]
 }
