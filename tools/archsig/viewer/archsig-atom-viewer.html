@@ -834,6 +834,7 @@
             <option value="obstructionLoops">AG Obstruction loops</option>
             <option value="obstructions">AG Forbidden support cages</option>
             <option value="spectrum">AG Spectrum landscape</option>
+            <option value="analyticOverlay">AG Analytic overlay</option>
             <option value="flatness">AG Flatness surface</option>
             <option value="aatAxes">AG Site / Cover</option>
             <option value="molecules">Molecule map</option>
@@ -1422,6 +1423,9 @@
       if (scene.sceneId === "hodge-debt-field") {
         renderLocusField(scene, geometry.locusField || {}, positions, geometry.renderLimits || {});
       }
+      if (scene.sceneId === "analytic-overlay") {
+        renderAnalyticOverlays(scene, geometry.analyticOverlayBundle || {}, positions, encoding, geometry.renderLimits || {});
+      }
       if (scene.sceneId === "obstruction") {
         renderForbiddenCages(scene, geometry.forbiddenCages || [], positions, encoding, geometry.renderLimits || {});
       }
@@ -1691,6 +1695,80 @@
         mesh.userData = { kind: "blockedUnmeasuredRegion", item: region };
         edgeGroup.add(mesh);
       });
+    }
+
+    function renderAnalyticOverlays(scene, bundle, positions, encoding, limits = {}) {
+      const overlays = (Array.isArray(bundle.overlays) ? bundle.overlays : []).slice(0, limits.analyticOverlays || 80);
+      const color = sceneColorHex("analytic_reading");
+      const vertices = [];
+      let previousPoint = null;
+      overlays.forEach((overlay, index) => {
+        const value = overlayMagnitude(overlay);
+        const center = sceneAxisPosition(scene, overlay.overlayId || `analytic-overlay:${index}`, index, Math.max(overlays.length, 1), groupPosition(index, Math.max(overlays.length, 1), 58), {
+          xValue: index / Math.max(overlays.length - 1, 1),
+          yValue: Math.min(value, 12),
+          zValue: Math.min(value, 12)
+        });
+        const size = 3.6 + Math.min(value, 10) * 1.4;
+        const geometry = overlayGeometry(overlay.overlayKind, size);
+        const mesh = new THREE.Mesh(
+          geometry,
+          new THREE.MeshStandardMaterial({
+            color,
+            emissive: 0x0b2f46,
+            transparent: true,
+            opacity: 0.58,
+            roughness: 0.42,
+            metalness: 0.03,
+            wireframe: overlay.overlayKind === "singularity_concentration"
+          })
+        );
+        mesh.position.copy(center);
+        mesh.position.y += 6 + Math.min(value, 12) * 1.8;
+        mesh.rotation.x = Math.PI / 8;
+        mesh.rotation.y = index * 0.42;
+        mesh.userData = { kind: overlay.overlayKind || "analyticOverlay", item: overlay, colorRole: "analytic_reading" };
+        edgeGroup.add(mesh);
+        if (previousPoint) {
+          vertices.push(previousPoint.x, previousPoint.y, previousPoint.z, mesh.position.x, mesh.position.y, mesh.position.z);
+        }
+        previousPoint = mesh.position.clone();
+        const label = createTextSprite(overlayLabel(overlay), "#e8f3ff", "rgba(14,35,58,0.72)");
+        label.position.copy(mesh.position).add(new THREE.Vector3(0, size + 5, 0));
+        label.userData = { kind: "analyticOverlayLabel", item: overlay };
+        edgeGroup.add(label);
+      });
+      addLineSegments(vertices, color, 0.38, "analyticOverlayLane", { lineRole: "contour", colorRole: "analytic_reading" });
+    }
+
+    function overlayGeometry(kind, size) {
+      if (kind === "period_pairing_matrix") return new THREE.BoxGeometry(size * 1.8, size * 0.24, size);
+      if (kind === "wasserstein_transfer_cost") return new THREE.ConeGeometry(size * 0.8, size * 1.8, 6);
+      if (kind === "spectral_gap_proxy") return new THREE.CylinderGeometry(size * 0.65, size * 0.65, size * 1.4, 20);
+      if (kind === "curvature_spectrum_hotspot") return new THREE.TorusKnotGeometry(size * 0.52, 0.28, 48, 8);
+      if (kind === "singularity_concentration") return new THREE.OctahedronGeometry(size * 0.9);
+      return new THREE.SphereGeometry(size, 16, 10);
+    }
+
+    function overlayMagnitude(overlay) {
+      const candidates = [
+        overlay.wassersteinTransferCost,
+        overlay.transferResidue,
+        overlay.spectralGap,
+        overlay.concentrationCount
+      ].map(Number).filter(Number.isFinite);
+      if (Array.isArray(overlay.periodPairingMatrix)) {
+        overlay.periodPairingMatrix.flat().map(Number).filter(Number.isFinite).forEach((value) => candidates.push(Math.abs(value)));
+      }
+      if (Array.isArray(overlay.hotspots)) {
+        overlay.hotspots.map((item) => Number(item.hotspotWeight)).filter(Number.isFinite).forEach((value) => candidates.push(value));
+      }
+      return candidates.length ? Math.max(...candidates.map(Math.abs)) : 1;
+    }
+
+    function overlayLabel(overlay) {
+      const label = String(overlay.overlayKind || "analytic").replace(/_/g, " ");
+      return label.length > 26 ? `${label.slice(0, 25)}...` : label;
     }
 
     function renderForbiddenCages(scene, cages, positions, encoding, limits) {
@@ -2851,7 +2929,8 @@
         sources: "source-evidence",
         curvature: "hodge-debt-field",
         flatness: "hodge-debt-field",
-        spectrum: "hodge-debt-field"
+        spectrum: "hodge-debt-field",
+        analyticOverlay: "analytic-overlay"
       };
       const sceneId = mapping[mode] || mode;
       return scenes.find((scene) => scene.sceneId === sceneId || scene.kind === sceneId);
@@ -2867,6 +2946,7 @@
         "repair-dual": "projection",
         "law-conflict-tor": "risk",
         "hodge-debt-field": "curvature",
+        "analytic-overlay": "analyticOverlay",
         "boundary-assumption": "risk",
         "source-evidence": "sources"
       };
