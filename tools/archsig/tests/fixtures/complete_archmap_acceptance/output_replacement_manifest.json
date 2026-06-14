@@ -26,7 +26,6 @@
     "missing-support",
     "blocked-molecule",
     "strict-distance",
-    "partial-canonical-family-bundle",
     "stale-success-artifact-suppression"
   ],
   "requiredOutputSurfaces": [

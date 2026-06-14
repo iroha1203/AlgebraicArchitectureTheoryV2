@@ -3039,8 +3039,10 @@
     async function handleReportAction(event) {
       const button = event.target.closest("[data-tour-id], [data-scene-id], [data-copy-source-refs]");
       if (!button) return;
+      event.preventDefault();
       if (button.dataset.tourId) {
         startGuidedTour(button.dataset.tourId);
+        return;
       }
       if (button.dataset.sceneId) {
         viewModeEl.value = modeForScene(button.dataset.sceneId);
@@ -3048,6 +3050,7 @@
         const scene = (currentData?.viewerVisualScenes || []).find((item) => item.sceneId === button.dataset.sceneId);
         if (scene) renderDetail("Scene", sceneDetailItem(scene, scene.layers?.[0], scene.visualEncodings?.[0]));
         status(`Scene: ${button.dataset.sceneId}`);
+        return;
       }
       if (button.dataset.copySourceRefs) {
         await copyText(button.dataset.copySourceRefs);
@@ -3108,6 +3111,7 @@
         await navigator.clipboard.writeText(text);
         status("Copied source refs");
       } catch (_error) {
+        setReportOpen(false);
         detailEl.innerHTML = `<h2>Copy source refs</h2><p>${escapeHtml(text)}</p>`;
         detailEl.hidden = false;
         status("Source refs shown in detail panel");
@@ -3294,7 +3298,8 @@
         ].filter(Boolean).join(" / ");
         const tourId = Array.isArray(item.tourRefs) && item.tourRefs.length ? item.tourRefs[0] : null;
         const actions = [
-          tourId ? `<button type="button" data-tour-id="${escapeAttr(tourId)}">Start tour</button>` : sceneId ? `<button type="button" data-scene-id="${escapeAttr(sceneId)}">Open scene</button>` : "",
+          tourId ? `<button type="button" data-tour-id="${escapeAttr(tourId)}">Start tour</button>` : "",
+          sceneId ? `<button type="button" data-scene-id="${escapeAttr(sceneId)}">Open scene</button>` : "",
           Array.isArray(sourceRefs) && sourceRefs.length ? `<button type="button" data-copy-source-refs="${escapeAttr(sourceRefs.join("\\n"))}">copy source refs</button>` : ""
         ].filter(Boolean).join("");
         return `<div class="item"><strong>${escapeHtml(String(title))}</strong><p>${escapeHtml(String(text))}</p>${refs ? `<p>${escapeHtml(refs)}</p>` : ""}${actions ? `<div class="chips">${actions}</div>` : ""}</div>`;

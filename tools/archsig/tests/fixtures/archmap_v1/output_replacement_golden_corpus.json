@@ -23,7 +23,7 @@
       "family": "practical",
       "archmapPath": "examples/practical-rust-service/archmap/archmap.json",
       "lawPolicyPath": "examples/practical-rust-service/law_policy/law_policy.json",
-      "executableTest": "practical_rust_service_example_runs_v1_analyze",
+      "executableTest": "practical_rust_service_example_runs_current_analyze",
       "requiredOutputSurfaces": [
         "diagnostic-value",
         "architecture-distance-profile",
@@ -177,14 +177,6 @@
       "lawPolicyPath": "tests/fixtures/archmap_v1/law_policy.json",
       "executableTest": "cli_analyze_v1_strict_distance_rejects_blocked_typed_results",
       "expectedGuard": "strict distance rejects blocked typed support"
-    },
-    {
-      "caseId": "strict-distance-partial-canonical-family-bundle-v1",
-      "family": "partial-canonical-family-bundle",
-      "archmapPath": "examples/practical-rust-service/archmap/archmap.json",
-      "lawPolicyPath": "examples/practical-rust-service/law_policy/law_policy.json",
-      "executableTest": "cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle",
-      "expectedGuard": "strict distance rejects partial canonical Part IV family bundles after emitting explicit partial measurement state"
     },
     {
       "caseId": "stale-success-artifact-suppression-v1",

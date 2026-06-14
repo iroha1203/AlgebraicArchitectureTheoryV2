@@ -4349,7 +4349,7 @@ fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
 
     let known_executable_tests = BTreeSet::from([
         "cli_analyze_v1_emit_raw_artifacts_writes_typed_packet_detail_and_handoff",
-        "practical_rust_service_example_runs_v1_analyze",
+        "practical_rust_service_example_runs_current_analyze",
         "cli_analyze_v1_writes_typed_evaluator_results",
         "cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation",
         "cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler",
@@ -4361,7 +4361,7 @@ fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
         "cli_analyze_v1_marks_incomplete_molecule_candidate_blocked",
         "cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref",
         "cli_analyze_v1_strict_distance_rejects_blocked_typed_results",
-        "cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle",
+        "cli_analyze_current_strict_distance_accepts_practical_measurement_foundation",
         "cli_analyze_v1_validation_failure_removes_stale_success_artifacts",
     ]);
     let positive_cases = corpus["positiveCases"]
@@ -4515,9 +4515,9 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
         (
             "tools/archsig/examples/practical-rust-service/README.md",
             &[
-                "architecture-distance.json",
-                "Strict distance guard",
-                "incomplete canonical distance family states",
+                "archsig-measurement-packet.json",
+                "archsig-atom-viewer-data-v2",
+                "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
             ][..],
         ),
     ] {
@@ -6883,8 +6883,8 @@ fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
 }
 
 #[test]
-fn cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle() {
-    let out_dir = temp_dir("analyze-v1-strict-distance-partial-family-bundle");
+fn cli_analyze_current_strict_distance_accepts_practical_measurement_foundation() {
+    let out_dir = temp_dir("analyze-current-strict-distance-practical-foundation");
     let root = practical_rust_service_root();
 
     let output = run_sig0_output(&[
@@ -6902,24 +6902,24 @@ fn cli_analyze_v1_strict_distance_rejects_partial_canonical_family_bundle() {
         "--strict-distance",
     ]);
 
-    assert!(!output.status.success());
-    assert_eq!(output.status.code(), Some(1));
-    let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("incomplete canonical distance family states"),
-        "--strict-distance must reject partial canonical family bundles\n{stderr}"
+        output.status.success(),
+        "--strict-distance must accept the current practical measurement foundation\nstderr: {}",
+        String::from_utf8_lossy(&output.stderr)
     );
-    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
     assert_eq!(
-        architecture_distance["measurementStateSummary"]["status"].as_str(),
-        Some("partial"),
-        "strict rejection must match the emitted canonical distance family state"
+        read_json(&out_dir.join("archsig-measurement-packet.json"))["schema"],
+        "archsig-measurement-packet/v1"
+    );
+    assert_eq!(
+        read_json(&out_dir.join("archsig-analysis-summary.json"))["conclusion"],
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
 }
 
 #[test]
-fn practical_rust_service_example_runs_v1_analyze() {
-    let out_dir = temp_dir("practical-rust-service-v1-analyze");
+fn practical_rust_service_example_runs_current_analyze() {
+    let out_dir = temp_dir("practical-rust-service-current-analyze");
     let root = practical_rust_service_root();
 
     let output = run_sig0_output(&[
@@ -6937,590 +6937,89 @@ fn practical_rust_service_example_runs_v1_analyze() {
         "--emit-raw-artifacts",
     ]);
 
-    assert!(output.status.success());
-    let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
-    assert_eq!(archmap_validation["summary"]["atomCount"], 29);
-    assert_eq!(archmap_validation["summary"]["moleculeCount"], 4);
-    assert_eq!(archmap_validation["summary"]["result"], "pass");
-    let normalized = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(normalized["summary"]["normalizedAtomCount"], 29);
-    assert_eq!(normalized["summary"]["generatedMoleculeCandidateCount"], 4);
-    assert!(normalized["molecules"].as_array().is_some_and(|molecules| {
-        [
-            "mol:domain-invariants",
-            "mol:inventory-store-adapter",
-            "mol:runtime-smoke-flow",
-        ]
-        .into_iter()
-        .all(|source_molecule_id| {
-            molecules
-                .iter()
-                .any(|molecule| molecule["sourceMoleculeId"] == source_molecule_id)
-        })
-    }));
-    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-    assert_eq!(packet["schema"], "archsig-analysis-packet/v1");
-    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
     assert!(
-        typed["replacementEvaluatorResults"]
-            .as_array()
-            .is_some_and(|results| {
-                results.iter().any(|result| {
-                    result["replacementId"] == "semantic.interpretation@1"
-                        && result["replacementForV0Field"] == "semanticObservations"
-                        && result["status"] == "measuredPass"
-                        && result["supportAtomRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && result["supportMoleculeRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })
-            }),
-        "practical fixture must resolve semanticObservations through semantic atoms, not v0 helper fields"
+        output.status.success(),
+        "current practical sample analyze must pass\nstderr: {}",
+        String::from_utf8_lossy(&output.stderr)
     );
-    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
+    let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
+    assert_eq!(archmap_validation["summary"]["atomCount"], 60);
+    assert_eq!(archmap_validation["summary"]["contextCount"], 7);
+    assert_eq!(archmap_validation["summary"]["coverCount"], 1);
+    assert_eq!(archmap_validation["summary"]["result"], "pass");
+
+    let normalized = read_json(&out_dir.join("normalized-archmap.json"));
+    assert_eq!(normalized["schema"], "normalized-archmap/v2");
+    assert_eq!(normalized["summary"]["normalizedAtomCount"], 60);
+    assert_eq!(normalized["summary"]["contextCount"], 7);
+    assert_eq!(normalized["summary"]["coverCount"], 1);
+
+    let measurement_packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        measurement_packet["schema"],
+        "archsig-measurement-packet/v1"
+    );
+    assert_eq!(
+        measurement_packet["packetId"],
+        "measurement:practical-rust-commerce-fulfillment-v2"
+    );
+    assert!(
+        measurement_packet["structuralVerdict"]
+            .as_array()
+            .is_some_and(|rows| rows.len() == 1
+                && rows[0]["evaluator"] == "ag.cech-obstruction@1"
+                && rows[0]["verdict"] == "measured_zero"),
+        "practical sample must expose the selected AG structural verdict"
+    );
+    assert!(
+        measurement_packet["computedInvariants"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| row["atomCount"] == 60
+                && row["contextCount"] == 7
+                && row["coverCount"] == 1)),
+        "measurement packet must preserve the finite-poset-site shape counts"
+    );
+
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
-    assert_eq!(summary["schema"], "archsig-analysis-summary/v1");
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert_eq!(summary["schema"], "archsig-analysis-summary/v2");
     assert_eq!(
-        architecture_distance["schema"],
-        "archsig-architecture-distance/v1"
+        summary["conclusion"],
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
+    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 1);
+    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
+
+    assert_eq!(viewer["schemaVersion"], "archsig-atom-viewer-data-v2");
+    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(60));
+    assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
+    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(78));
     assert_eq!(
-        architecture_distance["summary"]["profileRef"],
-        "distance-profile:practical-rust-service@1"
+        viewer["viewerVisualScenes"].as_array().map(Vec::len),
+        Some(10)
     );
+    assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(2));
     assert_eq!(
-        architecture_distance["familySummaries"], packet["architectureDistance"]["familySummaries"],
-        "primary architecture-distance artifact and raw packet must expose the same canonical family bundle"
+        viewer["decisionBar"]["conclusion"],
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
-    assert_eq!(
-        architecture_distance["measurementStateSummary"],
-        packet["architectureDistance"]["measurementStateSummary"],
-        "primary architecture-distance artifact and raw packet must expose the same measurement state summary"
-    );
-    assert_eq!(
-        architecture_distance["measurementStateSummary"]["familyCount"].as_u64(),
-        Some(10),
-        "practical fixture must expose all canonical distance families"
-    );
-    assert_eq!(
-        architecture_distance["measurementStateSummary"]["missingCanonicalFamilyCount"].as_u64(),
-        Some(0),
-        "strict-distance practical fixture must not omit canonical distance families"
-    );
-    assert_eq!(
-        string_set(&architecture_distance["summary"]["measuredTotalScope"]["includedFamilies"]),
-        BTreeSet::from([
-            "atomGeometry".to_string(),
-            "configurationGeometry".to_string(),
-            "operationGeometry".to_string(),
-            "signatureGeometry".to_string(),
-        ]),
-        "measuredTotal must be scoped to architecture-distance-point families"
-    );
+
+    assert_eq!(manifest["schemaVersion"], "archsig-run-manifest-v2");
+    assert_eq!(manifest["outputMode"], "v2-measurement-foundation");
     assert!(
-        string_set(
-            &architecture_distance["summary"]["measuredTotalScope"]["nonAggregatedFamilies"]
-        )
-        .is_superset(&BTreeSet::from([
-            "curvatureGeometry".to_string(),
-            "homotopyFillingGeometry".to_string(),
-            "representationMetric".to_string(),
-        ])),
-        "derived Part IV families must be visible as non-aggregated canonical distance families"
-    );
-    assert!(
-        architecture_distance["familySummaries"]
+        manifest["generatedArtifacts"]
             .as_array()
-            .is_some_and(|families| families
-                .iter()
-                .zip(
-                    packet["part4DistanceCoverageLedger"]
-                        .as_array()
-                        .expect("raw packet ledger is emitted")
-                        .iter()
-                )
-                .enumerate()
-                .all(|(index, (family_summary, ledger_entry))| {
-                    family_summary["sourceLedgerRef"]
-                        == format!("packet:/part4DistanceCoverageLedger/{index}")
-                        && family_summary["ledgerEntryId"] == ledger_entry["ledgerEntryId"]
-                        && family_summary["distanceFamily"] == ledger_entry["distanceFamily"]
-                        && family_summary["measurementStatus"] == ledger_entry["measurementStatus"]
-                        && family_summary["readingCount"] == ledger_entry["readingCount"]
-                })),
-        "primary architecture-distance family bundle must mirror the raw packet ledger"
+            .is_some_and(|artifacts| [
+                "archsig-measurement-packet.json",
+                "archsig-analysis-summary.json",
+                "archsig-insight-report.json",
+                "archsig-atom-viewer-data.json",
+            ]
+            .into_iter()
+            .all(|name| artifacts.iter().any(|artifact| artifact == name))),
+        "manifest must list the current practical demo artifacts"
     );
-    let first_atom_distance = &architecture_distance["atomDistanceReadings"][0];
-    assert_eq!(
-        string_set(&Value::Array(
-            first_atom_distance["part4DefinitionReadings"]
-                .as_array()
-                .expect("atom Part IV definition readings are emitted")
-                .iter()
-                .map(|reading| reading["componentKind"].clone())
-                .collect::<Vec<_>>()
-        )),
-        BTreeSet::from([
-            "carrier".to_string(),
-            "fiber".to_string(),
-            "semanticAnchor".to_string(),
-            "valence".to_string(),
-        ]),
-        "atom distance must expose Fiber / Carrier / Valence / Semantic Anchor rows"
-    );
-    assert_eq!(
-        first_atom_distance["atomLayoutDistance"]["definitionRef"].as_str(),
-        Some("definitions:2.5"),
-        "atom layout distance must remain the composed atom-pair distance"
-    );
-    let first_configuration_distance = &architecture_distance["configurationDistanceReadings"][0];
-    assert_eq!(
-        first_configuration_distance["configurationIndexedDistance"]["definitionRef"].as_str(),
-        Some("definitions:3.1"),
-        "configuration-indexed distance must be explicit"
-    );
-    assert_eq!(
-        first_configuration_distance["contextDistance"]["definitionRef"].as_str(),
-        Some("definitions:3.2"),
-        "context distance must be explicit"
-    );
-    assert!(
-        first_configuration_distance["typedHypergraph"]["hyperedges"]
-            .as_array()
-            .is_some_and(|hyperedges| !hyperedges.is_empty()),
-        "configuration distance must expose typed hypergraph evidence"
-    );
-    assert!(
-        first_configuration_distance["selectedPairDistances"]
-            .as_array()
-            .is_some_and(|pairs| pairs.len() > 1
-                && pairs.iter().all(|pair| {
-                    pair["configurationIndexedDistance"]["shortestPathHyperedgeRefs"]
-                        .as_array()
-                        .is_some_and(|refs| !refs.is_empty())
-                        && pair["contextDistance"]["contextUnionRefs"]
-                            .as_array()
-                            .is_some()
-                })),
-        "configuration distance must materialize explicit atom-pair shortest paths, not infer a first/last endpoint"
-    );
-    assert!(
-        first_configuration_distance["basis"]
-            .as_str()
-            .is_some_and(|basis| !basis.contains("configuration size")),
-        "configuration distance must not read as a molecule-size proxy"
-    );
-    assert!(
-        first_configuration_distance["moleculeContributionRate"].is_object(),
-        "configuration distance must expose molecule contribution rate"
-    );
-    assert!(
-        summary["distanceDiagnosis"]["atomConfigurationInsights"]["topMovedAtomPairs"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && viewer["reportPane"]["distanceDiagnosis"]["atomConfigurationInsights"]
-                ["topMovedMolecules"]
-                .as_array()
-                .is_some_and(|items| items
-                    .iter()
-                    .all(|item| item["sourceRefs"].as_array().is_some_and(|refs| !refs.is_empty())
-                        && item["topSelectedPairDistances"]
-                            .as_array()
-                            .is_some_and(|pairs| !pairs.is_empty())))
-            && llm_packet["distanceDiagnosisSummary"]["atomConfigurationInsights"]
-                ["topMovedAtomPairs"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty()),
-        "summary, viewer, and LLM packet must expose top atom-pair and molecule distance insights"
-    );
-    let operation_distance_readings = architecture_distance["operationDistanceReadings"]
-        .as_array()
-        .expect("primary operation distance readings are emitted");
-    assert!(
-        operation_distance_readings.iter().any(|reading| {
-            reading["law"] == "solid.dependency-inversion"
-                && reading["status"] == "measured"
-                && reading["measuredValue"] == 0
-                && reading["operationCost"]["sourceRef"]
-                    == "distanceProfile.operationCosts.solid.dependency-inversion"
-                && reading["operationCost"]["includedInMeasuredValue"] == false
-                && reading["targetDistanceDecrease"]["measuredValue"] == 0
-                && reading["distanceToSelectedFlat"]["measuredValue"] == 0
-                && reading["repairRoute"]["status"] == "not-required"
-                && reading["repairRoute"]["sourceRefs"]
-                    .as_array()
-                    .is_some_and(|refs| !refs.is_empty())
-                && reading["repairRoute"]["preconditionRefs"]
-                    .as_array()
-                    .is_some_and(|refs| !refs.is_empty())
-                && reading["repairRoute"]["transferRiskRefs"]
-                    .as_array()
-                    .is_some_and(|refs| refs.is_empty())
-                && reading["sideEffectBound"]["measuredValue"] == 0
-                && reading["part4DefinitionReadings"]
-                    .as_array()
-                    .is_some_and(|rows| {
-                        [
-                            "operationCost",
-                            "targetDistanceDecrease",
-                            "distanceToSelectedFlat",
-                            "repairRoute",
-                            "sideEffectBound",
-                        ]
-                        .into_iter()
-                        .all(|component| rows.iter().any(|row| row["componentKind"] == component))
-                    })
-                && reading["evidenceBoundary"]
-                    .as_str()
-                    .is_some_and(|boundary| {
-                        boundary.contains("not automatic repair safety")
-                            && boundary.contains("does not generate atoms")
-                    })
-        }),
-        "practical fixture must expose a profile-driven operation / repair / flatness / side-effect primary row even when the selected law already passes"
-    );
-    assert!(
-        summary["distanceDiagnosis"]["operationInsights"]["topOperationCandidates"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && viewer["reportPane"]["distanceDiagnosis"]["operationInsights"]
-                ["topOperationCandidates"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && llm_packet["distanceDiagnosisSummary"]["operationInsights"]["topOperationCandidates"]
-                .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "summary, viewer, and LLM packet must expose operation family insights"
-    );
-    assert!(
-        architecture_distance["obstructionMeasureReadings"]
-            .as_array()
-            .is_some_and(|items| {
-                items.len() == 6
-                    && items.iter().all(|reading| {
-                        reading["part4DefinitionRef"] == "definitions:6.1"
-                            && reading["status"] == "measured"
-                            && reading["obstructionMeasure"]["status"] == "measuredZero"
-                            && reading["supportRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["witnessRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                    })
-            })
-            && architecture_distance["curvatureSupportReadings"]
-                .as_array()
-                .is_some_and(|items| items.len() == 6)
-            && architecture_distance["curvatureTransferReadings"]
-                .as_array()
-                .is_some_and(|items| items.len() == 1)
-            && architecture_distance["curvatureMassReadings"]
-                .as_array()
-                .is_some_and(|items| items.len() == 1),
-        "primary architecture-distance artifact must expose obstruction measure, curvature support, transport, and mass rows"
-    );
-    assert!(
-        summary["distanceDiagnosis"]["curvatureInsights"]["status"] == "measured-zero"
-            && summary["distanceDiagnosis"]["curvatureInsights"]["measuredZeroSupportCount"]
-                == 6
-            && summary["distanceDiagnosis"]["curvatureInsights"]["blockedSupportCount"] == 0
-            && summary["distanceDiagnosis"]["curvatureInsights"]["curvatureTransport"]
-                ["spectralRadiusKind"]
-                == "measuredZeroWithinSelectedSupport"
-            && viewer["reportPane"]["distanceDiagnosis"]["curvatureInsights"]
-                ["topCurvatureSupports"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && llm_packet["distanceDiagnosisSummary"]["curvatureInsights"]
-                ["topCurvatureSupports"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.iter().all(|support| {
-                        support["recommendedNextAction"]
-                            .as_str()
-                            .is_some_and(|action| action.contains("selected-support zero"))
-                    })
-                }),
-        "summary, viewer, and LLM packet must expose curvature zero/nonzero/blocked counts without turning zero curvature into global lawfulness"
-    );
-    assert!(
-        architecture_distance["representationMetricReadings"]
-            .as_array()
-            .is_some_and(|items| {
-                items.len() == 1
-                    && items.iter().all(|reading| {
-                        reading["distanceFamily"] == "representationMetric"
-                            && reading["status"] == "partial"
-                            && reading["structuralDistance"]["status"] == "measured"
-                            && reading["analyticDistance"]["status"] == "boundedProxy"
-                            && reading["lipschitzUpperBound"]["status"] == "blockedByProxy"
-                            && reading["biLipschitzFaithfulness"]["status"] == "blocked"
-                            && reading["blockerRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["coverageBlockerRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["witnessCompletenessBlockerRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["part4DefinitionReadings"]
-                                .as_array()
-                                .is_some_and(|rows| {
-                                    ["representationStability", "representationFaithfulness"]
-                                        .into_iter()
-                                        .all(|component| {
-                                            rows.iter().any(|row| row["componentKind"] == component)
-                                        })
-                                })
-                    })
-            }),
-        "primary representation metric rows must expose structural distance, bounded analytic proxy, blocked Lipschitz upper-bound, and blocked faithfulness"
-    );
-    assert!(
-        summary["distanceDiagnosis"]["representationInsights"]["status"] == "partial"
-            && summary["distanceDiagnosis"]["representationInsights"]
-                ["measuredStructuralDistanceCount"]
-                == 1
-            && summary["distanceDiagnosis"]["representationInsights"]["boundedProxyAnalyticCount"]
-                == 1
-            && summary["distanceDiagnosis"]["representationInsights"]["blockedFaithfulnessCount"]
-                == 1
-            && viewer["reportPane"]["distanceDiagnosis"]["representationInsights"]
-                ["topRepresentationMetrics"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && llm_packet["distanceDiagnosisSummary"]["representationInsights"]
-                ["topRepresentationMetrics"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.iter().all(|reading| {
-                        reading["recommendedNextAction"]
-                            .as_str()
-                            .is_some_and(|action| action.contains("proxy telemetry"))
-                    })
-                }),
-        "summary, viewer, and LLM packet must expose representation proxy / faithfulness blockers instead of measured analytic distance"
-    );
-    assert!(
-        architecture_distance["homotopyDistanceReadings"]
-            .as_array()
-            .is_some_and(|items| {
-                items.len() == 4
-                    && items.iter().all(|reading| {
-                        reading["distanceFamily"] == "homotopyFillingGeometry"
-                            && reading["status"] == "blocked"
-                            && reading["measurementStatus"] == "blockedByCoverageGap"
-                            && reading["homotopyDistance"]["status"] == "blocked"
-                            && reading["fillingCost"]["status"] == "blocked"
-                            && reading["observationGapLowerBound"]["status"] == "measured"
-                            && reading["selectedDehnArea"]["status"] == "blocked"
-                            && reading["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["moleculeRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && reading["blockerRefs"].as_array().is_some_and(|refs| {
-                                refs.iter().any(|reference| {
-                                    reference == "homotopy:selected-axis-coverage-required"
-                                })
-                            })
-                            && reading["part4DefinitionReadings"]
-                                .as_array()
-                                .is_some_and(|rows| {
-                                    [
-                                        "homotopyDistance",
-                                        "fillingCost",
-                                        "observationGapLowerBound",
-                                        "selectedDehnArea",
-                                    ]
-                                    .into_iter()
-                                    .all(|component| {
-                                        rows.iter().any(|row| row["componentKind"] == component)
-                                    })
-                                })
-                    })
-            }),
-        "primary homotopy rows must expose homotopy distance, filling cost, observation gap lower bound, selected Dehn area, and source refs"
-    );
-    assert!(
-        summary["distanceDiagnosis"]["homotopyInsights"]["status"] == "partial"
-            && summary["distanceDiagnosis"]["homotopyInsights"]["blockedCoverageCount"] == 4
-            && summary["distanceDiagnosis"]["homotopyInsights"]["blockedReadingCount"] == 4
-            && summary["distanceDiagnosis"]["homotopyInsights"]["observationGapLowerBoundTotal"]
-                == 4
-            && viewer["reportPane"]["distanceDiagnosis"]["homotopyInsights"]["topBlockedReadings"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && llm_packet["distanceDiagnosisSummary"]["homotopyInsights"]["topCoverageGapBlockers"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.iter().all(|item| {
-                        item["recommendedNextAction"]
-                            .as_str()
-                            .is_some_and(|action| action.contains("coverage gap"))
-                            && item["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                    })
-                }),
-        "summary, viewer, and LLM packet must expose homotopy blocked coverage as source-linked next action"
-    );
-    assert_eq!(
-        architecture_distance["profile"]["signatureViolationWeight"].as_i64(),
-        Some(2),
-        "selected distance profile must contribute registry-owned weights"
-    );
-    assert_eq!(
-        architecture_distance["profile"]["operationCosts"]["domain.no-direct-infra-dependency"]
-            .as_i64(),
-        Some(6),
-        "selected distance profile must contribute registry-owned operation costs"
-    );
-    assert!(
-        architecture_distance["summary"]["measuredTotal"]
-            .as_i64()
-            .is_some_and(|total| {
-                total
-                    > typed["summary"]["measuredViolationCount"]
-                        .as_i64()
-                        .unwrap_or(0)
-            }),
-        "architecture distance must not collapse to typed evaluator violation count"
-    );
-    assert_eq!(
-        summary["conclusion"]["plainConclusion"].as_str(),
-        Some("違反なし")
-    );
-    assert_eq!(
-        summary["distanceDiagnosis"]["basis"].as_str(),
-        Some("architectureDistance")
-    );
-    assert_eq!(
-        viewer["reportPane"]["distanceDiagnosis"]["basis"].as_str(),
-        Some("architectureDistance")
-    );
-    assert_eq!(
-        llm_packet["distanceDiagnosisSummary"]["basis"].as_str(),
-        Some("architectureDistance")
-    );
-    assert_eq!(
-        summary["distanceInsights"], architecture_distance["distanceInsights"],
-        "summary must read the same distanceInsights object as architecture-distance"
-    );
-    assert_eq!(
-        viewer["reportPane"]["distanceInsights"], architecture_distance["distanceInsights"],
-        "viewer report pane must read the same distanceInsights object as architecture-distance"
-    );
-    assert_eq!(
-        llm_packet["distanceInsightsSummary"], architecture_distance["distanceInsights"],
-        "LLM packet must read the same distanceInsights object as architecture-distance"
-    );
-    let distance_insights = &architecture_distance["distanceInsights"];
-    assert!(
-        distance_insights["architecturalCenter"]["status"] == "measured"
-            && distance_insights["architecturalCenter"]["moleculeRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty())
-            && distance_insights["architecturalCenter"]["atomRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty())
-            && distance_insights["architecturalCenter"]["sourceRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty())
-            && distance_insights["architecturalCenter"]["measuredValue"]
-                .as_i64()
-                .is_some_and(|value| value > 0),
-        "distanceInsights must expose the structural center with molecule, atom, source refs, and measured distance"
-    );
-    assert!(
-        distance_insights["changeSensitiveAreas"]
-            .as_array()
-            .is_some_and(|areas| {
-                areas.iter().any(|area| {
-                    area["areaKind"] == "configuration-molecule"
-                        && area["sourceRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && area["moleculeRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                }) && areas.iter().any(|area| {
-                    area["areaKind"] == "operation-route"
-                        && area["sourceRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })
-            }),
-        "distanceInsights must expose change-sensitive configuration and operation areas"
-    );
-    assert_eq!(
-        distance_insights["policyObstructionReading"]["status"].as_str(),
-        Some("selectedPolicyObstructionMeasuredZero"),
-        "practical fixture should distinguish structural concentration from selected zero policy obstruction"
-    );
-    assert!(
-        distance_insights["blockedEvidence"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| {
-                    item["evidenceKind"] == "homotopy-coverage-gap"
-                        && item["blockerRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && item["sourceRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && item["moleculeRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                }) && items.iter().any(|item| {
-                    item["evidenceKind"] == "representation-metric"
-                        && item["atomRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && item["moleculeRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })
-            }),
-        "distanceInsights must connect blocked evidence to source, atom, and molecule refs"
-    );
-    assert!(
-        distance_insights["comparisonNeeded"]["baselineRequired"] == true
-            && distance_insights["comparisonNeeded"]["claimsNeedingBaseline"]
-                .as_array()
-                .is_some_and(|claims| !claims.is_empty())
-            && distance_insights["distanceActionQueue"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.iter().any(|item| {
-                        item["actionKind"] == "resolve-blocked-distance-evidence"
-                            && item["blockerRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && item["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                    })
-                }),
-        "distanceInsights must keep baseline-dependent claims explicit and convert blockers into distance action queue rows"
-    );
-    assert_public_artifact_omits_part4("summary", &summary);
-    assert_public_artifact_omits_part4("viewer", &viewer);
-    assert_public_artifact_omits_part4("llm packet", &llm_packet);
 }
 
 #[test]
@@ -9200,6 +8699,7 @@ fn atom_viewer_reads_insight_report_surface_contract() {
         "Read this first",
         "copy source refs",
         "Start tour",
+        "Open scene",
         "viewerVisualScenes",
         "axisMapping",
         "sceneForMode",
@@ -11626,14 +11126,6 @@ fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
         .iter()
         .find(|invariant| invariant["invariantId"] == invariant_id)
         .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
-}
-
-fn assert_public_artifact_omits_part4(label: &str, value: &Value) {
-    let text = serde_json::to_string(value).expect("json value serializes");
-    assert!(
-        !text.contains("Part IV"),
-        "{label} must not expose Part IV as public v1 summary wording"
-    );
 }
 
 fn has_nested_key(value: &Value, key: &str) -> bool {
