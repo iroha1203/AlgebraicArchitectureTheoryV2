@@ -4990,6 +4990,22 @@ unconditional / global conservativity theorem、R13 を越える additional gold
 measurement verdict / finite computability profile は
 PRD-8 の範囲であり、第VII部 bootstrap では導入しない。
 
+## AAT Algebraic-Geometric Part VIII Measurement Theory
+
+Tracking Issue: [#2210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2210).
+Initial implementation Issue: [#2211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2211).
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `VIII.R0` | `Formal.AG.Measurement`, `Formal.AG.Measurement.Bootstrap`, `AAT.AG.Measurement.UsesAATSite`, `UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `UsesAnalyticReadingContext`, `PrerequisiteStatus`, `PartVIIIDependencyStatus`, `currentDependencyStatus`, `current_site_available`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `current_representationAnalysis_available` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第VIII部 Measurement module を `Formal/AG.lean` から import し、PRD-2〜7 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、dependency status accessor が現時点の availability を保持する。 | `defined only` / `proved accessor` |
+| `VIII.定義2.1` | `AAT.AG.Measurement.MeasurementProfile`, `MeasurementProfile.Measured_M`, `MeasurementProfile.measured_inScope`, `MeasurementProfile.measured_method`, `MeasurementProfile.measured_certificate` | `structure` / `def` / `theorem` | selected site、cover、coefficient、effective interface、obstruction object、law universe、witness variables、obstruction ideal、representation family、domain、certificate、method、scope、zero / nonzero / undecided / not-computed predicates を profile-relative fields として保持する。`Measured_M` は scope、selected method、certificate reference を持つ bounded measurement surface である。 | `defined only` / `proved accessor` |
+| `VIII.定義3.1 / 原則3.2 / 定義3.3` | `AAT.AG.Measurement.MeasurementVerdict`, `MeasurementVerdict.measured_zero`, `MeasurementVerdict.measured_nonzero`, `MeasurementVerdict.unmeasured`, `MeasurementVerdict.unknown`, `MeasurementVerdict.not_computed`, `MeasurementVerdict.unmeasured_ne_measured_zero`, `MeasurementVerdict.unknown_ne_measured_nonzero`, `MeasurementVerdict.not_computed_ne_unmeasured`, `VerdictData`, `StructuralVerdict`, `AnalyticReading` | `inductive` / `structure` / `theorem` | measured zero、measured nonzero、unmeasured、unknown、not-computed を依存 payload 付き constructor として分離し、constructor disjointness により `unmeasured != measured_zero`、`unknown != measured_nonzero`、`not_computed != unmeasured` を証明する。structural verdict と analytic reading は別型として定義し、analytic value から structural verdict への暗黙変換を置かない。 | `defined only` / `proved constructor disjointness` |
+
+Non-conclusions: この Part VIII 初期 surface は R0/R1 の entrypoint と verdict discipline だけを実装する。
+finite computability、Stanley-Reisner / Alexander dual repair、refactor invariance、Hodge decomposition、
+LawConflict measurement、support-localized transfer、measurement packet、AAT-GAGA comparison、finite golden
+examples は後続 Issue に残る。`Zero` と `NonZero` を論理補集合として扱う theorem は置かない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
