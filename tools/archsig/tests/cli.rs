@@ -3542,7 +3542,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         serde_json::json!([["x_inventory"], ["x_checkout", "x_payment"]])
     );
     assert_eq!(
-        repair["stanleyReisnerComplex"]["reducedHomology"]["betti"],
+        repair["deltaComplex"]["reducedHomology"]["betti"],
         serde_json::json!([
             {"degree": 0, "dimension": 1},
             {"degree": 1, "dimension": 0}
@@ -3557,7 +3557,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     let arrangement = invariant_by_id(&packet, "lawful-locus-arrangement:profile:ag-square-free@1");
     assert_eq!(
         arrangement["method"],
-        "finite-stanley-reisner-coordinate-arrangement@1"
+        "finite-delta-coordinate-arrangement@1"
     );
     assert_eq!(
         arrangement["facets"],
@@ -3592,6 +3592,86 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
                 .is_some_and(|text| text.contains("does not evaluate section-specific"))),
         "lawful locus arrangement must not become a section-level verdict"
     );
+    let facet_link = invariant_by_id(&packet, "delta-facet-link-reading:profile:ag-square-free@1");
+    assert_eq!(
+        facet_link["method"],
+        "finite-delta-facet-link-neutral-reading@1"
+    );
+    assert_eq!(
+        facet_link["facetDimensionReading"],
+        serde_json::json!({
+            "facets": [
+                {
+                    "facetId": "delta-facet:1",
+                    "facet": ["x_checkout", "x_payment"],
+                    "dimension": 2
+                },
+                {
+                    "facetId": "delta-facet:2",
+                    "facet": ["x_inventory"],
+                    "dimension": 1
+                }
+            ],
+            "minDimension": 1,
+            "maxDimension": 2
+        })
+    );
+    assert_eq!(facet_link["isPure"], Value::Bool(false));
+    assert_eq!(
+        facet_link["linkBoundaryReading"],
+        serde_json::json!([
+            {
+                "vertex": "x_checkout",
+                "linkFaces": [[], ["x_payment"]],
+                "boundaryRanks": [],
+                "componentCount": 1
+            },
+            {
+                "vertex": "x_inventory",
+                "linkFaces": [[]],
+                "boundaryRanks": [],
+                "componentCount": 0
+            },
+            {
+                "vertex": "x_payment",
+                "linkFaces": [[], ["x_checkout"]],
+                "boundaryRanks": [],
+                "componentCount": 1
+            }
+        ])
+    );
+    assert_eq!(
+        facet_link["linkReducedBetti"],
+        serde_json::json!([
+            {
+                "vertex": "x_checkout",
+                "betti": [{"degree": 0, "dimension": 0}]
+            },
+            {
+                "vertex": "x_inventory",
+                "betti": [{"degree": 0, "dimension": 0}]
+            },
+            {
+                "vertex": "x_payment",
+                "betti": [{"degree": 0, "dimension": 0}]
+            }
+        ])
+    );
+    let facet_link_text =
+        serde_json::to_string(&facet_link).expect("facet/link invariant serializes");
+    let banned_terms = [
+        "depth".to_string(),
+        ["Reis", "ner"].concat(),
+        ["Cohen", "-", "Macaulay"].concat(),
+        "Krull".to_string(),
+        ["sr", "Depth"].concat(),
+    ];
+    for banned in banned_terms {
+        assert!(
+            !facet_link_text.contains(&banned),
+            "facet/link neutral reading must not contain banned term {banned}"
+        );
+    }
     let nsdepth_monotone = invariant_by_id(&packet, "nsdepth-monotone:profile:ag-square-free@1");
     assert_eq!(
         nsdepth_monotone["method"],

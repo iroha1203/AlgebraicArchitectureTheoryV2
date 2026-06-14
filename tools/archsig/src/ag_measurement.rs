@@ -1179,7 +1179,8 @@ fn evaluate_square_free_repair_v1(
             .map(|generator| generator.support.clone())
             .collect(),
     );
-    let delta_faces = stanley_reisner_faces(&witness_variables, &minimal_forbidden_supports);
+    let delta_faces =
+        delta_faces_from_forbidden_supports(&witness_variables, &minimal_forbidden_supports);
     let delta_facets = maximal_faces(&delta_faces);
     let reduced_homology = reduced_simplicial_homology_f2(&delta_faces);
     let repair_hitting_sets = minimal_hitting_sets(&witness_variables, &minimal_forbidden_supports);
@@ -1254,7 +1255,7 @@ fn evaluate_square_free_repair_v1(
                 }).collect::<Vec<_>>()
             },
             "minimalForbiddenSupports": minimal_forbidden_supports.clone(),
-            "stanleyReisnerComplex": {
+            "deltaComplex": {
                 "id": "Delta_U",
                 "faces": delta_faces,
                 "reducedHomology": {
@@ -1284,6 +1285,12 @@ fn evaluate_square_free_repair_v1(
             &witness_variables,
             &delta_facets,
             &minimal_forbidden_supports,
+        ),
+        delta_facet_link_reading_invariant(
+            profile,
+            &witness_variables,
+            &delta_faces,
+            &delta_facets,
         ),
     ];
     let mut analytic_readings = vec![AgAnalyticReadingV1 {
@@ -1391,8 +1398,8 @@ fn lawful_locus_arrangement_invariant(
     json!({
         "invariantId": format!("lawful-locus-arrangement:{}", profile.profile_id),
         "evaluator": "ag.square-free-repair@1",
-        "method": "finite-stanley-reisner-coordinate-arrangement@1",
-        "claimScope": "selected cover and selected witness-family relative finite Stanley-Reisner arrangement",
+        "method": "finite-delta-coordinate-arrangement@1",
+        "claimScope": "selected cover and selected witness-family relative finite Delta_U coordinate arrangement",
         "selectedCoverRef": profile.cover_ref,
         "locusSymbol": "Flat_U(X)=V(I_Delta)",
         "witnessVariables": witness_variables,
@@ -1405,6 +1412,73 @@ fn lawful_locus_arrangement_invariant(
             "This invariant does not evaluate section-specific s^* I_Ob^U=0.",
             "The dimension is a finite coordinate-subspace arrangement dimension, not a total-correctness or runtime-safety claim.",
             "irreducibleComponentCount is not a safety score or structural verdict."
+        ]
+    })
+}
+
+fn delta_facet_link_reading_invariant(
+    profile: &MeasurementProfileV1,
+    witness_variables: &[String],
+    delta_faces: &[Vec<String>],
+    facets: &[Vec<String>],
+) -> Value {
+    let facet_dimensions = facets
+        .iter()
+        .enumerate()
+        .map(|(index, facet)| {
+            json!({
+                "facetId": format!("delta-facet:{}", index + 1),
+                "facet": facet,
+                "dimension": facet.len()
+            })
+        })
+        .collect::<Vec<_>>();
+    let min_dimension = facets.iter().map(Vec::len).min().unwrap_or(0);
+    let max_dimension = facets.iter().map(Vec::len).max().unwrap_or(0);
+    let is_pure = facets
+        .first()
+        .is_none_or(|first| facets.iter().all(|facet| facet.len() == first.len()));
+    let link_readings = witness_variables
+        .iter()
+        .map(|vertex| {
+            let link_faces = delta_link_faces(delta_faces, vertex);
+            json!({
+                "vertex": vertex,
+                "linkFaces": link_faces,
+                "boundaryRanks": simplicial_boundary_rank_reading(&link_faces),
+                "componentCount": simplicial_component_count(&link_faces)
+            })
+        })
+        .collect::<Vec<_>>();
+    let link_reduced_betti = witness_variables
+        .iter()
+        .map(|vertex| {
+            let link_faces = delta_link_faces(delta_faces, vertex);
+            json!({
+                "vertex": vertex,
+                "betti": reduced_simplicial_homology_f2(&link_faces)
+            })
+        })
+        .collect::<Vec<_>>();
+
+    json!({
+        "invariantId": format!("delta-facet-link-reading:{}", profile.profile_id),
+        "evaluator": "ag.square-free-repair@1",
+        "method": "finite-delta-facet-link-neutral-reading@1",
+        "claimScope": "selected cover and selected witness-family relative raw Delta_U combinatorial reading",
+        "selectedCoverRef": profile.cover_ref,
+        "facetDimensionReading": {
+            "facets": facet_dimensions,
+            "minDimension": min_dimension,
+            "maxDimension": max_dimension
+        },
+        "linkBoundaryReading": link_readings,
+        "linkReducedBetti": link_reduced_betti,
+        "isPure": is_pure,
+        "nonConclusions": [
+            "This invariant reports raw selected Delta_U facet and link quantities only.",
+            "linkBoundaryReading does not decide boundary-local lawfulness.",
+            "isPure is not a safety score or structural verdict."
         ]
     })
 }
@@ -9062,7 +9136,7 @@ fn minimal_supports(mut supports: Vec<Vec<String>>) -> Vec<Vec<String>> {
         .collect()
 }
 
-fn stanley_reisner_faces(
+fn delta_faces_from_forbidden_supports(
     witness_variables: &[String],
     minimal_forbidden_supports: &[Vec<String>],
 ) -> Vec<Vec<String>> {
@@ -9074,6 +9148,96 @@ fn stanley_reisner_faces(
                 .any(|forbidden| is_subset(forbidden.as_slice(), face.as_slice()))
         })
         .collect()
+}
+
+fn delta_link_faces(delta_faces: &[Vec<String>], vertex: &str) -> Vec<Vec<String>> {
+    let face_set = delta_faces.iter().cloned().collect::<BTreeSet<_>>();
+    let mut link_faces = delta_faces
+        .iter()
+        .filter(|face| !face.iter().any(|entry| entry == vertex))
+        .filter_map(|face| {
+            let mut with_vertex = face.clone();
+            with_vertex.push(vertex.to_string());
+            with_vertex.sort();
+            face_set.contains(&with_vertex).then(|| face.clone())
+        })
+        .collect::<Vec<_>>();
+    link_faces.sort();
+    link_faces.dedup();
+    link_faces
+}
+
+fn simplicial_boundary_rank_reading(faces: &[Vec<String>]) -> Vec<Value> {
+    let mut simplices_by_degree = BTreeMap::<usize, Vec<Vec<String>>>::new();
+    for face in faces.iter().filter(|face| !face.is_empty()) {
+        simplices_by_degree
+            .entry(face.len() - 1)
+            .or_default()
+            .push(face.clone());
+    }
+    for simplices in simplices_by_degree.values_mut() {
+        simplices.sort();
+        simplices.dedup();
+    }
+
+    let max_degree = simplices_by_degree.keys().next_back().copied().unwrap_or(0);
+    (1..=max_degree)
+        .map(|degree| {
+            json!({
+                "domainDegree": degree,
+                "codomainDegree": degree - 1,
+                "rank": boundary_rank_f2(&simplices_by_degree, degree)
+            })
+        })
+        .collect()
+}
+
+fn simplicial_component_count(faces: &[Vec<String>]) -> usize {
+    let vertices = faces
+        .iter()
+        .filter(|face| face.len() == 1)
+        .map(|face| face[0].clone())
+        .collect::<BTreeSet<_>>();
+    if vertices.is_empty() {
+        return 0;
+    }
+
+    let mut adjacency = vertices
+        .iter()
+        .map(|vertex| (vertex.clone(), BTreeSet::<String>::new()))
+        .collect::<BTreeMap<_, _>>();
+    for edge in faces.iter().filter(|face| face.len() == 2) {
+        if let [left, right] = edge.as_slice() {
+            adjacency
+                .entry(left.clone())
+                .or_default()
+                .insert(right.clone());
+            adjacency
+                .entry(right.clone())
+                .or_default()
+                .insert(left.clone());
+        }
+    }
+
+    let mut seen = BTreeSet::<String>::new();
+    let mut count = 0;
+    for vertex in vertices {
+        if !seen.insert(vertex.clone()) {
+            continue;
+        }
+        count += 1;
+        let mut stack = vec![vertex];
+        while let Some(current) = stack.pop() {
+            if let Some(neighbors) = adjacency.get(&current) {
+                for neighbor in neighbors {
+                    if seen.insert(neighbor.clone()) {
+                        stack.push(neighbor.clone());
+                    }
+                }
+            }
+        }
+    }
+    count
 }
 
 fn reduced_simplicial_homology_f2(faces: &[Vec<String>]) -> Vec<Value> {
