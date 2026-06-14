@@ -287,6 +287,29 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
+        } else if evaluator == "ag.restriction-compatibility@1" {
+            validate_restriction_profile_v1(&profile)?;
+            let measurement = evaluate_restriction_compatibility_v1(normalized, &profile)?;
+            let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.restriction-compatibility".to_string()),
+                verdict: measurement.verdict,
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: measurement.zero,
+                    non_zero: measurement.non_zero,
+                    method_status: measurement.method_status,
+                    cert_ref: measurement.cert_ref,
+                },
+                depends_on_assumptions,
+                reason: Some(measurement.reason),
+            });
         } else if evaluator == "ag.square-free-repair@1" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
@@ -466,6 +489,44 @@ struct SquareFreeGeneratorV1 {
     generator_id: String,
     support: Vec<String>,
     support_atom_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct RestrictionMeasurementV1 {
+    verdict: String,
+    zero: bool,
+    non_zero: bool,
+    method_status: String,
+    cert_ref: Option<String>,
+    reason: String,
+    computed_invariants: Vec<Value>,
+    assumptions: Vec<AgAssumptionLedgerEntryV1>,
+}
+
+#[derive(Debug, Clone)]
+struct RestrictionGeneratorV1 {
+    generator_id: String,
+    context_ref: String,
+    support: Vec<String>,
+    source_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct RestrictionEdgeCheckV1 {
+    edge_ref: String,
+    source_context: String,
+    target_context: String,
+    status: String,
+    source_generators: Vec<RestrictionGeneratorV1>,
+    target_generators: Vec<RestrictionGeneratorV1>,
+    violations: Vec<RestrictionViolationV1>,
+}
+
+#[derive(Debug, Clone)]
+struct RestrictionViolationV1 {
+    generator_id: String,
+    support: Vec<String>,
+    source_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -1056,6 +1117,152 @@ fn evaluate_square_free_repair_v1(
                     .unwrap_or_else(|| Some(format!("measurement-profile:{}", profile.profile_id))),
             },
         ],
+    })
+}
+
+fn evaluate_restriction_compatibility_v1(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Result<RestrictionMeasurementV1, String> {
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
+    let edges = cech_edges(normalized, &selected_contexts);
+    let witness_variables = restriction_witness_variables(profile);
+    let generators = restriction_generators(normalized, &selected, &witness_variables)?;
+    let generators_by_context = generators.iter().cloned().fold(
+        BTreeMap::<String, Vec<RestrictionGeneratorV1>>::new(),
+        |mut acc, generator| {
+            acc.entry(generator.context_ref.clone())
+                .or_default()
+                .push(generator);
+            acc
+        },
+    );
+    let missing_edges = edges.is_empty();
+    let missing_generators = !missing_edges
+        && edges.iter().any(|edge| {
+            generators_by_context
+                .get(&edge.source_context)
+                .is_none_or(Vec::is_empty)
+                || generators_by_context
+                    .get(&edge.target_context)
+                    .is_none_or(Vec::is_empty)
+        });
+    let method_status = if missing_edges {
+        "empty_selected_restriction_edges"
+    } else if missing_generators {
+        "restriction_generator_missing"
+    } else {
+        "finite_support_inclusion_computed"
+    };
+    let edge_checks = if missing_edges {
+        Vec::new()
+    } else {
+        edges
+            .iter()
+            .map(|edge| {
+                let source_generators = generators_by_context
+                    .get(&edge.source_context)
+                    .cloned()
+                    .unwrap_or_default();
+                let target_generators = generators_by_context
+                    .get(&edge.target_context)
+                    .cloned()
+                    .unwrap_or_default();
+                let violations = if source_generators.is_empty() || target_generators.is_empty() {
+                    Vec::new()
+                } else {
+                    source_generators
+                        .iter()
+                        .filter(|source| {
+                            !target_generators
+                                .iter()
+                                .any(|target| is_subset(&target.support, &source.support))
+                        })
+                        .map(|source| RestrictionViolationV1 {
+                            generator_id: source.generator_id.clone(),
+                            support: source.support.clone(),
+                            source_refs: source.source_refs.clone(),
+                        })
+                        .collect::<Vec<_>>()
+                };
+                RestrictionEdgeCheckV1 {
+                    edge_ref: edge.edge_id.clone(),
+                    source_context: edge.source_context.clone(),
+                    target_context: edge.target_context.clone(),
+                    status: if source_generators.is_empty() || target_generators.is_empty() {
+                        "not_computed"
+                    } else if violations.is_empty() {
+                        "compatible"
+                    } else {
+                        "violated"
+                    }
+                    .to_string(),
+                    source_generators,
+                    target_generators,
+                    violations,
+                }
+            })
+            .collect::<Vec<_>>()
+    };
+    let violations = edge_checks
+        .iter()
+        .flat_map(|edge| edge.violations.iter())
+        .collect::<Vec<_>>();
+    let (verdict, zero, non_zero, reason) = if missing_edges {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected cover has no restriction edges for ag.restriction-compatibility@1"
+                .to_string(),
+        )
+    } else if missing_generators {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "selected restriction edge is missing source or target ideal generator contract"
+                .to_string(),
+        )
+    } else if violations.is_empty() {
+        (
+            "measured_zero".to_string(),
+            true,
+            false,
+            "all selected restriction edges satisfy finite monomial support inclusion".to_string(),
+        )
+    } else {
+        (
+            "measured_nonzero".to_string(),
+            false,
+            true,
+            "some selected restriction edge does not carry source ideal generators into the target ideal; this may disappear under sheaf image redefinition and is not a defect of the theory object".to_string(),
+        )
+    };
+    let cert_ref = matches!(verdict.as_str(), "measured_zero" | "measured_nonzero").then(|| {
+        format!(
+            "computedInvariants/restriction-compatibility:{}",
+            profile.profile_id
+        )
+    });
+
+    Ok(RestrictionMeasurementV1 {
+        verdict,
+        zero,
+        non_zero,
+        method_status: method_status.to_string(),
+        cert_ref,
+        reason,
+        computed_invariants: vec![restriction_invariant_json(
+            profile,
+            method_status,
+            &selected_contexts,
+            &edges,
+            &witness_variables,
+            &edge_checks,
+        )],
+        assumptions: restriction_assumptions(profile, method_status),
     })
 }
 
@@ -4501,6 +4708,61 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
     Ok(())
 }
 
+fn validate_restriction_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
+    let expected = [
+        ("coefficient", profile.coefficient.as_str(), "F2"),
+        (
+            "effCoeff",
+            profile.eff_coeff.as_str(),
+            "finite-support-inclusion@1",
+        ),
+        (
+            "resolutionSelector",
+            profile.resolution_selector.as_str(),
+            "support-inclusion@1",
+        ),
+        ("domain", profile.domain.as_str(), "finite-poset-site"),
+        (
+            "zeroPredicate",
+            profile.zero_predicate.as_str(),
+            "all-inclusions-hold@1",
+        ),
+        (
+            "nonZeroPredicate",
+            profile.non_zero_predicate.as_str(),
+            "some-inclusion-fails@1",
+        ),
+        (
+            "certSelector",
+            profile.cert_selector.as_str(),
+            "finite-certificate@1",
+        ),
+        (
+            "verdictDiscipline",
+            profile.verdict_discipline.as_str(),
+            "five-valued-structural-verdict@1",
+        ),
+    ];
+    for (field, actual, expected) in expected {
+        if actual != expected {
+            return Err(format!(
+                "ag.restriction-compatibility@1 requires MeasurementProfile {field}={expected}, found {actual}"
+            ));
+        }
+    }
+    if !profile
+        .witness_family
+        .iter()
+        .any(|witness| witness.law == "ag.restriction-compatibility")
+    {
+        return Err(
+            "ag.restriction-compatibility@1 requires MeasurementProfile witnessFamily law ag.restriction-compatibility"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String> {
     let expected = [
         (
@@ -5755,6 +6017,184 @@ fn tor_assumptions(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/9.2".to_string(),
             assumption: "flat base change stability is theorem-candidate only".to_string(),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        },
+    ]
+}
+
+fn restriction_witness_variables(profile: &MeasurementProfileV1) -> Vec<String> {
+    let mut variables = profile
+        .witness_family
+        .iter()
+        .filter(|witness| witness.law == "ag.restriction-compatibility")
+        .map(|witness| witness.variable.clone())
+        .collect::<Vec<_>>();
+    variables.sort();
+    variables.dedup();
+    variables
+}
+
+fn restriction_generators(
+    normalized: &NormalizedArchMapV2,
+    selected_contexts: &BTreeSet<String>,
+    witness_variables: &[String],
+) -> Result<Vec<RestrictionGeneratorV1>, String> {
+    let witness_set = witness_variables.iter().cloned().collect::<BTreeSet<_>>();
+    let mut generators = Vec::new();
+    for atom in normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "restriction-compatibility"
+                && atom.predicate == "restrictionIdealGenerator"
+        })
+        .filter(|atom| selected_contexts.contains(&atom.subject))
+    {
+        if !atom
+            .context_memberships
+            .iter()
+            .any(|context| context == &atom.subject)
+        {
+            return Err(format!(
+                "ag.restriction-compatibility@1 generator {} must belong to its subject context {}",
+                atom.normalized_atom_id, atom.subject
+            ));
+        }
+        let support = restriction_generator_support(atom);
+        if support.is_empty() {
+            return Err(format!(
+                "ag.restriction-compatibility@1 generator {} has no finite support variables",
+                atom.normalized_atom_id
+            ));
+        }
+        let unknown = support
+            .iter()
+            .filter(|variable| !witness_set.contains(*variable))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unknown.is_empty() {
+            return Err(format!(
+                "ag.restriction-compatibility@1 generator {} contains variables outside witnessFamily: {}",
+                atom.normalized_atom_id,
+                unknown.join(",")
+            ));
+        }
+        generators.push(RestrictionGeneratorV1 {
+            generator_id: atom.normalized_atom_id.clone(),
+            context_ref: atom.subject.clone(),
+            support,
+            source_refs: atom.source_refs.clone(),
+        });
+    }
+    generators.sort_by(|left, right| left.generator_id.cmp(&right.generator_id));
+    Ok(generators)
+}
+
+fn restriction_generator_support(atom: &NormalizedAtomV2) -> Vec<String> {
+    let mut support = atom
+        .object
+        .as_deref()
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToString::to_string)
+        .collect::<Vec<_>>();
+    support.sort();
+    support.dedup();
+    support
+}
+
+fn restriction_invariant_json(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+    selected_contexts: &[String],
+    edges: &[CechEdgeV1],
+    witness_variables: &[String],
+    edge_checks: &[RestrictionEdgeCheckV1],
+) -> Value {
+    json!({
+        "invariantId": format!("restriction-compatibility:{}", profile.profile_id),
+        "evaluator": "ag.restriction-compatibility@1",
+        "method": "finite-support-inclusion@1",
+        "status": if method_status == "finite_support_inclusion_computed" { "computed" } else { "not_computed" },
+        "methodStatus": method_status,
+        "claimScope": "selected-cover separated presheaf restriction compatibility over finite monomial supports",
+        "selectedCoverRef": profile.cover_ref,
+        "witnessVariables": witness_variables,
+        "contextCount": selected_contexts.len(),
+        "restrictionEdgeCount": edges.len(),
+        "edgeChecks": edge_checks.iter().map(|edge| json!({
+            "edgeRef": edge.edge_ref,
+            "sourceContextRef": edge.source_context,
+            "targetContextRef": edge.target_context,
+            "status": edge.status,
+            "sourceGenerators": edge.source_generators.iter().map(restriction_generator_json).collect::<Vec<_>>(),
+            "targetGenerators": edge.target_generators.iter().map(restriction_generator_json).collect::<Vec<_>>(),
+            "violations": edge.violations.iter().map(|violation| json!({
+                "generatorRef": violation.generator_id,
+                "support": violation.support,
+                "sourceRefs": violation.source_refs
+            })).collect::<Vec<_>>()
+        })).collect::<Vec<_>>(),
+        "boundaryNote": "A measured_nonzero row means the selected local-sum presentation does not flow into the target ideal; sheaf image 再定義で消えうる、理論対象の defect ではない.",
+        "nonConclusions": [
+            "This is a selected-cover separated presheaf check, not a global sheaf or semantic safety proof.",
+            "H1 Cech and H2 coherence verdict rows are not changed by this evaluator."
+        ]
+    })
+}
+
+fn restriction_generator_json(generator: &RestrictionGeneratorV1) -> Value {
+    json!({
+        "generatorId": generator.generator_id,
+        "contextRef": generator.context_ref,
+        "support": generator.support,
+        "sourceRefs": generator.source_refs
+    })
+}
+
+fn restriction_assumptions(
+    profile: &MeasurementProfileV1,
+    method_status: &str,
+) -> Vec<AgAssumptionLedgerEntryV1> {
+    vec![
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "Lean/ObstructionIdeal.RestrictionCompatible.maps_selected".to_string(),
+            assumption: "selected finite support generator family for restriction compatibility"
+                .to_string(),
+            status: if method_status == "restriction_generator_missing" {
+                "violated"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (method_status != "restriction_generator_missing")
+                .then(|| format!("measurement-profile:{}.witnessFamily", profile.profile_id)),
+            assumed_by: (method_status == "restriction_generator_missing")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P0-2".to_string(),
+            assumption: "selected cover supplies finite restriction edges for support inclusion"
+                .to_string(),
+            status: if method_status == "empty_selected_restriction_edges" {
+                "violated"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (method_status != "empty_selected_restriction_edges")
+                .then(|| format!("measurement-profile:{}.coverRef", profile.profile_id)),
+            assumed_by: (method_status == "empty_selected_restriction_edges")
+                .then(|| format!("measurement-profile:{}", profile.profile_id)),
+        },
+        AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/P0-2-boundary".to_string(),
+            assumption: "measured nonzero restriction incompatibility is presentation-relative"
+                .to_string(),
             status: "assumed".to_string(),
             checked_by: None,
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
