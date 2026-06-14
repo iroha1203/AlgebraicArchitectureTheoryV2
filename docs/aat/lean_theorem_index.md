@@ -5025,6 +5025,22 @@ comparison morphism なしの異 ambient law conflict comparison、detecting ass
 一般 optimal transport theory、candidate-dependent readings から certified verdict への昇格、
 external data source / external procedure の忠実性は置かない。
 
+## AAT Algebraic-Geometric Part IX Evolution Geometry
+
+Tracking Issue: [#2280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2280).
+Initial implementation Issue: [#2281](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2281).
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `IX.R0` | `Formal.AG.Evolution`, `Formal.AG.Evolution.Bootstrap`, `AAT.AG.Evolution.UsesAATSite`, `UsesArchitectureScheme`, `UsesCoverRelativeCechComplex`, `UsesRepairComparisonProfile`, `UsesArchitectureStratum`, `UsesAnalyticReadingContext`, `UsesMeasurementProfile`, `PrerequisiteStatus`, `PartIXDependencyStatus`, `currentDependencyStatus`, `current_site_available`, `current_lawAlgebra_available`, `current_cohomology_available`, `current_derived_available`, `current_singularityMonodromyStack_available`, `current_representationAnalysis_available`, `current_measurement_available` | `import` / `abbrev` / `inductive` / `structure` / `def` / `theorem` | 第IX部 Evolution Geometry module を `Formal/AG.lean` から import し、PRD-2〜8 の成果物上に立ち上げる。先行依存は concrete Lean 型参照で確認し、dependency status accessor が現時点の availability を保持する。 | `defined only` / `proved accessor` |
+| `IX.§1 / 定義2.1` | `AAT.AG.Evolution.TraceCategory`, `TraceCategory.selectedIdentity`, `TraceCategory.selectedComposition`, `TraceCategory.id_comp_holds`, `TraceCategory.comp_id_holds`, `TraceCategory.assoc_holds`, `TraceCategory.FiniteRegime`, `TraceCategory.FiniteRegime.object_finite`, `TraceCategory.FiniteRegime.hom_finite`, `TraceCategory.FiniteRegime.id_selected`, `TraceCategory.FiniteRegime.comp_selected`, `EvolutionProfile`, `EvolutionProfile.traceCategory`, `EvolutionProfile.measurement`, `EvolutionProfile.TraceRelativity`, `EvolutionProfile.traceRelativityBoundary`, `EvolutionGeometry`, `EvolutionGeometry.geometryAt`, `EvolutionGeometry.map_identity`, `EvolutionGeometry.map_composition` | `structure` / `def` / `theorem` | selected trace category、identity / composition law、finite selected trace regime、profile-relative measurement / base geometry / selected state family / temporal laws / coefficient profile、functor-like evolution geometry を定義する。finite regime は selected arrow family の identity / composition closure を保持する。 | `defined only` / `proved accessor` |
+
+Non-conclusions: この Part IX initial surface は R0/R1 entrypoint、selected trace category、finite trace regime、
+`EvolutionProfile`、functor-like `EvolutionGeometry` までを実装する。Temporal product / incidence site、
+temporal coefficient、state transition presheaf、temporal law、temporal obstruction、replay descent、
+dissipation、Lyapunov reading、force integrability statement、finite temporal examples は後続 R2 以降に残る。
+未選択 event、外部 runtime、実時間、任意 future path への zero / lawful / safe / forecast theorem は結論しない。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
