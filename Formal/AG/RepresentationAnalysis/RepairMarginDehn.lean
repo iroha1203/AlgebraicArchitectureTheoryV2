@@ -299,9 +299,10 @@ end ArchitecturalDehnProfile
 /--
 VII.定理12.7: explicit observation-gap lower-bound assumptions.
 
-The primary Lean inequality is `observationGap <= lipschitzConstant * fillCost`.
-This is the integer-safe form of the lower-bound statement; quotient-style
-readings are exposed only through an explicit selected predicate.
+The primary assumptions expose an integer Lipschitz estimate
+`observationGap <= lipschitzConstant * fillCost`.  The namespace then derives
+the selected Nat-division lower-bound surface `observationGap / L <= fillCost`
+under the explicit positive-Lipschitz hypothesis.
 -/
 structure ObservationGapLowerBoundProfile where
   Path : Type u
@@ -349,8 +350,21 @@ theorem observationGap_le_lipschitz_fillCost
     (Nat.mul_le_mul_left G.lipschitzConstant (G.generatorCost_le_fillCost P Q))
 
 /--
+VII.定理12.7: selected Nat-division observation-gap lower bound.
+
+This is the Lean reading of `fillCost(P . Q^{-1}) >= observationGap(P,Q) / L`
+for the selected loop and selected filler, with Nat division rounded down.
+-/
+theorem observationGap_div_lipschitz_le_fillCost
+    (G : ObservationGapLowerBoundProfile.{u}) (P Q : G.Path) :
+    G.observationGap P Q / G.lipschitzConstant ≤
+      G.fillCost (G.selectedFiller P Q) := by
+  rw [Nat.div_le_iff_le_mul_add_pred G.lipschitzConstant_pos]
+  exact Nat.le_trans (G.observationGap_le_lipschitz_fillCost P Q) (by omega)
+
+/--
 VII.定理12.7: selected quotient-style lower-bound reading, supplied explicitly
-to avoid untracked Nat-division rounding claims.
+for downstream variants that choose a stronger or domain-specific predicate.
 -/
 theorem quotientLowerBound_certificate
     (G : ObservationGapLowerBoundProfile.{u}) (P Q : G.Path) :
