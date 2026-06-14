@@ -483,10 +483,11 @@ def observationGapToyProfile : ObservationGapLowerBoundProfile where
   generatorCost_le_fillCost := by
     intro P Q
     simp
-  quotientLowerBound gap fill := gap ≤ 2 * fill
+  quotientLowerBound gap fill := gap / 2 ≤ fill
   quotientLowerBound_holds := by
     intro P Q h
-    exact Nat.le_trans h (by simp)
+    rw [Nat.div_le_iff_le_mul_add_pred (by omega : 0 < 2)]
+    exact Nat.le_trans h (by omega)
 
 theorem observationGap_toy_lipschitz_bound :
     observationGapToyProfile.observationGap ObservationPath.graph ObservationPath.semantic ≤
@@ -495,6 +496,15 @@ theorem observationGap_toy_lipschitz_bound :
           (observationGapToyProfile.selectedFiller
             ObservationPath.graph ObservationPath.semantic) :=
   observationGapToyProfile.observationGap_le_lipschitz_fillCost
+    ObservationPath.graph ObservationPath.semantic
+
+theorem observationGap_toy_div_lipschitz_lower_bound :
+    observationGapToyProfile.observationGap ObservationPath.graph ObservationPath.semantic /
+        observationGapToyProfile.lipschitzConstant ≤
+      observationGapToyProfile.fillCost
+        (observationGapToyProfile.selectedFiller
+          ObservationPath.graph ObservationPath.semantic) :=
+  observationGapToyProfile.observationGap_div_lipschitz_le_fillCost
     ObservationPath.graph ObservationPath.semantic
 
 theorem observationGap_toy_quotient_certificate :
