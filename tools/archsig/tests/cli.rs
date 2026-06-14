@@ -3554,6 +3554,44 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
         repair["nsdepthCertificate"]["verifiedMinimalForbiddenSupports"],
         serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
     );
+    let arrangement = invariant_by_id(&packet, "lawful-locus-arrangement:profile:ag-square-free@1");
+    assert_eq!(
+        arrangement["method"],
+        "finite-stanley-reisner-coordinate-arrangement@1"
+    );
+    assert_eq!(
+        arrangement["facets"],
+        serde_json::json!([["x_checkout", "x_payment"], ["x_inventory"]])
+    );
+    assert_eq!(arrangement["dimension"], Value::from(2));
+    assert_eq!(arrangement["irreducibleComponentCount"], Value::from(2));
+    assert_eq!(
+        arrangement["components"],
+        serde_json::json!([
+            {
+                "componentId": "lawful-locus-component:1",
+                "facet": ["x_checkout", "x_payment"],
+                "vanishingCoords": ["x_inventory"],
+                "dimension": 2
+            },
+            {
+                "componentId": "lawful-locus-component:2",
+                "facet": ["x_inventory"],
+                "vanishingCoords": ["x_checkout", "x_payment"],
+                "dimension": 1
+            }
+        ])
+    );
+    assert!(
+        arrangement["nonConclusions"]
+            .as_array()
+            .expect("arrangement nonConclusions is array")
+            .iter()
+            .any(|entry| entry
+                .as_str()
+                .is_some_and(|text| text.contains("does not evaluate section-specific"))),
+        "lawful locus arrangement must not become a section-level verdict"
+    );
     let repair_reading = packet["analyticReadings"]
         .as_array()
         .expect("analytic readings is array")
