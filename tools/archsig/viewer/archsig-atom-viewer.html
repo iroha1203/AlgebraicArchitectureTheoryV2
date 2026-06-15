@@ -3419,6 +3419,15 @@
         noStructuralVerdict: true,
         projectionBoundary: "PlaneGeometry approximation; discrete Tor_1 residue bundle only; selected lawful loci intersection"
       };
+      const analyticLaneStats = {
+        status: overlays.length ? "rendered" : "silent",
+        periodLandscapeCount: 0,
+        transferFlowCount: 0,
+        spectralGapValleyCount: 0,
+        colorRole: "analytic_reading",
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "analytic overlay lane renders M14 packet readings only; no structural color promotion"
+      };
       overlays.forEach((overlay, index) => {
         const value = overlayMagnitude(overlay);
         const center = sceneAxisPosition(scene, overlay.overlayId || `analytic-overlay:${index}`, index, Math.max(overlays.length, 1), groupPosition(index, Math.max(overlays.length, 1), 58), {
@@ -3466,9 +3475,142 @@
           lawfulLociStats.lastSharedSupport = Array.isArray(overlay.sharedSupport) ? overlay.sharedSupport.slice() : [];
           lawfulLociStats.lastCommonAmbient = overlay.commonAmbient?.ambientRef || "";
         }
+        const dedicated = createAnalyticOverlayDedicatedVisual(scene, overlay, mesh.position.clone(), index, Math.max(overlays.length, 1));
+        dedicated.forEach((object) => edgeGroup.add(object));
+        analyticLaneStats.periodLandscapeCount += dedicated.filter((object) => object.userData?.kind === "analyticPeriodLandscapeCell").length;
+        analyticLaneStats.transferFlowCount += dedicated.filter((object) => object.userData?.kind === "analyticWassersteinMassFlow").length;
+        analyticLaneStats.spectralGapValleyCount += dedicated.filter((object) => object.userData?.kind === "analyticSpectralGapValley").length;
       });
       addLineSegments(vertices, color, 0.38, "analyticOverlayLane", { lineRole: "contour", colorRole: "analytic_reading" });
       window.__archsigViewerLawfulLociIntersection = lawfulLociStats;
+      window.__archsigViewerAnalyticOverlayLane = analyticLaneStats;
+    }
+
+    function createAnalyticOverlayDedicatedVisual(scene, overlay, origin, index, total) {
+      if (overlay.overlayKind === "period_pairing_matrix") return createPeriodLandscapeOverlay(overlay, origin);
+      if (overlay.overlayKind === "wasserstein_transfer_cost") return createWassersteinTransferFlow(overlay, origin, index);
+      if (overlay.overlayKind === "spectral_gap_proxy") return createSpectralGapValley(overlay, origin);
+      return [];
+    }
+
+    function createPeriodLandscapeOverlay(overlay, origin) {
+      const matrix = Array.isArray(overlay.periodPairingMatrix) ? overlay.periodPairingMatrix : [];
+      const objects = [];
+      matrix.forEach((row, rowIndex) => {
+        (Array.isArray(row) ? row : []).forEach((value, colIndex) => {
+          const magnitude = Math.min(Math.abs(Number(value) || 0), 8);
+          const cell = new THREE.Mesh(
+            new THREE.BoxGeometry(7.5, 0.7 + magnitude * 1.4, 7.5),
+            new THREE.MeshStandardMaterial({
+              color: sceneColorHex("analytic_reading"),
+              emissive: 0x102c48,
+              transparent: true,
+              opacity: 0.58,
+              roughness: 0.42,
+              metalness: 0.02
+            })
+          );
+          cell.position.copy(origin).add(new THREE.Vector3((colIndex - 0.5) * 9, 4 + magnitude * 0.7, (rowIndex - 0.5) * 9));
+          cell.userData = {
+            kind: "analyticPeriodLandscapeCell",
+            item: overlay,
+            periodValue: Number(value) || 0,
+            modelRelative: true,
+            colorRole: "analytic_reading",
+            noStructuralVerdictCreatedByViewer: true,
+            projectionBoundary: "period landscape is modelRelative; not an absolute period invariant or verdict"
+          };
+          objects.push(cell);
+        });
+      });
+      if (objects.length) {
+        const label = createTextSprite("period landscape: modelRelative analytic lane", "#e8f3ff", "rgba(14,35,58,0.74)");
+        label.position.copy(origin).add(new THREE.Vector3(0, 22, 0));
+        label.userData = {
+          kind: "analyticPeriodLandscapeLabel",
+          modelRelative: true,
+          noStructuralVerdictCreatedByViewer: true
+        };
+        objects.push(label);
+      }
+      return objects;
+    }
+
+    function createWassersteinTransferFlow(overlay, origin, index) {
+      const cost = Math.max(0, Number(overlay.wassersteinTransferCost ?? overlay.transferResidue ?? 0) || 0);
+      if (!(cost > 0)) return [];
+      const from = origin.clone().add(new THREE.Vector3(-18, -6, -5 + index * 1.5));
+      const to = origin.clone().add(new THREE.Vector3(18 + Math.min(cost, 8) * 2, 5, 5 + index * 1.5));
+      const direction = to.clone().sub(from);
+      const arrow = new THREE.ArrowHelper(direction.normalize(), from, direction.length(), sceneColorHex("analytic_reading"), 6.2, 3.2);
+      arrow.userData = {
+        kind: "analyticWassersteinMassFlow",
+        item: overlay,
+        discreteCost: cost,
+        colorRole: "analytic_reading",
+        finiteSupportLocalizedOnly: true,
+        notW1Itself: true,
+        noGlobalRepairSafetyClaim: true,
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "Wasserstein flow visualizes discrete support-localized cost only; not W1 and not repair safety"
+      };
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(3.4 + Math.min(cost, 8) * 0.28, 18, 12),
+        new THREE.MeshStandardMaterial({
+          color: sceneColorHex("analytic_reading"),
+          emissive: 0x102c48,
+          transparent: true,
+          opacity: 0.64,
+          roughness: 0.36
+        })
+      );
+      marker.position.copy(to);
+      marker.userData = {
+        kind: "analyticWassersteinFlowHead",
+        item: overlay,
+        discreteCost: cost,
+        colorRole: "analytic_reading",
+        noStructuralVerdictCreatedByViewer: true
+      };
+      registerReadingBloom(marker, "analytic_wasserstein_flow", 0.42);
+      return [arrow, marker];
+    }
+
+    function createSpectralGapValley(overlay, origin) {
+      const gap = Math.max(0, Number(overlay.spectralGap) || 0);
+      const radius = 8 + Math.min(gap, 8) * 2.2;
+      const valley = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, 0.7, 12, 72),
+        new THREE.MeshStandardMaterial({
+          color: sceneColorHex("analytic_reading"),
+          emissive: 0x102c48,
+          transparent: true,
+          opacity: 0.5,
+          roughness: 0.38,
+          metalness: 0.02
+        })
+      );
+      valley.position.copy(origin).add(new THREE.Vector3(0, -5, 0));
+      valley.rotation.x = Math.PI / 2;
+      valley.userData = {
+        kind: "analyticSpectralGapValley",
+        item: overlay,
+        spectralGap: gap,
+        colorRole: "analytic_reading",
+        nearFlatNotLawful: true,
+        proxyEigenvalueNotL1: true,
+        noMeasuredZeroColorPromotion: true,
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "spectral gap valley is proxy eigenvalue depth; gap near zero is not measured_zero lawfulness"
+      };
+      const label = createTextSprite("spectral gap proxy valley; near-flat != lawful", "#e8f3ff", "rgba(14,35,58,0.74)");
+      label.position.copy(origin).add(new THREE.Vector3(0, 17, 0));
+      label.userData = {
+        kind: "analyticSpectralGapValleyLabel",
+        nearFlatNotLawful: true,
+        noStructuralVerdictCreatedByViewer: true
+      };
+      return [valley, label];
     }
 
     function renderPeriodMeter(scene, periodStokes, positions, encoding, limits = {}) {

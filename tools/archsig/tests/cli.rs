@@ -14116,6 +14116,25 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V17 must keep SAFE lawful plain central with deterministic axis placement and analytic non-verdict boundary"
     );
     assert!(
+        html.contains("window.__archsigViewerAnalyticOverlayLane")
+            && html.contains("createPeriodLandscapeOverlay")
+            && html.contains("analyticPeriodLandscapeCell")
+            && html.contains("analyticWassersteinMassFlow")
+            && html.contains("analyticSpectralGapValley"),
+        "viewer V18 must render dedicated period, transfer, and spectral gap analytic overlays"
+    );
+    assert!(
+        html.contains("period landscape is modelRelative")
+            && html.contains("notW1Itself: true")
+            && html.contains("noGlobalRepairSafetyClaim: true")
+            && html.contains("nearFlatNotLawful: true")
+            && html.contains("noMeasuredZeroColorPromotion: true")
+            && html.contains(
+                "analytic overlay lane renders M14 packet readings only; no structural color promotion"
+            ),
+        "viewer V18 must keep analytic overlays in the analytic lane without structural promotion"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
