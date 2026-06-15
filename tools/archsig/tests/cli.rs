@@ -13928,6 +13928,27 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V12 must support manual pause/resume while preserving context and non-verdict boundaries"
     );
     assert!(
+        html.contains("tagAssemblySnapObject")
+            && html.contains("assemblySnapStartPosition")
+            && html.contains("easeOutBack")
+            && html.contains("window.__archsigViewerAssemblySnap"),
+        "viewer V13 must animate nerve patches as assembly snap projections"
+    );
+    assert!(
+        html.contains("assemblySnapParitySeam")
+            && html.contains("unsnappedByParityCue: true")
+            && html.contains("edge.value parity seam; not restriction-compatibility verdict")
+            && html.contains("structuralSeamVerdict: false"),
+        "viewer V13 must keep value=1 seams as parity cues rather than M2 verdicts"
+    );
+    assert!(
+        html.contains("graph cycle != H1 structural verdict")
+            && html.contains("assembly snap uses edge.value parity until M2 restriction-compatibility verdict is projected")
+            && html.contains("microGapVibration")
+            && html.contains("assembly_snap_parity_seam"),
+        "viewer V13 must preserve graph-cycle and projection boundaries while showing seam vibration"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
