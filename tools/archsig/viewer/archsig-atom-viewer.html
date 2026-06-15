@@ -1681,6 +1681,23 @@
       });
     }
 
+    function createH2CoherenceMaterial(claim) {
+      const measuredNonzero = claim === "measured_nonzero";
+      return new THREE.MeshPhysicalMaterial({
+        color: sceneColorHex(measuredNonzero ? "measured_nonzero" : "measured_zero"),
+        emissive: measuredNonzero ? 0x3b2507 : 0x063230,
+        emissiveIntensity: measuredNonzero ? 0.42 : 0.16,
+        transparent: true,
+        opacity: measuredNonzero ? 0.42 : 0.26,
+        roughness: 0.58,
+        metalness: 0.0,
+        transmission: measuredNonzero ? 0.08 : 0.22,
+        alphaMap: measuredNonzero ? null : silenceHatchAlphaMap,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+    }
+
     function biasObjectIntoSilenceDepth(object, amount, reason) {
       const direction = new THREE.Vector3();
       camera.getWorldDirection(direction);
@@ -2294,18 +2311,36 @@
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap((p) => [p.x, p.y, p.z]), 3));
         geometry.computeVertexNormals();
-        const mesh = new THREE.Mesh(geometry, createSilenceGlassMaterial(0.12));
+        const h2Measured = triangle.h2CoherenceVisualized === true && Boolean(triangle.structuralVerdictRef);
+        const coherenceClaim = triangle.coherenceClaim || "not_visualized";
+        const mesh = new THREE.Mesh(
+          geometry,
+          h2Measured ? createH2CoherenceMaterial(coherenceClaim) : createSilenceGlassMaterial(0.12)
+        );
         mesh.userData = {
-          kind: "nerveTriangleSilenceGlass",
+          kind: h2Measured ? "nerveTriangleH2Coherence" : "nerveTriangleSilenceGlass",
           item: triangle,
-          coherenceClaim: triangle.coherenceClaim || "not_visualized",
-          h2CoherenceVisualized: false,
-          silenceBoundary: "H^2 coherence is not visualized by this viewer layer"
+          coherenceClaim,
+          h2CoherenceVisualized: h2Measured,
+          structuralVerdictRef: triangle.structuralVerdictRef || "",
+          projectionBoundary: triangle.coherenceProjectionBoundary || "H^2 coherence is not visualized by this viewer layer",
+          silenceBoundary: h2Measured ? "" : "H^2 coherence is not visualized by this viewer layer"
         };
         tagCohomologyLayer(mesh, "h2", "nerve.triangles");
-        biasObjectIntoSilenceDepth(mesh, 34, "coherenceClaim:not_visualized");
+        if (h2Measured) {
+          mesh.position.y += coherenceClaim === "measured_nonzero" ? 2.8 : -0.8;
+          if (coherenceClaim === "measured_nonzero") registerMeasuredBloom(mesh, "h2_coherence_structural_verdict", 0.48);
+        } else {
+          biasObjectIntoSilenceDepth(mesh, 34, "coherenceClaim:not_visualized");
+        }
         edgeGroup.add(mesh);
-        addTriangleOutline(points, "nerveTriangleSilenceOutline", 0x8a94a3, 0.34, "dashed_silence");
+        addTriangleOutline(
+          points,
+          h2Measured ? "nerveTriangleH2CoherenceOutline" : "nerveTriangleSilenceOutline",
+          h2Measured ? sceneColorHex(coherenceClaim === "measured_nonzero" ? "measured_nonzero" : "measured_zero") : 0x8a94a3,
+          h2Measured ? 0.58 : 0.34,
+          h2Measured ? "h2_structural_verdict_projection" : "dashed_silence"
+        );
         const marker = new THREE.Mesh(
           new THREE.SphereGeometry(2.8 + Math.min((triangle.sharedAtomRefs || []).length, 6) * 0.38, 18, 12),
           new THREE.MeshStandardMaterial({
