@@ -7,3 +7,4 @@ import Formal.AG.Evolution.StateTransition
 import Formal.AG.Evolution.TemporalLaw
 import Formal.AG.Evolution.TemporalObstruction
 import Formal.AG.Evolution.ReplayDescent
+import Formal.AG.Evolution.Dissipation
