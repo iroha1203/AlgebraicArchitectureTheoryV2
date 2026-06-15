@@ -13907,6 +13907,27 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V11 must scrub by focus opacity while preserving H2 grey silence"
     );
     assert!(
+        html.contains("applyFindingsTourStepFocus")
+            && html.contains("findTourHighlightFocus")
+            && html.contains("findingsTourHighlightPulse")
+            && html.contains("window.__archsigViewerFindingsTour"),
+        "viewer V12 must turn packet highlightRefs into cinematic tour focus objects"
+    );
+    assert!(
+        html.contains("cameraTweenToHighlightRefs: true")
+            && html.contains("packetHighlightRefsUsed: true")
+            && html.contains("captionPacketOnly: true")
+            && html.contains("positiveConclusionBadge: true"),
+        "viewer V12 must tween to packet highlight refs and end on a packet-derived conclusion badge"
+    );
+    assert!(
+        html.contains("pauseFindingsTour(\"manual pointer interaction\")")
+            && html.contains("data-tour-resume=\"true\"")
+            && html.contains("contextNotHidden: true")
+            && html.contains("tour camera adds no structural verdict"),
+        "viewer V12 must support manual pause/resume while preserving context and non-verdict boundaries"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
