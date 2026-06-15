@@ -56,6 +56,21 @@
   #question .scene-title { font-size: 13px; font-weight: 600; }
   #question .scene-q { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
 
+  /* insight rail (left, below toolbar) */
+  #insight-rail { left: 14px; top: 116px; width: 288px; max-height: calc(100vh - 480px); min-height: 120px; overflow: auto; padding: 12px 14px; }
+  #insight-rail h4 { margin: 0 0 10px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
+  #insight-rail h4 span { color: var(--ink-dim); }
+  .insight-card { display: flex; gap: 9px; align-items: flex-start; padding: 9px 10px; margin: 6px 0; border-radius: 10px;
+    border: 1px solid var(--glass-line); background: rgba(8,12,20,0.45); cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  .insight-card:hover { background: rgba(120,150,200,0.12); border-color: rgba(120,150,200,0.4); }
+  .insight-card.active { background: rgba(120,150,200,0.16); border-color: rgba(140,170,220,0.6); }
+  .insight-card .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; margin-top: 4px; box-shadow: 0 0 7px currentColor; }
+  .insight-card .ic-body { min-width: 0; }
+  .insight-card .ic-kind { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .insight-card .ic-one { font-size: 11px; color: var(--ink-dim); margin-top: 2px; line-height: 1.35; }
+  .insight-card .ic-rank { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
+  .rail-empty { font-size: 11.5px; color: var(--ink-dim); line-height: 1.5; padding: 6px 2px; }
+
   /* legend (left) */
   #legend { left: 14px; bottom: 56px; width: 246px; padding: 12px 14px; font-size: 11.5px; }
   #legend h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
@@ -81,6 +96,17 @@
   .badge.nonzero { background: rgba(255,178,76,0.16); color: var(--structural-nonzero); }
   .badge.analytic { background: rgba(182,156,255,0.16); color: var(--analytic); }
   .badge.silent { background: rgba(106,119,144,0.18); color: var(--ink-dim); }
+  #detail .ins-one { font-size: 13px; color: var(--ink); margin-top: 6px; line-height: 1.45; }
+  #detail .ins-why { font-size: 12px; color: var(--ink-dim); margin-top: 8px; line-height: 1.45; }
+  #detail .sec-h { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-faint); margin: 13px 0 5px; }
+  #detail .anchor { font-size: 12px; padding: 6px 8px; border-radius: 7px; background: rgba(8,12,20,0.5); border: 1px solid var(--glass-line); margin: 4px 0; }
+  #detail .a-subj { color: #8fe0ff; font-weight: 600; }
+  #detail .a-pred { color: var(--ink-faint); font-style: italic; }
+  #detail .a-obj { color: var(--ink-dim); }
+  #detail .a-src { color: var(--ink-faint); font-size: 10.5px; margin-top: 3px; word-break: break-word; }
+  #detail .ins-action { font-size: 12.5px; color: var(--structural-zero); }
+  #detail .ins-btn { margin: 10px 8px 0 0; font-size: 11.5px; }
+  #detail .ins-nonclaim { font-size: 10.5px; color: var(--ink-faint); line-height: 1.45; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-line); }
 
   /* status bar */
   #status { left: 14px; right: 14px; bottom: 14px; height: 34px; display: flex; align-items: center; gap: 14px;
@@ -152,6 +178,12 @@
   <div id="question" class="panel">
     <div class="scene-title" id="q-title">Nerve &amp; Cover</div>
     <div class="scene-q" id="q-question">What finite site and cover did ArchSig measure?</div>
+  </div>
+
+  <div id="insight-rail" class="panel">
+    <h4>Insights <span id="insight-count"></span></h4>
+    <div id="insight-list"></div>
+    <div id="insight-empty" class="rail-empty hidden"></div>
   </div>
 
   <div id="legend" class="panel"></div>
@@ -336,8 +368,8 @@ function restoreHidden() { for (const o of hiddenForBloom) o.visible = true; hid
 let bloomOk = true;
 function renderFrame() {
   if (!bloomOk) { renderer.render(scene, camera); return; }
+  const bg = scene.background;
   try {
-    const bg = scene.background;
     scene.background = null;                 // keep the backdrop out of the bloom pass (only evidence blooms)
     scene.traverse(darkenNonBloomed);
     bloomComposer.render();
@@ -346,6 +378,8 @@ function renderFrame() {
     scene.background = bg;
     finalComposer.render();
   } catch (e) {
+    // restore any swapped/hidden state before falling back, or meshes stay black / backdrop stays null
+    scene.traverse(restoreMaterial); restoreHidden(); scene.background = bg;
     bloomOk = false; matCache.clear(); renderer.render(scene, camera);
   }
 }
@@ -475,12 +509,50 @@ function buildModel(data) {
   const cages = (ov.forbiddenCages || []);
   const repairs = (ov.repairMorphs || []);
 
+  // ---- insight layer (ArchView reads what ArchSig measured; it computes no new verdict) ----
+  // code anchors per atom: subjectRef / objectRef / sourceRefSamples / predicate (the source-landing bridge).
+  const anchorByAtom = new Map();
+  for (const n of data.atomNodes || []) {
+    anchorByAtom.set(n.nodeId, {
+      subjectRef: n.subjectRef, objectRef: n.objectRef, predicate: n.predicate,
+      family: n.atomFamily, sourceRefs: (n.sourceRefSamples || []).map((s) => s.ref),
+    });
+  }
+  // ranked insight cards. Rank = projection of emitted fields only: measured-first, then severity, then magnitude.
+  const SEV = { high: 0, medium: 1, info: 2 };
+  const insights = (data.insightQueue || []).map((c) => {
+    const hasVerdict = !!((c.evidence && c.evidence.structuralVerdictRefs) || []).length;
+    return {
+      id: c.id, kind: c.kind, severity: c.severity || "info",
+      oneLine: c.oneLine || "", whyItMatters: c.whyItMatters || "",
+      rankingBasis: c.rankingBasis || [], evidence: c.evidence || {},
+      nextAction: c.nextAction || null, nonClaims: c.nonClaims || [],
+      nav: c.viewerNavigation || {}, tourRefs: c.tourRefs || [],
+      isMeasured: hasVerdict,                                              // a structural verdict was measured (zero OR nonzero)
+      isObstruction: hasVerdict && !/^no_measured/i.test(c.kind || ""),    // measured NONZERO obstruction only (amber lane)
+    };
+  });
+  insights.sort((a, b) => {
+    if (a.isObstruction !== b.isObstruction) return a.isObstruction ? -1 : 1; // measured obstructions lead
+    if (a.isMeasured !== b.isMeasured) return a.isMeasured ? -1 : 1;          // then measured-zero confirmations
+    const s = (SEV[a.severity] ?? 9) - (SEV[b.severity] ?? 9);
+    if (s) return s;
+    return (b.evidence.atomRefs || []).length - (a.evidence.atomRefs || []).length; // measured count tiebreak
+  });
+  // guided tours by insight id
+  const toursByInsight = new Map();
+  for (const t of data.guidedTours || []) for (const r of t.insightRefs || []) toursByInsight.set(r, t);
+  // emitted scene metadata (userQuestion + status), the ArchSig-side scene vocabulary
+  const emittedScenes = {};
+  for (const s of data.viewerVisualScenes || []) emittedScenes[s.sceneId] = { userQuestion: s.userQuestion, status: s.sceneStatus, kind: s.kind };
+
   return {
     contexts, ctxById, edges, triangles, atoms, cocycle, nerve, cellCarriers,
     conclusion, isNonzero, isZero, isFoundation, analytic, locus, cages, repairs,
     covers: site.covers || [], coverId: (site.covers && site.covers[0] && site.covers[0].normalizedCoverId) || "",
     omitted: data.omittedDetailCounts || {}, nonConclusions: data.nonConclusions || [],
     boundary: (ov.projectionBoundary || ""),
+    insights, anchorByAtom, toursByInsight, emittedScenes, copyBlocks: data.copyBlocks || {},
   };
 }
 function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
@@ -574,7 +646,10 @@ function clearGroups() {
   for (const g of Object.values(G)) {
     for (let i = g.children.length - 1; i >= 0; i--) {
       const o = g.children[i];
-      o.traverse?.((m) => { m.geometry?.dispose?.(); if (m.material && m.material !== darkMat) m.material.dispose?.(); });
+      o.traverse?.((m) => {
+        m.geometry?.dispose?.();
+        if (m.material && m.material !== darkMat) { m.material.map?.dispose?.(); m.material.dispose?.(); } // free label CanvasTextures too
+      });
       g.remove(o);
     }
   }
@@ -763,6 +838,53 @@ function buildSeam() {
     const lab = makeLabel("H¹ cocycle · won't close", { color: "#ffd9a8", scale: 1.15, bg: "rgba(48,26,8,0.82)" });
     lab.position.copy(mid).add(new THREE.Vector3(0, 11, 0)); G.seam.add(lab);
   }
+  // section-probe: a teal section traverses the LAWFUL struts (calm) and recoils at the seam —
+  // the global section visibly failing to close. Exploration of restriction paths, not a monodromy verdict.
+  const se0 = MODEL.cocycle.supportEdges[0];
+  const pSrc = CTXPOS.get(se0.sourceContextRef), pTgt = CTXPOS.get(se0.targetContextRef);
+  if (pSrc && pTgt) {
+    const seamKey = (a, b) => [a, b].sort().join("|");
+    const seamSet = new Set(MODEL.cocycle.supportEdges.map((e) => seamKey(e.sourceContextRef, e.targetContextRef)));
+    // BFS a lawful path (edges NOT in the seam) from src to tgt
+    const adj = new Map();
+    for (const e of MODEL.edges) {
+      if (seamSet.has(seamKey(e.a, e.b))) continue;
+      (adj.get(e.a) || adj.set(e.a, []).get(e.a)).push(e.b);
+      (adj.get(e.b) || adj.set(e.b, []).get(e.b)).push(e.a);
+    }
+    const prev = new Map([[se0.sourceContextRef, null]]), q = [se0.sourceContextRef];
+    while (q.length) { const c = q.shift(); if (c === se0.targetContextRef) break;
+      for (const n of adj.get(c) || []) if (!prev.has(n)) { prev.set(n, c); q.push(n); } }
+    let pathIds = [];
+    if (prev.has(se0.targetContextRef)) { let c = se0.targetContextRef; while (c != null) { pathIds.unshift(c); c = prev.get(c); } }
+    const pathPts = pathIds.length >= 2 ? pathIds.map((id) => CTXPOS.get(id).clone()) : [pSrc.clone(), pTgt.clone()];
+    const probe = new THREE.Mesh(new THREE.SphereGeometry(2.4, 18, 14),
+      new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 1.6, roughness: 0.3 }));
+    probe.userData.isProbe = true;
+    probe.userData.path = pathPts;
+    // after the lawful detour the probe reaches pTgt; the H¹ obstruction is that the CLOSING hop back to
+    // pSrc across the seam disagrees — so it lunges toward pSrc (the start it can't get back to) and recoils.
+    probe.userData.gapTarget = pSrc.clone();
+    probe.userData.pathEnd = pathPts[pathPts.length - 1].clone();
+    G.seam.add(probe);
+  }
+}
+// position a probe along its lawful path, then lunge at the seam gap and recoil (never crossing).
+function updateProbe(probe, t) {
+  const path = probe.userData.path; if (!path || path.length < 2) return;
+  const cycle = (t * 0.22) % 1;                  // slow loop
+  if (cycle < 0.78) {                            // travel the lawful polyline, calm
+    const u = cycle / 0.78 * (path.length - 1);
+    const i = Math.min(Math.floor(u), path.length - 2);
+    probe.position.lerpVectors(path[i], path[i + 1], u - i);
+    probe.material.emissiveIntensity = 1.5;
+  } else {                                        // reach the gap, lunge toward the far shore, recoil
+    const u = (cycle - 0.78) / 0.22;
+    const lunge = Math.sin(u * Math.PI) * 0.42;   // out and back, max 0.42 — never reaches 1
+    probe.position.lerpVectors(probe.userData.pathEnd, probe.userData.gapTarget, lunge);
+    probe.position.y += Math.sin(u * Math.PI) * 6;
+    probe.material.emissiveIntensity = 1.5 + Math.sin(u * Math.PI) * 1.8; // flares at the recoil
+  }
 }
 
 function buildTerrain() {
@@ -854,10 +976,10 @@ function buildPeriods() {
 function buildCages() {
   // forbidden supports as broken-line cages around their measured support atoms.
   // real v2 field is atomRefs (+ cageId, supportVariables); keep older aliases as fallback.
-  for (const cage of MODEL.cages) {
+  MODEL.cages.forEach((cage, ci) => {
     const refs = cage.atomRefs || cage.supportAtomRefs || cage.support || [];
     const pts = refs.map((r) => ATOMPOS.get(r)).filter(Boolean);
-    if (!pts.length) continue;
+    if (!pts.length) return;
     const c = new THREE.Vector3(); pts.forEach((p) => c.add(p)); c.divideScalar(pts.length);
     const r = 5 + pts.length * 3;
     const cageMesh = new THREE.LineSegments(
@@ -871,17 +993,90 @@ function buildCages() {
     G.cages.add(proxy);
     const lab = makeLabel("forbidden: " + (cage.supportVariables || refs).join(" ∧ ").replace(/atom:/g, ""),
       { color: "#ffd9a8", scale: 0.85, bg: "rgba(48,26,8,0.8)" });
-    lab.position.copy(c).add(new THREE.Vector3(0, r * 0.7 + 4, 0)); G.cages.add(lab);
+    // stagger cage labels (in tiny single-context scenes the centroids nearly coincide)
+    lab.position.copy(c).add(new THREE.Vector3((ci - (MODEL.cages.length - 1) / 2) * 26, r * 0.7 + 6 + ci * 7, 0));
+    G.cages.add(lab);
+  });
+  // repair morphisms as Alexander-dual LANDING-LADDERS: rung count = |supportVariables| (the measured
+  // hitting set). The shortest ladder is the cheapest measured repair target. A descending probe stops
+  // SHORT of the lawful floor (essential lower bound) — never landing, since landing would assert a fix.
+  if (MODEL.repairs.length) {
+    const minRungs = Math.min(...MODEL.repairs.map((rm) => (rm.supportVariables || []).length || 1));
+    const lawfulY = -6;                                  // the lawful-locus floor plane
+    MODEL.repairs.forEach((rm, ri) => {
+      const cagePts = (rm.fromCageRefs || []).map((cr) => {
+        const cg = MODEL.cages.find((c) => c.cageId === cr);
+        if (!cg) return null;
+        const ps = (cg.atomRefs || []).map((a) => ATOMPOS.get(a)).filter(Boolean);
+        if (!ps.length) return null;
+        const m = new THREE.Vector3(); ps.forEach((p) => m.add(p)); return m.divideScalar(ps.length);
+      }).filter(Boolean);
+      const top = cagePts.length ? cagePts.reduce((a, b) => a.add(b), new THREE.Vector3()).divideScalar(cagePts.length)
+        : (ATOMPOS.get((rm.fromAtomRefs || [])[0]) || new THREE.Vector3(0, 18, 0));
+      const rungs = (rm.supportVariables || []).length || 1;
+      const isShortest = rungs === minRungs;
+      const col = isShortest ? COL.zero : COL.analytic;  // shortest = teal target; alternatives = lavender
+      const ladderX = top.clone(); ladderX.x += (ri - (MODEL.repairs.length - 1) / 2) * 10;
+      // the rail
+      const rail = tube(ladderX.clone(), new THREE.Vector3(ladderX.x, lawfulY + 2, ladderX.z), isShortest ? 0.5 : 0.35,
+        new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: isShortest ? 0.7 : 0.35,
+          transparent: true, opacity: isShortest ? 0.9 : 0.55, roughness: 0.4 }));
+      G.cages.add(rail);
+      // the rungs (one per support variable in the hitting set)
+      for (let k = 0; k < rungs; k++) {
+        const y = THREE.MathUtils.lerp(top.y, lawfulY + 3, (k + 1) / (rungs + 1));
+        const rung = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.4, 8, 20),
+          new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: isShortest ? 0.8 : 0.35,
+            transparent: true, opacity: 0.85, roughness: 0.4 }));
+        rung.rotation.x = Math.PI / 2; rung.position.set(ladderX.x, y, ladderX.z);
+        G.cages.add(rung);
+      }
+      // descending probe (shortest ladder only) that STOPS at the lower-bound floor, never landing
+      if (isShortest) {
+        const probe = new THREE.Mesh(new THREE.SphereGeometry(2.0, 16, 12),
+          new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 1.4, roughness: 0.3 }));
+        probe.userData.descend = true; probe.userData.topY = top.y; probe.userData.floorY = lawfulY + 3;
+        probe.userData.x = ladderX.x; probe.userData.z = ladderX.z;
+        G.cages.add(probe);
+      }
+      const proxy = pickProxy(ladderX, 5);
+      pickables.push({ mesh: proxy, info: { type: "repair", repair: rm, shortest: isShortest } });
+      G.cages.add(proxy);
+      const lab = makeLabel(`repair: ${(rm.supportVariables || []).join(", ")}${isShortest ? " · cheapest" : ""}`,
+        { color: isShortest ? "#a8f0e6" : "#cdb8ff", scale: 0.8, bg: "rgba(8,24,22,0.78)" });
+      lab.position.set(ladderX.x, lawfulY - 5, ladderX.z); G.cages.add(lab);  // labels at the floor, clear of cage labels up top
+    });
+    // lawful floor plane (teal, calm) — the target surface the ladder descends toward but cannot land on
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(120, 120),
+      new THREE.MeshStandardMaterial({ color: COL.zero, transparent: true, opacity: 0.07,
+        emissive: COL.zero, emissiveIntensity: 0.15, side: THREE.DoubleSide, roughness: 0.9 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = lawfulY;
+    G.cages.add(floor);
+    // keystone = a coordinate that is itself a SINGLE-coordinate minimal repair (the sole element of some
+    // measured repairMorph: dropping it alone clears the measured obstruction in scope). This is read from
+    // the packet's hitting sets — not a viewer-computed cage intersection. Amber, but NOT bloomed (bloom is
+    // reserved for measured H¹ evidence; this is a square-free obstruction, like the cages it sits among).
+    const keystoneVars = [...new Set(MODEL.repairs.filter((r) => (r.supportVariables || []).length === 1).map((r) => r.supportVariables[0]))];
+    if (keystoneVars.length && MODEL.cages.length) {
+      const allPts = MODEL.cages.flatMap((c) => (c.atomRefs || []).map((a) => ATOMPOS.get(a)).filter(Boolean));
+      if (allPts.length) {
+        const kc = allPts.reduce((a, b) => a.add(b.clone()), new THREE.Vector3()).divideScalar(allPts.length);
+        const key = new THREE.Mesh(new THREE.OctahedronGeometry(3.2, 0),
+          new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 1.3, roughness: 0.25 }));
+        key.position.copy(kc); key.userData.softpulse = true;        // gentle pulse, no bloom
+        G.cages.add(key);
+        const klab = makeLabel(`single-move repair: ${keystoneVars.join(", ")}`, { color: "#ffd9a8", scale: 0.85, bg: "rgba(48,26,8,0.82)" });
+        klab.position.copy(kc).add(new THREE.Vector3(0, 7, 0)); G.cages.add(klab);
+      }
+    }
   }
-  // repair morphisms as flow ribbons from the off-surface support toward the lawful locus (origin).
-  for (const rm of MODEL.repairs) {
-    const src = (rm.fromAtomRefs || rm.atomRefs || rm.supportAtomRefs || [])[0];
-    const from = (src && ATOMPOS.get(src)) || new THREE.Vector3(0, -30, 0);
-    const m = tube(from.clone(), new THREE.Vector3(0, 0, 0), 0.6, new THREE.MeshStandardMaterial({
-      color: COL.analytic, emissive: COL.analytic, emissiveIntensity: 0.4, transparent: true, opacity: 0.6, roughness: 0.5 }));
-    G.cages.add(m);
-    pickables.push({ mesh: m, info: { type: "repair", repair: rm } });
-  }
+}
+// descending repair probe: eases down the shortest ladder and HOVERS at the lower-bound floor, never landing.
+function updateRepairProbe(probe, t) {
+  const u = (Math.sin(t * 0.8) * 0.5 + 0.5);             // 0..1 ease
+  const y = THREE.MathUtils.lerp(probe.userData.topY, probe.userData.floorY + 2, u); // +2 = stops short of floor
+  probe.position.set(probe.userData.x, y, probe.userData.z);
+  probe.material.emissiveIntensity = 1.2 + (1 - u) * 0.6;
 }
 
 function buildVerdict() {
@@ -1003,6 +1198,165 @@ function frameScene(id) {
   camera.near = Math.max(0.1, dist / 400); camera.far = dist * 12; camera.updateProjectionMatrix();
 }
 
+/* ============================================================================
+ * Insight layer — ArchView projects ArchSig's measured insights as a ranked,
+ * source-anchored, navigable surface. It reads emitted fields; computes no verdict.
+ * ========================================================================== */
+const KIND_LABEL = {
+  global_glue_mismatch: "H¹ glue mismatch", minimal_repair_candidate: "Minimal repair",
+  policy_conflict: "Policy conflict", measurement_boundary: "Measurement boundary",
+  analytic_debt_mass: "Hodge debt (analytic)", no_measured_obstruction: "No measured obstruction",
+};
+const kindLabel = (k) => KIND_LABEL[k] || (k || "insight").replace(/_/g, " ");
+// emitted ArchSig sceneId -> ArchView geometry scene
+const SCENE_MAP = {
+  overview: "nerve", "site-cover": "nerve", "cech-gluing": "gluing", "cech-h1-mismatch": "gluing",
+  obstruction: "forbidden", "repair-dual": "forbidden", "law-conflict-tor": "nerve",
+  "hodge-debt-field": "curvature", "analytic-overlay": "curvature", "period-stokes": "periods",
+  "boundary-assumption": "boundary", "source-evidence": "boundary",
+};
+function insightLane(ins) {
+  if (ins.isObstruction) return COL.nonzero;                           // measured NONZERO obstruction → amber
+  if (ins.isMeasured) return COL.zero;                                 // measured ZERO confirmation → teal (not amber)
+  if (/boundary|measurement|no_measured/.test(ins.kind || "")) return COL.silence;
+  return COL.analytic;                                                  // analytic reading → lavender
+}
+const hex = (c) => "#" + c.toString(16).padStart(6, "0");
+
+let highlighted = [];
+function clearHighlight() {
+  for (const m of highlighted) {
+    const ud = m.userData;
+    if (ud.baseIntensity != null && m.material && m.material.emissive) { m.material.emissive.setHex(ud.baseEmissive); m.material.emissiveIntensity = ud.baseIntensity; }
+    if (ud.baseScale != null) m.scale.setScalar(ud.baseScale);
+  }
+  highlighted = [];
+}
+function highlightRefs(atomRefs = [], contextRefs = []) {
+  clearHighlight();
+  const aset = new Set(atomRefs), cset = new Set(contextRefs);
+  for (const p of pickables) {
+    if (p.info.type === "atom" && aset.has(p.info.atom.id)) {
+      const m = p.mesh, ud = m.userData;
+      if (ud.baseIntensity != null && m.material && m.material.emissive) { m.material.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2; }
+      if (ud.baseScale != null) m.scale.setScalar(ud.baseScale * 1.6);
+      highlighted.push(m);
+    }
+  }
+}
+function frameToRefs(atomRefs = [], contextRefs = []) {
+  const box = new THREE.Box3(); let any = false;
+  for (const r of atomRefs) { const p = ATOMPOS.get(r); if (p) { box.expandByPoint(p); any = true; } }
+  for (const r of contextRefs) { const p = CTXPOS.get(r); if (p) { box.expandByPoint(p); any = true; } }
+  if (!any) return;
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  const radius = Math.max(sph.radius, 24);
+  const dist = radius / Math.sin((camera.fov * Math.PI) / 360) * 1.15;
+  const dir = new THREE.Vector3(0.32, 0.3, 1).normalize();
+  controls.target.copy(sph.center);
+  camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
+  camera.updateProjectionMatrix();
+}
+
+let activeInsightId = null;
+function navigateToInsight(ins) {
+  activeInsightId = ins.id;
+  const av = SCENE_MAP[ins.nav && ins.nav.sceneId] || (ins.isMeasured ? "gluing" : "boundary");
+  applyScene(av);
+  // let the emitted question/insight voice lead the HUD
+  const emitted = MODEL.emittedScenes[ins.nav && ins.nav.sceneId];
+  document.getElementById("q-title").textContent = kindLabel(ins.kind);
+  document.getElementById("q-question").textContent = ins.whyItMatters || (emitted && emitted.userQuestion) || ins.oneLine;
+  const hr = (ins.nav && ins.nav.highlightRefs) || {};
+  const atomRefs = hr.atomRefs || (ins.evidence.atomRefs || []);
+  const ctxRefs = hr.contextRefs || (ins.evidence.contextRefs || []);
+  highlightRefs(atomRefs, ctxRefs);
+  frameToRefs(atomRefs, ctxRefs);
+  // the insight deliberately brought us here — speak in its measured voice, not the scene's silence note
+  document.getElementById("st-boundary").textContent = ins.oneLine || MODEL.boundary || "";
+  showInsightDetail(ins);
+  renderInsightRail();
+}
+
+function showInsightDetail(ins) {
+  const el = document.getElementById("detail");
+  el.classList.remove("empty");
+  const anchors = (ins.evidence.atomRefs || []).map((r) => ({ ref: r, a: MODEL.anchorByAtom.get(r) }))
+    .filter((x) => x.a && (x.a.subjectRef || (x.a.sourceRefs || []).length));
+  const anchorRows = anchors.slice(0, 8).map(({ ref, a }) =>
+    `<div class="anchor"><span class="a-subj">${escapeHtml(a.subjectRef || ref)}</span>${
+      a.predicate ? `<span class="a-pred"> ${escapeHtml(a.predicate)} </span>` : " "}${
+      a.objectRef ? `<span class="a-obj">${escapeHtml(String(a.objectRef).slice(0, 60))}</span>` : ""}${
+      (a.sourceRefs || []).length ? `<div class="a-src">${a.sourceRefs.map(escapeHtml).join(" · ")}</div>` : ""}</div>`).join("");
+  const lane = insightLane(ins);
+  el.innerHTML = `
+    <div class="kind" style="color:${hex(lane)}">${ins.isObstruction ? "measured obstruction" : ins.isMeasured ? "measured · zero" : "analytic / boundary"} · ${escapeHtml(ins.severity)}</div>
+    <h3>${escapeHtml(kindLabel(ins.kind))}</h3>
+    <div class="ins-one">${escapeHtml(ins.oneLine)}</div>
+    ${ins.whyItMatters ? `<div class="ins-why">${escapeHtml(ins.whyItMatters)}</div>` : ""}
+    ${anchorRows ? `<div class="sec-h">Source anchors</div>${anchorRows}` : ""}
+    ${ins.nextAction ? `<div class="sec-h">Suggested next step</div><div class="ins-action">${escapeHtml(ins.nextAction.label || "")}</div>` : ""}
+    ${MODEL.toursByInsight.has(ins.id) ? `<button class="bare ins-btn" id="tour-btn">▶ Walk me there</button>` : ""}
+    <button class="bare ins-btn" id="copy-refs-btn">⧉ Copy source refs</button>
+    ${(ins.nonClaims || []).length ? `<div class="ins-nonclaim">${ins.nonClaims.map((n) => "— " + escapeHtml(n)).join("<br>")}</div>` : ""}`;
+  const tb = document.getElementById("tour-btn");
+  if (tb) tb.addEventListener("click", () => startTour(ins));
+  const cb = document.getElementById("copy-refs-btn");
+  if (cb) cb.addEventListener("click", () => {
+    const refs = (ins.evidence.sourceRefs || []).join("\n") || (MODEL.copyBlocks.sourceRefs || []).join("\n");
+    navigator.clipboard?.writeText(refs); cb.textContent = "✓ Copied";
+    setTimeout(() => { cb.textContent = "⧉ Copy source refs"; }, 1400);
+  });
+}
+
+/* lightweight guided tour: step through emitted tour steps (scene + highlight + caption) */
+let tourState = null;
+function startTour(ins) {
+  const tour = MODEL.toursByInsight.get(ins.id);
+  if (!tour || !(tour.steps || []).length) return;
+  tourState = { steps: tour.steps, i: -1, ins };
+  tourStep(1);
+}
+function tourStep(dir) {
+  if (!tourState) return;
+  tourState.i = Math.max(0, Math.min(tourState.steps.length - 1, tourState.i + dir));
+  const st = tourState.steps[tourState.i];
+  const av = SCENE_MAP[st.sceneId] || "nerve";
+  applyScene(av);
+  const hr = st.highlightRefs || {};
+  highlightRefs(hr.atomRefs || [], hr.contextRefs || []);
+  frameToRefs(hr.atomRefs || [], hr.contextRefs || []);
+  document.getElementById("q-title").textContent = `Tour ${tourState.i + 1}/${tourState.steps.length}`;
+  document.getElementById("q-question").textContent = st.caption || "";
+}
+
+function renderInsightRail() {
+  const list = document.getElementById("insight-list");
+  const empty = document.getElementById("insight-empty");
+  const countEl = document.getElementById("insight-count");
+  if (!MODEL) { list.innerHTML = ""; empty.classList.remove("hidden"); empty.textContent = "No data."; countEl.textContent = ""; return; }
+  const ins = MODEL.insights || [];
+  const obstr = ins.filter((i) => i.isObstruction);
+  countEl.textContent = obstr.length ? `· ${obstr.length} measured` : "";
+  if (!ins.length) {
+    list.innerHTML = ""; empty.classList.remove("hidden");
+    empty.innerHTML = `ArchSig measured no insight rows for this packet. <b>${escapeHtml(MODEL.conclusion)}</b> — silence, not a verdict.`;
+    return;
+  }
+  empty.classList.add("hidden");
+  list.innerHTML = ins.map((i, idx) => `
+    <div class="insight-card${i.id === activeInsightId ? " active" : ""}" data-idx="${idx}">
+      <span class="dot" style="color:${hex(insightLane(i))}"></span>
+      <div class="ic-body">
+        <div class="ic-kind">${escapeHtml(kindLabel(i.kind))}</div>
+        <div class="ic-one">${escapeHtml(i.oneLine)}</div>
+        <div class="ic-rank">${escapeHtml(i.severity)}${i.isObstruction ? " · measured" : i.isMeasured ? " · measured_zero" : ""}${(i.rankingBasis || [])[0] ? " · " + escapeHtml(i.rankingBasis[0]) : ""}</div>
+      </div>
+    </div>`).join("");
+  for (const card of list.querySelectorAll(".insight-card"))
+    card.addEventListener("click", () => navigateToInsight(ins[+card.dataset.idx]));
+}
+
 /* ---- layer toggles ------------------------------------------------------- */
 const LAYER_TOGGLES = [
   { key: "cells", label: "Cells" }, { key: "atoms", label: "Atoms" },
@@ -1055,9 +1409,12 @@ function showDetail(info) {
       ["poset", info.ctx.posetStatus || "—"]];
     badge = `<span class="badge silent">local window</span>`;
   } else if (info.type === "atom") {
-    title = info.atom.subject || info.atom.id; kind = `atom · ${info.atom.kind}`;
+    const anc = MODEL.anchorByAtom.get(info.atom.id) || {};
+    title = anc.subjectRef || info.atom.subject || info.atom.id; kind = `atom · ${info.atom.kind}`;
     rows = [["predicate", info.atom.predicate || "—"], ["valence", info.atom.valence],
       ["contexts", (info.atom.contexts || []).join(", ") || "—"], ["family", info.atom.family]];
+    if (anc.objectRef) rows.push(["object", String(anc.objectRef).slice(0, 70)]);
+    if ((anc.sourceRefs || []).length) rows.push(["source refs", anc.sourceRefs.join(" · ")]);
     badge = info.isObstruction ? `<span class="badge nonzero">on the H¹ cocycle support</span>` : "";
   } else if (info.type === "strut") {
     title = info.edge.id; kind = "cover restriction edge";
@@ -1209,13 +1566,18 @@ function renderData(data, source, companions) {
   document.getElementById("brand-sub").textContent =
     `${source} · ${MODEL.coverId || "no cover"}`;
   buildAll();
-  applyScene(currentScene);
+  activeInsightId = null; highlighted = []; tourState = null;
+  // open on the top measured OBSTRUCTION if present, else the default scene (honest silence handles NO_MEASURED)
+  const top = (MODEL.insights || []).find((i) => i.isObstruction);
+  if (top) navigateToInsight(top); else applyScene(currentScene);
+  renderInsightRail();
   renderReport();
   setStatus(`Loaded ${source}`);
 }
 function emptyShell() {
   MODEL = null; DATA = null;
   clearGroups();
+  renderInsightRail();
   document.getElementById("st-verdict").textContent = "—";
   document.getElementById("st-counts").textContent = "Open archsig-atom-viewer-data.json";
   setStatus("Open archsig-atom-viewer-data.json (drag a file, or use Open data…)");
@@ -1296,6 +1658,10 @@ document.getElementById("search").addEventListener("input", (e) => {
     if (match) {
       mat.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.0;
       p.mesh.scale.setScalar(ud.baseScale * 1.5);
+    } else if (highlighted.includes(p.mesh)) {
+      // preserve an active insight highlight instead of stomping it back to base
+      mat.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2;
+      p.mesh.scale.setScalar(ud.baseScale * 1.6);
     } else {
       mat.emissive.setHex(ud.baseEmissive);
       mat.emissiveIntensity = ud.baseIntensity;
@@ -1321,12 +1687,18 @@ function animate() {
   controls.update();
   // gentle life: obstruction pulse, calm-ring breathing, cell drift
   for (const g of [G.seam, G.atoms]) for (const o of g.children) {
+    if (o.userData && o.userData.isProbe) { updateProbe(o, t); continue; }
     if (o.userData && o.userData.pulse && o.material && o.material.emissive) {
       o.material.emissiveIntensity = 1.6 + Math.sin(t * 3.2) * 0.7;
     }
   }
   for (const o of G.verdict.children) {
     if (o.userData && o.userData.breathe) { const s = 1 + Math.sin(t * 1.1) * 0.02; o.scale.setScalar(s); }
+  }
+  for (const o of G.cages.children) {
+    if (o.userData && o.userData.isProbe) updateProbe(o, t);
+    if (o.userData && o.userData.descend) updateRepairProbe(o, t);
+    if (o.userData && o.userData.softpulse && o.material) o.material.emissiveIntensity = 1.1 + Math.sin(t * 2.5) * 0.4;
   }
   renderFrame();
 }
