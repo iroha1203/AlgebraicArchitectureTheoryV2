@@ -1308,6 +1308,7 @@
       controls.update();
       updateRepairMorphAnimation();
       updateAtomLayoutMorph();
+      updateHolonomyTraversalAnimation();
       renderFrame();
     }
 
@@ -1521,6 +1522,7 @@
       renderedGroups = filterGroups(allGroups);
       renderedEdgeCount = 0;
       bloomRegisteredCount = 0;
+      activeTourState = { frames: [] };
 
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
@@ -2483,7 +2485,91 @@
         };
         tagCohomologyLayer(gapLabel, "h1", "cocycleRibbon.closureGapEncoding");
         edgeGroup.add(gapLabel);
+        createHolonomyTraversalFrame(curve, ribbon, maxEdgeValue, points[0]);
       }
+    }
+
+    function createHolonomyTraversalFrame(curve, ribbon, parityValue, originPoint) {
+      if (!curve || !ribbon?.closureGapEncoding?.visible) return;
+      const frame = new THREE.Group();
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(2.4, 18, 12),
+        new THREE.MeshStandardMaterial({ color: 0xf2c15f, emissive: 0x3f2d08, roughness: 0.34 })
+      );
+      frame.add(marker);
+      const axisVertices = [
+        0, 0, 0, 7, 0, 0,
+        0, 0, 0, 0, 7, 0,
+        0, 0, 0, 0, 0, 7
+      ];
+      const axisGeometry = new THREE.BufferGeometry();
+      axisGeometry.setAttribute("position", new THREE.Float32BufferAttribute(axisVertices, 3));
+      const axes = new THREE.LineSegments(
+        axisGeometry,
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72 })
+      );
+      axes.userData = { kind: "holonomyTraversalFrameAxes" };
+      frame.add(axes);
+      frame.position.copy(originPoint || curve.getPointAt(0));
+      frame.userData = {
+        kind: "holonomyTraversalFrame",
+        curve,
+        parityTwistOnly: true,
+        closureGapVisible: true,
+        unmeasuredTwistMagnitude: true,
+        noMonodromyVerdict: true,
+        projectionBoundary: "restriction/cover path exploratory view only; no monodromy or pi1 verdict",
+        nonClaim: "twist magnitude is unmeasured; edge.value parity drives a discrete traversal cue"
+      };
+      tagCohomologyLayer(frame, "h1", "cocycleRibbon.closureGapEncoding");
+      registerReadingBloom(frame, "holonomy_traversal_frame", 0.5);
+      edgeGroup.add(frame);
+      const ghost = new THREE.Mesh(
+        new THREE.TorusGeometry(3.6, 0.22, 8, 36),
+        new THREE.MeshStandardMaterial({ color: 0x9fb3c8, transparent: true, opacity: 0.34, roughness: 0.5 })
+      );
+      ghost.position.copy(originPoint || curve.getPointAt(0));
+      ghost.userData = {
+        kind: "holonomyTraversalStartGhost",
+        noMonodromyVerdict: true,
+        parityTwistOnly: true
+      };
+      tagCohomologyLayer(ghost, "h1", "cocycleRibbon.closureGapEncoding");
+      edgeGroup.add(ghost);
+      const label = createTextSprite("restriction path traversal; parity twist only; no monodromy verdict", "#ffffff", "rgba(63,45,8,0.72)");
+      label.position.copy(frame.position).add(new THREE.Vector3(0, 11, 0));
+      label.userData = {
+        kind: "holonomyTraversalNonClaim",
+        labelPriorityScore: 94,
+        noMonodromyVerdict: true,
+        nonClaim: "restriction/cover path exploratory view; not a pi1 or monodromy verdict"
+      };
+      tagCohomologyLayer(label, "h1", "cocycleRibbon.closureGapEncoding");
+      edgeGroup.add(label);
+      activeTourState?.frames?.push({ frame, curve, parityValue: Number(parityValue || 0), startedAt: performance.now() });
+    }
+
+    function updateHolonomyTraversalAnimation() {
+      const frames = activeTourState?.frames || [];
+      if (!frames.length) return;
+      const now = performance.now();
+      frames.forEach((state) => {
+        const t = ((now - state.startedAt) % 3600) / 3600;
+        const point = state.curve.getPointAt(t);
+        const tangent = state.curve.getTangentAt(t).normalize();
+        state.frame.position.copy(point);
+        const twist = (state.parityValue > 0 ? 0.72 : 0) * Math.sin(t * Math.PI * 2);
+        const look = point.clone().add(tangent);
+        state.frame.lookAt(look);
+        state.frame.rotateZ(twist);
+        state.frame.userData.traversalProgress = Number(t.toFixed(3));
+        state.frame.userData.discreteParityTwist = Number(twist.toFixed(3));
+      });
+      window.__archsigViewerHolonomyTraversal = {
+        activeFrameCount: frames.length,
+        noMonodromyVerdict: true,
+        projectionBoundary: "restriction/cover path exploratory view only; no monodromy or pi1 verdict"
+      };
     }
 
     function locusFieldNumeric(value, fallback = 0) {
@@ -3965,6 +4051,7 @@
         renderSimpleLegend([
           ["f2c15f", "H1 support ribbon"],
           ["f2c15f", "measured closure marker"],
+          ["f2c15f", "restriction traversal; no monodromy verdict"],
           ["9fb3c8", "edge.value is mismatch parity, not continuous cohomology magnitude"]
         ]);
         return;

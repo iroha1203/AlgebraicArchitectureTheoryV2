@@ -13864,6 +13864,27 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V9 must expose morph trajectory and overlay crossfade non-claims"
     );
     assert!(
+        html.contains("createHolonomyTraversalFrame")
+            && html.contains("updateHolonomyTraversalAnimation()")
+            && html.contains("holonomyTraversalFrame")
+            && html.contains("holonomyTraversalStartGhost")
+            && html.contains("holonomy_traversal_frame"),
+        "viewer V10 must create and animate a closureGap-driven traversal frame"
+    );
+    assert!(
+        html.contains("parityTwistOnly: true")
+            && html.contains("unmeasuredTwistMagnitude: true")
+            && html.contains("noMonodromyVerdict: true")
+            && html.contains("restriction traversal; no monodromy verdict"),
+        "viewer V10 must keep traversal as parity-only and avoid monodromy verdict claims"
+    );
+    assert!(
+        html.contains("closureGapEncoding?.visible")
+            && html.contains("twist magnitude is unmeasured")
+            && html.contains("restriction/cover path exploratory view only; no monodromy or pi1 verdict"),
+        "viewer V10 must gate traversal on measured closureGap visibility and expose the boundary"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
