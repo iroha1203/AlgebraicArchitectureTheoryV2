@@ -23,3 +23,4 @@ import Formal.AG.RepresentationAnalysis
 import Formal.AG.Examples.RepresentationAnalysisPart7
 import Formal.AG.Measurement
 import Formal.AG.Evolution
+import Formal.AG.Examples.EvolutionPart9
