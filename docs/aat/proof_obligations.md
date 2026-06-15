@@ -1294,6 +1294,7 @@ R7 finite dissipation stopping Issue: [#2316](https://github.com/iroha1203/Algeb
 R8 AAT Lyapunov reading Issue: [#2320](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2320).
 R9 force / integrability obstruction candidate Issue: [#2322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2322).
 R10 finite temporal examples Issue: [#2324](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2324).
+R11 final ledger / no-sorry scan Issue: [#2326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2326).
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -1308,6 +1309,7 @@ R10 finite temporal examples Issue: [#2324](https://github.com/iroha1203/Algebra
 | `IX.§6.1 / R8` AAT Lyapunov Reading | `defined only` / `proved accessor`. `AATLyapunovReading` が selected finite evolution profile scope、policy non-increase、selected obstruction-zero 近傍の minimum predicate、terminal lawfulness boundary、no-forecast boundary を保持する。`selected_path_monotone` が selected path 上の non-increase を証明し、`selected_path_strict_before_terminal` と `no_infinite_loop_before_terminal` が strict / finite stopping package から terminal 前の strict decrease と infinite loop/path 不存在を読む。`HarmonicMassLyapunovInstance` は PRD-8 harmonic-mass reading hook を selected state value に接続する。 | 未選択 transition、未構成 state space、任意 future path forecast は主張しない。 |
 | `IX.定義7.1 / 定理候補7.2 / R9` Force / Force Integrability Obstruction Candidate | `defined only` / `statement-only candidate` / `proved accessor`. `Force` が selected incidence leg に沿う temporal state morphism と source/target state witness を保持する。`IntegrableForce` は `ForceIntegrationData` の `Nonempty` として local law data が selected global temporal law data へ descent / integration できる evidence predicate を読む。`ForceMismatchClass` が force 由来の degree-one temporal mismatch class、trace product site fixed 境界、mismatch construction soundness 境界を保持する。`ForceIntegrabilityObstructionCandidate` は selected nonzero obstruction、coefficient exactness、witness coverage、temporal descent detecting、local-to-global descent control を明示仮定にし、`candidate_not_integrable_of_obstruction` はその candidate field を読む。 | theorem candidate は future proof obligation として残し、一般 force integrability theorem は証明しない。未選択 transition、未構成 state space、任意 future path forecast は主張しない。 |
 | `IX.R10 finite temporal examples` | `proved examples` / `selected finite fixtures`. `Formal/AG/Examples/EvolutionPart9.lean` が two-step trace、finite temporal site/state presheaf、singleton temporal coefficient / Čech bridge、zero replay descent fixture、pseudo-circle nonzero replay mismatch、finite dissipation stopping、non-lawful terminal boundary、harmonic Lyapunov reading、force mismatch class / obstruction candidate assumption fixture を持つ。`zeroReplayTemporalDescentCriterion` と `replay_zero_theorem42_global_transition_exists` が R5 の theorem-4.2 package から global replay transition を読み、`twoStep_dissipation_reaches_terminal_by_theorem53` が R7 の finite-path theorem 5.3 package から terminal reachability を読む。`toyForceMismatchClass` と `force_candidate_selected_nonzero` が R9 の `ForceMismatchClass` surface と selected nonzero assumption fixture を接続し、`finite_temporal_examples_verified` が R10(a)-(g) の aggregate witness を束ねる。 | selected finite fixtures に限る。一般 temporal semantics、nonzero replay からの global failure、full `ForceIntegrabilityObstructionCandidate` instance、一般 force integrability theorem、未選択 transition、任意 future path forecast は主張しない。 |
+| `IX.R11 final ledger / no-sorry scan` | `proved final ledger sync`. `Formal/AG.lean` が `Formal.AG.Evolution` と `Formal.AG.Examples.EvolutionPart9` を import し、Part IX tower と finite examples を aggregate build 対象に含める。R11 validation で `Formal/AG` 全体の `axiom` / `admit` / `sorry` / `unsafe` scan が no match であることを確認し、`lean_theorem_index.md` と `proof_obligations.md` の第IX部 rows を最終実装と同期する。 | validation は Lean source と docs ledger の一致確認であり、PRD 外の source observation、runtime forecast、ArchMap / ArchSig / FieldSig 完全性は主張しない。 |
 
 第IX部 PRD-9 の証明対象ラベルは次の現在状態である。
 
@@ -1325,6 +1327,13 @@ R10 finite temporal examples Issue: [#2324](https://github.com/iroha1203/Algebra
 | `Force` / `IntegrableForce` / `ForceMismatchClass` | `defined only` / `proved accessor` |
 | `ForceIntegrabilityObstructionCandidate` | `statement-only candidate` / `future proof obligation` |
 | `Part IX finite examples` | `proved examples` / `selected finite fixtures` |
+| `Part IX final ledger / no-sorry scan` | `proved final ledger sync` |
+| `GeneralTraceSemantics` | `future proof obligation` / explicit non-goal for PRD-9 |
+| `ExternalRuntimeForecast` | `future proof obligation` / explicit non-goal for PRD-9 |
+| `AllFuturePathSafety` | `future proof obligation` / explicit non-goal for PRD-9 |
+| `UnselectedEventCompleteness` | `future proof obligation` / explicit non-goal for PRD-9 |
+| `TerminalStateImpliesLawfulWithoutObstructionAssumptions` | `future proof obligation` / explicit non-goal for PRD-9 |
+| `GeneralForceIntegrabilityTheorem` | `future proof obligation` / explicit non-goal for PRD-9 |
 
 ## 現在の未解決カテゴリ
 
