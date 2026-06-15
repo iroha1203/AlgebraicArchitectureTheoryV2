@@ -3894,6 +3894,38 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
             .is_some_and(|items| !items.is_empty()),
         "hotspot overlay must be gated by an existing landed hotspot reading"
     );
+    let spectrum_landscape = &laplacian_viewer["aatGeometryOverlays"]["spectrumLandscape"];
+    assert_eq!(
+        spectrum_landscape["schemaVersion"],
+        "archsig-spectrum-landscape-v1"
+    );
+    assert_eq!(spectrum_landscape["measurementStatus"], "proxy");
+    assert_eq!(spectrum_landscape["colorRole"], "analytic_reading");
+    assert_eq!(spectrum_landscape["axisPlacement"], "axisRef-deterministic");
+    assert_eq!(
+        spectrum_landscape["spectralRadiusNumeric"],
+        Value::from(2.0)
+    );
+    assert!(
+        spectrum_landscape["cells"]
+            .as_array()
+            .expect("spectrum cells is array")
+            .iter()
+            .any(|cell| cell["plainRole"] == "lawful_plain_measured_zero"
+                && cell["notLegacyStatusField"] == Value::Bool(true)),
+        "spectrum projection must draw cv=0 lawful plain cells without the legacy curvature status field"
+    );
+    assert!(
+        spectrum_landscape["hotspots"]
+            .as_array()
+            .expect("spectrum hotspots is array")
+            .iter()
+            .all(
+                |hotspot| hotspot["localDeviationSecondary"] == Value::Bool(true)
+                    && hotspot["measurementStatus"] == "proxy"
+            ),
+        "spectrum hotspots must remain secondary proxy deviations"
+    );
 
     let tor_out = run_ag_measurement_fixture(
         "m14-singularity-overlay",
@@ -14064,6 +14096,24 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("noStructuralVerdictCreatedByViewer: true")
             && html.contains("unknown audits are not green structural closure"),
         "viewer V16 must keep period meter model-relative and avoid new structural verdict claims"
+    );
+    assert!(
+        html.contains("renderSpectrumPeaks")
+            && html.contains("window.__archsigViewerSpectrumPeaks")
+            && html.contains("spectrumLawfulPlain")
+            && html.contains("spectrumLocalDeviationPeak")
+            && html.contains("spectrumProxyRidge"),
+        "viewer V17 must render lawful plain, secondary peaks, and proxy ridges"
+    );
+    assert!(
+        html.contains("lawfulPlainMeasuredZeroDrawn: isLawfulPlain")
+            && html.contains("legacyStatusFieldRead: false")
+            && html.contains("analyticReadingNotVerdict: true")
+            && html.contains(
+                "SAFE lawful plain remains central; spectrum peaks are proxy local deviations"
+            )
+            && html.contains("axisRef-deterministic"),
+        "viewer V17 must keep SAFE lawful plain central with deterministic axis placement and analytic non-verdict boundary"
     );
     assert!(
         html.contains("type=\"file\"")
