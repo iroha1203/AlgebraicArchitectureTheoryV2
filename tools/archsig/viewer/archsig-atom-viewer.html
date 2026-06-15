@@ -1048,6 +1048,7 @@
     let activeAtomLayoutPositions = new Map();
     let atomLayoutMorphState = null;
     let activeCohomologyLayerGroups = {};
+    let activeTourPulseGroup = null;
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1340,6 +1341,7 @@
       updateRepairMorphAnimation();
       updateAtomLayoutMorph();
       updateHolonomyTraversalAnimation();
+      updateFindingsTourPulse();
       renderFrame();
     }
 
@@ -1554,7 +1556,7 @@
       renderedGroups = filterGroups(allGroups);
       renderedEdgeCount = 0;
       bloomRegisteredCount = 0;
-      activeTourState = { frames: [] };
+      activeTourState = { ...(activeTourState || {}), frames: [] };
 
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
@@ -2706,6 +2708,17 @@
         noMonodromyVerdict: true,
         projectionBoundary: "restriction/cover path exploratory view only; no monodromy or pi1 verdict"
       };
+    }
+
+    function updateFindingsTourPulse() {
+      if (!activeTourPulseGroup) return;
+      const t = (performance.now() % 1300) / 1300;
+      const pulse = 1 + Math.sin(t * Math.PI * 2) * 0.18;
+      activeTourPulseGroup.children.forEach((child) => {
+        if (child.userData?.kind !== "findingsTourHighlightPulse" && child.userData?.kind !== "findingsTourConclusionBadge") return;
+        child.scale.setScalar(child.userData?.baseScale ? child.userData.baseScale * pulse : pulse);
+        child.userData.pulseProgress = Number(t.toFixed(3));
+      });
     }
 
     function locusFieldNumeric(value, fallback = 0) {
@@ -4488,6 +4501,9 @@
 
     function selectVisual(event) {
       if (!currentData) return;
+      if (activeTourState?.tour && !activeTourState?.cinematic?.paused) {
+        pauseFindingsTour("manual pointer interaction");
+      }
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1;
       pointer.y = -(((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1);
@@ -4597,15 +4613,24 @@
         return;
       }
       setReportOpen(false);
-      activeTourState = { tour, stepIndex: 0 };
+      activeTourState = {
+        ...(activeTourState || {}),
+        tour,
+        stepIndex: 0,
+        cinematic: {
+          paused: false,
+          packetCaptionOnly: true,
+          highlightRefsSource: "packet.viewerNavigation.highlightRefs"
+        }
+      };
       showTourStep();
     }
 
     function showTourStep() {
-      if (!activeTourState) return;
+      if (!activeTourState?.tour) return;
       const { tour, stepIndex } = activeTourState;
       if (stepIndex < 0 || stepIndex >= tour.steps.length) {
-        activeTourState = null;
+        finishFindingsTour();
         detailEl.hidden = true;
         status("Tour complete");
         return;
@@ -4613,29 +4638,261 @@
       const step = tour.steps[stepIndex];
       viewModeEl.value = modeForScene(step.sceneId);
       handleViewModeChange();
+      const focus = applyFindingsTourStepFocus(tour, step, stepIndex);
+      renderTourStepDetail(tour, step, stepIndex, focus);
+      status(`Tour ${stepIndex + 1}/${tour.steps.length}: ${step.sceneId}`);
+    }
+
+    function renderTourStepDetail(tour, step, stepIndex, focus) {
       const nextButton = stepIndex + 1 < tour.steps.length
         ? `<button type="button" data-tour-next="true">Next</button>`
         : `<button type="button" data-tour-end="true">Done</button>`;
-      detailEl.innerHTML = `<h2>${escapeHtml(tour.title || tour.tourId)}</h2><p>${escapeHtml(step.caption || step.sceneId)}</p><p>${escapeHtml(compactJson(step.highlightRefs || {}))}</p><div class="chips">${nextButton}</div>`;
+      const resumeButton = activeTourState?.cinematic?.paused
+        ? `<button type="button" data-tour-resume="true">Resume</button>`
+        : "";
+      const packetCaption = packetTourCaption(tour, step);
+      const badge = stepIndex + 1 >= tour.steps.length
+        ? `<p><span class="ok">${escapeHtml(packetCaption.conclusionBadge)}</span></p>`
+        : "";
+      detailEl.innerHTML = `<h2>${escapeHtml(packetCaption.title)}</h2><p>${escapeHtml(packetCaption.caption)}</p>${badge}<p>${escapeHtml(compactJson(step.highlightRefs || {}))}</p><p>${escapeHtml(focus.boundary)}</p><div class="chips">${resumeButton}${nextButton}</div>`;
       detailEl.hidden = false;
-      status(`Tour ${stepIndex + 1}/${tour.steps.length}: ${step.sceneId}`);
     }
 
     function handleTourStepAction(event) {
       const next = event.target.closest("[data-tour-next]");
       const end = event.target.closest("[data-tour-end]");
+      const resume = event.target.closest("[data-tour-resume]");
+      if (resume && activeTourState?.tour) {
+        event.preventDefault();
+        resumeFindingsTour();
+        return;
+      }
       if (next && activeTourState) {
         event.preventDefault();
+        activeTourState.cinematic = { ...(activeTourState.cinematic || {}), paused: false };
         activeTourState.stepIndex += 1;
         showTourStep();
         return;
       }
       if (end) {
         event.preventDefault();
-        activeTourState = null;
+        finishFindingsTour();
         detailEl.hidden = true;
         status("Tour complete");
       }
+    }
+
+    function packetTourCaption(tour, step) {
+      const insight = insightForTour(tour);
+      const title = tour.title || insight?.title || tour.tourId || "Guided tour";
+      const caption = step.caption || insight?.oneLine || step.sceneId || "";
+      return {
+        title,
+        caption,
+        conclusionBadge: insight?.title || tour.title || "Packet conclusion",
+        oneLine: insight?.oneLine || "",
+        packetDerived: true
+      };
+    }
+
+    function insightForTour(tour) {
+      const refs = new Set(Array.isArray(tour?.insightRefs) ? tour.insightRefs : []);
+      const queue = [
+        ...flattenReportItems(currentData?.insightQueue),
+        ...flattenReportItems(currentData?.reportPane?.insightQueue)
+      ];
+      return queue.find((item) => refs.has(item.id)) || null;
+    }
+
+    function clearFindingsTourPulse() {
+      if (!activeTourPulseGroup) return;
+      if (activeTourPulseGroup.parent) activeTourPulseGroup.parent.remove(activeTourPulseGroup);
+      disposeObject(activeTourPulseGroup);
+      activeTourPulseGroup = null;
+    }
+
+    function finishFindingsTour() {
+      clearFindingsTourPulse();
+      activeTourState = {
+        ...(activeTourState || {}),
+        tour: null,
+        stepIndex: 0,
+        cinematic: null
+      };
+      window.__archsigViewerFindingsTour = {
+        active: false,
+        packetHighlightRefsUsed: true,
+        captionPacketOnly: true
+      };
+    }
+
+    function pauseFindingsTour(reason) {
+      if (!activeTourState?.tour) return;
+      activeTourState.cinematic = {
+        ...(activeTourState.cinematic || {}),
+        paused: true,
+        pauseReason: reason
+      };
+      cameraTween = null;
+      const step = activeTourState.tour.steps?.[activeTourState.stepIndex];
+      if (step) renderTourStepDetail(activeTourState.tour, step, activeTourState.stepIndex, currentFindingsTourFocus());
+      window.__archsigViewerFindingsTour = {
+        ...(window.__archsigViewerFindingsTour || {}),
+        paused: true,
+        pauseReason: reason
+      };
+      status("Tour paused");
+    }
+
+    function resumeFindingsTour() {
+      if (!activeTourState?.tour) return;
+      activeTourState.cinematic = {
+        ...(activeTourState.cinematic || {}),
+        paused: false
+      };
+      const step = activeTourState.tour.steps?.[activeTourState.stepIndex];
+      if (!step) return;
+      const focus = applyFindingsTourStepFocus(activeTourState.tour, step, activeTourState.stepIndex);
+      renderTourStepDetail(activeTourState.tour, step, activeTourState.stepIndex, focus);
+      status("Tour resumed");
+    }
+
+    function currentFindingsTourFocus() {
+      return {
+        boundary: "caption and highlightRefs are packet-derived; tour camera adds no structural verdict",
+        targetCount: window.__archsigViewerFindingsTour?.targetCount || 0
+      };
+    }
+
+    function applyFindingsTourStepFocus(tour, step, stepIndex) {
+      clearFindingsTourPulse();
+      const focus = findTourHighlightFocus(step.highlightRefs || {});
+      const target = focus.centroid || controls.target.clone();
+      const cameraOffset = new THREE.Vector3(76, 54, 88);
+      startCameraTween(target.clone().add(cameraOffset), target);
+      activeTourPulseGroup = new THREE.Group();
+      activeTourPulseGroup.userData = {
+        kind: "findingsTourPulseGroup",
+        tourId: tour.tourId,
+        stepIndex,
+        packetHighlightRefsUsed: true,
+        captionPacketOnly: true,
+        contextNotHidden: true,
+        boundary: "camera tween and pulse are viewer navigation only; no new structural verdict"
+      };
+      focus.points.slice(0, 18).forEach((point, index) => {
+        const marker = new THREE.Mesh(
+          new THREE.TorusGeometry(4.2 + index * 0.04, 0.18, 8, 42),
+          new THREE.MeshStandardMaterial({ color: 0xf2c15f, emissive: 0x3f2d08, transparent: true, opacity: 0.78, roughness: 0.42 })
+        );
+        marker.position.copy(point);
+        marker.rotation.x = Math.PI / 2;
+        marker.userData = {
+          kind: "findingsTourHighlightPulse",
+          tourId: tour.tourId,
+          stepIndex,
+          packetHighlightRefsUsed: true,
+          noStructuralVerdict: true,
+          baseScale: 1
+        };
+        registerReadingBloom(marker, "findings_tour_highlight", 0.44);
+        activeTourPulseGroup.add(marker);
+      });
+      const isFinal = stepIndex + 1 >= (tour.steps || []).length;
+      if (isFinal) {
+        const caption = packetTourCaption(tour, step);
+        const badge = createTextSprite(caption.conclusionBadge, "#ffffff", "rgba(63,45,8,0.82)");
+        badge.position.copy(target).add(new THREE.Vector3(0, 18, 0));
+        badge.userData = {
+          kind: "findingsTourConclusionBadge",
+          positiveConclusionBadge: true,
+          packetDerivedCaption: true,
+          noStructuralVerdict: true,
+          baseScale: 1
+        };
+        registerReadingBloom(badge, "findings_tour_positive_conclusion_badge", 0.5);
+        activeTourPulseGroup.add(badge);
+      }
+      edgeGroup.add(activeTourPulseGroup);
+      const result = {
+        active: true,
+        tourId: tour.tourId,
+        stepIndex,
+        sceneId: step.sceneId,
+        targetCount: focus.points.length,
+        cameraTweenToHighlightRefs: true,
+        packetHighlightRefsUsed: true,
+        captionPacketOnly: true,
+        positiveConclusionBadge: isFinal,
+        contextNotHidden: true,
+        paused: false,
+        boundary: "caption and highlightRefs are packet-derived; tour camera adds no structural verdict"
+      };
+      window.__archsigViewerFindingsTour = result;
+      return result;
+    }
+
+    function findTourHighlightFocus(highlightRefs) {
+      const refs = new Set(Object.values(highlightRefs || {}).flatMap((value) => Array.isArray(value) ? value.map(String) : []));
+      const points = [];
+      for (const ref of refs) {
+        const atomPoint = activeAtomLayoutPositions.get(ref);
+        if (atomPoint) points.push(atomPoint.clone());
+      }
+      [edgeGroup, atomGroup, moleculeGroup].forEach((group) => {
+        group.traverse((object) => {
+          if (!object.userData || object.userData.degreeScrubLayerGroup || object.userData.kind === "findingsTourPulseGroup") return;
+          const objectRefs = collectTourRefs(object.userData);
+          if (!objectRefs.some((ref) => refs.has(ref))) return;
+          const point = objectWorldCenter(object);
+          if (point) {
+            points.push(point);
+            object.userData.findingsTourHighlighted = true;
+            object.userData.packetHighlightRefsUsed = true;
+          }
+        });
+      });
+      const unique = dedupeVectorPoints(points);
+      return {
+        points: unique,
+        centroid: unique.length ? centroid(unique) : null
+      };
+    }
+
+    function collectTourRefs(value, output = new Set(), depth = 0) {
+      if (depth > 4 || value == null) return [...output];
+      if (typeof value === "string") {
+        if (value.includes(":")) output.add(value);
+        return [...output];
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item) => collectTourRefs(item, output, depth + 1));
+        return [...output];
+      }
+      if (typeof value === "object") {
+        Object.entries(value).forEach(([key, item]) => {
+          if (/Refs?$|Id$|Ref$/.test(key) || typeof item === "object") collectTourRefs(item, output, depth + 1);
+        });
+      }
+      return [...output];
+    }
+
+    function objectWorldCenter(object) {
+      const box = new THREE.Box3().setFromObject(object);
+      if (!box.isEmpty()) return box.getCenter(new THREE.Vector3());
+      const point = new THREE.Vector3();
+      object.getWorldPosition(point);
+      return Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z) ? point : null;
+    }
+
+    function dedupeVectorPoints(points) {
+      const seen = new Set();
+      return points.filter((point) => {
+        const key = `${point.x.toFixed(1)}:${point.y.toFixed(1)}:${point.z.toFixed(1)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     async function copyText(text) {
