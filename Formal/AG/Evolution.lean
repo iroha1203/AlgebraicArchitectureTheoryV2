@@ -9,3 +9,4 @@ import Formal.AG.Evolution.TemporalObstruction
 import Formal.AG.Evolution.ReplayDescent
 import Formal.AG.Evolution.Dissipation
 import Formal.AG.Evolution.FiniteDissipation
+import Formal.AG.Evolution.Lyapunov
