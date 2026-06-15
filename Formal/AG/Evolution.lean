@@ -5,3 +5,4 @@ import Formal.AG.Evolution.TemporalProductSite
 import Formal.AG.Evolution.TemporalCoefficient
 import Formal.AG.Evolution.StateTransition
 import Formal.AG.Evolution.TemporalLaw
+import Formal.AG.Evolution.TemporalObstruction
