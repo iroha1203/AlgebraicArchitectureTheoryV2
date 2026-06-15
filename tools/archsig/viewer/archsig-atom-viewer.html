@@ -177,6 +177,11 @@
       margin-left: auto;
     }
 
+    .toolbar-group.degree-scrub {
+      flex-wrap: nowrap;
+      min-width: min(270px, calc(100vw - 24px));
+    }
+
     .toolbar-group.filters {
       flex-basis: auto;
       width: max-content;
@@ -324,6 +329,24 @@
 
     .toggle input {
       accent-color: var(--accent);
+    }
+
+    .degree-scrub-input {
+      width: 118px;
+      accent-color: var(--accent-2);
+    }
+
+    .degree-scrub-value {
+      display: inline-grid;
+      place-items: center;
+      min-width: 34px;
+      min-height: 24px;
+      border: 1px solid rgba(242, 193, 95, 0.28);
+      border-radius: 6px;
+      background: rgba(14, 20, 30, 0.78);
+      color: #f3f7fb;
+      font-size: 11px;
+      font-weight: 800;
     }
 
     .search {
@@ -825,6 +848,11 @@
           <label class="toggle"><input id="toggle-groups" type="checkbox" checked>Molecules</label>
           <label class="toggle"><input id="toggle-edges" type="checkbox" checked>Edges</label>
         </div>
+        <div class="toolbar-group degree-scrub">
+          <span class="toolbar-label">Degree</span>
+          <input id="degree-scrub" class="degree-scrub-input" type="range" min="0" max="2" step="0.01" value="1" title="Cohomology degree scrub">
+          <span id="degree-scrub-value" class="degree-scrub-value">H1</span>
+        </div>
         <div class="toolbar-group filters">
           <span class="toolbar-label">View</span>
           <select id="view-mode" title="View mode">
@@ -939,6 +967,8 @@
     const legendEl = document.getElementById("legend");
     const axisHudEl = document.getElementById("axis-hud");
     const viewModeEl = document.getElementById("view-mode");
+    const degreeScrubEl = document.getElementById("degree-scrub");
+    const degreeScrubValueEl = document.getElementById("degree-scrub-value");
     const familyFilterEl = document.getElementById("family-filter");
     const statusFilterEl = document.getElementById("status-filter");
     const moleculeFilterEl = document.getElementById("molecule-filter");
@@ -1017,6 +1047,7 @@
     let previousAtomLayoutPositions = new Map();
     let activeAtomLayoutPositions = new Map();
     let atomLayoutMorphState = null;
+    let activeCohomologyLayerGroups = {};
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1375,7 +1406,8 @@
         const keep = visible && (!collides || sprite.userData?.alwaysVisibleLabel);
         const distance = camera.position.distanceTo(sprite.position);
         const fade = sprite.userData?.alwaysVisibleLabel ? 1 : THREE.MathUtils.clamp(1.18 - distance / 520, 0.18, 0.92);
-        sprite.material.opacity = keep ? fade : 0;
+        const scrubFactor = Number.isFinite(Number(sprite.userData?.degreeScrubOpacityFactor)) ? Number(sprite.userData.degreeScrubOpacityFactor) : 1;
+        sprite.material.opacity = keep ? fade * scrubFactor : 0;
         sprite.material.transparent = true;
         sprite.visible = keep;
         if (keep) occupied.push(box);
@@ -1543,6 +1575,8 @@
       const activeScene = sceneForMode(viewModeEl.value);
       const edgeChildrenBeforeSceneLayers = edgeGroup.children.length;
       renderSceneLayers(activeScene, positions);
+      organizeCohomologyLayerGroups();
+      applyCohomologyDegreeScrub();
       applySceneShadowFlags();
       window.__archsigViewerDebug = {
         ...(window.__archsigViewerDebug || {}),
@@ -1666,6 +1700,108 @@
         cohomologyLayerY: layer.y,
         cohomologyLayerLabel: layer.label,
         cohomologyLayerSource: source
+      };
+    }
+
+    function cohomologyDegreeIndex(degree) {
+      return { h0: 0, h1: 1, h2: 2 }[degree] ?? 0;
+    }
+
+    function cohomologyDegreeLabel(value) {
+      const nearest = Math.round(THREE.MathUtils.clamp(Number(value || 0), 0, 2));
+      return ["H0", "H1", "H2"][nearest] || "H0";
+    }
+
+    function updateDegreeScrubControl() {
+      degreeScrubValueEl.textContent = cohomologyDegreeLabel(degreeScrubEl.value);
+    }
+
+    function smoothstep(edge0, edge1, value) {
+      const t = THREE.MathUtils.clamp((value - edge0) / Math.max(edge1 - edge0, 0.0001), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    function organizeCohomologyLayerGroups() {
+      activeCohomologyLayerGroups = {};
+      const layerGroupNames = { h0: "layerH0", h1: "layerH1", h2: "layerH2" };
+      ["h0", "h1", "h2"].forEach((degree) => {
+        const layer = cohomologyDegreeLayer(degree);
+        const group = new THREE.Group();
+        group.name = layerGroupNames[degree];
+        group.userData = {
+          kind: `layer${degree.toUpperCase()}`,
+          cohomologyDegree: degree,
+          cohomologyLayerY: layer.y,
+          cohomologyLayerLabel: layer.label,
+          degreeScrubLayerGroup: true,
+          h2CoherenceVisualized: degree === "h2" ? false : undefined,
+          noCohomologyVerdict: degree === "h2" ? true : undefined,
+          silenceBoundary: degree === "h2" ? "H^2 coherence remains grey silence unless M5 verdict is projected" : undefined
+        };
+        activeCohomologyLayerGroups[degree] = group;
+      });
+      edgeGroup.children.slice().forEach((child) => {
+        const degree = child.userData?.cohomologyDegree;
+        const group = activeCohomologyLayerGroups[degree];
+        if (!group || child.userData?.degreeScrubLayerGroup) return;
+        group.add(child);
+      });
+      Object.values(activeCohomologyLayerGroups).forEach((group) => {
+        if (group.children.length) edgeGroup.add(group);
+      });
+    }
+
+    function materialOpacityList(material) {
+      return Array.isArray(material) ? material.filter(Boolean) : [material].filter(Boolean);
+    }
+
+    function applyOpacityFactor(object, factor) {
+      object.userData.degreeScrubOpacityFactor = Number(factor.toFixed(3));
+      materialOpacityList(object.material).forEach((material) => {
+        if (!Number.isFinite(Number(material.userData?.degreeScrubBaseOpacity))) {
+          material.userData = { ...(material.userData || {}), degreeScrubBaseOpacity: Number(material.opacity ?? 1) };
+        }
+        material.transparent = true;
+        material.opacity = Number(material.userData.degreeScrubBaseOpacity) * factor;
+      });
+    }
+
+    function applyCohomologyDegreeScrub() {
+      const scrubValue = THREE.MathUtils.clamp(Number(degreeScrubEl.value || 1), 0, 2);
+      const counts = { h0: 0, h1: 0, h2: 0 };
+      Object.entries(activeCohomologyLayerGroups).forEach(([degree, group]) => {
+        const distance = Math.min(Math.abs(scrubValue - cohomologyDegreeIndex(degree)), 1);
+        const focus = smoothstep(0, 1, 1 - distance);
+        const factor = 0.25 + 0.75 * focus;
+        group.userData.degreeScrubFocus = Number(focus.toFixed(3));
+        group.userData.degreeScrubOpacityFactor = Number(factor.toFixed(3));
+        group.traverse((object) => {
+          if (object === group) return;
+          counts[degree] += object.userData?.cohomologyDegree === degree ? 1 : 0;
+          applyOpacityFactor(object, factor);
+          if (degree === "h2") {
+            object.userData = {
+              ...(object.userData || {}),
+              h2CoherenceVisualized: object.userData?.h2CoherenceVisualized === true ? true : false,
+              noCohomologyVerdict: true,
+              silenceBoundary: object.userData?.silenceBoundary || "H^2 coherence remains grey silence unless M5 verdict is projected"
+            };
+          }
+        });
+      });
+      updateDegreeScrubControl();
+      window.__archsigViewerDegreeScrub = {
+        value: Number(scrubValue.toFixed(2)),
+        focus: cohomologyDegreeLabel(scrubValue),
+        layerGroups: Object.fromEntries(Object.entries(activeCohomologyLayerGroups).map(([degree, group]) => [degree, {
+          name: group.name,
+          objectCount: counts[degree],
+          opacityFactor: group.userData.degreeScrubOpacityFactor,
+          h2CoherenceVisualized: degree === "h2" ? false : undefined,
+          noCohomologyVerdict: degree === "h2" ? true : undefined
+        }])),
+        h2GreySilence: true,
+        projectionBoundary: "degree scrub separates H0/H1/H2 viewer layers without adding H2 verdict color"
       };
     }
 
@@ -4033,6 +4169,7 @@
           ["d8dee9", "selected cover gluing edge"],
           ["73b7ff", "shared cover face"],
           ["f2c15f", "b1 graph cycle reading, not H1 verdict"],
+          ["8a94a3", "degree scrub H2 remains grey silence"],
           ["f2c15f", "nonzero gluing edge"]
         ]);
         return;
@@ -4052,6 +4189,7 @@
           ["f2c15f", "H1 support ribbon"],
           ["f2c15f", "measured closure marker"],
           ["f2c15f", "restriction traversal; no monodromy verdict"],
+          ["8a94a3", "degree scrub H2 remains grey silence"],
           ["9fb3c8", "edge.value is mismatch parity, not continuous cohomology magnitude"]
         ]);
         return;
@@ -4289,6 +4427,7 @@
 
     Object.values(toggles).forEach((input) => input.addEventListener("change", updateVisibility));
     viewModeEl.addEventListener("change", handleViewModeChange);
+    degreeScrubEl.addEventListener("input", applyCohomologyDegreeScrub);
     [familyFilterEl, statusFilterEl, moleculeFilterEl].forEach((input) => input.addEventListener("change", renderScene));
     const debouncedRenderScene = debounce(renderScene, 90);
     searchEl.addEventListener("input", debouncedRenderScene);
