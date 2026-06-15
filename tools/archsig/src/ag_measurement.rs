@@ -43,6 +43,7 @@ const GLUING_CAGE_RENDER_LIMIT: usize = 80;
 const GLUING_MORPH_RENDER_LIMIT: usize = 50;
 const GLUING_ATOM_GLYPH_RENDER_LIMIT: usize = 2_000;
 const ANALYTIC_OVERLAY_RENDER_LIMIT: usize = 80;
+const PERIOD_STOKES_METER_RENDER_LIMIT: usize = 24;
 const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
     "silence_by_design",
     "out_of_selected_vocabulary",
@@ -3998,6 +3999,7 @@ fn insight_viewer_visual_scenes_v1(
         false,
     );
     let analytic_overlay_refs = analytic_overlay_scene_refs(packet, gluing_geometry);
+    let period_stokes_refs = period_stokes_scene_refs(packet, gluing_geometry);
     let boundary_refs =
         scene_refs_for_kinds(normalized, packet, cards, &["measurement_boundary"], false);
     let source_refs = source_scene_refs(normalized, packet, cards);
@@ -4024,6 +4026,10 @@ fn insight_viewer_visual_scenes_v1(
         .any(|card| string_field(card, "kind") == "architecture_debt_mass");
     let has_analytic_overlay =
         !string_array_at(&analytic_overlay_refs, &["overlayRefs"]).is_empty();
+    let has_period_stokes = gluing_geometry["periodStokes"]["activeMeterCount"]
+        .as_u64()
+        .unwrap_or_default()
+        > 0;
     let scenes = vec![
         scene_v1(
             "overview",
@@ -4231,6 +4237,36 @@ fn insight_viewer_visual_scenes_v1(
                 "Near-flat or low proxy values are not measured_zero lawfulness.",
             ],
         ),
+        with_scene_non_claims(
+            scene_v1(
+                "period-stokes",
+                "period_stokes_meter",
+                "Period Stokes Meter",
+                "Does the supplied finite period audit close under the selected coefficient reading?",
+                (
+                    "period cycle basis",
+                    "form / chain audit pair",
+                    "Stokes residual magnitude",
+                ),
+                "period_stokes_meter",
+                "meter",
+                "periodStokesMeter",
+                "M9 Stokes audit meter; modelRelative finite-period reading",
+                &period_stokes_refs,
+                if has_period_stokes {
+                    "analytic_reading"
+                } else {
+                    "not_applicable"
+                },
+                "ring",
+                "flow_arc",
+                has_period_stokes,
+            ),
+            &[
+                "Period Stokes meter is modelRelative to the supplied finite period model.",
+                "Period arcs and audit residuals are packet projections; the viewer creates no new structural verdict.",
+            ],
+        ),
         boundary_scene_v1(&boundary_refs),
         scene_v1(
             "source-evidence",
@@ -4290,6 +4326,14 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
                 "spectralGapOverlay",
                 "curvatureHotspotOverlay",
                 "singularityConcentrationOverlay"
+            ]
+        }),
+        "period-stokes" => json!({
+            "periodStokesRef": "gluingGeometry.periodStokes",
+            "projectionObjectKinds": [
+                "periodStokesCycleArc",
+                "periodStokesAuditMeter",
+                "periodStokesResidualFlux"
             ]
         }),
         _ => json!({
@@ -4370,6 +4414,41 @@ fn analytic_overlay_scene_refs(
         "overlayRefs": overlay_refs,
         "analyticReadingRefs": analytic_reading_refs,
         "invariantRefs": invariant_refs,
+        "coverRefs": [packet.profile.cover_ref.clone()],
+        "sourceRefs": []
+    })
+}
+
+fn period_stokes_scene_refs(packet: &ArchSigMeasurementPacketV1, gluing_geometry: &Value) -> Value {
+    let meters = gluing_geometry["periodStokes"]["meters"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    let meter_refs = meters
+        .iter()
+        .filter_map(|meter| meter["meterId"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    let invariant_refs = meters
+        .iter()
+        .filter_map(|meter| meter["sourceInvariantRef"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let structural_verdict_refs = meters
+        .iter()
+        .filter_map(|meter| meter["structuralVerdictRef"].as_str())
+        .map(ToOwned::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    json!({
+        "meterRefs": meter_refs,
+        "invariantRefs": invariant_refs,
+        "structuralVerdictRefs": structural_verdict_refs,
         "coverRefs": [packet.profile.cover_ref.clone()],
         "sourceRefs": []
     })
@@ -4476,6 +4555,7 @@ fn gluing_geometry_projection_v1(
     let locus_field = locus_field_projection(packet);
     let atom_glyphs = atom_glyph_projection(normalized);
     let analytic_overlay_bundle = analytic_overlay_bundle_projection(packet);
+    let period_stokes = period_stokes_projection(packet);
     let triangle_count = cover_nerve_projection["faces"]
         .as_array()
         .map(Vec::len)
@@ -4496,6 +4576,8 @@ fn gluing_geometry_projection_v1(
     let analytic_overlay_count = analytic_overlay_bundle["rawOverlayCount"]
         .as_u64()
         .unwrap_or_default() as usize;
+    let period_stokes_meter_count =
+        period_stokes["rawMeterCount"].as_u64().unwrap_or_default() as usize;
     let cocycle_support_edge_count = nonzero_edges.len();
     let cocycle_support_edges = nonzero_edges
         .iter()
@@ -4540,6 +4622,7 @@ fn gluing_geometry_projection_v1(
         "repairMorphs": repair_morphs,
         "atomGlyphs": atom_glyphs,
         "analyticOverlayBundle": analytic_overlay_bundle,
+        "periodStokes": period_stokes,
         "visualEncodingLegend": visual_encoding_legend_v1(),
         "renderLimits": {
             "nerveTriangles": GLUING_TRIANGLE_RENDER_LIMIT,
@@ -4549,7 +4632,8 @@ fn gluing_geometry_projection_v1(
             "forbiddenCages": GLUING_CAGE_RENDER_LIMIT,
             "repairMorphs": GLUING_MORPH_RENDER_LIMIT,
             "atomGlyphs": GLUING_ATOM_GLYPH_RENDER_LIMIT,
-            "analyticOverlays": ANALYTIC_OVERLAY_RENDER_LIMIT
+            "analyticOverlays": ANALYTIC_OVERLAY_RENDER_LIMIT,
+            "periodStokesMeters": PERIOD_STOKES_METER_RENDER_LIMIT
         },
         "omittedGeometryCounts": {
             "nerveTriangles": triangle_count.saturating_sub(GLUING_TRIANGLE_RENDER_LIMIT),
@@ -4560,7 +4644,8 @@ fn gluing_geometry_projection_v1(
             "forbiddenCages": forbidden_cages.len().saturating_sub(GLUING_CAGE_RENDER_LIMIT),
             "repairMorphs": repair_morphs.len().saturating_sub(GLUING_MORPH_RENDER_LIMIT),
             "atomGlyphs": atom_glyph_total_count.saturating_sub(GLUING_ATOM_GLYPH_RENDER_LIMIT),
-            "analyticOverlays": analytic_overlay_count.saturating_sub(ANALYTIC_OVERLAY_RENDER_LIMIT)
+            "analyticOverlays": analytic_overlay_count.saturating_sub(ANALYTIC_OVERLAY_RENDER_LIMIT),
+            "periodStokesMeters": period_stokes_meter_count.saturating_sub(PERIOD_STOKES_METER_RENDER_LIMIT)
         },
         "nonClaims": [
             "No H2 coherence failure is visualized by this projection.",
@@ -4876,6 +4961,96 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
             "Spectral gap overlays are proxy eigenvalues and are not structural lawfulness.",
             "Curvature hotspot overlays are theorem-candidate projections.",
             "Singularity concentration has deformationRegime=not_provided and is not a size or difficulty score."
+        ]
+    })
+}
+
+fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
+    let structural_verdict = packet
+        .structural_verdict
+        .iter()
+        .find(|row| row.evaluator == "ag.period-stokes-audit@1");
+    let structural_verdict_ref = structural_verdict.map(structural_verdict_ref);
+    let structural_verdict_value = structural_verdict
+        .map(|row| row.verdict.clone())
+        .unwrap_or_else(|| "not_computed".to_string());
+    let meters = packet
+        .computed_invariants
+        .iter()
+        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit@1")
+        .take(PERIOD_STOKES_METER_RENDER_LIMIT)
+        .enumerate()
+        .map(|(index, invariant)| {
+            let cycle_basis = string_array_at(invariant, &["cycleBasis"]);
+            let forms = string_array_at(invariant, &["forms"]);
+            let pairs = invariant["stokesAudit"]["pairs"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default();
+            let audit_status = invariant["stokesAudit"]["status"]
+                .as_str()
+                .unwrap_or("unknown");
+            let has_model = !cycle_basis.is_empty() && !pairs.is_empty();
+            let meter_status = if audit_status == "checked" || audit_status == "residual_nonzero" {
+                "structural_audit_projected"
+            } else if audit_status == "unknown" && !cycle_basis.is_empty() {
+                "analytic_only"
+            } else if !has_model {
+                "silent"
+            } else {
+                "analytic_only"
+            };
+            json!({
+                "meterId": format!(
+                    "period-stokes-meter:{}:{index}",
+                    stable_ref_segment(&string_field(invariant, "invariantId"))
+                ),
+                "sourceInvariantRef": invariant["invariantId"],
+                "sourceEvaluator": "ag.period-stokes-audit@1",
+                "structuralVerdictRef": structural_verdict_ref.clone(),
+                "structuralVerdict": structural_verdict_value.clone(),
+                "meterStatus": meter_status,
+                "auditStatus": audit_status,
+                "colorRole": "analytic_reading",
+                "modelRelative": true,
+                "selectedCoverRef": invariant["selectedCoverRef"],
+                "coefficient": invariant["coefficient"],
+                "forms": forms,
+                "cycleBasis": cycle_basis,
+                "periodPairingMatrix": invariant["periodPairingMatrix"],
+                "stokesAudit": invariant["stokesAudit"],
+                "pairCount": pairs.len(),
+                "maxAbsoluteResidual": invariant["stokesAudit"]["maxAbsoluteResidual"],
+                "nonzeroPairCount": invariant["stokesAudit"]["nonzeroPairCount"],
+                "nonClaim": "Stokes audit meter is modelRelative to the supplied finite period model; it visualizes packet audit residuals and creates no new structural verdict.",
+                "projectionBoundary": "periodStokes projection carries M9 packet values only; analytic period arcs are not absolute periods and not lawfulness verdicts"
+            })
+        })
+        .collect::<Vec<_>>();
+    let active_meter_count = meters
+        .iter()
+        .filter(|meter| meter["meterStatus"] == "structural_audit_projected")
+        .count();
+    let raw_meter_count = packet
+        .computed_invariants
+        .iter()
+        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit@1")
+        .count();
+    json!({
+        "schemaVersion": "archsig-period-stokes-meter-v1",
+        "sourceEvaluator": "ag.period-stokes-audit@1",
+        "sourceAnalyticReadingKind": "strict-period-pairing@1",
+        "colorRole": "analytic_reading",
+        "modelRelative": true,
+        "rawMeterCount": raw_meter_count,
+        "activeMeterCount": active_meter_count,
+        "meterCount": meters.len(),
+        "meters": meters,
+        "projectionBoundary": "This projection renders M9 Stokes audit values in the viewer; it does not create or modify structural verdict rows.",
+        "nonClaims": [
+            "Period arcs are modelRelative to the supplied finite period model.",
+            "The meter reads packet stokesAudit pairs; it is not an absolute period invariant.",
+            "Unknown or model-missing audits remain analytic-only or silent, never green structural closure."
         ]
     })
 }
@@ -10489,6 +10664,7 @@ pub fn build_measurement_viewer_data_v1(
             "repairMorphs": insight_report["gluingGeometry"]["repairMorphs"],
             "atomGlyphs": insight_report["gluingGeometry"]["atomGlyphs"],
             "analyticOverlayBundle": insight_report["gluingGeometry"]["analyticOverlayBundle"],
+            "periodStokes": insight_report["gluingGeometry"]["periodStokes"],
             "periodPairingOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["periodPairingOverlays"],
             "transferCostOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["transferCostOverlays"],
             "spectralGapOverlays": insight_report["gluingGeometry"]["analyticOverlayBundle"]["spectralGapOverlays"],

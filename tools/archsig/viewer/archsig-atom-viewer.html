@@ -863,6 +863,7 @@
             <option value="obstructions">AG Forbidden support cages</option>
             <option value="spectrum">AG Spectrum landscape</option>
             <option value="analyticOverlay">AG Analytic overlay</option>
+            <option value="periodStokes">AG Period Stokes meter</option>
             <option value="flatness">AG Flatness surface</option>
             <option value="aatAxes">AG Site / Cover</option>
             <option value="molecules">Molecule map</option>
@@ -1052,6 +1053,7 @@
     let activeAssemblySnapObjects = [];
     let assemblySnapStartedAt = 0;
     let activeBreathingFiberObjects = [];
+    let activePeriodStokesObjects = [];
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1347,6 +1349,7 @@
       updateFindingsTourPulse();
       updateAssemblySnapAnimation();
       updateBreathingFiberAnimation();
+      updatePeriodStokesMeterAnimation();
       renderFrame();
     }
 
@@ -1564,6 +1567,7 @@
       activeTourState = { ...(activeTourState || {}), frames: [] };
       activeAssemblySnapObjects = [];
       activeBreathingFiberObjects = [];
+      activePeriodStokesObjects = [];
       assemblySnapStartedAt = performance.now();
 
       const positions = new Map();
@@ -2157,6 +2161,9 @@
       }
       if (scene.sceneId === "analytic-overlay") {
         renderAnalyticOverlays(scene, geometry.analyticOverlayBundle || {}, positions, encoding, geometry.renderLimits || {});
+      }
+      if (scene.sceneId === "period-stokes") {
+        renderPeriodMeter(scene, geometry.periodStokes || {}, positions, encoding, geometry.renderLimits || {});
       }
       if (scene.sceneId === "obstruction") {
         renderForbiddenCages(scene, geometry.forbiddenCages || [], positions, encoding, geometry.renderLimits || {});
@@ -3318,6 +3325,213 @@
       });
       addLineSegments(vertices, color, 0.38, "analyticOverlayLane", { lineRole: "contour", colorRole: "analytic_reading" });
       window.__archsigViewerLawfulLociIntersection = lawfulLociStats;
+    }
+
+    function renderPeriodMeter(scene, periodStokes, positions, encoding, limits = {}) {
+      const meters = (Array.isArray(periodStokes.meters) ? periodStokes.meters : [])
+        .slice(0, limits.periodStokesMeters || 24);
+      const renderable = meters.filter((meter) => {
+        const pairs = Array.isArray(meter.stokesAudit?.pairs) ? meter.stokesAudit.pairs : [];
+        return Array.isArray(meter.cycleBasis) && meter.cycleBasis.length
+          && (pairs.length || meter.meterStatus === "analytic_only");
+      });
+      const stats = {
+        status: renderable.length ? "rendered" : "silent",
+        meterCount: renderable.length,
+        arcCount: 0,
+        residualFluxCount: 0,
+        checkedMeterCount: 0,
+        analyticOnlyCount: 0,
+        modelRelative: true,
+        sourceEvaluator: "ag.period-stokes-audit@1",
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "periodStokes viewer meter projects packet M9 values only; no new structural verdict"
+      };
+      renderable.forEach((meter, index) => {
+        const status = String(meter.stokesAudit?.status || meter.auditStatus || "unknown");
+        const activeStructural = meter.meterStatus === "structural_audit_projected";
+        if (activeStructural) stats.checkedMeterCount += 1;
+        if (!activeStructural) stats.analyticOnlyCount += 1;
+        const maxResidual = periodStokesResidualMagnitude(meter);
+        const center = sceneAxisPosition(scene, meter.meterId || `period-stokes:${index}`, index, Math.max(renderable.length, 1), groupPosition(index, Math.max(renderable.length, 1), 64), {
+          xValue: index / Math.max(renderable.length - 1, 1),
+          yValue: Math.min((meter.stokesAudit?.pairs || []).length, 8),
+          zValue: Math.min(maxResidual, 8)
+        });
+        center.y += 18;
+        const radius = 18 + Math.min((meter.cycleBasis || []).length, 5) * 3.2;
+        const ring = createPeriodStokesCycleArc(center, radius, meter, status, activeStructural);
+        edgeGroup.add(ring);
+        stats.arcCount += 1;
+        const pulse = createPeriodStokesMovingArc(center, radius, meter, index);
+        edgeGroup.add(pulse);
+        activePeriodStokesObjects.push(pulse);
+        const audit = createPeriodStokesAuditMeter(center, radius, meter, status, activeStructural);
+        edgeGroup.add(audit);
+        const fluxes = renderPeriodStokesResidualFluxes(center, radius, meter, status, activeStructural);
+        fluxes.forEach((flux) => edgeGroup.add(flux));
+        stats.residualFluxCount += fluxes.length;
+        const labelText = activeStructural
+          ? status === "checked"
+            ? "Stokes audit checked; max residual 0"
+            : "Stokes audit residual flux measured"
+          : "period audit analytic-only; no structural closure";
+        const label = createTextSprite(labelText, "#e8f3ff", "rgba(14,35,58,0.74)");
+        label.position.copy(center).add(new THREE.Vector3(0, radius + 11, 0));
+        label.userData = {
+          kind: "periodStokesModelRelativeLabel",
+          item: meter,
+          modelRelative: true,
+          noStructuralVerdictCreatedByViewer: true,
+          nonClaim: "modelRelative finite-period meter; not an absolute period invariant"
+        };
+        edgeGroup.add(label);
+      });
+      window.__archsigViewerPeriodStokesMeter = stats;
+    }
+
+    function createPeriodStokesCycleArc(center, radius, meter, status, activeStructural) {
+      const curve = new THREE.CatmullRomCurve3(periodStokesCirclePoints(center, radius, 64), true, "centripetal", 0.45);
+      const ring = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 128, activeStructural ? 0.58 : 0.34, 8, true),
+        new THREE.MeshStandardMaterial({
+          color: activeStructural ? 0x73b7ff : 0x9aa8b8,
+          emissive: activeStructural ? 0x12324a : 0x101820,
+          transparent: true,
+          opacity: activeStructural ? 0.76 : 0.36,
+          roughness: 0.34,
+          metalness: 0.03
+        })
+      );
+      ring.userData = {
+        kind: "periodStokesCycleArc",
+        item: meter,
+        auditStatus: status,
+        modelRelative: true,
+        analyticReadingOnly: !activeStructural,
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "period arc is modelRelative and not an absolute period invariant"
+      };
+      if (activeStructural) registerReadingBloom(ring, "period_stokes_model_relative_arc", 0.42);
+      return ring;
+    }
+
+    function createPeriodStokesMovingArc(center, radius, meter, index) {
+      const pulse = new THREE.Mesh(
+        new THREE.SphereGeometry(2.8, 18, 12),
+        new THREE.MeshStandardMaterial({
+          color: 0xe8f3ff,
+          emissive: 0x2c5571,
+          transparent: true,
+          opacity: 0.82,
+          roughness: 0.3
+        })
+      );
+      pulse.position.copy(center).add(new THREE.Vector3(radius, 0, 0));
+      pulse.userData = {
+        kind: "periodStokesAccumulationArc",
+        item: meter,
+        center: center.clone(),
+        radius,
+        phaseOffset: index * 0.73,
+        modelRelative: true,
+        drivenBy: "periodPairingMatrix",
+        noStructuralVerdictCreatedByViewer: true
+      };
+      registerReadingBloom(pulse, "period_stokes_accumulation_arc", 0.52);
+      return pulse;
+    }
+
+    function createPeriodStokesAuditMeter(center, radius, meter, status, activeStructural) {
+      const residual = periodStokesResidualMagnitude(meter);
+      const color = activeStructural && status === "checked" ? 0x64d6be
+        : activeStructural && status === "residual_nonzero" ? 0xf2c15f
+          : 0x9aa8b8;
+      const meterMesh = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 0.42, 1.1 + Math.min(residual, 4) * 0.24, 16, 80),
+        new THREE.MeshStandardMaterial({
+          color,
+          emissive: status === "checked" ? 0x0b3d35 : 0x3f2d08,
+          transparent: true,
+          opacity: activeStructural ? 0.82 : 0.32,
+          roughness: 0.28,
+          metalness: 0.04
+        })
+      );
+      meterMesh.position.copy(center);
+      meterMesh.rotation.x = Math.PI / 2;
+      meterMesh.userData = {
+        kind: "periodStokesAuditMeter",
+        item: meter,
+        auditStatus: status,
+        maxAbsoluteResidual: residual,
+        modelRelative: true,
+        structuralVerdictRef: meter.structuralVerdictRef || null,
+        noStructuralVerdictCreatedByViewer: true,
+        nonClaim: "meter reads supplied stokesAudit pairs; unknown audits are not green structural closure"
+      };
+      if (activeStructural) registerReadingBloom(meterMesh, "period_stokes_audit_meter", 0.46);
+      return meterMesh;
+    }
+
+    function renderPeriodStokesResidualFluxes(center, radius, meter, status, activeStructural) {
+      if (!activeStructural || status !== "residual_nonzero") return [];
+      const pairs = Array.isArray(meter.stokesAudit?.pairs) ? meter.stokesAudit.pairs : [];
+      return pairs.flatMap((pair, index) => {
+        const residual = Math.abs(periodStokesNumber(pair.residual));
+        if (!(residual > 0)) return [];
+        const angle = (index / Math.max(pairs.length, 1)) * Math.PI * 2;
+        const from = center.clone().add(new THREE.Vector3(Math.cos(angle) * radius * 0.58, 0, Math.sin(angle) * radius * 0.58));
+        const to = center.clone().add(new THREE.Vector3(Math.cos(angle) * (radius * 0.92 + residual * 3), 5 + residual, Math.sin(angle) * (radius * 0.92 + residual * 3)));
+        const direction = to.clone().sub(from);
+        const arrow = new THREE.ArrowHelper(direction.normalize(), from, direction.length(), 0xf2c15f, 5.4, 2.8);
+        arrow.userData = {
+          kind: "periodStokesResidualFlux",
+          item: pair,
+          residual,
+          modelRelative: true,
+          measuredNonzeroFromM9: true,
+          noStructuralVerdictCreatedByViewer: true,
+          projectionBoundary: "nonzero residual flux is driven by M9 stokesAudit.status=residual_nonzero"
+        };
+        return [arrow];
+      });
+    }
+
+    function updatePeriodStokesMeterAnimation() {
+      const t = performance.now() * 0.001;
+      activePeriodStokesObjects.forEach((object) => {
+        const center = object.userData?.center;
+        const radius = Number(object.userData?.radius || 0);
+        if (!center || !radius) return;
+        const angle = t * 0.85 + Number(object.userData.phaseOffset || 0);
+        object.position.set(
+          center.x + Math.cos(angle) * radius,
+          center.y + Math.sin(angle * 2) * 1.8,
+          center.z + Math.sin(angle) * radius
+        );
+      });
+    }
+
+    function periodStokesCirclePoints(center, radius, segments) {
+      const points = [];
+      for (let index = 0; index < segments; index += 1) {
+        const angle = (index / segments) * Math.PI * 2;
+        points.push(new THREE.Vector3(center.x + Math.cos(angle) * radius, center.y, center.z + Math.sin(angle) * radius));
+      }
+      return points;
+    }
+
+    function periodStokesResidualMagnitude(meter) {
+      const direct = periodStokesNumber(meter.maxAbsoluteResidual);
+      if (direct > 0) return direct;
+      const pairs = Array.isArray(meter.stokesAudit?.pairs) ? meter.stokesAudit.pairs : [];
+      return pairs.reduce((max, pair) => Math.max(max, Math.abs(periodStokesNumber(pair.residual))), 0);
+    }
+
+    function periodStokesNumber(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : 0;
     }
 
     function overlayGeometry(kind, size) {
@@ -4666,6 +4880,15 @@
         ]);
         return;
       }
+      if (viewModeEl.value === "periodStokes") {
+        renderSimpleLegend([
+          ["64d6be", "checked Stokes audit residual"],
+          ["f2c15f", "nonzero residual flux"],
+          ["73b7ff", "modelRelative period arc"],
+          ["d8dee9", "no new structural verdict"]
+        ]);
+        return;
+      }
       if (usesFamilyLegend(viewModeEl.value)) {
         renderFamilyLegend();
         return;
@@ -4836,7 +5059,8 @@
         curvature: "hodge-debt-field",
         flatness: "hodge-debt-field",
         spectrum: "hodge-debt-field",
-        analyticOverlay: "analytic-overlay"
+        analyticOverlay: "analytic-overlay",
+        periodStokes: "period-stokes"
       };
       const sceneId = mapping[mode] || mode;
       return scenes.find((scene) => scene.sceneId === sceneId || scene.kind === sceneId);
@@ -4853,6 +5077,7 @@
         "law-conflict-tor": "risk",
         "hodge-debt-field": "curvature",
         "analytic-overlay": "analyticOverlay",
+        "period-stokes": "periodStokes",
         "boundary-assumption": "risk",
         "source-evidence": "sources"
       };

@@ -5427,6 +5427,7 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
         ]);
 
         let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+        let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let structural = packet["structuralVerdict"]
             .as_array()
             .expect("structural verdict is array");
@@ -5454,6 +5455,50 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
                     && reading["value"]["readingKind"] == "strict-period-pairing@1"),
             "strict-period-pairing must remain an analytic reading separate from the structural verdict"
         );
+        let period_stokes = &viewer["aatGeometryOverlays"]["periodStokes"];
+        assert_eq!(
+            period_stokes["schemaVersion"],
+            "archsig-period-stokes-meter-v1"
+        );
+        assert_eq!(period_stokes["sourceEvaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(period_stokes["modelRelative"], Value::Bool(true));
+        let meters = period_stokes["meters"]
+            .as_array()
+            .expect("periodStokes meters is array");
+        assert_eq!(
+            meters.len(),
+            1,
+            "period audit fixture must project one meter"
+        );
+        let meter = &meters[0];
+        assert_eq!(meter["sourceEvaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(meter["modelRelative"], Value::Bool(true));
+        assert_eq!(
+            meter["periodPairingMatrix"],
+            serde_json::json!([[2.0, -1.0]])
+        );
+        assert!(
+            meter["nonClaim"]
+                .as_str()
+                .is_some_and(|text| text.contains("creates no new structural verdict")),
+            "period meter must carry no-new-verdict non-claim"
+        );
+        if expected_verdict == "unknown" {
+            assert_eq!(meter["meterStatus"], "analytic_only");
+            assert_eq!(period_stokes["activeMeterCount"], Value::from(0));
+            assert_eq!(
+                viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
+                "not_active_for_packet",
+                "unknown strict coefficient audit must not render green structural closure"
+            );
+        } else {
+            assert_eq!(meter["meterStatus"], "structural_audit_projected");
+            assert_eq!(period_stokes["activeMeterCount"], Value::from(1));
+            assert_eq!(
+                viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
+                "active"
+            );
+        }
     }
 }
 
@@ -9787,10 +9832,14 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(78));
     assert_eq!(
         viewer["viewerVisualScenes"].as_array().map(Vec::len),
-        Some(11)
+        Some(12)
     );
     assert_eq!(
         viewer_scene_by_id(&viewer, "analytic-overlay")["sceneStatus"],
+        "not_active_for_packet"
+    );
+    assert_eq!(
+        viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
         "not_active_for_packet"
     );
     assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(2));
@@ -13758,7 +13807,8 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     );
     assert!(
         html.contains("tagCohomologyLayer(patch, \"h0\", \"nerve.vertices\")")
-            && html.contains("tagCohomologyLayer(tube, \"h1\", \"cocycleRibbon.supportEdges.value\")")
+            && html
+                .contains("tagCohomologyLayer(tube, \"h1\", \"cocycleRibbon.supportEdges.value\")")
             && html.contains("tagCohomologyLayer(mesh, \"h2\", \"nerve.triangles\")")
             && html.contains("h2CoherenceVisualized: false"),
         "viewer V5 must place H0/H1/H2 geometry on degree bands without H2 verdict color"
@@ -13859,7 +13909,9 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     );
     assert!(
         html.contains("Morph trajectories are visual projections, not verdicts.")
-            && html.contains("visual trajectory only; not semantic distance, causality, equivalence, or verdict")
+            && html.contains(
+                "visual trajectory only; not semantic distance, causality, equivalence, or verdict"
+            )
             && html.contains("geometryOverlayMorphCrossfade: true"),
         "viewer V9 must expose morph trajectory and overlay crossfade non-claims"
     );
@@ -13881,7 +13933,9 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
     assert!(
         html.contains("closureGapEncoding?.visible")
             && html.contains("twist magnitude is unmeasured")
-            && html.contains("restriction/cover path exploratory view only; no monodromy or pi1 verdict"),
+            && html.contains(
+                "restriction/cover path exploratory view only; no monodromy or pi1 verdict"
+            ),
         "viewer V10 must gate traversal on measured closureGap visibility and expose the boundary"
     );
     assert!(
@@ -13903,7 +13957,9 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         html.contains("smoothstep(0, 1, 1 - distance)")
             && html.contains("0.25 + 0.75 * focus")
             && html.contains("degree scrub H2 remains grey silence")
-            && html.contains("degree scrub separates H0/H1/H2 viewer layers without adding H2 verdict color"),
+            && html.contains(
+                "degree scrub separates H0/H1/H2 viewer layers without adding H2 verdict color"
+            ),
         "viewer V11 must scrub by focus opacity while preserving H2 grey silence"
     );
     assert!(
@@ -13981,7 +14037,9 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("noTransversalityProof: true")
             && html.contains("discreteQuantityBundle: true")
             && html.contains("noStructuralVerdict: true")
-            && html.contains("Tor_1 residue loci: PlaneGeometry approximation, no transversality proof"),
+            && html.contains(
+                "Tor_1 residue loci: PlaneGeometry approximation, no transversality proof"
+            ),
         "viewer V15 must make PlaneGeometry approximation and non-verdict boundaries explicit"
     );
     assert!(
@@ -13990,6 +14048,22 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("explicitTransferOnly: true")
             && html.contains("repair mass transfer is rendered only when explicit packet transfer data is present"),
         "viewer V15 must gate repair mass transfer rendering on explicit packet data"
+    );
+    assert!(
+        html.contains("value=\"periodStokes\"")
+            && html.contains("renderPeriodMeter")
+            && html.contains("window.__archsigViewerPeriodStokesMeter")
+            && html.contains("periodStokesCycleArc")
+            && html.contains("periodStokesAuditMeter")
+            && html.contains("periodStokesResidualFlux"),
+        "viewer V16 must expose a Period Stokes mode and render audit meter objects"
+    );
+    assert!(
+        html.contains("modelRelative finite-period meter; not an absolute period invariant")
+            && html.contains("periodStokes viewer meter projects packet M9 values only; no new structural verdict")
+            && html.contains("noStructuralVerdictCreatedByViewer: true")
+            && html.contains("unknown audits are not green structural closure"),
+        "viewer V16 must keep period meter model-relative and avoid new structural verdict claims"
     );
     assert!(
         html.contains("type=\"file\"")
