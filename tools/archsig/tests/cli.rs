@@ -13885,6 +13885,28 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V10 must gate traversal on measured closureGap visibility and expose the boundary"
     );
     assert!(
+        html.contains("id=\"degree-scrub\"")
+            && html.contains("degree-scrub-input")
+            && html.contains("applyCohomologyDegreeScrub")
+            && html.contains("window.__archsigViewerDegreeScrub"),
+        "viewer V11 must expose a cohomology degree scrub control and debug state"
+    );
+    assert!(
+        html.contains("organizeCohomologyLayerGroups")
+            && html.contains("layerH0")
+            && html.contains("layerH1")
+            && html.contains("layerH2")
+            && html.contains("degreeScrubLayerGroup: true"),
+        "viewer V11 must organize H0/H1/H2 objects into scrub layer groups"
+    );
+    assert!(
+        html.contains("smoothstep(0, 1, 1 - distance)")
+            && html.contains("0.25 + 0.75 * focus")
+            && html.contains("degree scrub H2 remains grey silence")
+            && html.contains("degree scrub separates H0/H1/H2 viewer layers without adding H2 verdict color"),
+        "viewer V11 must scrub by focus opacity while preserving H2 grey silence"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
