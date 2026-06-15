@@ -3255,6 +3255,19 @@
       const color = sceneColorHex("analytic_reading");
       const vertices = [];
       let previousPoint = null;
+      const lawfulLociStats = {
+        status: "silent",
+        planeCount: 0,
+        residueCount: 0,
+        repairTransferCount: 0,
+        planeGeometryApproximation: true,
+        sourceEvaluator: "ag.law-conflict-tor@1",
+        tor1ResidueDriven: false,
+        discreteQuantityBundle: true,
+        noTransversalityProof: true,
+        noStructuralVerdict: true,
+        projectionBoundary: "PlaneGeometry approximation; discrete Tor_1 residue bundle only; selected lawful loci intersection"
+      };
       overlays.forEach((overlay, index) => {
         const value = overlayMagnitude(overlay);
         const center = sceneAxisPosition(scene, overlay.overlayId || `analytic-overlay:${index}`, index, Math.max(overlays.length, 1), groupPosition(index, Math.max(overlays.length, 1), 58), {
@@ -3290,8 +3303,21 @@
         label.position.copy(mesh.position).add(new THREE.Vector3(0, size + 5, 0));
         label.userData = { kind: "analyticOverlayLabel", item: overlay };
         edgeGroup.add(label);
+        if (isLawConflictTorSingularityOverlay(overlay)) {
+          const lawfulLociObjects = createLawfulLociIntersection(scene, overlay, mesh.position.clone(), index, Math.max(overlays.length, 1));
+          lawfulLociObjects.forEach((object) => edgeGroup.add(object));
+          lawfulLociStats.status = "rendered";
+          lawfulLociStats.planeCount += lawfulLociObjects.filter((object) => object.userData?.kind === "lawfulLociIntersectionPlane").length;
+          lawfulLociStats.residueCount += lawfulLociObjects.filter((object) => object.userData?.kind === "tor1ResidueMass").length;
+          lawfulLociStats.repairTransferCount += lawfulLociObjects.filter((object) => object.userData?.kind === "lawfulLociRepairMassTransfer").length;
+          lawfulLociStats.tor1ResidueDriven = true;
+          lawfulLociStats.lastOverlayId = overlay.overlayId || "";
+          lawfulLociStats.lastSharedSupport = Array.isArray(overlay.sharedSupport) ? overlay.sharedSupport.slice() : [];
+          lawfulLociStats.lastCommonAmbient = overlay.commonAmbient?.ambientRef || "";
+        }
       });
       addLineSegments(vertices, color, 0.38, "analyticOverlayLane", { lineRole: "contour", colorRole: "analytic_reading" });
+      window.__archsigViewerLawfulLociIntersection = lawfulLociStats;
     }
 
     function overlayGeometry(kind, size) {
@@ -3301,6 +3327,150 @@
       if (kind === "curvature_spectrum_hotspot") return new THREE.TorusKnotGeometry(size * 0.52, 0.28, 48, 8);
       if (kind === "singularity_concentration") return new THREE.OctahedronGeometry(size * 0.9);
       return new THREE.SphereGeometry(size, 16, 10);
+    }
+
+    function isLawConflictTorSingularityOverlay(overlay) {
+      return overlay?.overlayKind === "singularity_concentration"
+        && overlay?.sourceEvaluator === "ag.law-conflict-tor@1";
+    }
+
+    function createLawfulLociIntersection(scene, overlay, origin, index, total) {
+      const objects = [];
+      const concentrationCount = Number.isFinite(Number(overlay.concentrationCount))
+        ? Math.max(1, Number(overlay.concentrationCount))
+        : 1;
+      const sharedSupport = Array.isArray(overlay.sharedSupport) ? overlay.sharedSupport.filter(Boolean) : [];
+      const lawPair = Array.isArray(overlay.commonAmbient?.lawPair)
+        ? overlay.commonAmbient.lawPair.filter(Boolean).slice(0, 2)
+        : [];
+      const planeSize = 20 + Math.min(concentrationCount, 6) * 2.8 + Math.min(sharedSupport.length, 4) * 1.8;
+      const colors = [0x64d6be, 0xf2c15f];
+      const base = origin.clone().add(new THREE.Vector3(0, -2, 0));
+      const lociLabels = lawPair.length >= 2 ? lawPair : ["lawful-locus:a", "lawful-locus:b"];
+      lociLabels.slice(0, 2).forEach((lawRef, planeIndex) => {
+        const plane = new THREE.Mesh(
+          new THREE.PlaneGeometry(planeSize * 1.42, planeSize),
+          new THREE.MeshStandardMaterial({
+            color: colors[planeIndex],
+            emissive: planeIndex === 0 ? 0x06362f : 0x362805,
+            transparent: true,
+            opacity: 0.26,
+            side: THREE.DoubleSide,
+            roughness: 0.58,
+            metalness: 0.02,
+            depthWrite: false
+          })
+        );
+        plane.position.copy(base).add(new THREE.Vector3(planeIndex === 0 ? -1.8 : 1.8, 0, 0));
+        plane.rotation.set(planeIndex === 0 ? 0.08 : -0.08, planeIndex === 0 ? -0.58 : 0.58, planeIndex === 0 ? 0.1 : -0.1);
+        plane.userData = {
+          kind: "lawfulLociIntersectionPlane",
+          item: overlay,
+          lawRef,
+          sourceEvaluator: "ag.law-conflict-tor@1",
+          drivenBy: "ag.law-conflict-tor@1/Tor_1 residue",
+          planeGeometryApproximation: true,
+          discreteQuantityBundle: true,
+          noTransversalityProof: true,
+          noStructuralVerdict: true,
+          projectionBoundary: "PlaneGeometry approximation; selected LawConflict_1 common ambient only"
+        };
+        objects.push(plane);
+      });
+      const axis = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.42, 0.42, planeSize * 1.1, 12),
+        new THREE.MeshStandardMaterial({
+          color: 0xe8f3ff,
+          emissive: 0x152d40,
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.34
+        })
+      );
+      axis.position.copy(base);
+      axis.rotation.z = Math.PI / 11;
+      axis.userData = {
+        kind: "lawfulLociIntersectionAxis",
+        item: overlay,
+        sourceEvaluator: "ag.law-conflict-tor@1",
+        tor1ResidueDriven: true,
+        planeGeometryApproximation: true,
+        noTransversalityProof: true,
+        projectionBoundary: "intersection axis is visual PlaneGeometry overlap, not a transversality proof"
+      };
+      objects.push(axis);
+      const residue = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(4.2 + Math.min(concentrationCount, 5) * 0.9, 1),
+        new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          emissive: 0x2a5c72,
+          transparent: true,
+          opacity: 0.86,
+          roughness: 0.28,
+          metalness: 0.04
+        })
+      );
+      residue.position.copy(base).add(new THREE.Vector3(0, 0.6, 0));
+      residue.userData = {
+        kind: "tor1ResidueMass",
+        item: overlay,
+        sourceEvaluator: "ag.law-conflict-tor@1",
+        concentrationCount,
+        sharedSupport,
+        commonAmbient: overlay.commonAmbient || {},
+        tor1ResidueDriven: true,
+        discreteQuantityBundle: true,
+        noStructuralVerdict: true,
+        noTransversalityProof: true,
+        projectionBoundary: "discrete Tor_1 residue bundle; not object size, repair difficulty, or lawful-space volume"
+      };
+      registerReadingBloom(residue, "tor1_residue_mass");
+      objects.push(residue);
+      lawfulLociRepairTransfers(overlay).forEach((transfer, transferIndex) => {
+        const arrow = createLawfulLociRepairMassTransfer(base, transfer, transferIndex, planeSize);
+        if (arrow) objects.push(arrow);
+      });
+      const note = createTextSprite("Tor_1 residue loci: PlaneGeometry approximation, no transversality proof", "#e8f3ff", "rgba(14,35,58,0.74)");
+      note.position.copy(base).add(new THREE.Vector3(0, planeSize * 0.62, 0));
+      note.userData = {
+        kind: "lawfulLociIntersectionNonClaim",
+        item: overlay,
+        planeGeometryApproximation: true,
+        tor1ResidueDriven: true,
+        noTransversalityProof: true,
+        noStructuralVerdict: true
+      };
+      objects.push(note);
+      return objects;
+    }
+
+    function lawfulLociRepairTransfers(overlay) {
+      const candidates = [
+        overlay?.repairMassTransfers,
+        overlay?.repairMassTransfer,
+        overlay?.massTransfers
+      ].filter(Boolean);
+      return candidates.flatMap((candidate) => Array.isArray(candidate) ? candidate : [candidate])
+        .filter((candidate) => candidate && typeof candidate === "object");
+    }
+
+    function createLawfulLociRepairMassTransfer(base, transfer, transferIndex, planeSize) {
+      const from = base.clone().add(new THREE.Vector3(-planeSize * 0.38, -planeSize * 0.18 + transferIndex * 2, 0));
+      const to = base.clone().add(new THREE.Vector3(planeSize * 0.38, -planeSize * 0.08 + transferIndex * 2, 0));
+      const direction = to.clone().sub(from);
+      const length = direction.length();
+      if (!length) return null;
+      const arrow = new THREE.ArrowHelper(direction.normalize(), from, length, 0xf2c15f, 4.8, 2.6);
+      arrow.userData = {
+        kind: "lawfulLociRepairMassTransfer",
+        item: transfer,
+        explicitTransferOnly: true,
+        planeGeometryApproximation: true,
+        noAutomaticRepairClaim: true,
+        noStructuralVerdict: true,
+        projectionBoundary: "repair mass transfer is rendered only when explicit packet transfer data is present"
+      };
+      return arrow;
     }
 
     function overlayMagnitude(overlay) {
@@ -3320,6 +3490,7 @@
     }
 
     function overlayLabel(overlay) {
+      if (isLawConflictTorSingularityOverlay(overlay)) return "Tor_1 residue loci";
       const label = String(overlay.overlayKind || "analytic").replace(/_/g, " ");
       return label.length > 26 ? `${label.slice(0, 25)}...` : label;
     }
