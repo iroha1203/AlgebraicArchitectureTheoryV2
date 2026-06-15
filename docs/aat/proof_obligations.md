@@ -1281,6 +1281,24 @@ Initial implementation Issue: [#2211](https://github.com/iroha1203/AlgebraicArch
 | `VIII.R11 finite examples` pseudo-circle measurement, square-free hitting set, finite computability, refactor invariance, cellular Hodge, support transfer, packet / GAGA separation | `proved selected finite examples` |
 | `GeneralPersistenceStability` / `GeneralZigzagStability` / `GeneralFlatBaseChangeForLawConflict` / `GeneralPerronFrobeniusHotspot` / `GeneralOptimalTransportTheory` / `AnalyticSmallnessImpliesLawfulness` | `future proof obligation` / explicit non-goal for PRD-8 |
 
+## AAT Algebraic-Geometric Part IX Evolution Geometry Lean status
+
+Tracking Issue: [#2280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2280).
+Initial implementation Issue: [#2281](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2281).
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `IX.R0` Formal/AG/Evolution entrypoint | `defined only` / `proved accessor`. `Formal/AG/Evolution.lean` が `Bootstrap.lean`、`TraceCategory.lean`、`Profile.lean` を束ね、`Formal/AG.lean` が `Formal.AG.Evolution` を import する。`UsesAATSite`、`UsesArchitectureScheme`、`UsesCoverRelativeCechComplex`、`UsesRepairComparisonProfile`、`UsesArchitectureStratum`、`UsesAnalyticReadingContext`、`UsesMeasurementProfile` が PRD-2〜8 の concrete Lean 型を参照する。`currentDependencyStatus` と accessor theorem 群は、現時点で先行依存が available であることを保持する。 | R2 以降の temporal product / coefficient / law / obstruction / replay / dissipation / Lyapunov / force / finite examples は未実装。 |
+| `IX.§1 / 定義2.1 / R1` EvolutionProfile / TraceCategory / EvolutionGeometry | `defined only` / `proved accessor`. `TraceCategory` が selected trace object、selected transition、identity、composition、identity law、associativity law を保持する。`TraceCategory.FiniteRegime` が finite object / hom と selected arrow family の identity / composition closure を保持する。`EvolutionProfile` が base geometry、measurement profile、selected trace、selected operations、selected state family、selected temporal laws、selected coefficient profile を束ねる。`EvolutionGeometry` が selected trace から base geometry への functor-like surface を持ち、`map_identity` と `map_composition` が accessor theorem として存在する。 | 未選択 event、外部 runtime、実時間、任意 future path への zero / lawful / safe / forecast は主張しない。Temporal law / obstruction への接続は後続 R2-R5 に残す。 |
+
+第IX部 PRD-9 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `IX.R0` | `defined only` / `proved accessor` |
+| `IX.§1 / 定義2.1 / R1` EvolutionProfile / TraceCategory / EvolutionGeometry | `defined only` / `proved accessor` |
+| `IX.TemporalSite` / `TempCoeff_A` / `StateTransitionPresheaf` / `TemporalLaw` / `TemporalObstruction` / `ReplayDescentData` / `Temporal Descent Criterion` / `Finite Dissipation Stopping` / `AATLyapunovReading` / `ForceIntegrabilityObstructionCandidate` / `Part IX finite examples` | `future proof obligation` / explicit non-goal for this initial PR |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
