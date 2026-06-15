@@ -1051,6 +1051,7 @@
     let activeTourPulseGroup = null;
     let activeAssemblySnapObjects = [];
     let assemblySnapStartedAt = 0;
+    let activeBreathingFiberObjects = [];
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1345,6 +1346,7 @@
       updateHolonomyTraversalAnimation();
       updateFindingsTourPulse();
       updateAssemblySnapAnimation();
+      updateBreathingFiberAnimation();
       renderFrame();
     }
 
@@ -1561,6 +1563,7 @@
       bloomRegisteredCount = 0;
       activeTourState = { ...(activeTourState || {}), frames: [] };
       activeAssemblySnapObjects = [];
+      activeBreathingFiberObjects = [];
       assemblySnapStartedAt = performance.now();
 
       const positions = new Map();
@@ -2263,6 +2266,7 @@
         tagCohomologyLayer(label, "h0", "nerve.vertices");
         edgeGroup.add(label);
       });
+      renderBreathingFiberBundle(vertices, vertexCenters);
       renderNerveEdges(edges, vertexCenters, encoding);
       renderAssemblySnapSeams(edges, vertexCenters, encoding);
       const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
@@ -2469,6 +2473,117 @@
       return Array.isArray(value) && value.length === 3
         ? new THREE.Vector3(Number(value[0]), Number(value[1]), Number(value[2]))
         : null;
+    }
+
+    function renderBreathingFiberBundle(vertices, vertexCenters) {
+      const fieldRows = activeLayoutContext?.aat?.gluingGeometry?.locusField?.fieldRows || [];
+      if (!vertices.length || !fieldRows.length) {
+        window.__archsigViewerBreathingFiberBundle = {
+          status: "gated",
+          reason: "requires nerve.vertices and locusField.fieldRows.signedCurvature in the same viewer packet",
+          noStructuralVerdict: true,
+          coverLaplacianCooccurrenceOnly: true
+        };
+        return;
+      }
+      const rowByCell = new Map(fieldRows.map((row) => [String(row.cellRef || row.cell || ""), row]));
+      let pillarCount = 0;
+      vertices.forEach((vertex) => {
+        const row = breathingFiberRowForVertex(vertex, rowByCell);
+        const center = vertexCenters.get(String(vertex.contextRef || ""));
+        if (!row || !center) return;
+        const curvature = Number(row.signedCurvature || 0);
+        const height = 10 + Math.min(Math.abs(curvature), 3) * 16;
+        const radius = 1.8 + Math.min((vertex.atomRefs || []).length, 10) * 0.12;
+        const material = new THREE.MeshStandardMaterial({
+          color: curvature >= 0 ? 0xf2c15f : 0x73b7ff,
+          emissive: curvature >= 0 ? 0x3f2d08 : 0x0b2f46,
+          transparent: true,
+          opacity: 0.58,
+          roughness: 0.44,
+          metalness: 0.02
+        });
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.72, 1, 18), material);
+        const base = pointOnCohomologyLayer(center, "h0", 3);
+        pillar.position.copy(base).add(new THREE.Vector3(0, height / 2, 0));
+        pillar.scale.y = height;
+        pillar.userData = {
+          kind: "breathingFiberPillar",
+          item: row,
+          contextRef: vertex.contextRef,
+          cellRef: row.cellRef || row.cell,
+          signedCurvature: curvature,
+          signedCurvatureDriven: true,
+          coverLaplacianCooccurrenceOnly: true,
+          analyticReadingOnly: true,
+          noStructuralVerdict: true,
+          baseY: base.y,
+          baseHeight: height,
+          nonClaim: "fiber height is an analytic signedCurvature projection, not a structural verdict"
+        };
+        tagCohomologyLayer(pillar, "h0", "locusField.fieldRows.signedCurvature");
+        if (Math.abs(curvature) > 0.5) registerReadingBloom(pillar, "breathing_fiber_signed_curvature", 0.38);
+        edgeGroup.add(pillar);
+        activeBreathingFiberObjects.push(pillar);
+        pillarCount += 1;
+      });
+      if (!pillarCount) {
+        window.__archsigViewerBreathingFiberBundle = {
+          status: "gated",
+          reason: "locusField.fieldRows did not resolve to nerve vertex contextRefs or atomRefs",
+          noStructuralVerdict: true,
+          coverLaplacianCooccurrenceOnly: true
+        };
+        return;
+      }
+      const label = createTextSprite("cover + laplacian fiber bundle; signedCurvature analytic projection", "#ffffff", "rgba(10,15,24,0.74)");
+      label.position.copy(centroid(activeBreathingFiberObjects.map((object) => object.position))).add(new THREE.Vector3(0, 18, 0));
+      label.userData = {
+        kind: "breathingFiberNonClaim",
+        labelPriorityScore: 86,
+        analyticReadingOnly: true,
+        noStructuralVerdict: true,
+        nonClaim: "requires cover+laplacian cooccurrence; no curvatureStatus or structural verdict is created"
+      };
+      edgeGroup.add(label);
+      window.__archsigViewerBreathingFiberBundle = {
+        status: "active",
+        pillarCount,
+        signedCurvatureDriven: true,
+        coverLaplacianCooccurrenceOnly: true,
+        analyticReadingOnly: true,
+        noStructuralVerdict: true,
+        projectionBoundary: "breathing fiber bundle renders only when nerve vertices and locusField signedCurvature coexist in the viewer packet"
+      };
+    }
+
+    function breathingFiberRowForVertex(vertex, rowByCell) {
+      const direct = rowByCell.get(String(vertex.contextRef || ""));
+      if (direct) return direct;
+      for (const atomRef of vertex.atomRefs || []) {
+        const row = rowByCell.get(String(atomRef || ""));
+        if (row) return row;
+      }
+      const normalizedContext = String(vertex.contextRef || "").replace(/^ctx:/, "cell:");
+      return rowByCell.get(normalizedContext) || null;
+    }
+
+    function updateBreathingFiberAnimation() {
+      if (!activeBreathingFiberObjects.length) return;
+      const phase = (performance.now() % 2200) / 2200;
+      activeBreathingFiberObjects.forEach((object, index) => {
+        const baseHeight = Number(object.userData?.baseHeight || 1);
+        const curvature = Math.abs(Number(object.userData?.signedCurvature || 0));
+        const breath = 1 + Math.sin(phase * Math.PI * 2 + index * 0.5) * Math.min(0.12 + curvature * 0.03, 0.22);
+        const height = baseHeight * breath;
+        object.scale.y = height;
+        object.position.y = Number(object.userData?.baseY || 0) + height / 2;
+        object.userData.breathingPhase = Number(phase.toFixed(3));
+      });
+      window.__archsigViewerBreathingFiberBundle = {
+        ...(window.__archsigViewerBreathingFiberBundle || {}),
+        breathingAnimation: true
+      };
     }
 
     function renderNerveEdges(edges, vertexCenters, encoding) {
@@ -4339,6 +4454,7 @@
           ["73b7ff", "shared cover face"],
           ["f2c15f", "b1 graph cycle reading, not H1 verdict"],
           ["8a94a3", "degree scrub H2 remains grey silence"],
+          ["73b7ff", "breathing fiber only when cover+laplacian coexist"],
           ["f2c15f", "nonzero gluing edge"]
         ]);
         return;

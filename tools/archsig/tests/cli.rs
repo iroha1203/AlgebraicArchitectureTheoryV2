@@ -13949,6 +13949,26 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V13 must preserve graph-cycle and projection boundaries while showing seam vibration"
     );
     assert!(
+        html.contains("renderBreathingFiberBundle")
+            && html.contains("window.__archsigViewerBreathingFiberBundle")
+            && html.contains("requires nerve.vertices and locusField.fieldRows.signedCurvature in the same viewer packet")
+            && html.contains("coverLaplacianCooccurrenceOnly: true"),
+        "viewer V14 must gate breathing fiber bundle on cover+laplacian cooccurrence"
+    );
+    assert!(
+        html.contains("breathingFiberPillar")
+            && html.contains("signedCurvatureDriven: true")
+            && html.contains("breathing_fiber_signed_curvature")
+            && html.contains("breathing fiber only when cover+laplacian coexist"),
+        "viewer V14 must render signedCurvature-driven fibers only after the cooccurrence gate"
+    );
+    assert!(
+        html.contains("analyticReadingOnly: true")
+            && html.contains("no curvatureStatus or structural verdict is created")
+            && html.contains("breathing fiber bundle renders only when nerve vertices and locusField signedCurvature coexist in the viewer packet"),
+        "viewer V14 must keep fiber bundle as analytic projection without structural verdict"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
