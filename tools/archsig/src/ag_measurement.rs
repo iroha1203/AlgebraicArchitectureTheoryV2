@@ -4530,6 +4530,8 @@ fn gluing_geometry_projection_v1(
                 "missing packet coverNerveProjection; viewer does not infer cover triangles",
             )
         });
+    let cover_nerve_projection =
+        project_h2_coherence_to_cover_nerve(cover_nerve_projection, packet);
     let cover = normalized.covers.iter().find(|cover| {
         cover.normalized_cover_id == packet.profile.cover_ref
             || cover.source_cover_id == packet.profile.cover_ref
@@ -4607,7 +4609,7 @@ fn gluing_geometry_projection_v1(
         "schema": "archsig-viewer-gluing-geometry/v1",
         "sourcePacketRef": "archsig-measurement-packet.json",
         "sourceInsightReportRef": "archsig-insight-report.json",
-        "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict, H2 coherence claim, or monodromy verdict.",
+        "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict or monodromy verdict; H2 coherence color appears only when projected from ag.coherence-obstruction@1 packet verdicts.",
         "nerve": {
             "coverRef": packet.profile.cover_ref,
             "sourceRefs": cover_refs,
@@ -5337,7 +5339,7 @@ fn analytic_locus_field_rows(packet: &ArchSigMeasurementPacketV1) -> Vec<Value> 
                 "cellRef": string_field(transfer, "cell"),
                 "harmonicMass": round_f64(harmonic_mass),
                 "distanceToFlatness": round_f64(distance_to_flatness),
-                "colorRole": if curvature.abs() > 1.0e-9 { "analytic_reading" } else { "measured_zero" },
+                "colorRole": "analytic_reading",
                 "sourceReadingRef": reading.reading_id,
                 "source": "analytic reading curvatureTransferSpectrum support / mass"
             }));
@@ -10578,6 +10580,103 @@ fn cover_nerve_projection_v1(
         "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer",
         "h2CoherenceVisualized": false
     })
+}
+
+fn project_h2_coherence_to_cover_nerve(
+    mut cover_nerve_projection: Value,
+    packet: &ArchSigMeasurementPacketV1,
+) -> Value {
+    let Some(coherence_row) = packet
+        .structural_verdict
+        .iter()
+        .find(|row| row.evaluator == "ag.coherence-obstruction@1")
+    else {
+        return cover_nerve_projection;
+    };
+    if coherence_row.verdict != "measured_zero" && coherence_row.verdict != "measured_nonzero" {
+        return cover_nerve_projection;
+    }
+    let Some(coherence_invariant) = packet
+        .computed_invariants
+        .iter()
+        .find(|invariant| invariant["evaluator"] == "ag.coherence-obstruction@1")
+    else {
+        return cover_nerve_projection;
+    };
+
+    let structural_ref = structural_verdict_ref(coherence_row);
+    let representative_contexts = coherence_invariant["representative"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(context_key)
+        .collect::<BTreeSet<_>>();
+    let measured_faces = coherence_invariant["faces"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|face| {
+            let key = context_key(face)?;
+            let cochain_value = face["cochainValue"].as_u64().unwrap_or_default();
+            Some((key, cochain_value))
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    let mut visualized = false;
+    if let Some(faces) = cover_nerve_projection["faces"].as_array_mut() {
+        for face in faces {
+            let Some(key) = context_key(face) else {
+                continue;
+            };
+            if !measured_faces.contains_key(&key) {
+                continue;
+            }
+            let claim = if coherence_row.verdict == "measured_nonzero"
+                && representative_contexts.contains(&key)
+            {
+                "measured_nonzero"
+            } else {
+                "measured_zero"
+            };
+            if let Some(object) = face.as_object_mut() {
+                object.insert(
+                    "coherenceClaim".to_string(),
+                    Value::String(claim.to_string()),
+                );
+                object.insert("h2CoherenceVisualized".to_string(), Value::Bool(true));
+                object.insert(
+                    "structuralVerdictRef".to_string(),
+                    Value::String(structural_ref.clone()),
+                );
+                object.insert(
+                    "coherenceProjectionBoundary".to_string(),
+                    Value::String(
+                        "Projected from ag.coherence-obstruction@1; viewer adds no H2 verdict"
+                            .to_string(),
+                    ),
+                );
+            }
+            visualized = true;
+        }
+    }
+    if visualized {
+        cover_nerve_projection["h2CoherenceVisualized"] = Value::Bool(true);
+    }
+    cover_nerve_projection
+}
+
+fn context_key(value: &Value) -> Option<String> {
+    let mut contexts = value["contextRefs"]
+        .as_array()?
+        .iter()
+        .filter_map(Value::as_str)
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    if contexts.is_empty() {
+        return None;
+    }
+    contexts.sort();
+    Some(contexts.join("|"))
 }
 
 fn empty_cover_nerve_projection_v1(cover_ref: &str, reason: &str) -> Value {

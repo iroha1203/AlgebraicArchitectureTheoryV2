@@ -2214,6 +2214,27 @@ fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative(
                 && entry["status"] == "assumed"),
         "Leray comparison must stay assumed"
     );
+    let report = read_json(&out_dir.join("archsig-insight-report.json"));
+    assert_eq!(
+        report["gluingGeometry"]["nerve"]["h2CoherenceVisualized"], true,
+        "M5 H2 coherence verdict must be projected to the viewer nerve after it lands"
+    );
+    let h2_face = report["gluingGeometry"]["nerve"]["triangles"]
+        .as_array()
+        .expect("viewer nerve triangles are array")
+        .iter()
+        .find(|face| face["coherenceClaim"] == "measured_nonzero")
+        .expect("nonzero H2 representative face is projected");
+    assert!(
+        h2_face["structuralVerdictRef"]
+            .as_str()
+            .is_some_and(|value| value.contains("ag-coherence-obstruction-1")),
+        "H2 viewer projection must point back to the packet structural verdict"
+    );
+    assert_eq!(
+        h2_face["coherenceProjectionBoundary"],
+        "Projected from ag.coherence-obstruction@1; viewer adds no H2 verdict"
+    );
 
     let zero_cochain_dir = temp_dir("ag-measurement-coherence-h2-nonzero-zero-cochain");
     let zero_cochain_archmap_path = zero_cochain_dir.join("archmap_coherence_h2_zero_cochain.json");
@@ -5214,6 +5235,38 @@ fn cli_analyze_v2_sheaf_laplacian_near_flat_is_not_measured_zero() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
     assert_eq!(packet["structuralVerdict"][0]["verdictData"]["zero"], false);
+
+    let zero_out_dir = temp_dir("ag-measurement-sheaf-laplacian-exact-zero-color");
+    let mut zero_archmap = read_json(&root.join("archmap_v2_sheaf_laplacian.json"));
+    zero_archmap["atoms"][0]["object"] = Value::String("0".to_string());
+    zero_archmap["atoms"][1]["object"] = Value::String("0".to_string());
+    let zero_archmap_path = zero_out_dir.join("archmap_v2_sheaf_laplacian_exact_zero.json");
+    fs::write(
+        &zero_archmap_path,
+        serde_json::to_vec_pretty(&zero_archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        zero_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_laplacian.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        zero_out_dir.to_str().expect("path is utf-8"),
+    ]);
+    let zero_report = read_json(&zero_out_dir.join("archsig-insight-report.json"));
+    assert!(
+        zero_report["gluingGeometry"]["locusField"]["fieldRows"]
+            .as_array()
+            .expect("fieldRows is array")
+            .iter()
+            .filter(|row| row["status"] == "analytic_reading")
+            .all(|row| row["colorRole"] == "analytic_reading"),
+        "exact-zero analytic curvature rows must stay in the analytic lane, not measured_zero"
+    );
 }
 
 #[test]
@@ -13783,7 +13836,7 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html.contains("alphaMap: silenceHatchAlphaMap")
             && html.contains("depthWrite: false")
             && html.contains("nerveTriangleSilenceGlass")
-            && html.contains("h2CoherenceVisualized: false")
+            && html.contains("H^2 coherence is not visualized by this viewer layer")
             && html.contains("blockedUnmeasuredRegion")
             && html.contains("redErrorEncodingRemoved: true"),
         "viewer V3 must render H2 and blocked silence as frosted non-verdict glass"
@@ -13842,15 +13895,16 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
             && html
                 .contains("tagCohomologyLayer(tube, \"h1\", \"cocycleRibbon.supportEdges.value\")")
             && html.contains("tagCohomologyLayer(mesh, \"h2\", \"nerve.triangles\")")
-            && html.contains("h2CoherenceVisualized: false"),
-        "viewer V5 must place H0/H1/H2 geometry on degree bands without H2 verdict color"
+            && html.contains("createH2CoherenceMaterial")
+            && html.contains("nerveTriangleH2Coherence"),
+        "viewer V5 must place H0/H1/H2 geometry on degree bands and use M5 packet verdicts only after projection"
     );
     assert!(
         html.contains("THREE.MathUtils.lerp(0.4, 2.2")
             && html.contains("edge.value is mismatch parity, not continuous cohomology magnitude")
             && html.contains("registerMeasuredBloom(tube, \"headline_h1_cocycle_seam\"")
-            && !html.contains("registerMeasuredBloom(mesh, \"h2"),
-        "viewer V5 must size H1 ribbon by parity marker and keep bloom off H2 glass"
+            && html.contains("registerMeasuredBloom(mesh, \"h2_coherence_structural_verdict\""),
+        "viewer V5 must size H1 ribbon by parity marker and bloom H2 only when an M5 structural verdict is projected"
     );
     assert!(
         html.contains("createLocusFieldMembrane")
