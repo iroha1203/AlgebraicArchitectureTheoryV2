@@ -151,6 +151,32 @@
   #drop.active { display: flex; }
   #drop .box { border: 2px dashed rgba(120,150,200,0.5); border-radius: 18px; padding: 60px 80px; }
 
+  /* seam-ignition timeline (bottom, above status) */
+  #timeline { left: 318px; right: 318px; bottom: 58px; margin: 0 auto; max-width: 760px; padding: 12px 18px 14px; }
+  @media (max-width: 1100px) { #timeline { left: 14px; right: 14px; bottom: 92px; } } /* stack clear of rails on narrow screens */
+  #timeline .tl-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  #timeline .tl-title { font-size: 12px; font-weight: 600; color: var(--ink); }
+  #timeline .tl-caption { font-size: 11.5px; color: var(--ink-dim); flex: 1; }
+  #timeline .tl-caption.ignite { color: var(--structural-nonzero); font-weight: 600; }
+  #timeline .tl-caption.heal { color: var(--structural-zero); font-weight: 600; }
+  #timeline .tl-play { cursor: pointer; font-size: 13px; color: var(--ink-dim); border: 1px solid var(--glass-line);
+    border-radius: 8px; padding: 4px 11px; user-select: none; }
+  #timeline .tl-play:hover { color: var(--ink); border-color: rgba(120,150,200,0.4); }
+  #timeline .tl-track { position: relative; height: 40px; display: flex; align-items: center; }
+  #timeline .tl-line { position: absolute; left: 8px; right: 8px; height: 2px; background: var(--glass-line); }
+  #timeline .tl-frames { position: relative; width: 100%; display: flex; justify-content: space-between; }
+  #timeline .tl-tick { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 0 0 auto; }
+  #timeline .tl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--silence); border: 2px solid var(--bg1);
+    box-shadow: 0 0 0 1px var(--glass-line); transition: transform 0.15s; }
+  #timeline .tl-tick:hover .tl-dot { transform: scale(1.25); }
+  #timeline .tl-dot.zero { background: var(--structural-zero); }
+  #timeline .tl-dot.obstr { background: var(--structural-nonzero); box-shadow: 0 0 10px var(--structural-nonzero); }
+  #timeline .tl-tick.active .tl-dot { transform: scale(1.4); box-shadow: 0 0 0 2px var(--ink); }
+  #timeline .tl-tick.ignite::before { content: "⚡"; position: absolute; top: -16px; font-size: 13px; }
+  #timeline .tl-tick.heal::before { content: "✓"; position: absolute; top: -16px; font-size: 12px; color: var(--structural-zero); }
+  #timeline .tl-lab { font-size: 10px; color: var(--ink-faint); margin-top: 6px; white-space: nowrap; }
+  #timeline .tl-tick.active .tl-lab { color: var(--ink-dim); }
+
   .hidden { display: none !important; }
   input[type="file"] { display: none; }
   a.filelabel { cursor: pointer; }
@@ -206,6 +232,15 @@
     <h2>Measurement report</h2>
     <div class="sub" id="report-sub">bounded projection of ArchMap v2 + LawPolicy + measurement packet</div>
     <div id="report-body"></div>
+  </div>
+
+  <div id="timeline" class="panel hidden">
+    <div class="tl-head">
+      <span class="tl-play" id="tl-play">▶ Play</span>
+      <span class="tl-title" id="tl-title">Sequence</span>
+      <span class="tl-caption" id="tl-caption"></span>
+    </div>
+    <div class="tl-track"><div class="tl-line"></div><div class="tl-frames" id="tl-frames"></div></div>
   </div>
 
   <div id="drop"><div class="box">Drop ArchSig viewer data</div></div>
@@ -1148,7 +1183,7 @@ const SCENES = {
 };
 let currentScene = "nerve";
 
-function applyScene(id) {
+function applyScene(id, opts = {}) {
   currentScene = id;
   const s = SCENES[id];
   for (const [k, g] of Object.entries(G)) g.visible = !!(s.show && s.show[k]);
@@ -1165,7 +1200,7 @@ function applyScene(id) {
   // silence note when a scene's measured content is absent
   noteSilence(id);
   applyLayerToggles();
-  frameScene(id);
+  if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera so the seam ignites in place
   updateStatus();
 }
 
@@ -1553,23 +1588,32 @@ async function fetchJsonIfAvailable(url) {
   try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); }
   catch { return null; }
 }
-async function loadCompanions() {
+async function loadCompanions(base = ".") {
   const [summary, manifest] = await Promise.all([
-    fetchJsonIfAvailable("./archsig-analysis-summary.json"),
-    fetchJsonIfAvailable("./archsig-run-manifest.json"),
+    fetchJsonIfAvailable(`${base}/archsig-analysis-summary.json`),
+    fetchJsonIfAvailable(`${base}/archsig-run-manifest.json`),
   ]);
   return { summary, manifest };
 }
-function renderData(data, source, companions) {
+function resetDetail() {
+  const el = document.getElementById("detail");
+  el.classList.add("empty");
+  el.innerHTML = `<div class="kind">selection</div><h3>Nothing selected</h3>
+    <div style="color:var(--ink-faint);font-size:12px;margin-top:6px">Click a context cell, an atom bead, a strut, or the obstruction seam to inspect what was measured there.</div>`;
+}
+function renderData(data, source, companions, opts = {}) {
   DATA = data; COMPANIONS = companions || { summary: null, manifest: null };
   MODEL = buildModel(data);
   document.getElementById("brand-sub").textContent =
     `${source} · ${MODEL.coverId || "no cover"}`;
   buildAll();
   activeInsightId = null; highlighted = []; tourState = null;
-  // open on the top measured OBSTRUCTION if present, else the default scene (honest silence handles NO_MEASURED)
-  const top = (MODEL.insights || []).find((i) => i.isObstruction);
-  if (top) navigateToInsight(top); else applyScene(currentScene);
+  if (!opts.sequenceMode) {
+    // open on the top measured OBSTRUCTION if present, else the default scene (honest silence handles NO_MEASURED)
+    const top = (MODEL.insights || []).find((i) => i.isObstruction);
+    if (top) navigateToInsight(top); else { applyScene(currentScene); resetDetail(); }
+  }
+  // (sequence mode: showFrame controls scene/camera/detail so the seam ignites in place)
   renderInsightRail();
   renderReport();
   setStatus(`Loaded ${source}`);
@@ -1583,17 +1627,110 @@ function emptyShell() {
   setStatus("Open archsig-atom-viewer-data.json (drag a file, or use Open data…)");
 }
 async function loadDefault() {
+  // Seam Ignition: if a sequence manifest sits beside the viewer, play the measured frames over time.
+  const seq = await fetchJsonIfAvailable("./archview-sequence.json");
+  if (seq && (seq.frames || []).length) { await loadSequence(seq); return; }
   const primary = await fetchJsonIfAvailable("./archsig-atom-viewer-data.json");
   if (!primary) { emptyShell(); return; }
   renderData(primary, "archsig-atom-viewer-data.json", await loadCompanions());
 }
 async function loadUserData(file) {
   try {
+    exitSequence();
     const data = JSON.parse(await file.text());
     renderData(data, file.name, await loadCompanions());
   } catch (e) { setStatus(`Could not load ${file.name}: ${e.message}`); }
 }
 function setStatus(msg) { if (msg) document.getElementById("st-boundary").textContent = msg; }
+
+/* ============================================================================
+ * Seam Ignition — play a measured SEQUENCE of packets and watch the H¹ obstruction
+ * be born / heal across frames. Each frame is one real ArchSig run; ArchView only
+ * keys correspondences by shared ids and computes no new verdict. Birth = the first
+ * frame whose measured conclusion is an obstruction whose prior frame was measured-zero.
+ * ========================================================================== */
+let SEQUENCE = null;
+async function loadSequence(manifest) {
+  // keep EVERY declared frame slot (a failed fetch stays a grey "not loaded" tick — never silently
+  // collapsing the order so non-adjacent measured frames look adjacent).
+  const frames = [];
+  for (const fr of manifest.frames) {
+    const data = await fetchJsonIfAvailable(`./${fr.path}/archsig-atom-viewer-data.json`);
+    const slot = { ...fr, data: data || null, loaded: !!data };
+    if (data) {
+      slot.companions = await loadCompanions(`./${fr.path}`);
+      slot.conclusion = (data.decisionBar && data.decisionBar.conclusion) || (data.reportPane && data.reportPane.conclusion) || "";
+      slot.obstruction = /MEASURED_.*OBSTRUCTION/.test(slot.conclusion) && !/NO_MEASURED/.test(slot.conclusion);
+      slot.measuredZero = /NO_MEASURED_.*OBSTRUCTION/.test(slot.conclusion);
+    }
+    frames.push(slot);
+  }
+  if (!frames.some((f) => f.loaded)) { emptyShell(); return; }
+  // transitions only between two LOADED adjacent frames (compare emitted measured booleans)
+  frames.forEach((f, i) => {
+    const prev = frames[i - 1];
+    if (!f.loaded || !prev || !prev.loaded) { f.transition = ""; return; }
+    f.transition = f.obstruction && !prev.obstruction ? "ignite" : !f.obstruction && prev.obstruction ? "heal" : "";
+    f.priorZero = !!prev.measuredZero;
+  });
+  SEQUENCE = { title: manifest.title || "Measured sequence", frames, current: 0, playing: false, timer: null, framed: false };
+  document.getElementById("timeline").classList.remove("hidden");
+  renderTimeline();
+  showFrame(frames.findIndex((f) => f.loaded));
+}
+function exitSequence() {
+  stopPlay(); SEQUENCE = null;
+  document.getElementById("timeline").classList.add("hidden");
+}
+function showFrame(i) {
+  if (!SEQUENCE) return;
+  SEQUENCE.current = Math.max(0, Math.min(SEQUENCE.frames.length - 1, i));
+  const fr = SEQUENCE.frames[SEQUENCE.current];
+  const cap = document.getElementById("tl-caption");
+  if (!fr.loaded) {                                  // a frame whose packet failed to load — silence, not measured_zero
+    cap.className = "tl-caption"; cap.textContent = `${fr.label || "frame"} not loaded — silence (not measured_zero).`;
+    renderTimeline(); return;
+  }
+  // render geometry in a FIXED gluing view so the seam ignites/heals in place; keep camera after the first frame.
+  const firstFrame = !SEQUENCE.framed;
+  renderData(fr.data, fr.label || `frame ${SEQUENCE.current}`, fr.companions, { sequenceMode: true });
+  applyScene("gluing", { keepCamera: !firstFrame });
+  SEQUENCE.framed = true;
+  const top = (MODEL.insights || []).find((x) => x.isObstruction);
+  if (top) { highlightRefs((top.evidence.atomRefs) || [], (top.evidence.contextRefs) || []); showInsightDetail(top); activeInsightId = top.id; renderInsightRail(); }
+  else { resetDetail(); }
+  cap.className = "tl-caption" + (fr.transition === "ignite" ? " ignite" : fr.transition === "heal" ? " heal" : "");
+  cap.textContent = fr.transition === "ignite"
+    ? `⚡ H¹ obstruction BORN here — local pieces stopped gluing across the cover${fr.priorZero ? " (prior frame was measured_zero)" : " (prior frame had no measured obstruction)"}.`
+    : fr.transition === "heal" ? "✓ H¹ healed — the seam closed; the global section glues again."
+    : (fr.note || fr.conclusion || "");
+  renderTimeline();
+}
+function renderTimeline() {
+  if (!SEQUENCE) return;
+  document.getElementById("tl-title").textContent = SEQUENCE.title;
+  const wrap = document.getElementById("tl-frames");
+  wrap.innerHTML = SEQUENCE.frames.map((f, i) => {
+    const dot = !f.loaded ? "" : f.obstruction ? "obstr" : f.measuredZero ? "zero" : ""; // grey for not-loaded / non-measured_zero lanes
+    return `<div class="tl-tick ${i === SEQUENCE.current ? "active" : ""} ${f.transition || ""}" data-i="${i}">
+       <span class="tl-dot ${dot}"></span>
+       <span class="tl-lab">${escapeHtml(f.label || "f" + i)}</span>
+     </div>`;
+  }).join("");
+  for (const t of wrap.querySelectorAll(".tl-tick"))
+    t.addEventListener("click", () => { stopPlay(); showFrame(+t.dataset.i); });
+}
+function stopPlay() {
+  if (SEQUENCE && SEQUENCE.timer) { clearInterval(SEQUENCE.timer); SEQUENCE.timer = null; }
+  if (SEQUENCE) SEQUENCE.playing = false;
+  const b = document.getElementById("tl-play"); if (b) b.textContent = "▶ Play";
+}
+function togglePlay() {
+  if (!SEQUENCE) return;
+  if (SEQUENCE.playing) { stopPlay(); return; }
+  SEQUENCE.playing = true; document.getElementById("tl-play").textContent = "⏸ Pause";
+  SEQUENCE.timer = setInterval(() => showFrame((SEQUENCE.current + 1) % SEQUENCE.frames.length), 1700);
+}
 
 /* file input */
 document.getElementById("open-file").addEventListener("click", () => document.getElementById("file").click());
@@ -1641,6 +1778,7 @@ function buildLayerToggles() {
 document.getElementById("reset-cam").addEventListener("click", () => frameScene(currentScene));
 document.getElementById("report-toggle").addEventListener("click", () =>
   document.getElementById("report").classList.toggle("open"));
+document.getElementById("tl-play").addEventListener("click", togglePlay);
 document.getElementById("report-close").addEventListener("click", () =>
   document.getElementById("report").classList.remove("open"));
 
