@@ -1049,6 +1049,8 @@
     let atomLayoutMorphState = null;
     let activeCohomologyLayerGroups = {};
     let activeTourPulseGroup = null;
+    let activeAssemblySnapObjects = [];
+    let assemblySnapStartedAt = 0;
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1342,6 +1344,7 @@
       updateAtomLayoutMorph();
       updateHolonomyTraversalAnimation();
       updateFindingsTourPulse();
+      updateAssemblySnapAnimation();
       renderFrame();
     }
 
@@ -1557,6 +1560,8 @@
       renderedEdgeCount = 0;
       bloomRegisteredCount = 0;
       activeTourState = { ...(activeTourState || {}), frames: [] };
+      activeAssemblySnapObjects = [];
+      assemblySnapStartedAt = performance.now();
 
       const positions = new Map();
       activeLayoutContext = buildLayoutContext(renderedAtoms, renderedGroups, currentData);
@@ -2222,11 +2227,13 @@
             side: THREE.DoubleSide
           })
         );
-        patch.position.copy(center);
-        patch.position.y = cohomologyDegreeLayer("h0").y + 1;
+        const patchTarget = pointOnCohomologyLayer(center, "h0", 1);
+        const patchStart = assemblySnapStartPosition(patchTarget, index, vertices.length);
+        patch.position.copy(patchStart);
         patch.rotation.x = -Math.PI / 2;
         patch.userData = { kind: "nerveVertexPatch", item: vertex };
         tagCohomologyLayer(patch, "h0", "nerve.vertices");
+        tagAssemblySnapObject(patch, patchStart, patchTarget, vertex.contextRef, "context_patch");
         edgeGroup.add(patch);
         const sphere = new THREE.Mesh(
           new THREE.SphereGeometry(3.2 + supportSize * 0.22, 24, 16),
@@ -2238,7 +2245,9 @@
             roughness: 0.42
           })
         );
-        sphere.position.copy(pointOnCohomologyLayer(center, "h0", 4.8 + supportSize * 0.08));
+        const sphereTarget = pointOnCohomologyLayer(center, "h0", 4.8 + supportSize * 0.08);
+        const sphereStart = assemblySnapStartPosition(sphereTarget, index, vertices.length).add(new THREE.Vector3(0, 6, 0));
+        sphere.position.copy(sphereStart);
         sphere.userData = {
           kind: "nerveContextSphere",
           item: vertex,
@@ -2246,6 +2255,7 @@
           atomRefCount: (vertex.atomRefs || []).length
         };
         tagCohomologyLayer(sphere, "h0", "nerve.vertices.atomRefs");
+        tagAssemblySnapObject(sphere, sphereStart, sphereTarget, vertex.contextRef, "context_sphere");
         edgeGroup.add(sphere);
         const label = createTextSprite(contextLabel(vertex.contextRef), "#d8dee9", "rgba(13,16,21,0.68)");
         label.position.copy(pointOnCohomologyLayer(center, "h0", 11 + supportSize * 0.08));
@@ -2254,6 +2264,7 @@
         edgeGroup.add(label);
       });
       renderNerveEdges(edges, vertexCenters, encoding);
+      renderAssemblySnapSeams(edges, vertexCenters, encoding);
       const triangleLimit = activeLayoutContext?.aat?.gluingGeometry?.renderLimits?.nerveTriangles || 80;
       triangles.slice(0, triangleLimit).forEach((triangle, index) => {
         const points = (triangle.contextRefs || [])
@@ -2313,6 +2324,151 @@
         centers.set(String(vertex.contextRef || ""), pointOnCohomologyLayer(center, "h0"));
       });
       return centers;
+    }
+
+    function assemblySnapStartPosition(target, index, total) {
+      const angle = (index / Math.max(total, 1)) * Math.PI * 2;
+      const radial = new THREE.Vector3(target.x, 0, target.z);
+      if (radial.lengthSq() < 0.001) radial.set(Math.cos(angle), 0, Math.sin(angle));
+      radial.normalize();
+      return target.clone().add(radial.multiplyScalar(120)).add(new THREE.Vector3(0, 34, 0));
+    }
+
+    function tagAssemblySnapObject(object, start, target, contextRef, role) {
+      object.userData = {
+        ...(object.userData || {}),
+        assemblySnapRole: role,
+        assemblySnapStartPosition: [Number(start.x.toFixed(3)), Number(start.y.toFixed(3)), Number(start.z.toFixed(3))],
+        assemblySnapTargetPosition: [Number(target.x.toFixed(3)), Number(target.y.toFixed(3)), Number(target.z.toFixed(3))],
+        assemblySnapProjectionOnly: true,
+        contextRef,
+        noStructuralVerdict: true,
+        projectionBoundary: "assembly snap is a viewer projection over nerve geometry; it adds no restriction-compatibility verdict"
+      };
+      activeAssemblySnapObjects.push(object);
+    }
+
+    function renderAssemblySnapSeams(edges, vertexCenters, encoding) {
+      let paritySeamCount = 0;
+      edges.forEach((edge, index) => {
+        const sourceBase = vertexCenters.get(String(edge.sourceContextRef || ""));
+        const targetBase = vertexCenters.get(String(edge.targetContextRef || ""));
+        if (!sourceBase || !targetBase) return;
+        const source = pointOnCohomologyLayer(sourceBase, "h1", 4);
+        const target = pointOnCohomologyLayer(targetBase, "h1", 4);
+        const value = Number(edge.value || 0);
+        if (value > 0) {
+          paritySeamCount += 1;
+          const midpoint = centroid([source, target]);
+          const direction = target.clone().sub(source).normalize();
+          const gap = direction.clone().multiplyScalar(5.2);
+          const vertices = [
+            source.x, source.y, source.z,
+            midpoint.x - gap.x, midpoint.y - gap.y, midpoint.z - gap.z,
+            midpoint.x + gap.x, midpoint.y + gap.y, midpoint.z + gap.z,
+            target.x, target.y, target.z
+          ];
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+          const seam = new THREE.LineSegments(
+            geometry,
+            new THREE.LineDashedMaterial({
+              color: sceneColorHex(encoding.colorRole || "measured_nonzero"),
+              transparent: true,
+              opacity: 0.88,
+              dashSize: 4.8,
+              gapSize: 2.2
+            })
+          );
+          if (typeof seam.computeLineDistances === "function") seam.computeLineDistances();
+          seam.userData = {
+            kind: "assemblySnapParitySeam",
+            item: edge,
+            edgeValue: value,
+            parityOnly: true,
+            unsnappedByParityCue: true,
+            m2Projected: false,
+            structuralSeamVerdict: false,
+            noStructuralVerdict: true,
+            seamJitter: true,
+            seamIndex: index,
+            nonClaim: "edge.value parity colors an overlap seam; it is not a restriction-compatibility verdict"
+          };
+          tagCohomologyLayer(seam, "h1", "nerve.edges.value.parity");
+          registerReadingBloom(seam, "assembly_snap_parity_seam", 0.48);
+          edgeGroup.add(seam);
+          if (paritySeamCount === 1) {
+            const label = createTextSprite("edge.value parity seam; not restriction-compatibility verdict", "#ffffff", "rgba(63,45,8,0.78)");
+            label.position.copy(midpoint).add(new THREE.Vector3(0, 10, 0));
+            label.userData = {
+              kind: "assemblySnapParityNonClaim",
+              edgeValueParityMarker: true,
+              noStructuralVerdict: true,
+              labelPriorityScore: 90,
+              nonClaim: "parity cue only; not a measured M2 seam verdict"
+            };
+            tagCohomologyLayer(label, "h1", "nerve.edges.value.parity");
+            edgeGroup.add(label);
+          }
+          return;
+        }
+        addLineSegments([
+          source.x, source.y + 0.2, source.z,
+          target.x, target.y + 0.2, target.z
+        ], sceneColorHex("checked"), 0.38, "assemblySnapCompatibleContact", {
+          lineRole: "snap_contact",
+          thicknessRole: "thin",
+          cohomologyDegree: "h1",
+          parityOnly: true,
+          m2Projected: false,
+          structuralSeamVerdict: false
+        });
+      });
+      window.__archsigViewerAssemblySnap = {
+        ...(window.__archsigViewerAssemblySnap || {}),
+        paritySeamCount,
+        m2Projected: false,
+        edgeValueParityMarker: true,
+        projectionBoundary: "assembly snap uses edge.value parity until M2 restriction-compatibility verdict is projected"
+      };
+    }
+
+    function easeOutBack(t) {
+      const c1 = 1.70158;
+      const c3 = c1 + 1;
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    }
+
+    function updateAssemblySnapAnimation() {
+      if (!activeAssemblySnapObjects.length) return;
+      const elapsed = performance.now() - assemblySnapStartedAt;
+      const raw = Math.min(elapsed / 1350, 1);
+      const eased = easeOutBack(raw);
+      activeAssemblySnapObjects.forEach((object) => {
+        const start = vectorFromArray(object.userData?.assemblySnapStartPosition);
+        const target = vectorFromArray(object.userData?.assemblySnapTargetPosition);
+        if (!start || !target) return;
+        object.position.copy(start.lerp(target, eased));
+        object.userData.assemblySnapProgress = Number(raw.toFixed(3));
+      });
+      edgeGroup.traverse((object) => {
+        if (!object.userData?.seamJitter) return;
+        object.position.y = Math.sin(performance.now() / 160 + Number(object.userData.seamIndex || 0)) * 0.9;
+        object.userData.microGapVibration = true;
+      });
+      window.__archsigViewerAssemblySnap = {
+        ...(window.__archsigViewerAssemblySnap || {}),
+        activePatchCount: activeAssemblySnapObjects.length,
+        progress: Number(raw.toFixed(3)),
+        patchFlyInUsesEaseOutBack: true,
+        noStructuralVerdict: true
+      };
+    }
+
+    function vectorFromArray(value) {
+      return Array.isArray(value) && value.length === 3
+        ? new THREE.Vector3(Number(value[0]), Number(value[1]), Number(value[2]))
+        : null;
     }
 
     function renderNerveEdges(edges, vertexCenters, encoding) {
