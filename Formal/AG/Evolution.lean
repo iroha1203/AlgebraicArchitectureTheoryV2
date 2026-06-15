@@ -8,3 +8,4 @@ import Formal.AG.Evolution.TemporalLaw
 import Formal.AG.Evolution.TemporalObstruction
 import Formal.AG.Evolution.ReplayDescent
 import Formal.AG.Evolution.Dissipation
+import Formal.AG.Evolution.FiniteDissipation
