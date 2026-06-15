@@ -4316,7 +4316,14 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
         }),
         "hodge-debt-field" => json!({
             "locusFieldRef": "gluingGeometry.locusField",
-            "projectionObjectKinds": ["curvatureHeightField", "blockedUnmeasuredRegion"]
+            "spectrumLandscapeRef": "gluingGeometry.spectrumLandscape",
+            "projectionObjectKinds": [
+                "curvatureHeightField",
+                "blockedUnmeasuredRegion",
+                "spectrumLawfulPlain",
+                "spectrumLocalDeviationPeak",
+                "spectrumProxyRidge"
+            ]
         }),
         "analytic-overlay" => json!({
             "analyticOverlayBundleRef": "gluingGeometry.analyticOverlayBundle",
@@ -4556,6 +4563,7 @@ fn gluing_geometry_projection_v1(
     let atom_glyphs = atom_glyph_projection(normalized);
     let analytic_overlay_bundle = analytic_overlay_bundle_projection(packet);
     let period_stokes = period_stokes_projection(packet);
+    let spectrum_landscape = spectrum_landscape_projection(packet);
     let triangle_count = cover_nerve_projection["faces"]
         .as_array()
         .map(Vec::len)
@@ -4578,6 +4586,9 @@ fn gluing_geometry_projection_v1(
         .unwrap_or_default() as usize;
     let period_stokes_meter_count =
         period_stokes["rawMeterCount"].as_u64().unwrap_or_default() as usize;
+    let spectrum_cell_count = spectrum_landscape["rawCellCount"]
+        .as_u64()
+        .unwrap_or_default() as usize;
     let cocycle_support_edge_count = nonzero_edges.len();
     let cocycle_support_edges = nonzero_edges
         .iter()
@@ -4623,6 +4634,7 @@ fn gluing_geometry_projection_v1(
         "atomGlyphs": atom_glyphs,
         "analyticOverlayBundle": analytic_overlay_bundle,
         "periodStokes": period_stokes,
+        "spectrumLandscape": spectrum_landscape,
         "visualEncodingLegend": visual_encoding_legend_v1(),
         "renderLimits": {
             "nerveTriangles": GLUING_TRIANGLE_RENDER_LIMIT,
@@ -4633,7 +4645,8 @@ fn gluing_geometry_projection_v1(
             "repairMorphs": GLUING_MORPH_RENDER_LIMIT,
             "atomGlyphs": GLUING_ATOM_GLYPH_RENDER_LIMIT,
             "analyticOverlays": ANALYTIC_OVERLAY_RENDER_LIMIT,
-            "periodStokesMeters": PERIOD_STOKES_METER_RENDER_LIMIT
+            "periodStokesMeters": PERIOD_STOKES_METER_RENDER_LIMIT,
+            "spectrumCells": GLUING_FIELD_ROW_RENDER_LIMIT
         },
         "omittedGeometryCounts": {
             "nerveTriangles": triangle_count.saturating_sub(GLUING_TRIANGLE_RENDER_LIMIT),
@@ -4645,7 +4658,8 @@ fn gluing_geometry_projection_v1(
             "repairMorphs": repair_morphs.len().saturating_sub(GLUING_MORPH_RENDER_LIMIT),
             "atomGlyphs": atom_glyph_total_count.saturating_sub(GLUING_ATOM_GLYPH_RENDER_LIMIT),
             "analyticOverlays": analytic_overlay_count.saturating_sub(ANALYTIC_OVERLAY_RENDER_LIMIT),
-            "periodStokesMeters": period_stokes_meter_count.saturating_sub(PERIOD_STOKES_METER_RENDER_LIMIT)
+            "periodStokesMeters": period_stokes_meter_count.saturating_sub(PERIOD_STOKES_METER_RENDER_LIMIT),
+            "spectrumCells": spectrum_cell_count.saturating_sub(GLUING_FIELD_ROW_RENDER_LIMIT)
         },
         "nonClaims": [
             "No H2 coherence failure is visualized by this projection.",
@@ -5053,6 +5067,134 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
             "Unknown or model-missing audits remain analytic-only or silent, never green structural closure."
         ]
     })
+}
+
+fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
+    let hodge_reading = packet.analytic_readings.iter().find(|reading| {
+        string_at(&reading.value, &["readingKind"]) == "graph-laplacian-hodge-proxy@1"
+    });
+    let hotspot_reading = packet.analytic_readings.iter().find(|reading| {
+        string_at(&reading.value, &["readingKind"]) == "curvature-transfer-perron-hotspot@1"
+    });
+    let Some(reading) = hodge_reading else {
+        return json!({
+            "schemaVersion": "archsig-spectrum-landscape-v1",
+            "status": "silent",
+            "measurementStatus": "not_projected",
+            "colorRole": "analytic_reading",
+            "rawCellCount": 0,
+            "cells": [],
+            "hotspots": [],
+            "projectionBoundary": "No M10 graph-laplacian-hodge-proxy reading is present; viewer remains silent and creates no structural verdict."
+        });
+    };
+    let cells = string_array_at(&reading.value, &["cells"]);
+    let cochain = reading.value["cochain"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let transfer_rows = reading.value["curvatureTransferSpectrum"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let transfer_by_cell = transfer_rows
+        .iter()
+        .filter_map(|row| {
+            Some((
+                string_field(row, "cell"),
+                row["curvature"].as_f64().unwrap_or(0.0),
+            ))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let cell_rows = cells
+        .iter()
+        .take(GLUING_FIELD_ROW_RENDER_LIMIT)
+        .enumerate()
+        .map(|(index, cell)| {
+            let cochain_value = cochain.get(index).and_then(Value::as_f64).unwrap_or(0.0);
+            let curvature = transfer_by_cell.get(cell).copied().unwrap_or(0.0);
+            json!({
+                "cellRef": cell,
+                "axisRef": format!("spectrum-axis:{cell}"),
+                "cochainValue": round_f64(cochain_value),
+                "signedCurvature": round_f64(curvature),
+                "plainRole": if cochain_value.abs() < 1.0e-9 {
+                    "lawful_plain_measured_zero"
+                } else {
+                    "local_deviation"
+                },
+                "deterministicIndex": index,
+                "colorRole": "analytic_reading",
+                "measurementStatus": "proxy",
+                "notLegacyStatusField": true
+            })
+        })
+        .collect::<Vec<_>>();
+    let hotspot_rows = hotspot_reading
+        .map(|reading| {
+            reading.value["hotspots"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .take(GLUING_FIELD_ROW_RENDER_LIMIT)
+                .enumerate()
+                .map(|(index, hotspot)| {
+                    json!({
+                        "hotspotId": format!(
+                            "spectrum-hotspot:{}:{index}",
+                            stable_ref_segment(&reading.reading_id)
+                        ),
+                        "cellRef": string_field(hotspot, "cell"),
+                        "axisRef": format!("spectrum-axis:{}", string_field(hotspot, "cell")),
+                        "hotspotWeight": hotspot["hotspotWeight"].clone(),
+                        "status": "needsReview",
+                        "measurementStatus": "proxy",
+                        "colorRole": "analytic_reading",
+                        "sourceReadingRef": reading.reading_id,
+                        "sourceRegime": reading.regime,
+                        "localDeviationSecondary": true
+                    })
+                })
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let spectral_radius_value = reading
+        .value
+        .get("spectralRadius")
+        .or_else(|| reading.value.get("spectralGap"))
+        .cloned()
+        .unwrap_or(Value::Null);
+    let spectral_radius_numeric = spectrum_numeric_value(&spectral_radius_value);
+
+    json!({
+        "schemaVersion": "archsig-spectrum-landscape-v1",
+        "status": "needsReview",
+        "measurementStatus": "proxy",
+        "sourceReadingRef": reading.reading_id,
+        "sourceEvaluator": reading.evaluator,
+        "sourceReadingKind": "graph-laplacian-hodge-proxy@1",
+        "hotspotReadingRef": hotspot_reading.map(|reading| reading.reading_id.clone()),
+        "hotspotReadingKind": hotspot_reading.map(|_| "curvature-transfer-perron-hotspot@1"),
+        "selectedCoverRef": reading.value["selectedCoverRef"].clone(),
+        "colorRole": "analytic_reading",
+        "rawCellCount": cells.len(),
+        "cells": cell_rows,
+        "hotspots": hotspot_rows,
+        "spectralGap": reading.value["spectralGap"].clone(),
+        "spectralRadius": spectral_radius_value,
+        "spectralRadiusNumeric": spectral_radius_numeric.map(round_f64),
+        "axisPlacement": "axisRef-deterministic",
+        "forbiddenFieldRefs": ["legacy-v0-curvature-status"],
+        "nonClaim": "Spectrum landscape is an analytic proxy reading; lawful plain and hotspots are not structural verdicts.",
+        "projectionBoundary": "spectrumLandscape carries M10/M14 packet readings only; no legacy v0 status field is read and no structural verdict is created."
+    })
+}
+
+fn spectrum_numeric_value(value: &Value) -> Option<f64> {
+    value
+        .as_f64()
+        .or_else(|| value.as_str().and_then(|text| text.parse::<f64>().ok()))
+        .filter(|value| value.is_finite())
 }
 
 fn atom_refs_by_square_free_variable(
@@ -10660,6 +10802,7 @@ pub fn build_measurement_viewer_data_v1(
             "nerve": insight_report["gluingGeometry"]["nerve"],
             "cocycleRibbon": insight_report["gluingGeometry"]["cocycleRibbon"],
             "locusField": insight_report["gluingGeometry"]["locusField"],
+            "spectrumLandscape": insight_report["gluingGeometry"]["spectrumLandscape"],
             "forbiddenCages": insight_report["gluingGeometry"]["forbiddenCages"],
             "repairMorphs": insight_report["gluingGeometry"]["repairMorphs"],
             "atomGlyphs": insight_report["gluingGeometry"]["atomGlyphs"],

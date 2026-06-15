@@ -1054,6 +1054,7 @@
     let assemblySnapStartedAt = 0;
     let activeBreathingFiberObjects = [];
     let activePeriodStokesObjects = [];
+    let activeSpectrumPeakObjects = [];
 
     const colorByStatus = {
       observed: 0x4cc3a7,
@@ -1350,6 +1351,7 @@
       updateAssemblySnapAnimation();
       updateBreathingFiberAnimation();
       updatePeriodStokesMeterAnimation();
+      updateSpectrumPeakAnimation();
       renderFrame();
     }
 
@@ -1568,6 +1570,7 @@
       activeAssemblySnapObjects = [];
       activeBreathingFiberObjects = [];
       activePeriodStokesObjects = [];
+      activeSpectrumPeakObjects = [];
       assemblySnapStartedAt = performance.now();
 
       const positions = new Map();
@@ -2158,6 +2161,9 @@
       }
       if (scene.sceneId === "hodge-debt-field") {
         renderLocusField(scene, geometry.locusField || {}, positions, geometry.renderLimits || {});
+        if (viewModeEl.value === "spectrum") {
+          renderSpectrumPeaks(scene, geometry.spectrumLandscape || {}, positions, encoding, geometry.renderLimits || {});
+        }
       }
       if (scene.sceneId === "analytic-overlay") {
         renderAnalyticOverlays(scene, geometry.analyticOverlayBundle || {}, positions, encoding, geometry.renderLimits || {});
@@ -3255,6 +3261,144 @@
         };
         edgeGroup.add(note);
       }
+    }
+
+    function renderSpectrumPeaks(scene, spectrum, positions, encoding, limits = {}) {
+      const cells = (Array.isArray(spectrum.cells) ? spectrum.cells : []).slice(0, limits.spectrumCells || 64);
+      const hotspots = Array.isArray(spectrum.hotspots) ? spectrum.hotspots : [];
+      const lawfulCells = cells.filter((cell) => Math.abs(spectrumNumber(cell.cochainValue)) < 1.0e-9);
+      const baseCenter = sceneAxisPosition(scene, spectrum.sourceReadingRef || "spectrum-landscape", 0, 1, new THREE.Vector3(0, 0, 0), {
+        xValue: 0.5,
+        yValue: 0,
+        zValue: 0
+      });
+      const stats = {
+        status: cells.length ? "rendered" : "silent",
+        cellCount: cells.length,
+        lawfulPlainCount: lawfulCells.length,
+        hotspotCount: hotspots.length,
+        axisPlacement: spectrum.axisPlacement || "axisRef-deterministic",
+        legacyStatusFieldRead: false,
+        measurementStatus: spectrum.measurementStatus || "proxy",
+        noStructuralVerdictCreatedByViewer: true,
+        projectionBoundary: "spectrumLandscape viewer reads M10/M14 analytic proxy values only; no legacy v0 status field and no structural verdict"
+      };
+      if (!cells.length) {
+        window.__archsigViewerSpectrumPeaks = stats;
+        return;
+      }
+      const cellPositions = new Map();
+      cells.forEach((cell, index) => {
+        const point = spectrumAxisPosition(baseCenter, cell.axisRef || cell.cellRef, index, cells.length, cell);
+        cellPositions.set(String(cell.cellRef || ""), point);
+        const isLawfulPlain = Math.abs(spectrumNumber(cell.cochainValue)) < 1.0e-9;
+        const size = isLawfulPlain ? 13 : 7 + Math.min(Math.abs(spectrumNumber(cell.signedCurvature)), 6) * 1.6;
+        const mesh = new THREE.Mesh(
+          isLawfulPlain ? new THREE.CircleGeometry(size, 48) : new THREE.ConeGeometry(size * 0.55, size * 1.35, 7),
+          new THREE.MeshStandardMaterial({
+            color: isLawfulPlain ? 0x64d6be : 0x73b7ff,
+            emissive: isLawfulPlain ? 0x0b3d35 : 0x102c48,
+            transparent: true,
+            opacity: isLawfulPlain ? 0.42 : 0.58,
+            roughness: 0.45,
+            metalness: 0.02,
+            side: THREE.DoubleSide
+          })
+        );
+        mesh.position.copy(point);
+        mesh.rotation.x = isLawfulPlain ? -Math.PI / 2 : 0;
+        mesh.userData = {
+          kind: isLawfulPlain ? "spectrumLawfulPlain" : "spectrumProxyCell",
+          item: cell,
+          axisRef: cell.axisRef,
+          deterministicAxisPlacement: true,
+          lawfulPlainMeasuredZeroDrawn: isLawfulPlain,
+          measurementStatus: cell.measurementStatus || "proxy",
+          analyticReadingNotVerdict: true,
+          noStructuralVerdictCreatedByViewer: true,
+          legacyStatusFieldRead: false,
+          projectionBoundary: "cochain cv=0 lawful plain is drawn as measured analytic support, not silence"
+        };
+        edgeGroup.add(mesh);
+      });
+      hotspots.forEach((hotspot, index) => {
+        const point = (cellPositions.get(String(hotspot.cellRef || "")) || spectrumAxisPosition(baseCenter, hotspot.axisRef || hotspot.cellRef, index, hotspots.length, hotspot)).clone();
+        const weight = Math.max(0, spectrumNumber(hotspot.hotspotWeight));
+        point.y += 14 + Math.min(weight, 2) * 15;
+        const peak = new THREE.Mesh(
+          new THREE.ConeGeometry(4.8 + weight * 4.2, 15 + weight * 18, 9),
+          new THREE.MeshStandardMaterial({
+            color: 0xf2c15f,
+            emissive: 0x3f2d08,
+            transparent: true,
+            opacity: 0.66,
+            roughness: 0.32,
+            metalness: 0.04
+          })
+        );
+        peak.position.copy(point);
+        peak.userData = {
+          kind: "spectrumLocalDeviationPeak",
+          item: hotspot,
+          hotspotSecondary: true,
+          status: hotspot.status || "needsReview",
+          measurementStatus: hotspot.measurementStatus || "proxy",
+          analyticReadingNotVerdict: true,
+          noStructuralVerdictCreatedByViewer: true,
+          legacyStatusFieldRead: false,
+          projectionBoundary: "Perron-Frobenius hotspot is a secondary local deviation, not the scene center"
+        };
+        registerReadingBloom(peak, "spectrum_local_deviation_peak", 0.44);
+        activeSpectrumPeakObjects.push(peak);
+        edgeGroup.add(peak);
+      });
+      const ridgeVertices = [];
+      hotspots.forEach((hotspot) => {
+        const point = cellPositions.get(String(hotspot.cellRef || ""));
+        if (!point) return;
+        ridgeVertices.push(baseCenter.x, baseCenter.y + 0.8, baseCenter.z, point.x, point.y + 4, point.z);
+      });
+      addLineSegments(ridgeVertices, sceneColorHex("analytic_reading"), 0.34, "spectrumProxyRidge", {
+        modelRelativeProxy: true,
+        analyticReadingNotVerdict: true,
+        noStructuralVerdictCreatedByViewer: true
+      });
+      const note = createTextSprite("SAFE lawful plain remains central; spectrum peaks are proxy local deviations", "#e8f3ff", "rgba(14,35,58,0.74)");
+      note.position.copy(baseCenter).add(new THREE.Vector3(0, 32, 0));
+      note.userData = {
+        kind: "spectrumAnalyticBoundaryLabel",
+        analyticReadingNotVerdict: true,
+        noStructuralVerdictCreatedByViewer: true,
+        legacyStatusFieldRead: false
+      };
+      edgeGroup.add(note);
+      window.__archsigViewerSpectrumPeaks = stats;
+    }
+
+    function spectrumAxisPosition(center, axisRef, index, total, item) {
+      const hash = hashText(String(axisRef || index));
+      const ring = Math.floor(index / 8);
+      const slot = index % 8;
+      const angle = (slot / Math.max(Math.min(total, 8), 1)) * Math.PI * 2;
+      const radius = item?.plainRole === "lawful_plain_measured_zero" ? 14 + ring * 10 : 38 + ring * 12;
+      return new THREE.Vector3(
+        center.x + Math.cos(angle) * radius + ((hash % 7) - 3) * 0.18,
+        center.y + (item?.plainRole === "lawful_plain_measured_zero" ? 1.2 : 6),
+        center.z + Math.sin(angle) * radius + (((hash >> 4) % 7) - 3) * 0.18
+      );
+    }
+
+    function updateSpectrumPeakAnimation() {
+      const t = performance.now() * 0.001;
+      activeSpectrumPeakObjects.forEach((object, index) => {
+        const scale = 1 + Math.sin(t * 2.2 + index * 0.7) * 0.06;
+        object.scale.set(scale, 1 + (scale - 1) * 0.55, scale);
+      });
+    }
+
+    function spectrumNumber(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : 0;
     }
 
     function renderAnalyticOverlays(scene, bundle, positions, encoding, limits = {}) {
