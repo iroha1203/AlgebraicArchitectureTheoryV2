@@ -13969,6 +13969,29 @@ fn archsig_atom_viewer_static_app_is_packaged_asset() {
         "viewer V14 must keep fiber bundle as analytic projection without structural verdict"
     );
     assert!(
+        html.contains("createLawfulLociIntersection")
+            && html.contains("window.__archsigViewerLawfulLociIntersection")
+            && html.contains("lawfulLociIntersectionPlane")
+            && html.contains("tor1ResidueMass")
+            && html.contains("ag.law-conflict-tor@1/Tor_1 residue"),
+        "viewer V15 must render law-conflict Tor overlays as lawful loci intersection planes with Tor_1 residue mass"
+    );
+    assert!(
+        html.contains("PlaneGeometry approximation; discrete Tor_1 residue bundle")
+            && html.contains("noTransversalityProof: true")
+            && html.contains("discreteQuantityBundle: true")
+            && html.contains("noStructuralVerdict: true")
+            && html.contains("Tor_1 residue loci: PlaneGeometry approximation, no transversality proof"),
+        "viewer V15 must make PlaneGeometry approximation and non-verdict boundaries explicit"
+    );
+    assert!(
+        html.contains("lawfulLociRepairTransfers")
+            && html.contains("lawfulLociRepairMassTransfer")
+            && html.contains("explicitTransferOnly: true")
+            && html.contains("repair mass transfer is rendered only when explicit packet transfer data is present"),
+        "viewer V15 must gate repair mass transfer rendering on explicit packet data"
+    );
+    assert!(
         html.contains("type=\"file\"")
             && html.contains("dragover")
             && html.contains("./archsig-atom-viewer-data.json"),
