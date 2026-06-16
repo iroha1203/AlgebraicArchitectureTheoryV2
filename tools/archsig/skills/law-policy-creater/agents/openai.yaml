@@ -1,4 +1,4 @@
 interface:
   display_name: "LawPolicy Creater"
-  short_description: "Create ArchSig LawPolicy v1 selector artifacts"
-  default_prompt: "Use $law-policy-creater to derive a law-policy/v1 selector artifact from repository conventions, human intent, ArchMap evidence, and user decisions; validate the result."
+  short_description: "Create LawPolicy and AG profiles"
+  default_prompt: "Use $law-policy-creater to derive a law-policy/v1 artifact with MeasurementProfile v1 for AG measurement and validate the result."

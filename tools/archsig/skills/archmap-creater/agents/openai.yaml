@@ -1,4 +1,4 @@
 interface:
   display_name: "ArchMap Creater"
-  short_description: "Create and validate ArchMap artifacts"
-  default_prompt: "Use $archmap-creater to create an archmap/v1 artifact from repository evidence."
+  short_description: "Create ArchMap v2 AG input artifacts"
+  default_prompt: "Use $archmap-creater to create an archmap/v2 finite-poset-site artifact from repository evidence."

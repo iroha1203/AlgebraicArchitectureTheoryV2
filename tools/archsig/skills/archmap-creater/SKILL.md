@@ -1,24 +1,57 @@
 ---
 name: archmap-creater
-description: Create and validate ArchMap v1 Atom artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap/v1 JSON file, prepare source-grounded atoms and molecules, or run ArchSig v1 analyze from code/docs/tests/traces.
+description: Create and validate ArchMap artifacts from repository evidence, especially AG measurement archmap/v2 finite-poset-site JSON. Use when Codex is asked to draft, generate, update, or validate an ArchMap, prepare source-grounded atoms, contexts, covers, extractionDoctrineRef, or run ArchSig analyze from code/docs/tests/traces.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap/v1` as source-grounded Atom input for ArchSig.
+Create `archmap/v2` as the source-grounded finite-poset-site input for
+ArchSig AG measurement.
 
-ArchMap v1 has three primary surfaces:
+ArchMap v2 has five primary surfaces:
 
-- `sources`: source ledger for files, symbols, docs, tests, traces, and policy refs that were actually read.
-- `atoms`: primitive source-grounded Atom facts from those sources.
-- `molecules`: explicit local configurations that group existing atom ids.
+- `schema`: exactly `archmap/v2`.
+- `extractionDoctrineRef`: declared doctrine id, fingerprint, and AAT components
+  used for A8-relative determinism.
+- `sources`: source ledger for files, symbols, docs, tests, traces, and policy
+  refs that were actually read.
+- `atoms`: subject / axis-decorated primitive source-grounded Atom facts.
+- `contexts`: finite poset contexts, each with explicit atom membership and
+  optional `restrictsTo` edges.
+- `covers`: finite context families selected as cover candidates.
 
 ArchMap does not contain obstruction circuits, law violations, signature axes,
 distance results, risk findings, projection hints, concern hints, observation
 gap ledgers, Lean proof objects, or global architecture truth. ArchSig computes
-bounded diagnostics later from `ArchMap + LawPolicy + evaluator registry`.
+bounded diagnostics later from `ArchMap + LawPolicy + MeasurementProfile +
+evaluator registry`.
+
+Use `archmap/v1` only when the user explicitly targets the bounded legacy
+structural-analysis path. Do not migrate v2 contexts back into v1 molecules for
+AG measurement work.
+
+## Non-Negotiable Authoring Discipline
+
+Author ArchMap by reading and interpreting source evidence, not by generating a
+static-analysis dump.
+
+- Do not create final atoms with a repository-wide script, AST walker, import
+  graph dump, filename template, or "minimal JSON" boilerplate. Scripts may help
+  list candidate files or run validation, but the accepted atoms / contexts /
+  covers must come from manual source reading and semantic integration.
+- Do not stop at a minimal component/relation inventory when the requested scope
+  exposes capabilities, states, effects, authority, contracts, runtime traces,
+  or domain semantics. A component-only ArchMap is a draft unless the source
+  scope truly contains only component existence evidence.
+- Do not use ArchMap to smuggle evaluator outcomes. Diagnostic-shaped tokens
+  such as `mismatch`, `obstruction`, `violation`, `risk`, `debt`, `unsafe`,
+  `lawful`, `nonzero`, or `failure` are forbidden as shortcuts. Use them only
+  when the extraction doctrine / fixture vocabulary explicitly requires that
+  observed relation and the source refs support it directly.
+- Before delivery, run the self-review gate in `references/prompt-pack.md`.
+  If any gate fails, revise the ArchMap instead of explaining the failure away.
 
 ## Inputs
 
@@ -36,6 +69,22 @@ artifact ids.
 This skill must work with only this skill bundle and a built `archsig`
 executable. Do not require the ArchSig source checkout.
 
+## Extraction Doctrine Rules
+
+Every v2 ArchMap must include:
+
+```json
+"extractionDoctrineRef": {
+  "doctrineId": "doctrine:<scope>@1",
+  "fingerprint": "sha256:<stable-fingerprint-or-user-provided-id>",
+  "components": ["V", "Gamma", "R", "rho", "E", "N"]
+}
+```
+
+Use the actual project doctrine id and fingerprint when supplied. If no
+fingerprint source is available, ask or mark validation as not final; do not
+invent comparability between different doctrines.
+
 ## Atom Rules
 
 Write atoms directly. In the ArchSig context these are the atoms.
@@ -45,24 +94,33 @@ Allowed atom `kind` values:
 - `component`
 - `relation`
 - `capability`
-- `dataState`
+- `state`
 - `effect`
 - `authority`
 - `contract`
 - `semantic`
 - `runtime`
 
-Each atom must have:
+Each v2 atom must have:
 
 - `id`
 - `kind`
-- the constructor-specific fields required by the v1 schema
+- `subject`
+- `axis`
 - `refs` resolving to `sources` ids
+- optional `predicate`
+- optional `object`
 - optional `label` for human display only
 
 Do not use natural-language-only atoms. `predicate`, `effect`, `authority`,
 `contract`, `meaning`, and `interaction` are controlled predicate tokens for
 ArchSig normalization, not prose paragraphs. Use `label` for prose display.
+
+Semantic atoms require use-evidence. A `semantic` atom is valid only when it
+captures how a symbol / value / boundary is used in the repository: name the
+subject, choose a predicate token from observed usage, and cite the files,
+tests, docs, or traces where that use is enacted. Do not write dictionary
+glosses, vibes, design praise, or policy conclusions as `semantic`.
 
 Do not write removed v0 fields:
 
@@ -74,10 +132,24 @@ Do not write removed v0 fields:
 - `concernHints`
 - `observationGaps`
 - `nonConclusions` as a defensive prose ledger
+- `molecules` for AG measurement v2 primary input
 
 Missing evidence is handled by ArchSig as `blocked`, `unknown`, or
 `unmeasured` when a selected evaluator needs support that is not present. Do
 not encode missing evidence as measured absence.
+
+## Context And Cover Rules
+
+Contexts and covers are source-grounded observation structure.
+
+- A `context` has `id`, non-empty `atoms`, optional `restrictsTo`, `refs`, and
+  optional `label`.
+- `restrictsTo` edges must resolve to context ids, be irreflexive, and form an
+  acyclic finite poset.
+- A `cover` has `id`, non-empty `contexts`, `refs`, and optional `label`.
+- Contexts / covers do not declare coefficients, witness variables, verdict
+  predicates, U-adequacy, exactness, Leray assumptions, or repair semantics.
+  Those belong to `MeasurementProfile` and the assumption ledger.
 
 ## Authoring Workflow
 
@@ -88,19 +160,33 @@ not encode missing evidence as measured absence.
 2. Extract primitive atoms.
    - Split workflows, responsibilities, and policies into primitive facts.
    - Prefer small atoms with direct source refs.
-   - Use `semantic` only for a primitive source-supported meaning, not a whole workflow.
+   - Cover all observed atom kinds relevant to the scope; do not collapse
+     capability, state, effect, authority, contract, runtime, and semantic
+     evidence into coarse component / relation atoms.
+   - Use `semantic` only for a primitive source-supported meaning, not a whole
+     workflow. Extract it from use: how the term participates in commands,
+     tests, invariants, docs, status transitions, permissions, or runtime
+     traces.
 
-3. Add molecule membership.
-   - A molecule is a local configuration of existing atom ids.
-   - Do not invent molecule kind enums.
-   - Do not create reverse paths, squares, fillers, or risks in ArchMap.
+3. Add contexts and covers.
+   - Contexts are finite atom subfamilies with source refs.
+   - Use `restrictsTo` only for observed restriction direction.
+   - Covers are selected finite context families grounded in source refs.
+   - Do not create squares, fillers, obstruction classes, repairs, or risks in
+     ArchMap.
 
 4. Validate.
    - Run `archsig archmap --input <archmap.json> --out <archmap-validation.json>`.
-   - Unknown kind, unknown predicate, unresolved source refs, removed v0 fields, and legacy aliases must fail.
+   - Unknown kind, unresolved source refs, invalid context / cover refs,
+     removed v0 fields, and legacy aliases must fail.
+   - Predicate tokens are still an authoring discipline: prefer evaluator-known
+     tokens from fixtures or policy docs, but do not claim validation rejects
+     every unknown predicate unless the current tool report says so.
 
 5. Run ArchSig when LawPolicy is available.
    - Run `archsig analyze --archmap <archmap.json> --law-policy <law_policy.json> --out-dir <out>`.
+   - For AG evaluators, LawPolicy must include `measurementProfileRef` and a
+     matching `measurementProfiles[]` entry.
    - Use `--strict-distance` when blocked / unknown / unmeasured distance must fail the run.
    - Use `--emit-raw-artifacts` when packet / detail-index / LLM handoff artifacts are needed.
 
@@ -129,7 +215,7 @@ When delivering an ArchMap, include:
 1. ArchMap path
 2. source scope summary
 3. atoms grouped by kind
-4. molecule membership summary
+4. contexts and cover summary
 5. explicit notes for private / unavailable / out-of-scope evidence outside the primary JSON
 6. validation result
 7. optional analyze output directory and verdict
@@ -138,8 +224,8 @@ Use concise Japanese when working in this repository.
 
 ## References
 
-- `references/schema-cheatsheet.md`: v1 schema shape
+- `references/schema-cheatsheet.md`: v2 schema shape
 - `references/mapping-guide.md`: source cue to atom mapping
-- `references/examples.md`: v1 examples
+- `references/examples.md`: v2 examples
 - `references/repository-survey.md`: survey protocol
 - `references/prompt-pack.md`: prompt template
