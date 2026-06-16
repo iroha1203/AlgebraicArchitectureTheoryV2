@@ -19,6 +19,8 @@ Then inspect likely config and architecture surfaces:
 - framework config and route/dependency declarations
 - security, tenancy, permissions, auth, transaction, provider, LLM, and runtime docs
 - tests that encode required behavior, when tests are in scope
+- ArchMap v2 covers and source-grounded context boundaries when an AG
+  measurement profile is requested
 
 ## Evidence Classification
 
@@ -33,11 +35,15 @@ Then inspect likely config and architecture surfaces:
 | --- | --- |
 | "Repository adopts SOLID" | `pack: "solid@1"`, `basis: ["policy-basis:solid"]` |
 | "Domain layer must not depend on infrastructure" | `law: "domain.no-direct-infra-dependency"`, `evaluator: "domain.no-direct-infra-dependency@1"`, `basis: ["policy-basis:layering"]` |
+| "Measure selected cover for Čech obstruction" | `law: "ag.cech-obstruction"`, `evaluator: "ag.cech-obstruction@1"`, plus `measurementProfileRef` |
+| "Measure square-free repair candidates" | `law: "ag.square-free-repair"`, `evaluator: "ag.square-free-repair@1"`, plus `measurementProfileRef` |
 | repeated but undocumented pattern | question to user, not policy yet |
 
 Do not translate evidence into witness rules, signature axes, coverage
 requirements, exactness assumptions, or distance profiles. Those are evaluator
-registry responsibilities in v1.
+registry responsibilities in v1. For AG, put selected cover, coefficient,
+witness family, resolution selector, predicates, certificate selector, and
+verdict discipline in `measurementProfiles[]`.
 
 ## Survey Output
 
@@ -46,5 +52,6 @@ Before drafting JSON, summarize:
 - docs and files read
 - candidate laws with evidence refs
 - candidate policy pack / evaluator selectors
+- candidate AG measurement profile fields, if applicable
 - decisions that need user confirmation
 - blind spots and excluded evidence
