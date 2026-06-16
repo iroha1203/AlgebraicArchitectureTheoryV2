@@ -13,6 +13,7 @@ target/
 *.dll
 *.exe
 .DS_Store
+.playwright-mcp/
 
 # wrangler files
 .wrangler

@@ -1,0 +1,1874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ArchView — AAT geometry viewer</title>
+<style>
+  :root {
+    --bg0: #05070d;
+    --bg1: #0a0f1a;
+    --ink: #e8eef7;
+    --ink-dim: #9fb0c6;
+    --ink-faint: #5d6c84;
+    --glass: rgba(18, 26, 41, 0.62);
+    --glass-line: rgba(120, 150, 200, 0.16);
+    --structural-zero: #38e0c8;   /* measured_zero / lawful — calm teal */
+    --structural-nonzero: #ffb24c; /* measured_nonzero — amber obstruction */
+    --analytic: #b69cff;          /* analytic_reading lane — lavender */
+    --silence: #6a7790;           /* unmeasured / silent — frosted grey */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg0); color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; overflow: hidden; }
+  #scene { position: fixed; inset: 0; background: radial-gradient(circle at 50% 30%, #24262b 0%, #131418 45%, #050506 80%); }
+  #scene canvas { display: block; }
+
+  .panel { position: fixed; background: var(--glass); border: 1px solid var(--glass-line);
+    border-radius: 14px; backdrop-filter: blur(16px) saturate(1.15); -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.45); }
+
+  /* top toolbar */
+  #toolbar { top: 14px; left: 14px; right: 14px; display: flex; gap: 14px; align-items: center;
+    padding: 10px 14px; flex-wrap: wrap; }
+  #toolbar .brand { font-weight: 650; letter-spacing: 0.2px; font-size: 14px; white-space: nowrap; }
+  #toolbar .brand small { color: var(--ink-faint); font-weight: 500; }
+  #toolbar .group { display: flex; gap: 6px; align-items: center; }
+  #toolbar .sep { width: 1px; height: 26px; background: var(--glass-line); }
+  .chip { font-size: 12px; color: var(--ink-dim); padding: 6px 10px; border-radius: 9px;
+    border: 1px solid transparent; cursor: pointer; user-select: none; white-space: nowrap; }
+  .chip:hover { color: var(--ink); background: rgba(120,150,200,0.10); }
+  .chip.on { color: var(--ink); background: rgba(120,150,200,0.16); border-color: var(--glass-line); }
+  .scene-btn { font-size: 12.5px; }
+  button.bare { font: inherit; color: var(--ink-dim); background: transparent; border: 1px solid var(--glass-line);
+    border-radius: 9px; padding: 6px 11px; cursor: pointer; font-size: 12px; }
+  button.bare:hover { color: var(--ink); border-color: rgba(120,150,200,0.4); }
+  .toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-dim); cursor: pointer; }
+  .toggle input { accent-color: #5fa8ff; }
+  .grow { flex: 1; }
+  #search { background: rgba(8,12,20,0.6); border: 1px solid var(--glass-line); color: var(--ink);
+    border-radius: 9px; padding: 6px 10px; font-size: 12px; width: 170px; }
+  #search::placeholder { color: var(--ink-faint); }
+
+  /* question HUD (center top) */
+  #question { top: 116px; left: 50%; transform: translateX(-50%); padding: 8px 16px; text-align: center;
+    pointer-events: none; max-width: 70vw; }
+  #question .scene-title { font-size: 13px; font-weight: 600; }
+  #question .scene-q { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+
+  /* insight rail (left, below toolbar) */
+  #insight-rail { left: 14px; top: 116px; width: 288px; max-height: calc(100vh - 480px); min-height: 120px; overflow: auto; padding: 12px 14px; }
+  #insight-rail h4 { margin: 0 0 10px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
+  #insight-rail h4 span { color: var(--ink-dim); }
+  .insight-card { display: flex; gap: 9px; align-items: flex-start; padding: 9px 10px; margin: 6px 0; border-radius: 10px;
+    border: 1px solid var(--glass-line); background: rgba(8,12,20,0.45); cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  .insight-card:hover { background: rgba(120,150,200,0.12); border-color: rgba(120,150,200,0.4); }
+  .insight-card.active { background: rgba(120,150,200,0.16); border-color: rgba(140,170,220,0.6); }
+  .insight-card .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; margin-top: 4px; box-shadow: 0 0 7px currentColor; }
+  .insight-card .ic-body { min-width: 0; }
+  .insight-card .ic-kind { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .insight-card .ic-one { font-size: 11px; color: var(--ink-dim); margin-top: 2px; line-height: 1.35; }
+  .insight-card .ic-rank { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
+  .rail-empty { font-size: 11.5px; color: var(--ink-dim); line-height: 1.5; padding: 6px 2px; }
+
+  /* legend (left) */
+  #legend { left: 14px; bottom: 56px; width: 246px; padding: 12px 14px; font-size: 11.5px; }
+  #legend h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--ink-faint); }
+  .leg-row { display: flex; gap: 9px; align-items: flex-start; margin: 6px 0; color: var(--ink-dim); }
+  .leg-mark { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 auto; margin-top: 1px; position: relative; }
+  .leg-mark.ring { border-radius: 50%; background: transparent; border: 2px solid var(--structural-zero); }
+  .leg-mark.seam { background: repeating-linear-gradient(90deg, var(--structural-nonzero) 0 4px, transparent 4px 7px); border-radius: 2px; }
+  .leg-mark.frost { background: var(--silence); opacity: 0.5; }
+  .leg-row b { color: var(--ink); font-weight: 600; }
+  #legend .note { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--glass-line);
+    color: var(--ink-faint); font-size: 10.5px; line-height: 1.45; }
+
+  /* detail (right) */
+  #detail { right: 14px; top: 116px; width: 290px; max-height: calc(100vh - 188px); overflow: auto; padding: 14px 16px; font-size: 12.5px; }
+  #detail.empty { color: var(--ink-faint); }
+  #detail h3 { margin: 0 0 4px; font-size: 14px; }
+  #detail .kind { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.5px; }
+  #detail dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; }
+  #detail dt { color: var(--ink-faint); }
+  #detail dd { margin: 0; color: var(--ink-dim); word-break: break-word; }
+  .badge { display: inline-block; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; margin-top: 8px; }
+  .badge.zero { background: rgba(56,224,200,0.14); color: var(--structural-zero); }
+  .badge.nonzero { background: rgba(255,178,76,0.16); color: var(--structural-nonzero); }
+  .badge.analytic { background: rgba(182,156,255,0.16); color: var(--analytic); }
+  .badge.silent { background: rgba(106,119,144,0.18); color: var(--ink-dim); }
+  #detail .ins-one { font-size: 13px; color: var(--ink); margin-top: 6px; line-height: 1.45; }
+  #detail .ins-why { font-size: 12px; color: var(--ink-dim); margin-top: 8px; line-height: 1.45; }
+  #detail .sec-h { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-faint); margin: 13px 0 5px; }
+  #detail .anchor { font-size: 12px; padding: 6px 8px; border-radius: 7px; background: rgba(8,12,20,0.5); border: 1px solid var(--glass-line); margin: 4px 0; }
+  #detail .a-subj { color: #8fe0ff; font-weight: 600; }
+  #detail .a-pred { color: var(--ink-faint); font-style: italic; }
+  #detail .a-obj { color: var(--ink-dim); }
+  #detail .a-src { color: var(--ink-faint); font-size: 10.5px; margin-top: 3px; word-break: break-word; }
+  #detail .ins-action { font-size: 12.5px; color: var(--structural-zero); }
+  #detail .ins-btn { margin: 10px 8px 0 0; font-size: 11.5px; }
+  #detail .ins-nonclaim { font-size: 10.5px; color: var(--ink-faint); line-height: 1.45; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-line); }
+
+  /* status bar */
+  #status { left: 14px; right: 14px; bottom: 14px; height: 34px; display: flex; align-items: center; gap: 14px;
+    padding: 0 14px; font-size: 11.5px; color: var(--ink-dim); }
+  #status .verdict { font-weight: 600; }
+  #status .verdict.zero { color: var(--structural-zero); }
+  #status .verdict.nonzero { color: var(--structural-nonzero); }
+  #status .verdict.foundation { color: #8fbfd0; }
+  #status .dim { color: var(--ink-faint); }
+  #status .grow { flex: 1; }
+
+  /* report slide-over */
+  #report { top: 0; right: 0; bottom: 0; width: min(560px, 92vw); border-radius: 0; border-right: none; border-top: none; border-bottom: none;
+    transform: translateX(102%); transition: transform 0.32s cubic-bezier(.4,.1,.2,1); overflow: auto; padding: 22px 24px 60px; }
+  #report.open { transform: translateX(0); }
+  #report h2 { margin: 0 0 2px; font-size: 17px; }
+  #report .sub { color: var(--ink-faint); font-size: 12px; margin-bottom: 16px; }
+  #report section { margin: 18px 0; }
+  #report h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink-faint); margin: 0 0 8px; }
+  #report .verdict-card { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--glass-line); background: rgba(8,12,20,0.5); }
+  #report .verdict-card .code { font-size: 15px; font-weight: 650; }
+  #report .verdict-card.zero .code { color: var(--structural-zero); }
+  #report .verdict-card.nonzero .code { color: var(--structural-nonzero); }
+  #report .verdict-card.foundation .code { color: #8fbfd0; }
+  #report .verdict-card .means { color: var(--ink-dim); font-size: 12.5px; margin-top: 6px; }
+  #report .metrics { display: flex; gap: 10px; flex-wrap: wrap; }
+  #report .metric { flex: 1 1 80px; padding: 10px 12px; border-radius: 10px; background: rgba(8,12,20,0.5); border: 1px solid var(--glass-line); }
+  #report .metric b { display: block; font-size: 18px; }
+  #report .metric span { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.5px; }
+  #report ul { margin: 0; padding-left: 18px; }
+  #report li { margin: 5px 0; color: var(--ink-dim); font-size: 12.5px; }
+  #report .item { padding: 10px 12px; border-radius: 10px; background: rgba(8,12,20,0.42); border: 1px solid var(--glass-line); margin: 8px 0; }
+  #report .item .t { font-weight: 600; font-size: 12.5px; }
+  #report .item .d { color: var(--ink-dim); font-size: 12px; margin-top: 3px; }
+  #report .boundary { color: var(--ink-faint); font-size: 11.5px; line-height: 1.5; }
+  #report a { color: #6fb2ff; text-decoration: none; }
+  #report-close { position: absolute; top: 14px; right: 16px; }
+
+  /* drop overlay */
+  #drop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(5,7,13,0.7); backdrop-filter: blur(4px); z-index: 50; font-size: 18px; color: var(--ink); pointer-events: none; }
+  #drop.active { display: flex; }
+  #drop .box { border: 2px dashed rgba(120,150,200,0.5); border-radius: 18px; padding: 60px 80px; }
+
+  /* seam-ignition timeline (bottom, above status) */
+  #timeline { left: 318px; right: 318px; bottom: 58px; margin: 0 auto; max-width: 760px; padding: 12px 18px 14px; }
+  @media (max-width: 1100px) { #timeline { left: 14px; right: 14px; bottom: 92px; } } /* stack clear of rails on narrow screens */
+  #timeline .tl-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  #timeline .tl-title { font-size: 12px; font-weight: 600; color: var(--ink); }
+  #timeline .tl-caption { font-size: 11.5px; color: var(--ink-dim); flex: 1; }
+  #timeline .tl-caption.ignite { color: var(--structural-nonzero); font-weight: 600; }
+  #timeline .tl-caption.heal { color: var(--structural-zero); font-weight: 600; }
+  #timeline .tl-play { cursor: pointer; font-size: 13px; color: var(--ink-dim); border: 1px solid var(--glass-line);
+    border-radius: 8px; padding: 4px 11px; user-select: none; }
+  #timeline .tl-play:hover { color: var(--ink); border-color: rgba(120,150,200,0.4); }
+  #timeline .tl-track { position: relative; height: 40px; display: flex; align-items: center; }
+  #timeline .tl-line { position: absolute; left: 8px; right: 8px; height: 2px; background: var(--glass-line); }
+  #timeline .tl-frames { position: relative; width: 100%; display: flex; justify-content: space-between; }
+  #timeline .tl-tick { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 0 0 auto; }
+  #timeline .tl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--silence); border: 2px solid var(--bg1);
+    box-shadow: 0 0 0 1px var(--glass-line); transition: transform 0.15s; }
+  #timeline .tl-tick:hover .tl-dot { transform: scale(1.25); }
+  #timeline .tl-dot.zero { background: var(--structural-zero); }
+  #timeline .tl-dot.obstr { background: var(--structural-nonzero); box-shadow: 0 0 10px var(--structural-nonzero); }
+  #timeline .tl-tick.active .tl-dot { transform: scale(1.4); box-shadow: 0 0 0 2px var(--ink); }
+  #timeline .tl-tick.ignite::before { content: "⚡"; position: absolute; top: -16px; font-size: 13px; }
+  #timeline .tl-tick.heal::before { content: "✓"; position: absolute; top: -16px; font-size: 12px; color: var(--structural-zero); }
+  #timeline .tl-lab { font-size: 10px; color: var(--ink-faint); margin-top: 6px; white-space: nowrap; }
+  #timeline .tl-tick.active .tl-lab { color: var(--ink-dim); }
+
+  .hidden { display: none !important; }
+  input[type="file"] { display: none; }
+  a.filelabel { cursor: pointer; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,150,200,0.22); border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div id="toolbar" class="panel">
+    <div class="brand">ArchView<br><small id="brand-sub">AAT tooling · geometry layer</small></div>
+    <div class="sep"></div>
+    <div class="group" id="scene-buttons"></div>
+    <div class="sep"></div>
+    <div class="group" id="layer-toggles"></div>
+    <div class="grow"></div>
+    <input id="search" placeholder="find atom / context…" autocomplete="off" />
+    <button class="bare" id="reset-cam">Reset view</button>
+    <a class="filelabel"><button class="bare" id="open-file">Open data…</button></a>
+    <input id="file" type="file" accept="application/json,.json" />
+    <button class="bare" id="report-toggle">Report</button>
+  </div>
+
+  <div id="question" class="panel">
+    <div class="scene-title" id="q-title">Nerve &amp; Cover</div>
+    <div class="scene-q" id="q-question">What finite site and cover did ArchSig measure?</div>
+  </div>
+
+  <div id="insight-rail" class="panel">
+    <h4>Insights <span id="insight-count"></span></h4>
+    <div id="insight-list"></div>
+    <div id="insight-empty" class="rail-empty hidden"></div>
+  </div>
+
+  <div id="legend" class="panel"></div>
+
+  <div id="detail" class="panel empty">
+    <div class="kind">selection</div>
+    <h3>Nothing selected</h3>
+    <div style="color:var(--ink-faint);font-size:12px;margin-top:6px">Click a context cell, an atom bead, a strut, or the obstruction seam to inspect what was measured there.</div>
+  </div>
+
+  <div id="status" class="panel">
+    <span class="verdict" id="st-verdict">—</span>
+    <span class="dim" id="st-counts">no data</span>
+    <span class="grow"></span>
+    <span class="dim" id="st-boundary"></span>
+  </div>
+
+  <div id="report" class="panel">
+    <button class="bare" id="report-close">Close</button>
+    <h2>Measurement report</h2>
+    <div class="sub" id="report-sub">bounded projection of ArchMap v2 + LawPolicy + measurement packet</div>
+    <div id="report-body"></div>
+  </div>
+
+  <div id="timeline" class="panel hidden">
+    <div class="tl-head">
+      <span class="tl-play" id="tl-play">▶ Play</span>
+      <span class="tl-title" id="tl-title">Sequence</span>
+      <span class="tl-caption" id="tl-caption"></span>
+    </div>
+    <div class="tl-track"><div class="tl-line"></div><div class="tl-frames" id="tl-frames"></div></div>
+  </div>
+
+  <div id="drop"><div class="box">Drop ArchSig viewer data</div></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+
+/* ============================================================================
+ * ArchView — the AAT tooling-layer geometry viewer.
+ * A no-build single-file projection of ArchSig's measured artifacts: it renders
+ * the finite nerve as geometry and adds NO new structural verdict of its own.
+ *
+ * Editorial spine (faithfulness contract):
+ *  - Position is a deterministic layout of the MEASURED nerve topology and
+ *    atom memberships. Adjacency and membership are real; absolute coordinates
+ *    carry NO verdict. Hash is only a sub-dominant declump jitter.
+ *  - Form is driven by measured quantities: cell radius ∝ |atoms|, strut radius
+ *    ∝ |shared atoms|, bead size ∝ valence, seam ∝ measured cocycle support.
+ *  - Silence is never fabricated and never red: unmeasured / zero quantities
+ *    recede into fog or frosted grey, or are simply not drawn.
+ *  - Color lanes are separated: structural measured_zero = teal, measured_nonzero
+ *    = amber, analytic_reading = lavender, silence = grey. Bloom is reserved for
+ *    measured H¹ evidence only.
+ *  - The viewer derives no new structural verdict; it projects the one already
+ *    paid at input-contract time.
+ * ========================================================================== */
+
+/* ---- palette ------------------------------------------------------------- */
+const COL = {
+  zero: 0x38e0c8, nonzero: 0xffb24c, analytic: 0xb69cff, silence: 0x6a7790,
+  cell: 0x7fa6d8, strut: 0x9fb4d6, face: 0x8694ad, ink: 0xe8eef7,
+};
+const FAMILY_COLORS = {
+  component: 0x6fb0ff, relation: 0xff9ecb, capability: 0x8fe39a, state: 0xffd27a,
+  effect: 0xff8d6b, authority: 0xc59cff, contract: 0x6fe0d6, semantic: 0xb9c4d6,
+  runtime: 0xffc14d,
+};
+const familyColor = (f) => FAMILY_COLORS[f] ?? 0xb9c4d6;
+
+/* ---- deterministic prng (no Math.random in layout) ----------------------- */
+function hash32(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- three.js bootstrap -------------------------------------------------- */
+const host = document.getElementById("scene");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.75;
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = makeBackdrop();
+scene.fog = new THREE.FogExp2(0x09090b, 0.0034);
+
+function makeBackdrop() {
+  const c = document.createElement("canvas"); c.width = 64; c.height = 512;
+  const ctx = c.getContext("2d");
+  const g = ctx.createLinearGradient(0, 0, 0, 512);
+  g.addColorStop(0, "#26282d"); g.addColorStop(0.5, "#141519"); g.addColorStop(1, "#050506");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 512);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 4000);
+camera.position.set(0, 38, 132);
+camera.layers.enableAll();
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 12;
+controls.maxDistance = 900;
+
+/* environment IBL — vessel, does not drive meaning */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+/* 3-point-ish lighting + hemisphere ambient */
+const key = new THREE.DirectionalLight(0xdfeaff, 3.1); key.position.set(70, 130, 90); scene.add(key);
+const fill = new THREE.DirectionalLight(0xa8bce6, 1.35); fill.position.set(-100, 40, -50); scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffd9a8, 1.5); rim.position.set(-20, -50, -130); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xbcd0f4, 0x1a2438, 1.25));
+
+/* ground reference grid — faint, neutral; not a measurement */
+const grid = new THREE.GridHelper(1600, 80, 0x1a2740, 0x101a2c);
+grid.material.transparent = true; grid.material.opacity = 0.18; grid.position.y = -0.2;
+scene.add(grid);
+
+/* projection-boundary horizon membrane (ambient in every scene) */
+const horizon = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 48, 32),
+  new THREE.MeshBasicMaterial({ color: 0x0c1830, transparent: true, opacity: 0.05, side: THREE.BackSide })
+);
+horizon.scale.setScalar(420); scene.add(horizon);
+
+/* ---- selective bloom (measured-evidence only) ---------------------------- */
+const BLOOM_LAYER = 1;
+const bloomLayer = new THREE.Layers(); bloomLayer.set(BLOOM_LAYER);
+const darkMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const matCache = new Map();
+
+const renderScenePass = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.25, 0.6, 0.0);
+const bloomComposer = new EffectComposer(renderer);
+bloomComposer.renderToScreen = false;
+bloomComposer.addPass(renderScenePass);
+bloomComposer.addPass(bloomPass);
+
+const finalPass = new ShaderPass(new THREE.ShaderMaterial({
+  uniforms: { baseTexture: { value: null }, bloomTexture: { value: bloomComposer.renderTarget2.texture } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `uniform sampler2D baseTexture; uniform sampler2D bloomTexture; varying vec2 vUv;
+    void main(){ gl_FragColor = texture2D(baseTexture, vUv) + vec4(1.0) * texture2D(bloomTexture, vUv); }`,
+  defines: {},
+}), "baseTexture");
+finalPass.needsSwap = true;
+const finalComposer = new EffectComposer(renderer);
+finalComposer.addPass(renderScenePass);
+finalComposer.addPass(finalPass);
+
+const hiddenForBloom = [];
+function darkenNonBloomed(obj) {
+  if (bloomLayer.test(obj.layers)) return;
+  if (obj.isMesh) { matCache.set(obj.uuid, obj.material); obj.material = darkMat; }
+  else if ((obj.isLine || obj.isSprite || obj.isPoints) && obj.visible) { obj.visible = false; hiddenForBloom.push(obj); }
+}
+function restoreMaterial(obj) {
+  if (matCache.has(obj.uuid)) { obj.material = matCache.get(obj.uuid); matCache.delete(obj.uuid); }
+}
+function restoreHidden() { for (const o of hiddenForBloom) o.visible = true; hiddenForBloom.length = 0; }
+let bloomOk = true;
+function renderFrame() {
+  if (!bloomOk) { renderer.render(scene, camera); return; }
+  const bg = scene.background;
+  try {
+    scene.background = null;                 // keep the backdrop out of the bloom pass (only evidence blooms)
+    scene.traverse(darkenNonBloomed);
+    bloomComposer.render();
+    scene.traverse(restoreMaterial);
+    restoreHidden();
+    scene.background = bg;
+    finalComposer.render();
+  } catch (e) {
+    // restore any swapped/hidden state before falling back, or meshes stay black / backdrop stays null
+    scene.traverse(restoreMaterial); restoreHidden(); scene.background = bg;
+    bloomOk = false; matCache.clear(); renderer.render(scene, camera);
+  }
+}
+
+/* ============================================================================
+ * Scene content groups
+ * ========================================================================== */
+const root = new THREE.Group(); scene.add(root);
+const G = {
+  cells: new THREE.Group(), atoms: new THREE.Group(), struts: new THREE.Group(),
+  faces: new THREE.Group(), seam: new THREE.Group(), terrain: new THREE.Group(),
+  periods: new THREE.Group(), cages: new THREE.Group(), labels: new THREE.Group(),
+  verdict: new THREE.Group(),
+};
+Object.values(G).forEach((g) => root.add(g));
+
+const pickables = []; // {mesh, info}
+let MODEL = null;     // parsed model
+let DATA = null;      // raw viewer data
+let COMPANIONS = { summary: null, manifest: null };
+
+/* ---- label sprites ------------------------------------------------------- */
+function makeLabel(text, { color = "#cdd9ec", scale = 1, bg = "rgba(8,12,20,0.55)" } = {}) {
+  const pad = 14, font = 30;
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d");
+  ctx.font = `600 ${font}px ui-sans-serif, system-ui, sans-serif`;
+  const w = Math.ceil(ctx.measureText(text).width) + pad * 2;
+  const h = font + pad * 2;
+  c.width = w; c.height = h;
+  ctx.font = `600 ${font}px ui-sans-serif, system-ui, sans-serif`;
+  ctx.fillStyle = bg;
+  roundRect(ctx, 0, 0, w, h, 12); ctx.fill();
+  ctx.fillStyle = color; ctx.textBaseline = "middle";
+  ctx.fillText(text, pad, h / 2);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  sp.scale.set((w / h) * 6 * scale, 6 * scale, 1);
+  return sp;
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+/* ============================================================================
+ * Model build — strictly from measured fields
+ * ========================================================================== */
+function buildModel(data) {
+  const site = data.finitePosetSite || { atoms: [], contexts: [], covers: [] };
+  const ov = data.aatGeometryOverlays || {};
+  const nerve = ov.nerve || { vertices: [], edges: [], triangles: [] };
+
+  // glyph valence by atomRef (the only measured per-atom numeric);
+  // cellCarriers maps a laplacian/spectrum cell id (== glyph carrier) -> its member atoms,
+  // so analytic-cell overlays can be anchored via the measured carrier graph (not string surgery).
+  const valence = new Map();
+  const cellCarriers = new Map();
+  for (const g of ov.atomGlyphs || []) {
+    valence.set(g.atomRef, g.valence ?? 1);
+    if (g.carrier) { if (!cellCarriers.has(g.carrier)) cellCarriers.set(g.carrier, []); cellCarriers.get(g.carrier).push(g.atomRef); }
+  }
+
+  // atom family/labels from atomNodes
+  const nodeMeta = new Map();
+  for (const n of data.atomNodes || []) nodeMeta.set(n.nodeId, n);
+
+  // contexts
+  const contexts = (site.contexts || []).map((c) => ({
+    id: c.normalizedContextId, atomIds: c.atomIds || [], restrictsTo: c.restrictsTo || [],
+    posetStatus: c.posetStatus, raw: c,
+  }));
+  const ctxById = new Map(contexts.map((c) => [c.id, c]));
+
+  // nerve adjacency (the measured cover restriction edges)
+  const edges = (nerve.edges || []).map((e) => ({
+    id: e.edgeId, a: e.sourceContextRef, b: e.targetContextRef,
+    support: e.supportAtomRefs || [], value: e.value ?? 0,
+  })).filter((e) => ctxById.has(e.a) && ctxById.has(e.b));
+
+  const triangles = (nerve.triangles || []).map((t) => ({
+    id: t.faceId, ctx: t.contextRefs || [], shared: t.sharedAtomRefs || [],
+    coherence: t.coherenceClaim,
+  })).filter((t) => (t.ctx || []).every((cid) => ctxById.has(cid)));
+
+  // atoms
+  const atoms = (site.atoms || []).map((a) => {
+    const id = a.normalizedAtomId;
+    const meta = nodeMeta.get(id) || {};
+    return {
+      id, kind: a.atomKind, predicate: a.predicate, subject: a.subject,
+      contexts: a.contextMemberships || [], valence: valence.get(id) ?? 1,
+      family: meta.atomFamily || a.atomKind, labels: meta.labels || [], axis: a.axis,
+    };
+  });
+
+  // cocycle (the measured H¹ obstruction representative)
+  const cr = ov.cocycleRibbon || {};
+  const cge = cr.closureGapEncoding || {};
+  const cocycle = {
+    visible: !!cge.visible,
+    supportEdges: cr.supportEdges || [],
+    supportAtoms: cr.supportAtomRefs || [],
+    nonClaim: cge.nonClaim || "",
+  };
+
+  // verdict
+  const dbar = data.decisionBar || {};
+  const rp = data.reportPane || {};
+  const conclusion = dbar.conclusion || rp.conclusion || "—";
+  // measured obstruction family (H1 or AG square-free) = amber; no-measured-obstruction = teal;
+  // measurement-foundation-ready = its own calm lane (rows present, no nonzero obstruction measured).
+  const isNonzero = /MEASURED_.*OBSTRUCTION/.test(conclusion) && !/NO_MEASURED/.test(conclusion);
+  const isZero = /NO_MEASURED_.*OBSTRUCTION/.test(conclusion);
+  const isFoundation = /FOUNDATION_READY/.test(conclusion);
+
+  // analytic overlays (lavender lane)
+  const analytic = {
+    curvature: firstOverlay(ov.curvatureHotspotOverlays),
+    spectralGap: firstOverlay(ov.spectralGapOverlays),
+    spectrum: ov.spectrumLandscape && (ov.spectrumLandscape.cells || []).length ? ov.spectrumLandscape : null,
+    period: firstOverlay(ov.periodPairingOverlays),
+    transfer: firstOverlay(ov.transferCostOverlays),
+  };
+  const locus = ov.locusField || {};
+  const cages = (ov.forbiddenCages || []);
+  const repairs = (ov.repairMorphs || []);
+
+  // ---- insight layer (ArchView reads what ArchSig measured; it computes no new verdict) ----
+  // code anchors per atom: subjectRef / objectRef / sourceRefSamples / predicate (the source-landing bridge).
+  const anchorByAtom = new Map();
+  for (const n of data.atomNodes || []) {
+    anchorByAtom.set(n.nodeId, {
+      subjectRef: n.subjectRef, objectRef: n.objectRef, predicate: n.predicate,
+      family: n.atomFamily, sourceRefs: (n.sourceRefSamples || []).map((s) => s.ref),
+    });
+  }
+  // ranked insight cards. Rank = projection of emitted fields only: measured-first, then severity, then magnitude.
+  const SEV = { high: 0, medium: 1, info: 2 };
+  const insights = (data.insightQueue || []).map((c) => {
+    const hasVerdict = !!((c.evidence && c.evidence.structuralVerdictRefs) || []).length;
+    return {
+      id: c.id, kind: c.kind, severity: c.severity || "info",
+      oneLine: c.oneLine || "", whyItMatters: c.whyItMatters || "",
+      rankingBasis: c.rankingBasis || [], evidence: c.evidence || {},
+      nextAction: c.nextAction || null, nonClaims: c.nonClaims || [],
+      nav: c.viewerNavigation || {}, tourRefs: c.tourRefs || [],
+      isMeasured: hasVerdict,                                              // a structural verdict was measured (zero OR nonzero)
+      isObstruction: hasVerdict && !/^no_measured/i.test(c.kind || ""),    // measured NONZERO obstruction only (amber lane)
+    };
+  });
+  insights.sort((a, b) => {
+    if (a.isObstruction !== b.isObstruction) return a.isObstruction ? -1 : 1; // measured obstructions lead
+    if (a.isMeasured !== b.isMeasured) return a.isMeasured ? -1 : 1;          // then measured-zero confirmations
+    const s = (SEV[a.severity] ?? 9) - (SEV[b.severity] ?? 9);
+    if (s) return s;
+    return (b.evidence.atomRefs || []).length - (a.evidence.atomRefs || []).length; // measured count tiebreak
+  });
+  // guided tours by insight id
+  const toursByInsight = new Map();
+  for (const t of data.guidedTours || []) for (const r of t.insightRefs || []) toursByInsight.set(r, t);
+  // emitted scene metadata (userQuestion + status), the ArchSig-side scene vocabulary
+  const emittedScenes = {};
+  for (const s of data.viewerVisualScenes || []) emittedScenes[s.sceneId] = { userQuestion: s.userQuestion, status: s.sceneStatus, kind: s.kind };
+
+  return {
+    contexts, ctxById, edges, triangles, atoms, cocycle, nerve, cellCarriers,
+    conclusion, isNonzero, isZero, isFoundation, analytic, locus, cages, repairs,
+    covers: site.covers || [], coverId: (site.covers && site.covers[0] && site.covers[0].normalizedCoverId) || "",
+    omitted: data.omittedDetailCounts || {}, nonConclusions: data.nonConclusions || [],
+    boundary: (ov.projectionBoundary || ""),
+    insights, anchorByAtom, toursByInsight, emittedScenes, copyBlocks: data.copyBlocks || {},
+  };
+}
+function firstOverlay(arr) { return Array.isArray(arr) && arr.length ? arr[0] : null; }
+
+/* ============================================================================
+ * Layout — context centers from the measured nerve graph (force-directed),
+ * atoms placed by their measured context memberships. Hash only declumps.
+ * ========================================================================== */
+function layoutContexts(model) {
+  const ids = model.contexts.map((c) => c.id);
+  const n = ids.length;
+  const pos = new Map();
+  if (n === 0) return pos;
+  const rnd = mulberry32(0x5eed);
+  // seed on a fibonacci-ish sphere (deterministic), then relax with the nerve graph
+  ids.forEach((id, i) => {
+    const t = (i + 0.5) / n;
+    const phi = Math.acos(1 - 2 * t);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = 46 + n * 1.4;
+    pos.set(id, new THREE.Vector3(
+      r * Math.sin(phi) * Math.cos(theta),
+      (t - 0.5) * 24,
+      r * Math.sin(phi) * Math.sin(theta)
+    ).addScalar((rnd() - 0.5) * 0.5));
+  });
+  if (n === 1) { pos.get(ids[0]).set(0, 0, 0); return pos; }
+
+  const adj = model.edges;
+  const k = 60; // ideal edge length scale
+  // O(n^2) relaxation — cap work for large finite sites (bail to the deterministic seed above ~400).
+  const ITERS = n > 400 ? 0 : n > 120 ? 80 : 320;
+  for (let iter = 0; iter < ITERS; iter++) {
+    const disp = new Map(ids.map((id) => [id, new THREE.Vector3()]));
+    // repulsion (all pairs)
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const pi = pos.get(ids[i]), pj = pos.get(ids[j]);
+      const d = new THREE.Vector3().subVectors(pi, pj);
+      let len = d.length() || 0.01;
+      const f = (k * k) / len;
+      d.multiplyScalar(f / len);
+      disp.get(ids[i]).add(d); disp.get(ids[j]).sub(d);
+    }
+    // attraction (nerve edges)
+    for (const e of adj) {
+      const pa = pos.get(e.a), pb = pos.get(e.b);
+      const d = new THREE.Vector3().subVectors(pa, pb);
+      let len = d.length() || 0.01;
+      const f = (len * len) / k;
+      d.multiplyScalar(f / len);
+      disp.get(e.a).sub(d); disp.get(e.b).add(d);
+    }
+    const cool = 8 * (1 - iter / 320);
+    for (const id of ids) {
+      const dp = disp.get(id);
+      const len = dp.length() || 0.01;
+      pos.get(id).add(dp.multiplyScalar(Math.min(len, cool) / len));
+    }
+  }
+  // recenter at origin
+  const c = new THREE.Vector3();
+  for (const id of ids) c.add(pos.get(id));
+  c.divideScalar(n);
+  for (const id of ids) pos.get(id).sub(c);
+  return pos;
+}
+
+function cellRadius(model, ctx) { return 7 + Math.sqrt((ctx.atomIds || []).length) * 3.4; }
+
+function layoutAtoms(model, ctxPos) {
+  const ap = new Map();
+  for (const atom of model.atoms) {
+    const ctxs = (atom.contexts || []).filter((c) => ctxPos.has(c));
+    const base = new THREE.Vector3();
+    if (ctxs.length === 0) { base.set(0, -34, 0); }
+    else { for (const c of ctxs) base.add(ctxPos.get(c)); base.divideScalar(ctxs.length); }
+    // jitter inside the cell — sub-dominant, seeded by atom id (declump only)
+    const rnd = mulberry32(hash32(atom.id));
+    const spread = ctxs.length ? Math.min(...ctxs.map((c) => cellRadius(model, model.ctxById.get(c)))) * 0.62 : 8;
+    const jitter = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(spread);
+    if (ctxs.length >= 2) jitter.multiplyScalar(0.45); // shared atoms hug the overlap midpoint
+    ap.set(atom.id, base.add(jitter));
+  }
+  return ap;
+}
+
+/* ============================================================================
+ * Geometry builders
+ * ========================================================================== */
+function clearGroups() {
+  for (const g of Object.values(G)) {
+    for (let i = g.children.length - 1; i >= 0; i--) {
+      const o = g.children[i];
+      o.traverse?.((m) => {
+        m.geometry?.dispose?.();
+        if (m.material && m.material !== darkMat) { m.material.map?.dispose?.(); m.material.dispose?.(); } // free label CanvasTextures too
+      });
+      g.remove(o);
+    }
+  }
+  pickables.length = 0;
+}
+
+let CTXPOS = new Map(), ATOMPOS = new Map();
+let BASE_FOG = 0.0016; // scene-radius-scaled fog density, recomputed per load in buildAll
+
+// Resolve an analytic cell id (cell:left, ...) to a position via the MEASURED carrier graph:
+// context match -> carrier-atom centroid -> null (never invent). Used by curvature/spectrum.
+function cellPosition(cellId) {
+  if (CTXPOS.has(cellId)) return CTXPOS.get(cellId).clone();
+  const carriers = MODEL.cellCarriers.get(cellId);
+  if (carriers && carriers.length) {
+    const c = new THREE.Vector3(); let n = 0;
+    for (const a of carriers) { const p = ATOMPOS.get(a); if (p) { c.add(p); n++; } }
+    if (n) return c.divideScalar(n);
+  }
+  return null;
+}
+
+function buildAll() {
+  clearGroups();
+  if (!MODEL) return;
+  CTXPOS = layoutContexts(MODEL);
+  ATOMPOS = layoutAtoms(MODEL, CTXPOS);
+  buildCells();
+  buildStruts();
+  buildFaces();
+  buildAtoms();
+  buildSeam();
+  buildTerrain();
+  buildPeriods();
+  buildCages();
+  buildVerdict();
+  // horizon sized to content
+  const box = new THREE.Box3().setFromObject(root);
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  horizon.position.copy(sph.center);
+  horizon.scale.setScalar(Math.max(160, sph.radius * 2.6));
+  // fog scaled to scene radius — gives the "boundary scene" depth/atmosphere as the standard look,
+  // size-independent (same relative depth on a 5-atom fixture or a 60-atom service).
+  BASE_FOG = Math.min(0.006, Math.max(0.0012, 0.46 / Math.max(sph.radius, 40)));
+  scene.fog.density = BASE_FOG;
+}
+
+function buildCells() {
+  const geo = new THREE.IcosahedronGeometry(1, 1);
+  for (const ctx of MODEL.contexts) {
+    const p = CTXPOS.get(ctx.id); if (!p) continue;
+    const r = cellRadius(MODEL, ctx);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: COL.cell, transparent: true, opacity: 0.05, roughness: 0.12, metalness: 0,
+      transmission: 0.2, thickness: 1.5, ior: 1.2, clearcoat: 0.6, clearcoatRoughness: 0.3,
+      iridescence: 0.35, iridescenceIOR: 1.35, emissive: COL.cell, emissiveIntensity: 0.1,
+      side: THREE.DoubleSide, depthWrite: false,
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.copy(p); m.scale.setScalar(r);
+    G.cells.add(m);
+    pickables.push({ mesh: m, info: { type: "context", ctx } });
+    // bright wire shell — the cell silhouette (primary legibility of the 7 contexts)
+    const wire = new THREE.LineSegments(
+      new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(r, 1)),
+      new THREE.LineBasicMaterial({ color: 0xdbe9ff, transparent: true, opacity: 0.82 })
+    );
+    wire.position.copy(p); G.cells.add(wire);
+    const label = makeLabel(ctx.id.replace(/^ctx:/, ""), { color: "#aebfd8", scale: 0.95 });
+    label.position.copy(p).add(new THREE.Vector3(0, r + 5, 0));
+    G.labels.add(label);
+  }
+}
+
+function buildStruts() {
+  for (const e of MODEL.edges) {
+    const pa = CTXPOS.get(e.a), pb = CTXPOS.get(e.b); if (!pa || !pb) continue;
+    const marked = e.support.length > 0;               // carries a čech-mismatch marker → measured_nonzero lane
+    const radius = 0.55 + e.support.length * 0.6;       // thickness ∝ #mismatch markers (measured)
+    const mat = marked
+      ? new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 0.5,
+          roughness: 0.3, metalness: 0.2, transparent: true, opacity: 0.95 })
+      : new THREE.MeshStandardMaterial({ color: 0x9fb0cc, roughness: 0.35, metalness: 0.25,
+          transparent: true, opacity: 0.7, emissive: 0x2a3a55, emissiveIntensity: 0.35 }); // frosted restriction edge (silence lane)
+    const m = tube(pa, pb, radius, mat);
+    G.struts.add(m);
+    pickables.push({ mesh: m, info: { type: "strut", edge: e, marked } });
+  }
+}
+
+function buildFaces() {
+  // triple overlaps — existence only. H² coherence is NOT visualized (silence).
+  for (const t of MODEL.triangles) {
+    const pts = t.ctx.map((c) => CTXPOS.get(c)).filter(Boolean);
+    if (pts.length < 3) continue;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(
+      [pts[0].x, pts[0].y, pts[0].z, pts[1].x, pts[1].y, pts[1].z, pts[2].x, pts[2].y, pts[2].z], 3));
+    g.computeVertexNormals();
+    const opacity = 0.06 + Math.min(t.shared.length, 4) * 0.03; // frosted; sub-verdict
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+      color: COL.face, transparent: true, opacity, roughness: 0.9, metalness: 0,
+      side: THREE.DoubleSide, depthWrite: false,
+    }));
+    G.faces.add(m);
+    pickables.push({ mesh: m, info: { type: "face", tri: t } });
+  }
+}
+
+// per-family glyph geometry — a redundant, color-independent channel (accessibility)
+const FAMILY_SHAPE = {
+  component: () => new THREE.SphereGeometry(1, 16, 12),
+  relation: () => new THREE.OctahedronGeometry(1.15, 0),
+  capability: () => new THREE.TetrahedronGeometry(1.3, 0),
+  state: () => new THREE.BoxGeometry(1.5, 1.5, 1.5),
+  effect: () => new THREE.ConeGeometry(1.1, 2.0, 14),
+  authority: () => new THREE.DodecahedronGeometry(1.1, 0),
+  contract: () => new THREE.TorusGeometry(0.9, 0.42, 10, 20),
+  semantic: () => new THREE.IcosahedronGeometry(1.1, 0),
+  runtime: () => new THREE.CylinderGeometry(0.95, 0.95, 1.8, 14),
+};
+const _glyphGeo = {};
+function makeGlyph(family, mat) {
+  if (!_glyphGeo[family]) _glyphGeo[family] = (FAMILY_SHAPE[family] || FAMILY_SHAPE.component)();
+  return new THREE.Mesh(_glyphGeo[family], mat);
+}
+
+function buildAtoms() {
+  for (const k in _glyphGeo) delete _glyphGeo[k]; // fresh geometries per build (prior ones disposed on clear)
+  for (const atom of MODEL.atoms) {
+    const p = ATOMPOS.get(atom.id); if (!p) continue;
+    const r = 2.8 + (atom.valence - 1) * 1.3;          // size ∝ valence (measured)
+    const isObstruction = MODEL.cocycle.visible && MODEL.cocycle.supportAtoms.includes(atom.id);
+    const fc = familyColor(atom.family);
+    const mat = new THREE.MeshStandardMaterial({
+      color: isObstruction ? COL.nonzero : fc,
+      roughness: 0.22, metalness: 0.15,
+      emissive: isObstruction ? COL.nonzero : fc,
+      emissiveIntensity: isObstruction ? 1.7 : 1.45,   // calm self-glow for lawful beads; only obstruction blooms
+    });
+    const m = makeGlyph(atom.family, mat);
+    m.position.copy(p); m.scale.setScalar(r);
+    m.userData.baseEmissive = mat.emissive.getHex();
+    m.userData.baseIntensity = mat.emissiveIntensity;
+    m.userData.baseScale = r;
+    if (isObstruction) { m.layers.enable(BLOOM_LAYER); m.userData.pulse = true; }
+    G.atoms.add(m);
+    pickables.push({ mesh: m, info: { type: "atom", atom, isObstruction } });
+  }
+}
+
+function buildSeam() {
+  // the measured H¹ cocycle representative — the one seam that won't close.
+  if (!MODEL.cocycle.visible || !MODEL.cocycle.supportEdges.length) return;
+  const arch = (pa, pb, tt) => {
+    const v = new THREE.Vector3().lerpVectors(pa, pb, tt);
+    v.y += Math.sin(tt * Math.PI) * 14;                  // arch the seam up into the H¹ mid-band
+    return v;
+  };
+  for (const se of MODEL.cocycle.supportEdges) {
+    const pa = CTXPOS.get(se.sourceContextRef), pb = CTXPOS.get(se.targetContextRef);
+    if (!pa || !pb) continue;
+    // glowing dashed stitches between the two contexts
+    const segs = 11;
+    for (let i = 0; i < segs; i++) {
+      if (i % 2 === 1) continue;
+      const a = arch(pa, pb, i / segs), b = arch(pa, pb, (i + 1) / segs);
+      const m = tube(a, b, 1.9, new THREE.MeshStandardMaterial({
+        color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.6,
+        roughness: 0.3, metalness: 0.1,
+      }));
+      m.layers.enable(BLOOM_LAYER); m.userData.pulse = true;
+      G.seam.add(m);
+    }
+    // stitch knots at the gap ends — the torn seam reads as discrete stitches
+    for (const tt of [0.06, 0.5, 0.94]) {
+      const knot = new THREE.Mesh(new THREE.SphereGeometry(2.6, 18, 14),
+        new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 2.4, roughness: 0.25 }));
+      knot.position.copy(arch(pa, pb, tt)); knot.layers.enable(BLOOM_LAYER); knot.userData.pulse = true;
+      G.seam.add(knot);
+    }
+    const mid = arch(pa, pb, 0.5);
+    const proxy = pickProxy(mid, 5);
+    pickables.push({ mesh: proxy, info: { type: "seam", edge: se } });
+    G.seam.add(proxy);
+    const lab = makeLabel("H¹ cocycle · won't close", { color: "#ffd9a8", scale: 1.15, bg: "rgba(48,26,8,0.82)" });
+    lab.position.copy(mid).add(new THREE.Vector3(0, 11, 0)); G.seam.add(lab);
+  }
+  // section-probe: a teal section traverses the LAWFUL struts (calm) and recoils at the seam —
+  // the global section visibly failing to close. Exploration of restriction paths, not a monodromy verdict.
+  const se0 = MODEL.cocycle.supportEdges[0];
+  const pSrc = CTXPOS.get(se0.sourceContextRef), pTgt = CTXPOS.get(se0.targetContextRef);
+  if (pSrc && pTgt) {
+    const seamKey = (a, b) => [a, b].sort().join("|");
+    const seamSet = new Set(MODEL.cocycle.supportEdges.map((e) => seamKey(e.sourceContextRef, e.targetContextRef)));
+    // BFS a lawful path (edges NOT in the seam) from src to tgt
+    const adj = new Map();
+    for (const e of MODEL.edges) {
+      if (seamSet.has(seamKey(e.a, e.b))) continue;
+      (adj.get(e.a) || adj.set(e.a, []).get(e.a)).push(e.b);
+      (adj.get(e.b) || adj.set(e.b, []).get(e.b)).push(e.a);
+    }
+    const prev = new Map([[se0.sourceContextRef, null]]), q = [se0.sourceContextRef];
+    while (q.length) { const c = q.shift(); if (c === se0.targetContextRef) break;
+      for (const n of adj.get(c) || []) if (!prev.has(n)) { prev.set(n, c); q.push(n); } }
+    let pathIds = [];
+    if (prev.has(se0.targetContextRef)) { let c = se0.targetContextRef; while (c != null) { pathIds.unshift(c); c = prev.get(c); } }
+    const pathPts = pathIds.length >= 2 ? pathIds.map((id) => CTXPOS.get(id).clone()) : [pSrc.clone(), pTgt.clone()];
+    const probe = new THREE.Mesh(new THREE.SphereGeometry(2.4, 18, 14),
+      new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 1.6, roughness: 0.3 }));
+    probe.userData.isProbe = true;
+    probe.userData.path = pathPts;
+    // after the lawful detour the probe reaches pTgt; the H¹ obstruction is that the CLOSING hop back to
+    // pSrc across the seam disagrees — so it lunges toward pSrc (the start it can't get back to) and recoils.
+    probe.userData.gapTarget = pSrc.clone();
+    probe.userData.pathEnd = pathPts[pathPts.length - 1].clone();
+    G.seam.add(probe);
+  }
+}
+// position a probe along its lawful path, then lunge at the seam gap and recoil (never crossing).
+function updateProbe(probe, t) {
+  const path = probe.userData.path; if (!path || path.length < 2) return;
+  const cycle = (t * 0.22) % 1;                  // slow loop
+  if (cycle < 0.78) {                            // travel the lawful polyline, calm
+    const u = cycle / 0.78 * (path.length - 1);
+    const i = Math.min(Math.floor(u), path.length - 2);
+    probe.position.lerpVectors(path[i], path[i + 1], u - i);
+    probe.material.emissiveIntensity = 1.5;
+  } else {                                        // reach the gap, lunge toward the far shore, recoil
+    const u = (cycle - 0.78) / 0.22;
+    const lunge = Math.sin(u * Math.PI) * 0.42;   // out and back, max 0.42 — never reaches 1
+    probe.position.lerpVectors(probe.userData.pathEnd, probe.userData.gapTarget, lunge);
+    probe.position.y += Math.sin(u * Math.PI) * 6;
+    probe.material.emissiveIntensity = 1.5 + Math.sin(u * Math.PI) * 1.8; // flares at the recoil
+  }
+}
+
+function buildTerrain() {
+  // analytic curvature / spectral reading — lavender lane, never a verdict.
+  const a = MODEL.analytic;
+  if (!a.curvature && !a.spectralGap && !a.spectrum) return;
+  const hotspots = (a.curvature && a.curvature.hotspots) || [];
+  const gap = a.spectralGap && Number(a.spectralGap.spectralGap);
+  // raised cones at the MEASURED carrier-resolved position of each hotspot cell
+  let placed = 0, dropped = 0;
+  for (const h of hotspots) {
+    const p = cellPosition(h.cell);
+    if (!p) { dropped++; continue; }
+    const height = 6 + Math.abs(h.hotspotWeight || 0) * 34;
+    const baseR = 5 + (MODEL.cellCarriers.get(h.cell) || []).length * 2;
+    const cone = new THREE.Mesh(
+      new THREE.ConeGeometry(baseR, height, 24, 1, true),
+      new THREE.MeshStandardMaterial({ color: COL.analytic, transparent: true, opacity: 0.4,
+        emissive: COL.analytic, emissiveIntensity: 0.5, roughness: 0.5, side: THREE.DoubleSide })
+    );
+    cone.position.copy(p).add(new THREE.Vector3(0, height / 2, 0));
+    G.terrain.add(cone); placed++;
+    pickables.push({ mesh: cone, info: { type: "curvature", hotspot: h } });
+    const lab = makeLabel(`${h.cell.replace(/^cell:/, "")} · w ${(+h.hotspotWeight).toFixed(2)}`, { color: "#cdb8ff", scale: 0.8, bg: "rgba(24,16,46,0.7)" });
+    lab.position.copy(p).add(new THREE.Vector3(0, height + 4, 0)); G.terrain.add(lab);
+  }
+  if (dropped && !placed) G.terrain.userData.unplacedHotspots = dropped;
+  if (Number.isFinite(gap) && gap > 0) {
+    const box = new THREE.Box3().setFromObject(G.cells.children.length ? G.cells : root);
+    const size = box.getSize(new THREE.Vector3());
+    const slab = new THREE.Mesh(
+      new THREE.PlaneGeometry(Math.max(size.x, 60) * 1.2, Math.max(size.z, 60) * 1.2),
+      new THREE.MeshStandardMaterial({ color: COL.analytic, transparent: true, opacity: 0.14,
+        emissive: COL.analytic, emissiveIntensity: 0.25, side: THREE.DoubleSide, roughness: 0.8 })
+    );
+    slab.rotation.x = -Math.PI / 2; slab.position.y = gap * 12;
+    G.terrain.add(slab);
+    const lab = makeLabel(`spectral gap ${gap} · analytic`, { color: "#cdb8ff", scale: 0.95, bg: "rgba(24,16,46,0.7)" });
+    lab.position.set(box.getCenter(new THREE.Vector3()).x, gap * 12 + 6, box.min.z);
+    G.terrain.add(lab);
+    pickables.push({ mesh: slab, info: { type: "spectralGap", gap: a.spectralGap } });
+  }
+  // signed spectrum relief — measured per-cell signedCurvature as up/down lavender pins (analytic lane)
+  for (const cell of (a.spectrum && a.spectrum.cells) || []) {
+    const p = cellPosition(cell.cellRef || cell.cell); if (!p) continue;
+    const sign = Math.sign(Number(cell.signedCurvature) || 0) || 1;
+    const amp = 6 + Math.abs(Number(cell.cochainValue) || 1) * 8;
+    const pin = tube(p.clone(), p.clone().add(new THREE.Vector3(0, sign * amp, 0)), 0.7,
+      new THREE.MeshStandardMaterial({ color: COL.analytic, emissive: COL.analytic, emissiveIntensity: 0.5,
+        transparent: true, opacity: 0.75, roughness: 0.5 }));
+    G.terrain.add(pin);
+    pickables.push({ mesh: pin, info: { type: "spectrumCell", cell } });
+  }
+}
+
+function buildPeriods() {
+  const p = MODEL.analytic.period;
+  if (!p || !p.cycleBasis) return;
+  // The packet does NOT carry each cycle's nerve support, so rings are SCHEMATIC placeholders
+  // (one per measured cycle), not the measured winding. The measured content is the period
+  // pairing matrix ⟨ω,γ⟩, which we surface honestly: each ring's tube radius encodes the
+  // column's pairing magnitude. All lavender analytic lane, never a verdict.
+  const box = new THREE.Box3().setFromObject(G.cells.children.length ? G.cells : root);
+  const center = box.getCenter(new THREE.Vector3());
+  const rad = Math.max(box.getSize(new THREE.Vector3()).length() * 0.32, 30);
+  const matrix = p.periodPairingMatrix || [];
+  const cycles = p.cycleBasis || [];
+  const colMag = (j) => matrix.reduce((s, row) => s + Math.abs(Number(row[j]) || 0), 0);
+  cycles.forEach((cyc, i) => {
+    const mag = colMag(i);
+    const tubeR = 0.5 + Math.min(mag, 6) * 0.45;       // tube radius ∝ measured pairing magnitude
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(rad - i * 6, tubeR, 14, 96),
+      new THREE.MeshStandardMaterial({ color: COL.analytic, emissive: COL.analytic, emissiveIntensity: 0.7,
+        roughness: 0.4, transparent: true, opacity: 0.82 })
+    );
+    ring.position.copy(center);
+    ring.rotation.x = Math.PI / 2 + i * 0.5; ring.rotation.y = i * 0.7;
+    G.periods.add(ring);
+    const vals = matrix.map((row) => row[i]).filter((v) => v != null);
+    const lab = makeLabel(`${cyc.replace(/^cycle:/, "γ:")}  ⟨ω,γ⟩ ${vals.join(", ") || "—"} · schematic`,
+      { color: "#cdb8ff", scale: 0.85, bg: "rgba(24,16,46,0.75)" });
+    lab.position.copy(center).add(new THREE.Vector3((rad - i * 6) * 0.72, 4 + i * 6, 0));
+    G.periods.add(lab);
+    pickables.push({ mesh: ring, info: { type: "period", cycle: cyc, overlay: p, pairing: vals } });
+  });
+}
+
+function buildCages() {
+  // forbidden supports as broken-line cages around their measured support atoms.
+  // real v2 field is atomRefs (+ cageId, supportVariables); keep older aliases as fallback.
+  MODEL.cages.forEach((cage, ci) => {
+    const refs = cage.atomRefs || cage.supportAtomRefs || cage.support || [];
+    const pts = refs.map((r) => ATOMPOS.get(r)).filter(Boolean);
+    if (!pts.length) return;
+    const c = new THREE.Vector3(); pts.forEach((p) => c.add(p)); c.divideScalar(pts.length);
+    const r = 5 + pts.length * 3;
+    const cageMesh = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(r, r, r)),
+      new THREE.LineDashedMaterial({ color: COL.nonzero, dashSize: 1.6, gapSize: 1.1, transparent: true, opacity: 0.85 })
+    );
+    cageMesh.computeLineDistances(); cageMesh.position.copy(c);
+    G.cages.add(cageMesh);
+    const proxy = pickProxy(c, r * 0.5);
+    pickables.push({ mesh: proxy, info: { type: "cage", cage } });
+    G.cages.add(proxy);
+    const lab = makeLabel("forbidden: " + (cage.supportVariables || refs).join(" ∧ ").replace(/atom:/g, ""),
+      { color: "#ffd9a8", scale: 0.85, bg: "rgba(48,26,8,0.8)" });
+    // stagger cage labels (in tiny single-context scenes the centroids nearly coincide)
+    lab.position.copy(c).add(new THREE.Vector3((ci - (MODEL.cages.length - 1) / 2) * 26, r * 0.7 + 6 + ci * 7, 0));
+    G.cages.add(lab);
+  });
+  // repair morphisms as Alexander-dual LANDING-LADDERS: rung count = |supportVariables| (the measured
+  // hitting set). The shortest ladder is the cheapest measured repair target. A descending probe stops
+  // SHORT of the lawful floor (essential lower bound) — never landing, since landing would assert a fix.
+  if (MODEL.repairs.length) {
+    const minRungs = Math.min(...MODEL.repairs.map((rm) => (rm.supportVariables || []).length || 1));
+    const lawfulY = -6;                                  // the lawful-locus floor plane
+    MODEL.repairs.forEach((rm, ri) => {
+      const cagePts = (rm.fromCageRefs || []).map((cr) => {
+        const cg = MODEL.cages.find((c) => c.cageId === cr);
+        if (!cg) return null;
+        const ps = (cg.atomRefs || []).map((a) => ATOMPOS.get(a)).filter(Boolean);
+        if (!ps.length) return null;
+        const m = new THREE.Vector3(); ps.forEach((p) => m.add(p)); return m.divideScalar(ps.length);
+      }).filter(Boolean);
+      const top = cagePts.length ? cagePts.reduce((a, b) => a.add(b), new THREE.Vector3()).divideScalar(cagePts.length)
+        : (ATOMPOS.get((rm.fromAtomRefs || [])[0]) || new THREE.Vector3(0, 18, 0));
+      const rungs = (rm.supportVariables || []).length || 1;
+      const isShortest = rungs === minRungs;
+      const col = isShortest ? COL.zero : COL.analytic;  // shortest = teal target; alternatives = lavender
+      const ladderX = top.clone(); ladderX.x += (ri - (MODEL.repairs.length - 1) / 2) * 10;
+      // the rail
+      const rail = tube(ladderX.clone(), new THREE.Vector3(ladderX.x, lawfulY + 2, ladderX.z), isShortest ? 0.5 : 0.35,
+        new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: isShortest ? 0.7 : 0.35,
+          transparent: true, opacity: isShortest ? 0.9 : 0.55, roughness: 0.4 }));
+      G.cages.add(rail);
+      // the rungs (one per support variable in the hitting set)
+      for (let k = 0; k < rungs; k++) {
+        const y = THREE.MathUtils.lerp(top.y, lawfulY + 3, (k + 1) / (rungs + 1));
+        const rung = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.4, 8, 20),
+          new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: isShortest ? 0.8 : 0.35,
+            transparent: true, opacity: 0.85, roughness: 0.4 }));
+        rung.rotation.x = Math.PI / 2; rung.position.set(ladderX.x, y, ladderX.z);
+        G.cages.add(rung);
+      }
+      // descending probe (shortest ladder only) that STOPS at the lower-bound floor, never landing
+      if (isShortest) {
+        const probe = new THREE.Mesh(new THREE.SphereGeometry(2.0, 16, 12),
+          new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 1.4, roughness: 0.3 }));
+        probe.userData.descend = true; probe.userData.topY = top.y; probe.userData.floorY = lawfulY + 3;
+        probe.userData.x = ladderX.x; probe.userData.z = ladderX.z;
+        G.cages.add(probe);
+      }
+      const proxy = pickProxy(ladderX, 5);
+      pickables.push({ mesh: proxy, info: { type: "repair", repair: rm, shortest: isShortest } });
+      G.cages.add(proxy);
+      const lab = makeLabel(`repair: ${(rm.supportVariables || []).join(", ")}${isShortest ? " · cheapest" : ""}`,
+        { color: isShortest ? "#a8f0e6" : "#cdb8ff", scale: 0.8, bg: "rgba(8,24,22,0.78)" });
+      lab.position.set(ladderX.x, lawfulY - 5, ladderX.z); G.cages.add(lab);  // labels at the floor, clear of cage labels up top
+    });
+    // lawful floor plane (teal, calm) — the target surface the ladder descends toward but cannot land on
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(120, 120),
+      new THREE.MeshStandardMaterial({ color: COL.zero, transparent: true, opacity: 0.07,
+        emissive: COL.zero, emissiveIntensity: 0.15, side: THREE.DoubleSide, roughness: 0.9 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = lawfulY;
+    G.cages.add(floor);
+    // keystone = a coordinate that is itself a SINGLE-coordinate minimal repair (the sole element of some
+    // measured repairMorph: dropping it alone clears the measured obstruction in scope). This is read from
+    // the packet's hitting sets — not a viewer-computed cage intersection. Amber, but NOT bloomed (bloom is
+    // reserved for measured H¹ evidence; this is a square-free obstruction, like the cages it sits among).
+    const keystoneVars = [...new Set(MODEL.repairs.filter((r) => (r.supportVariables || []).length === 1).map((r) => r.supportVariables[0]))];
+    if (keystoneVars.length && MODEL.cages.length) {
+      const allPts = MODEL.cages.flatMap((c) => (c.atomRefs || []).map((a) => ATOMPOS.get(a)).filter(Boolean));
+      if (allPts.length) {
+        const kc = allPts.reduce((a, b) => a.add(b.clone()), new THREE.Vector3()).divideScalar(allPts.length);
+        const key = new THREE.Mesh(new THREE.OctahedronGeometry(3.2, 0),
+          new THREE.MeshStandardMaterial({ color: COL.nonzero, emissive: COL.nonzero, emissiveIntensity: 1.3, roughness: 0.25 }));
+        key.position.copy(kc); key.userData.softpulse = true;        // gentle pulse, no bloom
+        G.cages.add(key);
+        const klab = makeLabel(`single-move repair: ${keystoneVars.join(", ")}`, { color: "#ffd9a8", scale: 0.85, bg: "rgba(48,26,8,0.82)" });
+        klab.position.copy(kc).add(new THREE.Vector3(0, 7, 0)); G.cages.add(klab);
+      }
+    }
+  }
+}
+// descending repair probe: eases down the shortest ladder and HOVERS at the lower-bound floor, never landing.
+function updateRepairProbe(probe, t) {
+  const u = (Math.sin(t * 0.8) * 0.5 + 0.5);             // 0..1 ease
+  const y = THREE.MathUtils.lerp(probe.userData.topY, probe.userData.floorY + 2, u); // +2 = stops short of floor
+  probe.position.set(probe.userData.x, y, probe.userData.z);
+  probe.material.emissiveIntensity = 1.2 + (1 - u) * 0.6;
+}
+
+function buildVerdict() {
+  const box = new THREE.Box3().setFromObject(root);
+  const center = box.getCenter(new THREE.Vector3());
+  const code = MODEL.conclusion;
+  const color = MODEL.isNonzero ? "#ffd9a8" : (MODEL.isZero ? "#a8f0e6" : (MODEL.isFoundation ? "#bfe0ea" : "#cdd9ec"));
+  const bg = MODEL.isNonzero ? "rgba(40,22,6,0.78)" : (MODEL.isZero ? "rgba(6,28,26,0.78)" : "rgba(10,22,30,0.78)");
+  const lab = makeLabel(code, { color, scale: 1.45, bg });
+  lab.position.set(center.x, box.max.y + 14, center.z);
+  G.verdict.add(lab);
+  if (MODEL.isZero) {
+    // the loop closes — a calm, slowly breathing teal ring at the centroid
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(Math.max(box.getSize(new THREE.Vector3()).x * 0.3, 26), 0.5, 12, 96),
+      new THREE.MeshStandardMaterial({ color: COL.zero, emissive: COL.zero, emissiveIntensity: 0.4,
+        roughness: 0.4, transparent: true, opacity: 0.55 })
+    );
+    ring.position.copy(center); ring.rotation.x = Math.PI / 2;
+    ring.userData.breathe = true;
+    G.verdict.add(ring);
+  }
+}
+
+/* helpers */
+function tube(a, b, radius, material) {
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length() || 0.001;
+  const geo = new THREE.CylinderGeometry(radius, radius, len, 12, 1, true);
+  const m = new THREE.Mesh(geo, material);
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  return m;
+}
+function pickProxy(pos, r) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6),
+    new THREE.MeshBasicMaterial({ visible: false }));
+  m.position.copy(pos); return m;
+}
+
+/* ============================================================================
+ * Scenes
+ * ========================================================================== */
+const SCENES = {
+  nerve: {
+    title: "Nerve & Cover", q: "What finite site and cover did ArchSig measure?",
+    show: { cells: 1, atoms: 1, struts: 1, faces: 1, labels: 1, verdict: 0 },
+  },
+  gluing: {
+    title: "Gluing & H¹ obstruction", q: "Does local agreement glue to a global section? Where does it fail?",
+    show: { cells: 1, atoms: 1, struts: 1, faces: 1, seam: 1, labels: 1, verdict: 1 },
+  },
+  curvature: {
+    title: "Curvature / Hodge debt", q: "Where does curvature concentrate? (analytic reading, not a verdict)",
+    show: { cells: 1, struts: 1, terrain: 1, labels: 1 },
+  },
+  periods: {
+    title: "Period / Stokes", q: "How do classes wind around cycles? (analytic reading)",
+    show: { cells: 1, struts: 1, periods: 1, labels: 1 },
+  },
+  forbidden: {
+    title: "Forbidden support / flatness", q: "Which atom co-occurrences are forbidden, and how could a section repair?",
+    show: { cells: 1, atoms: 1, cages: 1, labels: 1 },
+  },
+  boundary: {
+    title: "Projection boundary", q: "What did the selected profile observe — and what stays silent?",
+    show: { cells: 1, atoms: 1, struts: 1, faces: 1, labels: 1, verdict: 1 },
+  },
+};
+let currentScene = "nerve";
+
+function applyScene(id, opts = {}) {
+  currentScene = id;
+  const s = SCENES[id];
+  for (const [k, g] of Object.entries(G)) g.visible = !!(s.show && s.show[k]);
+  // the boundary scene's depth + soft horizon is now the STANDARD atmosphere for every scene;
+  // the boundary view itself goes a touch denser to keep its "fog-of-war" identity.
+  horizon.material.opacity = id === "boundary" ? 0.24 : 0.16;
+  scene.fog.density = id === "boundary" ? BASE_FOG * 1.5 : BASE_FOG;
+
+  document.getElementById("q-title").textContent = s.title;
+  document.getElementById("q-question").textContent = s.q;
+  for (const btn of document.querySelectorAll("#scene-buttons .scene-btn"))
+    btn.classList.toggle("on", btn.dataset.scene === id);
+
+  // silence note when a scene's measured content is absent
+  noteSilence(id);
+  applyLayerToggles();
+  if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera so the seam ignites in place
+  updateStatus();
+}
+
+function noteSilence(id) {
+  let silent = false, msg = "";
+  if (id === "curvature" && !(MODEL && (MODEL.analytic.curvature || MODEL.analytic.spectralGap || MODEL.analytic.spectrum)))
+    { silent = true; msg = "No Laplacian / curvature reading in this packet — nothing is drawn on this lane. (silence, not a flatness verdict)"; }
+  else if (id === "curvature" && MODEL && G.terrain.userData.unplacedHotspots)
+    { silent = true; msg = `${G.terrain.userData.unplacedHotspots} curvature hotspot(s) could not be anchored to a measured carrier — not drawn. (silence)`; }
+  if (id === "periods" && !(MODEL && MODEL.analytic.period))
+    { silent = true; msg = "No period / Stokes reading in this packet — nothing is drawn on this lane. (silence)"; }
+  if (id === "forbidden" && !(MODEL && (MODEL.cages.length || MODEL.repairs.length)))
+    { silent = true; msg = "No forbidden-support generators were projected under this profile — nothing is drawn here. (silence, not a flatness verdict)"; }
+  if (id === "gluing" && MODEL && !MODEL.cocycle.visible && MODEL.isZero)
+    { silent = true; msg = "No measured H¹ obstruction — the restriction loop closes. NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE."; }
+  document.getElementById("st-boundary").textContent = silent ? msg : (MODEL ? MODEL.boundary : "");
+}
+
+function frameScene(id) {
+  const visibleGroups = Object.entries(G).filter(([k, g]) => g.visible && g.children.length);
+  if (!visibleGroups.length) return;
+  const box = new THREE.Box3();
+  for (const [, g] of visibleGroups) box.expandByObject(g);
+  if (box.isEmpty()) return;
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  const dist = sph.radius / Math.sin((camera.fov * Math.PI) / 360) * 0.8;
+  const dir = new THREE.Vector3(0.32, 0.28, 1).normalize();
+  controls.target.copy(sph.center);
+  camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
+  camera.near = Math.max(0.1, dist / 400); camera.far = dist * 12; camera.updateProjectionMatrix();
+}
+
+/* ============================================================================
+ * Insight layer — ArchView projects ArchSig's measured insights as a ranked,
+ * source-anchored, navigable surface. It reads emitted fields; computes no verdict.
+ * ========================================================================== */
+const KIND_LABEL = {
+  global_glue_mismatch: "H¹ glue mismatch", minimal_repair_candidate: "Minimal repair",
+  policy_conflict: "Policy conflict", measurement_boundary: "Measurement boundary",
+  analytic_debt_mass: "Hodge debt (analytic)", no_measured_obstruction: "No measured obstruction",
+};
+const kindLabel = (k) => KIND_LABEL[k] || (k || "insight").replace(/_/g, " ");
+// emitted ArchSig sceneId -> ArchView geometry scene
+const SCENE_MAP = {
+  overview: "nerve", "site-cover": "nerve", "cech-gluing": "gluing", "cech-h1-mismatch": "gluing",
+  obstruction: "forbidden", "repair-dual": "forbidden", "law-conflict-tor": "nerve",
+  "hodge-debt-field": "curvature", "analytic-overlay": "curvature", "period-stokes": "periods",
+  "boundary-assumption": "boundary", "source-evidence": "boundary",
+};
+function insightLane(ins) {
+  if (ins.isObstruction) return COL.nonzero;                           // measured NONZERO obstruction → amber
+  if (ins.isMeasured) return COL.zero;                                 // measured ZERO confirmation → teal (not amber)
+  if (/boundary|measurement|no_measured/.test(ins.kind || "")) return COL.silence;
+  return COL.analytic;                                                  // analytic reading → lavender
+}
+const hex = (c) => "#" + c.toString(16).padStart(6, "0");
+
+let highlighted = [];
+function clearHighlight() {
+  for (const m of highlighted) {
+    const ud = m.userData;
+    if (ud.baseIntensity != null && m.material && m.material.emissive) { m.material.emissive.setHex(ud.baseEmissive); m.material.emissiveIntensity = ud.baseIntensity; }
+    if (ud.baseScale != null) m.scale.setScalar(ud.baseScale);
+  }
+  highlighted = [];
+}
+function highlightRefs(atomRefs = [], contextRefs = []) {
+  clearHighlight();
+  const aset = new Set(atomRefs), cset = new Set(contextRefs);
+  for (const p of pickables) {
+    if (p.info.type === "atom" && aset.has(p.info.atom.id)) {
+      const m = p.mesh, ud = m.userData;
+      if (ud.baseIntensity != null && m.material && m.material.emissive) { m.material.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2; }
+      if (ud.baseScale != null) m.scale.setScalar(ud.baseScale * 1.6);
+      highlighted.push(m);
+    }
+  }
+}
+function frameToRefs(atomRefs = [], contextRefs = []) {
+  const box = new THREE.Box3(); let any = false;
+  for (const r of atomRefs) { const p = ATOMPOS.get(r); if (p) { box.expandByPoint(p); any = true; } }
+  for (const r of contextRefs) { const p = CTXPOS.get(r); if (p) { box.expandByPoint(p); any = true; } }
+  if (!any) return;
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  const radius = Math.max(sph.radius, 24);
+  const dist = radius / Math.sin((camera.fov * Math.PI) / 360) * 1.15;
+  const dir = new THREE.Vector3(0.32, 0.3, 1).normalize();
+  controls.target.copy(sph.center);
+  camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
+  camera.updateProjectionMatrix();
+}
+
+let activeInsightId = null;
+function navigateToInsight(ins) {
+  activeInsightId = ins.id;
+  const av = SCENE_MAP[ins.nav && ins.nav.sceneId] || (ins.isMeasured ? "gluing" : "boundary");
+  applyScene(av);
+  // let the emitted question/insight voice lead the HUD
+  const emitted = MODEL.emittedScenes[ins.nav && ins.nav.sceneId];
+  document.getElementById("q-title").textContent = kindLabel(ins.kind);
+  document.getElementById("q-question").textContent = ins.whyItMatters || (emitted && emitted.userQuestion) || ins.oneLine;
+  const hr = (ins.nav && ins.nav.highlightRefs) || {};
+  const atomRefs = hr.atomRefs || (ins.evidence.atomRefs || []);
+  const ctxRefs = hr.contextRefs || (ins.evidence.contextRefs || []);
+  highlightRefs(atomRefs, ctxRefs);
+  frameToRefs(atomRefs, ctxRefs);
+  // the insight deliberately brought us here — speak in its measured voice, not the scene's silence note
+  document.getElementById("st-boundary").textContent = ins.oneLine || MODEL.boundary || "";
+  showInsightDetail(ins);
+  renderInsightRail();
+}
+
+function showInsightDetail(ins) {
+  const el = document.getElementById("detail");
+  el.classList.remove("empty");
+  const anchors = (ins.evidence.atomRefs || []).map((r) => ({ ref: r, a: MODEL.anchorByAtom.get(r) }))
+    .filter((x) => x.a && (x.a.subjectRef || (x.a.sourceRefs || []).length));
+  const anchorRows = anchors.slice(0, 8).map(({ ref, a }) =>
+    `<div class="anchor"><span class="a-subj">${escapeHtml(a.subjectRef || ref)}</span>${
+      a.predicate ? `<span class="a-pred"> ${escapeHtml(a.predicate)} </span>` : " "}${
+      a.objectRef ? `<span class="a-obj">${escapeHtml(String(a.objectRef).slice(0, 60))}</span>` : ""}${
+      (a.sourceRefs || []).length ? `<div class="a-src">${a.sourceRefs.map(escapeHtml).join(" · ")}</div>` : ""}</div>`).join("");
+  const lane = insightLane(ins);
+  el.innerHTML = `
+    <div class="kind" style="color:${hex(lane)}">${ins.isObstruction ? "measured obstruction" : ins.isMeasured ? "measured · zero" : "analytic / boundary"} · ${escapeHtml(ins.severity)}</div>
+    <h3>${escapeHtml(kindLabel(ins.kind))}</h3>
+    <div class="ins-one">${escapeHtml(ins.oneLine)}</div>
+    ${ins.whyItMatters ? `<div class="ins-why">${escapeHtml(ins.whyItMatters)}</div>` : ""}
+    ${anchorRows ? `<div class="sec-h">Source anchors</div>${anchorRows}` : ""}
+    ${ins.nextAction ? `<div class="sec-h">Suggested next step</div><div class="ins-action">${escapeHtml(ins.nextAction.label || "")}</div>` : ""}
+    ${MODEL.toursByInsight.has(ins.id) ? `<button class="bare ins-btn" id="tour-btn">▶ Walk me there</button>` : ""}
+    <button class="bare ins-btn" id="copy-refs-btn">⧉ Copy source refs</button>
+    ${(ins.nonClaims || []).length ? `<div class="ins-nonclaim">${ins.nonClaims.map((n) => "— " + escapeHtml(n)).join("<br>")}</div>` : ""}`;
+  const tb = document.getElementById("tour-btn");
+  if (tb) tb.addEventListener("click", () => startTour(ins));
+  const cb = document.getElementById("copy-refs-btn");
+  if (cb) cb.addEventListener("click", () => {
+    const refs = (ins.evidence.sourceRefs || []).join("\n") || (MODEL.copyBlocks.sourceRefs || []).join("\n");
+    navigator.clipboard?.writeText(refs); cb.textContent = "✓ Copied";
+    setTimeout(() => { cb.textContent = "⧉ Copy source refs"; }, 1400);
+  });
+}
+
+/* lightweight guided tour: step through emitted tour steps (scene + highlight + caption) */
+let tourState = null;
+function startTour(ins) {
+  const tour = MODEL.toursByInsight.get(ins.id);
+  if (!tour || !(tour.steps || []).length) return;
+  tourState = { steps: tour.steps, i: -1, ins };
+  tourStep(1);
+}
+function tourStep(dir) {
+  if (!tourState) return;
+  tourState.i = Math.max(0, Math.min(tourState.steps.length - 1, tourState.i + dir));
+  const st = tourState.steps[tourState.i];
+  const av = SCENE_MAP[st.sceneId] || "nerve";
+  applyScene(av);
+  const hr = st.highlightRefs || {};
+  highlightRefs(hr.atomRefs || [], hr.contextRefs || []);
+  frameToRefs(hr.atomRefs || [], hr.contextRefs || []);
+  document.getElementById("q-title").textContent = `Tour ${tourState.i + 1}/${tourState.steps.length}`;
+  document.getElementById("q-question").textContent = st.caption || "";
+}
+
+function renderInsightRail() {
+  const list = document.getElementById("insight-list");
+  const empty = document.getElementById("insight-empty");
+  const countEl = document.getElementById("insight-count");
+  if (!MODEL) { list.innerHTML = ""; empty.classList.remove("hidden"); empty.textContent = "No data."; countEl.textContent = ""; return; }
+  const ins = MODEL.insights || [];
+  const obstr = ins.filter((i) => i.isObstruction);
+  countEl.textContent = obstr.length ? `· ${obstr.length} measured` : "";
+  if (!ins.length) {
+    list.innerHTML = ""; empty.classList.remove("hidden");
+    empty.innerHTML = `ArchSig measured no insight rows for this packet. <b>${escapeHtml(MODEL.conclusion)}</b> — silence, not a verdict.`;
+    return;
+  }
+  empty.classList.add("hidden");
+  list.innerHTML = ins.map((i, idx) => `
+    <div class="insight-card${i.id === activeInsightId ? " active" : ""}" data-idx="${idx}">
+      <span class="dot" style="color:${hex(insightLane(i))}"></span>
+      <div class="ic-body">
+        <div class="ic-kind">${escapeHtml(kindLabel(i.kind))}</div>
+        <div class="ic-one">${escapeHtml(i.oneLine)}</div>
+        <div class="ic-rank">${escapeHtml(i.severity)}${i.isObstruction ? " · measured" : i.isMeasured ? " · measured_zero" : ""}${(i.rankingBasis || [])[0] ? " · " + escapeHtml(i.rankingBasis[0]) : ""}</div>
+      </div>
+    </div>`).join("");
+  for (const card of list.querySelectorAll(".insight-card"))
+    card.addEventListener("click", () => navigateToInsight(ins[+card.dataset.idx]));
+}
+
+/* ---- layer toggles ------------------------------------------------------- */
+const LAYER_TOGGLES = [
+  { key: "cells", label: "Cells" }, { key: "atoms", label: "Atoms" },
+  { key: "struts", label: "Struts" }, { key: "faces", label: "Faces" },
+  { key: "labels", label: "Labels" },
+];
+const layerState = Object.fromEntries(LAYER_TOGGLES.map((t) => [t.key, true]));
+function applyLayerToggles() {
+  const s = SCENES[currentScene].show || {};
+  for (const t of LAYER_TOGGLES) {
+    if (s[t.key]) G[t.key].visible = layerState[t.key];
+  }
+}
+
+/* ============================================================================
+ * Picking + detail
+ * ========================================================================== */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let downXY = null;
+renderer.domElement.addEventListener("pointerdown", (e) => { downXY = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!downXY) return;
+  const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]);
+  downXY = null;
+  if (moved > 5) return;
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const meshes = pickables.filter((p) => p.mesh.visible && isUnderVisibleGroup(p.mesh)).map((p) => p.mesh);
+  const hits = raycaster.intersectObjects(meshes, false);
+  if (hits.length) {
+    const info = pickables.find((p) => p.mesh === hits[0].object)?.info;
+    if (info) showDetail(info);
+  }
+});
+function isUnderVisibleGroup(mesh) {
+  let o = mesh;
+  while (o && o !== scene) { if (o.parent && Object.values(G).includes(o.parent)) return o.parent.visible; o = o.parent; }
+  return true;
+}
+
+function showDetail(info) {
+  const el = document.getElementById("detail");
+  el.classList.remove("empty");
+  let kind = info.type, title = "", rows = [], badge = "";
+  if (info.type === "context") {
+    title = info.ctx.id; kind = "context (nerve vertex)";
+    rows = [["atoms", (info.ctx.atomIds || []).length], ["restricts to", (info.ctx.restrictsTo || []).join(", ") || "—"],
+      ["poset", info.ctx.posetStatus || "—"]];
+    badge = `<span class="badge silent">local window</span>`;
+  } else if (info.type === "atom") {
+    const anc = MODEL.anchorByAtom.get(info.atom.id) || {};
+    title = anc.subjectRef || info.atom.subject || info.atom.id; kind = `atom · ${info.atom.kind}`;
+    rows = [["predicate", info.atom.predicate || "—"], ["valence", info.atom.valence],
+      ["contexts", (info.atom.contexts || []).join(", ") || "—"], ["family", info.atom.family]];
+    if (anc.objectRef) rows.push(["object", String(anc.objectRef).slice(0, 70)]);
+    if ((anc.sourceRefs || []).length) rows.push(["source refs", anc.sourceRefs.join(" · ")]);
+    badge = info.isObstruction ? `<span class="badge nonzero">on the H¹ cocycle support</span>` : "";
+  } else if (info.type === "strut") {
+    title = info.edge.id; kind = "cover restriction edge";
+    rows = [["shared atoms", info.edge.support.length], ["support", info.edge.support.join(", ") || "—"],
+      ["edge.value", `${info.edge.value} (parity = |support| mod 2)`]];
+    badge = `<span class="badge silent">overlap; value is a parity marker, not H¹ magnitude</span>`;
+  } else if (info.type === "face") {
+    title = info.tri.id.replace(/^nerve-face:/, ""); kind = "triple overlap (2-simplex)";
+    rows = [["contexts", info.tri.ctx.join(", ")], ["shared atoms", info.tri.shared.join(", ") || "—"],
+      ["H² coherence", "not visualized (silence)"]];
+    badge = `<span class="badge silent">existence only — no coherence verdict</span>`;
+  } else if (info.type === "seam") {
+    title = "H¹ cocycle representative"; kind = "measured obstruction";
+    rows = [["edge", info.edge.edgeId], ["support", (info.edge.supportAtomRefs || []).join(", ")],
+      ["reading", "finite F₂ Čech 1-cocycle, not a coboundary on the selected cover"]];
+    badge = `<span class="badge nonzero">measured_nonzero</span>`;
+  } else if (info.type === "curvature") {
+    title = info.hotspot.cell; kind = "curvature hotspot";
+    rows = [["weight", info.hotspot.hotspotWeight], ["lane", "analytic_reading"]];
+    badge = `<span class="badge analytic">Perron hotspot — analytic, not a verdict</span>`;
+  } else if (info.type === "spectralGap") {
+    title = "spectral gap"; kind = "Laplacian proxy";
+    rows = [["gap", info.gap.spectralGap], ["harmonic mass", info.gap.harmonicMass ?? "—"],
+      ["distance to flat", info.gap.distanceToFlatness ?? "—"]];
+    badge = `<span class="badge analytic">finite graph-Laplacian proxy, not lawfulness</span>`;
+  } else if (info.type === "period") {
+    title = info.cycle; kind = "period pairing cycle";
+    rows = [["forms", (info.overlay.forms || []).join(", ")], ["basis", (info.overlay.cycleBasis || []).join(", ")]];
+    badge = `<span class="badge analytic">model-relative analytic reading</span>`;
+  } else if (info.type === "cage") {
+    title = info.cage.cageId || "forbidden support"; kind = "obstruction ideal generator";
+    rows = [["forbidden atoms", (info.cage.atomRefs || info.cage.supportAtomRefs || []).join(", ") || "—"],
+      ["support variables", (info.cage.supportVariables || []).join(" ∧ ") || "—"]];
+    badge = `<span class="badge nonzero">forbidden co-occurrence (measured_nonzero)</span>`;
+  } else if (info.type === "repair") {
+    title = info.repair.repairId || info.repair.morphId || "repair morphism"; kind = "support-transfer repair";
+    rows = [["from", (info.repair.fromAtomRefs || info.repair.atomRefs || []).join(", ") || "—"],
+      ["cost", info.repair.groundCost ?? info.repair.cost ?? "—"]];
+    badge = `<span class="badge analytic">lower-bound inspection aid, not an auto-repair</span>`;
+  } else if (info.type === "spectrumCell") {
+    title = info.cell.cellRef || info.cell.cell; kind = "spectrum cell";
+    rows = [["signed curvature", info.cell.signedCurvature], ["cochain value", info.cell.cochainValue],
+      ["status", info.cell.measurementStatus || "proxy"]];
+    badge = `<span class="badge analytic">analytic relief — sign of local deviation</span>`;
+  }
+  el.innerHTML = `<div class="kind">${kind}</div><h3>${escapeHtml(title)}</h3>${badge}
+    <dl>${rows.map(([k, v]) => `<dt>${escapeHtml(String(k))}</dt><dd>${escapeHtml(String(v))}</dd>`).join("")}</dl>`;
+}
+function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* ============================================================================
+ * Legend + status + report
+ * ========================================================================== */
+function renderLegend() {
+  const fams = Object.entries(FAMILY_COLORS).map(([f, c]) =>
+    `<span style="display:inline-flex;gap:4px;align-items:center;margin:2px 7px 2px 0"><span style="width:9px;height:9px;border-radius:2px;background:#${c.toString(16).padStart(6, "0")}"></span><span style="font-size:10.5px;color:var(--ink-dim)">${f}</span></span>`).join("");
+  document.getElementById("legend").innerHTML = `
+    <h4>How to read this</h4>
+    <div class="leg-row"><span class="leg-mark ring" style="border-color:#a9c4ef"></span><div><b>Glass cage</b> — a context (local window). Radius ∝ #atoms it observes.</div></div>
+    <div class="leg-row"><span class="leg-mark" style="background:#8294b4"></span><div><b>Grey strut</b> — cover restriction edge (no shared atoms).</div></div>
+    <div class="leg-row"><span class="leg-mark seam"></span><div><b>Amber strut / seam</b> — čech-mismatch marker &amp; the measured H¹ cocycle that won't close. Thickness ∝ #markers; edge value = |support| mod 2 (parity).</div></div>
+    <div class="leg-row"><span class="leg-mark frost"></span><div><b>Frosted face</b> — triple overlap. Existence only; H² stays silent.</div></div>
+    <div class="leg-row"><span class="leg-mark ring"></span><div><b>Teal ring</b> — the loop closes: NO measured obstruction.</div></div>
+    <div class="leg-row"><span class="leg-mark" style="background:#b69cff"></span><div><b>Lavender</b> — analytic reading (curvature / spectrum / period), never a verdict.</div></div>
+    <div class="note"><b>Atom families</b> — distinct shape <i>and</i> hue (sphere = component, octahedron = relation, …):<br>${fams}</div>
+    <div class="note">Position is a layout of the measured nerve topology &amp; atom memberships — adjacency and membership are real; absolute coordinates carry no verdict. The viewer adds no new structural verdict.</div>`;
+}
+
+function updateStatus() {
+  if (!MODEL) { document.getElementById("st-verdict").textContent = "—";
+    document.getElementById("st-counts").textContent = "no data"; return; }
+  const v = document.getElementById("st-verdict");
+  v.textContent = MODEL.conclusion;
+  v.className = "verdict " + (MODEL.isNonzero ? "nonzero" : MODEL.isZero ? "zero" : MODEL.isFoundation ? "foundation" : "");
+  const om = MODEL.omitted || {};
+  const omitted = (om.omittedAtoms || 0) + (om.omittedEdges || 0);
+  document.getElementById("st-counts").textContent =
+    `${MODEL.contexts.length} contexts · ${MODEL.atoms.length} atoms · ${MODEL.edges.length} overlaps · ${MODEL.triangles.length} triple-overlaps`
+    + (omitted ? ` · ${omitted} omitted by projection` : "");
+}
+
+function renderReport() {
+  const body = document.getElementById("report-body");
+  if (!MODEL) { body.innerHTML = `<div class="boundary">No viewer data loaded.</div>`; return; }
+  const sum = COMPANIONS.summary || {};
+  const man = COMPANIONS.manifest || {};
+  const rtf = (DATA.reportPane && DATA.reportPane.readThisFirst) || sum.readThisFirst || {};
+  const vClass = MODEL.isNonzero ? "nonzero" : MODEL.isZero ? "zero" : MODEL.isFoundation ? "foundation" : "";
+  const assume = (DATA.reportPane && DATA.reportPane.assumptionSummary) || sum.assumptionSummary || {};
+  const struct = (DATA.reportPane && DATA.reportPane.structuralVerdictSummary) || sum.structuralVerdictSummary || {};
+  const insights = (DATA.insightQueue || (DATA.reportPane && DATA.reportPane.insightQueue) || sum.insightCards || []);
+  const actions = (DATA.actionQueue || (DATA.reportPane && DATA.reportPane.actionQueue) || []);
+  const artifacts = (man.generatedArtifacts || man.rawArtifactPaths ||
+    Object.values((DATA.decisionBar && DATA.decisionBar.artifactLinks) || {}) || []);
+
+  body.innerHTML = `
+    <div class="verdict-card ${vClass}">
+      <div class="code">${escapeHtml(MODEL.conclusion)}</div>
+      <div class="means">${escapeHtml(rtf.whatItMeans || (MODEL.isZero
+        ? "No selected H¹ glue mismatch was measured under the profile."
+        : MODEL.isNonzero ? "A measured AG obstruction is present on the selected cover (e.g. a Čech 1-cocycle that is not a coboundary)."
+        : MODEL.isFoundation ? "Measurement foundation is ready under the profile; no nonzero obstruction was measured on the selected rows."
+        : "Profile-relative reading."))}</div>
+    </div>
+    <section><div class="metrics">
+      <div class="metric"><b>${MODEL.contexts.length}</b><span>contexts</span></div>
+      <div class="metric"><b>${MODEL.atoms.length}</b><span>atoms</span></div>
+      <div class="metric"><b>${struct.measuredNonzeroCount ?? (MODEL.isNonzero ? 1 : 0)}</b><span>nonzero rows</span></div>
+      <div class="metric"><b>${assume.assumedCount ?? "—"}</b><span>assumed</span></div>
+    </div></section>
+    ${insights.length ? `<section><h3>Insight queue</h3>${insights.slice(0, 6).map(itemCard).join("")}</section>` : ""}
+    ${actions.length ? `<section><h3>Suggested next inspections</h3>${actions.slice(0, 6).map(itemCard).join("")}</section>` : ""}
+    <section><h3>Boundary digest</h3>
+      <div class="boundary">${escapeHtml((DATA.decisionBar && DATA.decisionBar.boundaryDigest) || rtf.boundary || "Profile-relative.")}</div></section>
+    ${artifacts.length ? `<section><h3>Artifacts</h3><ul>${artifacts.map((a) =>
+      `<li>${escapeHtml(typeof a === "string" ? a : (a.path || a.ref || JSON.stringify(a)))}</li>`).join("")}</ul></section>` : ""}
+    <section><h3>Boundaries &amp; non-claims</h3>
+      <div class="boundary">${MODEL.nonConclusions.map((n) => "• " + escapeHtml(n)).join("<br>") || "—"}
+      <br><br>${escapeHtml(MODEL.boundary || "")}</div></section>`;
+}
+function itemCard(it) {
+  const t = it.title || it.headline || it.summary || it.id || "insight";
+  const d = it.oneLine || it.detail || it.description || it.whatItMeans || it.whyItMatters || it.reason ||
+    (it.evidence && it.evidence.summary) || "";
+  return `<div class="item"><div class="t">${escapeHtml(String(t))}</div>${
+    d ? `<div class="d">${escapeHtml(String(d))}</div>` : ""}</div>`;
+}
+
+/* ============================================================================
+ * Data loading — EXACT contract preserved
+ *   primary: ./archsig-atom-viewer-data.json (required → empty shell on fail)
+ *   companions: ./archsig-analysis-summary.json + ./archsig-run-manifest.json (optional → null)
+ *   file input + window drag-drop both route through loadUserData (re-fetch companions)
+ * ========================================================================== */
+async function fetchJsonIfAvailable(url) {
+  try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); }
+  catch { return null; }
+}
+async function loadCompanions(base = ".") {
+  const [summary, manifest] = await Promise.all([
+    fetchJsonIfAvailable(`${base}/archsig-analysis-summary.json`),
+    fetchJsonIfAvailable(`${base}/archsig-run-manifest.json`),
+  ]);
+  return { summary, manifest };
+}
+function resetDetail() {
+  const el = document.getElementById("detail");
+  el.classList.add("empty");
+  el.innerHTML = `<div class="kind">selection</div><h3>Nothing selected</h3>
+    <div style="color:var(--ink-faint);font-size:12px;margin-top:6px">Click a context cell, an atom bead, a strut, or the obstruction seam to inspect what was measured there.</div>`;
+}
+function renderData(data, source, companions, opts = {}) {
+  DATA = data; COMPANIONS = companions || { summary: null, manifest: null };
+  MODEL = buildModel(data);
+  document.getElementById("brand-sub").textContent =
+    `${source} · ${MODEL.coverId || "no cover"}`;
+  buildAll();
+  activeInsightId = null; highlighted = []; tourState = null;
+  if (!opts.sequenceMode) {
+    // open on the top measured OBSTRUCTION if present, else the default scene (honest silence handles NO_MEASURED)
+    const top = (MODEL.insights || []).find((i) => i.isObstruction);
+    if (top) navigateToInsight(top); else { applyScene(currentScene); resetDetail(); }
+  }
+  // (sequence mode: showFrame controls scene/camera/detail so the seam ignites in place)
+  renderInsightRail();
+  renderReport();
+  setStatus(`Loaded ${source}`);
+}
+function emptyShell() {
+  MODEL = null; DATA = null;
+  clearGroups();
+  renderInsightRail();
+  document.getElementById("st-verdict").textContent = "—";
+  document.getElementById("st-counts").textContent = "Open archsig-atom-viewer-data.json";
+  setStatus("Open archsig-atom-viewer-data.json (drag a file, or use Open data…)");
+}
+async function loadDefault() {
+  // Seam Ignition: if a sequence manifest sits beside the viewer, play the measured frames over time.
+  const seq = await fetchJsonIfAvailable("./archview-sequence.json");
+  if (seq && (seq.frames || []).length) { await loadSequence(seq); return; }
+  const primary = await fetchJsonIfAvailable("./archsig-atom-viewer-data.json");
+  if (!primary) { emptyShell(); return; }
+  renderData(primary, "archsig-atom-viewer-data.json", await loadCompanions());
+}
+async function loadUserData(file) {
+  try {
+    exitSequence();
+    const data = JSON.parse(await file.text());
+    renderData(data, file.name, await loadCompanions());
+  } catch (e) { setStatus(`Could not load ${file.name}: ${e.message}`); }
+}
+function setStatus(msg) { if (msg) document.getElementById("st-boundary").textContent = msg; }
+
+/* ============================================================================
+ * Seam Ignition — play a measured SEQUENCE of packets and watch the H¹ obstruction
+ * be born / heal across frames. Each frame is one real ArchSig run; ArchView only
+ * keys correspondences by shared ids and computes no new verdict. Birth = the first
+ * frame whose measured conclusion is an obstruction whose prior frame was measured-zero.
+ * ========================================================================== */
+let SEQUENCE = null;
+async function loadSequence(manifest) {
+  // keep EVERY declared frame slot (a failed fetch stays a grey "not loaded" tick — never silently
+  // collapsing the order so non-adjacent measured frames look adjacent).
+  const frames = [];
+  for (const fr of manifest.frames) {
+    const data = await fetchJsonIfAvailable(`./${fr.path}/archsig-atom-viewer-data.json`);
+    const slot = { ...fr, data: data || null, loaded: !!data };
+    if (data) {
+      slot.companions = await loadCompanions(`./${fr.path}`);
+      slot.conclusion = (data.decisionBar && data.decisionBar.conclusion) || (data.reportPane && data.reportPane.conclusion) || "";
+      slot.obstruction = /MEASURED_.*OBSTRUCTION/.test(slot.conclusion) && !/NO_MEASURED/.test(slot.conclusion);
+      slot.measuredZero = /NO_MEASURED_.*OBSTRUCTION/.test(slot.conclusion);
+    }
+    frames.push(slot);
+  }
+  if (!frames.some((f) => f.loaded)) { emptyShell(); return; }
+  // transitions only between two LOADED adjacent frames (compare emitted measured booleans)
+  frames.forEach((f, i) => {
+    const prev = frames[i - 1];
+    if (!f.loaded || !prev || !prev.loaded) { f.transition = ""; return; }
+    f.transition = f.obstruction && !prev.obstruction ? "ignite" : !f.obstruction && prev.obstruction ? "heal" : "";
+    f.priorZero = !!prev.measuredZero;
+  });
+  SEQUENCE = { title: manifest.title || "Measured sequence", frames, current: 0, playing: false, timer: null, framed: false };
+  document.getElementById("timeline").classList.remove("hidden");
+  renderTimeline();
+  showFrame(frames.findIndex((f) => f.loaded));
+}
+function exitSequence() {
+  stopPlay(); SEQUENCE = null;
+  document.getElementById("timeline").classList.add("hidden");
+}
+function showFrame(i) {
+  if (!SEQUENCE) return;
+  SEQUENCE.current = Math.max(0, Math.min(SEQUENCE.frames.length - 1, i));
+  const fr = SEQUENCE.frames[SEQUENCE.current];
+  const cap = document.getElementById("tl-caption");
+  if (!fr.loaded) {                                  // a frame whose packet failed to load — silence, not measured_zero
+    cap.className = "tl-caption"; cap.textContent = `${fr.label || "frame"} not loaded — silence (not measured_zero).`;
+    renderTimeline(); return;
+  }
+  // render geometry in a FIXED gluing view so the seam ignites/heals in place; keep camera after the first frame.
+  const firstFrame = !SEQUENCE.framed;
+  renderData(fr.data, fr.label || `frame ${SEQUENCE.current}`, fr.companions, { sequenceMode: true });
+  applyScene("gluing", { keepCamera: !firstFrame });
+  SEQUENCE.framed = true;
+  const top = (MODEL.insights || []).find((x) => x.isObstruction);
+  if (top) { highlightRefs((top.evidence.atomRefs) || [], (top.evidence.contextRefs) || []); showInsightDetail(top); activeInsightId = top.id; renderInsightRail(); }
+  else { resetDetail(); }
+  cap.className = "tl-caption" + (fr.transition === "ignite" ? " ignite" : fr.transition === "heal" ? " heal" : "");
+  cap.textContent = fr.transition === "ignite"
+    ? `⚡ H¹ obstruction BORN here — local pieces stopped gluing across the cover${fr.priorZero ? " (prior frame was measured_zero)" : " (prior frame had no measured obstruction)"}.`
+    : fr.transition === "heal" ? "✓ H¹ healed — the seam closed; the global section glues again."
+    : (fr.note || fr.conclusion || "");
+  renderTimeline();
+}
+function renderTimeline() {
+  if (!SEQUENCE) return;
+  document.getElementById("tl-title").textContent = SEQUENCE.title;
+  const wrap = document.getElementById("tl-frames");
+  wrap.innerHTML = SEQUENCE.frames.map((f, i) => {
+    const dot = !f.loaded ? "" : f.obstruction ? "obstr" : f.measuredZero ? "zero" : ""; // grey for not-loaded / non-measured_zero lanes
+    return `<div class="tl-tick ${i === SEQUENCE.current ? "active" : ""} ${f.transition || ""}" data-i="${i}">
+       <span class="tl-dot ${dot}"></span>
+       <span class="tl-lab">${escapeHtml(f.label || "f" + i)}</span>
+     </div>`;
+  }).join("");
+  for (const t of wrap.querySelectorAll(".tl-tick"))
+    t.addEventListener("click", () => { stopPlay(); showFrame(+t.dataset.i); });
+}
+function stopPlay() {
+  if (SEQUENCE && SEQUENCE.timer) { clearInterval(SEQUENCE.timer); SEQUENCE.timer = null; }
+  if (SEQUENCE) SEQUENCE.playing = false;
+  const b = document.getElementById("tl-play"); if (b) b.textContent = "▶ Play";
+}
+function togglePlay() {
+  if (!SEQUENCE) return;
+  if (SEQUENCE.playing) { stopPlay(); return; }
+  SEQUENCE.playing = true; document.getElementById("tl-play").textContent = "⏸ Pause";
+  SEQUENCE.timer = setInterval(() => showFrame((SEQUENCE.current + 1) % SEQUENCE.frames.length), 1700);
+}
+
+/* file input */
+document.getElementById("open-file").addEventListener("click", () => document.getElementById("file").click());
+document.getElementById("file").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0]; if (f) loadUserData(f);
+});
+/* drag-drop */
+const drop = document.getElementById("drop");
+window.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("active"); });
+window.addEventListener("dragleave", (e) => { if (e.target === drop || e.clientX === 0) drop.classList.remove("active"); });
+window.addEventListener("drop", (e) => {
+  e.preventDefault(); drop.classList.remove("active");
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadUserData(f);
+});
+
+/* ============================================================================
+ * UI wiring
+ * ========================================================================== */
+function buildSceneButtons() {
+  const wrap = document.getElementById("scene-buttons");
+  wrap.innerHTML = "";
+  for (const [id, s] of Object.entries(SCENES)) {
+    const b = document.createElement("div");
+    b.className = "chip scene-btn" + (id === currentScene ? " on" : "");
+    b.dataset.scene = id;
+    b.textContent = s.title;
+    b.title = s.q;
+    b.addEventListener("click", () => applyScene(id));
+    wrap.appendChild(b);
+  }
+}
+function buildLayerToggles() {
+  const wrap = document.getElementById("layer-toggles");
+  wrap.innerHTML = "";
+  for (const t of LAYER_TOGGLES) {
+    const l = document.createElement("label");
+    l.className = "toggle";
+    l.innerHTML = `<input type="checkbox" ${layerState[t.key] ? "checked" : ""}/>${t.label}`;
+    l.querySelector("input").addEventListener("change", (e) => {
+      layerState[t.key] = e.target.checked; applyLayerToggles();
+    });
+    wrap.appendChild(l);
+  }
+}
+document.getElementById("reset-cam").addEventListener("click", () => frameScene(currentScene));
+document.getElementById("report-toggle").addEventListener("click", () =>
+  document.getElementById("report").classList.toggle("open"));
+document.getElementById("tl-play").addEventListener("click", togglePlay);
+document.getElementById("report-close").addEventListener("click", () =>
+  document.getElementById("report").classList.remove("open"));
+
+/* search highlight */
+// search highlight — bump self-glow + scale (NOT bloom; the H¹ bloom budget is reserved).
+// build-time emissive/intensity/scale are restored exactly on no-match (no permanent corruption).
+document.getElementById("search").addEventListener("input", (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  for (const p of pickables) {
+    if (p.info.type !== "atom") continue;
+    const mat = p.mesh.material; const ud = p.mesh.userData;
+    if (!mat || !mat.emissive || ud.baseIntensity == null) continue;
+    const id = (p.info.atom.subject + " " + p.info.atom.id).toLowerCase();
+    const match = q && id.includes(q);
+    if (match) {
+      mat.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.0;
+      p.mesh.scale.setScalar(ud.baseScale * 1.5);
+    } else if (highlighted.includes(p.mesh)) {
+      // preserve an active insight highlight instead of stomping it back to base
+      mat.emissiveIntensity = Math.max(ud.baseIntensity, 0.85) * 2.2;
+      p.mesh.scale.setScalar(ud.baseScale * 1.6);
+    } else {
+      mat.emissive.setHex(ud.baseEmissive);
+      mat.emissiveIntensity = ud.baseIntensity;
+      p.mesh.scale.setScalar(ud.baseScale);
+    }
+  }
+});
+
+/* ============================================================================
+ * Resize + animation
+ * ========================================================================== */
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  bloomComposer.setSize(window.innerWidth, window.innerHeight);
+  finalComposer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  controls.update();
+  // gentle life: obstruction pulse, calm-ring breathing, cell drift
+  for (const g of [G.seam, G.atoms]) for (const o of g.children) {
+    if (o.userData && o.userData.isProbe) { updateProbe(o, t); continue; }
+    if (o.userData && o.userData.pulse && o.material && o.material.emissive) {
+      o.material.emissiveIntensity = 1.6 + Math.sin(t * 3.2) * 0.7;
+    }
+  }
+  for (const o of G.verdict.children) {
+    if (o.userData && o.userData.breathe) { const s = 1 + Math.sin(t * 1.1) * 0.02; o.scale.setScalar(s); }
+  }
+  for (const o of G.cages.children) {
+    if (o.userData && o.userData.isProbe) updateProbe(o, t);
+    if (o.userData && o.userData.descend) updateRepairProbe(o, t);
+    if (o.userData && o.userData.softpulse && o.material) o.material.emissiveIntensity = 1.1 + Math.sin(t * 2.5) * 0.4;
+  }
+  renderFrame();
+}
+
+/* ---- go ------------------------------------------------------------------ */
+renderLegend();
+buildSceneButtons();
+buildLayerToggles();
+emptyShell();
+loadDefault();
+animate();
+
+/* diagnostics (used by automated verification; harmless in normal use) */
+window.__arch = {
+  diag() {
+    const box = new THREE.Box3();
+    for (const [k, g] of Object.entries(G)) if (g.visible) box.expandByObject(g);
+    const sph = box.isEmpty() ? null : box.getBoundingSphere(new THREE.Sphere());
+    return {
+      scene: currentScene, model: !!MODEL,
+      ctxPositions: MODEL ? MODEL.contexts.map((c) => { const p = CTXPOS.get(c.id); return [c.id, p ? [+p.x.toFixed(1), +p.y.toFixed(1), +p.z.toFixed(1)] : null]; }) : [],
+      groupCounts: Object.fromEntries(Object.entries(G).map(([k, g]) => [k, g.children.length])),
+      bsphere: sph ? { c: [+sph.center.x.toFixed(1), +sph.center.y.toFixed(1), +sph.center.z.toFixed(1)], r: +sph.radius.toFixed(1) } : null,
+      cam: [+camera.position.x.toFixed(1), +camera.position.y.toFixed(1), +camera.position.z.toFixed(1)],
+      target: [+controls.target.x.toFixed(1), +controls.target.y.toFixed(1), +controls.target.z.toFixed(1)],
+      bloomOk,
+    };
+  },
+  setScene: applyScene,
+  fogInfo() { return { density: scene.fog ? scene.fog.density : null }; },
+  setFog(density) { if (scene.fog) scene.fog.density = density; },
+};
+</script>
+</body>
+</html>

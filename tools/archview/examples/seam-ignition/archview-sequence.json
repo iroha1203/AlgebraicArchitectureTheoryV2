@@ -1,0 +1,10 @@
+{
+  "schema": "archview-sequence/v1",
+  "title": "Seam Ignition — an H¹ gluing obstruction born, then healed",
+  "cover": "cover:order-inventory",
+  "frames": [
+    { "path": "frame-00", "label": "f0 · calm", "archmap": "frame-00.archmap.json", "note": "lawful cover" },
+    { "path": "frame-01", "label": "f1 · mismatch added", "archmap": "frame-01.archmap.json", "note": "left↔bottom čech mismatch atom appears" },
+    { "path": "frame-02", "label": "f2 · healed", "archmap": "frame-02.archmap.json", "note": "mismatch removed" }
+  ]
+}
