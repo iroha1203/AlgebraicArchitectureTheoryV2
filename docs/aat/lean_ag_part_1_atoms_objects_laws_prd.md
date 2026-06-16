@@ -16,7 +16,7 @@ Atom -> AtomFamily -> Configuration
 
 採否規律: この塔の構成と、その上で成り立つ Lawfulness–Zero Obstruction 同値
 (定理9.3)に寄与する定義・命題だけを形式化対象に採る。塔の構成に寄与しない要素
-(例、原則、設計原則の層の表)は対象外とする。実装中に公理の不足
+(例、原則、外部設計語彙の読み)は対象外とする。実装中に公理の不足
 (塔が立ち上がらない)または過剰(使われない公理)が見つかった場合、それは
 本文または本PRDの欠陥であり、ループを停止して報告する。
 
@@ -99,10 +99,10 @@ Lean status の台帳は既存の2文書に統合する。
 | 定義5.1 Architecture Object / 5.2 Generated Object / 5.4 Object Equivalence | 定義 | R4 |
 | 命題5.3 Atom-Origin | 証明 | 生成原理。構成から従うことを theorem にする |
 | 定義6.1–6.3(Invariant / Family / Preservation) | 定義 | R5 |
-| 例6.4 / 命題6.5 設計原則の層 | 対象外 | 6.5 は読みの表であり塔の構成に寄与しない |
+| 例6.4 / 原則6.5 外部設計語彙の扱い | 対象外 | 6.5 は SOLID / Layered などが AAT primitive ではないことを示す読みであり、塔の構成に寄与しない |
 | 定義7.1 Law / 7.2 Law Universe / 7.3 Lawfulness | 定義 | SemanticLawful / NoRequiredObstruction / RequiredSignatureAxesZero の三述語を含む(R6) |
 | 例7.4 | 対象外 | 代表 law は R10 の有限モデルで NoCycle を実装する |
-| 定義8.1 Obstruction / 8.2 Obstruction Circuit / 8.5 Obstruction Valuation | 定義 | 値域の zero/positive dichotomy と zero-reflecting Agg を含む(R7) |
+| 定義8.1 Obstruction / 8.2 Obstruction Circuit / 8.5 Obstruction Valuation | 定義 | 値域の zero/positive dichotomy と zero-reflecting Agg を含む(R7)。`ObstructionCircuit` は finite witness presentation として読む |
 | 例8.3 Cycle / 例8.4 Substitution | 例 theorem | R10 の有限モデル上で obstruction circuit の実例として証明する |
 | 命題9.1 Soundness / 命題9.2 Completeness | 定義 | 性質の定義として形式化する(本文も定義的に述べている) |
 | 定理9.3 Lawfulness-Zero Obstruction [CBI] | 証明 | R8。後段の三読み一致も含む |
@@ -273,8 +273,9 @@ Lean status の台帳は既存の2文書に統合する。
   ついて zero claim を出さない。
 - 本PRDの完了は、ArchSig が参照する第VIII部の定理群の証明を意味しない
   (それは PRD-5 の仕事である)。
-- 命題6.5(設計原則の層)の表は形式化しない。設計原則と invariant の対応は
-  本文の読みにとどまる。
+- 原則6.5(外部設計語彙の扱い)は形式化しない。SOLID / Layered などは
+  AAT primitive ではなく、必要な場合だけ law presentation、cover、
+  restriction compatibility、obstruction ideal、lawful locus の具体例として読む。
 
 ## 完了条件(Acceptance Criteria)
 

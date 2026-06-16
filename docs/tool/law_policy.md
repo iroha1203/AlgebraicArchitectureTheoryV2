@@ -82,14 +82,14 @@ InterpretationProfile
 ```
 
 Raw source diffs could help an adapter choose source refs, but they did not
-select LawPolicy and were not canonical semantic inputs to the interpretation
-profile.
+select LawPolicy and were not canonical semantic inputs to the selected
+analysis policy.
 
 ## Legacy v0 Responsibility
 
-The legacy interpretation profile owned the selected analysis policy for a
-specific review context. It did not define AAT, did not act as a design-rule
-collection, and did not prove architecture lawfulness.
+The legacy v0 profile owned the selected analysis policy for a specific review
+context. It did not define AAT, did not act as a design-rule collection, and did
+not prove architecture lawfulness.
 
 For legacy Part IV distance analysis, the v0 profile was the source of the
 selected `DistanceProfile` boundary that ArchSig copied into

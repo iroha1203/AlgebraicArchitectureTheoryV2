@@ -1,7 +1,8 @@
 # Tool Docs
 
-`docs/tool/` is built around the ArchMap / interpretation profile / ArchSig
-`analyze` workflow.
+`docs/tool/` is built around the ArchMap / LawPolicy / MeasurementProfile /
+ArchSig `analyze` workflow. Tooling documents describe artifact contracts; they
+are not the source of truth for AAT mathematics.
 
 The previous mixed tool documents are archived under:
 
@@ -75,7 +76,7 @@ Current source-of-truth boundaries:
 - The ArchSig schema catalog contains v1 ArchMap, LawPolicy, evaluator registry, normalized ArchMap, typed evaluator results, architecture distance, analysis packet, run manifest, Atom Viewer data, schema catalog, compatibility policy, and validation report artifacts. Legacy pre-Atom outputs are not current schema catalog surfaces.
 - ArchSig keeps non-conclusions as metadata rather than as the lead diagnosis. Reports should state the measured conclusion first, then preserve measurement boundaries for downstream interpretation.
 - ArchSig validation separates surface checks from measurement-depth and proxy-regression checks. It still does not prove source-observation layer, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
-- ArchSig is the CI / PR-review / lightweight structural diagnosis surface. FieldSig is the batch / longitudinal monitoring / evolution-quality diagnosis surface. FieldSig consumes explicit ArchSig handoff artifacts as bounded current and historical AAT structural state for PR / diff / change-vector evolution analysis. It does not read raw ArchMap observations as forecast truth, and ArchSig summary / Viewer reports do not replace FieldSig forecast, governance, calibration, operational feedback, or longitudinal monitoring.
+- ArchSig is the CI / PR-review / lightweight selected-evidence diagnosis surface. FieldSig is the batch / longitudinal monitoring / evolution-quality diagnosis surface. FieldSig consumes explicit ArchSig handoff artifacts as bounded current and historical architecture-evidence state for PR / diff / change-vector evolution analysis. It does not read raw ArchMap observations as forecast truth, and ArchSig summary / Viewer reports do not replace FieldSig forecast, governance, calibration, operational feedback, or longitudinal monitoring.
 
 Atom handoff checklist:
 
@@ -92,10 +93,6 @@ Atom handoff checklist:
 Forward design PRDs:
 
 - [ArchMap Atom-to-AAT Presentation Contract PRD](archmap_minimal_observation_contract_prd.md)
-- [LLM-native ArchMap / ArchSig PRD](llm_native_archmap_archsig_prd.md)
-- [ArchSig AAT Analysis Engine PRD](archsig_aat_analysis_engine_prd.md)
-- [ArchSig Output / Viewer PRD](archsig_output_report_prd.md)
-- [ArchSig v0.3.0 Measurement Expansion PRD](archsig_v0_3_0_measurement_expansion_prd.md)
 - [ArchSig v0.4.0 Algebraic Geometry Measurement PRD](archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
 - [ArchSig v0.4.0 改善 PRD(measured_zero 純度 / 行レベル assumption 依存 / 境界の機械可読化 / ArchMap atom 語彙 lint)](archsig_v0_4_0_improvement_prd.md)
 - [ArchSig 計測忠実性補強と AG-faithful Viewer 統合 PRD(計測=主 / 可視化=従、M0-M15 + V0-V18)](archsig_measurement_faithfulness_and_ag_viewer_prd.md)

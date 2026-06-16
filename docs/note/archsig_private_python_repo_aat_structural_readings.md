@@ -1,6 +1,6 @@
 # ArchSig Private Python Repository AAT Structural Readings Note
 
-とある Python リポジトリの ArchMap を用いた AAT structural readings 実験メモ
+とある Python リポジトリの ArchMap を用いた architecture-evidence readings 実験メモ
 
 ---
 
@@ -63,7 +63,7 @@ ArchSig can read architecture state, not only architecture violations.
 ```
 
 ArchSig analysis packet validation は pass した。
-追加した AAT structural readings は次の件数で出力された。
+追加した architecture-evidence readings は次の件数で出力された。
 
 ```text
 representationStrengthReadings      14
@@ -259,7 +259,7 @@ AI generation job surface delta
 
 ここでの spectrum は、厳密な数値線形代数としての固有値分解そのものではない。
 ArchMap 上の Molecule / Atom / Obstruction / Operation を行列的な表現へ写し、
-どの成分が支配的な圧力を持つかを読むための AAT structural proxy である。
+どの成分が支配的な圧力を持つかを読むための architecture-evidence proxy である。
 
 出力された spectral analysis は次である。
 
@@ -856,7 +856,7 @@ FieldSig は PR / diff / change vector による evolution を読む。
 
 ```text
 ArchSig:
-  current AAT structural state
+  current architecture-evidence state
 
 FieldSig:
   software evolution over ArchSig state

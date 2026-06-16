@@ -112,8 +112,8 @@ it, summary / viewer / manifest remain the primary reading surface.
 
 `archsig-analysis-packet-v0` is the legacy ArchSig output artifact for
 `archmap-observation-map-v0` / `law-policy-v0`.
-It reads a source-grounded ArchMap together with one selected interpretation
-profile and records AAT-based, bounded analysis for LLM and human review.
+It reads a source-grounded ArchMap together with one selected legacy v0 profile
+and records bounded analysis for LLM and human review.
 
 ```text
 ArchMap
@@ -491,7 +491,7 @@ blockers for measured or blocked readings, require Part IV rows to stay tied
 to the selected `DistanceProfile` / `DiagnosticScope`, and reject hard-coded
 fixture markers as measured provenance; proxy-regression checks reject
 `schemaFoundationOnly` or bounded proxy rows when they masquerade as measured analysis. Packet
-validation checks identity, ArchMap / interpretation profile
+validation checks identity, ArchMap / LawPolicy
 references, AAT concept coverage, bounded judgement statuses, analytic axes,
 spectral analysis readings, spectral mode readings,
 design principle readings, spectral drilldown readings, curvature support
@@ -500,7 +500,7 @@ bridge readings and bridge-edge source refs, v0.3.0 measurement expansion
 readings, AAT observation-axis readings, homotopy complex summaries, path pair
 candidates, loop candidates, filler candidate readings,
 architectural hole readings, homotopy holonomy readings, Stokes-style readings,
-ArchitectureHomotopyReport, AAT structural state readings, ArchMapStore delta /
+ArchitectureHomotopyReport, architecture-evidence state readings, ArchMapStore delta /
 commit / snapshot / index refs, operation square candidates, axis-wise path
 continuation traces, `measurementStatus` and `readingBoundary` fields for ACTS
 and Homotopy measurement records, Part IV distance foundation rows, Part IV Atom
@@ -556,7 +556,7 @@ one targeted unfilled loop, and Stokes-style local curvature cells.
 
 The builder:
 
-- evaluates selected interpretation-profile witness rules over ArchMap atom and semantic observations
+- evaluates selected LawPolicy witness rules over ArchMap atom and semantic observations
 - uses `concernHints` only as auxiliary evidence
 - constructs obstruction circuits only from family-complete witness rules whose
   required atom families and `moleculePatternRefs` are observed under the
@@ -565,9 +565,10 @@ The builder:
   nonzero signature axis must not be emitted from concern hints, blocked
   witnesses, incomplete molecule patterns, or policy text alone
 - preserves observation gaps as flatness blockers, not measured zero
-- emits AAT concept surfaces for Atom, Configuration, ArchitectureObject,
-  Invariant, LawUniverse, ObstructionCircuit, ArchitectureSignature, Operation,
-  Path, Homotopy, Diagram, and AnalyticRepresentation
+- emits finite AG-AAT measurement surfaces for Atom vocabulary, Atom family /
+  configuration, architecture object, selected law universe, coverage context,
+  local lawful section, obstruction witness, lawful-locus reading, and
+  measurement profile outputs
 - emits architecture state, design pressure, change impact, bounded judgements,
   LLM interpretation, analytic representation, semantic coupling/cohesion,
   spectral analysis readings, and design principle
@@ -821,7 +822,7 @@ The builder:
   support, interaction obstruction refs, and required boundary operations. It
   states that filler / lifting / boundary-operation evidence is required before
   reading a split as obstruction removal.
-- AAT structural state readings expose representation strength, local curvature
+- architecture-evidence state readings expose representation strength, local curvature
   diagrams, three-layer flatness, observation projection loss, state transition
   algebra, operation / invariant Galois-style correspondence, and split
   readiness. These readings describe the current architecture state; PR / diff
@@ -831,13 +832,13 @@ The builder:
   spectral, matrix, curvature, and aggregate readings. Aggregate zero safety is
   represented as a strength boundary: zero aggregates only reflect local zero
   under the recorded assumptions and cancellation constraints.
-- `structuralReadingReviewSurface` connects the AAT structural reading families
+- `structuralReadingReviewSurface` connects the packet measurement families
   into one review guide. It states that ArchSig reads current architecture
   state, not just violations, and lists the review focus for representation
   blockers, curvature, flatness, projection loss, state/effect algebra,
   operation/invariant constraints, and split readiness.
 - `currentStateEvolutionBoundary` records the product boundary: ArchSig computes
-  current AAT structural state from `ArchMap + LawPolicy`. FieldSig studies
+  current architecture-evidence state from `ArchMap + LawPolicy`. FieldSig studies
   PR / diff / change-vector evolution over workflow evidence and serialized
   `archsig-analysis-packet/v1` handoff artifacts. The packet must not be read as forecast
   correctness, causal truth, raw-diff semantic truth, or raw-ArchMap forecast

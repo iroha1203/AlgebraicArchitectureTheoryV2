@@ -35,7 +35,7 @@ source artifacts -> ArchMap v1 atoms -> LawPolicy v1 -> typed evaluator results 
 - FieldSig consumes ArchSig analysis packets as bounded current tooling handoff
   state, not raw ArchMap observations. Obstruction circuits, typed evaluator
   statuses, repair candidates, structural review boundaries, current-state /
-  evolution boundary, and blockers remain bounded current AAT structural state
+  evolution boundary, and blockers remain bounded current architecture-evidence state
   or unknown remainder when projected to SFT handoff artifacts.
 - FieldSig validation does not prove forecast correctness, probability, calibration, global future safety, or Lean theorem discharge.
 

@@ -4,12 +4,20 @@
 
 ## 位置づけ
 
-- AAT は Atom から architecture object、law、obstruction circuit、operation、flatness、path / homotopy、analytic representation を構成する局所代数の核である。
-- AAT は Atom を公理的出発点とする。実コードベース抽出器、ArchMap observation、tooling validation は
-  Atom 入力を提示・検査する前段または後段 surface であり、AAT の theorem package の完了条件ではない。
-- AAT 自体に observation / measurement / tooling boundary はない。境界を持つのは、Atom 入力を提示する
-  ArchMap、LawPolicy による選択、ArchSig / FieldSig の測定 artifact、または empirical dataset である。
-- Lean source は Atom から生成される純粋な algebra / theorem package を形式化する場所である。
+- 現行 AAT は代数幾何的アーキテクチャ論である。Atom は primitive architectural fact
+  として公理化され、Atom family / configuration から architecture object が生成される。
+  その上で固定された law universe、coverage topology、係数環 / 係数 sheaf から
+  architecture geometry を構成し、AAT site、sheaf、ringed AAT topos、law algebra、
+  obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、
+  derived / stacky geometry として読む。
+- Atom / law / obstruction / flatness / signature は代数幾何版の基礎データや局所
+  presentation である。外部設計パターン語彙へ潰して説明しない。
+- 実コードベース抽出器、ArchMap observation、tooling validation は、AAT 入力を提示・検査する
+  前段または後段 surface であり、AAT の theorem package の完了条件ではない。
+- AAT 自体に observation / measurement / tooling boundary はない。境界を持つのは、ArchMap、
+  LawPolicy / MeasurementProfile による選択、ArchSig / FieldSig の測定 artifact、または
+  empirical dataset である。
+- Lean source は代数幾何版 AAT の定義・定理・finite examples を形式化する場所である。
   実測や empirical correlation は、AAT ではなく tooling / SFT 側の artifact に相対化して扱う。
 - Lean 形式化は全知の検査器ではない。形式化対象は、AAT の語彙で明示的に述べられる命題に限る。
   全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
@@ -28,7 +36,7 @@
 - 定量指標は `Walk`, `Path`, adjacency matrix、または将来の free-category construction 側で扱う。
 - executable metrics は、まず有限な measurement universe 上の計算として定義し、graph-level facts との接続は別 theorem として証明する。
 - `ComponentUniverse` は proof-carrying measurement universe として扱う。source extraction の成否は
-  AAT core の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
+  AAT の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
 - ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
   形式化であり、ArchSig は別に `ArchMap + LawPolicy + evidence contract` から診断結論を出す tool である。
 
@@ -39,8 +47,8 @@
 - 完了レビューでは、対象文書が列挙した theorem、suite field、acceptance theorem、fixture、Issue closure を
   直接照合する。対象文書が要求していない無制限 claim を「未完了部分」として追加しない。
 - 禁止: AAT の完了レビューで source-observation layer の性質を `non-conclusion`、残タスク、
-  未完了 claim、証明不能な限界として列挙しない。AAT は Atom を公理とするので、source code から Atom input
-  を提示する過程は AAT theorem package の外側にある。必要なら ArchMap / ArchSig / FieldSig の
+  未完了 claim、証明不能な限界として列挙しない。source code から AAT 入力を提示する過程は
+  AAT theorem package の外側にある。必要なら ArchMap / ArchSig / FieldSig の
   具体的な artifact、fixture、schema、validator、Issue acceptance として別管理する。
 - non-conclusion / claim boundary は、具体的な theorem や artifact の近くで必要な分だけ記録する。
   レビュー報告や残タスク欄を、一般的に証明不能な巨大 claim の一覧にしない。
@@ -49,7 +57,9 @@
 - theorem や定義を追加した場合は、必要に応じて `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` を更新する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
-- 設計原則の分類では、SOLID を万能原理として扱わない。SOLID は局所契約層、Layered / Clean Architecture は大域構造層、Event Sourcing / Saga / CRUD は状態遷移代数層、Circuit Breaker / Replicated Log は実行時依存・分散収束層として整理する。
+- SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
+  必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、
+  lawful locus の具体例として読む。
 
 ## 検証
 
