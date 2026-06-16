@@ -47,7 +47,14 @@
   「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。
   source-observation layer の性質は AAT の内側の claim ではない。必要な場合は tooling / SFT 側の
   具体的な artifact、fixture、schema、validator、Issue acceptance として別に扱う。
-- AAT / SFT の数学本文は根幹文書である。ユーザーの明示的な指示なしに `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` を更新しない。
+- AAT / SFT の数学本文は根幹文書である。ユーザーがはっきりと明示的に本文編集を指示した場合のみ、
+  `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、
+  `docs/sft/aat_interface.md` を更新してよい。
+  - 例: 「数学本文を編集して」「`docs/aat/algebraic_geometric_theory/...` を修正して」。
+  - 「読み直して」「理解して」「レビューして」「差分を確認して」「常識の観点で見て」
+    「PR 作成して」は本文編集の許可ではない。
+  - 本文に問題を見つけても、明示的な本文編集指示がない限り、提案、PR コメント、Issue、
+    周辺 docs / 台帳の修正として扱い、数学本文は read-only とする。
 - 実装作業は `main` を最新化してから専用ブランチを切る。ブランチ名は Issue 番号または作業内容が分かる名前にする。
 - PR 本文には対象 Issue を `Closes #N` 形式で明記し、`.github/pull_request_template.md` に沿って書く。
 - 既存の未コミット変更はユーザーの変更として扱い、勝手に戻さない。
