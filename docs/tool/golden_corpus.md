@@ -363,7 +363,7 @@ archsig-analysis-packet/v1 -> operation-support-estimate-v0
 
 The projection keeps obstruction circuits, signature axes, repair candidates,
 structural review boundaries, current-state / evolution boundary, and coverage
-gaps as bounded current AAT structural state. It does not promote raw ArchMap
+gaps as bounded current architecture-evidence state. It does not promote raw ArchMap
 observations to forecast truth.
 
 ArchSig PR review and codebase inspection fixtures are not FieldSig fixtures.

@@ -140,7 +140,7 @@ v0.3.0 では、少なくとも次を計測対象にする。
 
 ### R4. Law universe coverage / witness exactness を計測する
 
-ArchSig は、selected interpretation profile がどの law universe をどの程度測れているかを
+ArchSig は、selected LawPolicy がどの law universe をどの程度測れているかを
 計測できなければならない。
 
 AAT 本文では、LawUniverse は次の成分を持つ。

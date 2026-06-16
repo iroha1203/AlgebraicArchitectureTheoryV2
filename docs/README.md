@@ -26,7 +26,7 @@ source of truth として扱わない。
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): AAT / SFT / ArchSig / AI-driven Development の全体像を示す入口文書。
-- [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): AAT 数学本文の正典。Atom から site、ringed topos、affine chart、scheme、derived / stacky geometry、measurement、evolution geometry へ進む。
+- [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): AAT 数学本文の正典。Atom 公理系から architecture object を構成し、AAT site、sheaf、ringed topos、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、derived / stacky geometry、measurement、evolution geometry へ進む。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
 - [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の台帳。
@@ -47,8 +47,8 @@ source of truth として扱わない。
 ## 層の分担
 
 ```text
-AAT gives laws.
-ArchSig measures state.
+AAT gives algebraic-geometric architecture.
+ArchSig measures selected evidence.
 SFT predicts trajectories.
 AI proposes operations.
 Review / CI controls transitions.
@@ -56,9 +56,9 @@ Review / CI controls transitions.
 
 | 層 | 役割 | 主な文書 |
 | --- | --- | --- |
-| AAT | Atom から立ち上がる局所的・代数幾何的・形式的・証明可能な核。 | `docs/aat/algebraic_geometric_theory/README.md` |
+| AAT | Atom 公理系から生成される architecture object を、AAT site、sheaf、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent へ持ち上げる代数幾何的・形式的・証明可能な核。 | `docs/aat/algebraic_geometric_theory/README.md` |
 | AAT / SFT Interface | AAT から SFT への片方向依存と claim discipline。 | `docs/sft/aat_interface.md` |
-| ArchSig | AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層。 | `docs/tool/` |
+| ArchSig | supplied evidence と MeasurementProfile から bounded diagnostic / measurement artifact を作り、SFT 的予測・制御へ渡す計測層。 | `docs/tool/` |
 | SFT | 大域的・力学的・予測的・制御的な上位理論。 | `docs/sft/software_field_theory.md` |
 | AI-driven Development | SFT の forecast と AAT の theorem assumptions の中で operation を生成する制御対象。 | `docs/sft/software_field_theory.md`, tooling / AIR docs |
 
@@ -88,6 +88,8 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 - [2026-05-09 AAT/SFT reorg archive](archive/2026-05-09-aat-sft-reorg/): AAT/SFT 階層へ再編する前の旧 AAT Part 文書、旧数学設計書、旧 proof obligations、旧 theorem index、旧 Architecture Signature Dynamics 設計。
 - [2026-05-09 first-class docs archive](archive/2026-05-09-first-class-docs/): 後方互換のためだけに残っていた facade 文書、薄い索引、旧 PRD、旧 design note、旧 empirical pilot の退避先。
+- [2026-06-16 AAT pre-AG designs](archive/2026-06-16-aat-pre-ag-designs/): 代数幾何版へ完全移行する前の Atomic Theory / Atom-generated reconstruction / distance extension 設計。
+- [2026-06-16 ArchSig pre-AG PRDs](archive/2026-06-16-archsig-pre-ag-prds/): AG measurement path へ移行する前の LLM-native / AAT analysis engine / output / v0.3 PRD。
 - [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
 - [Flatness-Obstruction Conjecture](archive/Flatness%E2%80%93Obstruction%20Conjecture.md): 現行本文へ整理する前の数学草案。
 - [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): `docs/aat/proof_obligations.md` を索引化する前の詳細 ledger。

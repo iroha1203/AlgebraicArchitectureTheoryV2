@@ -13,8 +13,8 @@ toolchain for diagnosing what is preserved, what breaks, and which futures a
 software system becomes more likely to reach.
 
 ```text
-AAT makes architecture locally algebraic.
-ArchSig makes architecture observable.
+AAT makes architecture algebraic-geometric.
+ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
@@ -30,7 +30,7 @@ toward explicit diagnosis. Its central questions are:
 ```text
 Does this change preserve the selected architecture invariant?
 If not, which obstruction witness shows the break?
-Which ArchitectureSignature axis exposes the break?
+Which selected measurement coordinate or law-evaluation profile exposes the break?
 Which future architecture does this PRD / Issue / PR make easier to reach?
 Which review / CI / policy / governance narrows dangerous trajectories?
 ```
@@ -46,9 +46,9 @@ To answer these questions, the project keeps the following layers separate:
 
 | Layer | Role | Source of truth |
 | --- | --- | --- |
-| AAT | A pure algebraic-geometric theory generated from architectural atoms, reading architecture objects, laws, obstructions, sheaves, cohomology, derived geometry, measurement, and evolution geometry. | [AAT algebraic-geometric mathematical text](docs/aat/algebraic_geometric_theory/README.md) |
+| AAT | A pure algebraic-geometric theory that starts from architectural atoms and builds architecture objects, AAT sites, sheaves, law algebras, obstruction ideal sheaves, lawful loci, architecture schemes, Čech descent, derived law geometry, measurement, and evolution geometry. | [AAT algebraic-geometric mathematical text](docs/aat/algebraic_geometric_theory/README.md) |
 | AAT / SFT Interface | The interface explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / FieldSig Tooling | ArchSig reads supplied Atom ArchMap evidence plus LawPolicy into AAT structural review artifacts. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
+| ArchSig / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
@@ -80,29 +80,36 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## AAT
 
-AAT begins from primitive architectural facts called atoms. From atom families
-and configurations it constructs architecture objects, law families,
-obstruction circuits, operations, flatness conditions, paths, homotopies, and
-analytic representations.
+AAT begins from primitive architectural facts called atoms. An atom axiom system
+and atom families generate configurations and architecture objects; after a law
+universe, coverage topology, and coefficient data are fixed, those objects are
+lifted to architecture geometry: AAT sites, sheaves, law algebras, obstruction
+ideal sheaves, lawful loci, architecture schemes, Čech obstruction classes, and
+derived law geometry.
 
 ```text
-software architecture
-  = Atom
-  + AtomFamily
-  + Configuration
-  + ArchitectureObject
-  + InvariantFamily
-  + Law
-  + ObstructionCircuit
-  + ArchitectureOperation
-  + ArchitectureSignature
+AAT
+  = atom vocabulary
+  + atom axiom system
+  + atom family / configuration
+  + architecture object
+  + law universe
+  + coverage topology
+  + coefficient sheaf
+  + AAT site
+  + sheaves
+  + law algebra
+  + obstruction ideal sheaf
+  + lawful locus
+  + architecture scheme
+  + Čech descent
+  + derived law geometry
 ```
 
-AAT reads design principles as operations rather than slogans. SOLID,
-Layered / Clean Architecture, Event Sourcing, Saga, Circuit Breaker, Replicated
-Log, and related patterns are not treated as universal maxims. Instead, the
-theory asks which atoms, laws, invariants, operations, observations, and
-obstruction circuits each principle is connected to.
+External design vocabulary such as SOLID or Layered Architecture is not an AAT
+primitive. When useful, it is read as a concrete law presentation, cover,
+restriction-compatibility condition, obstruction ideal, or lawful-locus example
+inside a selected algebraic-geometric regime.
 
 ## SFT
 
@@ -121,9 +128,9 @@ governance are handled under explicit computable cores and stated claim scopes.
 ## Tooling
 
 The tooling goal is to connect the vocabulary of AAT and SFT to real development
-artifacts. ArchSig extracts observable evidence from codebases, PRs, reports,
-and policies, then turns it into signature axes, obstruction witnesses,
-precondition status, and forecast scopes that review and CI can handle.
+artifacts. ArchSig reads supplied ArchMap evidence, LawPolicy, and
+MeasurementProfile artifacts, then emits bounded diagnostic / measurement
+packets that review and CI can handle.
 
 The tooling is not the theory itself. It does not confuse measured zero with
 unmeasured, and a tool pass is not read as a Lean theorem.
@@ -221,4 +228,4 @@ This repository is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## FieldSig
 
-FieldSig is the SFT-based software evolution measurement crate under `tools/fieldsig`. Run `cargo test --manifest-path tools/fieldsig/Cargo.toml` for FieldSig changes. ArchSig remains the AAT structural telemetry generator under `tools/archsig`.
+FieldSig is the SFT-based software evolution measurement crate under `tools/fieldsig`. Run `cargo test --manifest-path tools/fieldsig/Cargo.toml` for FieldSig changes. ArchSig remains the selected architecture-evidence measurement and bounded diagnostic crate under `tools/archsig`.

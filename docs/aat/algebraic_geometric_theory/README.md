@@ -3,8 +3,11 @@
 このディレクトリは、現行 AAT 数学本文の正典である。
 
 Algebraic Architecture Theory, AAT は、ソフトウェアアーキテクチャを
-Atom から生成され、law によって切り出され、obstruction sheaf と
-cohomology によって局所から大域への不整合を読む幾何対象として扱う理論である。
+Atom から生成される architecture object として始め、その上に固定された law universe、
+coverage topology、係数環 / 係数 sheaf に相対化された architecture geometry を構成する理論である。
+Atom は primitive architectural fact として公理化され、そこから AAT site、sheaf、
+law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、
+derived law geometry が立ち上がる。
 
 AAT の対象は、裸のコードベースそのものではない。Atom vocabulary、law universe、
 coverage topology、coefficient ring を固定したときに構成される、相対的なアーキテクチャ幾何である。
@@ -22,10 +25,9 @@ X_C^{V,U,J,k} : AATGeometry
 係数環を明示しない場合、`X_C^{V,U,J}` は `k` を固定済みとする省略記法である。
 
 この本文では、AAT を「代数幾何的アーキテクチャ論」として定式化する。
-Atom は primitive architectural fact として公理化される。law は Atom を生成せず、
-Atom family 上の関係・制約・零点条件を与える。obstruction は law failure の
-witness であり、局所的な witness が大域的に貼り合わない場合、その差は
-cohomology class として現れる。
+law は Atom を生成せず、選ばれた architecture geometry 上の関係・制約・零点条件を与える。
+law failure は obstruction ideal sheaf と lawful locus によって局所代数的に読まれ、
+局所 lawful section が大域的に貼り合わない場合、その差は Čech cohomology class として現れる。
 
 中心図式は次である。
 
@@ -53,13 +55,15 @@ Atom
 ## 位置づけ
 
 このディレクトリの本文では、AAT を純粋な数学理論として扱う。
-本文の内部対象は、Atom、architecture object、law universe、site、sheaf、cohomology、
-representation、measurement profile、trace category である。
+本文の内部対象は、Atom vocabulary、Atom family、architecture object、law universe、
+AAT site、sheaf、ringed AAT topos、law algebra、obstruction ideal sheaf、
+lawful locus、architecture scheme、cohomology、representation、measurement profile、
+trace category である。
 未選択の観測過程、外部過程、応用上の判定手続きについて、本文は主張しない。
 
-従来の Atom / law / obstruction / flatness / signature による AAT は、
-この理論史における古典的な有限・構成的基礎である。この本文は、その先行体系への
-注釈書ではなく、Atom の公理から代数幾何的アーキテクチャ論を自立して構成する。
+Atom / law / obstruction / flatness / signature という語は、代数幾何版の基礎データ、
+局所 presentation、または artifact-side reading として使う。この本文はそれらの語への
+注釈書ではなく、Atom 公理系から代数幾何的アーキテクチャ論を自立した正典として構成する。
 
 ## 構成
 

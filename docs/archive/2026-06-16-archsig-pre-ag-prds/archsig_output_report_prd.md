@@ -18,7 +18,7 @@ ArchMap + LawPolicy
   -> optional raw artifacts for evidence store / FieldSig handoff
 ```
 
-ArchSig は analysis packet を捨てるわけではない。packet は bounded current AAT structural
+ArchSig は analysis packet を捨てるわけではない。packet は bounded current architecture-evidence
 state の evidence store であり、FieldSig handoff の契約でもある。ただし、通常の人間レビューや
 LLM 解釈では、packet を常に保存・閲覧することを前提にしない。
 
@@ -313,7 +313,7 @@ viewer 内で 100MB 級 packet を parse して深掘りすることを要求し
 
 ### R11. FieldSig handoff は raw artifact opt-in として残す
 
-FieldSig は引き続き `archsig-analysis-packet-v0` を bounded current AAT structural state として読む。
+FieldSig は引き続き `archsig-analysis-packet-v0` を bounded current architecture-evidence state として読む。
 したがって、FieldSig handoff を行う workflow では raw packet 保存が必要である。
 
 ArchSig docs と CLI help は、次を明記しなければならない。

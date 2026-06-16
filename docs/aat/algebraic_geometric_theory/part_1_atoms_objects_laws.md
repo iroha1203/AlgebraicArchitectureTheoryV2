@@ -101,8 +101,8 @@ predicate = r
 ```
 
 relation Atom は、cycle、reachability、layering、projection、substitution、effect ordering
-などの law に接続される。したがって relation Atom は、obstruction circuit を作る主要な
-材料でもある。
+などの law に接続される。したがって relation Atom は、finite witness として読まれる
+obstruction circuit を作る主要な材料でもある。
 
 #### Capability Atom
 
@@ -899,22 +899,16 @@ semantic inconsistency count
 
 各 invariant は異なる law と obstruction に対応する。
 
-### 命題 6.5 設計原則の層
+### 原則 6.5 外部設計語彙の扱い
 
-設計原則は、一つの slogan ではなく、複数の invariant family と operation family を
-結びつける読みである。代表的な分類は次である。
+SOLID、Layered Architecture、Clean Architecture などの外部設計語彙は、AAT の
+primitive ではない。必要な場合、それらは選ばれた vocabulary、law universe、
+coverage topology、係数 sheaf のもとで、law presentation、restriction compatibility、
+obstruction ideal、lawful locus、または operation family の例として読む。
 
-| 設計原則 / pattern | 主に扱う invariant | 層 |
-| --- | --- | --- |
-| SRP / OCP / LSP / ISP / DIP | 局所契約、抽象、置換可能性、interface 分離 | 局所契約層 |
-| Layered Architecture | ranking、依存方向、非循環性、分解可能性 | 大域構造層 |
-| Clean Architecture | 内外分離、内向き依存、抽象化整合性 | 大域構造層 |
-| Event Sourcing / Saga / CRUD | replay、projection、compensation、履歴と上書きの関係式 | 状態遷移代数層 |
-| Circuit Breaker | runtime protection、障害局所性 | 実行時依存層 |
-| Replicated Log | ordering、quorum、failure model、条件付き収束性 | 分散収束層 |
-
-局所契約層の invariant は、大域構造層、状態遷移代数層、実行時依存層、分散収束層の
-invariant を自動的には含意しない。
+したがって、外部設計語彙を数学本文の主語にしない。本文の主語は、局所条件を切り出す
+law algebra、それを集める obstruction ideal sheaf、その零点としての lawful locus、
+および局所 lawful section の descent である。
 
 ## 7. Law
 
@@ -999,7 +993,9 @@ SemanticInterpretationConsistent
 
 ## 8. Obstruction Circuit
 
-Law が失敗するとき、その失敗は obstruction として読む。
+Law が失敗するとき、その失敗は第III部で obstruction ideal sheaf と lawful locus によって
+局所代数的に読む。本節では、その前段として、有限 law failure を witness する
+obstruction circuit を導入する。
 
 ### 定義 8.1 Obstruction
 
@@ -1011,7 +1007,8 @@ Ob_L(A)
 
 ### 定義 8.2 Obstruction Circuit
 
-Obstruction circuit は、Atom と relation の有限配置であり、ある law failure を引き起こす。
+Obstruction circuit は、Atom と relation の有限配置であり、ある law failure を
+有限 witness presentation として示す。
 
 ```text
 O = (F_O, R_O, L)
@@ -1027,7 +1024,7 @@ not L(A)
 
 が成り立つ。
 
-### 例 8.3 Cycle Obstruction
+### 例 8.3 Cycle Obstruction Circuit
 
 ```text
 depends(A, B)
@@ -1037,7 +1034,7 @@ depends(C, A)
 
 これは `NoCycle` の obstruction circuit である。
 
-### 例 8.4 Substitution Obstruction
+### 例 8.4 Substitution Obstruction Circuit
 
 ```text
 contract(Base, returns NonNull)
@@ -1049,7 +1046,7 @@ substitutes(Impl, Base)
 
 ### 定義 8.5 Obstruction Valuation
 
-Obstruction valuation は、law universe に対して obstruction の量を与える。
+Obstruction valuation は、law universe に対して選ばれた obstruction circuit の量を与える。
 
 ```text
 omega_L(A) : Value
@@ -1194,7 +1191,8 @@ Sig
 ```
 
 ここで、`Obj` は architecture object、`Op` は operation、`Inv` は invariant、
-`Law` は law universe、`Ob` は obstruction circuit、`Sig` は signature である。
+`Law` は law universe、`Ob` は finite witness として読まれる obstruction circuit、
+`Sig` は selected quantities の多軸表現としての architecture signature である。
 
 ### 定義 10.2 Operation
 
@@ -1247,5 +1245,6 @@ Atom
   -> ArchitectureSignature
 ```
 
-したがって、AAT は Atom 公理系の上で architecture object、law、obstruction、
-signature、operation を持つ純粋な理論として立ち上がる。
+したがって、第I部は代数幾何版 AAT の基礎データを与える。以後の部では、これを
+AAT site、sheaf、law algebra、obstruction ideal sheaf、lawful locus、Čech descent、
+derived law geometry へ持ち上げる。

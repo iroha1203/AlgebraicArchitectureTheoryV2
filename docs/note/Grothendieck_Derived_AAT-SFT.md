@@ -128,8 +128,11 @@ Atom
   -> Configuration
   -> ArchitectureObject
   -> LawUniverse
-  -> ObstructionCircuit
-  -> ArchitectureSignature
+  -> CoverageTopology / CoefficientSheaf
+  -> AATSite / Sheaf
+  -> LawAlgebra / ObstructionIdealSheaf
+  -> LawfulLocus / ArchitectureScheme
+  -> CechObstructionClass
 ```
 
 ## 2.3 Flatness and Zero Curvature
@@ -164,7 +167,7 @@ ZeroCurvature_U(A) iff κ_U(A) = 0
 
 である。
 
-現行 AAT の zero curvature theorem は、lawfulness、required obstruction absence、required signature axes zero、zero curvature が exactness 仮定の下で一致することを述べる。
+現行 AAT では、lawfulness は lawful locus への因子化として読み、obstruction ideal sheaf の vanishing や selected analytic coordinate との一致は明示した exactness 仮定の下で扱う。
 
 新 AAT はこの対応を代数幾何的に拡張する。
 

@@ -405,7 +405,7 @@ boundary holonomy witness を report するものとして扱う。
 
 実装設計で具体化するものは次である。
 
-- `archsig-analysis-packet-v0` へ追加する monodromy / boundary holonomy reading family。
+- `archsig-analysis-packet/v1` handoff artifact へ追加する monodromy / boundary holonomy reading family。
 - base ArchMap / PR-local ArchMap delta / LawPolicy を入力として受ける lightweight PR review command または workflow。
 - raw diff を PR review input surface から除外する input boundary。
 - codebase inspection mode で使う ArchMapSnapshot / ArchMapIndex boundary。

@@ -20,7 +20,7 @@ source artifacts
 The ArchMap, LawPolicy, summary, viewer data, manifest, and optional raw
 analysis artifacts are ArchSig-owned. The final
 `operation-support-estimate-v0` is FieldSig-owned and reads the ArchSig
-analysis packet as bounded current AAT structural state only when raw artifacts
+analysis packet as bounded current architecture-evidence state only when raw artifacts
 were explicitly emitted.
 
 Future PR review and longitudinal workflows should insert ArchMapStore before
@@ -170,7 +170,7 @@ The E2E flow must preserve these boundaries:
 - `llm-interpretation-packet.json` is emitted only in raw mode and remains a
   compact packet sub-surface, not a separate source of truth.
 - FieldSig accepts `archsig-analysis-packet/v1` raw packets as bounded current
-  AAT structural state and rejects raw ArchMap JSON as the current handoff
+  architecture-evidence state and rejects raw ArchMap JSON as the current handoff
   input. PR / diff / change-vector evolution remains FieldSig territory.
 - ArchSig PR review mode reads base ArchMap, optional head / intermediate path
   ArchMaps, PR-local ArchMap delta, and LawPolicy as change-local structural

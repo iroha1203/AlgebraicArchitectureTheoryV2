@@ -221,7 +221,7 @@ trace(L^κ) = 0
 
 逆に、全 `κ_{σ,x}=0` なら明らかに `L^κ=0` で、したがってスペクトルも全て 0 です。
 
-最後に、`κ` が law failure を exact に読み、witness family が complete なら、AAT の zero curvature theorem / signature flatness によって `Flat_U(A)` と一致します。
+最後に、`κ` が law failure を exact に読み、witness family が complete なら、AAT の lawful-locus / obstruction-ideal exactness reading によって `Flat_U(A)` と一致します。
 
 ---
 

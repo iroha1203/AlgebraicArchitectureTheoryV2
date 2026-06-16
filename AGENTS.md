@@ -17,9 +17,13 @@
 - このリポジトリは個人開発であり、常に最小実装・最小差分を選ぶ必要はない。目的に対して自然に必要な設計、実装、docs、tests、website surface まで広げてよい。
 - ただし、無関係な既存変更の巻き戻し、claim boundary を越える主張、根拠のない互換性維持、不要な抽象化は避ける。
 - AAT / Lean / ArchSig の境界は作業前に必ず分ける。
-  - AAT は Atom を公理とする純粋数学理論である。AAT 自体に source observation、measurement、
-    tooling validation の境界を持ち込まない。測定境界は ArchMap / ArchSig / FieldSig 側の
-    artifact contract として扱う。
+  - 現行 AAT は代数幾何的アーキテクチャ論である。Atom は primitive architectural fact
+    として公理化され、Atom family / configuration から architecture object が生成される。
+    その上に architecture geometry、AAT site、sheaf、ringed AAT topos、law algebra、
+    obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、
+    derived law geometry が立つ。
+  - AAT 自体に source observation、measurement、tooling validation の境界を持ち込まない。
+    測定境界は ArchMap / ArchSig / FieldSig 側の artifact contract として扱う。
   - Lean 形式化は神様の視点ではない。語れる命題だけを形式化し、全 runtime、全 semantic universe、
     全未来予測のような証明対象を勝手にスコープへ入れない。
   - ArchSig は Rust tooling であり Lean 証明器ではない。Rust と Lean の対応を要求しない。
@@ -40,7 +44,7 @@
   `NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT` のような肯定的結論を中心にし、
   外側の未観測領域を長い `non-conclusion` 一覧として主役化しない。
 - 禁止: AAT の完了レビューで source extraction / ArchMap observation / tooling validation の完全性を
-  「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。AAT は Atom を公理とするため、
+  「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。
   source-observation layer の性質は AAT の内側の claim ではない。必要な場合は tooling / SFT 側の
   具体的な artifact、fixture、schema、validator、Issue acceptance として別に扱う。
 - AAT / SFT の数学本文は根幹文書である。ユーザーの明示的な指示なしに `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` を更新しない。
@@ -66,14 +70,22 @@
 
 ## 基礎概念
 
-- AAT は Atom から architecture object、law、obstruction circuit、operation、flatness、path / homotopy、analytic representation を構成する局所代数の核である。
-- AAT は Atom を公理的出発点とする純粋理論である。source extraction / ArchMap observation / tooling validation は
-  Atom 入力を提示・検査する前段または後段 surface であり、AAT の完了条件や残タスクではない。
+- 現行 AAT は、Atom 公理系から Atom family、configuration、architecture object を構成し、
+  そこに law universe、coverage topology、係数環 / 係数 sheaf を載せて architecture geometry、
+  site、sheaf、law algebra、obstruction ideal sheaf、lawful locus、Čech cohomology、
+  derived / stacky geometry として読む純粋数学理論である。
+- Atom、law、obstruction、flatness、signature は代数幾何版の基礎データや局所 presentation
+  として現れる。外部設計パターン語彙へ潰して説明しない。
+- source extraction / ArchMap observation / tooling validation は、AAT 入力を提示・検査する
+  前段または後段 surface であり、AAT の完了条件や残タスクではない。
 - Lean で証明済みの主張、定義のみの概念、将来の証明義務、実証仮説は混同しない。
 - SFT は artifact、practice、AI、review、CI、operational feedback が software evolution の reachable future をどう変えるかを扱う。
-- ArchMap は source-grounded Atom observation map であり、law-independent な観測を記録する。
-- LawPolicy / interpretation profile は選ばれた law universe、witness rule、signature axis、coverage requirement を与える profile であり、AAT そのものではない。
-- ArchSig は ArchMap と interpretation profile から `archsig-analysis-packet-v0` を作る AAT structural analysis layer である。Lean 証明器ではない。選ばれた LawPolicy と evidence contract の中で語れることを確かに語り、その外側は証明不能な限界として騒がず沈黙する。
+- ArchMap は source-grounded observation artifact であり、AAT site / measurement profile へ渡す
+  有限 evidence surface を記録する。AAT の source of truth ではない。
+- LawPolicy / MeasurementProfile は選ばれた policy、law reading、cover、係数、witness family、
+  measurement regime を与える artifact contract であり、AAT そのものではない。
+- ArchSig は Rust tooling であり、ArchMap、LawPolicy、MeasurementProfile、evidence contract から
+  bounded diagnostic / measurement artifact を出す。Lean 証明器ではない。
 - ウィトゲンシュタイン的責務境界では、ArchSig は入力された世界の中で語れることだけを出力し、語れない領域を診断・安全・失敗として作らない。
 - FieldSig は ArchSig analysis packet と workflow evidence を SFT 側の evolution measurement / governance input として読む。raw ArchMap を forecast truth として読まない。
 - Website は docs の複製ではなく、AAT / SFT / ArchSig を公開向けに読むための web-native publication surface である。

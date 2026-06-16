@@ -140,8 +140,8 @@ Hol_U(∂f) != 0
 
 です。
 
-AAT では law failure を curvature として読み、lawfulness、required obstruction absence、signature axes zero、zero curvature が exactness の下で一致する、という zero curvature theorem が置かれています。
-境界ホロノミー予想は、その zero curvature theorem を **feature extension の相対版** にするものです。
+AAT では law failure を obstruction ideal sheaf と lawful locus の局所代数として読み、selected coordinate や curvature-style reading との一致は exactness 仮定の下でだけ扱います。
+境界ホロノミー予想は、その lawful-locus exactness reading を **feature extension の相対版** にするものです。
 
 ---
 
