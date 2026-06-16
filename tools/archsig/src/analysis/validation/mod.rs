@@ -6112,12 +6112,12 @@ fn check_part4_distance_coverage_ledger_surface(
         );
         if !entry
             .theory_section_ref
-            .contains("part_4_distance_measure_geometry.md")
+            .contains("aat-theory:distance-extension-design")
         {
             examples.push(generic_validation_example(
                 &entry.ledger_entry_id,
                 &entry.theory_section_ref,
-                "coverage ledger theory refs must point back to the Part IV source text",
+                "coverage ledger theory refs must point back to the current AAT distance design note",
             ));
         }
         if !allowed_coverage.contains(entry.coverage_status.as_str())

@@ -20,12 +20,12 @@
 
 - `docs/` は研究本文、Lean status、proof obligation、tooling specification の source of truth として扱う。
 - `website/` は Cloudflare Pages 向けの public reading surface として扱う。
-- AAT の数学的正典は `docs/aat/mathematical_theory/` であり続ける。
+- AAT の数学的正典は `docs/aat/algebraic_geometric_theory/` であり続ける。
   `website/aat/**` はそれを置き換えず、出版物として肉付けした web-native
   monograph / publication edition として扱う。
 - AAT website では、定義、命題、証明アイデア、例、反例、Lean status を章本文の中で
   追跡できるようにする。website 独自の theorem claim は置かず、理論上の新規 claim は
-  先に `docs/aat/mathematical_theory/` に反映する。
+  先に `docs/aat/algebraic_geometric_theory/` に反映する。
 - 公開サイトの canonical language は英語とする。
 - 日本語の説明は Qiita、Zenn、Hashnode などの outreach article として扱い、必要に応じて canonical English pages へ戻す。
 - AAT / SFT の公開ページは宣伝文ではなく、web-native preprint / monograph として、定義、前提、定理境界、例、反例、Lean status、non-conclusion を保つ。

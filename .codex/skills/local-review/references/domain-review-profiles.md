@@ -12,7 +12,7 @@
 2. Repo-specific: theorem status and ledger consistency
    - `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` が docs、registry、Lean theorem index、proof obligations と一致するか確認する。
    - checkpoint PR や部分パッケージを、計画全体の完了として書いていないか確認する。
-   - `docs/aat/mathematical_theory/` を明示依頼なしに変更していないか確認する。
+   - `docs/aat/algebraic_geometric_theory/` を明示依頼なしに変更していないか確認する。
 
 3. General: Lean API and dependency quality
    - import、namespace、定義・定理の依存、命名、局所性が coherent か確認する。
@@ -35,11 +35,12 @@
    - witness、materialization、score computation が proxy 的 label 代入に戻っていないか確認する。
    - `SAFE_WITHIN_POLICY`, `NO_SELECTED_OBSTRUCTION`, `ACCEPTABLE_UNDER_EVIDENCE_CONTRACT` などの結論が、実際の evaluator と evidence path に支えられているか確認する。
    - output / viewer / release skill / docs の contract が同じ読み方をしているか確認する。
+   - release binary から出る artifact、schema catalog、fixture、viewer data に、個人環境パス、private/internal 風の値、repo-local docs path、読めない source-of-truth path が露出していないか確認する。
 
 3. General: practical Rust CLI safety
    - 入力検証、path handling、出力先 handling、既存ファイル上書き、filesystem side effect が安全か確認する。
    - exit code、stderr / stdout、diagnostics、error message が automation と人間の両方に実用的か確認する。
-   - panic、`unwrap` / `expect`、secret / private data leak、過剰な raw artifact 出力、巨大出力の扱いを確認する。
+   - panic、`unwrap` / `expect`、secret / private data leak、個人名・ローカル絶対パス・private/internal fixture の混入、過剰な raw artifact 出力、巨大出力の扱いを確認する。
 
 4. General: Rust code quality and test coverage
    - 責務分割、`Result` / error design、serde schema、versioned artifact、fixture ownership が coherent か確認する。
@@ -71,7 +72,7 @@
 ## Docs / SFT / Research Notes
 
 1. Repo-specific: protected source and domain boundary
-   - `docs/aat/mathematical_theory/`, `docs/sft/software_field_theory.md`, `docs/sft/aat_interface.md` を明示依頼なしに変更していないか確認する。
+   - `docs/aat/algebraic_geometric_theory/`, `docs/sft/software_field_theory.md`, `docs/sft/aat_interface.md` を明示依頼なしに変更していないか確認する。
    - AAT、SFT、Tooling、Website の責務と完了条件を混同していないか確認する。
    - Archive を現行 source of truth として扱っていないか確認する。
 

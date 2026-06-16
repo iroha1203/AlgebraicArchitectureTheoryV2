@@ -14439,7 +14439,7 @@ mod tests {
             assert!(
                 entry
                     .theory_section_ref
-                    .contains("part_4_distance_measure_geometry.md")
+                    .contains("aat-theory:distance-extension-design")
             );
             assert!(!entry.coverage_status.is_empty());
             assert_ne!(entry.coverage_status, "schemaFoundationOnly");

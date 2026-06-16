@@ -6006,17 +6006,35 @@ fn sorted_truncated(refs: Vec<String>, limit: usize) -> Vec<String> {
 }
 
 fn sanitize_source_ref(source_ref: &str) -> String {
-    if source_ref.starts_with('/')
-        || source_ref.contains("\\")
-        || source_ref.contains("/Users/")
-        || source_ref.contains(".codex")
-        || source_ref.contains("Documents/LEAN")
-        || source_ref.contains("HelloLean")
-    {
+    if is_local_or_private_source_ref(source_ref) {
         "source-ref:redacted-local-path".to_string()
     } else {
         source_ref.to_string()
     }
+}
+
+fn is_local_or_private_source_ref(source_ref: &str) -> bool {
+    source_ref.starts_with('/')
+        || source_ref.starts_with("~/")
+        || source_ref.starts_with("../")
+        || source_ref.contains("/../")
+        || source_ref.contains('\\')
+        || looks_like_windows_drive_path(source_ref)
+        || has_hidden_path_segment(source_ref)
+}
+
+fn looks_like_windows_drive_path(source_ref: &str) -> bool {
+    let bytes = source_ref.as_bytes();
+    bytes.len() >= 3
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && matches!(bytes[2], b'/' | b'\\')
+}
+
+fn has_hidden_path_segment(source_ref: &str) -> bool {
+    source_ref
+        .split(['/', '\\'])
+        .any(|segment| segment.starts_with('.') && segment != "." && segment != "..")
 }
 
 fn invariant_refs(packet: &ArchSigMeasurementPacketV1) -> Vec<String> {

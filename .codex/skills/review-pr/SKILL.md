@@ -22,6 +22,7 @@ GitHub PR を、紐づく Issue の完了条件・実装内容・テスト・doc
 - 破壊的操作をしない。`git reset --hard`, `git checkout --`, force push は使わない。
 - PR ブランチを現在の作業ツリーへ checkout する必要がある場合は、作業ツリーが clean か確認する。dirty の場合は `/tmp` の一時 worktree を優先する。
 - Lean 変更を含む PR では、原則として `lake build` を確認する。既存 CI が既に同等の `lake build` を成功させていても、ローカルで実行できない場合はその理由を報告する。
+- 公開物に入る可能性がある code、fixture、docs、schema catalog、website、release asset、tool output contract では、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入していないかを必ず確認し、見つけた場合は原則 `Needs changes` の finding にする。
 
 ## 手順
 
@@ -58,6 +59,9 @@ GitHub PR を、紐づく Issue の完了条件・実装内容・テスト・doc
      - hidden / bidi scan: `rg -n "[\\u200B-\\u200F\\u202A-\\u202E\\u2066-\\u2069]" <changed-files>`
    - docs-only PR でも、Lean status や import に影響する記述なら `lake build` を検討する。
    - tooling 変更なら該当テストも確認する。例: `cargo test --manifest-path tools/archsig/Cargo.toml`
+   - public / release surface に触る PR では privacy / local-path scan を行う。目安:
+     - `rg -n "(\\/Users\\/|\\/home\\/|C:\\\\Users\\\\|Documents\\/|HelloLean|nakahata|private\\/internal|\\/private\\/internal|\\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>`
+     - Tooling / release output では `docs/aat/...` や `docs/tool/...` のような repo-local source-of-truth path が runtime artifact に露出していないかも確認する。必要なら `aat-theory:*`, `archsig-contract:*` などの安定 ID を求める。
 
 6. マージ可否を判定する。
    - **Mergeable**: Issue 完了条件を満たし、CI / 必要なローカル検証が通り、重大な未対応がない。

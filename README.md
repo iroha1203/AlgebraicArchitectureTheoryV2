@@ -46,7 +46,7 @@ To answer these questions, the project keeps the following layers separate:
 
 | Layer | Role | Source of truth |
 | --- | --- | --- |
-| AAT | A pure algebraic theory generated from architectural atoms, reconstructing architecture objects, laws, obstruction circuits, operations, flatness, homotopy, and analytic representations. | [AAT mathematical theory](docs/aat/mathematical_theory/README.md) |
+| AAT | A pure algebraic-geometric theory generated from architectural atoms, reading architecture objects, laws, obstructions, sheaves, cohomology, derived geometry, measurement, and evolution geometry. | [AAT algebraic-geometric mathematical text](docs/aat/algebraic_geometric_theory/README.md) |
 | AAT / SFT Interface | The interface explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
 | ArchSig / FieldSig Tooling | ArchSig reads supplied Atom ArchMap evidence plus LawPolicy into AAT structural review artifacts. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
@@ -66,7 +66,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 1. [PHILOSOPHY](PHILOSOPHY.md)
 2. [Research Goal](docs/research_goal.md)
-3. [AAT Mathematical Theory](docs/aat/mathematical_theory/README.md)
+3. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
 4. [AAT / SFT Interface](docs/sft/aat_interface.md)
 5. [Software Field Theory](docs/sft/software_field_theory.md)
 6. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
@@ -165,7 +165,7 @@ completeness of real-code extractors are not included in that QED.
   - First-class theory documents, Lean status, proof obligations, tool docs,
     and empirical protocol.
 - `docs/aat`
-  - Atom-based AAT mathematical theory, proof obligations, and Lean theorem index.
+  - Canonical algebraic-geometric AAT text, proof obligations, and Lean theorem index.
 - `docs/sft`
   - AAT / SFT interface and the SFT body.
 - `docs/tool`

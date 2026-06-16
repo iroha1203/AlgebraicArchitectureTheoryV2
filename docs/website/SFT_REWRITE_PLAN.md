@@ -28,7 +28,7 @@ SFT の大きな魅力である次の三点を弱く見せている。
 - `tools/fieldsig/docs/commands.md`
 - `tools/fieldsig/docs/operational-feedback.md`
 - `tools/archsig/docs/artifacts-and-boundaries.md`
-- `docs/aat/mathematical_theory/README.md`
+- `docs/aat/algebraic_geometric_theory/README.md`
 - `docs/aat/lean_theorem_index.md`
 - `docs/aat/proof_obligations.md`
 

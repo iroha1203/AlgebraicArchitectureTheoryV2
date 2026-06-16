@@ -1227,22 +1227,22 @@
         {
           "axisRef": "atom.fiber",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "axisRef": "atom.carrier",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "axisRef": "atom.valence",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "axisRef": "atom.semanticAnchor",
           "weight": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         }
       ],
       "signatureWeights": [
@@ -1261,57 +1261,57 @@
         {
           "operationKind": "rename",
           "cost": 1,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "move",
           "cost": 2,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "extract",
           "cost": 3,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "evidence-enrichment",
           "cost": 3,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "introduce-port",
           "cost": 4,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "split-module",
           "cost": 5,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "change-contract",
           "cost": 8,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "semantic-rewrite",
           "cost": 13,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "repair-boundaryleakcircuit",
           "cost": 13,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "repair-semanticmismatchcircuit",
           "cost": 13,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         },
         {
           "operationKind": "runtime-protocol-shift",
           "cost": 21,
-          "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+          "sourceRef": "aat-theory:distance-extension-design"
         }
       ],
       "aggregationPolicy": "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately",
@@ -1365,7 +1365,7 @@
           "status": "blocked",
           "unit": "milli-distance",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
+            "aat-theory:distance-extension-design",
             "atomDistanceReadings"
           ],
           "evaluatorBasisRefs": [
@@ -1405,7 +1405,7 @@
           "status": "blocked",
           "unit": "configuration-distance",
           "provenanceRefs": [
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
+            "aat-theory:distance-extension-design",
             "configurationDistanceReadings"
           ],
           "evaluatorBasisRefs": [
@@ -1704,7 +1704,7 @@
       "ledgerEntryId": "part4-ledger:distance-aat",
       "part4DefinitionRef": "definition:1.1",
       "definitionTitle": "DistanceAAT",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:35",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "foundation",
       "coverageStatus": "primary",
       "measurementStatus": "blocked",
@@ -1746,7 +1746,7 @@
       "ledgerEntryId": "part4-ledger:atom-geometry",
       "part4DefinitionRef": "definitions:2.1-2.5",
       "definitionTitle": "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:140",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "atomGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1786,7 +1786,7 @@
       "ledgerEntryId": "part4-ledger:configuration-context",
       "part4DefinitionRef": "definitions:3.1-3.2",
       "definitionTitle": "Configuration-indexed distance and Context distance",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:275",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "configurationGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1823,7 +1823,7 @@
       "ledgerEntryId": "part4-ledger:signature-geometry",
       "part4DefinitionRef": "definitions:4.1-4.4",
       "definitionTitle": "Axis distance, Signature distance, Safe margin, and Signature drift",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:344",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "signatureGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1863,7 +1863,7 @@
       "ledgerEntryId": "part4-ledger:operation-geometry",
       "part4DefinitionRef": "definitions:5.1-5.5",
       "definitionTitle": "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:490",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "operationGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1904,7 +1904,7 @@
       "ledgerEntryId": "part4-ledger:obstruction-curvature",
       "part4DefinitionRef": "definitions:6.1-6.3",
       "definitionTitle": "Obstruction measure, Curvature mass, and Curvature transport",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:599",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "curvatureGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1944,7 +1944,7 @@
       "ledgerEntryId": "part4-ledger:homotopy-filling",
       "part4DefinitionRef": "definitions:7.1-7.4",
       "definitionTitle": "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:674",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "homotopyFillingGeometry",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -1982,7 +1982,7 @@
       "ledgerEntryId": "part4-ledger:representation-metric",
       "part4DefinitionRef": "definitions:8.1-8.2",
       "definitionTitle": "Representation stability and Representation faithfulness",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:746",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "representationMetric",
       "coverageStatus": "primary-blocked",
       "measurementStatus": "blocked",
@@ -2022,7 +2022,7 @@
       "ledgerEntryId": "part4-ledger:measurement-boundary",
       "part4DefinitionRef": "definitions:9.1-9.3",
       "definitionTitle": "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:784",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "measurementBoundary",
       "coverageStatus": "primary",
       "measurementStatus": "blocked",
@@ -2070,7 +2070,7 @@
       "ledgerEntryId": "part4-ledger:bounded-diagnostic-conclusion",
       "part4DefinitionRef": "definitions:10.1-10.2",
       "definitionTitle": "Diagnostic scope and Bounded diagnostic conclusion",
-      "theorySectionRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:852",
+      "theorySectionRef": "aat-theory:distance-extension-design",
       "distanceFamily": "boundedDiagnosticConclusion",
       "coverageStatus": "partial",
       "measurementStatus": "blocked",
@@ -2123,9 +2123,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -2148,9 +2148,9 @@
         "measuredValue": 1000,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -2170,9 +2170,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -2191,9 +2191,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -2211,9 +2211,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -2250,9 +2250,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:route-users",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -2287,9 +2287,9 @@
             "measuredValue": 1000,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:route-users",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -2318,9 +2318,9 @@
             "measuredValue": 0,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:route-users",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -2348,9 +2348,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:route-users",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -2402,9 +2402,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -2427,9 +2427,9 @@
         "measuredValue": 800,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -2449,9 +2449,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -2470,9 +2470,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -2490,9 +2490,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -2529,9 +2529,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -2566,9 +2566,9 @@
             "measuredValue": 800,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -2597,9 +2597,9 @@
             "measuredValue": 0,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -2627,9 +2627,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -2681,9 +2681,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -2705,9 +2705,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -2726,9 +2726,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -2746,9 +2746,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [],
@@ -2765,9 +2765,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -2803,9 +2803,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "test-user-contract"
             ],
             "evaluatorBasisRefs": [
@@ -2839,9 +2839,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "test-user-contract"
             ],
             "evaluatorBasisRefs": [
@@ -2869,9 +2869,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "test-user-contract"
             ],
             "evaluatorBasisRefs": [
@@ -2898,9 +2898,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "test-user-contract"
             ],
             "evaluatorBasisRefs": [],
@@ -2952,9 +2952,9 @@
         "measuredValue": 400,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -2978,9 +2978,9 @@
         "measuredValue": 858,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -3001,9 +3001,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -3023,9 +3023,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -3044,9 +3044,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -3084,9 +3084,9 @@
             "measuredValue": 400,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -3122,9 +3122,9 @@
             "measuredValue": 858,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -3154,9 +3154,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -3185,9 +3185,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:capability:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -3240,9 +3240,9 @@
         "measuredValue": 200,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3265,9 +3265,9 @@
         "measuredValue": 1000,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3287,9 +3287,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3308,9 +3308,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3328,9 +3328,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3367,9 +3367,9 @@
             "measuredValue": 200,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3404,9 +3404,9 @@
             "measuredValue": 1000,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3435,9 +3435,9 @@
             "measuredValue": 0,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3465,9 +3465,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:component:service-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3518,9 +3518,9 @@
         "measuredValue": 800,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -3543,9 +3543,9 @@
         "measuredValue": 1000,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -3565,9 +3565,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -3586,9 +3586,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -3606,9 +3606,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -3645,9 +3645,9 @@
             "measuredValue": 800,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -3682,9 +3682,9 @@
             "measuredValue": 1000,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -3713,9 +3713,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -3743,9 +3743,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "test-user-contract"
             ],
@@ -3798,9 +3798,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3823,9 +3823,9 @@
         "measuredValue": 667,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3845,9 +3845,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3866,9 +3866,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3886,9 +3886,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -3925,9 +3925,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3962,9 +3962,9 @@
             "measuredValue": 667,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -3993,9 +3993,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4023,9 +4023,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:route-users",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4078,9 +4078,9 @@
         "measuredValue": 800,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -4103,9 +4103,9 @@
         "measuredValue": 800,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -4125,9 +4125,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -4146,9 +4146,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -4166,9 +4166,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -4205,9 +4205,9 @@
             "measuredValue": 800,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -4242,9 +4242,9 @@
             "measuredValue": 800,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -4273,9 +4273,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -4303,9 +4303,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:contract:create-user",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-service-user",
               "test-user-contract"
             ],
@@ -4358,9 +4358,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -4383,9 +4383,9 @@
         "measuredValue": 667,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -4405,9 +4405,9 @@
         "measuredValue": 500,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -4426,9 +4426,9 @@
         "status": "unmeasured",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -4446,9 +4446,9 @@
         "status": "blocked",
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -4485,9 +4485,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4522,9 +4522,9 @@
             "measuredValue": 667,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4553,9 +4553,9 @@
             "measuredValue": 500,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4583,9 +4583,9 @@
             "status": "unmeasured",
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:component:service-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user"
             ],
@@ -4638,9 +4638,9 @@
         "measuredValue": 600,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -4664,9 +4664,9 @@
         "measuredValue": 858,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -4687,9 +4687,9 @@
         "measuredValue": 667,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -4710,9 +4710,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -4733,9 +4733,9 @@
         "measuredValue": 617,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -4773,9 +4773,9 @@
             "measuredValue": 600,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:contract:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -4811,9 +4811,9 @@
             "measuredValue": 858,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:contract:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -4843,9 +4843,9 @@
             "measuredValue": 667,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:contract:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -4875,9 +4875,9 @@
             "measuredValue": 0,
             "unit": "milli-distance",
             "provenanceRefs": [
+              "aat-theory:distance-extension-design",
               "atom:contract:create-user",
               "atom:relation:route-service",
-              "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
               "src-route-users",
               "src-service-user",
               "test-user-contract"
@@ -4961,11 +4961,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "test-user-contract"
@@ -4987,9 +4986,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -5009,11 +5008,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:route-users",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "test-user-contract"
@@ -5087,11 +5085,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5112,9 +5109,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5134,11 +5131,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:component:service-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5211,11 +5207,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -5235,9 +5230,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -5256,11 +5251,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "test-user-contract"
         ],
         "evaluatorBasisRefs": [
@@ -5332,11 +5326,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5358,9 +5351,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5381,11 +5374,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:capability:create-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5460,11 +5452,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "src-service-user"
@@ -5486,9 +5477,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -5508,11 +5499,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:component:service-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "src-service-user"
@@ -5587,11 +5577,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "test-user-contract"
@@ -5613,9 +5602,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "test-user-contract"
         ],
@@ -5635,11 +5624,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "test-user-contract"
@@ -5714,11 +5702,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "src-service-user"
@@ -5740,9 +5727,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -5762,11 +5749,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:route-users",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:moleculeMembership:atom-capability-create-user-atom-component-route-users-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "molecule:user-request-responsibility",
           "src-route-users",
           "src-service-user"
@@ -5840,11 +5826,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5865,9 +5850,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5887,11 +5872,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:contract:create-user",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-service-user",
           "test-user-contract"
         ],
@@ -5964,11 +5948,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -5990,9 +5973,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user"
         ],
@@ -6012,11 +5995,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:component:service-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -6090,11 +6072,10 @@
         "measuredValue": 1,
         "unit": "configuration-hop",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -6116,9 +6097,9 @@
         "measuredValue": 0,
         "unit": "milli-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"
@@ -6139,11 +6120,10 @@
         "status": "blocked",
         "unit": "configuration-distance",
         "provenanceRefs": [
+          "aat-theory:distance-extension-design",
           "atom:contract:create-user",
           "atom:relation:route-service",
           "configuration-hypergraph:fixture-archmap-atom-observation:hyperedge:contractAttachment:atom-capability-create-user-atom-component-service-user-atom-contract-create-user-atom-relation-route-service",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry",
-          "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry",
           "src-route-users",
           "src-service-user",
           "test-user-contract"

@@ -1,10 +1,10 @@
-# AAT代数幾何版 拡張考察: 旧本文からの移植・他分野への橋・大定理候補
+# AAT代数幾何版 拡張考察: 先行ノートからの移植・他分野への橋・大定理候補
 
 - 対象: `docs/aat/algebraic_geometric_theory/`(第I〜VIII部+付録A/B、2026-06-12 時点)
-- 比較対象: `docs/aat/mathematical_theory/`(旧数学本文、全4部)、`docs/note/` の旧体系定理ノート4本、`Formal/Arch/` の旧体系 Lean 資産
+- 比較対象: `docs/aat/algebraic_geometric_theory/`、`docs/note/` の先行体系定理ノート4本、`Formal/Arch/` の先行体系 Lean 資産
 - 実施日: 2026-06-12
 - 位置づけ: フルレビュー(`aat_algebraic_geometric_theory_full_review.md`、2026-06-11)とその反映(#1900 数学本文補強、#1901 計測理論=第VIII部追加)を前提に、次の三問に答える。
-  1. 旧数学本文から移植できる要素は何か
+  1. 先行ノートから移植できる要素は何か
   2. 代数幾何から解析などへ、実コードを効果的に解析できる橋は架けられるか
   3. 複数分野に橋をかけ、コードベース構造に新しいインサイトを与える大定理を発見できるか
 
@@ -14,7 +14,7 @@
 
 ## 0. 要旨
 
-- 移植: 旧本文には AG 版が**まだ持っていない計測の量的核**が眠っている。最重要は4点 — (P1) ホモトピー生成元族(π₁^AAT の表示を与え、第VI部の ill-defined 性を解消する)、(P2) 計測モノドロミー μ_x / AMI(Lean 形式化済み資産ごと第VI×VIII部に接続)、(P3) 状態遷移代数(AG 版に不在の temporal 層の実体)、(P4) 距離・充填幾何の量的核(margin 安定性、観測ギャップ下界、Dehn 関数、bi-Lipschitz 忠実性)。
+- 移植: 先行ノートには AG 版が**まだ持っていない計測の量的核**が眠っている。最重要は4点 — (P1) ホモトピー生成元族(π₁^AAT の表示を与え、第VI部の ill-defined 性を解消する)、(P2) 計測モノドロミー μ_x / AMI(Lean 形式化済み資産ごと第VI×VIII部に接続)、(P3) 状態遷移代数(AG 版に不在の temporal 層の実体)、(P4) 距離・充填幾何の量的核(margin 安定性、観測ギャップ下界、Dehn 関数、bi-Lipschitz 忠実性)。
 - 橋: 第VIII部が用意した有限 regime(有限 poset site + square-free + cellular sheaf)は**ハブ**であり、そこから Hodge 理論、最適輸送、離散 Morse 理論、スペクトル理論、力学系へ**スポーク**が架かる。どの橋も「実コードで何が新しく測れるか」を一つずつ持つ。
 - 大定理: 提案の筆頭は **G1 有限アーキテクチャ計測の基本定理**(AAT-GAGA)— 「有限 regime において、コードベースの代数的負債幾何は、数値線形代数によって忠実かつ安定に読める」を5条項(比較・分解・会計・位相・安定)に分けた束。うち4条項は今すぐ証明可能で、各条項が単独でも実務的な読みを持つ。G2(位相的負債定理)と G3(調和的負債分解)は特に、「**分解の形そのものが隠れ結合の容量を決める**」「**局所修正では消えない本質負債の質量が一意に定まる**」という、既存のどの計測ツールも出していない結論を出す。
 
@@ -47,7 +47,7 @@ W5. worked example がコード断片起点でない:
     付録B は擬円周+抽象 witness (p,q,r) であり、第I部 例1.4 のコード断片から
     付録B の pipeline までを貫く例がまだない (レビュー E1 の半残)。
 
-W6. 旧体系 Lean 資産が AG 台帳に未接続:
+W6. 先行体系 Lean 資産が AG 台帳に未接続:
     MonodromyMeasurement / HomotopyHolonomyStokes / CurvatureTransferSpectrum /
     DistanceGeometry は guardrail として存在するが、AG 版の theorem label とは
     無関係のまま。AG 有限 regime ならこれらの「仮定として持ち込まれた不等式」を
@@ -58,13 +58,13 @@ W6. 旧体系 Lean 資産が AG 台帳に未接続:
 
 ---
 
-## 2. 問1: 旧数学本文からの移植プラン
+## 2. 問1: 先行ノートからの移植プラン
 
-旧本文(mathematical_theory 全4部)と AG 版の差分を取った。第I部(Atom 公理系、コード断片からの抽出例 1.4 を含む)はほぼ全量移植済み。**未移植の本体は旧第II部後半・第III部・第IV部に集中しており、それはちょうど「計算・例・距離」**、つまりユーザーが弱いと感じている部分である。これは偶然ではない: AG 化の過程で「構造の階層」(site/sheaf/ideal/cohomology)が先に運ばれ、「量の幾何」(距離・コスト・スペクトル・状態遷移)が後回しになった。
+先行ノートと AG 版の差分を取った。第I部(Atom 公理系、コード断片からの抽出例 1.4 を含む)はほぼ全量移植済み。**未移植の本体は先行体系の後半部に集中しており、それはちょうど「計算・例・距離」**、つまりユーザーが弱いと感じている部分である。これは偶然ではない: AG 化の過程で「構造の階層」(site/sheaf/ideal/cohomology)が先に運ばれ、「量の幾何」(距離・コスト・スペクトル・状態遷移)が後回しになった。
 
 ### 2.1 移植インベントリ(優先度順)
 
-| # | 旧本文の要素 | 移植先 | 規模 | 何が変わるか |
+| # | 先行ノートの要素 | 移植先 | 規模 | 何が変わるか |
 | --- | --- | --- | --- | --- |
 | P1 | ホモトピー生成元族(II 定義11.1: independent square / same contract replacement / repair filler / identity / associativity) | 第VI部 §9 | 中 | π₁^AAT を「selected generator 族による operation groupoid の表示」として再定義。レビュー指摘(π₁ が群にならない)の解消経路 |
 | P2 | 計測モノドロミー(II §12: Cont_x、μ_x、AMI、命題12.4/12.5)+ Lean 資産 | 第VI部 §10–11、第VIII部 | 中 | Mon を「測れる2-cell(square)上の有限 Gauss-Manin」として先に定義。`MonodromyMeasurement.*` の proved 定理を AG 台帳に接続 |
@@ -324,7 +324,7 @@ cellular sheaf model(VIII §8)で mismatch 1-cocycle g(定義5.2 の gluing mism
 > 特に: feature 境界の mismatch section b の holonomy 類 δ(b) を release ループ γ で
 > 読んだ period は、γ の境界に沿って測った局所 mismatch の符号付き和に等しい。
 
-証明経路: 単体的 Stokes(随伴性)そのもの。有限なので完全に初等的。VII 例5.2B / 付録B.6 の pairing 計算(Per = r_sync − r_async)はこの恒等式の実例。旧体系 `HomotopyHolonomyStokes.lean` では Stokes 不等式が「仮定フィールド(boundedStokes)」として持ち込まれていたが、AG 有限 regime では**仮定でなく定理**に昇格する(W6 の模範例)。
+証明経路: 単体的 Stokes(随伴性)そのもの。有限なので完全に初等的。VII 例5.2B / 付録B.6 の pairing 計算(Per = r_sync − r_async)はこの恒等式の実例。先行体系 `HomotopyHolonomyStokes.lean` では Stokes 不等式が「仮定フィールド(boundedStokes)」として持ち込まれていたが、AG 有限 regime では**仮定でなく定理**に昇格する(W6 の模範例)。
 
 橋: 微分幾何の Stokes ↔ Čech/単体 cohomology ↔ 計測監査。
 

@@ -1,8 +1,8 @@
 # AAT Distance Extension Design
 
 この文書は、第IV部「距離・測度・アーキテクチャ幾何」の設計メモである。
-AAT 数学本文としての source of truth は
-`docs/aat/mathematical_theory/part_4_distance_measure_geometry.md` に置く。
+現行 AAT 数学本文としての source of truth は
+`docs/aat/algebraic_geometric_theory/README.md` 以下に置く。
 この文書は、ArchSig / FieldSig へ実装・製品面を展開するときの補助設計として読む。
 
 ## 目的

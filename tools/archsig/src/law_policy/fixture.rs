@@ -163,28 +163,28 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
                     axis_ref: "atom.fiber".to_string(),
                     weight: 1,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4DistanceWeightV0 {
                     axis_ref: "atom.carrier".to_string(),
                     weight: 1,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4DistanceWeightV0 {
                     axis_ref: "atom.valence".to_string(),
                     weight: 1,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4DistanceWeightV0 {
                     axis_ref: "atom.semanticAnchor".to_string(),
                     weight: 1,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
             ],
@@ -205,77 +205,77 @@ pub fn static_law_policy() -> LawPolicyDocumentV0 {
                     operation_kind: "rename".to_string(),
                     cost: 1,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "move".to_string(),
                     cost: 2,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "extract".to_string(),
                     cost: 3,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "evidence-enrichment".to_string(),
                     cost: 3,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "introduce-port".to_string(),
                     cost: 4,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "split-module".to_string(),
                     cost: 5,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "change-contract".to_string(),
                     cost: 8,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "semantic-rewrite".to_string(),
                     cost: 13,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "repair-boundaryleakcircuit".to_string(),
                     cost: 13,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "repair-semanticmismatchcircuit".to_string(),
                     cost: 13,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
                 LawPolicyPart4OperationCostV0 {
                     operation_kind: "runtime-protocol-shift".to_string(),
                     cost: 21,
                     source_ref:
-                        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+                        "aat-theory:distance-extension-design"
                             .to_string(),
                 },
             ],
