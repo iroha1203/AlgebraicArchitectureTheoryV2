@@ -43,7 +43,7 @@
   「未完了部分」「非主張」「残タスク」「証明不能な限界」として持ち出さない。AAT は Atom を公理とするため、
   source-observation layer の性質は AAT の内側の claim ではない。必要な場合は tooling / SFT 側の
   具体的な artifact、fixture、schema、validator、Issue acceptance として別に扱う。
-- AAT / SFT の数学本文は根幹文書である。ユーザーの明示的な指示なしに `docs/aat/mathematical_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` を更新しない。
+- AAT / SFT の数学本文は根幹文書である。ユーザーの明示的な指示なしに `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` を更新しない。
 - 実装作業は `main` を最新化してから専用ブランチを切る。ブランチ名は Issue 番号または作業内容が分かる名前にする。
 - PR 本文には対象 Issue を `Closes #N` 形式で明記し、`.github/pull_request_template.md` に沿って書く。
 - 既存の未コミット変更はユーザーの変更として扱い、勝手に戻さない。
@@ -57,7 +57,7 @@
 
 | 領域 | 主な場所 | 役割 | 詳細 |
 | --- | --- | --- | --- |
-| Lean / AAT | `Formal/Arch`, `Formal.lean`, `Main.lean` | AAT / SFT の形式化、定義、定理、例。 | [AAT guideline](docs/aat/guideline.md) |
+| Lean / AAT | `Formal/AG`, `Formal/Arch`, `Formal.lean`, `Main.lean` | AAT / SFT の形式化、定義、定理、例。 | [AAT guideline](docs/aat/guideline.md) |
 | AAT docs | `docs/aat` | AAT 数学本文、Lean status、proof obligation。 | [AAT guideline](docs/aat/guideline.md) |
 | SFT docs | `docs/sft` | Software Field Theory と AAT / SFT interface。 | [SFT guideline](docs/sft/guideline.md) |
 | Tooling | `tools/archsig`, `tools/fieldsig`, `docs/tool` | ArchMap / LawPolicy / ArchSig / FieldSig の CLI、schema、workflow。 | [Tool guideline](docs/tool/guideline.md) |
@@ -84,7 +84,7 @@
   原理を述べるのが役割で、作業規律としての規範効力はこの AGENTS.md を正とし、両者が食い違う場合は AGENTS.md に従う。
   数学的精密さは AG版本文(`docs/aat/algebraic_geometric_theory/`)が担う。
 - `docs/README.md`: 研究 docs 全体の読み方。
-- `docs/aat/mathematical_theory/README.md`: AAT 数学本文の入口。
+- `docs/aat/algebraic_geometric_theory/README.md`: 代数幾何的 AAT 数学本文の入口。
 - `docs/aat/proof_obligations.md`: Lean proof obligation と empirical hypothesis の台帳。
 - `docs/aat/lean_theorem_index.md`: Lean 定義・定理索引。
 - `docs/sft/software_field_theory.md`: SFT 本文。

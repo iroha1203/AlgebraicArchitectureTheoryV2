@@ -1,7 +1,7 @@
 # AAT / SFT Interface
 
 この文書は、SFT が AAT から何を借り、どう読み替えるかを定義する。
-AAT 側の数学理論は [AAT 数学理論](../aat/mathematical_theory/README.md) に閉じており、
+AAT 側の数学理論は [代数幾何的 AAT 数学本文](../aat/algebraic_geometric_theory/README.md) に閉じており、
 SFT はその理論に逆依存を作らない。
 
 ```text

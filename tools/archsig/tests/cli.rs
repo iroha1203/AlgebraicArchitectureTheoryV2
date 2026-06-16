@@ -3256,7 +3256,7 @@ fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
     let out_dir = temp_dir("ag-measurement-insight-source-redaction");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    let private_ref = "/Users/nakahata/private/internal.rs";
+    let private_ref = "/workspace/local-only/internal.rs";
     archmap["sources"][private_ref] = json!({
         "kind": "rust",
         "path": private_ref,

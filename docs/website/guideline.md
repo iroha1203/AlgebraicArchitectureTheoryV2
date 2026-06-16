@@ -20,7 +20,7 @@
   肯定的診断を中心に置く。語れない外側は、長い non-conclusion ではなく必要最小限の boundary として扱う。
 - 公開ページや renewal plan では、読者が検討できる具体的な artifact / theorem / example / command を中心にする。
   一般的に証明できない巨大 claim の否定を、見出しや残タスクの中心にしない。
-- 理論上の新規 claim は先に `docs/aat/mathematical_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、または `docs/tool/` に反映する。
+- 理論上の新規 claim は先に `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、または `docs/tool/` に反映する。
 - ArchSig website では Core / Review の AAT structural surface と FieldSig 側の SFT / Operational / governance surface を分けて書く。
 - 公開ページから `docs/website/` の内部設計メモへ誘導しない。
 

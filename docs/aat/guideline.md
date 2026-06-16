@@ -1,6 +1,6 @@
 # AAT / Lean 編集ガイドライン
 
-この文書は `Formal/Arch` と `docs/aat` を編集するときの作業方針をまとめる。
+この文書は `Formal/AG`、`Formal/Arch`、`docs/aat` を編集するときの作業方針をまとめる。
 
 ## 位置づけ
 
@@ -14,8 +14,8 @@
 - Lean 形式化は全知の検査器ではない。形式化対象は、AAT の語彙で明示的に述べられる命題に限る。
   全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
   AAT theorem package のスコープに入れない。
-- `docs/aat/mathematical_theory/` は数学本文である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
-- `docs/aat/mathematical_theory/` は AAT の根幹文書である。ユーザーの明示的な指示なしに更新しない。
+- `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
+- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。ユーザーの明示的な指示なしに更新しない。
 - Lean status と Issue との対応は `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` で管理する。
 
 ## Lean 形式化方針

@@ -98,7 +98,7 @@ https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
 少し詳しく読むなら、次の順番がおすすめです。
 
 1. 研究の全体目標
-2. AAT 数学理論
+2. 代数幾何的 AAT 数学本文
 3. AAT / SFT Interface
 4. Software Field Theory
 5. Lean 定義・定理索引

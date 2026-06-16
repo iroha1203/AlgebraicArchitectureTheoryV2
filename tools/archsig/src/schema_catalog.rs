@@ -26,8 +26,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "legacy",
                 "Historical ArchMap v0",
                 vec![
-                    "docs/tool/llm_native_archmap_archsig_prd.md",
-                    "docs/tool/atom_handoff.md",
+                    "archsig-contract:llm-native-archmap-archsig",
+                    "archsig-contract:atom-handoff",
                 ],
                 "Legacy ArchMap v0 recorded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, operationSquareEvidence, concernHints, provenance, and nonConclusions. It is not a current runtime input.",
                 vec![
@@ -41,7 +41,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
                 "legacy",
                 "Historical ArchMap v0",
-                vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
+                vec!["archsig-contract:llm-native-archmap-archsig"],
                 "ArchMap validation checks source refs, claim boundaries, projection separation, atom observation summaries, and responsibility boundaries without promoting observations to formal truth.",
                 vec![
                     "Validation pass does not imply semantic correctness, architecture lawfulness, source completeness, zero curvature, or Lean theorem discharge.",
@@ -54,7 +54,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                vec!["archsig-contract:archmap-minimal-observation"],
                 "ArchMap v1 records sources, atoms, and molecules as the primary input contract. It rejects legacy v0 root fields, unknown atom kinds, unknown predicates, and unresolved source refs before analysis.",
                 vec![
                     "ArchMap v1 validation does not run the v1 evaluator pipeline.",
@@ -67,7 +67,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 AAT_ATOM_VOCABULARY_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_improvement_prd.md"],
+                vec!["archsig-contract:v0.4.0-improvement"],
                 "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from extractionDoctrineRef components before checking atoms[].kind membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
@@ -80,7 +80,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHMAP_V2_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"],
+                vec!["archsig-contract:v0.4.0-ag-measurement"],
                 "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, covers, and extractionDoctrineRef. Molecules are not a primary v2 field.",
                 vec![
                     "ArchMap v2 validation does not prove source extraction soundness, U-adequacy, exactness, Lean theorem discharge, or architecture lawfulness.",
@@ -94,9 +94,9 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "legacy",
                 "Historical LawPolicy v0",
                 vec![
-                    "docs/tool/archsig_aat_analysis_engine_prd.md",
-                    "docs/tool/llm_native_archmap_archsig_prd.md",
-                    "docs/tool/README.md",
+                    "archsig-contract:aat-analysis-engine",
+                    "archsig-contract:llm-native-archmap-archsig",
+                    "archsig-contract:tool-boundary",
                 ],
                 "The legacy law-policy-v0 JSON contract selected laws, witness rules, molecule patterns, obstruction definitions, signature axes, measurement policy, optional spectrum measurement profile, optional homotopy measurement profile, exactness assumptions, coverage requirements, excluded readings, and non-conclusions. It is not a current runtime input.",
                 vec![
@@ -112,7 +112,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 LAW_POLICY_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                vec!["archsig-contract:archmap-minimal-observation"],
                 "LawPolicy v1 selects policy packs or explicit law/evaluator pairs with registry-owned basis, scope, and severity. It rejects unknown packs, unknown evaluators, unresolved basis refs, and DSL-style witness rules before analysis.",
                 vec![
                     "LawPolicy v1 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
@@ -125,7 +125,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 MEASUREMENT_PROFILE_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"],
+                vec!["archsig-contract:v0.4.0-ag-measurement"],
                 "MeasurementProfile v1 declares selected site, cover, coefficient, EffCoeff procedure, witness family, resolution selector, Dom/Zero/NonZero/Cert predicates, and five-valued verdict discipline.",
                 vec![
                     "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
@@ -138,7 +138,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "law-evaluator-registry/v1",
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                vec!["archsig-contract:archmap-minimal-observation"],
                 "Law evaluator registry v1 owns evaluator manifests, policy pack expansion, basis refs, missing blocker rules, pass / violation criteria, typed result schema refs, distance contribution, and output refs. LawPolicy v1 selects entries from this registry.",
                 vec![
                     "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
@@ -151,7 +151,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
                 "legacy",
                 "Historical LawPolicy v0",
-                vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
+                vec!["archsig-contract:llm-native-archmap-archsig"],
                 "LawPolicy validation checks schema support, identity, id uniqueness, law/witness/axis references, measurement policy, optional spectrum measurement profile refs, optional homotopy path / filler / loop measurement profile refs, coverage, exactness, and non-conclusion guardrails.",
                 vec![
                     "Validation pass does not imply architecture lawfulness, certified atom truth, zero curvature, or Lean theorem discharge.",
@@ -164,7 +164,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 NORMALIZED_ARCHMAP_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                vec!["archsig-contract:archmap-minimal-observation"],
                 "Normalized ArchMap v1 is generated by the ArchSig normalizer from ArchMap v1 without rereading the source repository. It records normalized AtomKind / Axis / predicate bindings, valence template refs, molecule memberships, and generated molecule candidate status.",
                 vec![
                     "Normalized ArchMap v1 is deterministic tooling input for evaluators, not a Lean proof object.",
@@ -177,7 +177,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 NORMALIZED_ARCHMAP_V2_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"],
+                vec!["archsig-contract:v0.4.0-ag-measurement"],
                 "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under a declared extraction doctrine fingerprint.",
                 vec![
                     "Normalized ArchMap v2 does not prove source extraction soundness.",
@@ -190,7 +190,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["docs/tool/archmap_minimal_observation_contract_prd.md"],
+                vec!["archsig-contract:archmap-minimal-observation"],
                 "Typed evaluator results v1 records evaluator status, support atom refs, support molecule refs, basis refs, detail refs, and bounded conclusions computed from Normalized ArchMap v1 and LawPolicy v1.",
                 vec![
                     "Typed evaluator results do not read label-only, memo-only, removed-field-only, or schema-only evidence as measured support.",
@@ -203,7 +203,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHITECTURE_DISTANCE_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / Viewer workflow",
-                vec!["docs/tool/README.md"],
+                vec!["archsig-contract:tool-boundary"],
                 "Architecture distance v1 records measured atom, configuration, signature, operation, primary curvature geometry readings, primary homotopy filling geometry readings, primary representation metric readings, and distanceInsights computed from Normalized ArchMap v1, TypedEvaluatorResults v1, raw v1 packet distance rows, and the selected LawPolicy distanceProfileRef.",
                 vec![
                     "Architecture distance is a diagnostic ArchSig artifact, not a Lean theorem proof.",
@@ -217,7 +217,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"],
+                vec!["archsig-contract:v0.4.0-ag-measurement"],
                 "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract.",
                 vec![
                     "Structural verdicts are limited to measured_zero, measured_nonzero, unmeasured, unknown, and not_computed.",
@@ -233,7 +233,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["docs/tool/archsig_v0_4_0_improvement_prd.md"],
+                vec!["archsig-contract:v0.4.0-improvement"],
                 "BoundaryStatement v1 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
                 vec![
                     "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
@@ -247,9 +247,9 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "legacy",
                 "Historical ArchSig v0 packet",
                 vec![
-                    "docs/tool/archsig_aat_analysis_engine_prd.md",
-                    "docs/tool/archsig_analysis_packet.md",
-                    "docs/tool/llm_native_archmap_archsig_prd.md",
+                    "archsig-contract:aat-analysis-engine",
+                    "archsig-contract:analysis-packet",
+                    "archsig-contract:llm-native-archmap-archsig",
                 ],
                 "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, Part IV distance foundation with DistanceValue / DistanceProfile / DiagnosticScope provenance gates, Part IV Atom distance readings, Part IV selected configuration hypergraph distance readings with typed hyperedges / shortest paths / context overlap / gap blockers, Part IV signature distance readings with rho_i / safe-region margin / drift / axis partitions, Part IV operation distance readings with operation cost / target decrease / protected-axis movement / side-effect blockers, Part IV obstruction measure and curvature mass readings with witness-backed Omega_U / curv_mass_U / transport blockers, Part IV homotopy distance readings with filling cost / observation-gap lower bound / selected Dehn-style area blockers, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, spectral analysis readings, spectral mode readings, spectral drilldown readings, curvature support readings, curvature transfer readings, ArchitectureSpectrumReport, transfer bridge readings with edge source refs, review focus, and cut recommendations, Atom support / axis restriction readings, Atom compatibility readings, LawUniverse coverage readings, feature extension formula readings, operation calculus law readings, path signature trajectory readings, homotopy / operation-order sensitivity readings, diagram fillability readings, axis-forgetting / projection reflection loss readings, signature trajectory homotopy refutation readings, bridge split obstruction transfer readings, homotopy complex summaries, path pair candidates, loop candidates, filler candidate readings, architectural hole readings, homotopy holonomy readings, Stokes-style readings, ArchitectureHomotopyReport, representation strength readings, local curvature diagram readings, three-layer flatness readings, observation projection readings, state transition algebra readings, operation/invariant Galois readings, split readiness readings, structural reading review surface, current-state/evolution boundary, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
                 vec![
@@ -264,9 +264,9 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "FieldSig handoff / raw evidence store",
                 vec![
-                    "docs/tool/archmap_minimal_observation_contract_prd.md",
-                    "docs/tool/archsig_analysis_packet.md",
-                    "docs/tool/llm_native_e2e_workflow.md",
+                    "archsig-contract:archmap-minimal-observation",
+                    "archsig-contract:analysis-packet",
+                    "archsig-contract:llm-native-e2e",
                 ],
                 "ArchSig v1 analysis packet is emitted only in raw mode and is the current FieldSig handoff contract. It carries typed evaluator results, architecture distance, generated packet refs, spectrum, homotopy, structural reading surface, bounded conclusions, detail refs, and non-conclusions.",
                 vec![
@@ -280,7 +280,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION,
                 "legacy",
                 "Historical ArchSig v0 packet",
-                vec!["docs/tool/archsig_analysis_packet.md"],
+                vec!["archsig-contract:analysis-packet"],
                 "Validation separates JSON surface checks from measurement-depth and proxy-regression checks. It checks identity, ArchMap and LawPolicy refs, Part IV distance foundation profile / diagnostic scope / DistanceValue status and provenance gates, Part IV Atom distance component basis / semantic-anchor blockers / viewer-distance separation, Part IV selected configuration hypergraph typed edges / shortest-path basis / context basis / observation-gap blockers, Part IV signature distance rho_i basis / safe-region margin / drift / axis partitions, Part IV operation cost / target decrease / protected-axis movement / side-effect blockers, Part IV obstruction measure / curvature mass / curvature transport distance refs and missing-witness blockers, Part IV homotopy distance / filling cost / observation-gap lower-bound refs and missing-filler blockers, spectral analysis readings, spectral mode readings, spectral drilldown readings, curvature support readings, curvature transfer readings, ArchitectureSpectrumReport, transfer bridge readings, bridge edge source refs / review focus / cut recommendations, v0.3.0 measurement expansion readings including reverse-import projection / trajectory / bridge-transfer readings, homotopy complex / path pair / loop candidate surfaces, filler candidate and architectural hole surfaces, homotopy holonomy and Stokes-style surfaces, ArchitectureHomotopyReport, AAT structural state readings, structural reading review surface, current-state/evolution boundary, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, evaluator input refs, distance value provenance, witness rule alignment, coverage blockers, hard-coded fixture marker rejection, LLM interpretation surface, and non-conclusions without recomputing the full analysis engine.",
                 vec![
                     "Validation pass does not imply architecture lawfulness, source completeness, flatness proof, or repair safety.",
@@ -294,8 +294,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / Viewer workflow",
                 vec![
-                    "docs/tool/archsig_output_report_prd.md",
-                    "tools/archsig/docs/commands.md",
+                    "archsig-contract:output-report",
+                    "archsig-contract:command-guide",
                 ],
                 "Run manifest records the analyze command name, input artifact paths, output mode, generated and omitted artifact lists, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
                 vec![
@@ -310,8 +310,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / Viewer workflow",
                 vec![
-                    "docs/tool/archsig_output_report_prd.md",
-                    "tools/archsig/docs/commands.md",
+                    "archsig-contract:output-report",
+                    "archsig-contract:command-guide",
                 ],
                 "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
                 vec![

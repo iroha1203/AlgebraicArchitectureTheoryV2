@@ -451,7 +451,7 @@ atomObservations
 
 - `docs/aat/proof_obligations.md` update
 - `docs/aat/lean_theorem_index.md` update
-- 必要なら `docs/aat/mathematical_theory/` 本文更新。ただしこれは実装後に行う。
+- 必要なら `docs/aat/algebraic_geometric_theory/` 本文更新。ただしこれは実装後に行う。
 
 ## 8. 検査体系
 

@@ -12,8 +12,8 @@
       "ownerPhase": "Historical ArchMap v0",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/llm_native_archmap_archsig_prd.md",
-        "docs/tool/atom_handoff.md"
+        "archsig-contract:llm-native-archmap-archsig",
+        "archsig-contract:atom-handoff"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -40,7 +40,7 @@
       "ownerPhase": "Historical ArchMap v0",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/llm_native_archmap_archsig_prd.md"
+        "archsig-contract:llm-native-archmap-archsig"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -67,7 +67,7 @@
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md"
+        "archsig-contract:archmap-minimal-observation"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -94,7 +94,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_improvement_prd.md"
+        "archsig-contract:v0.4.0-improvement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -121,7 +121,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+        "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -148,9 +148,9 @@
       "ownerPhase": "Historical LawPolicy v0",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_aat_analysis_engine_prd.md",
-        "docs/tool/llm_native_archmap_archsig_prd.md",
-        "docs/tool/README.md"
+        "archsig-contract:aat-analysis-engine",
+        "archsig-contract:llm-native-archmap-archsig",
+        "archsig-contract:tool-boundary"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -179,7 +179,7 @@
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md"
+        "archsig-contract:archmap-minimal-observation"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -206,7 +206,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+        "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -233,7 +233,7 @@
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md"
+        "archsig-contract:archmap-minimal-observation"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -260,7 +260,7 @@
       "ownerPhase": "Historical LawPolicy v0",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/llm_native_archmap_archsig_prd.md"
+        "archsig-contract:llm-native-archmap-archsig"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -287,7 +287,7 @@
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md"
+        "archsig-contract:archmap-minimal-observation"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -314,7 +314,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+        "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -341,7 +341,7 @@
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md"
+        "archsig-contract:archmap-minimal-observation"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -368,7 +368,7 @@
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/README.md"
+        "archsig-contract:tool-boundary"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -396,7 +396,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md"
+        "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -426,7 +426,7 @@
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_v0_4_0_improvement_prd.md"
+        "archsig-contract:v0.4.0-improvement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -453,9 +453,9 @@
       "ownerPhase": "Historical ArchSig v0 packet",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_aat_analysis_engine_prd.md",
-        "docs/tool/archsig_analysis_packet.md",
-        "docs/tool/llm_native_archmap_archsig_prd.md"
+        "archsig-contract:aat-analysis-engine",
+        "archsig-contract:analysis-packet",
+        "archsig-contract:llm-native-archmap-archsig"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -482,9 +482,9 @@
       "ownerPhase": "FieldSig handoff / raw evidence store",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md",
-        "docs/tool/archsig_analysis_packet.md",
-        "docs/tool/llm_native_e2e_workflow.md"
+        "archsig-contract:archmap-minimal-observation",
+        "archsig-contract:analysis-packet",
+        "archsig-contract:llm-native-e2e"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -511,7 +511,7 @@
       "ownerPhase": "Historical ArchSig v0 packet",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_analysis_packet.md"
+        "archsig-contract:analysis-packet"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -538,8 +538,8 @@
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_output_report_prd.md",
-        "tools/archsig/docs/commands.md"
+        "archsig-contract:output-report",
+        "archsig-contract:command-guide"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
@@ -566,8 +566,8 @@
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_output_report_prd.md",
-        "tools/archsig/docs/commands.md"
+        "archsig-contract:output-report",
+        "archsig-contract:command-guide"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {

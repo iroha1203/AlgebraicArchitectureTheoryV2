@@ -169,22 +169,22 @@
       {
         "axisRef": "atom.fiber",
         "weight": 1,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "axisRef": "atom.carrier",
         "weight": 1,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "axisRef": "atom.valence",
         "weight": 1,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "axisRef": "atom.semanticAnchor",
         "weight": 1,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#1-atom-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       }
     ],
     "signatureWeights": [
@@ -198,57 +198,57 @@
       {
         "operationKind": "rename",
         "cost": 1,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "move",
         "cost": 2,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "extract",
         "cost": 3,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "evidence-enrichment",
         "cost": 3,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "introduce-port",
         "cost": 4,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "split-module",
         "cost": 5,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "change-contract",
         "cost": 8,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "semantic-rewrite",
         "cost": 13,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "repair-boundaryleakcircuit",
         "cost": 13,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "repair-semanticmismatchcircuit",
         "cost": 13,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       },
       {
         "operationKind": "runtime-protocol-shift",
         "cost": 21,
-        "sourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+        "sourceRef": "aat-theory:distance-extension-design"
       }
     ],
     "aggregationPolicy": "aggregate measured axes only; propagate unmeasured, unavailable, incomparable, and blocked status separately",

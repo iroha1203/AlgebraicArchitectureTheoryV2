@@ -2585,7 +2585,7 @@ pub fn build_architecture_distance_v1(
         "signatureDistanceReadings": signature_distance_readings,
         "operationDistanceReadings": operation_distance_readings,
         "metadata": {
-            "theorySourceRef": "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md",
+            "theorySourceRef": "aat-theory:distance-extension-design",
             "publicNamingBoundary": "public summary surfaces use architecture distance naming; AAT mathematics section names remain raw artifact metadata"
         },
         "nonConclusions": [

@@ -85,7 +85,7 @@ pub fn validate_archmap_v2_report(
 }
 
 pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
-    let doctrine_ref = "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md";
+    let doctrine_ref = "aat-theory:atom-vocabulary";
     AatAtomVocabularyV1 {
         schema: AAT_ATOM_VOCABULARY_V1_SCHEMA.to_string(),
         vocabulary_id: "aat-atom-vocabulary:ag-archmap@1".to_string(),
@@ -1811,7 +1811,7 @@ mod tests {
         assert_eq!(vocabulary.schema, AAT_ATOM_VOCABULARY_V1_SCHEMA);
         assert_eq!(
             vocabulary.doctrine_ref,
-            "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+            "aat-theory:atom-vocabulary"
         );
         assert_eq!(actual_kinds, expected_kinds);
         assert_eq!(
@@ -1819,9 +1819,9 @@ mod tests {
             ["V", "Gamma", "R", "rho", "E", "N"]
         );
         assert!(vocabulary.entries.iter().all(|entry| {
-            entry.doctrine_ref == "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+            entry.doctrine_ref == "aat-theory:atom-vocabulary"
                 && entry.provenance_ref
-                    == "docs/aat/mathematical_theory/part_1_atoms_objects_laws.md"
+                    == "aat-theory:atom-vocabulary"
         }));
         assert!(
             vocabulary

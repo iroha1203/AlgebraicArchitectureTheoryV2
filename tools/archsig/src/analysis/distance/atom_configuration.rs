@@ -199,7 +199,7 @@ fn promote_atom_geometry_supporting_distance(
             measured_value: fully_measured.then_some(max_distance),
             unit: "milli-distance".to_string(),
             provenance_refs: vec![
-                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry"
+                "aat-theory:distance-extension-design"
                     .to_string(),
                 "atomDistanceReadings".to_string(),
             ],
@@ -462,7 +462,7 @@ fn promote_configuration_geometry_supporting_distance(
             measured_value: fully_measured.then_some(max_bundle_distance),
             unit: "configuration-distance".to_string(),
             provenance_refs: vec![
-                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry"
+                "aat-theory:distance-extension-design"
                     .to_string(),
                 "configurationDistanceReadings".to_string(),
             ],
@@ -1229,7 +1229,7 @@ fn configuration_pair_provenance_refs(
         atom_pair_provenance_refs(left, right)
             .into_iter()
             .chain(std::iter::once(
-                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#3-configuration-geometry"
+                "aat-theory:distance-extension-design"
                     .to_string(),
             ))
             .chain(
@@ -1565,7 +1565,7 @@ fn atom_pair_provenance_refs(
     let mut refs = vec![
         left.atom_observation_id.clone(),
         right.atom_observation_id.clone(),
-        "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#2-atom-geometry"
+        "aat-theory:distance-extension-design"
             .to_string(),
     ];
     refs.extend(left.source_refs.iter().map(source_ref_label));

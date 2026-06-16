@@ -75,7 +75,7 @@ Non-goals remain unchanged:
 | Missing filler evidence does not become measured zero. | `archmap_homotopy_hole.json` fixture keeps `homotopyDistance=null`, `measurementStatus=blockedByMissingFiller`, and `observationGapLowerBound>0`. | implemented |
 | Lean minimal theorem guardrail exists and builds. | `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`, imported by `Formal.lean`; local and CI `lake build`. | proved / bounded |
 | Proof obligations and theorem index reflect Lean additions and claim boundary. | `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`. | documented |
-| AAT mathematical text reflects the Homotopy-Holonomy Stokes reading as theory, not implementation status. | `docs/aat/mathematical_theory/part_2_flatness_calculus_geometry.md`, `part_3_analytic_state_examples.md`. | documented |
+| AAT mathematical text reflects the Homotopy-Holonomy Stokes reading as theory, not implementation status. | `docs/aat/algebraic_geometric_theory/README.md`. | documented |
 | Tool docs explain ArchitectureHomotopyReport. | `docs/tool/README.md`, `docs/tool/law_policy.md`, `docs/tool/archsig_analysis_packet.md`. | documented |
 | Website / public manual explains the reading surface and non-conclusions. | `website/archsig/index.html`, `getting-started`, and `reading-output`. | documented |
 | Cargo, Lean, diff, and hidden Unicode checks pass. | Commands listed below. | validated |

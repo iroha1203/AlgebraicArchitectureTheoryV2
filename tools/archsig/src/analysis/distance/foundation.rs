@@ -156,7 +156,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:distance-aat",
             "definition:1.1",
             "DistanceAAT",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:35",
+            "aat-theory:distance-extension-design",
             "foundation",
             "primary",
             foundation_status(foundation),
@@ -180,7 +180,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:atom-geometry",
             "definitions:2.1-2.5",
             "Fiber / Carrier / Valence / Semantic Anchor / Atom Layout distance",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:140",
+            "aat-theory:distance-extension-design",
             "atomGeometry",
             coverage_status_for_family(
                 foundation,
@@ -205,7 +205,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:configuration-context",
             "definitions:3.1-3.2",
             "Configuration-indexed distance and Context distance",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:275",
+            "aat-theory:distance-extension-design",
             "configurationGeometry",
             coverage_status_for_family(
                 foundation,
@@ -230,7 +230,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:signature-geometry",
             "definitions:4.1-4.4",
             "Axis distance, Signature distance, Safe margin, and Signature drift",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:344",
+            "aat-theory:distance-extension-design",
             "signatureGeometry",
             coverage_status_for_family(
                 foundation,
@@ -255,7 +255,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:operation-geometry",
             "definitions:5.1-5.5",
             "Operation cost, Operation distance, Flatness distance, Repair route, and Side-effect bound",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:490",
+            "aat-theory:distance-extension-design",
             "operationGeometry",
             coverage_status_for_family(
                 foundation,
@@ -283,7 +283,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:obstruction-curvature",
             "definitions:6.1-6.3",
             "Obstruction measure, Curvature mass, and Curvature transport",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:599",
+            "aat-theory:distance-extension-design",
             "curvatureGeometry",
             coverage_status_for_family(
                 foundation,
@@ -311,7 +311,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:homotopy-filling",
             "definitions:7.1-7.4",
             "Homotopy distance, Filling cost, Observation gap lower bound, and Architectural Dehn function",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:674",
+            "aat-theory:distance-extension-design",
             "homotopyFillingGeometry",
             coverage_status_for_family(
                 foundation,
@@ -339,7 +339,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:representation-metric",
             "definitions:8.1-8.2",
             "Representation stability and Representation faithfulness",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:746",
+            "aat-theory:distance-extension-design",
             "representationMetric",
             coverage_status_for_family(
                 foundation,
@@ -367,7 +367,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:measurement-boundary",
             "definitions:9.1-9.3",
             "DistanceValue, unmeasured-is-not-zero, and DistanceProfile",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:784",
+            "aat-theory:distance-extension-design",
             "measurementBoundary",
             "primary",
             foundation_status(foundation),
@@ -398,7 +398,7 @@ fn build_part4_distance_coverage_ledger(
             "part4-ledger:bounded-diagnostic-conclusion",
             "definitions:10.1-10.2",
             "Diagnostic scope and Bounded diagnostic conclusion",
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md:852",
+            "aat-theory:distance-extension-design",
             "boundedDiagnosticConclusion",
             "partial",
             foundation_status(foundation),
@@ -643,7 +643,7 @@ fn distance_weight(axis_ref: &str, weight: i64) -> ArchSigDistanceProfileWeightV
     ArchSigDistanceProfileWeightV0 {
         axis_ref: axis_ref.to_string(),
         weight,
-        source_ref: "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md".to_string(),
+        source_ref: "aat-theory:distance-extension-design".to_string(),
     }
 }
 
@@ -652,7 +652,7 @@ fn operation_cost(operation_kind: &str, cost: i64) -> ArchSigDistanceOperationCo
         operation_kind: operation_kind.to_string(),
         cost,
         source_ref:
-            "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md#5-operation-geometry"
+            "aat-theory:distance-extension-design"
                 .to_string(),
     }
 }
@@ -677,8 +677,8 @@ fn unmeasured_part4_distance(
             measured_value: None,
             unit: "selected-distance-unit".to_string(),
             provenance_refs: vec![
-                "docs/aat/mathematical_theory/part_4_distance_measure_geometry.md".to_string(),
-                "docs/aat/AAT_Distance_Extension_Design.md".to_string(),
+                "aat-theory:distance-extension-design".to_string(),
+                "aat-theory:distance-extension-design".to_string(),
             ],
             evaluator_basis_refs: Vec::new(),
             coverage_refs: coverage_refs.to_vec(),

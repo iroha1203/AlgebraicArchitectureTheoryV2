@@ -15,7 +15,7 @@
 
 - `docs/note/`: 完結した設計考察ノート・フルレビューなど中〜大の文書。
 - `docs/research/`(ここ): 進行中の粒度の小さいアイデアを貯める inbox。
-- `docs/aat/mathematical_theory/`, `docs/aat/algebraic_geometric_theory/`: 体系化された数学本文(取り込み先)。
+- `docs/aat/algebraic_geometric_theory/`, `docs/aat/algebraic_geometric_theory/`: 体系化された数学本文(取り込み先)。
   **保護ファイルであり、取り込みはユーザーの明示承認を要する。**
 - `docs/aat/proof_obligations.md`, `docs/aat/lean_theorem_index.md`: Lean 形式化の台帳(取り込み先)。
 

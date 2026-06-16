@@ -110,7 +110,7 @@ https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
 If you want to go deeper, I recommend this order:
 
 1. Research goal
-2. AAT mathematical theory
+2. AAT algebraic-geometric mathematical text
 3. AAT / SFT interface
 4. Software Field Theory
 5. Lean definitions and theorem index

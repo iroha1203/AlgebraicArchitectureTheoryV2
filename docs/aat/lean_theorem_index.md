@@ -8,8 +8,8 @@
 
 `Formal/Arch` 以下の現在の主要 API と canonical path は、この索引で確認する。
 過去の file move 方針メモは archive に退避しており、現行入口としては使わない。
-Atom 起点の AAT 数学本文は
-[AAT 数学理論](mathematical_theory/README.md) を入口とする。
+現行 AAT 数学本文の正典は
+[代数幾何的 AAT 数学本文](algebraic_geometric_theory/README.md) を入口とする。
 
 ## 索引の読み方
 
@@ -1692,8 +1692,8 @@ Files: `Formal/Arch/Signature/DistanceGeometry.lean`,
 `Formal/Arch/AAT/TheoremClassification.lean`,
 `Formal/Arch/Examples/AATPart4DistanceExamples.lean`.
 
-この節は [AAT Part IV: Distance, Measure, and Architecture Geometry](mathematical_theory/part_4_distance_measure_geometry.md)
-と [AAT Distance Extension Design](AAT_Distance_Extension_Design.md) に対応する
+この節は [AAT Distance Extension Design](AAT_Distance_Extension_Design.md) と
+[代数幾何的 AAT 数学本文](algebraic_geometric_theory/README.md) に対応する
 bounded Lean theorem package の入口である。Part IV 本文は数学理論の source text として保ち、
 Lean 実装 status はこの索引と `proof_obligations.md` に分離する。
 

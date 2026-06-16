@@ -1,5 +1,7 @@
 # 代数幾何的アーキテクチャ論
 
+このディレクトリは、現行 AAT 数学本文の正典である。
+
 Algebraic Architecture Theory, AAT は、ソフトウェアアーキテクチャを
 Atom から生成され、law によって切り出され、obstruction sheaf と
 cohomology によって局所から大域への不整合を読む幾何対象として扱う理論である。
@@ -56,7 +58,7 @@ representation、measurement profile、trace category である。
 未選択の観測過程、外部過程、応用上の判定手続きについて、本文は主張しない。
 
 従来の Atom / law / obstruction / flatness / signature による AAT は、
-この理論史における古典的な有限・構成的基礎である。この本文は、その旧体系への
+この理論史における古典的な有限・構成的基礎である。この本文は、その先行体系への
 注釈書ではなく、Atom の公理から代数幾何的アーキテクチャ論を自立して構成する。
 
 ## 構成
