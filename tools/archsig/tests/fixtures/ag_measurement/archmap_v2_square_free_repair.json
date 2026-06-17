@@ -20,16 +20,6 @@
       "symbol": "PaymentContext",
       "line": 1
     },
-    "src:certificate": {
-      "kind": "policy",
-      "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
-      "section": "B.3-B.4"
-    },
-    "src:nsdepth-monotone": {
-      "kind": "policy",
-      "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md",
-      "section": "M12"
-    },
     "src:cover": {
       "kind": "policy",
       "path": "docs/tool/archsig_v0_4_0_algebraic_geometry_measurement_prd.md",
@@ -68,60 +58,27 @@
       ]
     },
     {
-      "id": "atom:ob-checkout-inventory",
+      "id": "atom:support-checkout-inventory",
       "kind": "relation",
       "subject": "x_checkout",
       "object": "x_inventory",
       "axis": "square-free",
-      "predicate": "obstructionGenerator",
+      "predicate": "support",
       "refs": [
         "src:checkout",
         "src:inventory"
       ]
     },
     {
-      "id": "atom:ob-inventory-payment",
+      "id": "atom:support-inventory-payment",
       "kind": "relation",
       "subject": "x_inventory",
       "object": "x_payment",
       "axis": "square-free",
-      "predicate": "obstructionGenerator",
+      "predicate": "support",
       "refs": [
         "src:inventory",
         "src:payment"
-      ]
-    },
-    {
-      "id": "atom:nsdepth-certificate",
-      "kind": "semantic",
-      "subject": "cert:nsdepth-square-free",
-      "object": "nsdepth=2;depthRule=alexanderDualMaxMinimalHittingSet@1;minimalForbiddenSupports=x_checkout+x_inventory|x_inventory+x_payment;supportAtomRefs=atom:ob-checkout-inventory,atom:ob-inventory-payment",
-      "axis": "square-free",
-      "predicate": "nsdepthCertificate",
-      "refs": [
-        "src:certificate"
-      ]
-    },
-    {
-      "id": "atom:nsdepth-scope-u",
-      "kind": "semantic",
-      "subject": "law-scope:U",
-      "object": "nsdepth=2;generators=x_checkout+x_inventory|x_inventory+x_payment",
-      "axis": "square-free",
-      "predicate": "nsdepthMonotoneScope",
-      "refs": [
-        "src:nsdepth-monotone"
-      ]
-    },
-    {
-      "id": "atom:nsdepth-scope-u-prime",
-      "kind": "semantic",
-      "subject": "law-scope:U-prime",
-      "object": "extends=law-scope:U;nsdepth=1;generators=x_checkout+x_inventory|x_inventory+x_payment|x_checkout+x_payment",
-      "axis": "square-free",
-      "predicate": "nsdepthMonotoneScope",
-      "refs": [
-        "src:nsdepth-monotone"
       ]
     }
   ],
@@ -132,11 +89,8 @@
         "atom:checkout",
         "atom:inventory",
         "atom:payment",
-        "atom:ob-checkout-inventory",
-        "atom:ob-inventory-payment",
-        "atom:nsdepth-certificate",
-        "atom:nsdepth-scope-u",
-        "atom:nsdepth-scope-u-prime"
+        "atom:support-checkout-inventory",
+        "atom:support-inventory-payment"
       ],
       "refs": [
         "src:cover"

@@ -13,10 +13,10 @@ ArchSig がそれを測定するので、測定の裏付けで言える。
 | frame | ArchMap | 測定された結論 | 意味 |
 | --- | --- | --- | --- |
 | f0 · calm | `frame-00.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | 凪。loop は閉じる |
-| **f1 · mismatch added** | `frame-01.archmap.json` | `MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | **⚡ H¹ 発火**。`atom:left-bottom-cech-mismatch` が現れ、left↔bottom が貼り合わなくなる |
-| f2 · healed | `frame-02.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | ✓ 治癒。mismatch atom が消え seam が閉じる |
+| **f1 · section value changed** | `frame-01.archmap.json` | `MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | **⚡ H¹ 発火**。`sectionValue` の raw value が left↔bottom で食い違い、ArchSig が貼り合わせ不一致を計算する |
+| f2 · healed | `frame-02.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | ✓ 治癒。raw `sectionValue` が再び揃い seam が閉じる |
 
-フレーム間の差は **mismatch atom が1つ現れて消えるだけ**(同一 cover・同一 4 context)。
+フレーム間の差は **sectionValue の raw value が left↔bottom で変わって戻るだけ**(同一 cover・同一 4 context)。
 タイムラインを scrub すると、f1 で amber の cocycle seam が結晶の中で発火し、teal の
 closure ring が開き、bloom が新生 supportEdge ただ一つに灯る。
 

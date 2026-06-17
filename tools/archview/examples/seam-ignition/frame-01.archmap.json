@@ -94,14 +94,25 @@
       ]
     },
     {
-      "id": "atom:left-bottom-cech-mismatch",
-      "kind": "relation",
+      "id": "atom:left-cech-section-value",
+      "kind": "semantic",
       "subject": "ctx:left",
-      "object": "ctx:bottom",
+      "object": "section=left-local",
       "axis": "cech",
-      "predicate": "mismatch",
+      "predicate": "sectionValue",
       "refs": [
         "ctx:left",
+        "src:cover"
+      ]
+    },
+    {
+      "id": "atom:bottom-cech-section-value",
+      "kind": "semantic",
+      "subject": "ctx:bottom",
+      "object": "section=bottom-local",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
         "ctx:bottom",
         "src:cover"
       ]
@@ -125,7 +136,7 @@
       "id": "ctx:left",
       "atoms": [
         "atom:left",
-        "atom:left-bottom-cech-mismatch"
+        "atom:left-cech-section-value"
       ],
       "restrictsTo": [
         "ctx:bottom"
@@ -149,7 +160,8 @@
     {
       "id": "ctx:bottom",
       "atoms": [
-        "atom:bottom"
+        "atom:bottom",
+        "atom:bottom-cech-section-value"
       ],
       "refs": [
         "ctx:bottom"
