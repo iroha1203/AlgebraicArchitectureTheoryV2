@@ -20,6 +20,12 @@ Current source-of-truth boundaries:
   vocabulary and that `atoms[].kind` is a member before measurement; the check
   does not prove source extraction soundness, semantic correctness, or whether a
   new atom kind should be added to the doctrine.
+- 観測と判定の責務境界の理論的根拠は
+  [ArchMap・LawPolicy・ArchSig 責務憲章](archmap_lawpolicy_archsig_responsibility_charter.md) を見る。
+  [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) は、上記の `extractionDoctrineRef` を
+  author 入力から固定定数へ格下げし、AG 入力から判定語(`mismatch` / `obstructionGenerator` /
+  計算済み certificate)を排する改修を提案している。AAT 本文の A8 Essential Uniqueness 定理そのものは
+  不変であり、tool 側の単一固定 doctrine 化はその一特殊化(compute 側の cross-doctrine 比較の退化)である。
 - MeasurementProfile v1 is the first-class selected measurement regime. It
   declares site / cover refs, coefficient, EffCoeff procedure, witness family,
   resolution selector, Dom / Zero / NonZero / Cert predicates, and the
