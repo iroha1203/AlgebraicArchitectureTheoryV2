@@ -68,7 +68,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-improvement"],
-                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from the fixed AAT canonical doctrine before checking atoms[].kind membership.",
+                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",

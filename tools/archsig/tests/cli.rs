@@ -254,6 +254,51 @@ fn cli_rejects_archmap_v2_diagnostic_predicate_shortcut() {
 }
 
 #[test]
+fn cli_rejects_archmap_v2_violated_diagnostic_shortcut() {
+    let out_dir = temp_dir("archmap-v2-diagnostic-violated");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["id"] = json!("atom:contract-violated");
+    for context in archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are array")
+    {
+        for atom_ref in context["atoms"]
+            .as_array_mut()
+            .expect("context atoms are array")
+        {
+            if atom_ref == "atom:order" {
+                *atom_ref = json!("atom:contract-violated");
+            }
+        }
+    }
+    let archmap_path = out_dir.join("archmap_v2_diagnostic_violated.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    assert_eq!(check["result"], "fail");
+    assert_eq!(check["examples"][0]["source"], "atom:contract-violated");
+    assert_eq!(check["examples"][0]["target"], "id:violation");
+}
+
+#[test]
 fn cli_rejects_archmap_v2_nonzero_camel_case_shortcut() {
     let out_dir = temp_dir("archmap-v2-diagnostic-nonzero-camel");
     let root = ag_measurement_root();
@@ -3733,6 +3778,21 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(
         repair["nsdepthCertificate"]["verifiedMinimalForbiddenSupports"],
         serde_json::json!([["x_checkout", "x_inventory"], ["x_inventory", "x_payment"]])
+    );
+    let nsdepth_assumption = packet["assumptions"]
+        .as_array()
+        .expect("assumptions are array")
+        .iter()
+        .find(|row| row["theoremRef"] == "part3/7.2B")
+        .expect("NSdepth assumption ledger row exists");
+    assert_eq!(nsdepth_assumption["status"], "checked");
+    assert_eq!(
+        nsdepth_assumption["checkedBy"],
+        "ag.square-free-repair@1:cert:nsdepth-square-free:computed"
+    );
+    assert!(
+        nsdepth_assumption["assumedBy"].is_null(),
+        "ArchSig-computed NSdepth certificate must not be downgraded to an assumption"
     );
     let arrangement = invariant_by_id(&packet, "lawful-locus-arrangement:profile:ag-square-free@1");
     assert_eq!(

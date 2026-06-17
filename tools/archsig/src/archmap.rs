@@ -265,7 +265,7 @@ fn diagnostic_shortcut_token(value: &str) -> Option<&'static str> {
         .find_map(|part| match part.as_str() {
             "mismatch" => Some("mismatch"),
             "obstruction" | "obstructive" => Some("obstruction"),
-            "violation" | "violate" | "violates" | "violating" => Some("violation"),
+            "violation" | "violate" | "violated" | "violates" | "violating" => Some("violation"),
             "risk" | "risky" => Some("risk"),
             "debt" => Some("debt"),
             "unsafe" => Some("unsafe"),
