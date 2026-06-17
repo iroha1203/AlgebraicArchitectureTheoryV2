@@ -375,7 +375,7 @@
       "label": "ShippingPort exposes shipment planning"
     },
     {
-      "id": "atom:port-risk-component",
+      "id": "atom:port-assessment-component",
       "kind": "component",
       "subject": "app:RiskPort",
       "axis": "static",
@@ -489,7 +489,7 @@
       ]
     },
     {
-      "id": "atom:checkout-depends-on-risk-port",
+      "id": "atom:checkout-depends-on-assessment-port",
       "kind": "relation",
       "subject": "app:CheckoutService",
       "axis": "static",
@@ -549,7 +549,7 @@
       ]
     },
     {
-      "id": "atom:infra-implements-risk-port",
+      "id": "atom:infra-implements-assessment-port",
       "kind": "relation",
       "subject": "store:InMemoryCommercePlatform",
       "axis": "static",
@@ -573,7 +573,7 @@
       ]
     },
     {
-      "id": "atom:policy-engine-reads-order-risk",
+      "id": "atom:policy-engine-reads-order-assessment",
       "kind": "relation",
       "subject": "policy:PolicyEngine",
       "axis": "semantic",
@@ -939,13 +939,13 @@
         "atom:port-inventory-component",
         "atom:port-payment-component",
         "atom:port-shipping-component",
-        "atom:port-risk-component",
+        "atom:port-assessment-component",
         "atom:port-outbox-component",
         "atom:checkout-depends-on-catalog-port",
         "atom:checkout-depends-on-inventory-port",
         "atom:checkout-depends-on-payment-port",
         "atom:checkout-depends-on-shipping-port",
-        "atom:checkout-depends-on-risk-port",
+        "atom:checkout-depends-on-assessment-port",
         "atom:checkout-depends-on-outbox-port",
         "atom:capability-reserve-inventory",
         "atom:capability-authorize-payment",
@@ -973,7 +973,7 @@
         "atom:checkout-depends-on-inventory-port",
         "atom:checkout-depends-on-payment-port",
         "atom:checkout-depends-on-shipping-port",
-        "atom:checkout-depends-on-risk-port",
+        "atom:checkout-depends-on-assessment-port",
         "atom:checkout-depends-on-outbox-port",
         "atom:runtime-demo-calls-checkout",
         "atom:capability-place-order",
@@ -999,7 +999,7 @@
         "atom:infra-implements-inventory-port",
         "atom:infra-implements-payment-port",
         "atom:infra-implements-shipping-port",
-        "atom:infra-implements-risk-port",
+        "atom:infra-implements-assessment-port",
         "atom:infra-implements-outbox-port",
         "atom:infrastructure-policy-cover-overlap",
         "atom:effect-inventory-decrement",
@@ -1022,7 +1022,7 @@
       "id": "ctx:policy",
       "atoms": [
         "atom:policy-engine-component",
-        "atom:policy-engine-reads-order-risk",
+        "atom:policy-engine-reads-order-assessment",
         "atom:infrastructure-policy-cover-overlap",
         "atom:capability-evaluate-policy",
         "atom:authority-policy-rule-catalog",
