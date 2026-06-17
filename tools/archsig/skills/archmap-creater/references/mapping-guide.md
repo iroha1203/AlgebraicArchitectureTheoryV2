@@ -1,7 +1,7 @@
 # ArchMap v2 Mapping Guide
 
-ArchMap v2 records source-grounded atoms, finite poset contexts, covers, and an
-extraction doctrine ref.
+ArchMap v2 records source-grounded atoms, finite poset contexts, and covers
+under the fixed ArchMap v2 extraction doctrine.
 ArchSig computes normalized predicates, evaluator results, distance diagnosis,
 and bounded conclusions later.
 
@@ -57,7 +57,7 @@ If that cannot be answered with refs, omit the semantic atom.
 
 ## Diagnostic Token Rules
 
-Avoid diagnostic-shaped ids and predicates in authored atoms:
+Do not use diagnostic-shaped ids or predicates in authored atoms:
 
 - `*_mismatch`
 - `*_obstruction`
@@ -69,10 +69,9 @@ Avoid diagnostic-shaped ids and predicates in authored atoms:
 - `*_nonzero`
 - `*_failure`
 
-Exception: use such a token only when the current extraction doctrine or an AG
-fixture vocabulary explicitly models it as an observed source relation, and the
-refs directly support that observation. Otherwise let ArchSig evaluators derive
-diagnostic readings from neutral atoms, contexts, covers, and LawPolicy.
+There is no doctrine or fixture exception for authored ids and predicates.
+ArchSig validation rejects these diagnostic shortcut tokens; let evaluators
+derive diagnostic readings from neutral atoms, contexts, covers, and LawPolicy.
 
 ## Context Rules
 

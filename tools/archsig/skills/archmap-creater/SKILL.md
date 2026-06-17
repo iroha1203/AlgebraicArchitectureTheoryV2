@@ -49,9 +49,9 @@ static-analysis dump.
   scope truly contains only component existence evidence.
 - Do not use ArchMap to smuggle evaluator outcomes. Diagnostic-shaped tokens
   such as `mismatch`, `obstruction`, `violation`, `risk`, `debt`, `unsafe`,
-  `lawful`, `nonzero`, or `failure` are forbidden as shortcuts. Use them only
-  when the extraction doctrine / fixture vocabulary explicitly requires that
-  observed relation and the source refs support it directly.
+  `lawful`, `nonzero`, or `failure` are forbidden in authored atom ids and
+  predicates. Record neutral observed source relations and let ArchSig derive
+  diagnostic readings later.
 - Before delivery, run the self-review gate in `references/prompt-pack.md`.
   If any gate fails, revise the ArchMap instead of explaining the failure away.
 

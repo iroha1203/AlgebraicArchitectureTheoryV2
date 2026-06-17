@@ -156,9 +156,9 @@ status is used by code and tests.
 }
 ```
 
-Why bad unless doctrine-approved: it names a diagnostic conclusion instead of a
-neutral observed relation. Prefer source-grounded relation / contract / state
-atoms and let the AG evaluator derive mismatch / obstruction readings.
+Why bad: it names a diagnostic conclusion instead of a neutral observed
+relation. Prefer source-grounded relation / contract / state atoms and let the
+AG evaluator derive mismatch / obstruction readings.
 
 ## Bad: Molecules In v2
 
