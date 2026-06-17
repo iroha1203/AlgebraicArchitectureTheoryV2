@@ -19,7 +19,6 @@ primitive observed facts.
 - runtime traces when supplied
 - source-grounded context boundaries and restriction directions
 - finite cover candidates for AG measurement
-- project extraction doctrine id / fingerprint source when available
 
 ## Sub-Agent Output
 
@@ -49,7 +48,7 @@ atoms as final ArchMap fields.
   semantic use evidence.
 - Reject semantic atoms that do not explain the observed use that makes the
   meaning true.
-- Reject diagnostic-shaped ids / predicates unless explicitly doctrine-approved
-  and source-supported.
+- Reject diagnostic-shaped ids / predicates unconditionally; source-supported
+  observations must still be written as neutral atom ids and predicates.
 - Keep unavailable inventory in notes; do not encode it as measured absence.
 - Validate with `archsig archmap`.

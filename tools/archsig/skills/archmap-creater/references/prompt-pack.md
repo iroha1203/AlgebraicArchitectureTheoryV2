@@ -33,8 +33,8 @@ Do not write law violations, obstruction circuits, distance scores, risk
 claims, projection hints, proof objects, or global architecture truth.
 Do not invent diagnostic-shaped atom ids or predicates such as *_mismatch,
 *_obstruction, *_violation, *_risk, *_debt, *_unsafe, *_lawful, *_nonzero, or
-*_failure unless the supplied extraction doctrine explicitly defines that token
-as an observed source relation and the supplied evidence supports it directly.
+*_failure. These tokens are forbidden in authored ids and predicates; write
+neutral observed relations and let ArchSig evaluators derive diagnostic readings.
 
 Every atom refs entry must resolve to sources. Every context atom entry must
 resolve to atoms. Every cover context entry must resolve to contexts. Labels are
@@ -78,6 +78,6 @@ source notes:
   represented or explicitly out of scope.
 - `semanticAtomsHaveUseEvidence`: every semantic atom cites observed use.
 - `noDiagnosticShortcutAtoms`: ids / predicates do not encode evaluator
-  conclusions except doctrine-approved observed relations.
+  conclusions or diagnostic shortcut tokens.
 
 Any `false` gate blocks delivery.
