@@ -1,18 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "practical-rust-commerce-fulfillment-v2",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:aat-atom-vocabulary@1",
-    "fingerprint": "sha256:aat-atom-vocabulary-v1-practical-rust-commerce",
-    "components": [
-      "V",
-      "Gamma",
-      "R",
-      "rho",
-      "E",
-      "N"
-    ]
-  },
   "sources": {
     "src:domain": {
       "kind": "rust",

@@ -9,7 +9,7 @@ use crate::{
     ArchMapLeanPreservationVocabularyEntry, ArchMapSourceInventoryV0, ArchMapSourceRef,
     ArchMapValidationReportV0, ArchMapValidationReportV1, ArchMapValidationReportV2,
     ArchMapValidationSummary, ArchMapValidationSummaryV1, ArchMapValidationSummaryV2,
-    ValidationCheck, ValidationExample,
+    ValidationCheck, ValidationExample, canonical_archmap_extraction_doctrine_ref_v2,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -22,19 +22,24 @@ pub fn compare_archmap_v2_doctrine(
     left: &ArchMapDocumentV2,
     right: &ArchMapDocumentV2,
 ) -> serde_json::Value {
-    if left.extraction_doctrine_ref.fingerprint == right.extraction_doctrine_ref.fingerprint {
+    let canonical = canonical_archmap_extraction_doctrine_ref_v2();
+    let left_is_canonical = left.extraction_doctrine_ref == canonical;
+    let right_is_canonical = right.extraction_doctrine_ref == canonical;
+    if left_is_canonical && right_is_canonical {
         serde_json::json!({
             "status": "comparable",
-            "reason": "same_doctrine",
+            "reason": "fixed_tool_doctrine",
             "leftDoctrine": left.extraction_doctrine_ref.doctrine_id,
             "rightDoctrine": right.extraction_doctrine_ref.doctrine_id
         })
     } else {
         serde_json::json!({
             "status": "not_comparable",
-            "reason": "cross_doctrine_not_comparable",
+            "reason": "invalid_fixed_doctrine",
             "leftDoctrine": left.extraction_doctrine_ref.doctrine_id,
-            "rightDoctrine": right.extraction_doctrine_ref.doctrine_id
+            "rightDoctrine": right.extraction_doctrine_ref.doctrine_id,
+            "leftCanonical": left_is_canonical,
+            "rightCanonical": right_is_canonical
         })
     }
 }
@@ -136,34 +141,32 @@ fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {
 }
 
 fn check_archmap_v2_doctrine(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let canonical = canonical_archmap_extraction_doctrine_ref_v2();
     let mut examples = Vec::new();
-    if document
-        .extraction_doctrine_ref
-        .doctrine_id
-        .trim()
-        .is_empty()
-    {
+    if document.extraction_doctrine_ref.doctrine_id != canonical.doctrine_id {
         examples.push(generic_validation_example(
             "extractionDoctrineRef.doctrineId",
-            "empty",
-            "doctrine id must be non-empty",
+            &document.extraction_doctrine_ref.doctrine_id,
+            "ArchMap v2 uses the fixed AAT canonical doctrine",
         ));
     }
-    if document
-        .extraction_doctrine_ref
-        .fingerprint
-        .trim()
-        .is_empty()
-    {
+    if document.extraction_doctrine_ref.fingerprint != canonical.fingerprint {
         examples.push(generic_validation_example(
             "extractionDoctrineRef.fingerprint",
-            "empty",
-            "doctrine fingerprint must be non-empty",
+            &document.extraction_doctrine_ref.fingerprint,
+            "ArchMap v2 uses the fixed AAT canonical doctrine fingerprint",
+        ));
+    }
+    if document.extraction_doctrine_ref.components != canonical.components {
+        examples.push(generic_validation_example(
+            "extractionDoctrineRef.components",
+            &document.extraction_doctrine_ref.components.join(","),
+            "ArchMap v2 uses the fixed AAT canonical doctrine components",
         ));
     }
     check_from_examples(
         "archmap-v2-extraction-doctrine-ref",
-        "ArchMap v2 declares the extraction doctrine fingerprint used for A8-relative determinism",
+        "ArchMap v2 uses the fixed AAT canonical doctrine; authors do not select doctrine",
         examples,
     )
 }
@@ -230,8 +233,8 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
 fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> ValidationCheck {
     let vocabulary = static_aat_atom_vocabulary_v1();
     let vocabulary_ref = vocabulary.vocabulary_id.as_str();
-    let declared_components = document
-        .extraction_doctrine_ref
+    let canonical_doctrine = canonical_archmap_extraction_doctrine_ref_v2();
+    let canonical_components = canonical_doctrine
         .components
         .iter()
         .map(String::as_str)
@@ -239,7 +242,7 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
     let missing_components = vocabulary
         .required_doctrine_components
         .iter()
-        .filter(|component| !declared_components.contains(component.as_str()))
+        .filter(|component| !canonical_components.contains(component.as_str()))
         .cloned()
         .collect::<Vec<_>>();
     let allowed = vocabulary
@@ -255,12 +258,12 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
     let mut examples = Vec::new();
     if !missing_components.is_empty() {
         examples.push(ValidationExample {
-            component_id: Some("extractionDoctrineRef.components".to_string()),
-            path: Some("extractionDoctrineRef.components".to_string()),
-            source: Some(document.extraction_doctrine_ref.components.join(",")),
+            component_id: Some("fixedAatCanonicalDoctrine.components".to_string()),
+            path: Some("fixedAatCanonicalDoctrine.components".to_string()),
+            source: Some(canonical_doctrine.components.join(",")),
             target: Some(vocabulary_ref.to_string()),
             evidence: Some(format!(
-                "extraction doctrine does not resolve required AAT atom vocabulary components: {}",
+                "fixed AAT canonical doctrine does not resolve required atom vocabulary components: {}",
                 missing_components.join(",")
             )),
         });
@@ -285,11 +288,11 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
                     .to_string()
             }
             (true, false) => {
-                "extraction doctrine does not resolve the declared AAT atom vocabulary"
+                "fixed AAT canonical doctrine does not resolve the declared atom vocabulary"
                     .to_string()
             }
             (false, false) => {
-                "declared AAT atom vocabulary does not contain one or more atom kind tokens and the extraction doctrine does not resolve the vocabulary"
+                "declared AAT atom vocabulary does not contain one or more atom kind tokens and the fixed AAT canonical doctrine does not resolve the vocabulary"
                     .to_string()
             }
             (true, true) => unreachable!("failed vocabulary check must have examples"),
@@ -1809,10 +1812,7 @@ mod tests {
             .collect::<BTreeSet<_>>();
 
         assert_eq!(vocabulary.schema, AAT_ATOM_VOCABULARY_V1_SCHEMA);
-        assert_eq!(
-            vocabulary.doctrine_ref,
-            "aat-theory:atom-vocabulary"
-        );
+        assert_eq!(vocabulary.doctrine_ref, "aat-theory:atom-vocabulary");
         assert_eq!(actual_kinds, expected_kinds);
         assert_eq!(
             vocabulary.required_doctrine_components,
@@ -1820,8 +1820,7 @@ mod tests {
         );
         assert!(vocabulary.entries.iter().all(|entry| {
             entry.doctrine_ref == "aat-theory:atom-vocabulary"
-                && entry.provenance_ref
-                    == "aat-theory:atom-vocabulary"
+                && entry.provenance_ref == "aat-theory:atom-vocabulary"
         }));
         assert!(
             vocabulary

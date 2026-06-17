@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:order": {
       "kind": "rust",
@@ -32,7 +27,9 @@
       "subject": "src:order",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:order"]
+      "refs": [
+        "src:order"
+      ]
     },
     {
       "id": "atom:inventory",
@@ -40,7 +37,9 @@
       "subject": "src:inventory",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:inventory"]
+      "refs": [
+        "src:inventory"
+      ]
     },
     {
       "id": "atom:order-inventory-restriction",
@@ -49,33 +48,60 @@
       "object": "src:inventory",
       "axis": "restriction",
       "predicate": "dependsOn",
-      "refs": ["src:order", "src:inventory"]
+      "refs": [
+        "src:order",
+        "src:inventory"
+      ]
     }
   ],
   "contexts": [
     {
       "id": "ctx:order",
-      "atoms": ["atom:order", "atom:order-inventory-restriction"],
-      "restrictsTo": ["ctx:shared"],
-      "refs": ["src:order"]
+      "atoms": [
+        "atom:order",
+        "atom:order-inventory-restriction"
+      ],
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "src:order"
+      ]
     },
     {
       "id": "ctx:inventory",
-      "atoms": ["atom:inventory", "atom:order-inventory-restriction"],
-      "restrictsTo": ["ctx:shared"],
-      "refs": ["src:inventory"]
+      "atoms": [
+        "atom:inventory",
+        "atom:order-inventory-restriction"
+      ],
+      "restrictsTo": [
+        "ctx:shared"
+      ],
+      "refs": [
+        "src:inventory"
+      ]
     },
     {
       "id": "ctx:shared",
-      "atoms": ["atom:order-inventory-restriction"],
-      "refs": ["src:cover"]
+      "atoms": [
+        "atom:order-inventory-restriction"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:order-inventory",
-      "contexts": ["ctx:order", "ctx:inventory", "ctx:shared"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:order",
+        "ctx:inventory",
+        "ctx:shared"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

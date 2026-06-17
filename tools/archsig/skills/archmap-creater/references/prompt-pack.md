@@ -9,8 +9,8 @@ Create candidate evidence for an archmap/v2 JSON artifact from the selected repo
 Read only the supplied files, docs, tests, traces, and user-approved context.
 Record read evidence in sources. Write primitive architectural facts in atoms.
 Group finite observation regions in contexts and selected finite families in covers.
-Include extractionDoctrineRef only when the supplied context gives the doctrine id
-and fingerprint; otherwise return a note asking the integrator to fill it.
+Do not include extractionDoctrineRef; ArchSig supplies the fixed
+doctrine:aat-canonical@1 contract during validation and normalization.
 
 Do not create atoms mechanically from a script, AST dump, import graph, route list,
 or filename template. Use such outputs only as navigation aids. Final candidate
@@ -48,7 +48,6 @@ Sub-agents should return candidate packets, not final ArchMap JSON:
 ```json
 {
   "reviewedSources": [],
-  "candidateExtractionDoctrineRef": null,
   "candidateSources": {},
   "candidateAtoms": [],
   "candidateContexts": [],
@@ -64,8 +63,8 @@ Sub-agents should return candidate packets, not final ArchMap JSON:
 }
 ```
 
-The integrator decides what enters final `extractionDoctrineRef`, `sources`,
-`atoms`, `contexts`, and `covers`.
+The integrator decides what enters final `sources`, `atoms`, `contexts`, and
+`covers`.
 
 ## Self-Review Gate
 

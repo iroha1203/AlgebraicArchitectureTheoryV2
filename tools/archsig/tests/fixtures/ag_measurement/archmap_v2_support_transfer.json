@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-support-transfer-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:transfer-api": {
       "kind": "policy",
@@ -46,7 +41,9 @@
       "object": "support:api,support:data",
       "axis": "transfer",
       "predicate": "repairPath",
-      "refs": ["src:repair-path"]
+      "refs": [
+        "src:repair-path"
+      ]
     },
     {
       "id": "atom:transfer-path-api",
@@ -55,7 +52,9 @@
       "object": "support:api=0.25",
       "axis": "transfer",
       "predicate": "transferPairing",
-      "refs": ["src:transfer-api"]
+      "refs": [
+        "src:transfer-api"
+      ]
     },
     {
       "id": "atom:transfer-path-data",
@@ -64,7 +63,9 @@
       "object": "support:data=0.75",
       "axis": "transfer",
       "predicate": "transferPairing",
-      "refs": ["src:transfer-data"]
+      "refs": [
+        "src:transfer-data"
+      ]
     },
     {
       "id": "atom:transfer-ground-api",
@@ -73,7 +74,9 @@
       "object": "2",
       "axis": "transfer",
       "predicate": "groundCost",
-      "refs": ["src:ground-api"]
+      "refs": [
+        "src:ground-api"
+      ]
     },
     {
       "id": "atom:transfer-ground-data",
@@ -82,7 +85,9 @@
       "object": "4",
       "axis": "transfer",
       "predicate": "groundCost",
-      "refs": ["src:ground-data"]
+      "refs": [
+        "src:ground-data"
+      ]
     }
   ],
   "contexts": [
@@ -95,14 +100,20 @@
         "atom:transfer-ground-api",
         "atom:transfer-ground-data"
       ],
-      "refs": ["src:cover"]
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:support-transfer",
-      "contexts": ["ctx:support-transfer-local"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:support-transfer-local"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

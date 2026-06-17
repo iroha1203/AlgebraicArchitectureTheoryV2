@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-square-free-repair-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:checkout": {
       "kind": "rust",
@@ -48,7 +43,9 @@
       "subject": "src:checkout",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:checkout"]
+      "refs": [
+        "src:checkout"
+      ]
     },
     {
       "id": "atom:inventory",
@@ -56,7 +53,9 @@
       "subject": "src:inventory",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:inventory"]
+      "refs": [
+        "src:inventory"
+      ]
     },
     {
       "id": "atom:payment",
@@ -64,7 +63,9 @@
       "subject": "src:payment",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:payment"]
+      "refs": [
+        "src:payment"
+      ]
     },
     {
       "id": "atom:ob-checkout-inventory",
@@ -73,7 +74,10 @@
       "object": "x_inventory",
       "axis": "square-free",
       "predicate": "obstructionGenerator",
-      "refs": ["src:checkout", "src:inventory"]
+      "refs": [
+        "src:checkout",
+        "src:inventory"
+      ]
     },
     {
       "id": "atom:ob-inventory-payment",
@@ -82,7 +86,10 @@
       "object": "x_payment",
       "axis": "square-free",
       "predicate": "obstructionGenerator",
-      "refs": ["src:inventory", "src:payment"]
+      "refs": [
+        "src:inventory",
+        "src:payment"
+      ]
     },
     {
       "id": "atom:nsdepth-certificate",
@@ -91,7 +98,9 @@
       "object": "nsdepth=2;depthRule=alexanderDualMaxMinimalHittingSet@1;minimalForbiddenSupports=x_checkout+x_inventory|x_inventory+x_payment;supportAtomRefs=atom:ob-checkout-inventory,atom:ob-inventory-payment",
       "axis": "square-free",
       "predicate": "nsdepthCertificate",
-      "refs": ["src:certificate"]
+      "refs": [
+        "src:certificate"
+      ]
     },
     {
       "id": "atom:nsdepth-scope-u",
@@ -100,7 +109,9 @@
       "object": "nsdepth=2;generators=x_checkout+x_inventory|x_inventory+x_payment",
       "axis": "square-free",
       "predicate": "nsdepthMonotoneScope",
-      "refs": ["src:nsdepth-monotone"]
+      "refs": [
+        "src:nsdepth-monotone"
+      ]
     },
     {
       "id": "atom:nsdepth-scope-u-prime",
@@ -109,7 +120,9 @@
       "object": "extends=law-scope:U;nsdepth=1;generators=x_checkout+x_inventory|x_inventory+x_payment|x_checkout+x_payment",
       "axis": "square-free",
       "predicate": "nsdepthMonotoneScope",
-      "refs": ["src:nsdepth-monotone"]
+      "refs": [
+        "src:nsdepth-monotone"
+      ]
     }
   ],
   "contexts": [
@@ -125,14 +138,20 @@
         "atom:nsdepth-scope-u",
         "atom:nsdepth-scope-u-prime"
       ],
-      "refs": ["src:cover"]
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:square-free-repair",
-      "contexts": ["ctx:square-free-local"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:square-free-local"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

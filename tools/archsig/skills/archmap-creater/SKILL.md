@@ -1,6 +1,6 @@
 ---
 name: archmap-creater
-description: Create and validate ArchMap artifacts from repository evidence, especially AG measurement archmap/v2 finite-poset-site JSON. Use when Codex is asked to draft, generate, update, or validate an ArchMap, prepare source-grounded atoms, contexts, covers, extractionDoctrineRef, or run ArchSig analyze from code/docs/tests/traces.
+description: Create and validate ArchMap artifacts from repository evidence, especially AG measurement archmap/v2 finite-poset-site JSON. Use when Codex is asked to draft, generate, update, or validate an ArchMap, prepare source-grounded atoms, contexts, covers, or run ArchSig analyze from code/docs/tests/traces.
 ---
 
 # ArchMap Creater
@@ -13,14 +13,16 @@ ArchSig AG measurement.
 ArchMap v2 has five primary surfaces:
 
 - `schema`: exactly `archmap/v2`.
-- `extractionDoctrineRef`: declared doctrine id, fingerprint, and AAT components
-  used for A8-relative determinism.
 - `sources`: source ledger for files, symbols, docs, tests, traces, and policy
   refs that were actually read.
 - `atoms`: subject / axis-decorated primitive source-grounded Atom facts.
 - `contexts`: finite poset contexts, each with explicit atom membership and
   optional `restrictsTo` edges.
 - `covers`: finite context families selected as cover candidates.
+
+The extraction doctrine is fixed by ArchSig as `doctrine:aat-canonical@1`.
+ArchMap authors do not choose, fingerprint, or extend a doctrine in the v2
+artifact.
 
 ArchMap does not contain obstruction circuits, law violations, signature axes,
 distance results, risk findings, projection hints, concern hints, observation
@@ -68,22 +70,6 @@ artifact ids.
 
 This skill must work with only this skill bundle and a built `archsig`
 executable. Do not require the ArchSig source checkout.
-
-## Extraction Doctrine Rules
-
-Every v2 ArchMap must include:
-
-```json
-"extractionDoctrineRef": {
-  "doctrineId": "doctrine:<scope>@1",
-  "fingerprint": "sha256:<stable-fingerprint-or-user-provided-id>",
-  "components": ["V", "Gamma", "R", "rho", "E", "N"]
-}
-```
-
-Use the actual project doctrine id and fingerprint when supplied. If no
-fingerprint source is available, ask or mark validation as not final; do not
-invent comparability between different doctrines.
 
 ## Atom Rules
 

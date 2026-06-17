@@ -12,18 +12,19 @@ Current source-of-truth boundaries:
 
 - ArchMap v2 is the v0.4.0 AG measurement input contract. It records
   `sources`, subject / axis-decorated `atoms`, finite-poset `contexts`,
-  selected `covers`, and `extractionDoctrineRef`. `molecules` are not a v2
-  primary field; context membership replaces them for AG measurement.
+  and selected `covers`. The extraction doctrine is fixed by ArchSig as
+  `doctrine:aat-canonical@1`; `molecules` are not a v2 primary field, and
+  context membership replaces them for AG measurement.
 - `aat-atom-vocabulary/v1` is the artifact-side projection of allowed ArchMap
   atom kind tokens with provenance back to the AAT doctrine. ArchMap v2
-  validation checks that `extractionDoctrineRef.components` resolves the
-  vocabulary and that `atoms[].kind` is a member before measurement; the check
-  does not prove source extraction soundness, semantic correctness, or whether a
-  new atom kind should be added to the doctrine.
+  validation resolves this vocabulary from the fixed AAT canonical doctrine and
+  checks that `atoms[].kind` is a member before measurement; the check does not
+  prove source extraction soundness, semantic correctness, or whether a new atom
+  kind should be added to the doctrine.
 - 観測と判定の責務境界の理論的根拠は
   [ArchMap・LawPolicy・ArchSig 責務憲章](archmap_lawpolicy_archsig_responsibility_charter.md) を見る。
-  [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) は、上記の `extractionDoctrineRef` を
-  author 入力から固定定数へ格下げし、AG 入力から判定語(`mismatch` / `obstructionGenerator` /
+  [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) は、旧 `extractionDoctrineRef` を
+  author 入力ではなく固定定数として扱い、AG 入力から判定語(`mismatch` / `obstructionGenerator` /
   計算済み certificate)を排する改修を提案している。AAT 本文の A8 Essential Uniqueness 定理そのものは
   不変であり、tool 側の単一固定 doctrine 化はその一特殊化(compute 側の cross-doctrine 比較の退化)である。
 - MeasurementProfile v1 is the first-class selected measurement regime. It

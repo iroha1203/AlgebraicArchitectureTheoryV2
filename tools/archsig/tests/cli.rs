@@ -211,12 +211,16 @@ fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
 }
 
 #[test]
-fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
-    let out_dir = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine");
+fn cli_rejects_archmap_v2_custom_extraction_doctrine() {
+    let out_dir = temp_dir("archmap-v2-custom-extraction-doctrine");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
-    archmap["extractionDoctrineRef"]["components"] = json!(["custom"]);
-    let archmap_path = out_dir.join("archmap_v2_unresolved_atom_vocabulary.json");
+    archmap["extractionDoctrineRef"] = json!({
+        "doctrineId": "doctrine:custom@1",
+        "fingerprint": "sha256:custom",
+        "components": ["custom"]
+    });
+    let archmap_path = out_dir.join("archmap_v2_custom_extraction_doctrine.json");
     fs::write(
         &archmap_path,
         serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
@@ -241,28 +245,20 @@ fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
-        .expect("atom vocabulary check is present");
+        .find(|check| check["id"] == "archmap-v2-extraction-doctrine-ref")
+        .expect("fixed doctrine check is present");
     assert_eq!(check["result"], "fail");
     assert_eq!(
-        check["reason"],
-        "extraction doctrine does not resolve the declared AAT atom vocabulary"
+        check["title"],
+        "ArchMap v2 uses the fixed AAT canonical doctrine; authors do not select doctrine"
     );
     let example = &check["examples"][0];
-    assert_eq!(example["componentId"], "extractionDoctrineRef.components");
-    assert_eq!(example["path"], "extractionDoctrineRef.components");
-    assert_eq!(example["source"], "custom");
-    assert_eq!(example["target"], "aat-atom-vocabulary:ag-archmap@1");
-    assert!(example["evidence"].as_str().is_some_and(|evidence| {
-        evidence.contains(
-            "extraction doctrine does not resolve required AAT atom vocabulary components",
-        ) && evidence.contains("Gamma")
-            && evidence.contains("rho")
-    }));
-    let reason = check["reason"].as_str().expect("reason is text");
-    assert!(!reason.contains("should"));
-    assert!(!reason.contains("semantic correctness"));
-
+    assert_eq!(example["source"], "extractionDoctrineRef.doctrineId");
+    assert_eq!(example["target"], "doctrine:custom@1");
+    assert_eq!(
+        example["evidence"],
+        "ArchMap v2 uses the fixed AAT canonical doctrine"
+    );
     let analyze_out = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine-analyze");
     let output = run_sig0_output(&[
         "analyze",
@@ -278,7 +274,7 @@ fn cli_rejects_archmap_v2_atom_vocabulary_unresolved_by_doctrine_components() {
     assert_eq!(
         output.status.code(),
         Some(1),
-        "analyze must fail closed before measurement when doctrine components do not resolve vocabulary\nstdout:\n{}\nstderr:\n{}",
+        "analyze must fail closed before measurement when ArchMap v2 declares a custom doctrine\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -343,7 +339,7 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert_eq!(normalized["schema"], "normalized-archmap/v2");
     assert_eq!(
         normalized["summary"]["doctrineFingerprint"],
-        "sha256:ag-fixture-doctrine"
+        "sha256:aat-canonical-doctrine-v1"
     );
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
@@ -825,7 +821,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "atomCount": 5,
                 "contextCount": 4,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:ag-fixture-doctrine",
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-v1",
                 "invariantId": "finite-poset-site-shape"
             },
             {
@@ -7205,19 +7201,38 @@ fn archmap_v2_normalize_is_byte_deterministic() {
 }
 
 #[test]
-fn archmap_v2_cross_doctrine_comparison_is_not_comparable() {
+fn archmap_v2_cross_doctrine_comparison_degenerates_to_comparable() {
+    let root = ag_measurement_root();
+    let left_value = read_json(&root.join("archmap_v2.json"));
+    let right_value = left_value.clone();
+    let left: ArchMapDocumentV2 = serde_json::from_value(left_value).expect("left archmap parses");
+    let right: ArchMapDocumentV2 =
+        serde_json::from_value(right_value).expect("right archmap parses");
+
+    let result = compare_archmap_v2_doctrine(&left, &right);
+    assert_eq!(result["status"], "comparable");
+    assert_eq!(result["reason"], "fixed_tool_doctrine");
+}
+
+#[test]
+fn archmap_v2_cross_doctrine_comparison_rejects_noncanonical_input() {
     let root = ag_measurement_root();
     let left_value = read_json(&root.join("archmap_v2.json"));
     let mut right_value = left_value.clone();
-    right_value["extractionDoctrineRef"]["fingerprint"] =
-        Value::String("sha256:other-doctrine".to_string());
+    right_value["extractionDoctrineRef"] = json!({
+        "doctrineId": "doctrine:custom@1",
+        "fingerprint": "sha256:other-doctrine",
+        "components": ["custom"]
+    });
     let left: ArchMapDocumentV2 = serde_json::from_value(left_value).expect("left archmap parses");
     let right: ArchMapDocumentV2 =
         serde_json::from_value(right_value).expect("right archmap parses");
 
     let result = compare_archmap_v2_doctrine(&left, &right);
     assert_eq!(result["status"], "not_comparable");
-    assert_eq!(result["reason"], "cross_doctrine_not_comparable");
+    assert_eq!(result["reason"], "invalid_fixed_doctrine");
+    assert_eq!(result["leftCanonical"], true);
+    assert_eq!(result["rightCanonical"], false);
 }
 
 #[test]
@@ -13687,7 +13702,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     .is_some_and(|description| {
                         description.contains("artifact-side projection")
                             && description.contains("allowed ArchMap atom kind tokens")
-                            && description.contains("extractionDoctrineRef components")
+                            && description.contains("fixed AAT canonical doctrine")
                     })
                 && entry["compatibilityBoundary"]["nonConclusions"]
                     .as_array()
@@ -14827,11 +14842,6 @@ fn restriction_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v2",
         "id": format!("ag-restriction-fixture-{case}"),
-        "extractionDoctrineRef": {
-            "doctrineId": "doctrine:ag-fixture@1",
-            "fingerprint": "sha256:ag-restriction-fixture",
-            "components": ["V", "Gamma", "R", "rho", "E", "N"]
-        },
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
             "src:target": {"kind": "rust", "path": "src/target.rs", "symbol": "Target", "line": 1},
@@ -15036,11 +15046,6 @@ fn boundary_residue_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v2",
         "id": format!("ag-boundary-residue-fixture-{case}"),
-        "extractionDoctrineRef": {
-            "doctrineId": "doctrine:ag-fixture@1",
-            "fingerprint": "sha256:ag-boundary-residue-fixture",
-            "components": ["V", "Gamma", "R", "rho", "E", "N"]
-        },
         "sources": {
             "src:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 core patch"},
             "src:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 feature patch"},
@@ -15144,11 +15149,6 @@ fn section_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v2",
         "id": format!("ag-section-fixture-{case}"),
-        "extractionDoctrineRef": {
-            "doctrineId": "doctrine:ag-fixture@1",
-            "fingerprint": "sha256:ag-section-fixture",
-            "components": ["V", "Gamma", "R", "rho", "E", "N"]
-        },
         "sources": {
             "src:section-carrier": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 section"},
             "src:forbidden-support": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 minimal forbidden support"},
@@ -15634,11 +15634,6 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
     json!({
         "schema": "archmap/v2",
         "id": "ag-coherence-fixture",
-        "extractionDoctrineRef": {
-            "doctrineId": "doctrine:ag-fixture@1",
-            "fingerprint": "sha256:ag-coherence-fixture",
-            "components": ["V", "Gamma", "R", "rho", "E", "N"]
-        },
         "sources": {
             "src:a": {"kind": "rust", "path": "src/a.rs", "symbol": "A", "line": 1},
             "src:b": {"kind": "rust", "path": "src/b.rs", "symbol": "B", "line": 1},

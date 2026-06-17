@@ -11726,8 +11726,9 @@ mod tests {
             "sourceArchmapRef": "archmap:test",
             "sourceArchmapId": "archmap:test",
             "extractionDoctrineRef": {
-                "doctrineId": "doctrine:test",
-                "fingerprint": "sha256:test"
+                "doctrineId": "doctrine:aat-canonical@1",
+                "fingerprint": "sha256:aat-canonical-doctrine-v1",
+                "components": ["V", "Gamma", "R", "rho", "E", "N"]
             },
             "atoms": [
                 {
@@ -11805,7 +11806,7 @@ mod tests {
                 "normalizedAtomCount": 3,
                 "contextCount": 3,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:test"
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-v1"
             },
             "nonConclusions": []
         }))

@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-sheaf-laplacian-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:left-cell": {
       "kind": "policy",
@@ -36,7 +31,9 @@
       "object": "1",
       "axis": "laplacian",
       "predicate": "cellularCochain",
-      "refs": ["src:left-cell"]
+      "refs": [
+        "src:left-cell"
+      ]
     },
     {
       "id": "atom:laplacian-right-cochain",
@@ -45,7 +42,9 @@
       "object": "0",
       "axis": "laplacian",
       "predicate": "cellularCochain",
-      "refs": ["src:right-cell"]
+      "refs": [
+        "src:right-cell"
+      ]
     },
     {
       "id": "atom:laplacian-boundary",
@@ -54,7 +53,9 @@
       "object": "cell:right",
       "axis": "laplacian",
       "predicate": "cellularBoundary",
-      "refs": ["src:boundary"]
+      "refs": [
+        "src:boundary"
+      ]
     }
   ],
   "contexts": [
@@ -65,14 +66,20 @@
         "atom:laplacian-right-cochain",
         "atom:laplacian-boundary"
       ],
-      "refs": ["src:cover"]
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:sheaf-laplacian",
-      "contexts": ["ctx:sheaf-laplacian-local"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:sheaf-laplacian-local"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

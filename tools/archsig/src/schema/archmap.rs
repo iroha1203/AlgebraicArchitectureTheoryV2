@@ -22,6 +22,7 @@ pub struct ArchMapDocumentV1 {
 pub struct ArchMapDocumentV2 {
     pub schema: String,
     pub id: String,
+    #[serde(default = "canonical_archmap_extraction_doctrine_ref_v2")]
     pub extraction_doctrine_ref: ArchMapExtractionDoctrineRefV2,
     #[serde(default)]
     pub sources: BTreeMap<String, ArchMapSourceV1>,
@@ -40,6 +41,17 @@ pub struct ArchMapExtractionDoctrineRefV2 {
     pub fingerprint: String,
     #[serde(default)]
     pub components: Vec<String>,
+}
+
+pub fn canonical_archmap_extraction_doctrine_ref_v2() -> ArchMapExtractionDoctrineRefV2 {
+    ArchMapExtractionDoctrineRefV2 {
+        doctrine_id: "doctrine:aat-canonical@1".to_string(),
+        fingerprint: "sha256:aat-canonical-doctrine-v1".to_string(),
+        components: ["V", "Gamma", "R", "rho", "E", "N"]
+            .into_iter()
+            .map(str::to_string)
+            .collect(),
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

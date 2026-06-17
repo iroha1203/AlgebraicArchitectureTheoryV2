@@ -98,7 +98,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from extractionDoctrineRef components before checking atoms[].kind membership.",
+        "fieldMappingPolicy": "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from the fixed AAT canonical doctrine before checking atoms[].kind membership.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -125,7 +125,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, covers, and extractionDoctrineRef. Molecules are not a primary v2 field.",
+        "fieldMappingPolicy": "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, and covers. The extraction doctrine is fixed by ArchSig as doctrine:aat-canonical@1; molecules are not a primary v2 field.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -318,7 +318,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under a declared extraction doctrine fingerprint.",
+        "fieldMappingPolicy": "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under the fixed AAT canonical doctrine fingerprint.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -329,7 +329,7 @@
         ],
         "nonConclusions": [
           "Normalized ArchMap v2 does not prove source extraction soundness.",
-          "A8 determinism is relative to the declared extraction doctrine fingerprint."
+          "A8 determinism is relative to the fixed tool doctrine fingerprint."
         ]
       }
     },
