@@ -1,18 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "seam-ignition-f02-healed",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": [
-      "V",
-      "Gamma",
-      "R",
-      "rho",
-      "E",
-      "N"
-    ]
-  },
   "sources": {
     "src:top": {
       "kind": "rust",

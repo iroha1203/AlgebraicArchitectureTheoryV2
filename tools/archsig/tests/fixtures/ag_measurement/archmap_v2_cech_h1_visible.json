@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-cech-h1-visible-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:top": {
       "kind": "rust",
@@ -64,7 +59,9 @@
       "subject": "src:top",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:top"]
+      "refs": [
+        "src:top"
+      ]
     },
     {
       "id": "atom:left",
@@ -72,7 +69,9 @@
       "subject": "src:left",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:left"]
+      "refs": [
+        "src:left"
+      ]
     },
     {
       "id": "atom:right",
@@ -80,7 +79,9 @@
       "subject": "src:right",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:right"]
+      "refs": [
+        "src:right"
+      ]
     },
     {
       "id": "atom:bottom",
@@ -88,7 +89,9 @@
       "subject": "src:bottom",
       "axis": "static",
       "predicate": "component",
-      "refs": ["src:bottom"]
+      "refs": [
+        "src:bottom"
+      ]
     },
     {
       "id": "atom:left-bottom-cech-mismatch",
@@ -97,39 +100,74 @@
       "object": "ctx:bottom",
       "axis": "cech",
       "predicate": "mismatch",
-      "refs": ["ctx:left", "ctx:bottom", "src:cover"]
+      "refs": [
+        "ctx:left",
+        "ctx:bottom",
+        "src:cover"
+      ]
     }
   ],
   "contexts": [
     {
       "id": "ctx:top",
-      "atoms": ["atom:top"],
-      "restrictsTo": ["ctx:left", "ctx:right"],
-      "refs": ["ctx:top"]
+      "atoms": [
+        "atom:top"
+      ],
+      "restrictsTo": [
+        "ctx:left",
+        "ctx:right"
+      ],
+      "refs": [
+        "ctx:top"
+      ]
     },
     {
       "id": "ctx:left",
-      "atoms": ["atom:left", "atom:left-bottom-cech-mismatch"],
-      "restrictsTo": ["ctx:bottom"],
-      "refs": ["ctx:left"]
+      "atoms": [
+        "atom:left",
+        "atom:left-bottom-cech-mismatch"
+      ],
+      "restrictsTo": [
+        "ctx:bottom"
+      ],
+      "refs": [
+        "ctx:left"
+      ]
     },
     {
       "id": "ctx:right",
-      "atoms": ["atom:right"],
-      "restrictsTo": ["ctx:bottom"],
-      "refs": ["ctx:right"]
+      "atoms": [
+        "atom:right"
+      ],
+      "restrictsTo": [
+        "ctx:bottom"
+      ],
+      "refs": [
+        "ctx:right"
+      ]
     },
     {
       "id": "ctx:bottom",
-      "atoms": ["atom:bottom"],
-      "refs": ["ctx:bottom"]
+      "atoms": [
+        "atom:bottom"
+      ],
+      "refs": [
+        "ctx:bottom"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:order-inventory",
-      "contexts": ["ctx:top", "ctx:left", "ctx:right", "ctx:bottom"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:top",
+        "ctx:left",
+        "ctx:right",
+        "ctx:bottom"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-law-conflict-tor-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:checkout-policy": {
       "kind": "policy",
@@ -36,7 +31,9 @@
       "object": "law:checkout,law:inventory",
       "axis": "tor",
       "predicate": "commonAmbient",
-      "refs": ["src:ambient"]
+      "refs": [
+        "src:ambient"
+      ]
     },
     {
       "id": "atom:checkout-law-generator",
@@ -45,7 +42,9 @@
       "object": "x_checkout,x_inventory",
       "axis": "tor",
       "predicate": "lawIdealGenerator",
-      "refs": ["src:checkout-policy"]
+      "refs": [
+        "src:checkout-policy"
+      ]
     },
     {
       "id": "atom:inventory-law-generator",
@@ -54,7 +53,9 @@
       "object": "x_inventory,x_payment",
       "axis": "tor",
       "predicate": "lawIdealGenerator",
-      "refs": ["src:inventory-policy"]
+      "refs": [
+        "src:inventory-policy"
+      ]
     }
   ],
   "contexts": [
@@ -65,14 +66,20 @@
         "atom:checkout-law-generator",
         "atom:inventory-law-generator"
       ],
-      "refs": ["src:cover"]
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:law-conflict-tor",
-      "contexts": ["ctx:tor-common-ambient"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:tor-common-ambient"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

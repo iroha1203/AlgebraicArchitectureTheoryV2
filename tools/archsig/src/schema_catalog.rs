@@ -68,7 +68,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-improvement"],
-                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from extractionDoctrineRef components before checking atoms[].kind membership.",
+                "AAT atom vocabulary v1 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation resolves it from the fixed AAT canonical doctrine before checking atoms[].kind membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",
@@ -81,7 +81,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, covers, and extractionDoctrineRef. Molecules are not a primary v2 field.",
+                "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, and covers. The extraction doctrine is fixed by ArchSig as doctrine:aat-canonical@1; molecules are not a primary v2 field.",
                 vec![
                     "ArchMap v2 validation does not prove source extraction soundness, U-adequacy, exactness, Lean theorem discharge, or architecture lawfulness.",
                     "Contexts and covers are observation structure; measurement choices live in MeasurementProfile.",
@@ -178,10 +178,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under a declared extraction doctrine fingerprint.",
+                "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under the fixed AAT canonical doctrine fingerprint.",
                 vec![
                     "Normalized ArchMap v2 does not prove source extraction soundness.",
-                    "A8 determinism is relative to the declared extraction doctrine fingerprint.",
+                    "A8 determinism is relative to the fixed tool doctrine fingerprint.",
                 ],
             ),
             artifact(

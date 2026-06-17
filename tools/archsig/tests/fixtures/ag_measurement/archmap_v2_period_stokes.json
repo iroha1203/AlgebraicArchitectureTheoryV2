@@ -1,11 +1,6 @@
 {
   "schema": "archmap/v2",
   "id": "ag-measurement-period-stokes-fixture",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:ag-fixture@1",
-    "fingerprint": "sha256:ag-fixture-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src:period-alpha": {
       "kind": "policy",
@@ -41,7 +36,9 @@
       "object": "cycle:alpha=2",
       "axis": "period",
       "predicate": "periodIntegral",
-      "refs": ["src:period-alpha"]
+      "refs": [
+        "src:period-alpha"
+      ]
     },
     {
       "id": "atom:period-omega-beta",
@@ -50,7 +47,9 @@
       "object": "cycle:beta=-1",
       "axis": "period",
       "predicate": "periodIntegral",
-      "refs": ["src:period-beta"]
+      "refs": [
+        "src:period-beta"
+      ]
     },
     {
       "id": "atom:stokes-domega-sigma",
@@ -59,7 +58,9 @@
       "object": "chain:sigma=3",
       "axis": "period",
       "predicate": "dOmegaIntegral",
-      "refs": ["src:stokes-domega"]
+      "refs": [
+        "src:stokes-domega"
+      ]
     },
     {
       "id": "atom:stokes-boundary-sigma",
@@ -68,7 +69,9 @@
       "object": "chain:sigma=3",
       "axis": "period",
       "predicate": "boundaryPeriod",
-      "refs": ["src:stokes-boundary"]
+      "refs": [
+        "src:stokes-boundary"
+      ]
     }
   ],
   "contexts": [
@@ -80,14 +83,20 @@
         "atom:stokes-domega-sigma",
         "atom:stokes-boundary-sigma"
       ],
-      "refs": ["src:cover"]
+      "refs": [
+        "src:cover"
+      ]
     }
   ],
   "covers": [
     {
       "id": "cover:period-stokes",
-      "contexts": ["ctx:period-stokes-local"],
-      "refs": ["src:cover"]
+      "contexts": [
+        "ctx:period-stokes-local"
+      ],
+      "refs": [
+        "src:cover"
+      ]
     }
   ]
 }

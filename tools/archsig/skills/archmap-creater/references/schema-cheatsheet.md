@@ -6,11 +6,6 @@
 {
   "schema": "archmap/v2",
   "id": "project-or-scope-id",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:project@1",
-    "fingerprint": "sha256:project-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {},
   "atoms": [],
   "contexts": [],
@@ -20,14 +15,11 @@
 
 Unknown root fields fail validation.
 
-## Extraction Doctrine
+## Fixed Doctrine
 
-`extractionDoctrineRef` is required for A8-relative determinism. Components
-must resolve the AAT atom vocabulary expected by ArchSig; the AG fixtures use
-`["V", "Gamma", "R", "rho", "E", "N"]`.
-
-The doctrine ref is a comparability boundary. Do not compare or merge ArchMaps
-with different doctrine fingerprints unless the tool explicitly accepts it.
+ArchMap v2 authors do not write `extractionDoctrineRef`. ArchSig supplies the
+fixed `doctrine:aat-canonical@1` contract and validates atom kind membership
+against its AAT vocabulary projection.
 
 ## Sources
 

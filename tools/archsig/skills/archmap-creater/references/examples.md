@@ -6,11 +6,6 @@
 {
   "schema": "archmap/v2",
   "id": "example-service",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:example-service@1",
-    "fingerprint": "sha256:example-service-doctrine",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {
     "src.order": { "kind": "file", "path": "src/order.rs" },
     "src.inventory": { "kind": "file", "path": "src/inventory.rs" },
@@ -85,11 +80,6 @@
 {
   "schema": "archmap/v2",
   "id": "bad-map",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:bad@1",
-    "fingerprint": "sha256:bad",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {},
   "atoms": [],
   "contexts": [],
@@ -176,11 +166,6 @@ atoms and let the AG evaluator derive mismatch / obstruction readings.
 {
   "schema": "archmap/v2",
   "id": "bad-map",
-  "extractionDoctrineRef": {
-    "doctrineId": "doctrine:bad@1",
-    "fingerprint": "sha256:bad",
-    "components": ["V", "Gamma", "R", "rho", "E", "N"]
-  },
   "sources": {},
   "atoms": [],
   "molecules": []
