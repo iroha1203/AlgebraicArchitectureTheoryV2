@@ -53,6 +53,7 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_doctrine(document),
         check_archmap_v2_sources(document),
         check_archmap_v2_atom_ids(document),
+        check_archmap_v2_no_diagnostic_shortcuts(document),
         check_archmap_v2_atom_kind_vocabulary(document),
         check_archmap_v2_atom_shapes(document),
         check_archmap_v2_contexts(document),
@@ -228,6 +229,83 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
         "atom ids are non-empty and unique",
         examples,
     )
+}
+
+fn check_archmap_v2_no_diagnostic_shortcuts(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        if let Some(token) = diagnostic_shortcut_token(&atom.id) {
+            examples.push(generic_validation_example(
+                &atom.id,
+                &format!("id:{token}"),
+                "ArchMap v2 atom ids must not pre-author diagnostic conclusions",
+            ));
+        }
+        if let Some(predicate) = atom.predicate.as_deref() {
+            if let Some(token) = diagnostic_shortcut_token(predicate) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    &format!("predicate:{token}"),
+                    "ArchMap v2 atom predicates must stay observational; diagnostic conclusions belong to ArchSig",
+                ));
+            }
+        }
+    }
+    check_from_examples(
+        "archmap-v2-no-diagnostic-shortcuts",
+        "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions",
+        examples,
+    )
+}
+
+fn diagnostic_shortcut_token(value: &str) -> Option<&'static str> {
+    let parts = diagnostic_shortcut_parts(value);
+    parts
+        .iter()
+        .find_map(|part| match part.as_str() {
+            "mismatch" => Some("mismatch"),
+            "obstruction" | "obstructive" => Some("obstruction"),
+            "violation" | "violate" | "violates" | "violating" => Some("violation"),
+            "risk" | "risky" => Some("risk"),
+            "debt" => Some("debt"),
+            "unsafe" => Some("unsafe"),
+            "lawful" => Some("lawful"),
+            "nonzero" => Some("nonzero"),
+            "failure" | "fail" | "failed" | "failing" => Some("failure"),
+            _ => None,
+        })
+        .or_else(|| {
+            parts
+                .windows(2)
+                .any(|window| window[0] == "non" && window[1] == "zero")
+                .then_some("nonzero")
+        })
+}
+
+fn diagnostic_shortcut_parts(value: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut previous_was_lower_or_digit = false;
+    for character in value.chars() {
+        if character.is_ascii_alphanumeric() {
+            if character.is_ascii_uppercase() && previous_was_lower_or_digit && !current.is_empty()
+            {
+                parts.push(std::mem::take(&mut current));
+            }
+            current.push(character.to_ascii_lowercase());
+            previous_was_lower_or_digit =
+                character.is_ascii_lowercase() || character.is_ascii_digit();
+        } else {
+            if !current.is_empty() {
+                parts.push(std::mem::take(&mut current));
+            }
+            previous_was_lower_or_digit = false;
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current);
+    }
+    parts
 }
 
 fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> ValidationCheck {

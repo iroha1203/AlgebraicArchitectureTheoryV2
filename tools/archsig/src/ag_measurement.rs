@@ -8987,7 +8987,7 @@ fn boundary_residue_mismatch(
     for atom in normalized
         .atoms
         .iter()
-        .filter(|atom| atom.axis == "boundary-residue" && atom.predicate == "mismatchSection")
+        .filter(|atom| atom.axis == "boundary-residue" && atom.predicate == "boundarySection")
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
     {
         let selected_memberships = atom
@@ -9001,7 +9001,7 @@ fn boundary_residue_mismatch(
                 .any(|context| role_map.get(*context).map(String::as_str) != Some("boundary"))
         {
             return Err(format!(
-                "ag.boundary-residue@1 mismatchSection {} must belong only to selected boundary contexts",
+                "ag.boundary-residue@1 boundarySection {} must belong only to selected boundary contexts",
                 atom.normalized_atom_id
             ));
         }
@@ -9110,7 +9110,7 @@ fn boundary_residue_invariant_json(
                 "sourceRefs": column.source_refs
             })).collect::<Vec<_>>()
         },
-        "mismatchSection": mismatch.map(|mismatch| json!({
+        "boundarySection": mismatch.map(|mismatch| json!({
             "atomRefs": mismatch.atom_refs,
             "support": mismatch.support,
             "vector": mismatch.vector,
@@ -9871,7 +9871,7 @@ fn coherence_witness_atoms<'a>(
         .filter(|atom| {
             matches!(
                 atom.predicate.as_str(),
-                "tripleMismatch" | "coherenceMismatch" | "h2Mismatch"
+                "tripleSection" | "coherenceSection" | "h2Section"
             )
         })
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))

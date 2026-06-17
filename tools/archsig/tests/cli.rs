@@ -177,6 +177,166 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
 }
 
 #[test]
+fn cli_rejects_archmap_v2_diagnostic_atom_id_shortcut() {
+    let out_dir = temp_dir("archmap-v2-diagnostic-id");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["id"] = json!("atom:service-violation");
+    for context in archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are array")
+    {
+        for atom_ref in context["atoms"]
+            .as_array_mut()
+            .expect("context atoms are array")
+        {
+            if atom_ref == "atom:order" {
+                *atom_ref = json!("atom:service-violation");
+            }
+        }
+    }
+    let archmap_path = out_dir.join("archmap_v2_diagnostic_id.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    assert_eq!(check["result"], "fail");
+    assert_eq!(check["examples"][0]["source"], "atom:service-violation");
+    assert_eq!(check["examples"][0]["target"], "id:violation");
+}
+
+#[test]
+fn cli_rejects_archmap_v2_diagnostic_predicate_shortcut() {
+    let out_dir = temp_dir("archmap-v2-diagnostic-predicate");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["predicate"] = json!("violatesLaw");
+    let archmap_path = out_dir.join("archmap_v2_diagnostic_predicate.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    assert_eq!(check["result"], "fail");
+    assert_eq!(check["examples"][0]["source"], "atom:order");
+    assert_eq!(check["examples"][0]["target"], "predicate:violation");
+}
+
+#[test]
+fn cli_rejects_archmap_v2_nonzero_camel_case_shortcut() {
+    let out_dir = temp_dir("archmap-v2-diagnostic-nonzero-camel");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["id"] = json!("atom:selected-nonZero-section");
+    archmap["atoms"][0]["predicate"] = json!("nonZeroSignal");
+    for context in archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are array")
+    {
+        for atom_ref in context["atoms"]
+            .as_array_mut()
+            .expect("context atoms are array")
+        {
+            if atom_ref == "atom:order" {
+                *atom_ref = json!("atom:selected-nonZero-section");
+            }
+        }
+    }
+    let archmap_path = out_dir.join("archmap_v2_diagnostic_nonzero_camel.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "fail");
+    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    assert_eq!(check["result"], "fail");
+    assert!(check["examples"].as_array().unwrap().iter().any(|example| {
+        example["source"] == "atom:selected-nonZero-section" && example["target"] == "id:nonzero"
+    }));
+    assert!(check["examples"].as_array().unwrap().iter().any(|example| {
+        example["source"] == "atom:selected-nonZero-section"
+            && example["target"] == "predicate:nonzero"
+    }));
+}
+
+#[test]
+fn cli_allows_archmap_v2_semantic_free_text_without_diagnostic_lint() {
+    let out_dir = temp_dir("archmap-v2-semantic-free-text");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["kind"] = json!("semantic");
+    archmap["atoms"][0]["predicate"] = json!("meaning");
+    archmap["atoms"][0]["object"] = json!(
+        "observer notes mention mismatch, risk, violation, obstruction, nonzero, and failure as prose"
+    );
+    archmap["atoms"][0]["label"] = json!("free text can mention unsafe and lawful");
+    let archmap_path = out_dir.join("archmap_v2_semantic_free_text.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_string_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("write archmap fixture");
+
+    let report = out_dir.join("archmap-validation.json");
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    assert_eq!(check["result"], "pass");
+}
+
+#[test]
 fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
     let out_dir = temp_dir("archmap-v2-state-atom-kind-vocabulary");
     let root = ag_measurement_root();
@@ -14252,6 +14412,15 @@ fn read_json(path: &Path) -> Value {
         .expect("json fixture parses")
 }
 
+fn check_by_id<'a>(report: &'a Value, check_id: &str) -> &'a Value {
+    report["checks"]
+        .as_array()
+        .expect("checks is array")
+        .iter()
+        .find(|check| check["id"] == check_id)
+        .unwrap_or_else(|| panic!("missing validation check {check_id}"))
+}
+
 fn run_ag_measurement_fixture(case_id: &str, archmap: &str, law_policy: &str) -> PathBuf {
     let root = ag_measurement_root();
     let out_dir = temp_dir(case_id);
@@ -14753,16 +14922,16 @@ fn boundary_residue_archmap(case: &str) -> Value {
     }
     if include_mismatch {
         atoms.push(atom_json(
-            "atom:boundary-mismatch",
+            "atom:boundary-section",
             "relation",
-            "boundary:mismatch",
+            "boundary:section",
             "boundary-residue",
-            "mismatchSection",
+            "boundarySection",
             Some(mismatch_support),
             if case == "invalid-core-mismatch" {
-                vec!["ctx:core", "src:mismatch"]
+                vec!["ctx:core", "src:boundary-section"]
             } else {
-                vec!["ctx:boundary", "src:mismatch"]
+                vec!["ctx:boundary", "src:boundary-section"]
             },
         ));
     }
@@ -14814,7 +14983,7 @@ fn boundary_residue_archmap(case: &str) -> Value {
             "src:role": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 patch role"},
             "src:d0-core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
             "src:d0-feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 Mayer-Vietoris d0"},
-            "src:mismatch": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary mismatch"},
+            "src:boundary-section": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 boundary section"},
             "ctx:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
             "ctx:feature": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"},
             "ctx:boundary": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6"}
@@ -15029,7 +15198,7 @@ fn coherence_triangle_archmap(include_witness: bool) -> Value {
             "relation",
             "ctx:a",
             "coherence",
-            "tripleMismatch",
+            "tripleSection",
             Some("ctx:a,ctx:b,ctx:c"),
             vec!["ctx:a", "ctx:b", "ctx:c"],
         ));
@@ -15110,7 +15279,7 @@ fn coherence_boundary_archmap(include_witnesses: bool) -> Value {
                 "relation",
                 contexts[0],
                 "coherence",
-                "tripleMismatch",
+                "tripleSection",
                 Some(&contexts.join(",")),
                 contexts.clone(),
             ));
@@ -15194,7 +15363,7 @@ fn coherence_boundary_zero_cochain_archmap() -> Value {
             "relation",
             "ctx:a",
             "coherence",
-            "tripleMismatch",
+            "tripleSection",
             Some("ctx:a,ctx:b,ctx:c"),
             vec!["ctx:a", "ctx:b", "ctx:c"],
         ));
@@ -15286,7 +15455,7 @@ fn coherence_incomplete_triangle_archmap() -> Value {
                 "relation",
                 "ctx:a",
                 "coherence",
-                "tripleMismatch",
+                "tripleSection",
                 Some("ctx:a,ctx:b,ctx:c"),
                 vec!["ctx:a", "ctx:b", "ctx:c"],
             ),
@@ -15355,7 +15524,7 @@ fn coherence_filled_tetrahedron_archmap() -> Value {
                 "relation",
                 "ctx:a",
                 "coherence",
-                "tripleMismatch",
+                "tripleSection",
                 Some("ctx:a,ctx:b,ctx:c"),
                 vec!["ctx:a", "ctx:b", "ctx:c"],
             ),
