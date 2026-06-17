@@ -729,22 +729,6 @@ struct SquareFreeCertificateV1 {
 }
 
 #[derive(Debug, Clone)]
-struct NsdepthMonotoneMeasurementV1 {
-    computed_invariant: Value,
-    analytic_reading: AgAnalyticReadingV1,
-}
-
-#[derive(Debug, Clone)]
-struct NsdepthMonotoneScopeV1 {
-    scope_ref: String,
-    extends_ref: Option<String>,
-    nsdepth: usize,
-    generators: Vec<Vec<String>>,
-    atom_ref: String,
-    source_refs: Vec<String>,
-}
-
-#[derive(Debug, Clone)]
 struct TorMeasurementV1 {
     verdict: String,
     zero: bool,
@@ -1205,8 +1189,6 @@ fn evaluate_square_free_repair_v1(
         &generators,
         witness_variables.len(),
     )?;
-    let nsdepth_monotone =
-        nsdepth_monotone_measurement_v1(normalized, &selected_contexts, profile)?;
     let has_obstruction = !minimal_forbidden_supports.is_empty();
     let (verdict, zero, non_zero, method_status, cert_ref, reason) = if !has_obstruction {
         (
@@ -1220,14 +1202,14 @@ fn evaluate_square_free_repair_v1(
             "square-free obstruction ideal has no selected generators".to_string(),
         )
     } else if let Some(certificate) = &certificate {
-        if certificate.status == "verified" {
+        if matches!(certificate.status.as_str(), "verified" | "computed") {
             (
                 "measured_nonzero".to_string(),
                 false,
                 true,
-                "nsdepth_certificate_verified".to_string(),
+                "nsdepth_certificate_computed".to_string(),
                 Some(certificate.cert_ref.clone()),
-                "square-free obstruction generators were found and the selected finite NSdepth certificate payload matches the computed obstruction ideal".to_string(),
+                "square-free obstruction generators were found and ArchSig computed the finite NSdepth certificate from the selected obstruction ideal".to_string(),
             )
         } else {
             (
@@ -1244,13 +1226,13 @@ fn evaluate_square_free_repair_v1(
             "unknown".to_string(),
             false,
             false,
-            "nsdepth_certificate_missing".to_string(),
+            "nsdepth_certificate_not_computed".to_string(),
             None,
-            "square-free obstruction generators were found, but no NSdepth certificate was supplied; lawfulness is not concluded".to_string(),
+            "square-free obstruction generators were found, but ArchSig could not compute the NSdepth certificate".to_string(),
         )
     };
 
-    let mut computed_invariants = vec![
+    let computed_invariants = vec![
         json!({
             "invariantId": format!("square-free-repair:{}", profile.profile_id),
             "evaluator": "ag.square-free-repair@1",
@@ -1306,7 +1288,7 @@ fn evaluate_square_free_repair_v1(
             &delta_facets,
         ),
     ];
-    let mut analytic_readings = vec![AgAnalyticReadingV1 {
+    let analytic_readings = vec![AgAnalyticReadingV1 {
         reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
         evaluator: "ag.foundation@1".to_string(),
         value: json!({
@@ -1321,11 +1303,6 @@ fn evaluate_square_free_repair_v1(
         regime: Some("theorem-candidate".to_string()),
         structural_verdict_ref: None,
     }];
-    if let Some(nsdepth_monotone) = nsdepth_monotone {
-        computed_invariants.push(nsdepth_monotone.computed_invariant);
-        analytic_readings.push(nsdepth_monotone.analytic_reading);
-    }
-
     Ok(SquareFreeMeasurementV1 {
         verdict,
         zero,
@@ -1494,184 +1471,6 @@ fn delta_facet_link_reading_invariant(
             "isPure is not a safety score or structural verdict."
         ]
     })
-}
-
-fn nsdepth_monotone_measurement_v1(
-    normalized: &NormalizedArchMapV2,
-    selected_contexts: &BTreeSet<String>,
-    profile: &MeasurementProfileV1,
-) -> Result<Option<NsdepthMonotoneMeasurementV1>, String> {
-    let scopes = nsdepth_monotone_scopes(normalized, selected_contexts)?;
-    if scopes.is_empty() {
-        return Ok(None);
-    }
-    if scopes.len() != 2 {
-        return Err(format!(
-            "ag.nullstellensatz-depth-monotone@1 expects exactly two selected nsdepthMonotoneScope atoms, found {}",
-            scopes.len()
-        ));
-    }
-    let extended = scopes
-        .iter()
-        .find(|scope| scope.extends_ref.is_some())
-        .ok_or_else(|| {
-            "ag.nullstellensatz-depth-monotone@1 requires one scope with extends=<base-scope>"
-                .to_string()
-        })?;
-    let base_ref = extended.extends_ref.as_deref().unwrap_or_default();
-    let base = scopes
-        .iter()
-        .find(|scope| scope.scope_ref == base_ref)
-        .ok_or_else(|| {
-            format!("ag.nullstellensatz-depth-monotone@1 unresolved base scope {base_ref}")
-        })?;
-    let generator_extension = base.generators.iter().all(|generator| {
-        extended
-            .generators
-            .iter()
-            .any(|candidate| candidate == generator)
-    });
-    let monotone = extended.nsdepth <= base.nsdepth;
-    let scope_pair = json!({
-        "baseScopeRef": base.scope_ref.clone(),
-        "extendedScopeRef": extended.scope_ref.clone(),
-        "baseAtomRef": base.atom_ref.clone(),
-        "extendedAtomRef": extended.atom_ref.clone()
-    });
-    let source_refs = base
-        .source_refs
-        .iter()
-        .chain(extended.source_refs.iter())
-        .cloned()
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>();
-
-    Ok(Some(NsdepthMonotoneMeasurementV1 {
-        computed_invariant: json!({
-            "invariantId": format!("nsdepth-monotone:{}", profile.profile_id),
-            "evaluator": "ag.nullstellensatz-depth-monotone@1",
-            "method": "finite-square-free-nsdepth-monotone-proxy@1",
-            "selectedCoverRef": profile.cover_ref,
-            "scopePair": scope_pair.clone(),
-            "monotone": monotone,
-            "generatorExtension": generator_extension,
-            "nonConclusions": [
-                "NSdepth scalar values are omitted from this structural invariant and appear only in the analytic reading.",
-                "monotone is scoped to the supplied two square-free law-universe scopes, not all law universes.",
-                "generatorExtension is a finite generator-set inclusion check, not a Nullstellensatz theorem over arbitrary k."
-            ]
-        }),
-        analytic_reading: AgAnalyticReadingV1 {
-            reading_id: format!(
-                "analytic:ag.nullstellensatz-depth-monotone:{}",
-                profile.profile_id
-            ),
-            evaluator: "ag.nullstellensatz-depth-monotone@1".to_string(),
-            value: json!({
-                "readingKind": "ag.nullstellensatz-depth-monotone@1",
-                "selectedCoverRef": profile.cover_ref,
-                "scopePair": scope_pair,
-                "nsdepthProxyByScope": [
-                    {
-                        "scopeRef": base.scope_ref.clone(),
-                        "nsdepthProxy": base.nsdepth,
-                        "generatorCount": base.generators.len(),
-                        "atomRef": base.atom_ref.clone()
-                    },
-                    {
-                        "scopeRef": extended.scope_ref.clone(),
-                        "nsdepthProxy": extended.nsdepth,
-                        "generatorCount": extended.generators.len(),
-                        "atomRef": extended.atom_ref.clone()
-                    }
-                ],
-                "proxyBoundary": "NSdepth values are author-supplied / hitting-set upper-bound proxy readings, not structural verdict data.",
-                "sourceRefs": source_refs,
-                "nonConclusion": "This reading does not prove a general Nullstellensatz, exact minimal representation degree, or all-universe monotonicity."
-            }),
-            regime: Some("analytic-measurement".to_string()),
-            structural_verdict_ref: None,
-        },
-    }))
-}
-
-fn nsdepth_monotone_scopes(
-    normalized: &NormalizedArchMapV2,
-    selected_contexts: &BTreeSet<String>,
-) -> Result<Vec<NsdepthMonotoneScopeV1>, String> {
-    let mut scopes = Vec::new();
-    for atom in normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthMonotoneScope")
-        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
-    {
-        let raw = atom.object.as_deref().ok_or_else(|| {
-            format!(
-                "ag.nullstellensatz-depth-monotone@1 scope {} requires semicolon payload",
-                atom.normalized_atom_id
-            )
-        })?;
-        let fields = parse_semicolon_key_values(raw).map_err(|reason| {
-            format!(
-                "ag.nullstellensatz-depth-monotone@1 scope {} invalid payload: {reason}",
-                atom.normalized_atom_id
-            )
-        })?;
-        let nsdepth = fields
-            .get("nsdepth")
-            .and_then(|value| value.parse::<usize>().ok())
-            .filter(|value| *value > 0)
-            .ok_or_else(|| {
-                format!(
-                    "ag.nullstellensatz-depth-monotone@1 scope {} requires positive nsdepth",
-                    atom.normalized_atom_id
-                )
-            })?;
-        let generators = fields
-            .get("generators")
-            .map(|raw| parse_square_free_support_payload(raw))
-            .filter(|generators| !generators.is_empty())
-            .ok_or_else(|| {
-                format!(
-                    "ag.nullstellensatz-depth-monotone@1 scope {} requires non-empty generators",
-                    atom.normalized_atom_id
-                )
-            })?;
-        scopes.push(NsdepthMonotoneScopeV1 {
-            scope_ref: atom.subject.clone(),
-            extends_ref: fields.get("extends").cloned(),
-            nsdepth,
-            generators,
-            atom_ref: atom.normalized_atom_id.clone(),
-            source_refs: atom.source_refs.clone(),
-        });
-    }
-    scopes.sort_by(|left, right| left.scope_ref.cmp(&right.scope_ref));
-    Ok(scopes)
-}
-
-fn parse_semicolon_key_values(raw: &str) -> Result<BTreeMap<String, String>, String> {
-    let mut fields = BTreeMap::new();
-    for segment in raw.split(';') {
-        let segment = segment.trim();
-        if segment.is_empty() {
-            continue;
-        }
-        let Some((key, value)) = segment.split_once('=') else {
-            return Err(format!("payload segment {segment} must be key=value"));
-        };
-        let key = key.trim();
-        let value = value.trim();
-        if key.is_empty() || value.is_empty() {
-            return Err("payload keys and values must be non-empty".to_string());
-        }
-        if fields.insert(key.to_string(), value.to_string()).is_some() {
-            return Err(format!("payload field {key} appears more than once"));
-        }
-    }
-    Ok(fields)
 }
 
 fn maximal_faces(faces: &[Vec<String>]) -> Vec<Vec<String>> {
@@ -1900,7 +1699,7 @@ fn evaluate_section_factorization_v1(
             "not_computed".to_string(),
             false,
             false,
-            "selected obstructionGenerator atoms are absent; ArchSig does not infer an empty I_Ob^U presentation".to_string(),
+            "selected raw support atoms are absent; ArchSig does not infer an empty I_Ob^U presentation".to_string(),
         )
     } else if !violated_supports.is_empty() {
         (
@@ -8790,15 +8589,13 @@ fn section_forbidden_supports(
     for atom in normalized
         .atoms
         .iter()
-        .filter(|atom| {
-            atom.axis == "section-factorization" && atom.predicate == "obstructionGenerator"
-        })
+        .filter(|atom| atom.axis == "section-factorization" && is_raw_support_predicate(atom))
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
     {
         let support = parse_csv_values(atom.object.as_deref().unwrap_or_default());
         if support.is_empty() {
             return Err(format!(
-                "ag.section-factorization@1 obstruction generator {} has no finite support variables",
+                "ag.section-factorization@1 raw support {} has no finite support variables",
                 atom.normalized_atom_id
             ));
         }
@@ -8809,7 +8606,7 @@ fn section_forbidden_supports(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.section-factorization@1 obstruction generator {} contains variables outside witnessFamily: {}",
+                "ag.section-factorization@1 raw support {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
@@ -9005,7 +8802,7 @@ fn section_assumptions(
         },
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/P0-3".to_string(),
-            assumption: "selected obstructionGenerator atoms supply the finite I_Ob^U presentation within the selected witness family".to_string(),
+            assumption: "selected raw support atoms supply the finite I_Ob^U presentation within the selected witness family".to_string(),
             status: if method_status == "obstruction_generators_absent" {
                 "violated"
             } else {
@@ -9410,7 +9207,7 @@ fn square_free_generators(
     for atom in normalized
         .atoms
         .iter()
-        .filter(|atom| atom.axis == "square-free" && atom.predicate == "obstructionGenerator")
+        .filter(|atom| atom.axis == "square-free" && is_raw_support_predicate(atom))
         .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
     {
         let raw_variables = square_free_atom_variables(atom);
@@ -9421,14 +9218,14 @@ fn square_free_generators(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.square-free-repair@1 generator {} contains variables outside witnessFamily: {}",
+                "ag.square-free-repair@1 raw support {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
         }
         if raw_variables.is_empty() {
             return Err(format!(
-                "ag.square-free-repair@1 generator {} has no square-free witness variables",
+                "ag.square-free-repair@1 raw support {} has no square-free witness variables",
                 atom.normalized_atom_id
             ));
         }
@@ -9459,52 +9256,30 @@ fn square_free_atom_variables(atom: &crate::NormalizedAtomV2) -> Vec<String> {
 }
 
 fn square_free_certificate(
-    normalized: &NormalizedArchMapV2,
-    selected_contexts: &BTreeSet<String>,
+    _normalized: &NormalizedArchMapV2,
+    _selected_contexts: &BTreeSet<String>,
     minimal_forbidden_supports: &[Vec<String>],
     repair_hitting_sets: &[Vec<String>],
     generators: &[SquareFreeGeneratorV1],
     witness_variable_count: usize,
 ) -> Result<Option<SquareFreeCertificateV1>, String> {
-    let certificates = normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "square-free" && atom.predicate == "nsdepthCertificate")
-        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
-        .map(|atom| {
-            let raw = atom.object.as_deref();
-            let verification = verify_square_free_nsdepth_certificate(
-                raw,
-                minimal_forbidden_supports,
-                repair_hitting_sets,
-                generators,
-                witness_variable_count,
-            );
-            let support_atom_refs = if verification.support_atom_refs.is_empty() {
-                vec![atom.normalized_atom_id.clone()]
-            } else {
-                verification.support_atom_refs.clone()
-            };
-            SquareFreeCertificateV1 {
-                cert_ref: atom.normalized_atom_id.clone(),
-                nsdepth: verification.nsdepth,
-                support_atom_refs,
-                verified_minimal_forbidden_supports: verification
-                    .verified_minimal_forbidden_supports,
-                status: verification.status,
-                effect: verification.effect,
-            }
-        })
-        .collect::<Vec<_>>();
-
-    if certificates.len() > 1 {
-        return Err(format!(
-            "ag.square-free-repair@1 expected at most one selected NSdepth certificate, found {}",
-            certificates.len()
-        ));
+    if minimal_forbidden_supports.is_empty() {
+        return Ok(None);
     }
-
-    Ok(certificates.into_iter().next())
+    let verification = compute_square_free_nsdepth_certificate(
+        minimal_forbidden_supports,
+        repair_hitting_sets,
+        generators,
+        witness_variable_count,
+    );
+    Ok(Some(SquareFreeCertificateV1 {
+        cert_ref: "cert:nsdepth-square-free:computed".to_string(),
+        nsdepth: verification.nsdepth,
+        support_atom_refs: verification.support_atom_refs,
+        verified_minimal_forbidden_supports: verification.verified_minimal_forbidden_supports,
+        status: verification.status,
+        effect: verification.effect,
+    }))
 }
 
 #[derive(Debug, Clone)]
@@ -9516,162 +9291,38 @@ struct SquareFreeCertificateVerificationV1 {
     effect: String,
 }
 
-fn verify_square_free_nsdepth_certificate(
-    raw: Option<&str>,
+fn compute_square_free_nsdepth_certificate(
     minimal_forbidden_supports: &[Vec<String>],
     repair_hitting_sets: &[Vec<String>],
     generators: &[SquareFreeGeneratorV1],
     witness_variable_count: usize,
 ) -> SquareFreeCertificateVerificationV1 {
-    let Some(raw) = raw.map(str::trim).filter(|value| !value.is_empty()) else {
-        return square_free_certificate_unverified(
-            None,
-            "invalid_payload",
-            "NSdepth certificate object is missing; structural verdict remains unknown",
-        );
-    };
-
-    if let Ok(nsdepth) = raw.parse::<usize>() {
-        if nsdepth == 0 {
-            return square_free_certificate_unverified(
-                None,
-                "invalid_payload",
-                "NSdepth certificate numeric object must be positive; structural verdict remains unknown",
-            );
-        }
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "author_supplied_unverified",
-            "NSdepth certificate only supplies a numeric value, not a finite verifier payload; structural verdict remains unknown",
-        );
-    }
-
-    let fields = match parse_square_free_certificate_fields(raw) {
-        Ok(fields) => fields,
-        Err(reason) => {
-            return square_free_certificate_unverified(
-                None,
-                "invalid_payload",
-                &format!("{reason}; structural verdict remains unknown"),
-            );
-        }
-    };
-    let nsdepth = match fields
-        .get("nsdepth")
-        .and_then(|value| value.as_str().parse::<usize>().ok())
-    {
-        Some(nsdepth) if nsdepth > 0 => nsdepth,
-        _ => {
-            return square_free_certificate_unverified(
-                None,
-                "invalid_payload",
-                "NSdepth verifier payload requires positive nsdepth field; structural verdict remains unknown",
-            );
-        }
-    };
+    let nsdepth = repair_hitting_sets.iter().map(Vec::len).max().unwrap_or(0);
     if nsdepth > witness_variable_count {
         return square_free_certificate_unverified(
             Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload exceeds selected witness family size; structural verdict remains unknown",
+            "not_computed",
+            "computed NSdepth exceeds selected witness family size; structural verdict remains unknown",
         );
     }
-    let Some(depth_rule) = fields.get("depthRule") else {
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload requires depthRule field; structural verdict remains unknown",
-        );
-    };
-    if depth_rule != "alexanderDualMaxMinimalHittingSet@1" {
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload uses unsupported depthRule; structural verdict remains unknown",
-        );
-    }
-    let expected_nsdepth = repair_hitting_sets.iter().map(Vec::len).max().unwrap_or(0);
-    if nsdepth != expected_nsdepth {
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload value does not match the selected finite depthRule; structural verdict remains unknown",
-        );
-    }
-
-    let payload_supports = fields
-        .get("minimalForbiddenSupports")
-        .map(|value| parse_square_free_support_payload(value.as_str()))
-        .unwrap_or_default();
-    let support_atom_refs = fields
-        .get("supportAtomRefs")
-        .map(|value| parse_csv_values(value.as_str()))
-        .unwrap_or_default();
-    let expected_atom_refs = generators
+    let support_atom_refs = generators
         .iter()
         .map(|generator| generator.generator_id.clone())
         .collect::<Vec<_>>();
-    if payload_supports != minimal_forbidden_supports {
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload minimalForbiddenSupports does not match the computed obstruction ideal; structural verdict remains unknown",
-        );
-    }
-    if support_atom_refs != expected_atom_refs {
-        return square_free_certificate_unverified(
-            Some(nsdepth),
-            "invalid_payload",
-            "NSdepth verifier payload supportAtomRefs does not match selected obstruction generator atoms; structural verdict remains unknown",
-        );
-    }
 
     SquareFreeCertificateVerificationV1 {
         nsdepth: Some(nsdepth),
         support_atom_refs,
-        verified_minimal_forbidden_supports: payload_supports,
-        status: "verified".to_string(),
+        verified_minimal_forbidden_supports: minimal_forbidden_supports.to_vec(),
+        status: "computed".to_string(),
         effect:
-            "finite verifier payload matched selected obstruction generators, minimal forbidden supports, and depthRule-derived NSdepth; structural verdict is measured_nonzero"
+            "ArchSig computed NSdepth from selected raw supports, minimal forbidden supports, and the finite Alexander-dual hitting-set depth rule; structural verdict is measured_nonzero"
                 .to_string(),
     }
 }
 
-fn parse_square_free_certificate_fields(raw: &str) -> Result<BTreeMap<String, String>, String> {
-    let mut fields = BTreeMap::new();
-    let allowed = BTreeSet::from([
-        "nsdepth",
-        "minimalForbiddenSupports",
-        "supportAtomRefs",
-        "depthRule",
-    ]);
-    for segment in raw.split(';') {
-        let segment = segment.trim();
-        if segment.is_empty() {
-            return Err("NSdepth verifier payload contains an empty segment".to_string());
-        }
-        let Some((key, value)) = segment.split_once('=') else {
-            return Err(format!(
-                "NSdepth verifier payload segment {segment} must be key=value"
-            ));
-        };
-        let key = key.trim();
-        let value = value.trim();
-        if key.is_empty() || value.is_empty() {
-            return Err("NSdepth verifier payload contains empty key or value".to_string());
-        }
-        if !allowed.contains(key) {
-            return Err(format!(
-                "NSdepth verifier payload contains unsupported field {key}"
-            ));
-        }
-        if fields.insert(key.to_string(), value.to_string()).is_some() {
-            return Err(format!(
-                "NSdepth verifier payload contains duplicate field {key}"
-            ));
-        }
-    }
-    Ok(fields)
+fn is_raw_support_predicate(atom: &NormalizedAtomV2) -> bool {
+    matches!(atom.predicate.as_str(), "support" | "cooccurrence")
 }
 
 fn square_free_certificate_unverified(
@@ -9686,33 +9337,6 @@ fn square_free_certificate_unverified(
         status: status.to_string(),
         effect: effect.to_string(),
     }
-}
-
-fn parse_square_free_support_payload(raw: &str) -> Vec<Vec<String>> {
-    let mut supports = raw
-        .split('|')
-        .map(parse_plus_values)
-        .filter(|support| !support.is_empty())
-        .collect::<Vec<_>>();
-    for support in &mut supports {
-        support.sort();
-        support.dedup();
-    }
-    supports.sort();
-    supports.dedup();
-    supports
-}
-
-fn parse_plus_values(raw: &str) -> Vec<String> {
-    let mut values = raw
-        .split('+')
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(ToOwned::to_owned)
-        .collect::<Vec<_>>();
-    values.sort();
-    values.dedup();
-    values
 }
 
 fn parse_csv_values(raw: &str) -> Vec<String> {
@@ -9993,16 +9617,10 @@ fn is_subset(left: &[String], right: &[String]) -> bool {
 
 fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) -> Vec<CechEdgeV1> {
     let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
-    let marker_atoms = normalized
+    let section_value_atoms = normalized
         .atoms
         .iter()
-        .filter(|atom| {
-            atom.axis == "cech"
-                && matches!(
-                    atom.predicate.as_str(),
-                    "mismatch" | "cechMismatch" | "residue"
-                )
-        })
+        .filter(|atom| atom.axis == "cech" && atom.predicate == "sectionValue")
         .collect::<Vec<_>>();
     let mut seen_edges = BTreeSet::new();
     let mut edges = Vec::new();
@@ -10033,22 +9651,42 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
             if !seen_edges.insert((edge_key.0.clone(), edge_key.1.clone())) {
                 continue;
             }
-            let support_atom_refs = marker_atoms
-                .iter()
-                .filter(|atom| marker_atom_marks_edge(atom, &edge_key.2, &edge_key.3))
-                .map(|atom| atom.normalized_atom_id.clone())
-                .collect::<Vec<_>>();
+            let source_values = cech_section_values(&section_value_atoms, &edge_key.2);
+            let target_values = cech_section_values(&section_value_atoms, &edge_key.3);
+            let mismatch = !source_values.is_empty()
+                && !target_values.is_empty()
+                && source_values != target_values;
+            let support_atom_refs = if mismatch {
+                section_value_atoms
+                    .iter()
+                    .filter(|atom| atom.subject == edge_key.2 || atom.subject == edge_key.3)
+                    .map(|atom| atom.normalized_atom_id.clone())
+                    .collect::<Vec<_>>()
+            } else {
+                Vec::new()
+            };
             edges.push(CechEdgeV1 {
                 edge_id: format!("{}->{}", edge_key.2, edge_key.3),
                 source_context: edge_key.2,
                 target_context: edge_key.3,
-                value: (support_atom_refs.len() % 2) as u8,
+                value: mismatch as u8,
                 support_atom_refs,
             });
         }
     }
     edges.sort_by(|left, right| left.edge_id.cmp(&right.edge_id));
     edges
+}
+
+fn cech_section_values(atoms: &[&NormalizedAtomV2], context_id: &str) -> BTreeSet<String> {
+    atoms
+        .iter()
+        .filter(|atom| atom.subject == context_id)
+        .filter_map(|atom| atom.object.as_deref())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+        .collect()
 }
 
 fn coherence_faces(
@@ -10707,38 +10345,6 @@ fn empty_cover_nerve_projection_v1(cover_ref: &str, reason: &str) -> Value {
         "h2CoherenceVisualized": false,
         "projectionStatus": "not_projected_missing_packet_cover_nerve"
     })
-}
-
-fn marker_atom_marks_edge(
-    atom: &crate::NormalizedAtomV2,
-    source_context: &str,
-    target_context: &str,
-) -> bool {
-    let source_matches =
-        atom.subject == source_context || atom.subject == unprefixed(source_context);
-    let object_matches = atom
-        .object
-        .as_deref()
-        .is_some_and(|object| object == target_context || object == unprefixed(target_context));
-    let target_matches = atom
-        .source_refs
-        .iter()
-        .any(|value| value == target_context || value == unprefixed(target_context));
-    let source_ref_matches = atom
-        .source_refs
-        .iter()
-        .any(|value| value == source_context || value == unprefixed(source_context));
-    let context_membership_matches = atom.context_memberships.iter().any(|membership| {
-        membership == source_context
-            || membership == target_context
-            || membership == unprefixed(source_context)
-            || membership == unprefixed(target_context)
-    });
-    source_matches
-        && object_matches
-        && source_ref_matches
-        && target_matches
-        && context_membership_matches
 }
 
 fn unprefixed(value: &str) -> &str {
@@ -12112,42 +11718,35 @@ mod tests {
         let mut context_ids = Vec::new();
         let mut contexts = Vec::new();
         let mut atoms = Vec::new();
-        for index in 0..=GLUING_COCYCLE_EDGE_RENDER_LIMIT {
-            let source = format!("ctx:{index}");
-            let target = format!("ctx:{}", index + 1);
-            let atom_id = format!("atom:mismatch:{index}");
-            context_ids.push(source.clone());
+        for index in 0..=GLUING_COCYCLE_EDGE_RENDER_LIMIT + 1 {
+            let context = format!("ctx:{index}");
+            let atom_id = format!("atom:section-value:{index}");
+            context_ids.push(context.clone());
             contexts.push(NormalizedContextV2 {
-                source_context_id: source.clone(),
-                normalized_context_id: source.clone(),
+                source_context_id: context.clone(),
+                normalized_context_id: context.clone(),
                 atom_ids: vec![atom_id.clone()],
-                restricts_to: vec![target.clone()],
-                source_refs: vec![format!("fixture://{source}")],
+                restricts_to: if index <= GLUING_COCYCLE_EDGE_RENDER_LIMIT {
+                    vec![format!("ctx:{}", index + 1)]
+                } else {
+                    Vec::new()
+                },
+                source_refs: vec![format!("fixture://{context}")],
                 poset_status: "selected".to_string(),
             });
             atoms.push(NormalizedAtomV2 {
                 source_atom_id: atom_id.clone(),
                 normalized_atom_id: atom_id,
                 atom_kind: "component".to_string(),
-                subject: source.clone(),
+                subject: context.clone(),
                 axis: "cech".to_string(),
-                predicate: "mismatch".to_string(),
-                object: Some(target.clone()),
-                source_refs: vec![source, target.clone()],
-                context_memberships: vec![target],
+                predicate: "sectionValue".to_string(),
+                object: Some(format!("section:{index}")),
+                source_refs: vec![format!("fixture://{context}")],
+                context_memberships: vec![context],
                 normalization_status: "normalized".to_string(),
             });
         }
-        let final_context = format!("ctx:{}", GLUING_COCYCLE_EDGE_RENDER_LIMIT + 1);
-        context_ids.push(final_context.clone());
-        contexts.push(NormalizedContextV2 {
-            source_context_id: final_context.clone(),
-            normalized_context_id: final_context.clone(),
-            atom_ids: Vec::new(),
-            restricts_to: Vec::new(),
-            source_refs: vec![format!("fixture://{final_context}")],
-            poset_status: "selected".to_string(),
-        });
         normalized.contexts = contexts;
         normalized.atoms = atoms;
         normalized.covers[0].context_ids = context_ids;

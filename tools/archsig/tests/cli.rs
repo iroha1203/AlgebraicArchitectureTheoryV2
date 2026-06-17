@@ -765,8 +765,11 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         1
     );
     assert_eq!(
-        cech["observedCocycle"]["mismatchSupportRefs"][0],
-        "atom:left-bottom-cech-mismatch"
+        cech["observedCocycle"]["mismatchSupportRefs"],
+        json!([
+            "atom:bottom-cech-section-value",
+            "atom:left-cech-section-value"
+        ])
     );
     assert!(
         cech["coverNerveProjection"]["faces"]
@@ -818,7 +821,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         json!([
             {
                 "archmapRef": cech_fixture_path,
-                "atomCount": 5,
+                "atomCount": 6,
                 "contextCount": 4,
                 "coverCount": 1,
                 "doctrineFingerprint": "sha256:aat-canonical-doctrine-v1",
@@ -836,7 +839,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                             "objectKind": "nerveEdge",
                             "source": "selected cover restriction edge",
                             "sourceContextRef": "ctx:left",
-                            "supportAtomRefs": ["atom:left-bottom-cech-mismatch"],
+                            "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
                             "targetContextRef": "ctx:bottom",
                             "value": 1
                         },
@@ -873,12 +876,12 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                     "h2CoherenceVisualized": false,
                     "vertices": [
                         {
-                            "atomRefs": ["atom:bottom"],
+                            "atomRefs": ["atom:bottom", "atom:bottom-cech-section-value"],
                             "contextRef": "ctx:bottom",
                             "objectKind": "nerveVertex"
                         },
                         {
-                            "atomRefs": ["atom:left", "atom:left-bottom-cech-mismatch"],
+                            "atomRefs": ["atom:left", "atom:left-cech-section-value"],
                             "contextRef": "ctx:left",
                             "objectKind": "nerveVertex"
                         },
@@ -904,12 +907,12 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "methodStatus": "finite_f2_cech_computed",
                 "observedCocycle": {
                     "classNonzero": true,
-                    "mismatchSupportRefs": ["atom:left-bottom-cech-mismatch"],
+                    "mismatchSupportRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
                     "representative": [
                         {
                             "edge": "ctx:left->ctx:bottom",
                             "sourceContext": "ctx:left",
-                            "supportAtomRefs": ["atom:left-bottom-cech-mismatch"],
+                            "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"],
                             "targetContext": "ctx:bottom",
                             "value": 1
                         }
@@ -1937,7 +1940,7 @@ fn cli_analyze_v2_section_factorization_checks_selected_section() {
                         .as_str()
                         .is_some_and(|checked_by| checked_by.contains("atom:forbid-xy"))
             }),
-        "I_Ob^U presentation ledger must be checked by selected obstructionGenerator atoms"
+        "I_Ob^U presentation ledger must be checked by selected raw support atoms"
     );
 
     let nonzero_dir = root_out.join("nonzero");
@@ -2097,7 +2100,7 @@ fn cli_analyze_v2_section_factorization_checks_selected_section() {
             .unwrap()
             .iter()
             .any(|row| row["theoremRef"] == "part8/P0-3" && row["status"] == "violated"),
-        "missing obstructionGenerator evidence must not be treated as an empty ideal"
+        "missing raw support evidence must not be treated as an empty ideal"
     );
 
     let bad_profile_dir = root_out.join("bad-profile");
@@ -3240,8 +3243,8 @@ fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
             .expect("viewer atoms are array")
             .iter()
             .any(
-                |atom| atom["normalizedAtomId"] == "atom:left-bottom-cech-mismatch"
-                    || atom["sourceAtomId"] == "atom:left-bottom-cech-mismatch"
+                |atom| atom["normalizedAtomId"] == "atom:left-cech-section-value"
+                    || atom["sourceAtomId"] == "atom:left-cech-section-value"
             ),
         "top insight support atom must remain in the truncated viewer projection even when it appears after background atoms"
     );
@@ -3262,8 +3265,8 @@ fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
     let atoms = archmap["atoms"].as_array_mut().expect("atoms are array");
     let mismatch = atoms
         .iter_mut()
-        .find(|atom| atom["id"] == "atom:left-bottom-cech-mismatch")
-        .expect("mismatch atom exists");
+        .find(|atom| atom["id"] == "atom:left-cech-section-value")
+        .expect("section value atom exists");
     mismatch["refs"]
         .as_array_mut()
         .expect("refs are array")
@@ -3415,7 +3418,7 @@ fn cli_analyze_v2_cech_ignores_unanchored_mismatch_support() {
     let out_dir = temp_dir("ag-measurement-cech-unanchored-support");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    archmap["atoms"][4]["object"] = Value::String("ctx:right".to_string());
+    archmap["atoms"][4]["object"] = Value::String("section=bottom-local".to_string());
     let archmap_path = out_dir.join("archmap_v2_unanchored_cech.json");
     fs::write(
         &archmap_path,
@@ -3454,7 +3457,7 @@ fn cli_analyze_v2_topological_debt_capacity_does_not_claim_h1_class() {
     let out_dir = temp_dir("ag-measurement-cech-positive-capacity-no-class");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    archmap["atoms"][4]["object"] = Value::String("ctx:right".to_string());
+    archmap["atoms"][4]["object"] = Value::String("section=bottom-local".to_string());
     let top_context = archmap["contexts"]
         .as_array_mut()
         .expect("contexts is array")
@@ -3534,11 +3537,11 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_verified"
+        "nsdepth_certificate_computed"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdictData"]["certRef"],
-        "atom:nsdepth-certificate"
+        "cert:nsdepth-square-free:computed"
     );
     assert_eq!(
         packet["structuralVerdict"]
@@ -3565,7 +3568,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
             {"degree": 1, "dimension": 0}
         ])
     );
-    assert_eq!(repair["nsdepthCertificate"]["status"], "verified");
+    assert_eq!(repair["nsdepthCertificate"]["status"], "computed");
     assert_eq!(repair["nsdepthCertificate"]["nsdepth"], Value::from(2));
     assert_eq!(
         repair["nsdepthCertificate"]["verifiedMinimalForbiddenSupports"],
@@ -3689,54 +3692,14 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
             "facet/link neutral reading must not contain banned term {banned}"
         );
     }
-    let nsdepth_monotone = invariant_by_id(&packet, "nsdepth-monotone:profile:ag-square-free@1");
-    assert_eq!(
-        nsdepth_monotone["method"],
-        "finite-square-free-nsdepth-monotone-proxy@1"
-    );
-    assert_eq!(nsdepth_monotone["monotone"], Value::Bool(true));
-    assert_eq!(nsdepth_monotone["generatorExtension"], Value::Bool(true));
-    assert_eq!(
-        nsdepth_monotone["scopePair"],
-        serde_json::json!({
-            "baseScopeRef": "law-scope:U",
-            "extendedScopeRef": "law-scope:U-prime",
-            "baseAtomRef": "atom:nsdepth-scope-u",
-            "extendedAtomRef": "atom:nsdepth-scope-u-prime"
-        })
-    );
-    assert_eq!(nsdepth_monotone["nsdepthProxy"], Value::Null);
-    assert_eq!(nsdepth_monotone["nsdepthProxyByScope"], Value::Null);
-    let nsdepth_reading = packet["analyticReadings"]
-        .as_array()
-        .expect("analytic readings is array")
-        .iter()
-        .find(|reading| reading["value"]["readingKind"] == "ag.nullstellensatz-depth-monotone@1")
-        .expect("NSdepth monotone analytic reading exists");
-    assert_eq!(nsdepth_reading["structuralVerdictRef"], Value::Null);
-    assert_eq!(nsdepth_reading["regime"], "analytic-measurement");
-    assert_eq!(
-        nsdepth_reading["value"]["nsdepthProxyByScope"],
-        serde_json::json!([
-            {
-                "scopeRef": "law-scope:U",
-                "nsdepthProxy": 2,
-                "generatorCount": 2,
-                "atomRef": "atom:nsdepth-scope-u"
-            },
-            {
-                "scopeRef": "law-scope:U-prime",
-                "nsdepthProxy": 1,
-                "generatorCount": 3,
-                "atomRef": "atom:nsdepth-scope-u-prime"
-            }
-        ])
-    );
     assert!(
-        nsdepth_reading["value"]["proxyBoundary"]
-            .as_str()
-            .is_some_and(|text| text.contains("not structural verdict data")),
-        "NSdepth scalar must stay proxy analytic data"
+        packet["analyticReadings"]
+            .as_array()
+            .expect("analytic readings is array")
+            .iter()
+            .all(|reading| reading["value"]["readingKind"]
+                != "ag.nullstellensatz-depth-monotone@1"),
+        "nsdepth monotone proxy is not authored in ArchMap input after R2"
     );
     let repair_reading = packet["analyticReadings"]
         .as_array()
@@ -3985,58 +3948,6 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
 }
 
 #[test]
-fn cli_analyze_v2_square_free_without_certificate_returns_unknown() {
-    let out_dir = temp_dir("ag-measurement-square-free-no-cert");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"] = Value::Array(
-        archmap["atoms"]
-            .as_array()
-            .expect("atoms is array")
-            .iter()
-            .filter(|atom| atom["id"] != "atom:nsdepth-certificate")
-            .cloned()
-            .collect(),
-    );
-    archmap["contexts"][0]["atoms"] = Value::Array(
-        archmap["contexts"][0]["atoms"]
-            .as_array()
-            .expect("context atoms is array")
-            .iter()
-            .filter(|atom| atom.as_str() != Some("atom:nsdepth-certificate"))
-            .cloned()
-            .collect(),
-    );
-    let archmap_path = out_dir.join("archmap_v2_square_free_no_cert.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_missing"
-    );
-    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
-    assert_eq!(repair["nsdepthCertificate"]["status"], "missing");
-}
-
-#[test]
 fn cli_analyze_v2_square_free_requires_matching_witness_family() {
     let out_dir = temp_dir("ag-measurement-square-free-witness-family");
     let root = ag_measurement_root();
@@ -4062,155 +3973,6 @@ fn cli_analyze_v2_square_free_requires_matching_witness_family() {
             out_dir.to_str().expect("path is utf-8"),
         ],
         2,
-    );
-}
-
-#[test]
-fn cli_analyze_v2_square_free_malformed_nsdepth_certificate_returns_unknown() {
-    let out_dir = temp_dir("ag-measurement-square-free-bad-cert");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"][5]["object"] = Value::String("not-a-verifier-payload".to_string());
-    let archmap_path = out_dir.join("archmap_v2_square_free_bad_cert.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_invalid_payload"
-    );
-    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
-    assert_eq!(repair["nsdepthCertificate"]["status"], "invalid_payload");
-}
-
-#[test]
-fn cli_analyze_v2_square_free_wrong_nsdepth_value_returns_unknown() {
-    let out_dir = temp_dir("ag-measurement-square-free-wrong-nsdepth");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"][5]["object"] = Value::String(
-        "nsdepth=1;depthRule=alexanderDualMaxMinimalHittingSet@1;minimalForbiddenSupports=x_checkout+x_inventory|x_inventory+x_payment;supportAtomRefs=atom:ob-checkout-inventory,atom:ob-inventory-payment"
-            .to_string(),
-    );
-    let archmap_path = out_dir.join("archmap_v2_square_free_wrong_nsdepth.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_invalid_payload"
-    );
-    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
-    assert_eq!(repair["nsdepthCertificate"]["status"], "invalid_payload");
-}
-
-#[test]
-fn cli_analyze_v2_square_free_junk_nsdepth_segment_returns_unknown() {
-    let out_dir = temp_dir("ag-measurement-square-free-junk-nsdepth");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"][5]["object"] = Value::String(
-        "nsdepth=2;depthRule=alexanderDualMaxMinimalHittingSet@1;unexpected-segment;minimalForbiddenSupports=x_checkout+x_inventory|x_inventory+x_payment;supportAtomRefs=atom:ob-checkout-inventory,atom:ob-inventory-payment"
-            .to_string(),
-    );
-    let archmap_path = out_dir.join("archmap_v2_square_free_junk_nsdepth.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_invalid_payload"
-    );
-    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
-    assert_eq!(repair["nsdepthCertificate"]["status"], "invalid_payload");
-}
-
-#[test]
-fn cli_analyze_v2_square_free_numeric_only_certificate_returns_unknown() {
-    let out_dir = temp_dir("ag-measurement-square-free-extra-bad-cert");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["atoms"][5]["object"] = Value::String("2".to_string());
-    let archmap_path = out_dir.join("archmap_v2_square_free_extra_bad_cert.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
-    assert_eq!(
-        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
-        "nsdepth_certificate_author_supplied_unverified"
-    );
-    let repair = invariant_by_id(&packet, "square-free-repair:profile:ag-square-free@1");
-    assert_eq!(
-        repair["nsdepthCertificate"]["status"],
-        "author_supplied_unverified"
     );
 }
 
@@ -4291,7 +4053,7 @@ fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
             .as_array()
             .expect("atoms is array")
             .iter()
-            .filter(|atom| atom["predicate"] != "obstructionGenerator")
+            .filter(|atom| atom["predicate"] != "support")
             .cloned()
             .collect(),
     );
@@ -4303,7 +4065,7 @@ fn cli_analyze_v2_square_free_without_generators_returns_measured_zero() {
             .filter(|atom| {
                 !matches!(
                     atom.as_str(),
-                    Some("atom:ob-checkout-inventory" | "atom:ob-inventory-payment")
+                    Some("atom:support-checkout-inventory" | "atom:support-inventory-payment")
                 )
             })
             .cloned()
@@ -6882,8 +6644,8 @@ fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
             .as_array()
             .expect("atoms is array")
             .iter()
-            .any(|atom| atom["axis"] == "cech" && atom["predicate"] == "mismatch"),
-        "AG golden fixture must contain an explicit Cech mismatch atom"
+            .any(|atom| atom["axis"] == "cech" && atom["predicate"] == "sectionValue"),
+        "AG golden fixture must contain an explicit Cech section value atom"
     );
 
     let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
@@ -6915,8 +6677,8 @@ fn cli_locks_ag_measurement_square_free_golden_fixture() {
             .as_array()
             .expect("atoms is array")
             .iter()
-            .any(|atom| atom["axis"] == "square-free" && atom["predicate"] == "nsdepthCertificate"),
-        "AG square-free fixture must contain an explicit NSdepth certificate atom"
+            .all(|atom| atom["axis"] != "square-free" || atom["predicate"] != "nsdepthCertificate"),
+        "AG square-free fixture must not pre-author an explicit NSdepth certificate atom"
     );
 
     let golden_corpus = fs::read_to_string(repo_root.join("docs/tool/golden_corpus.md"))
@@ -6925,7 +6687,6 @@ fn cli_locks_ag_measurement_square_free_golden_fixture() {
         "archmap_v2_square_free_repair.json",
         "law_policy_square_free.json",
         "cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth",
-        "cli_analyze_v2_square_free_without_certificate_returns_unknown",
     ] {
         assert!(
             golden_corpus.contains(snippet),
@@ -15123,7 +14884,7 @@ fn section_archmap(case: &str) -> Value {
             "relation",
             "I_Ob^U",
             "section-factorization",
-            "obstructionGenerator",
+            "support",
             Some("x,y"),
             vec!["src:forbidden-support", "ctx:section"],
         ));
@@ -15155,7 +14916,7 @@ fn section_archmap(case: &str) -> Value {
             "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment A"},
             "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 total section assignment B"},
             "src:section-partial": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 partial section"},
-            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 assignment without obstructionGenerator"},
+            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 assignment without raw support"},
             "ctx:section": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3"}
         },
         "atoms": atoms,
