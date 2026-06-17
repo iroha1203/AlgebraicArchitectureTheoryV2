@@ -1336,18 +1336,22 @@ fn evaluate_square_free_repair_v1(
                 assumption: "NSdepth certificate payload covers the computed square-free obstruction ideal within the selected witness family".to_string(),
                 status: certificate
                     .as_ref()
-                    .filter(|certificate| certificate.status == "verified")
+                    .filter(|certificate| {
+                        matches!(certificate.status.as_str(), "verified" | "computed")
+                    })
                     .map(|_| "checked")
                     .unwrap_or("assumed")
                     .to_string(),
                 checked_by: certificate
                     .as_ref()
-                    .filter(|certificate| certificate.status == "verified")
+                    .filter(|certificate| {
+                        matches!(certificate.status.as_str(), "verified" | "computed")
+                    })
                     .map(|certificate| format!("ag.square-free-repair@1:{}", certificate.cert_ref)),
                 assumed_by: certificate
                     .as_ref()
                     .map(|certificate| {
-                        if certificate.status == "verified" {
+                        if matches!(certificate.status.as_str(), "verified" | "computed") {
                             None
                         } else {
                             Some(certificate.cert_ref.clone())
