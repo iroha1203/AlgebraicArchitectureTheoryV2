@@ -46,20 +46,22 @@ artifact, not slice fragments.
 | Typed evaluator results | `typed-evaluator-results/v1` | Selected evaluator statuses, support refs, basis refs, replacement evaluator results, and positive bounded conclusions. `blocked`, `unknown`, and `unmeasured` are blockers, not measured zero. |
 | Architecture distance | `archsig-architecture-distance/v1` | Current-state diagnostic distance readings derived from typed evaluator output and the selected distance profile. It is not a forecast or merge-safety score. |
 | ArchSig analysis summary | `archsig-analysis-summary.json` | Default compact reading surface emitted by `analyze`. It reports conclusion, typed evaluator status, architecture distance, `distanceDiagnosis`, dominant findings, action queue, rich packet refs, measurement basis, and metadata without reprinting raw packet detail. |
-| ArchSig Atom Viewer data | `archsig-atom-viewer-data.json` | Bounded browser projection emitted by default from `analyze`. It mirrors summary / packet refs into a visual inspection surface. Viewer layout distance remains visual support, not diagnostic metric. |
+| ArchSig viewer data | `archsig-atom-viewer-data.json` | Bounded browser projection emitted by default from `analyze`. It mirrors summary / packet refs into a visual inspection surface. Viewer layout distance remains visual support, not diagnostic metric. |
+| ArchView | `archview/archview.html` | Visualization layer for emitted ArchSig measurement artifacts. It reads `archsig-atom-viewer-data.json`, optional same-directory summary / manifest files, and optional `archview-sequence/v1` manifests. It projects measured AAT geometry and does not create structural verdicts. |
 | ArchSig run manifest | `archsig-run-manifest.json` | Run navigation artifact emitted by default from `analyze`. It records command name, input paths, generated / omitted artifacts, validation report paths, optional raw artifact paths, and validation result summary. |
 | ArchSig analysis packet | `archsig-analysis-packet/v1` | Optional raw evidence artifact emitted with `--emit-raw-artifacts`. It records generated law inputs, signature axes, generated obstructions, generated repair targets, replacement registry / replacement evaluator results, spectrum / homotopy / structural readings, bounded judgements, LLM interpretation refs, and non-conclusions. |
 | ArchSig detail index | `archsig-analysis-detail-index/v1` | Optional raw lookup artifact for packet refs and detail refs. It lets summary / viewer users stay compact while preserving evidence lookup. |
 | LLM interpretation packet | `llm-interpretation-packet.json` | Optional raw artifact carrying compact reading guidance, action queue summary, distance diagnosis summary, and rich packet refs for LLM readers. |
 | PR review report | `archsig-pr-review-report-v1` | Lightweight PR review surface over base `archmap/v1`, optional head / path `archmap/v1`, PR-local `archmap-delta-v0`, and `law-policy/v1`. It emits report-local v1 snapshots, delta packet intersections, movement / hidden-excursion boundaries, safe-change budget, and review focus. |
 
-Release archives include a fixed `archsig-atom-viewer.html` at the package root
-and under `viewer/`. The app reads `archsig-atom-viewer-data.json` projection
-data, not raw packet detail. Its report pane uses the projection data first and
-then same-directory `archsig-analysis-summary.json` /
-`archsig-run-manifest.json` when available to display conclusion, distance
-diagnosis, findings, action queue, coverage boundaries, validation failures,
-generated / omitted artifacts, and relative raw artifact links.
+Release archives include ArchView under `archview/`, including its README.
+ArchView reads `archsig-atom-viewer-data.json` projection data, not raw packet
+detail. It also reads same-directory `archsig-analysis-summary.json` /
+`archsig-run-manifest.json` when available, and enters sequence mode when an
+`archview-sequence.json` manifest sits beside the viewer. Sequence frames are
+independent emitted ArchSig measurements; ArchView compares frame conclusions
+only to show adjacent measured conclusion changes and does not interpolate or
+invent verdicts.
 
 ## Removed v0 Fields
 

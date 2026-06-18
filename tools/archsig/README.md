@@ -91,6 +91,7 @@ the ready-to-run tool bundle. Each archive contains:
 
 - the `archsig` executable
 - the ArchSig README and command guide
+- ArchView under `archview/` as the visualization layer
 - the bundled LLM skills under `skills/`
 - the repository license
 
@@ -126,23 +127,20 @@ This writes:
 - `.archsig/analyze/archsig-run-manifest.json`
 
 Use `archsig-analysis-summary.json` as the LLM-readable first pass and
-`archsig-atom-viewer-data.json` with the fixed Atom Viewer app for human visual
-review. Viewer data is bounded: atom nodes, molecule groups, edges, overlays,
-labels, diagnostic distance projections, and source refs are priority-selected
-or sampled, with omitted counts and reasons recorded. Viewer layout distance
+`archsig-atom-viewer-data.json` with ArchView for human visual review. Viewer
+data is bounded: atom nodes, molecule groups, edges, overlays, labels,
+diagnostic distance projections, and source refs are priority-selected or
+sampled, with omitted counts and reasons recorded. Viewer layout distance
 inputs are visual placement support, not diagnostic metrics.
 `archsig-run-manifest.json` records generated and omitted artifacts.
 
-Release archives include `archsig-atom-viewer.html` as a fixed viewer app. Open
-it in a browser and load `archsig-atom-viewer-data.json` with the file picker,
-drag-and-drop, or the same-directory default fetch. The viewer uses CDN Three.js,
-tries the WebGPU renderer first when available, and falls back to WebGL. It
-does not load `archsig-analysis-packet.json`. Its lower report pane reads the
-bounded viewer data plus same-directory `archsig-analysis-summary.json` and
-`archsig-run-manifest.json` when present, so the human surface can show verdict,
-top findings, distance diagnosis, action queue, coverage boundaries, validation
-status, generated / omitted artifacts, and relative raw artifact links without
-embedding raw packet detail.
+Release archives include `archview/archview.html` as the visualization layer.
+Open it in a browser through a local HTTP server next to an
+`archsig analyze` output directory, or copy it beside
+`archsig-atom-viewer-data.json` so same-directory fetch can load the packet.
+ArchView also supports file picker / drag-and-drop and sequence mode through
+`archview-sequence/v1`. It uses CDN Three.js and projects measured AAT geometry
+without creating new structural verdicts.
 
 For large ArchMaps, prefer the optimized binary:
 

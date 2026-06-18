@@ -1,6 +1,6 @@
 # Tooling 編集ガイドライン
 
-この文書は `tools/archsig`、`tools/fieldsig`、`docs/tool` を編集するときの作業方針をまとめる。
+この文書は `tools/archsig`、`tools/archview`、`tools/fieldsig`、`docs/tool` を編集するときの作業方針をまとめる。
 
 ## 境界
 
@@ -11,6 +11,7 @@
   実測 surface であり、AAT の定理や完了条件を定義しない。
 - LawPolicy v1 は policy pack / evaluator / basis / scope / severity を選ぶ selector である。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v1` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
 - ArchSig v0.4.0 は ArchMap v2 + LawPolicy v1 + MeasurementProfile から `archsig-measurement-packet/v1` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v1` の実測フレーム列だけを表示する。
 - ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
   `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
   `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で
@@ -32,6 +33,7 @@
 - `llm-native-workflow` / `north-star-workflow`、`archsig-analysis` / `aat-analysis`、`analysis-summary`、`codebase-inspection`、`archmap-generate` は current runtime surface ではない。
 - pre-v1 workflow は Git history や historical fixtures に残るだけで、現行 ArchSig surface や compatibility input として扱わない。
 - JSON artifact / schema / report の互換性を壊す変更では、`docs/tool`、tool README、fixtures、validation tests を合わせて更新する。
+- ArchView surface を変更する場合は、`tools/archview/README.md`、`docs/tool/README.md`、release bundle、必要な visual / workflow tests を合わせて更新する。可視化の豊かさを ArchSig の測定結論へ昇格させない。
 - CLI surface を追加・変更する場合は、必要に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
 - Rust 型共有を ArchSig / FieldSig 間の cross-tool contract として扱わない。serialized JSON artifact boundary を重視する。
 - Rust source では不用意な `unwrap`, `expect`, `panic!`、placeholder 実装、claim boundary を曖昧にする fallback を避ける。

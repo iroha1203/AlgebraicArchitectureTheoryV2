@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Seam Ignition demo: measure each frame ArchMap with ArchSig, into an ordered
+# Build the ArchView frame-comparison demo: measure each frame ArchMap with ArchSig, into an ordered
 # packet sequence ArchView plays. Each frame is one real `archsig analyze` run — ArchView
 # fabricates no measurement; it only plays the emitted per-frame verdicts over time.
 #

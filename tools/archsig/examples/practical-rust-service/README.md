@@ -87,10 +87,10 @@ The generated artifacts include:
 
 ## Viewer
 
-Open the fixed viewer app:
+Open ArchView:
 
 ```text
-tools/archsig/viewer/archsig-atom-viewer.html
+tools/archview/archview.html
 ```
 
 Load:

@@ -2,7 +2,7 @@
 
 Use this reference when deciding what to read first in ArchSig output. The
 default first surfaces are `archsig-analysis-summary.json` for LLM/structured
-reading and the Atom Viewer report pane for human visual reading. Raw
+reading and the ArchView report pane for human visual reading. Raw
 `archsig-analysis-packet/v1` artifacts are optional evidence-store and FieldSig
 handoff files emitted only with `--emit-raw-artifacts`.
 
@@ -44,7 +44,7 @@ Do not turn unmeasured claims into caveats in the main diagnosis.
 Use packet detail only after the compact summary identifies which queue item or
 finding needs evidence inspection.
 
-For human review, open the bundled `archsig-atom-viewer.html` and load
+For human review, open bundled ArchView at `archview/archview.html` and load
 `archsig-atom-viewer-data.json`. Its report pane should show the same verdict,
 top findings, distance diagnosis, action queue, coverage boundaries,
 validation status, artifact list, generated / omitted artifact state, and

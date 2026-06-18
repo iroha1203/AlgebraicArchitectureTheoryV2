@@ -2,7 +2,7 @@
 
 日付: 2026-06-15
 対象ファイル:
-- `tools/archsig/viewer/archsig-atom-viewer.html`(現 viewer、3427行、Three.js r0.164.1 単一HTML)
+- `tools/archview/archview.html`(現 viewer、Three.js r0.164.1 単一HTML)
 - `tools/archsig/src/ag_measurement.rs`(viewer-data v2 ビルダー `build_measurement_viewer_data_v1` / `gluing_geometry_projection_v1`)
 - 既存 PRD: `docs/tool/archsig_viewer_gluing_geometry_prd.md`(#2082、MERGED)/ `docs/tool/archsig_v0_4_0_insight_viewer_prd.md`(insight viewer、scene の器)
 
@@ -83,7 +83,7 @@ memory の「未マージ」記述は古い。**#2082(`archsig_viewer_gluing_geo
 
 ### Tier 1 即効(レンダリング品質)
 
-これらは新規データ不要で `archsig-atom-viewer.html` だけで成立し、no-build の importmap 経由 `three/addons/` で実装する。**ただし「綺麗になる」に限定され「意味が見える」ようにはならない。**
+これらは新規データ不要で `archview.html` だけで成立し、no-build の importmap 経由 `three/addons/` で実装する。**ただし「綺麗になる」に限定され「意味が見える」ようにはならない。**
 
 **T1-1 PBR基盤の刷新(ACESFilmic + RoomEnvironment IBL + 3点照明 + 接地影 + fog)**
 - 見える像: atom 球と幾何が環境反射とソフトな接地影を得て床に立つ。ハイライトが白飛びせずフィルミックな階調になる。距離フォグで camera far=4000 の奥行きが残る。

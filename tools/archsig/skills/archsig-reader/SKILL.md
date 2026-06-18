@@ -1,6 +1,6 @@
 ---
 name: archsig-reader
-description: Run ArchMap artifacts through ArchSig, read the summary and Atom Viewer report pane first, use optional raw analysis packet artifacts for detailed evidence, compare findings against source code evidence, and propose bounded architecture improvements. Use when Codex is asked to analyze an ArchMap with ArchSig, interpret ArchSig output, review workflow risk / spectral / transfer bridge / split readiness readings, validate ArchSig artifacts, or turn ArchSig analysis into concrete source-review and improvement proposals.
+description: Run ArchMap artifacts through ArchSig, read the summary and ArchView report pane first, use optional raw analysis packet artifacts for detailed evidence, compare findings against source code evidence, and propose bounded architecture improvements. Use when Codex is asked to analyze an ArchMap with ArchSig, interpret ArchSig output, review workflow risk / spectral / transfer bridge / split readiness readings, validate ArchSig artifacts, or turn ArchSig analysis into concrete source-review and improvement proposals.
 ---
 
 # ArchSig Reader
@@ -8,7 +8,7 @@ description: Run ArchMap artifacts through ArchSig, read the summary and Atom Vi
 ## Purpose
 
 Turn a supplied `archmap/v1` and `law-policy/v1` into an ArchSig analysis, read the
-resulting summary and Atom Viewer report pane as the first architecture
+resulting summary and ArchView report pane as the first architecture
 measurement over the supplied `ArchMap + LawPolicy`, and propose practical
 improvements. Use raw packet artifacts only when detailed evidence lookup,
 FieldSig handoff, or fixture maintenance requires them.
@@ -89,9 +89,9 @@ Expected default files:
 - `archsig-atom-viewer-data.json`
 - `archsig-run-manifest.json`
 
-The fixed `archsig-atom-viewer.html` app is shipped in the release bundle. Open
+ArchView is shipped in the release bundle under `archview/archview.html`. Open
 it near the run output or load `archsig-atom-viewer-data.json` with the file
-picker / drag-and-drop; the lower report pane reads the viewer data plus
+picker / drag-and-drop; its report pane reads the viewer data plus
 same-directory summary and manifest when available.
 
 For FieldSig handoff, detailed evidence store, or packet validation fixture
@@ -143,8 +143,8 @@ Read in this order:
      `aatObservationAxisSummary`, `architecturalHoleSummary`,
      `bridgeSummary`, `coverageGapSummary`, `detailIndex`, and
      `measurementBasis`.
-   - When a human visual reading is useful, open the fixed Atom Viewer and use
-     its report pane as the human first surface for overview, top findings,
+   - When a human visual reading is useful, open ArchView and use its report
+     pane as the human first surface for overview, top findings,
      distance diagnosis, action queue, coverage boundaries, validation status,
      artifacts, and omitted raw detail.
    - Say what the supplied ArchMap + LawPolicy measured: flat/nonflat under selected policy, nonzero axes, hotspots, recurrent pressure, architectural holes, trend / review support, bridge pressure, and review action queue.

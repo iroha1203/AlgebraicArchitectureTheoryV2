@@ -560,7 +560,7 @@
     },
     {
       "artifactId": "archsig-atom-viewer-data",
-      "artifactName": "ArchSig Atom Viewer bounded projection data",
+      "artifactName": "ArchSig viewer bounded projection data",
       "schemaVersionName": "archsig-atom-viewer-data-v0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
@@ -571,7 +571,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
+        "fieldMappingPolicy": "Viewer projection data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

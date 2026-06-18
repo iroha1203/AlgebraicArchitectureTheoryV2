@@ -52,6 +52,12 @@ Current source-of-truth boundaries:
   assumptions once at packet time. If an assumption is violated, dependent AG
   structural verdicts fall to `not_computed`; conclusion text stays
   ledger-relative and conclusion-first.
+- ArchView is the visualization layer for ArchSig measurement artifacts under
+  `tools/archview`. It consumes emitted `archsig-atom-viewer-data.json`
+  plus same-directory summary / manifest files, or an `archview-sequence/v1`
+  manifest whose frames are independent `archsig analyze` runs. It projects
+  measured finite-site / cover / gluing geometry and never creates a new
+  structural verdict.
 - FieldSig validates serialized `archsig-measurement-packet/v1` handoff
   semantics before projection. Measured structural verdict rows must carry a
   `certRef` or matching computed invariant evidence. Because the current packet
@@ -76,11 +82,11 @@ Current source-of-truth boundaries:
 - Representation metric in `architecture-distance.json` exposes selected structural distance, analytic-distance state, Lipschitz upper-bound state, bi-Lipschitz faithfulness state, and `distanceDiagnosis.representationInsights`. Bounded proxy telemetry remains partial / blocked support and is not treated as measured analytic distance or representation faithfulness.
 - `distanceInsights` is the engineer-facing reading of `architecture-distance.json`: it exposes structural center, change-sensitive areas, selected policy-obstruction state, blocked evidence, recommended reading refs, and baseline-dependent `comparisonNeeded` claims without turning a single run into a trend or proof.
 - `archsig-analysis-summary.json` is the LLM-native compact reading surface emitted by `analyze`. In v1 it reports a conclusion-first `conclusion`, typed evaluator status, `architectureDistance`, `distanceInsights`, `distanceDiagnosis`, dominant findings, action queue, measurement basis, and metadata without promoting label-only, removed-field-only, schema-only, blocked, unknown, or unmeasured rows to measured claims. Public summary / viewer / LLM surfaces use architecture distance naming rather than AAT mathematics section names.
-- `archsig-atom-viewer.html` is the human first surface shipped in ArchSig release bundles. It reads `archsig-atom-viewer-data.json` for bounded 3D Atom / molecule / overlay projection and uses same-directory summary / manifest files to populate the report pane with verdict, top findings, architecture distance, distance insights, distance diagnosis, action queue, coverage boundaries, validation status, generated / omitted artifact state, and optional raw artifact links. Viewer layout distances remain visual placement support, not ArchSig diagnostic metrics.
+- `archview.html` is the human visualization surface shipped in tool release bundles. It reads `archsig-atom-viewer-data.json` for bounded AAT geometry projection and uses same-directory summary / manifest files to populate the report pane with verdict, top findings, assumption boundary, validation status, and generated artifact state. If `archview-sequence.json` is present, it enters sequence mode and replays measured frames without interpolating new verdicts. Viewer geometry remains projection support, not an ArchSig diagnostic metric.
 - `ArchitectureSpectrumReport` and `ArchitectureHomotopyReport` are legacy packet reading families, not v1 CLI commands. New runtime reporting should flow through typed evaluator results, summary, viewer data, and optional raw v1 packet artifacts.
 - Legacy `concernHints` remain outside the v1 input contract. Review cues belong in review notes or report surfaces, not in ArchMap primary JSON.
 - ArchMap validation rejects non-current root fields. Authoring must use the Atom observation fields above; pre-Atom ArchMap shapes are not compatibility inputs.
-- The ArchSig schema catalog contains v1 ArchMap, LawPolicy, evaluator registry, normalized ArchMap, typed evaluator results, architecture distance, analysis packet, run manifest, Atom Viewer data, schema catalog, compatibility policy, and validation report artifacts. Legacy pre-Atom outputs are not current schema catalog surfaces.
+- The ArchSig schema catalog contains v1 ArchMap, LawPolicy, evaluator registry, normalized ArchMap, typed evaluator results, architecture distance, analysis packet, run manifest, viewer projection data, schema catalog, and validation report artifacts.
 - ArchSig keeps non-conclusions as metadata rather than as the lead diagnosis. Reports should state the measured conclusion first, then preserve measurement boundaries for downstream interpretation.
 - ArchSig validation separates surface checks from measurement-depth and proxy-regression checks. It still does not prove source-observation layer, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
 - ArchSig is the CI / PR-review / lightweight selected-evidence diagnosis surface. FieldSig is the batch / longitudinal monitoring / evolution-quality diagnosis surface. FieldSig consumes explicit ArchSig handoff artifacts as bounded current and historical architecture-evidence state for PR / diff / change-vector evolution analysis. It does not read raw ArchMap observations as forecast truth, and ArchSig summary / Viewer reports do not replace FieldSig forecast, governance, calibration, operational feedback, or longitudinal monitoring.
@@ -96,6 +102,7 @@ Atom handoff checklist:
 - [ArchSig v1 Migration Note](archsig_v1_migration_note.md)
 - [LLM-Native Golden Corpus](golden_corpus.md)
 - [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
+- [ArchView](../../tools/archview/README.md)
 
 Forward design PRDs:
 

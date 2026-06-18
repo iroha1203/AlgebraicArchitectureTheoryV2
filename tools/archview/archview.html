@@ -151,14 +151,14 @@
   #drop.active { display: flex; }
   #drop .box { border: 2px dashed rgba(120,150,200,0.5); border-radius: 18px; padding: 60px 80px; }
 
-  /* seam-ignition timeline (bottom, above status) */
+  /* measured sequence timeline (bottom, above status) */
   #timeline { left: 318px; right: 318px; bottom: 58px; margin: 0 auto; max-width: 760px; padding: 12px 18px 14px; }
   @media (max-width: 1100px) { #timeline { left: 14px; right: 14px; bottom: 92px; } } /* stack clear of rails on narrow screens */
   #timeline .tl-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   #timeline .tl-title { font-size: 12px; font-weight: 600; color: var(--ink); }
   #timeline .tl-caption { font-size: 11.5px; color: var(--ink-dim); flex: 1; }
-  #timeline .tl-caption.ignite { color: var(--structural-nonzero); font-weight: 600; }
-  #timeline .tl-caption.heal { color: var(--structural-zero); font-weight: 600; }
+  #timeline .tl-caption.obstruction-after-zero { color: var(--structural-nonzero); font-weight: 600; }
+  #timeline .tl-caption.zero-after-obstruction { color: var(--structural-zero); font-weight: 600; }
   #timeline .tl-play { cursor: pointer; font-size: 13px; color: var(--ink-dim); border: 1px solid var(--glass-line);
     border-radius: 8px; padding: 4px 11px; user-select: none; }
   #timeline .tl-play:hover { color: var(--ink); border-color: rgba(120,150,200,0.4); }
@@ -172,8 +172,8 @@
   #timeline .tl-dot.zero { background: var(--structural-zero); }
   #timeline .tl-dot.obstr { background: var(--structural-nonzero); box-shadow: 0 0 10px var(--structural-nonzero); }
   #timeline .tl-tick.active .tl-dot { transform: scale(1.4); box-shadow: 0 0 0 2px var(--ink); }
-  #timeline .tl-tick.ignite::before { content: "⚡"; position: absolute; top: -16px; font-size: 13px; }
-  #timeline .tl-tick.heal::before { content: "✓"; position: absolute; top: -16px; font-size: 12px; color: var(--structural-zero); }
+  #timeline .tl-tick.obstruction-after-zero::before { content: "D"; position: absolute; top: -16px; font-size: 13px; color: var(--structural-nonzero); }
+  #timeline .tl-tick.zero-after-obstruction::before { content: "D"; position: absolute; top: -16px; font-size: 12px; color: var(--structural-zero); }
   #timeline .tl-lab { font-size: 10px; color: var(--ink-faint); margin-top: 6px; white-space: nowrap; }
   #timeline .tl-tick.active .tl-lab { color: var(--ink-dim); }
 
@@ -1200,7 +1200,7 @@ function applyScene(id, opts = {}) {
   // silence note when a scene's measured content is absent
   noteSilence(id);
   applyLayerToggles();
-  if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera so the seam ignites in place
+  if (!opts.keepCamera) frameScene(id);   // sequence playback keeps the camera stable across frames
   updateStatus();
 }
 
@@ -1613,7 +1613,7 @@ function renderData(data, source, companions, opts = {}) {
     const top = (MODEL.insights || []).find((i) => i.isObstruction);
     if (top) navigateToInsight(top); else { applyScene(currentScene); resetDetail(); }
   }
-  // (sequence mode: showFrame controls scene/camera/detail so the seam ignites in place)
+  // (sequence mode: showFrame controls scene/camera/detail for stable frame comparison)
   renderInsightRail();
   renderReport();
   setStatus(`Loaded ${source}`);
@@ -1627,7 +1627,7 @@ function emptyShell() {
   setStatus("Open archsig-atom-viewer-data.json (drag a file, or use Open data…)");
 }
 async function loadDefault() {
-  // Seam Ignition: if a sequence manifest sits beside the viewer, play the measured frames over time.
+  // If a sequence manifest sits beside the viewer, play measured frames over time.
   const seq = await fetchJsonIfAvailable("./archview-sequence.json");
   if (seq && (seq.frames || []).length) { await loadSequence(seq); return; }
   const primary = await fetchJsonIfAvailable("./archsig-atom-viewer-data.json");
@@ -1644,10 +1644,9 @@ async function loadUserData(file) {
 function setStatus(msg) { if (msg) document.getElementById("st-boundary").textContent = msg; }
 
 /* ============================================================================
- * Seam Ignition — play a measured SEQUENCE of packets and watch the H¹ obstruction
- * be born / heal across frames. Each frame is one real ArchSig run; ArchView only
- * keys correspondences by shared ids and computes no new verdict. Birth = the first
- * frame whose measured conclusion is an obstruction whose prior frame was measured-zero.
+ * Measured sequence — play emitted packets and compare adjacent measured
+ * conclusions. Each frame is one real ArchSig run; ArchView keys
+ * correspondences by shared ids and computes no new verdict.
  * ========================================================================== */
 let SEQUENCE = null;
 async function loadSequence(manifest) {
@@ -1666,11 +1665,13 @@ async function loadSequence(manifest) {
     frames.push(slot);
   }
   if (!frames.some((f) => f.loaded)) { emptyShell(); return; }
-  // transitions only between two LOADED adjacent frames (compare emitted measured booleans)
+  // Differences are shown only between two loaded adjacent frames.
   frames.forEach((f, i) => {
     const prev = frames[i - 1];
     if (!f.loaded || !prev || !prev.loaded) { f.transition = ""; return; }
-    f.transition = f.obstruction && !prev.obstruction ? "ignite" : !f.obstruction && prev.obstruction ? "heal" : "";
+    f.transition = f.obstruction && prev.measuredZero
+      ? "obstruction-after-zero"
+      : f.measuredZero && prev.obstruction ? "zero-after-obstruction" : "";
     f.priorZero = !!prev.measuredZero;
   });
   SEQUENCE = { title: manifest.title || "Measured sequence", frames, current: 0, playing: false, timer: null, framed: false };
@@ -1691,7 +1692,7 @@ function showFrame(i) {
     cap.className = "tl-caption"; cap.textContent = `${fr.label || "frame"} not loaded — silence (not measured_zero).`;
     renderTimeline(); return;
   }
-  // render geometry in a FIXED gluing view so the seam ignites/heals in place; keep camera after the first frame.
+  // Render geometry in a fixed gluing view; keep camera after the first frame.
   const firstFrame = !SEQUENCE.framed;
   renderData(fr.data, fr.label || `frame ${SEQUENCE.current}`, fr.companions, { sequenceMode: true });
   applyScene("gluing", { keepCamera: !firstFrame });
@@ -1699,10 +1700,10 @@ function showFrame(i) {
   const top = (MODEL.insights || []).find((x) => x.isObstruction);
   if (top) { highlightRefs((top.evidence.atomRefs) || [], (top.evidence.contextRefs) || []); showInsightDetail(top); activeInsightId = top.id; renderInsightRail(); }
   else { resetDetail(); }
-  cap.className = "tl-caption" + (fr.transition === "ignite" ? " ignite" : fr.transition === "heal" ? " heal" : "");
-  cap.textContent = fr.transition === "ignite"
-    ? `⚡ H¹ obstruction BORN here — local pieces stopped gluing across the cover${fr.priorZero ? " (prior frame was measured_zero)" : " (prior frame had no measured obstruction)"}.`
-    : fr.transition === "heal" ? "✓ H¹ healed — the seam closed; the global section glues again."
+  cap.className = "tl-caption" + (fr.transition ? ` ${fr.transition}` : "");
+  cap.textContent = fr.transition === "obstruction-after-zero"
+    ? "Frame comparison: emitted conclusion changed from measured_zero to measured obstruction."
+    : fr.transition === "zero-after-obstruction" ? "Frame comparison: emitted conclusion changed from measured obstruction to measured_zero."
     : (fr.note || fr.conclusion || "");
   renderTimeline();
 }

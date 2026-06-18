@@ -1,45 +1,25 @@
-# Seam Ignition — watch an H¹ obstruction be born
+# H1 Gluing Obstruction Frame Comparison
 
-ArchView の旗艦機能のデモ。**測定されたフレーム列を再生し、H¹ gluing obstruction が
-生まれる正確なフレームを見る。** 他のどのコード可視化ツール(call-graph / blame /
-Sourcegraph / CodeScene / Structurizr)も「どのコミットでアーキテクチャが局所片から
-貼り合わなくなったか」を答えられない ── obstruction class が無いから。ArchView は
-ArchSig がそれを測定するので、測定の裏付けで言える。
+ArchView can replay a sequence of emitted ArchSig packets. Each frame is an
+independent `archsig analyze` run; ArchView compares adjacent emitted
+conclusions and does not create a new verdict.
 
-## 何が起きるか
+## Frames
 
-同一 cover `cover:order-inventory` 上の3フレーム。各フレームは独立した実 `archsig analyze` run:
-
-| frame | ArchMap | 測定された結論 | 意味 |
+| frame | ArchMap | emitted conclusion | note |
 | --- | --- | --- | --- |
-| f0 · calm | `frame-00.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | 凪。loop は閉じる |
-| **f1 · section value changed** | `frame-01.archmap.json` | `MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | **⚡ H¹ 発火**。`sectionValue` の raw value が left↔bottom で食い違い、ArchSig が貼り合わせ不一致を計算する |
-| f2 · healed | `frame-02.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | ✓ 治癒。raw `sectionValue` が再び揃い seam が閉じる |
+| f0 | `frame-00.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | raw section values agree |
+| f1 | `frame-01.archmap.json` | `MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | left and bottom raw section values differ |
+| f2 | `frame-02.archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` | raw section values agree again |
 
-フレーム間の差は **sectionValue の raw value が left↔bottom で変わって戻るだけ**(同一 cover・同一 4 context)。
-タイムラインを scrub すると、f1 で amber の cocycle seam が結晶の中で発火し、teal の
-closure ring が開き、bloom が新生 supportEdge ただ一つに灯る。
+The sequence view keeps camera placement stable across frames and labels only
+adjacent emitted-conclusion changes.
 
-## 忠実性
-
-ArchView は新しい verdict を作らない。`ignite` / `heal` は**各フレームの emitted
-`decisionBar.conclusion`(ArchSig が測定した measured_zero / measured_nonzero)を隣接
-フレーム間で比較しているだけ**。フレーム間の補間値は描かない(各 tick は実測フレーム)。
-
-## ビルドと実行
+## Run
 
 ```bash
-tools/archview/examples/seam-ignition/build-sequence.sh        # → .tmp/archview-seq
+tools/archview/examples/seam-ignition/build-sequence.sh
 python3 -m http.server 8000 --directory .tmp/archview-seq
-# → http://localhost:8000/archview.html  (▶ Play、または tick をクリックして scrub)
 ```
 
-`archview-sequence.json` が viewer の隣にあると ArchView は自動でシーケンスモードに入る
-(`schema: archview-sequence/v1`、`frames[].path` は各 packet ディレクトリへの相対パス)。
-任意の単一 packet を読む通常モードには影響しない。
-
-## 拡張
-
-`frame-NN.archmap.json` を増やせば任意長のシーケンスにできる。実コミット列の ArchMap を
-順に並べれば、実コードベースの「アーキテクチャが貼り合わなくなった瞬間」を再生できる。
-`archsig pr-review` の base/head を2フレームとして並べれば PR 単位の発火も見られる。
+Open `http://localhost:8000/archview.html`.

@@ -283,7 +283,7 @@ cannot be represented as measured analytic distance. Faithfulness must keep
 coverage and witness-completeness blockers visible until the selected scope
 supplies that evidence.
 The raw packet `part4DistanceFoundation.diagnosticScope`, compact
-`distanceDiagnosis`, Atom Viewer report pane, and LLM
+`distanceDiagnosis`, ArchView report pane, and LLM
 `distanceDiagnosisSummary` must agree on post-evaluator axis status. In
 particular, a measured or zero signature axis cannot remain in
 `unmeasuredAxes` / `unmeasuredAxisRefs`, and closed implementation Issue
