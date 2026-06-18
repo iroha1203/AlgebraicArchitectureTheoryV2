@@ -305,7 +305,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "archsig-atom-viewer-data",
-                "ArchSig Atom Viewer bounded projection data",
+                "ArchSig viewer bounded projection data",
                 ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
                 "primary",
                 "ArchSig Output / Viewer workflow",
@@ -313,7 +313,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "archsig-contract:output-report",
                     "archsig-contract:command-guide",
                 ],
-                "Atom Viewer data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
+                "Viewer projection data records source artifact refs, bounded layout settings, atom nodes, molecule groups, selected law-axis overlays, analysis overlays, report pane sections, omitted detail counts, truncation policy, and non-conclusions for browser visualization without embedding the raw analysis packet.",
                 vec![
                     "Viewer data is a bounded visual projection, not a replacement for explicit ArchSig evidence lookup.",
                     "3D layout distance is not an AAT theorem metric, semantic equivalence, or causal relation.",

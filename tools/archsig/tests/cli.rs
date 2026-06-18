@@ -6577,7 +6577,7 @@ fn cli_analyze_v2_sheaf_laplacian_rejects_unknown_cell() {
 }
 
 #[test]
-fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
+fn cli_locks_archview_gluing_geometry_golden_ux_fixture() {
     let root = ag_measurement_root();
     let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
     assert_eq!(
@@ -6585,8 +6585,11 @@ fn cli_locks_archsig_viewer_gluing_geometry_golden_ux_fixture() {
         "archsig-viewer-gluing-geometry-golden-ux/v1"
     );
 
-    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
-    let viewer_html = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .join("archview/archview.html");
+    let viewer_html = fs::read_to_string(&viewer_path).expect("ArchView html can be read");
     for required in manifest["requiredViewerFunctions"]
         .as_array()
         .expect("requiredViewerFunctions is array")
@@ -11588,102 +11591,66 @@ fn cli_analyze_strict_distance_uses_part4_profile_weights() {
 }
 
 #[test]
-fn atom_viewer_uses_atom_shape_distance_inputs_for_molecule_layout() {
-    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
-    let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+fn archview_uses_measured_geometry_inputs_for_layout() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .join("archview/archview.html");
+    let viewer = fs::read_to_string(&viewer_path).expect("ArchView html can be read");
 
     for required in [
-        "geometry.viewerDistanceInputs",
-        "atomToViewerDistances",
-        "viewerDistances",
-        "function viewerDistanceProfile",
-        "function viewerDistanceEmbedding",
-        "function componentAxisVector",
-        "distanceProfile.meanDistance",
-        "distanceProfile.offset",
-        "function renderViewerDistanceBonds",
-        "AtomShape distance from molecule center",
+        "Position is a deterministic layout of the MEASURED nerve topology",
+        "cell radius ∝ |atoms|",
+        "strut radius",
+        "bead size",
+        "Hash is only a sub-dominant declump jitter",
+        "layoutContexts(model)",
+        "cellRadius(model, ctx)",
+        "buildCells",
+        "buildStruts",
+        "buildAtoms",
     ] {
         assert!(
             viewer.contains(required),
-            "atom viewer must use AtomShape viewerDistanceInputs in molecule layout: missing {required}"
+            "ArchView must use measured geometry inputs in layout: missing {required}"
         );
     }
 }
 
 #[test]
-fn atom_viewer_reads_insight_report_surface_contract() {
-    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
-    let viewer = fs::read_to_string(&viewer_path).expect("viewer html can be read");
+fn archview_reads_insight_report_surface_contract() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .join("archview/archview.html");
+    let viewer = fs::read_to_string(&viewer_path).expect("ArchView html can be read");
 
     for required in [
-        "Insight Queue",
-        "Suggested Next Inspections",
-        "Decision Bar",
-        "Read this first",
-        "copy source refs",
-        "Start tour",
-        "Open scene",
-        "AG Curvature field",
-        r#"value="holonomy" selected>AG Cover & Gluing"#,
-        "AG Cover & Gluing",
-        "AG Obstruction loops",
-        "AG Forbidden support cages",
-        "AG Spectrum landscape",
-        "AG Flatness surface",
-        "AG Site / Cover",
-        "AG Projection map",
+        "Insights",
+        "Suggested next inspections",
+        "Measurement report",
+        "copy-refs-btn",
+        "Nerve & Cover",
+        "Gluing & H¹ obstruction",
+        "Curvature / Hodge debt",
+        "Period / Stokes",
+        "Forbidden support / flatness",
+        "Projection boundary",
         "viewerVisualScenes",
-        "axisMapping",
-        "sceneForMode",
-        "modeForScene",
-        "escapeHtml(legendValueText(item.values))",
-        "sceneNodeColor",
-        "renderSceneLayers",
-        "sceneLayerMesh",
-        "renderGluingGeometry",
-        "renderNerveGeometry",
-        "renderCocycleRibbon",
-        "renderLocusField",
-        "renderForbiddenCages",
-        "renderRepairMorphs",
-        "renderAtomGlyphOverlays",
-        "atomGlyphGeometry",
-        "atomGlyphColor",
-        "updateRepairMorphAnimation",
-        "sceneAxisPosition",
-        "legendSwatchColor",
-        "legendValueText",
-        "gluingGeometry.",
-        "value=\"obstructions\"",
-        "LineDashedMaterial",
-        "ConeGeometry",
-        "repairMorphArrow",
-        "cocycleSupportEdges",
-        "thicknessRole",
-        "visualEncodingChannel",
-        "thickness",
-        "window.__archsigViewerDebug",
-        "sceneColorHex",
-        "handleReportAction",
-        "const reportEl = document.getElementById(\"report\")",
-        "startGuidedTour",
-        "showTourStep",
-        "data-tour-id",
-        "data-tour-next",
-        "navigator.clipboard.writeText",
-        "data-scene-id",
-        "data-copy-source-refs",
-        "Boolean(data?.decisionBar)",
-        "evidenceDetailShape",
-        "holonomyLikeGapMarker",
-        "blockedUnmeasuredRegion",
-        "forbiddenSupportCage",
-        "not automatic repair",
+        "sceneStatus",
+        "renderReport",
+        "buildSeam",
+        "buildCages",
+        "updateRepairProbe",
+        "navigator.clipboard?.writeText",
+        "sourceRefs",
+        "closureGapEncoding",
+        "Frosted face",
+        "not an auto-repair",
     ] {
         assert!(
             viewer.contains(required),
-            "atom viewer must read the insight report surface contract: missing {required}"
+            "ArchView must read the insight report surface contract: missing {required}"
         );
     }
 }
@@ -13609,6 +13576,7 @@ fn legacy_archsig_surface_does_not_reenter_source_or_paths() {
         "tests/fixtures/air",
         "tests/fixtures/module_root",
         "tests/fixtures/python_imports",
+        "viewer/archsig-atom-viewer.html",
     ] {
         assert!(
             !crate_root.join(removed_path).exists(),
@@ -13753,483 +13721,62 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
 }
 
 #[test]
-fn archsig_atom_viewer_static_app_is_packaged_asset() {
-    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("viewer/archsig-atom-viewer.html");
-    let html = fs::read_to_string(&viewer_path).expect("atom viewer static html can be read");
-    assert!(viewer_path.is_file(), "fixed Atom Viewer app must exist");
+fn archview_static_app_is_packaged_asset() {
+    let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("tools root")
+        .join("archview/archview.html");
+    let html = fs::read_to_string(&viewer_path).expect("ArchView static html can be read");
+    assert!(viewer_path.is_file(), "ArchView app must exist");
     assert!(
-        html.contains("https://unpkg.com/three@"),
-        "viewer must load CDN Three.js runtime"
-    );
-    assert!(
-        html.contains("WebGPURenderer.js") && html.contains("WebGLRenderer"),
-        "viewer must prefer WebGPU and keep a WebGL fallback"
-    );
-    assert!(
-        html.contains("RoomEnvironment.js")
-            && html.contains("PMREMGenerator")
-            && html.contains("scene.environment")
-            && html.contains("ACESFilmicToneMapping")
-            && html.contains("toneMappingExposure = 1.05")
-            && html.contains("SRGBColorSpace"),
-        "viewer V1 PBR foundation must configure ACES tone mapping and RoomEnvironment IBL"
-    );
-    assert!(
-        html.contains("HemisphereLight")
-            && html.contains("keyLight")
-            && html.contains("rimLight")
-            && html.contains("PCFSoftShadowMap")
-            && html.contains("ShadowMaterial")
-            && html.contains("castShadow = true")
-            && html.contains("receiveShadow = true")
-            && html.contains("scene.fog = new THREE.FogExp2"),
-        "viewer V1 PBR foundation must include three-point lighting, contact shadows, and fog"
-    );
-    assert!(
-        html.contains("viewerPixelRatio()")
-            && html.contains("renderer.setPixelRatio(viewerPixelRatio())"),
-        "viewer V1 must cap and reapply pixel ratio across renderer resize paths"
-    );
-    assert!(
-        html.contains("EffectComposer.js")
-            && html.contains("RenderPass.js")
+        html.contains("https://unpkg.com/three@")
+            && html.contains("EffectComposer.js")
             && html.contains("UnrealBloomPass.js")
-            && html.contains("OutputPass.js")
-            && html.contains("const BLOOM_LAYER = 1")
-            && html.contains("bloomLayer.set(BLOOM_LAYER)")
-            && html.contains("bloomComposer.render()")
-            && html.contains("finalComposer.render()")
-            && html.contains("function renderFrame()")
-            && html.contains("renderFrame();"),
-        "viewer V2 must route frames through selective bloom composers"
+            && html.contains("RoomEnvironment.js")
+            && html.contains("ACESFilmicToneMapping")
+            && html.contains("FogExp2"),
+        "ArchView must load the CDN Three.js runtime and geometry rendering stack"
     );
     assert!(
-        html.contains("registerMeasuredBloom(tube, \"headline_h1_cocycle_seam\"")
-            && html.contains("registerMeasuredBloom(gap, \"headline_h1_closure_gap\"")
-            && html.contains("registerMeasuredBloom(marker, \"shared_atom_overlap_marker\"")
-            && html.contains("registerMeasuredBloom(mesh, \"candidate_forbidden_cage\"")
-            && html.contains("registerMeasuredBloom(arrowHead, \"candidate_repair_arrow\"")
-            && html.contains("registerMeasuredBloom(marker, \"candidate_repair_marker\""),
-        "viewer V2 bloom must be registered only on measured evidence glyphs"
-    );
-    assert!(
-        html.contains("darkenNonBloomed")
-            && html.contains("restoreBloomMaterials")
-            && html.contains("selectiveBloomStatus")
-            && html.contains("bloomRegisteredCount"),
-        "viewer V2 must mask non-bloom objects and expose bloom diagnostics"
-    );
-    assert!(
-        html.contains("BokehPass.js")
-            && html.contains("new BokehPass(scene, camera")
-            && html.contains("updateBokehFocus()")
-            && html.contains("camera.position.distanceTo(controls.target)")
-            && html.contains("silenceDepthStatus"),
-        "viewer V3 must keep silence depth in FogExp2 and BokehPass focus"
-    );
-    assert!(
-        html.contains("createSilenceGlassMaterial")
-            && html.contains("alphaMap: silenceHatchAlphaMap")
-            && html.contains("depthWrite: false")
-            && html.contains("nerveTriangleSilenceGlass")
-            && html.contains("H^2 coherence is not visualized by this viewer layer")
-            && html.contains("blockedUnmeasuredRegion")
-            && html.contains("redErrorEncodingRemoved: true"),
-        "viewer V3 must render H2 and blocked silence as frosted non-verdict glass"
-    );
-    assert!(
-        html.contains("sceneColorHex(\"measured_nonzero\")")
-            && !html.contains("MeshStandardMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.34, wireframe: true })")
-            && !html.contains("MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x3a0808"),
-        "viewer V3 must remove red error encoding from blocked regions and closure gap marker"
-    );
-    assert!(
-        html.contains("labelTextureAtlas")
-            && html.contains("sharedLabelAtlas")
-            && html.contains("updateLabelVisibility()")
-            && html.contains("boxesOverlap")
-            && html.contains("labelPriorityScore")
-            && html.contains("alwaysVisibleLabel")
-            && html.contains("__archsigViewerLabelStats"),
-        "viewer V4 must use shared label atlas with distance fade and collision priority"
-    );
-    assert!(
-        html.contains("createSpatialContextGroup")
-            && html.contains("visualProjectionGrid")
-            && html.contains("coordinateNonClaimPlate")
-            && html.contains("visual projection only; not semantic distance, causality, or equivalence")
-            && html.contains("Coordinates are a visual projection, not semantic distance, causality, or equivalence."),
-        "viewer V4 must add grid, coordinate plate, and non-claim HUD copy"
-    );
-    assert!(
-        html.contains("createVignettePass")
-            && html.contains("vignettePass")
-            && html.contains("startCameraTween")
-            && html.contains("updateCameraTween")
-            && html.contains("handleViewModeChange")
-            && html.contains("camera.position.copy(cameraTween.fromPosition).lerp"),
-        "viewer V4 must add vignette postprocess and camera target tweening"
-    );
-    assert!(
-        html.contains("holonomyLikeGapLabel")
-            && html.contains("derivedFrom: \"cocycleRibbon.closureGapEncoding\"")
-            && !html.contains("derivedFrom: \"nonzeroHolonomyLoops")
-            && !html.contains("derivedFrom: \"spectrumReport"),
-        "viewer V4 H1 top insight label must derive from closureGapEncoding only"
-    );
-    assert!(
-        html.contains("cohomologyDegreeLayer")
-            && html.contains("H0 ground context layer")
-            && html.contains("H1 cocycle ribbon layer")
-            && html.contains("H2 silent glass ceiling")
-            && html.contains("pointOnCohomologyLayer")
-            && html.contains("tagCohomologyLayer"),
-        "viewer V5 must define fixed cohomology degree layers"
-    );
-    assert!(
-        html.contains("tagCohomologyLayer(patch, \"h0\", \"nerve.vertices\")")
-            && html
-                .contains("tagCohomologyLayer(tube, \"h1\", \"cocycleRibbon.supportEdges.value\")")
-            && html.contains("tagCohomologyLayer(mesh, \"h2\", \"nerve.triangles\")")
-            && html.contains("createH2CoherenceMaterial")
-            && html.contains("nerveTriangleH2Coherence"),
-        "viewer V5 must place H0/H1/H2 geometry on degree bands and use M5 packet verdicts only after projection"
-    );
-    assert!(
-        html.contains("THREE.MathUtils.lerp(0.4, 2.2")
-            && html.contains("edge.value is mismatch parity, not continuous cohomology magnitude")
-            && html.contains("registerMeasuredBloom(tube, \"headline_h1_cocycle_seam\"")
-            && html.contains("registerMeasuredBloom(mesh, \"h2_coherence_structural_verdict\""),
-        "viewer V5 must size H1 ribbon by parity marker and bloom H2 only when an M5 structural verdict is projected"
-    );
-    assert!(
-        html.contains("createLocusFieldMembrane")
-            && html.contains("curvatureHeightmapMembrane")
-            && html.contains("locusField.fieldRows.signedCurvature")
-            && html.contains("coolToWarmColor")
-            && html.contains("vertexColors: true")
-            && html.contains("curvatureMeasuredCell"),
-        "viewer V6 must render locusField signedCurvature as an analytic heatmap membrane with measured cell markers"
-    );
-    assert!(
-        html.contains("IDW interpolation is a window between measured cells")
-            && html.contains("IDW membrane is a projection window, not between-cell measurement")
-            && html.contains("blockedLocusHoleRim")
-            && html.contains("blockedHole: true")
-            && html.contains("interpolationExcluded: true")
-            && html.contains("no new structural verdict"),
-        "viewer V6 must mark interpolation as a non-claim and leave blocked regions as torn holes"
-    );
-    assert!(
-        html.contains("measuredZeroLocusBasin")
-            && html.contains("signedCurvature≈0 measured cell")
-            && !html.contains("new THREE.CylinderGeometry(3.6, 6.2")
-            && !html.contains("curvatureHeightField"),
-        "viewer V6 must replace curvature columns with basins anchored by measured zero curvature cells"
-    );
-    assert!(
-        html.contains("registerReadingBloom")
-            && html.contains("nerveContextSphere")
-            && html.contains("radiusDrivenBy: \"nerve.vertices[].atomRefs.length\"")
-            && html.contains("nerveSimplicialEdgeTube")
-            && html.contains("radiusDrivenBy: \"nerve.edges[].supportAtomRefs.length\""),
-        "viewer V7 must render the Cech nerve as context spheres and support-sized edge tubes"
-    );
-    assert!(
-        html.contains("extractNerveGraphCycleBasis")
-            && html.contains("findTreePath")
-            && html.contains("nerveB1GraphCycleRing")
-            && html.contains("b1_graph_cycle_reading")
-            && html.contains("filledByTriangleBoundary"),
-        "viewer V7 must derive graph-cycle b1 rings with triangle-boundary awareness"
-    );
-    assert!(
-        html.contains("graph cycle != H1 structural verdict")
-            && html.contains("graph cycle reading only; no new structural verdict")
-            && html.contains("b1 graph cycle reading, not H1 verdict")
-            && html.contains("h1StructuralVerdict: false"),
-        "viewer V7 must keep graph-cycle readings separate from H1 structural verdicts"
-    );
-    assert!(
-        html.contains("supportVariableAxis")
-            && html.contains("supportCoordinateFrame")
-            && html.contains("supportVariableAxisLabel")
-            && html.contains("lawfulFlatLandingPlane")
-            && html.contains("Flat_U landing plane"),
-        "viewer V8 must build a supportVariables coordinate frame with a Flat_U landing plane"
-    );
-    assert!(
-        html.contains("forbiddenSupportCoordinateSimplex")
-            && html.contains("repairSceneSourceCageSimplex")
-            && html.contains("supportCoordinateSimplexFace")
-            && html.contains("hashFallback: false")
-            && html.contains("notTorClassDecomposedBeforeM4: true"),
-        "viewer V8 must place cages as support-variable simplexes without hash fallback or pre-M4 class decomposition"
-    );
-    assert!(
-        html.contains("support repair: drop support variables; not automatic repair; lower-bound inspection aid")
-            && html.contains("not automatic repair; lower-bound inspection aid; no new structural verdict")
-            && !html.contains("cobordism")
-            && !html.contains("mass-preserving"),
-        "viewer V8 must keep support repair as a lower-bound inspection aid without unsupported repair claims"
-    );
-    assert!(
-        html.contains("previousAtomLayoutPositions")
-            && html.contains("activeAtomLayoutPositions")
-            && html.contains("atomLayoutMorphState")
-            && html.contains("updateAtomLayoutMorph()")
-            && html.contains("easeInOutCubic"),
-        "viewer V9 must preserve atom layout positions and animate view-mode morphs"
-    );
-    assert!(
-        html.contains("demotedHashJitter")
-            && html.contains("axisMetricBindings-primary/hash-demoted-jitter")
-            && html.contains("metricDominantLayout: true")
-            && html.contains("hashRole: \"demoted-jitter\"")
-            && !html.contains("const xScale = 46 + (hashText"),
-        "viewer V9 must demote hash jitter behind axisMetricBindings-driven scene positions"
-    );
-    assert!(
-        html.contains("Morph trajectories are visual projections, not verdicts.")
-            && html.contains(
-                "visual trajectory only; not semantic distance, causality, equivalence, or verdict"
-            )
-            && html.contains("geometryOverlayMorphCrossfade: true"),
-        "viewer V9 must expose morph trajectory and overlay crossfade non-claims"
-    );
-    assert!(
-        html.contains("createHolonomyTraversalFrame")
-            && html.contains("updateHolonomyTraversalAnimation()")
-            && html.contains("holonomyTraversalFrame")
-            && html.contains("holonomyTraversalStartGhost")
-            && html.contains("holonomy_traversal_frame"),
-        "viewer V10 must create and animate a closureGap-driven traversal frame"
-    );
-    assert!(
-        html.contains("parityTwistOnly: true")
-            && html.contains("unmeasuredTwistMagnitude: true")
-            && html.contains("noMonodromyVerdict: true")
-            && html.contains("restriction traversal; no monodromy verdict"),
-        "viewer V10 must keep traversal as parity-only and avoid monodromy verdict claims"
-    );
-    assert!(
-        html.contains("closureGapEncoding?.visible")
-            && html.contains("twist magnitude is unmeasured")
-            && html.contains(
-                "restriction/cover path exploratory view only; no monodromy or pi1 verdict"
-            ),
-        "viewer V10 must gate traversal on measured closureGap visibility and expose the boundary"
-    );
-    assert!(
-        html.contains("id=\"degree-scrub\"")
-            && html.contains("degree-scrub-input")
-            && html.contains("applyCohomologyDegreeScrub")
-            && html.contains("window.__archsigViewerDegreeScrub"),
-        "viewer V11 must expose a cohomology degree scrub control and debug state"
-    );
-    assert!(
-        html.contains("organizeCohomologyLayerGroups")
-            && html.contains("layerH0")
-            && html.contains("layerH1")
-            && html.contains("layerH2")
-            && html.contains("degreeScrubLayerGroup: true"),
-        "viewer V11 must organize H0/H1/H2 objects into scrub layer groups"
-    );
-    assert!(
-        html.contains("smoothstep(0, 1, 1 - distance)")
-            && html.contains("0.25 + 0.75 * focus")
-            && html.contains("degree scrub H2 remains grey silence")
-            && html.contains(
-                "degree scrub separates H0/H1/H2 viewer layers without adding H2 verdict color"
-            ),
-        "viewer V11 must scrub by focus opacity while preserving H2 grey silence"
-    );
-    assert!(
-        html.contains("applyFindingsTourStepFocus")
-            && html.contains("findTourHighlightFocus")
-            && html.contains("findingsTourHighlightPulse")
-            && html.contains("window.__archsigViewerFindingsTour"),
-        "viewer V12 must turn packet highlightRefs into cinematic tour focus objects"
-    );
-    assert!(
-        html.contains("cameraTweenToHighlightRefs: true")
-            && html.contains("packetHighlightRefsUsed: true")
-            && html.contains("captionPacketOnly: true")
-            && html.contains("positiveConclusionBadge: true"),
-        "viewer V12 must tween to packet highlight refs and end on a packet-derived conclusion badge"
-    );
-    assert!(
-        html.contains("pauseFindingsTour(\"manual pointer interaction\")")
-            && html.contains("data-tour-resume=\"true\"")
-            && html.contains("contextNotHidden: true")
-            && html.contains("tour camera adds no structural verdict"),
-        "viewer V12 must support manual pause/resume while preserving context and non-verdict boundaries"
-    );
-    assert!(
-        html.contains("tagAssemblySnapObject")
-            && html.contains("assemblySnapStartPosition")
-            && html.contains("easeOutBack")
-            && html.contains("window.__archsigViewerAssemblySnap"),
-        "viewer V13 must animate nerve patches as assembly snap projections"
-    );
-    assert!(
-        html.contains("assemblySnapParitySeam")
-            && html.contains("unsnappedByParityCue: true")
-            && html.contains("edge.value parity seam; not restriction-compatibility verdict")
-            && html.contains("structuralSeamVerdict: false"),
-        "viewer V13 must keep value=1 seams as parity cues rather than M2 verdicts"
-    );
-    assert!(
-        html.contains("graph cycle != H1 structural verdict")
-            && html.contains("assembly snap uses edge.value parity until M2 restriction-compatibility verdict is projected")
-            && html.contains("microGapVibration")
-            && html.contains("assembly_snap_parity_seam"),
-        "viewer V13 must preserve graph-cycle and projection boundaries while showing seam vibration"
-    );
-    assert!(
-        html.contains("renderBreathingFiberBundle")
-            && html.contains("window.__archsigViewerBreathingFiberBundle")
-            && html.contains("requires nerve.vertices and locusField.fieldRows.signedCurvature in the same viewer packet")
-            && html.contains("coverLaplacianCooccurrenceOnly: true"),
-        "viewer V14 must gate breathing fiber bundle on cover+laplacian cooccurrence"
-    );
-    assert!(
-        html.contains("breathingFiberPillar")
-            && html.contains("signedCurvatureDriven: true")
-            && html.contains("breathing_fiber_signed_curvature")
-            && html.contains("breathing fiber only when cover+laplacian coexist"),
-        "viewer V14 must render signedCurvature-driven fibers only after the cooccurrence gate"
-    );
-    assert!(
-        html.contains("analyticReadingOnly: true")
-            && html.contains("no curvatureStatus or structural verdict is created")
-            && html.contains("breathing fiber bundle renders only when nerve vertices and locusField signedCurvature coexist in the viewer packet"),
-        "viewer V14 must keep fiber bundle as analytic projection without structural verdict"
-    );
-    assert!(
-        html.contains("createLawfulLociIntersection")
-            && html.contains("window.__archsigViewerLawfulLociIntersection")
-            && html.contains("lawfulLociIntersectionPlane")
-            && html.contains("tor1ResidueMass")
-            && html.contains("ag.law-conflict-tor@1/Tor_1 residue"),
-        "viewer V15 must render law-conflict Tor overlays as lawful loci intersection planes with Tor_1 residue mass"
-    );
-    assert!(
-        html.contains("PlaneGeometry approximation; discrete Tor_1 residue bundle")
-            && html.contains("noTransversalityProof: true")
-            && html.contains("discreteQuantityBundle: true")
-            && html.contains("noStructuralVerdict: true")
-            && html.contains(
-                "Tor_1 residue loci: PlaneGeometry approximation, no transversality proof"
-            ),
-        "viewer V15 must make PlaneGeometry approximation and non-verdict boundaries explicit"
-    );
-    assert!(
-        html.contains("lawfulLociRepairTransfers")
-            && html.contains("lawfulLociRepairMassTransfer")
-            && html.contains("explicitTransferOnly: true")
-            && html.contains("repair mass transfer is rendered only when explicit packet transfer data is present"),
-        "viewer V15 must gate repair mass transfer rendering on explicit packet data"
-    );
-    assert!(
-        html.contains("value=\"periodStokes\"")
-            && html.contains("renderPeriodMeter")
-            && html.contains("window.__archsigViewerPeriodStokesMeter")
-            && html.contains("periodStokesCycleArc")
-            && html.contains("periodStokesAuditMeter")
-            && html.contains("periodStokesResidualFlux"),
-        "viewer V16 must expose a Period Stokes mode and render audit meter objects"
-    );
-    assert!(
-        html.contains("modelRelative finite-period meter; not an absolute period invariant")
-            && html.contains("periodStokes viewer meter projects packet M9 values only; no new structural verdict")
-            && html.contains("noStructuralVerdictCreatedByViewer: true")
-            && html.contains("unknown audits are not green structural closure"),
-        "viewer V16 must keep period meter model-relative and avoid new structural verdict claims"
-    );
-    assert!(
-        html.contains("renderSpectrumPeaks")
-            && html.contains("window.__archsigViewerSpectrumPeaks")
-            && html.contains("spectrumLawfulPlain")
-            && html.contains("spectrumLocalDeviationPeak")
-            && html.contains("spectrumProxyRidge"),
-        "viewer V17 must render lawful plain, secondary peaks, and proxy ridges"
-    );
-    assert!(
-        html.contains("lawfulPlainMeasuredZeroDrawn: isLawfulPlain")
-            && html.contains("legacyStatusFieldRead: false")
-            && html.contains("analyticReadingNotVerdict: true")
-            && html.contains(
-                "SAFE lawful plain remains central; spectrum peaks are proxy local deviations"
-            )
-            && html.contains("axisRef-deterministic"),
-        "viewer V17 must keep SAFE lawful plain central with deterministic axis placement and analytic non-verdict boundary"
-    );
-    assert!(
-        html.contains("window.__archsigViewerAnalyticOverlayLane")
-            && html.contains("createPeriodLandscapeOverlay")
-            && html.contains("analyticPeriodLandscapeCell")
-            && html.contains("analyticWassersteinMassFlow")
-            && html.contains("analyticSpectralGapValley"),
-        "viewer V18 must render dedicated period, transfer, and spectral gap analytic overlays"
-    );
-    assert!(
-        html.contains("period landscape is modelRelative")
-            && html.contains("notW1Itself: true")
-            && html.contains("noGlobalRepairSafetyClaim: true")
-            && html.contains("nearFlatNotLawful: true")
-            && html.contains("noMeasuredZeroColorPromotion: true")
-            && html.contains(
-                "analytic overlay lane renders M14 packet readings only; no structural color promotion"
-            ),
-        "viewer V18 must keep analytic overlays in the analytic lane without structural promotion"
-    );
-    assert!(
-        html.contains("type=\"file\"")
-            && html.contains("dragover")
-            && html.contains("./archsig-atom-viewer-data.json"),
-        "viewer must support file picker, drag-and-drop, and default viewer data loading"
-    );
-    assert!(
-        html.contains("./archsig-analysis-summary.json")
+        html.contains("./archsig-atom-viewer-data.json")
+            && html.contains("./archsig-analysis-summary.json")
             && html.contains("./archsig-run-manifest.json")
-            && html.contains("rawArtifactPaths")
-            && html.contains("analysisDetailIndex"),
-        "viewer report pane must integrate summary, manifest, and raw artifact links when present"
+            && html.contains("type=\"file\"")
+            && html.contains("dragover"),
+        "ArchView must support same-directory fetch, file picker, and drag-and-drop"
+    );
+    assert!(
+        html.contains("./archview-sequence.json")
+            && html.contains("function loadSequence")
+            && html.contains("function showFrame")
+            && html.contains("function togglePlay")
+            && html.contains("Frame comparison: emitted conclusion changed from measured_zero to measured obstruction.")
+            && html.contains("Frame comparison: emitted conclusion changed from measured obstruction to measured_zero."),
+        "ArchView must support measured sequence playback"
     );
     for section in [
-        "Overview",
-        "Insight Queue",
-        "Distance Diagnosis",
-        "Suggested Next Inspections",
-        "Coverage And Boundaries",
+        "Measurement report",
+        "Insight queue",
+        "Suggested next inspections",
+        "Boundary digest",
         "Artifacts",
-        "Validation Status",
-        "Omitted Detail",
+        "Boundaries &amp; non-claims",
     ] {
         assert!(
             html.contains(section),
-            "viewer report pane must render {section}"
+            "ArchView report pane must render {section}"
         );
     }
     assert!(
-        html.contains("renderDistanceDiagnosis")
-            && html.contains("compactRepresentationMetricValues")
-            && html.contains("representationMetric")
-            && html.contains("distanceBoundary")
-            && html.contains("nonClaims")
-            && html.contains("detailRefs"),
-        "viewer must render distanceDiagnosis with boundary, non-claims, and detail refs"
-    );
-    assert!(
-        html.contains("atomEdges")
-            && html.contains("moleculeGroups")
-            && html.contains("analysisOverlays"),
-        "viewer must render atoms, molecules, edges, and overlays"
+        html.contains("The viewer adds no new structural verdict")
+            && html.contains("Projection boundary")
+            && html.contains("bounded projection of ArchMap v2")
+            && html.contains("adds NO new structural verdict"),
+        "ArchView must keep visualization below structural verdict level"
     );
     assert!(
         !html.contains("archsig-analysis-packet.json"),
-        "viewer must not embed or load the raw analysis packet"
+        "ArchView must not embed or load the raw analysis packet"
     );
 }
 
@@ -14381,10 +13928,14 @@ fn archsig_release_workflow_packages_output_viewer_contract() {
         fs::read_to_string(repo_root.join(".github/workflows/archsig-release.yml"))
             .expect("release workflow can be read");
     assert!(
-        release_workflow.contains("package/archsig-atom-viewer.html")
-            && release_workflow.contains("package/viewer/archsig-atom-viewer.html")
-            && release_workflow.contains("test -s package/archsig-atom-viewer.html"),
-        "release workflow must package and verify the fixed Atom Viewer app"
+        release_workflow.contains("package/archview/archview.html")
+            && release_workflow.contains("package/archview/README.md")
+            && release_workflow.contains("test -s package/archview/archview.html"),
+        "release workflow must package and verify ArchView assets"
+    );
+    assert!(
+        !release_workflow.contains("package/archview/examples"),
+        "release workflow must not package ArchView examples"
     );
     assert!(
         release_workflow.contains("package/docs/artifacts-and-boundaries.md")

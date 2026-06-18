@@ -240,7 +240,7 @@ aggregate readings, and measurement-expansion detail belong in the packet, not
 in `archsig-analysis-summary.json`.
 
 `archsig-atom-viewer-data.json` keeps visual layout distance separate from
-Part IV diagnostic distance. `viewerDistanceInputs` support Atom Viewer
+Part IV diagnostic distance. `viewerDistanceInputs` support ArchView
 placement only. Diagnostic distance overlays are bounded projections of packet
 distance readings and are exposed through `diagnosticDistanceReadings`,
 `diagnosticDistanceBoundary`, omitted counts, and the report pane

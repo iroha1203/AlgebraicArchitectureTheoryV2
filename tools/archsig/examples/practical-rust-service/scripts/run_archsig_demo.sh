@@ -10,5 +10,5 @@ cargo run --manifest-path "$EXAMPLE/sample/Cargo.toml"
 cargo run --manifest-path "$ROOT/tools/archsig/Cargo.toml" -- analyze   --archmap "$EXAMPLE/archmap/archmap.json"   --law-policy "$EXAMPLE/law_policy/law_policy.json"   --out-dir "$OUT"
 
 echo "ArchSig artifacts: $OUT"
-echo "Viewer app: $ROOT/tools/archsig/viewer/archsig-atom-viewer.html"
+echo "ArchView app: $ROOT/tools/archview/archview.html"
 echo "Load viewer data: $OUT/archsig-atom-viewer-data.json"

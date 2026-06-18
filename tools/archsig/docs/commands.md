@@ -48,25 +48,22 @@ is conclusion-first and includes typed evaluator diagnosis, architecture
 distance, `distanceDiagnosis`, action queue, and detail refs. Public summary /
 viewer / LLM wording uses architecture distance naming; raw metadata may retain
 source refs to the AAT mathematics documents.
-`archsig-atom-viewer-data.json` is a bounded visual projection for the fixed
-Atom Viewer app. It uses deterministic top-N priority selection for atom nodes
-and molecule groups, emits bounded molecule-to-atom edges, limits labels and
-source refs to count plus samples, carries bounded diagnostic distance overlays
-separately from viewer layout distance inputs, and records omitted counts /
-reasons.
+`archsig-atom-viewer-data.json` is a bounded visual projection for ArchView. It
+uses deterministic top-N priority selection for atom nodes and molecule groups,
+emits bounded molecule-to-atom edges, limits labels and source refs to count
+plus samples, carries bounded diagnostic distance overlays separately from
+viewer layout distance inputs, and records omitted counts / reasons.
 `archsig-run-manifest.json` records generated and omitted artifacts. For large
 ArchMaps, run `analyze` with `cargo run --release`.
 
-The release bundle includes a fixed `archsig-atom-viewer.html`. The page loads
-CDN Three.js, tries WebGPU first when the browser exposes it, falls back to
-WebGL, and reads `archsig-atom-viewer-data.json` through a file picker,
-drag-and-drop, or same-directory default fetch. It does not read the raw
-analysis packet. Its report pane also reads same-directory
+The release bundle includes `archview/archview.html`. The page loads CDN
+Three.js and reads `archsig-atom-viewer-data.json` through same-directory
+default fetch, file picker, or drag-and-drop. It does not read the raw analysis
+packet. Its report pane also reads same-directory
 `archsig-analysis-summary.json` and `archsig-run-manifest.json` when available
-to show the verdict, top findings, action queue, coverage boundaries,
-distance diagnosis, validation status, generated / omitted artifacts, and
-relative links to raw packet / detail-index files when raw artifacts were
-emitted.
+to show the verdict, top findings, action queue, coverage boundaries, distance
+diagnosis, validation status, generated / omitted artifacts, and relative links
+to raw packet / detail-index files when raw artifacts were emitted.
 
 `--strict-distance` requires LawPolicy v1 to select a known `distanceProfileRef`
 and rejects blocked / unknown / unmeasured typed or architecture distance

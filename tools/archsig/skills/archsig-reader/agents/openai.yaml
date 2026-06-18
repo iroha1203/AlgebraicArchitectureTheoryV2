@@ -1,4 +1,4 @@
 interface:
   display_name: "ArchSig Reader"
-  short_description: "Run ArchMap through ArchSig and read ArchitectureSpectrumReport"
-  default_prompt: "Use $archsig-reader to run an ArchMap through ArchSig, read ArchitectureSpectrumReport and other analysis packet surfaces, compare findings with source code, and propose bounded improvements."
+  short_description: "Run ArchMap through ArchSig and read summary plus ArchView"
+  default_prompt: "Use $archsig-reader to run an ArchMap through ArchSig, read the summary and ArchView report pane, compare findings with source code, and propose bounded improvements."

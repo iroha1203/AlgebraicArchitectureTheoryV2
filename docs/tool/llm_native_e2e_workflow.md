@@ -11,7 +11,7 @@ source artifacts
   -> supplied archmap/v1
   -> selected law-policy/v1
   -> archsig-analysis-summary.json
-  -> archsig-atom-viewer-data.json + fixed archsig-atom-viewer.html
+  -> archsig-atom-viewer-data.json + ArchView
   -> archsig-run-manifest.json
   -> optional archsig-analysis-packet/v1 raw artifacts
   -> operation-support-estimate-v0
@@ -67,9 +67,9 @@ Expected ArchSig outputs:
 
 Default `analyze` does not save the raw analysis packet, detail index, or LLM
 interpretation packet. Read `archsig-analysis-summary.json` as the LLM first
-surface and open the fixed release-bundled `archsig-atom-viewer.html` with
-`archsig-atom-viewer-data.json` as the human first surface. The Viewer report
-pane also reads the same-directory summary and manifest when available. Part IV
+surface and open release-bundled `archview/archview.html` with
+`archsig-atom-viewer-data.json` as the human visualization surface. ArchView
+also reads the same-directory summary and manifest when available. Part IV
 distance diagnosis is read from summary `distanceDiagnosis` and viewer report
 pane diagnostic overlays first; raw packet distance rows are detail evidence,
 not the primary human or LLM surface.
@@ -162,11 +162,11 @@ The E2E flow must preserve these boundaries:
   Part IV distance surface for measured movement, unmeasured axes, safe margin,
   repair / curvature / homotopy distance, representation metric boundaries,
   and packet refs.
-- `archsig-atom-viewer-data.json` plus fixed `archsig-atom-viewer.html` is the
-  human visual/report surface. It is a bounded projection and does not parse
-  raw packet detail in the browser. Diagnostic distance overlays are bounded
-  Part IV evaluator projections; viewer layout distances are visual placement
-  support, not ArchSig metrics.
+- `archsig-atom-viewer-data.json` plus ArchView is the human visual/report
+  surface. It is a bounded projection and does not parse raw packet detail in
+  the browser. Diagnostic distance overlays are bounded Part IV evaluator
+  projections; viewer layout distances are visual placement support, not
+  ArchSig metrics.
 - `llm-interpretation-packet.json` is emitted only in raw mode and remains a
   compact packet sub-surface, not a separate source of truth.
 - FieldSig accepts `archsig-analysis-packet/v1` raw packets as bounded current
@@ -192,7 +192,7 @@ The E2E flow must preserve these boundaries:
   Part IV distance values are not zeros. They stay tied to coverage blockers,
   `DistanceProfile`, and `DiagnosticScope`.
 - ArchSig default `analyze` emits only the current validation reports, summary,
-  Atom Viewer data, and run manifest. Raw packet, detail index, and LLM
+  viewer data, and run manifest. Raw packet, detail index, and LLM
   interpretation packet are opt-in through `--emit-raw-artifacts`.
   Pre-Atom artifacts are not compatibility outputs.
 
