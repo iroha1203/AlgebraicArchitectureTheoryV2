@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 850
+- total SCORE: 1020
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -12,8 +12,9 @@
   - traceability / certificate-transport / invariance / atom-supported-quality-geometry: 120
   - traceability / quality-surface / multi-axis-signature / computability / ridge-fold: 130
   - traceability / quality-surface / certificate-transport / repair-potential / ridge-fold: 150
+  - traceability / profile-curvature / certificate-transport / repair-potential / ridge-fold: 170
 - evidence portfolio:
-  - proved-in-research: 6
+  - proved-in-research: 7
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -228,8 +229,48 @@ Lean 証拠は次を固定する。
 support 内の locus decomposition と repair frontier を保持すべきであることが Lean-backed に固定された。
 support まで表示しても、trace locus と repair frontier はなお lossful projection の下に隠れうる。
 
+## Cycle 7: Trace-curvature detector
+
+```text
+candidate: Trace-curvature detector
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 85
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 170
+category: traceability/profile-curvature/certificate-transport/repair-potential/ridge-fold
+goal_delta: 同じ upper-right scalar、verdict、support の下でも、path ordering によって trace locus と repair frontier が分岐する trace-curvature cell を Lean-proved finite witness として固定する。
+project_value_delta: cycle 3 の profile curvature と cycle 6 の trace locus / exact repair frontier を、path-ordered trace coherence detector として統合する。
+formalization_quality: pass/high。typed profile square、two path composites、trace availability / missing、exact repair frontier、trace locus / repair frontier nonfaithfulness が Lean で明示され、主要 theorem は axiom-free / sorry-free で証明されている。
+open_questions: 任意有限 square への一般化、profile-typed certificate tuple 全体への拡張、finite codebase trace example への接続、trace curvature を broader detector class として整理すること。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TraceCurvature.lean` は、finite trace profile square を定義する。
+lower-left の seed certificate から upper-right へ到達する二つの path として、law strengthening 後に
+cover refinement を行う `lawThenCover` と、cover refinement 後に law strengthening を行う `coverThenLaw` を置く。
+二つの path は typed `EdgeTransport` の合成として upper-right certificate space に入る。
+
+Lean 証拠は次を固定する。
+
+- `same_scalar_after_trace_paths`: 二つの path は upper-right の visible scalar reading で一致する。
+- `same_verdict_after_trace_paths`: 二つの path は selected verdict で一致する。
+- `same_support_after_trace_paths`: 二つの path は selected support で一致する。
+- `lawThenCover_trace_available`: law-then-cover path は upper-right で trace complete のままである。
+- `coverThenLaw_trace_missing`: cover-then-law path は upper-right で database trace gap を持つ。
+- `coverThenLaw_repair_frontier_matches_missing_locus`: cover-then-law path の repair frontier は missing trace locus と一致する。
+- `trace_square_not_faithful_to_trace_locus`: visible upper-right surface は path-ordered trace locus を復元できない。
+- `trace_square_not_faithful_to_repair_frontier`: 同じ surface は path-ordered repair frontier も復元できない。
+- `trace_curvature_cell`: 同じ scalar / verdict / support の下で、trace locus と exact repair frontier が path ordering により分岐する。
+
+この結果により、Quality Surface の trace geometry は、最終頂点の scalar / verdict / support だけでなく、
+profile change に沿う path-ordered trace coherence として読む必要があることが Lean-backed に固定された。
+traceability は support の静的 drill-down だけでなく、profile square 上の curvature としても現れる。
+
 ### Next Frontier
 
-次サイクルでは、`trace curvature detector` または `finite codebase trace example` を優先する。前者は
-profile-curvature と trace-missing / trace-locus state を結びつけ、後者は Research sandbox の finite trace
-locus を codebase-facing paper seed に近づける。
+G-aat-quality-surface-01 の SCORE threshold 1000 は cycle 7 で到達した。次に進める場合は、
+`finite codebase trace example`、任意有限 square への一般化、profile-typed certificate tuple 全体への拡張を
+別 GOAL / 後続 issue として扱う。
