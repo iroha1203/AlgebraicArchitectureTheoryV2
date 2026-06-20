@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2040
+- total SCORE: 2130
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -22,8 +22,9 @@
   - certificate-transport / invariance / repair-potential / traceability: 90
   - profile-curvature / atom-supported-quality-geometry / repair-potential / invariance: 80
   - traceability / invariance / atom-supported-quality-geometry: 90
+  - traceability / certificate-transport / repair-potential / invariance: 90
 - evidence portfolio:
-  - proved-in-research: 16
+  - proved-in-research: 17
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -664,6 +665,51 @@ global source-reference namespace injectivity、実コード全体の traceabili
 
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 16 後の total SCORE は 2040 である。
+## Cycle 17: Source-ref packet updates induce exact tuple transports
+
+```text
+candidate: Source-ref packet updates induce exact tuple transports
+candidate_type: bridge
+evidence_stage: proved-in-research
+base_score: 45
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 90
+category: traceability/certificate-transport/repair-potential/invariance
+goal_delta: Cycle 13 の packet-to-tuple bridge、Cycle 14 の tuple transport exactness、Cycle 16 の token identity reflection を、source-ref packet update law から packet-induced / aligned tuple transport exactness へ統合した。
+project_value_delta: supplied source-ref artifact update が missing locus、repair frontier、source-ref table identity を保存・反映する範囲で、packet-induced tuple の missing locus、exact repair、trace-field identity が lossless に運ばれることを固定した。
+formalization_quality: pass。`PacketUpdate`、`BidirectionalSourceRefPacketTransport`、packet-induced tuple missing-locus preservation/reflection、exact repair iff、aligned tuple trace-field identity iff、theorem package が axiom-free / sorry-free で証明されている。全域 `TupleTransport` は主張しない。
+open_questions: grid-level flatness / holonomy criterion、lossy tuple transport obstruction、tuple protected data finite-square criterion instance、source-ref exactness detects lossy packet-to-tuple visualization。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SourceRefPacketTransport.lean` は、
+source-ref packet update を明示的な `PacketUpdate` として置く。更新 law は code support、
+source-ref missing locus、repair frontier、source-ref table identity の保存・反映を bundled
+`BidirectionalSourceRefPacketTransport` として持つ。
+
+Lean 証拠は次を固定する。
+
+- `PacketUpdate`: supplied source-ref packet update。
+- `BidirectionalSourceRefPacketTransport`: support / missing / repair / source-ref table identity の保存・反映 law。
+- `packetTransport_preserves_tupleMissingLocus`: packet update は `packetToTuple` 像の tuple missing locus を保存する。
+- `packetTransport_reflects_tupleMissingLocus`: packet update は `packetToTuple` 像の tuple missing locus を反映する。
+- `packetTransport_tupleMissingLocus_iff`: `packetToTuple` 像で missing locus membership は不変である。
+- `packetTransport_preserves_tupleRepairFrontier`: packet update は induced tuple repair frontier を保存する。
+- `packetTransport_reflects_tupleRepairFrontier`: packet update は induced tuple repair frontier を反映する。
+- `sourceRefPacketTransport_exactRepair_iff`: packet-induced tuples で exact repair frontier は同値である。
+- `packetTransport_preserves_tupleTraceField`: source-ref table identity preservation は induced tuple trace field を保存する。
+- `sourceRefPacketTransport_traceField_identity_iff`: aligned tuple witness の下で、tuple trace-field equality は source-ref table identity と同値である。
+- `sourceRefPacketTransport_exactness_package`: missing-locus invariance、exact-repair invariance、trace-field identity をまとめる theorem package。
+
+この結果により、source-ref artifact の bounded update law は、packet-induced / aligned profile tuple の
+exact transport law として読める。主張は supplied packets、explicit update law、`packetToTuple` の像、
+`PacketTupleAligned` witness に相対化され、canonical global `TupleTransport`、tuple-to-packet extractor、
+source extraction completeness、ArchMap correctness、全 profile change の exactness は結論しない。
+
+### Next Frontier
+
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 17 後の total SCORE は 2130 である。
 次に進める場合は、grid-level flatness / holonomy criterion、lossy tuple transport obstruction、
-tuple protected data finite-square criterion instance、または source-ref packet updates induced exact tuple transports を狙う。
+tuple protected data finite-square criterion instance、または source-ref exactness detects lossy packet-to-tuple visualization を狙う。
