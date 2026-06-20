@@ -9,3 +9,4 @@ import Formal.AG.Research.QualitySurface.TraceCurvature
 import Formal.AG.Research.QualitySurface.ReadingAdequacy
 import Formal.AG.Research.QualitySurface.CodebaseTracePacket
 import Formal.AG.Research.QualitySurface.ProfileGridHolonomy
+import Formal.AG.Research.QualitySurface.ProfileTupleIntegration

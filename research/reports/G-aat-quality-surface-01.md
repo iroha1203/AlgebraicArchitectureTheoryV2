@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1410
+- total SCORE: 1520
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -16,8 +16,9 @@
   - quality-surface / traceability / ridge-fold / repair-potential: 110
   - traceability / computability / quality-surface / repair-potential: 150
   - profile-curvature / quality-surface / certificate-transport / ridge-fold / traceability: 130
+  - unification / atom-supported-quality-geometry / traceability / repair-potential: 110
 - evidence portfolio:
-  - proved-in-research: 10
+  - proved-in-research: 11
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -395,8 +396,51 @@ Lean 証拠は次を固定する。
 として固定された。主張は finite witness に限定され、global flatness theorem、source extraction completeness、
 実コード全体の品質判定、現行 tooling schema impact は結論しない。
 
+## Cycle 11: Profile-typed certificate tuple integration
+
+```text
+candidate: Profile-typed certificate tuple integration
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: unification/atom-supported-quality-geometry/traceability/repair-potential
+goal_delta: `Cert_A(p)` 六成分 tuple を finite profile-typed object として固定し、visible surface 非忠実性、trace-locus projection、exact repair frontier faithfulness を同一 witness 上にまとめた。
+project_value_delta: phase boundary が要求する certificate tuple の意味を Lean-backed witness として補強する。新しい不変量や curvature theorem ではなく、cycles 5-10 の成果を中心語彙へ圧縮する成果である。
+formalization_quality: pass。`TupleCertificateAt p`、grid witness を持つ endpoint tuple、trace-locus projection、projection 前の `omega` / `traceField` / protected data 分岐、visible tuple surface nonfaithfulness、exact trace-aware repair faithfulness が axiom-free / sorry-free で証明されている。
+open_questions: 任意有限 square criterion、profile tuple に沿う non-definitional transport theorem、source-ref packet との同一 tuple への統合、grid-level flatness / holonomy criterion。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ProfileTupleIntegration.lean` は、有限 profile 上の
+`Cert_A(p) = (sigma_p, omega_p, S_p, R_p, nu_p, T_p)` 型 tuple を Research 配下に固定する。
+`TupleCertificateAt p` は `ProfileGridHolonomy.CertificateAt p` を保持し、cycle 10 の
+law-first / cover-first endpoint witness を同じ endpoint profile 上の tuple として読む。
+
+Lean 証拠は次を固定する。
+
+- `TupleCertificateAt`: profile witness と六成分 `(sigma, omega, S, R, nu, T)` を同時に持つ finite tuple。
+- `toTraceLocusCertificate`: tuple から trace-locus certificate への射影。
+- `tuple_missing_locus_projects_to_trace_missing`: tuple missing locus は射影先 trace missing locus と一致する。
+- `tupleExactRepair_projects_to_trace_exactRepair`: tuple-level exact repair frontier は射影先の exact repair frontier を与える。
+- `endpointTuple_gridWitness_diff`: 同じ endpoint profile 上で law-first / cover-first の typed grid witness は異なる。
+- `endpointTuple_traceField_diff`: projection 前の trace field は二つの endpoint tuple で異なる。
+- `endpointTuple_protectedData_diff`: projection 前の protected tuple data `(omega, R, T)` は二つの endpoint tuple で異なる。
+- `visibleTupleSurface_not_faithful_to_traceMissingLocus`: visible tuple surface は trace missing locus を復元しない。
+- `visibleTupleSurface_not_faithful_to_repairFrontier`: visible tuple surface は repair frontier を復元しない。
+- `traceAwareTupleReading_faithful_to_repair_of_exact`: exact trace-repair regime では trace-aware tuple reading が repair frontier に faithful である。
+- `same_surface_but_profile_tuple_diff`: 同じ visible tuple surface の下で、grid witness、obligation state、trace field、repair frontier が分岐する統合 witness。
+
+この結果により、Quality Surface の中心対象は、単なる scalar / verdict / support の表示ではなく、
+profile fiber 上の protected tuple geometry として読める。主張は supplied trace data と finite profile witness に
+相対化され、source extraction completeness、global flatness、実コード全体の品質判定、現行 tooling schema impact は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 10 後の total SCORE は 1410 である。
-次に進める場合は、任意有限 square criterion、profile-typed certificate tuple 全体への拡張、
-grid-level flatness / holonomy criterion、または source-ref evidence を実 tooling artifact と同期する将来 surface を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 11 後の total SCORE は 1520 である。
+次に進める場合は、任意有限 square criterion、profile tuple に沿う non-definitional transport theorem、
+source-ref packet と profile tuple の統合、grid-level flatness / holonomy criterion、または source-ref evidence を
+実 tooling artifact と同期する将来 surface を狙う。
