@@ -2,7 +2,7 @@
 status: picked
 goal: G-aat-quality-surface-01
 candidate_type: unification
-capability_category: atom-supported-quality-geometry / quality-surface / certificate-transport / traceability / repair-potential
+capability_category: unification / atom-supported-quality-geometry / traceability / repair-potential
 expected_base_score: 55
 expected_evidence_multiplier: 2.0
 expected_final_score: 110
