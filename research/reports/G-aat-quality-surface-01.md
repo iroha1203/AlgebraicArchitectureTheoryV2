@@ -4,12 +4,13 @@
 
 ## Current SCORE
 
-- total SCORE: 280
+- total SCORE: 450
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
+  - profile-curvature / certificate-transport / computability / ridge-fold / repair-potential: 170
 - evidence portfolio:
-  - proved-in-research: 2
+  - proved-in-research: 3
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -69,6 +70,48 @@ Lean 証拠は次を固定する。
 
 この結果により、Quality Surface の scalar view は lossful projection であり、背後の certificate geometry を保持しなければ repair frontier を失うことが有限例として固定された。
 
+## Cycle 3: Finite square cell profile-curvature detector
+
+```text
+candidate: Finite square cell profile-curvature detector
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 85
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 170
+category: profile-curvature/certificate-transport/computability/ridge-fold/repair-potential
+goal_delta: scalar reading と verdict が二つの profile-change path で一致しても、support antichain と repair hitting requirement が分岐する finite square を Lean-proved witness として固定し、profile-curvature frontier を前進させる。
+project_value_delta: AAT Research / Lean / paper seed に、Quality Surface の二次元性を path-ordered certificate transport の coherence failure として説明する素材を追加する。tooling / website への接続は将来の説明 surface に留める。
+formalization_quality: pass。`CertificateAt` による profile-typed certificate space、typed `EdgeTransport`、四辺 transport、二つの upper-right path composite、full-certificate regularity、curvature-as-coherence-failure が Lean で明示されている。
+open_questions: trace-natural certificate transport、measured-zero / unmeasured / trace-missing separation、profile curvature の broader detector class、finite codebase trace example。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ProfileCurvature.lean` は、有限 profile square を定義する。
+lower-left の seed certificate から upper-right へ到達する path として、law strengthening 後に cover
+refinement を行う `lawThenCover` と、cover refinement 後に law strengthening を行う
+`coverThenLaw` を置く。四つの edge comparison map は typed `EdgeTransport` として与えられ、
+二つの path composite はどちらも `CertificateAt upperRight` に入る。
+
+Lean 証拠は次を固定する。
+
+- `same_scalarReading_after_paths`: 二つの path は selected scalar reading で一致する。
+- `same_verdict_after_paths`: 二つの path は selected verdict で一致する。
+- `supportAndRepairPathDiscrepancy_seed`: 二つの path は selected support family と repair hitting
+  requirement で分岐する。
+- `curvatureCell_of_supportRepair_path_discrepancy`: support または repair の path discrepancy は
+  full-certificate regularity を破る。
+- `same_scalar_verdict_but_curved_square`: scalar reading と verdict は flat でも、full certificate
+  geometry は curvature cell になる。
+
+この結果により、Quality Surface の二次元性は頂点値の grid ではなく、profile change に沿う certificate
+transport の path coherence として固定された。scalar view が flat に見える square でも、support / repair
+frontier は曲がりうる。
+
 ### Next Frontier
 
-次サイクルでは、portfolio constraint の残りである `finite profile-curvature detector on a square cell` または `trace-natural certificate transport bridge` を優先する。前者は certificate transport / profile curvature を直接進め、後者は traceability と transport の接続を作る。
+次サイクルでは、`trace-natural certificate transport bridge` または
+`measured zero / unmeasured / trace-missing separation` を優先する。前者は traceability と transport
+を接続し、後者は finite trace example と loss-aware visualization の基礎を作る。
