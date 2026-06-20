@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2560
+- total SCORE: 2680
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -27,8 +27,9 @@
   - certificate-transport / obstruction / invariance / repair-potential / traceability: 110
   - profile-curvature / certificate-transport / invariance / computability / obstruction: 120
   - traceability / repair-potential / computability / quality-surface / certificate-transport: 120
+  - profile-curvature / certificate-transport / invariance / obstruction / traceability: 120
 - evidence portfolio:
-  - proved-in-research: 21
+  - proved-in-research: 22
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -910,8 +911,59 @@ declared pointwise repair action、source-ref missing locus、exact repair front
 実コード全体の repair reachability、source extraction completeness、ArchMap correctness、任意 codebase の
 repair planning、tooling completeness は結論しない。
 
+## Cycle 22: Tuple holonomy defect invariant for protected certificate data
+
+```text
+candidate: Tuple holonomy defect invariant for protected certificate data
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: profile-curvature/certificate-transport/invariance/obstruction/traceability
+goal_delta: protected tuple data holonomy を obligation / repair frontier / trace field の component defect invariant として分解し、visible-flat な selected square の hidden curvature と transport obstruction を同じ語彙で扱えるようにした。
+project_value_delta: Cycle 11/14/18 の tuple protected-data witness、transport exactness、finite-square curvature を report / paper 用の component-level invariant package に統合した。
+formalization_quality: pass。`TupleProtectedComponent`、same-profile / cross-profile component-indexed defect、zero-defect iff、endpoint/square witness、transport obstruction、package theorem が axiom-free / sorry-free で証明されている。
+open_questions: component defect の合成則、任意 selected grid/path family への holonomy defect calculus、source-ref packet/tuple visualization の lossy exactness detector との接続。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TupleHolonomyDefect.lean` は、profile tuple certificate の
+protected data 差分を component-indexed defect として切り出す。component は `obligation`、
+`repairFrontier atom`、`traceField atom` であり、zero defect は protected tuple data agreement
+と同値である。
+
+Lean 証拠は次を固定する。
+
+- `TupleProtectedComponent`: hidden holonomy を担う protected tuple component。
+- `NoTupleHolonomyDefect` / `HasTupleHolonomyDefect`: same-profile の zero / nonzero defect。
+- `TupleHolonomyDefect`: same-profile component-indexed defect。
+- `noTupleHolonomyDefect_iff_protectedData`: zero defect は `SameTupleProtectedData` と同値である。
+- `tupleHolonomyDefect_obstructs_noTupleHolonomyDefect`: 任意 component defect は zero defect を阻害する。
+- `endpointTuple_visibleSurface_hides_indexedDefects`: selected endpoint pair は visible tuple surface で一致するが、
+  obligation、database repair frontier、database trace field の各 component defect を持つ。
+- `tupleProtectedDataSquare_componentDefects_curve`: selected finite square は visible-flat だが、
+  component defect を持ち、protected-data reading では curved である。
+- `NoTupleHolonomyDefectAcross` / `TupleHolonomyDefectAcross`: cross-profile zero / component defect。
+- `noTupleHolonomyDefectAcross_iff_protectedDataAcross`: cross-profile zero defect は
+  `SameTupleProtectedDataAcross` と同値である。
+- `tupleHolonomyDefectAcross_obstructs_losslessTransport`: transported component defect は
+  `PreservesTupleProtectedDataAcross` を阻害する。
+- `tupleTransportOfGridMap_noTupleHolonomyDefectAcross`: grid-map tuple transport は protected data を
+  pointwise に運ぶため zero cross-profile defect を持つ。
+- `tupleHolonomyDefect_invariant_package`: same-profile zero criterion、endpoint indexed defects、
+  selected square curvature、transport obstruction、grid-map zero-defect transport を束ねる theorem package。
+
+この結果により、tuple protected-data curvature は単なる `¬ SameTupleProtectedData` ではなく、
+どの protected component が hidden holonomy を支えているかを参照できる defect interface として扱える。
+主張は supplied finite tuple certificate、selected finite square、declared tuple transport に相対化され、
+任意 profile family の global classification、canonical transport、source extraction completeness、
+ArchMap correctness、実コード全体の traceability は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 21 後の total SCORE は 2560 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 22 後の total SCORE は 2680 である。
 次に進める場合は、source-ref exactness detects lossy packet-to-tuple visualization、finite codebase trace holonomy
-packet、tuple holonomy defect invariant、または selected decomposition を越える grid localization calculus を狙う。
+packet、component defect の合成則、または selected decomposition を越える grid localization calculus を狙う。
