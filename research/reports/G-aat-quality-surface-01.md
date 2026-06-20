@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3940
+- total SCORE: 4070
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -38,8 +38,9 @@
   - certificate-transport / repair-potential / traceability / invariance / obstruction: 130
   - repair-potential / traceability / atom-supported-quality-geometry / invariance: 130
   - obstruction / repair-potential / traceability / invariance: 120
+  - obstruction / repair-potential / traceability / invariance / quality-surface: 130
 - evidence portfolio:
-  - proved-in-research: 32
+  - proved-in-research: 33
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1414,11 +1415,52 @@ Lean 証拠は次を固定する。
 exactness law を含むことが明確になった。主張は supplied finite source-ref packets と declared repair actions に
 相対化され、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 33: Supported-token mismatch obstruction
+
+```text
+candidate: Supported-token mismatch obstruction: frontier exact but source-ref non-exact
+candidate_type: orientation
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: obstruction/repair-potential/traceability/invariance/quality-surface
+goal_delta: support-local repair action が frontier restriction と post frontier collapse を満たしても、support 内 wrong source-ref token により source-ref exact visualization が失敗する有限 witness を固定した。
+project_value_delta: Cycle 31 の positive frontier calculus、Cycle 32 の outside-support obstruction、Cycle 29 の token identity obstruction を、repair success と source-ref exactness の二層性として圧縮した。
+formalization_quality: pass。`supportedTokenMismatch_frontierRestriction_holds` は全 atom の frontier formula であり、空 frontier だけに弱めていない。同一 witness で support-locality、post frontier collapse、visible packet / tuple equivalence、storage table component defect、lossy visualization、non-exactness を証明する。全 declaration は axiom-free / sorry-free。
+open_questions: support-local repair/transport commutator criterion、frontier formula minimality theorem、selected support-defect localization。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SupportedTokenMismatchObstruction.lean` は、
+frontier success と source-ref exactness が一致しないことを示す有限 repair witness を定義する。
+`supportedTokenMismatchRepairAction` は storage support に token を供給し、support 外 source-ref table を保存するため
+`SupportLocalSourceRefRepair` を満たす。しかし storage には supplied full packet の `storageRef` ではなく
+`workerRef` を入れる。
+
+Lean 証拠は次を固定する。
+
+- `supportedTokenMismatch_supportLocal`: wrong-token action は Cycle 31 の support-local repair law を満たす。
+- `supportedTokenMismatch_frontierRestriction_holds`: post frontier は pre frontier minus declared support として計算される。
+- `supportedTokenMismatch_postFrontier_empty`: wrong-token repair は post frontier を空にする。
+- `supportedTokenMismatch_visiblePacketSurface` / `supportedTokenMismatch_visibleTupleSurface`: full packet と wrong-token repaired packet は visible packet / tuple surface で一致する。
+- `supportedTokenMismatch_storageSourceRefTableDefect`: storage source-ref table component は full packet と一致しない。
+- `supportedTokenMismatch_storageSourceRefTableComponentDefect`: storage source-ref table mismatch は component-indexed packet defect である。
+- `supportedTokenMismatch_hasPacketHolonomyDefect`: wrong-token repaired packet は full packet に対して nonzero packet holonomy を持つ。
+- `supportedTokenMismatch_lossyPacketToTupleVisualization`: visible tuple flatness と protected packet holonomy defect が同じ witness に共存する。
+- `supportedTokenMismatch_not_sourceRefExactVisualization`: protected storage token defect が source-ref exact visualization を阻害する。
+- `supportedTokenMismatchObstruction_package`: support-locality、frontier formula、frontier collapse、visible flatness、component defect、lossy visualization、non-exactness を束ねる。
+
+この結果により、repair success は「missing / frontier が消える」ことと「正しい source-ref token identity へ戻る」ことに
+分離された。主張は supplied finite source-ref packets と declared repair actions に相対化され、canonical repair planning、
+source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 32 後の total SCORE は 3940 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 33 後の total SCORE は 4070 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 support-local repair/transport commutator criterion、
-supported-token mismatch obstruction、
 または selected support-defect localization を狙う。
