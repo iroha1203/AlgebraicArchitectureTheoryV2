@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3040
+- total SCORE: 3180
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -31,8 +31,9 @@
   - traceability / profile-curvature / certificate-transport / computability / repair-potential: 120
   - traceability / certificate-transport / invariance / computability / quality-surface: 120
   - traceability / repair-potential / certificate-transport / obstruction / invariance: 120
+  - obstruction / invariance / certificate-transport / profile-curvature / traceability: 140
 - evidence portfolio:
-  - proved-in-research: 25
+  - proved-in-research: 26
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1107,8 +1108,48 @@ supplied finite packet family、declared exact fill repair action、explicit pac
 tuple に相対化され、任意 repair reachability、source extraction completeness、ArchMap correctness、canonical
 extractor、global transport law、実コード全体の品質判定は結論しない。
 
+## Cycle 26: Component holonomy defect propagation and cancellation law
+
+```text
+candidate: Component holonomy defect propagation and cancellation law
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: obstruction/invariance/certificate-transport/profile-curvature/traceability
+goal_delta: tuple / packet component holonomy defect を static witness から finite propagation calculus へ持ち上げ、zero-holonomy leg に沿う defect の保存・反映と、nonzero defect leg の cancellation boundary を固定した。
+project_value_delta: Cycle 22/23 の component defect と packet-to-tuple projection を、future commutator / selected decomposition localization の基礎 calculus として再利用できる形にした。
+formalization_quality: pass。tuple/packet zero-defect refl/trans、left/right zero-leg propagation、packet-to-tuple projection after propagation、tuple/packet full/partial/full cancellation witnesses が axiom-free / sorry-free で証明されている。
+open_questions: genuine finite repair/transport commutator、selected decomposition を越える grid/path localization calculus、fold-locus 解析。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ComponentDefectPropagation.lean` は、
+Cycle 22/23 の component-indexed tuple / packet holonomy defects を finite calculus として扱う。
+zero-holonomy leg は protected data agreement であり、その leg に沿って component defect は保存・反映される。
+一方で、nonzero defect leg 同士は endpoint で cancel しうるため、unrestricted な defect composition は成立しない。
+
+Lean 証拠は次を固定する。
+
+- `noTupleHolonomyDefect_refl` / `noTupleHolonomyDefect_trans`: tuple zero holonomy は reflexive / transitive。
+- `tupleComponentDefect_propagates_left_of_zero` / `tupleComponentDefect_propagates_right_of_zero`: tuple component defect は left/right zero leg に沿って保存・反映される。
+- `noSourceRefPacketHolonomyDefect_refl` / `noSourceRefPacketHolonomyDefect_trans`: packet zero holonomy は reflexive / transitive。
+- `packetComponentDefect_propagates_left_of_zero` / `packetComponentDefect_propagates_right_of_zero`: packet component defect も left/right zero leg に沿って保存・反映される。
+- `packetComponentDefect_projects_after_left_zero`: zero leg で propagates した packet defect は packet-to-tuple bridge で tuple defect へ写る。
+- `tupleComponentDefects_can_cancel`: full / partial / full endpoint tuple chain では、obligation、database repair frontier、database trace field の各 defect が往復で存在しても endpoint は zero defect に戻る。
+- `packetComponentDefects_can_cancel`: full / partial / full source-ref packet chain でも、obligation、storage repair frontier、storage source-ref table の各 defect が往復で存在しても endpoint は zero defect に戻る。
+- `componentHolonomyDefectPropagation_package`: zero tuple/packet calculus、component propagation、packet-to-tuple projection after propagation、代表的 cancellation witness を束ねる theorem package。
+
+この結果により、hidden holonomy defect は zero leg に沿って追跡できる finite invariant になるが、nonzero defect を
+無条件に足し合わせる global defect algebra ではないことが明確になる。主張は supplied finite tuple certificates、
+source-ref packets、explicit packet-to-tuple bridge に相対化され、global additive defect group、canonical extraction、
+source extraction completeness、ArchMap correctness、任意 codebase traceability、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 25 後の total SCORE は 3040 である。
-次に進める場合は、genuine finite repair/transport commutator、component defect の合成則、
-または selected decomposition を越える grid localization calculus を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 26 後の total SCORE は 3180 である。
+次に進める場合は、genuine finite repair/transport commutator、
+selected decomposition を越える grid/path localization calculus、または source-ref exact fold-locus 解析を狙う。
