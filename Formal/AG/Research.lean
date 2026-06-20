@@ -29,3 +29,4 @@ import Formal.AG.Research.QualitySurface.SourceRefExactFoldLocus
 import Formal.AG.Research.QualitySurface.VisibleRepairTransportCommutator
 import Formal.AG.Research.QualitySurface.SourceRefTableLawObstruction
 import Formal.AG.Research.QualitySurface.LawfulRepairTransportCommutator
+import Formal.AG.Research.QualitySurface.SupportLocalRepairFrontier
