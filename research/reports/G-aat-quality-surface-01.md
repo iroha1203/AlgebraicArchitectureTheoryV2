@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4200
+- total SCORE: 4350
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -40,8 +40,9 @@
   - obstruction / repair-potential / traceability / invariance: 120
   - obstruction / repair-potential / traceability / invariance / quality-surface: 130
   - repair-potential / certificate-transport / traceability / invariance / obstruction: 130
+  - repair-potential / obstruction / traceability / invariance: 150
 - evidence portfolio:
-  - proved-in-research: 34
+  - proved-in-research: 35
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1497,10 +1498,55 @@ Cycle 32 の outside-support mutation と Cycle 33 の supported-token mismatch 
 主張は supplied finite source-ref packets、declared repair actions、explicit packet transport laws に相対化され、
 canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 35: Frontier-local formula minimality criterion
+
+```text
+candidate: Frontier-local formula minimality criterion
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 75
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 150
+category: repair-potential/obstruction/traceability/invariance
+goal_delta: support-local repair frontier formula に必要な missing-locus law を切り出し、table-level support-locality より弱い frontier-local criterion として固定した。
+project_value_delta: Cycle 31 の table-level sufficient condition、Cycle 32 の outside-support obstruction、Cycle 34 の transport-compatible frontier formula を、frontier-local correctness と table-local trace correctness の境界として整理した。
+formalization_quality: pass。`FrontierLocalSourceRefRepair` は formula の直定義ではなく support 上 clearing と support 外 missing-locus preserve/reflect として定義され、strictness witness と二 conjunct necessity を含む。全 declaration は axiom-free / sorry-free。
+open_questions: lawful repair/transport criterion minimality matrix、selected support-defect localization、selected commutator defect localization。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/FrontierLocalFormulaMinimality.lean` は、
+frontier formula に本当に必要な repair law を missing-locus level で抽出する。
+`FrontierLocalSourceRefRepair` は、declared repair support 上で post missing locus を消し、
+support 外で missing locus を保存・反映する law である。これは table-level の token identity preservation を要求しない。
+
+Lean 証拠は次を固定する。
+
+- `FrontierLocalSourceRefRepair`: formula そのものではなく、support 上 clearing と support 外 missing-locus preserve/reflect を持つ frontier-local law。
+- `supportLocal_implies_frontierLocal`: Cycle 31 の `SupportLocalSourceRefRepair` は frontier-local law を含意する。
+- `frontierLocal_frontierRestriction`: exact pre-frontier の下で frontier-local law は post frontier = pre frontier minus declared support を導く。
+- `frontierRestriction_implies_frontierLocal`: 同じ exactness 仮定の下で、frontier formula は frontier-local law を反映する。
+- `frontierLocal_iff_frontierRestriction`: exact pre-frontier に相対化した必要十分 criterion。
+- `tokenRenamingOutsideStorageRepairAction` / `tokenRenamingOutsideStorageRepairPacket`: support 外 endpoint token を rename する有限 witness。
+- `tokenRenaming_frontierLocal` / `tokenRenaming_frontierRestriction`: token-renaming witness は missingness と frontier formula を保つ。
+- `tokenRenaming_not_supportLocal`: 同じ witness は support 外 table identity を破るため table-level support-locality を満たさない。
+- `frontierFormula_outsideSupportConjunct_is_necessary`: declared support に属する pre-frontier atom は post frontier から消えるため、`¬ repairSupport` conjunct が必要である。
+- `frontierFormula_preFrontierConjunct_is_necessary`: repair support 外であっても pre-frontier でない atom は post frontier に入らないため、pre-frontier conjunct が必要である。
+- `frontierFormula_conjuncts_are_independent`: 二つの conjunct の独立 witness を束ねる。
+- `frontierLocalFormulaMinimality_package`: frontier-local criterion、strictness witness、conjunct necessity を束ねる。
+
+この結果により、frontier-local correctness と table-local trace correctness は分離された。
+repair dashboard が frontier だけを保証する場合、source-ref token identity の完全保存までは要求しない。
+一方で source-ref exact visualization や traceability surface では token identity が別途必要である。
+主張は supplied finite source-ref packets と declared repair actions に相対化され、canonical repair planning、
+source extraction completeness、ArchMap correctness、source-ref exact visualization、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 34 後の total SCORE は 4200 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 35 後の total SCORE は 4350 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
-frontier formula minimality theorem、
+lawful repair/transport criterion minimality matrix、
 または selected support-defect localization を狙う。
