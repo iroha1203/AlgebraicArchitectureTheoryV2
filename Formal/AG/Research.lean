@@ -5,3 +5,4 @@ import Formal.AG.Research.QualitySurface.ProfileCurvature
 import Formal.AG.Research.QualitySurface.TraceTransport
 import Formal.AG.Research.QualitySurface.StateSeparation
 import Formal.AG.Research.QualitySurface.TraceLocus
+import Formal.AG.Research.QualitySurface.TraceCurvature
