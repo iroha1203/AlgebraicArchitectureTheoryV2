@@ -18,3 +18,4 @@ import Formal.AG.Research.QualitySurface.SourceRefTokenIdentityReflection
 import Formal.AG.Research.QualitySurface.SourceRefPacketTransport
 import Formal.AG.Research.QualitySurface.TupleProtectedDataSquareCriterion
 import Formal.AG.Research.QualitySurface.TupleTransportComponentLaws
+import Formal.AG.Research.QualitySurface.GridHolonomyLocalization
