@@ -37,3 +37,4 @@ import Formal.AG.Research.QualitySurface.FrontierLocalFormulaMinimality
 import Formal.AG.Research.QualitySurface.FrontierLocalRepairTransportCommutator
 import Formal.AG.Research.QualitySurface.TransportTableLawRouteLocalization
 import Formal.AG.Research.QualitySurface.RouteDefectSupport
+import Formal.AG.Research.QualitySurface.VisibleLawDeletionProtectedZero
