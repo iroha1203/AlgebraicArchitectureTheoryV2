@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3180
+- total SCORE: 3300
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -32,8 +32,9 @@
   - traceability / certificate-transport / invariance / computability / quality-surface: 120
   - traceability / repair-potential / certificate-transport / obstruction / invariance: 120
   - obstruction / invariance / certificate-transport / profile-curvature / traceability: 140
+  - traceability / obstruction / invariance / certificate-transport / quality-surface: 120
 - evidence portfolio:
-  - proved-in-research: 26
+  - proved-in-research: 27
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1148,8 +1149,48 @@ Lean 証拠は次を固定する。
 source-ref packets、explicit packet-to-tuple bridge に相対化され、global additive defect group、canonical extraction、
 source extraction completeness、ArchMap correctness、任意 codebase traceability、実コード全体の品質判定は結論しない。
 
+## Cycle 27: Source-ref exact fold-locus propagation and repair exit
+
+```text
+candidate: Source-ref exact fold-locus propagation and repair exit
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: traceability/obstruction/invariance/certificate-transport/quality-surface
+goal_delta: visible tuple visualization が一致しながら source-ref exact visualization が失敗する fold locus を定義し、visible + packet holonomy defect との同値、source-ref exact leg に沿う伝播、component obstruction、repair exit を固定した。
+project_value_delta: Cycle 24 の exact/lossy detector、Cycle 25 の repair exit、Cycle 26 の component propagation を loss-aware visualization の finite fold-locus calculus として統合した。
+formalization_quality: pass。propagation は source-ref exact leg を仮定して visible と protected zero の両方を使い、packet-zero-only visible propagation は主張していない。全 declaration は axiom-free / sorry-free。
+open_questions: genuine finite repair/transport commutator、selected decomposition を越える grid/path localization calculus。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SourceRefExactFoldLocus.lean` は、
+packet-induced tuple visible surface が一致する一方で source-ref exact visualization が失敗する関係を
+`SourceRefExactFoldLocus` として定義する。fold locus は visible equivalence と packet-level protected
+holonomy defect の組と同値である。
+
+Lean 証拠は次を固定する。
+
+- `SourceRefExactFoldLocus`: visible tuple agreement plus non-exact source-ref visualization。
+- `sourceRefExactFold_iff_visible_packetDefect`: fold membership は visible agreement と packet holonomy defect の組と同値。
+- `full_partial_sourceRefExactFoldLocus`: full / partial packet pair は concrete fold-locus witness。
+- `sourceRefExactFoldLocus_propagates_left_of_exact` / `sourceRefExactFoldLocus_propagates_right_of_exact`: fold membership は source-ref exact leg に沿って left/right に伝播する。
+- `packetComponentDefect_obstructs_sourceRefExactFold`: visible fiber 内の packet component defect は fold-locus point を作る。
+- `propagatedPacketDefect_obstructs_sourceRefExactFold`: exact leg で propagated した component defect も fold obstruction になる。
+- `storageRepairPacket_exits_sourceRefExactFoldLocus`: supplied exact storage repair 後の full/repaired pair は fold locus から出る。
+- `sourceRefExactFoldLocus_package`: characterization、full/partial witness、exact-leg propagation、component obstruction、repair exit を束ねる theorem package。
+
+この結果により、source-ref exactness failure は単なる non-exact pair ではなく、visible quotient が protected
+source-ref holonomy を落とす finite fold locus として扱える。主張は supplied finite source-ref packets、
+explicit packet-to-tuple bridge、declared repair action に相対化され、global fold theory、canonical extraction、
+source extraction completeness、ArchMap correctness、任意 codebase traceability、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 26 後の total SCORE は 3180 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 27 後の total SCORE は 3300 である。
 次に進める場合は、genuine finite repair/transport commutator、
-selected decomposition を越える grid/path localization calculus、または source-ref exact fold-locus 解析を狙う。
+または selected decomposition を越える grid/path localization calculus を狙う。
