@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2320
+- total SCORE: 2440
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -25,8 +25,9 @@
   - traceability / certificate-transport / repair-potential / invariance: 90
   - quality-surface / profile-curvature / certificate-transport / traceability / repair-potential: 80
   - certificate-transport / obstruction / invariance / repair-potential / traceability: 110
+  - profile-curvature / certificate-transport / invariance / computability / obstruction: 120
 - evidence portfolio:
-  - proved-in-research: 19
+  - proved-in-research: 20
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -804,8 +805,60 @@ transports と selected witnesses に相対化され、complete necessity/suffic
 global minimality theorem、canonical global tuple transport、source extraction completeness、ArchMap correctness、
 実コード全体の traceability は結論しない。
 
+## Cycle 20: Grid-level flatness and holonomy localization criterion
+
+```text
+candidate: Grid-level flatness and holonomy localization criterion
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: profile-curvature/certificate-transport/invariance/computability/obstruction
+goal_delta: selected two-cell decomposition 上で、endpoint holonomy を trace / repair protected invariant の selected cell reading-curvature へ局所化し、all-selected-cells protected-flat なら endpoint protected holonomy が消える sufficient condition を固定した。
+project_value_delta: Cycle 10 の 3x3 witness と Cycle 12 の finite-square criterion を、Lean-backed な grid-level localization package として接続し、report / paper の grid holonomy frontier を一段閉じた。
+formalization_quality: pass。`SharedBoundaryProtectedCompatible`、`SelectedTwoCellDecomposition`、cellwise visible / protected flatness、trace / repair endpoint holonomy、trace / repair localization theorem、package theorem が axiom-free / sorry-free で証明されている。
+open_questions: selected two-cell decomposition を越える任意 finite grid / path family の localization theorem、canonical global pasting なしで扱える decomposition calculus、source-ref exactness detects lossy packet-to-tuple visualization、finite codebase trace example への接続。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/GridHolonomyLocalization.lean` は、
+Cycle 10 の finite `P_law x P_cover` 3x3 grid witness と Cycle 12 の
+`FiniteSquareCriterion` を、selected two-cell decomposition 上の holonomy localization
+criterion として接続する。
+
+Lean 証拠は次を固定する。
+
+- `GridCellEndpointPair` / `gridUpperRightCellPair`: selected upper-right cell の two path endpoint pair。
+- `gridTraceCellReading` / `gridRepairCellReading`: visible surface の下に trace missing locus /
+  repair frontier を protected invariant として置く selected readings。
+- `SharedBoundaryProtectedCompatible`: common prefix と branch endpoint 手前が trace-complete で、
+  database repair frontier を持たないこと。
+- `SelectedTwoCellDecomposition`: shared prefix、二つの branch vertex、upper-right endpoint pair、
+  shared-boundary protected compatibility を束ねる selected decomposition。
+- `AllSelectedCellsVisibleFlat` / `AllSelectedCellsProtectedFlat`: selected decomposition に相対化した
+  cellwise visible / protected flatness。
+- `endpointProtectedFlat_of_allSelectedCellsFlat`: selected cells が protected-flat なら endpoint
+  protected holonomy が消える sufficient condition。
+- `gridUpperRightCell_traceDiscrepancy` / `gridUpperRightCell_repairDiscrepancy`: endpoint trace /
+  repair protected invariant の concrete discrepancy。
+- `curvedCell_of_endpointTraceHolonomy` / `curvedCell_of_endpointRepairHolonomy`: cellwise visible-flatness
+  と endpoint holonomy から selected cell の `ReadingCurved` を得る localization theorem。
+- `gridHolonomy_localization_package`: selected two-cell decomposition、visible-flatness、
+  endpoint-flatness sufficient condition、trace / repair endpoint holonomy、trace / repair
+  reading-curvature、Cycle 10 の localized curvature cell をまとめる theorem package。
+
+この結果により、endpoint の path-ordered holonomy は、supplied selected decomposition と
+shared-boundary compatibility の下で、少なくとも selected upper-right elementary cell の
+reading-curvature として局所化できる。主張は supplied finite grid、selected visible reading、
+selected protected invariant、selected two-cell decomposition に相対化され、任意 finite grid の
+global flatness、任意 path family の pasting theorem、canonical profile transport、source extraction
+completeness、ArchMap correctness、実コード全体の traceability は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 19 後の total SCORE は 2320 である。
-次に進める場合は、grid-level flatness / holonomy criterion、source-ref exactness detects lossy packet-to-tuple visualization、
-finite codebase trace example への接続、または tuple holonomy defect invariant を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 20 後の total SCORE は 2440 である。
+次に進める場合は、source-ref exactness detects lossy packet-to-tuple visualization、finite codebase trace example
+への接続、tuple holonomy defect invariant、または selected decomposition を越える grid localization calculus を狙う。
