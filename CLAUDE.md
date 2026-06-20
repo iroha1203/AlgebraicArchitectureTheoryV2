@@ -54,6 +54,7 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 | SFT docs | `docs/sft` | Software Field Theory と AAT / SFT interface |
 | Tooling | `tools/archsig`, `tools/fieldsig`, `docs/tool` | ArchMap / LawPolicy / ArchSig / FieldSig の CLI・schema・workflow |
 | Website | `website`, `docs/website` | Cloudflare Pages 向け no-build static surface |
+| 研究プログラム | `research/`, `Formal/AG/Research` | 研究 GOAL の下で候補探索 → 三審判 → Lean 検証 / 証拠固定 → SCORE 監査 → フェーズ区切り判定を回すループ engine と検証 sandbox |
 | Archive | `docs/archive` | 過去文書の退避先。現行 source of truth ではない |
 
 主要な入口:
@@ -63,6 +64,7 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 - `docs/aat/proof_obligations.md` — proof obligation と empirical hypothesis の台帳
 - `docs/aat/lean_theorem_index.md` — Lean 定義・定理索引
 - `docs/tool/README.md` — 現行 tooling 境界
+- `research/README.md` — ループ研究 engine の入口(`$research-loop`)
 
 ## 検証コマンド
 
