@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4350
+- total SCORE: 4480
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -39,10 +39,10 @@
   - repair-potential / traceability / atom-supported-quality-geometry / invariance: 130
   - obstruction / repair-potential / traceability / invariance: 120
   - obstruction / repair-potential / traceability / invariance / quality-surface: 130
-  - repair-potential / certificate-transport / traceability / invariance / obstruction: 130
+  - repair-potential / certificate-transport / traceability / invariance / obstruction: 260
   - repair-potential / obstruction / traceability / invariance: 150
 - evidence portfolio:
-  - proved-in-research: 35
+  - proved-in-research: 36
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1543,9 +1543,53 @@ repair dashboard が frontier だけを保証する場合、source-ref token ide
 主張は supplied finite source-ref packets と declared repair actions に相対化され、canonical repair planning、
 source extraction completeness、ArchMap correctness、source-ref exact visualization、実コード全体の品質判定は結論しない。
 
+## Cycle 36: Frontier-local repair/transport commutator criterion
+
+```text
+candidate: Frontier-local repair/transport commutator criterion
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: repair-potential/certificate-transport/traceability/invariance/obstruction
+goal_delta: lawful repair/transport square の route frontier correctness に必要な仮定を table-level support-locality から missing-locus level の frontier-localityへ下げた。
+project_value_delta: Cycle 34 の support-local commutator と Cycle 35 の frontier-local minimalityを統合し、frontier formula correctness と source-ref exact visualization を別ラベルの law 層として分離した。
+formalization_quality: pass。`transportedAction_frontierLocal_of_lawful` は `SupportLocalSourceRefRepair` を仮定せず、`LawfulRepairTransportSquare` と source frontier-locality から target frontier-locality を導く。identity lawful square 上の token-renaming witness により旧 support-local 仮定より真に弱いことを commutator 文脈で証明する。全 reported declarations は axiom-free / sorry-free。
+open_questions: lawful criterion minimality matrix、support/action/obligation/table law の独立必要性、selected commutator defect localization。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/FrontierLocalRepairTransportCommutator.lean` は、
+Cycle 34 の repair/transport frontier commutator を Cycle 35 の `FrontierLocalSourceRefRepair` へ弱化する。
+仮定は supplied packet、declared source action / transported action、explicit packet update `τ`、
+`LawfulRepairTransportSquare τ action transportedAction`、source 側の
+`FrontierLocalSourceRefRepair action packet`、および source packet の exact pre-frontier に相対化される。
+
+Lean 証拠は次を固定する。
+
+- `transportedAction_frontierLocal_of_lawful`: lawful square と source frontier-locality から transported action の frontier-locality が出る。
+- `frontierLocalRepairTransport_leftFrontierRestriction`: repair-then-transport route の frontier は transported pre-frontier minus transported support である。
+- `frontierLocalRepairTransport_rightFrontierRestriction`: transport-then-repair route の frontier も同じ transported formula である。
+- `frontierLocalRepairTransport_routeFrontiers_agree`: 両 route endpoint の repair frontier は一致する。
+- `frontierLocalRepairTransport_sourceRefExactVisualization`: source-ref exact visualization は frontier-locality ではなく lawful square 側の protected laws から得られる。
+- `identitySourceRefPacketUpdate` / `identitySourceRefPacketTransport_lawful` / `self_repairActionTransportNaturality`: strict weakening witness を lawful square 内へ置くための identity square。
+- `tokenRenaming_identity_lawfulSquare`: Cycle 35 の token-renaming action は identity packet transport と lawful square を作る。
+- `frontierLocalRepairTransport_strictlyWeakens_supportLocalHypothesis`: 同じ witness は frontier-local route formula、route agreement、source-ref exact visualization を満たすが、`SupportLocalSourceRefRepair` は満たさない。
+- `frontierLocalRepairTransportCommutator_package`: transported exact frontier、transported frontier-locality、left/right frontier formula、route frontier agreement、source-ref exact visualization、strict weakening witness を束ねる。
+
+この結果により、repair/transport route の frontier correctness は source-ref table identity preservation まで要求しない
+missing-locus law として読める。一方で source-ref exact visualization は lawful square の table / obligation /
+visible laws に残る。したがって report や tooling surface では、frontier formula correctness と source-ref exact visualization
+を別の保証として表示する必要がある。主張は supplied finite source-ref packets、declared repair actions、explicit
+packet transport laws に相対化され、canonical transport、canonical repair planning、source extraction completeness、
+ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 35 後の total SCORE は 4350 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 36 後の total SCORE は 4480 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
