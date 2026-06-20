@@ -4,15 +4,16 @@
 
 ## Current SCORE
 
-- total SCORE: 700
+- total SCORE: 850
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
   - profile-curvature / certificate-transport / computability / ridge-fold / repair-potential: 170
   - traceability / certificate-transport / invariance / atom-supported-quality-geometry: 120
   - traceability / quality-surface / multi-axis-signature / computability / ridge-fold: 130
+  - traceability / quality-surface / certificate-transport / repair-potential / ridge-fold: 150
 - evidence portfolio:
-  - proved-in-research: 5
+  - proved-in-research: 6
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -188,8 +189,47 @@ Lean 証拠は次を固定する。
 同じ数値に潰す lossful layer であることが Lean-backed に固定された。UI / report / paper surface では、
 zero value だけでなく measurement state、selector state、trace evidence、obligation を保持する必要がある。
 
+## Cycle 6: Finite trace-locus certificate grid
+
+```text
+candidate: Finite trace-locus certificate grid
+candidate_type: bridge
+evidence_stage: proved-in-research
+base_score: 75
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 150
+category: traceability/quality-surface/certificate-transport/repair-potential/ridge-fold
+goal_delta: 同じ visible scalar、selected verdict、selected support の下でも、trace locus と repair frontier が分岐することを Lean-proved finite witness として固定する。
+project_value_delta: cycle 4 の trace transport と cycle 5 の trace-missing state separation を、support 内の trace locus / exact repair frontier という drill-down surface へ接続する。
+formalization_quality: pass/high。finite support、trace field、missing locus、repair frontier、faithfulness 述語が明示され、主要 theorem は axiom-free / sorry-free で証明されている。
+open_questions: 任意有限 support への一般化、profile-typed certificate tuple への統合、finite codebase trace example、trace curvature detector との接続。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TraceLocus.lean` は、finite support atom `{api, database, queue}` 上で、
+同じ visible scalar reading、同じ selected verdict、同じ selected support を持つ二つの trace-locus certificate
+を構成する。一方は selected support 全体で trace token を持ち、もう一方は database atom の trace token を欠く。
+
+Lean 証拠は次を固定する。
+
+- `trace_locus_partition`: selected support は available trace locus と missing trace locus に分解される。
+- `trace_available_missing_disjoint`: available locus と missing locus は交わらない。
+- `fullTrace_available_on_support`: full certificate は selected support 上で trace token を持つ。
+- `partialTrace_missing_on_support`: partial certificate は selected support 上で missing trace を持つ。
+- `partialTrace_missing_locus_exact_database`: partial certificate の missing locus は database atom ちょうどである。
+- `partialTrace_repair_frontier_matches_missing_locus`: partial certificate の repair frontier は missing locus と一致する。
+- `surfaceSupport_not_faithful_to_missing_locus`: scalar / verdict / selected support projection は missing locus を復元できない。
+- `surfaceSupport_not_faithful_to_repair_frontier`: 同じ projection は repair frontier も復元できない。
+- `same_surface_support_but_trace_locus_diff`: 同じ visible surface / support の下で trace locus と repair frontier が分岐する。
+
+この結果により、Quality Surface の traceability surface は global な traced / missing label ではなく、
+support 内の locus decomposition と repair frontier を保持すべきであることが Lean-backed に固定された。
+support まで表示しても、trace locus と repair frontier はなお lossful projection の下に隠れうる。
+
 ### Next Frontier
 
-次サイクルでは、`finite trace-locus certificate example` または `trace curvature detector` を優先する。
-前者は trace token つき finite example を codebase-facing paper seed に近づけ、後者は profile-curvature と
-trace-missing state を結びつける。
+次サイクルでは、`trace curvature detector` または `finite codebase trace example` を優先する。前者は
+profile-curvature と trace-missing / trace-locus state を結びつけ、後者は Research sandbox の finite trace
+locus を codebase-facing paper seed に近づける。
