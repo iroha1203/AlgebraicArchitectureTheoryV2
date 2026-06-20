@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3560
+- total SCORE: 3690
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -35,8 +35,9 @@
   - traceability / obstruction / invariance / certificate-transport / quality-surface: 120
   - traceability / repair-potential / certificate-transport / obstruction / ridge-fold: 140
   - traceability / certificate-transport / obstruction / invariance / quality-surface: 120
+  - certificate-transport / repair-potential / traceability / invariance / obstruction: 130
 - evidence portfolio:
-  - proved-in-research: 29
+  - proved-in-research: 30
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1281,9 +1282,55 @@ support、missing locus、repair frontier、obligation、visible packet / tuple 
 finite token vocabulary、finite source-ref packet、explicit packet-to-tuple bridge に相対化され、global source-reference
 namespace、source extraction completeness、ArchMap correctness、任意 codebase traceability、実コード全体の品質判定は結論しない。
 
+## Cycle 30: Lawful repair/transport commutator criterion
+
+```text
+candidate: Lawful repair/transport commutator criterion
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: certificate-transport/repair-potential/traceability/invariance/obstruction
+goal_delta: repair/transport square の component laws と repair action field naturality から、二経路 endpoint の packet zero holonomy と source-ref exact visualization を導く十分条件を固定した。
+project_value_delta: Cycle 28/29 の negative obstruction を positive lawful criterion へ反転し、visible commutation ではなく protected component laws が exact visualization を保証する境界を追加した。
+formalization_quality: pass。`LawfulRepairTransportSquare` は endpoint equality、packet zero holonomy、tuple zero holonomy、source-ref exact visualization を仮定せず、bidirectional transport laws、visible preservation、obligation preservation、repair action field naturality から結論を導く。全 declaration は axiom-free / sorry-free。
+open_questions: necessity / minimality direction、selected commutator localization、support law が実際に効く extended repair-action semantics。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/LawfulRepairTransportCommutator.lean` は、
+repair followed by transport と transport followed by repair の二経路 endpoint を定義し、lawful な finite
+source-ref repair/transport square の十分条件を与える。
+
+仮定は次の component laws に分かれる。
+
+- `BidirectionalSourceRefPacketTransport`: support、missing locus、repair frontier、source-ref table の transport law。
+- `PreservesSourceRefVisibleSurface`: visible scalar / verdict preservation。
+- `PreservesSourceRefObligation`: obligation preservation。
+- `RepairActionTransportNaturality`: repair action field の `repairSupport` iff、`repairedSourceRefTable` pointwise equality、`repairedObligation` equality。
+
+Lean 証拠は次を固定する。
+
+- `repairTransport_visiblePacketSurface_of_lawful`: 二経路 endpoint は visible packet surface で一致する。
+- `repairTransport_noPacketHolonomy_of_lawful`: 二経路 endpoint は packet protected zero-holonomy を持つ。
+- `repairTransport_tupleZeroHolonomy_of_lawful`: packet zero holonomy は tuple zero holonomy へ射影される。
+- `repairTransport_visibleTupleSurface_of_lawful`: visible packet agreement は packet-induced tuple visible surface へ射影される。
+- `repairTransport_sourceRefExactVisualization_of_lawful`: 二経路 endpoint は source-ref exact visualization を持つ。
+- `lawfulRepairTransportCommutatorCriterion_package`: 任意 supplied packet に対して visible packet commutation、packet zero holonomy、visible tuple commutation、tuple zero holonomy、source-ref exact visualization を束ねる。
+
+この結果により、Cycle 28 の visible-only failure と Cycle 29 の table-law obstruction は、lawful criterion の外側に
+位置づけられる。visible commutation だけでは不十分だが、source-ref table、repair frontier、obligation、visible
+surface、repair action field naturality が揃うと、repair/transport commutator は protected zero になり、source-ref
+exact visualization へ上がる。主張は supplied finite source-ref packets、declared repair actions、explicit
+packet-to-tuple bridge に相対化され、global repair planning、canonical transport、source extraction completeness、
+ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 29 後の total SCORE は 3560 である。
-次に進める場合は、lawful repair/transport commutator criterion、
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 30 後の total SCORE は 3690 である。
+次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
-または obligation preservation law を含む拡張 transport structure を狙う。
+または support law が実際に効く extended repair-action semantics を狙う。
