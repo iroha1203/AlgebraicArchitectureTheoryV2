@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4070
+- total SCORE: 4200
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -39,8 +39,9 @@
   - repair-potential / traceability / atom-supported-quality-geometry / invariance: 130
   - obstruction / repair-potential / traceability / invariance: 120
   - obstruction / repair-potential / traceability / invariance / quality-surface: 130
+  - repair-potential / certificate-transport / traceability / invariance / obstruction: 130
 - evidence portfolio:
-  - proved-in-research: 33
+  - proved-in-research: 34
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1457,10 +1458,49 @@ Lean 証拠は次を固定する。
 分離された。主張は supplied finite source-ref packets と declared repair actions に相対化され、canonical repair planning、
 source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 34: Support-local repair/transport frontier commutator criterion
+
+```text
+candidate: Support-local repair/transport frontier commutator criterion
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: repair-potential/certificate-transport/traceability/invariance/obstruction
+goal_delta: lawful repair/transport square と source action の support-locality から、transported support-locality、両 route の同一 frontier formula、route frontier agreement、source-ref exact visualization を導いた。
+project_value_delta: Cycle 30 の protected commutator criterion と Cycle 31 の support-local frontier calculus を、transport compatible frontier repair theorem として統合した。
+formalization_quality: pass。`transportedAction_supportLocal_of_lawful` は transported support-locality を仮定せず導出し、left/right route frontier restriction は同じ transported formula を結論する。全 declaration は axiom-free / sorry-free。
+open_questions: frontier formula minimality theorem、selected support-defect localization、lawful criterion の necessity / minimality。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SupportLocalRepairTransportCommutator.lean` は、
+lawful transport 下で support-local repair frontier calculus が二経路 commutator と整合することを証明する。
+仮定は supplied packet、declared source action / transported action、explicit packet update `τ`、および
+`LawfulRepairTransportSquare τ action transportedAction` と source 側の `SupportLocalSourceRefRepair action packet` に相対化される。
+
+Lean 証拠は次を固定する。
+
+- `packetTransport_repairFrontierExact`: packet transport law は `RepairFrontierExact` を transported packet へ運ぶ。
+- `transportedAction_supportLocal_of_lawful`: lawful square と source support-locality から transported action の support-locality が出る。
+- `supportLocalRepairTransport_leftFrontierRestriction`: repair-then-transport route の frontier は transported pre-frontier minus transported support である。
+- `supportLocalRepairTransport_rightFrontierRestriction`: transport-then-repair route の frontier も同じ transported formula である。
+- `supportLocalRepairTransport_routeFrontiers_agree`: 両 route endpoint の repair frontier は一致する。
+- `supportLocalRepairTransport_sourceRefExactVisualization`: lawful square は両 route の source-ref exact visualization を与える。
+- `supportLocalRepairTransportCommutator_package`: transported exact frontier、transported support-locality、left/right frontier formula、route frontier agreement、source-ref exact visualization を束ねる。
+
+この結果により、repair support は lawful transport 下で functorial に移送される frontier-deleting operation として読める。
+Cycle 32 の outside-support mutation と Cycle 33 の supported-token mismatch は、この criterion の外側に位置づけられる。
+主張は supplied finite source-ref packets、declared repair actions、explicit packet transport laws に相対化され、
+canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 33 後の total SCORE は 4070 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 34 後の total SCORE は 4200 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
-support-local repair/transport commutator criterion、
+frontier formula minimality theorem、
 または selected support-defect localization を狙う。
