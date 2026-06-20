@@ -4,13 +4,14 @@
 
 ## Current SCORE
 
-- total SCORE: 450
+- total SCORE: 570
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
   - profile-curvature / certificate-transport / computability / ridge-fold / repair-potential: 170
+  - traceability / certificate-transport / invariance / atom-supported-quality-geometry: 120
 - evidence portfolio:
-  - proved-in-research: 3
+  - proved-in-research: 4
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -110,8 +111,46 @@ Lean 証拠は次を固定する。
 transport の path coherence として固定された。scalar view が flat に見える square でも、support / repair
 frontier は曲がりうる。
 
+## Cycle 4: Trace-natural certificate transport bridge
+
+```text
+candidate: Trace-natural certificate transport bridge
+candidate_type: bridge
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: traceability/certificate-transport/invariance/atom-supported-quality-geometry
+goal_delta: trace field を support transport の保存対象として Lean-backed に接続し、support transport と trace naturality failure を有限 witness で分離する。
+project_value_delta: AAT Research の traceability surface と将来の ArchMap / website 説明面に使える橋を追加する。ただし toy finite witness であり、finite codebase trace example でも profile-curvature 本体でもない。
+formalization_quality: pass。`TraceAvailableOn`、`TraceMissingOn`、`TransportedSupport`、`TraceNatural`、preservation theorem、finite missing-trace witness が Lean で明示されている。
+open_questions: profile-typed certificate tuple 全体への trace transport 統合、finite codebase trace example、measured-zero / unmeasured / trace-missing separation、trace curvature detector。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TraceTransport.lean` は、support atom を target atom へ運ぶ
+`TransportedSupport` と、partial trace field の availability / missing predicate を定義する。
+`TraceNatural` は、selected source support 上で target trace field が atom transport と trace-token map に可換であることを表す。
+
+Lean 証拠は次を固定する。
+
+- `traceAvailableOn_transport_of_traceNatural`: source support 上で trace token が利用可能で、profile change が
+  trace naturality を満たすなら、transported target support 上でも trace token が利用可能である。
+- `targetTraceAvailable_of_traceNatural`: finite witness の natural target trace field は target support 上で traced である。
+- `targetTraceMissing_not_traceNatural`: transported support の `bPrime` で trace token が欠ける target trace field は
+  trace naturality を満たさない。
+- `missingTraceOn_targetSupport`: target support には trace-missing atom が存在する。
+- `support_transport_without_trace_naturality_has_missing_trace`: support transport は成立しても、trace naturality がなければ
+  transported support に missing trace が残る。
+
+この結果により、supporting atom family を運ぶことと、利用可能な trace token を運ぶことが分離された。
+AAT 内部では source extraction completeness を主張せず、利用可能な trace token の保存条件だけを certificate transport の
+一部として扱う。
+
 ### Next Frontier
 
-次サイクルでは、`trace-natural certificate transport bridge` または
-`measured zero / unmeasured / trace-missing separation` を優先する。前者は traceability と transport
-を接続し、後者は finite trace example と loss-aware visualization の基礎を作る。
+次サイクルでは、`measured zero / unmeasured / trace-missing separation` または
+`finite trace-locus certificate example` を優先する。前者は loss-aware visualization の状態分離を進め、
+後者は trace token つき finite example を codebase-facing paper seed に近づける。
