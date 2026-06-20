@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3820
+- total SCORE: 3940
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -37,8 +37,9 @@
   - traceability / certificate-transport / obstruction / invariance / quality-surface: 120
   - certificate-transport / repair-potential / traceability / invariance / obstruction: 130
   - repair-potential / traceability / atom-supported-quality-geometry / invariance: 130
+  - obstruction / repair-potential / traceability / invariance: 120
 - evidence portfolio:
-  - proved-in-research: 31
+  - proved-in-research: 32
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1371,10 +1372,53 @@ Lean 証拠は次を固定する。
 bounded semantics になった。主張は supplied finite source-ref packets と declared repair actions に相対化され、
 canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 32: Outside-support mutation obstruction
+
+```text
+candidate: Outside-support mutation obstruction for support-local frontier restriction
+candidate_type: orientation
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: obstruction/repair-potential/traceability/invariance
+goal_delta: declared support 上の fill が成功しても support 外 source-ref table mutation が post frontier、packet holonomy、source-ref exact visualization を同時に壊す有限 witness を固定した。
+project_value_delta: Cycle 31 の support-local frontier restriction の `preservesOutsideSupport` が removable ではないことを、visible-flat かつ source-ref lossy な packet-to-tuple visualization として示した。
+formalization_quality: pass。`WeakSupportFillSourceRefRepair` は declared support fill のみを要求し、同一 witness で visible packet / tuple equivalence、frontier restriction failure、endpoint component defects、lossy visualization、non-exactness を証明する。全 declaration は axiom-free / sorry-free。
+open_questions: support-local repair/transport commutator criterion、supported-token mismatch obstruction、selected support-defect localization。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/OutsideSupportMutationObstruction.lean` は、
+declared support 上の token supply だけでは support-local repair にならないことを示す有限 witness を定義する。
+`outsideSupportMutationRepairAction` は storage support を fill するが、support 外 endpoint の source-ref table を
+`none` に変える。
+
+Lean 証拠は次を固定する。
+
+- `WeakSupportFillSourceRefRepair`: declared support 上の token supply だけを読む弱い fill law。
+- `outsideSupportMutation_fillsDeclaredSupport`: mutation action は weak fill law を満たす。
+- `outsideSupportMutation_not_supportLocal`: mutation action は `preservesOutsideSupport` を破るため support-local ではない。
+- `outsideSupportMutation_endpointFrontier`: support 外 endpoint が post frontier に新規発生する。
+- `outsideSupportMutation_breaks_frontierRestriction`: Cycle 31 の frontier restriction formula は endpoint で失敗する。
+- `outsideSupportMutation_visiblePacketSurface` / `outsideSupportMutation_visibleTupleSurface`: full packet と mutation-repaired packet は visible packet / tuple surface で一致する。
+- `outsideSupportMutation_endpointRepairFrontierDefect` / `outsideSupportMutation_endpointSourceRefTableDefect`: endpoint に protected component defects がある。
+- `outsideSupportMutation_hasPacketHolonomyDefect`: mutation repair packet は full packet に対して nonzero packet holonomy を持つ。
+- `outsideSupportMutation_lossyPacketToTupleVisualization`: visible tuple flatness と protected packet holonomy defect が同じ witness に共存する。
+- `outsideSupportMutation_not_sourceRefExactVisualization`: protected endpoint table defect が source-ref exact visualization を阻害する。
+- `outsideSupportMutationObstruction_package`: weak fill success、non-support-locality、frontier failure、visible flatness、component defects、lossy visualization、non-exactness を束ねる。
+
+この結果により、support-locality は「support 内を直す」だけではなく、support 外 source-ref table を保存する
+exactness law を含むことが明確になった。主張は supplied finite source-ref packets と declared repair actions に
+相対化され、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 31 後の total SCORE は 3820 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 32 後の total SCORE は 3940 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 support-local repair/transport commutator criterion、
-または outside-support mutation obstruction を狙う。
+supported-token mismatch obstruction、
+または selected support-defect localization を狙う。
