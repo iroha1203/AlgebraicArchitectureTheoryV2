@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2800
+- total SCORE: 2920
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -29,8 +29,9 @@
   - traceability / repair-potential / computability / quality-surface / certificate-transport: 120
   - profile-curvature / certificate-transport / invariance / obstruction / traceability: 120
   - traceability / profile-curvature / certificate-transport / computability / repair-potential: 120
+  - traceability / certificate-transport / invariance / computability / quality-surface: 120
 - evidence portfolio:
-  - proved-in-research: 23
+  - proved-in-research: 24
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1015,9 +1016,54 @@ tuple protected-data geometry に反映する。主張は supplied finite source
 explicit packet-to-tuple bridge、selected endpoint tuple に相対化され、source extraction completeness、
 ArchMap correctness、canonical packet extractor、任意 codebase traceability、実コード全体の品質判定は結論しない。
 
+## Cycle 24: Source-ref exactness detects lossy packet-to-tuple visualization
+
+```text
+candidate: Source-ref exactness detects lossy packet-to-tuple visualization
+candidate_type: bridge
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: traceability/certificate-transport/invariance/computability/quality-surface
+goal_delta: visible tuple visualization と source-ref exact visualization を分離し、packet-induced tuple の zero holonomy と packet zero holonomy の同値により、lossy packet-to-tuple visualization を検出できる条件を固定した。
+project_value_delta: loss-aware visualization / drill-down report の paper seed として、visible equality だけでは hidden source-ref holonomy を落とすこと、source-ref exactness がそれを検出することを Lean-backed にした。
+formalization_quality: pass。`SourceRefExactVisualization`、tuple/packet zero-holonomy iff、lossy finite witness、component obstruction、source-ref table defect detection、package theorem が axiom-free / sorry-free で証明されている。
+open_questions: 任意 packet family、canonical extractor、実コード全体の traceability には拡張していない。次は repair/transport commutator、component defect composition、selected decomposition calculus が自然な frontier。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SourceRefExactVisualization.lean` は、
+packet-induced tuple visualization の exact-vs-lossy 境界を定義する。
+`SourceRefExactVisualization` は visible packet-induced tuple equivalence と tuple-level
+`NoTupleHolonomyDefect` の組であり、packet zero defect を定義へ埋め込まない。
+
+Lean 証拠は次を固定する。
+
+- `TupleVisibleVisualizationEquivalent`: packet-induced tuples の visible surface equivalence。
+- `SourceRefExactVisualization`: visible tuple equivalence と tuple zero holonomy を持つ exact visualization。
+- `LossyPacketToTupleVisualization`: visible tuple surface は一致するが packet holonomy defect が残る visualization。
+- `tupleZeroHolonomy_reflects_packetZeroHolonomy`: tuple zero holonomy から packet zero holonomy を反射する。
+- `packetTuple_zeroHolonomy_iff_packetZeroHolonomy`: packet-induced tuple zero holonomy と packet zero holonomy は同値である。
+- `sourceRefExactVisualization_iff_visible_packetZeroHolonomy`: exact visualization は visible tuple equivalence と
+  packet zero holonomy の組と同値である。
+- `packetHolonomyDefect_obstructs_sourceRefExactVisualization`: packet component defect は exact visualization を阻害する。
+- `lossyVisualization_not_sourceRefExact`: lossy visualization は source-ref exact ではない。
+- `sourceRefTableDefect_detected_as_tupleTraceFieldDefect`: source-ref table defect は tuple trace-field defect として検出される。
+- `full_partial_packetTuple_lossyVisualization`: full / partial packet pair は concrete lossy visualization である。
+- `sourceRefExactVisualization_package`: zero-holonomy iff、exactness iff、lossy witness、component obstruction、
+  source-ref table defect detection を束ねる theorem package。
+
+この結果により、tuple visible surface だけを見る visualization は finite source-ref packet holonomy を隠すが、
+source-ref exactness を要求すれば hidden packet holonomy は tuple protected-data defect として検出される。
+主張は supplied finite source-ref packets、finite code atom vocabulary、explicit packet-to-tuple bridge、
+selected endpoint tuple に相対化され、source extraction completeness、ArchMap correctness、canonical packet
+extractor、任意 codebase traceability、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 23 後の total SCORE は 2800 である。
-次に進める場合は、source-ref exactness detects lossy packet-to-tuple visualization、finite codebase trace holonomy
-packet の transport / repair commutator、component defect の合成則、または selected decomposition を越える
-grid localization calculus を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 24 後の total SCORE は 2920 である。
+次に進める場合は、finite codebase trace holonomy packet の transport / repair commutator、component defect の合成則、
+または selected decomposition を越える grid localization calculus を狙う。
