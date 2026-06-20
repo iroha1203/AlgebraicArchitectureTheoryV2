@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1280
+- total SCORE: 1410
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -15,8 +15,9 @@
   - traceability / profile-curvature / certificate-transport / repair-potential / ridge-fold: 170
   - quality-surface / traceability / ridge-fold / repair-potential: 110
   - traceability / computability / quality-surface / repair-potential: 150
+  - profile-curvature / quality-surface / certificate-transport / ridge-fold / traceability: 130
 - evidence portfolio:
-  - proved-in-research: 9
+  - proved-in-research: 10
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -354,8 +355,48 @@ Lean 証拠は次を固定する。
 供給済み source-ref evidence に相対化された packet geometry として固定された。visible scalar / verdict /
 support は source-ref trace frontier を復元しないため、loss-aware surface には packet-level drill-down が必要である。
 
+## Cycle 10: Finite 3x3 profile grid holonomy witness
+
+```text
+candidate: Finite 3x3 profile grid holonomy witness
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: profile-curvature/quality-surface/certificate-transport/ridge-fold/traceability
+goal_delta: 3x3 profile grid frontier を、localized curvature cell と endpoint holonomy discrepancy の Lean-proved finite witness として前進させる。
+project_value_delta: endpoint-only reading が path-ordered trace / repair frontier を失うことを、report / paper / future visualization surface で使える証拠にした。
+formalization_quality: pass/high。typed 3x3 grid、length-4 path、middle vertices、localized curvature cell、surrounding preservation steps、endpoint nonfaithfulness が axiom-free / sorry-free で証明されている。
+open_questions: 任意有限 square criterion、profile-typed certificate tuple 全体への統合、grid-level flatness / holonomy criterion、source-ref evidence を実 tooling artifact と同期する将来 surface。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ProfileGridHolonomy.lean` は、`LawLevel x CoverLevel` による
+finite 3x3 profile grid を定義する。左下 `low/coarse` から右上 `high/fine` へ向かう二つの
+length-4 monotone path を typed `EdgeTransport` の合成として置く。二つの path は共通の middle vertex を通り、
+右上の localized elementary cell を law-first / cover-first の逆順で通過する。
+
+Lean 証拠は次を固定する。
+
+- `lawFirst_uses_middle_grid_vertices`: law-first path は shared middle vertices と high/middle vertex を通る。
+- `coverFirst_uses_middle_grid_vertices`: cover-first path は shared middle vertices と mid/fine vertex を通る。
+- `gridHolonomy_visibleAgreement`: endpoint の scalar、verdict、support は二つの path で一致する。
+- `surrounding_steps_preserve_trace_frontier`: common prefix と周辺 step は trace frontier を保存し、database repair frontier を作らない。
+- `localized_curvature_cell`: localized upper-right cell は trace-complete endpoint と trace-missing endpoint を分岐させる。
+- `coverFirst_repair_frontier_matches_missing_locus`: cover-first endpoint の repair frontier は missing trace locus と一致する。
+- `endpointSurface_not_faithful_to_gridTraceLocus`: endpoint-only reading は path-ordered trace missing locus を復元できない。
+- `endpointSurface_not_faithful_to_gridRepairFrontier`: endpoint-only reading は path-ordered repair frontier を復元できない。
+- `same_grid_surface_but_path_ordered_frontier_diff`: 3x3 grid の path memory は endpoint surface では失われる。
+
+この結果により、cycle 7 の single-square trace curvature は、3x3 profile grid 上の endpoint holonomy discrepancy
+として固定された。主張は finite witness に限定され、global flatness theorem、source extraction completeness、
+実コード全体の品質判定、現行 tooling schema impact は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 9 後の total SCORE は 1280 である。
-次に進める場合は、任意有限 square への一般化、profile-typed certificate tuple 全体への拡張、
-finite profile grid holonomy criterion、または source-ref evidence を実 tooling artifact と同期する将来 surface を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 10 後の total SCORE は 1410 である。
+次に進める場合は、任意有限 square criterion、profile-typed certificate tuple 全体への拡張、
+grid-level flatness / holonomy criterion、または source-ref evidence を実 tooling artifact と同期する将来 surface を狙う。
