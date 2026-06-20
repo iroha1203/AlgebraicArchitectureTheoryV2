@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1020
+- total SCORE: 1130
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -13,8 +13,9 @@
   - traceability / quality-surface / multi-axis-signature / computability / ridge-fold: 130
   - traceability / quality-surface / certificate-transport / repair-potential / ridge-fold: 150
   - traceability / profile-curvature / certificate-transport / repair-potential / ridge-fold: 170
+  - quality-surface / traceability / ridge-fold / repair-potential: 110
 - evidence portfolio:
-  - proved-in-research: 7
+  - proved-in-research: 8
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -269,8 +270,52 @@ Lean 証拠は次を固定する。
 profile change に沿う path-ordered trace coherence として読む必要があることが Lean-backed に固定された。
 traceability は support の静的 drill-down だけでなく、profile square 上の curvature としても現れる。
 
+## Cycle 8: Finite reading adequacy chain for protected quality data
+
+```text
+candidate: Finite reading adequacy chain for protected quality data
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: quality-surface/traceability/ridge-fold/repair-potential
+goal_delta: cycle 2/5/6/7 の scalar/verdict/support loss、trace missing locus、repair frontier、path-ordered trace gap を、finite reading refinement と faithfulness hierarchy に統合する。
+project_value_delta: Lean-backed な report / paper seed として loss-aware Quality Surface の表示設計を protected invariant の復元可能性に接続する。
+formalization_quality: pass。`ReadingRefines`、faithfulness preservation、support surface nonfaithfulness、`RepairFrontierExact` 下の trace-locus-aware sufficiency、cycle 7 path-ordered repair adequacy gap が axiom-free / sorry-free で証明されている。
+open_questions: scalar-only reading node、obligation-aware / full protected signature reading、任意有限 square への一般化、finite codebase trace example への接続。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ReadingAdequacy.lean` は、Quality Surface の reading を
+finite chain と refinement preorder として整理する。reading は certificate 上の observational equivalence
+として扱い、`ReadingRefines` は fine reading の同値性が coarse reading の同値性を含意することを表す。
+`FaithfulToInvariant` は、ある reading で同値な certificate が protected invariant を同じくすることを表す。
+
+Lean 証拠は次を固定する。
+
+- `reading_refinement_preserves_faithfulness`: coarse reading がある invariant に faithful なら、その refinement
+  も同じ invariant に faithful である。
+- `surfaceSupport_not_faithful_to_traceMissingLocus`: visible scalar / verdict / selected support まで一致しても、
+  trace missing locus は復元できない。
+- `surfaceSupport_not_faithful_to_exactRepairFrontier`: exact trace-repair regime に制限しても、support surface
+  reading は repair frontier に faithful ではない。
+- `traceLocusAware_faithful_to_repairFrontier_of_exact`: exact trace-repair regime では、trace missing locus を含む
+  reading が repair frontier を復元する。
+- `same_surface_support_but_trace_locus_adequacy_gap`: cycle 6 の witness を、support surface と
+  trace-locus-aware reading の adequacy gap として読む。
+- `traceCurvature_surfaceSupport_not_pathOrderedRepairAdequate`: cycle 7 の trace-curvature cell では、同じ
+  upper-right scalar / verdict / support の下でも path-ordered repair frontier が復元できない。
+
+この結果により、Quality Surface の loss-aware 表示は、単なる UI choice ではなく、どの protected invariant に
+faithful な reading を選んでいるかという復元可能性の問題として固定された。主張は宣言された finite reading chain と
+exact trace-repair regime に相対化され、絶対 lattice、絶対最小性、source extraction completeness、実コード全体の
+品質判定は主張しない。
+
 ### Next Frontier
 
-G-aat-quality-surface-01 の SCORE threshold 1000 は cycle 7 で到達した。次に進める場合は、
-`finite codebase trace example`、任意有限 square への一般化、profile-typed certificate tuple 全体への拡張を
-別 GOAL / 後続 issue として扱う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 8 後の total SCORE は 1130 である。
+次に進める場合は、`finite codebase trace example`、任意有限 square への一般化、profile-typed certificate tuple
+全体への拡張、または finite profile grid holonomy criterion を狙う。
