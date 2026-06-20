@@ -34,3 +34,4 @@ import Formal.AG.Research.QualitySurface.OutsideSupportMutationObstruction
 import Formal.AG.Research.QualitySurface.SupportedTokenMismatchObstruction
 import Formal.AG.Research.QualitySurface.SupportLocalRepairTransportCommutator
 import Formal.AG.Research.QualitySurface.FrontierLocalFormulaMinimality
+import Formal.AG.Research.QualitySurface.FrontierLocalRepairTransportCommutator
