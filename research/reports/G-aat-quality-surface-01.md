@@ -4,14 +4,15 @@
 
 ## Current SCORE
 
-- total SCORE: 570
+- total SCORE: 700
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
   - profile-curvature / certificate-transport / computability / ridge-fold / repair-potential: 170
   - traceability / certificate-transport / invariance / atom-supported-quality-geometry: 120
+  - traceability / quality-surface / multi-axis-signature / computability / ridge-fold: 130
 - evidence portfolio:
-  - proved-in-research: 4
+  - proved-in-research: 5
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -149,8 +150,46 @@ Lean 証拠は次を固定する。
 AAT 内部では source extraction completeness を主張せず、利用可能な trace token の保存条件だけを certificate transport の
 一部として扱う。
 
+## Cycle 5: Measured-zero / unmeasured / trace-missing separation
+
+```text
+candidate: Measured-zero / unmeasured / trace-missing separation
+candidate_type: orientation
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: traceability/quality-surface/multi-axis-signature/computability/ridge-fold
+goal_delta: 同じ visible scalar `0` と selected verdict の下で、測定済みゼロ、未測定、trace 欠落が異なる certificate state と obligation を持つことを Lean-proved finite witness として固定する。
+project_value_delta: cycle 2 の scalar collapse と cycle 4 の trace transport を接続し、loss-aware Quality Surface 表示で zero-looking state を drill-down すべき理由を paper seed として追加する。
+formalization_quality: pass。`QualityCertificate` に actual measurement、selector、support、trace field、obligation が明示され、`SelectedTraceMissing`、三状態主 theorem、trace-missing 専用 nonfaithfulness theorem が Lean で証明されている。
+open_questions: 三状態分離の一般定理化、profile-typed certificate tuple への trace status 統合、finite codebase trace example、trace curvature detector。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/StateSeparation.lean` は、同じ visible scalar reading `0` と同じ
+selected verdict を持つ三つの finite certificate を構成する。`visibleScalarReading` は display convention
+であり、actual measurement とは別フィールドとして扱われる。
+
+Lean 証拠は次を固定する。
+
+- `measuredZero_has_actual_zero`: measured-zero は actual measurement として `some 0` を持つ。
+- `unmeasured_has_no_actual_measurement`: unmeasured は actual measurement を持たず、selector outside である。
+- `traceMissing_has_selected_support_and_missing_trace`: trace-missing は selected support と
+  `TraceTransport.TraceMissingOn` による missing trace を持つ。
+- `zeroLooking_certificates_state_separated`: 三状態は scalar/verdict では一致するが、actual measurement、
+  selector state、selected trace-missing evidence、obligation、protected state signature で分離される。
+- `scalarVerdict_not_faithful_to_selectedTraceMissing`: scalar/verdict projection は selected support と
+  trace field から導かれる trace-missing state を復元できない。
+
+この結果により、Quality Surface の zero-looking surface は、測定済みゼロ、未測定、trace 欠落を
+同じ数値に潰す lossful layer であることが Lean-backed に固定された。UI / report / paper surface では、
+zero value だけでなく measurement state、selector state、trace evidence、obligation を保持する必要がある。
+
 ### Next Frontier
 
-次サイクルでは、`measured zero / unmeasured / trace-missing separation` または
-`finite trace-locus certificate example` を優先する。前者は loss-aware visualization の状態分離を進め、
-後者は trace token つき finite example を codebase-facing paper seed に近づける。
+次サイクルでは、`finite trace-locus certificate example` または `trace curvature detector` を優先する。
+前者は trace token つき finite example を codebase-facing paper seed に近づけ、後者は profile-curvature と
+trace-missing state を結びつける。
