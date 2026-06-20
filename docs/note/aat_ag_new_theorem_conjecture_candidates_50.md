@@ -17,7 +17,7 @@ _作成: 2026-06-14 / ダイナミックワークフロー(16レンズ生成 →
 
 ## 取り組み優先度分類(A / B / C)
 
-候補を「いま着手する価値」で三分類する。これは固定された価値判断ではなく、`docs/research/` の棚卸しで随時見直す作業上の triage である。基準は (i) AAT 既存構造への接続の強さ、(ii) 有限 poset / finite linear algebra / Stanley-Reisner / LP / sheaf Laplacian など計算可能な道具へ落ちやすさ、(iii) CS/SWE 帰結の明確さ。
+候補を「いま着手する価値」で三分類する。これは固定された価値判断ではなく、`research/` の棚卸しで随時見直す作業上の triage である。基準は (i) AAT 既存構造への接続の強さ、(ii) 有限 poset / finite linear algebra / Stanley-Reisner / LP / sheaf Laplacian など計算可能な道具へ落ちやすさ、(iii) CS/SWE 帰結の明確さ。
 
 ### A. 特に取り組むべき価値があるもの(15件)
 
