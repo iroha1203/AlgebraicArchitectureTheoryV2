@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1870
+- total SCORE: 1950
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -20,8 +20,9 @@
   - profile-curvature / certificate-transport / ridge-fold / invariance: 140
   - traceability / atom-supported-quality-geometry / certificate-transport / quality-surface: 120
   - certificate-transport / invariance / repair-potential / traceability: 90
+  - profile-curvature / atom-supported-quality-geometry / repair-potential / invariance: 80
 - evidence portfolio:
-  - proved-in-research: 14
+  - proved-in-research: 15
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -575,9 +576,54 @@ component law によって exactness を運ぶ comparison map として扱える
 selected component laws に相対化され、任意 profile change の canonical transport、global flatness、source
 extraction completeness、ArchMap correctness、observation completeness、実コード全体の品質判定は結論しない。
 
+## Cycle 15: Support antichain finite-square curvature instance
+
+```text
+candidate: Support antichain finite-square curvature instance
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+category: profile-curvature/atom-supported-quality-geometry/repair-potential/invariance
+goal_delta: Cycle 3 の support-antichain / repair-hitting witness を Cycle 12 の generic finite-square criterion の正式 instance として固定した。
+project_value_delta: trace missing / repair frontier 以外の atom-supported repair geometry も selected protected invariant として finite-square reading-curvature へ載ることを示した。
+formalization_quality: pass。`profileCurvatureSquare`、visible scalar/verdict reading、support/repair protected invariant、endpoint support-family antichain evidence、support and repair discrepancy、generic finite-square criterion instance、旧 `CurvatureCell` への bridge theorem が axiom-free / sorry-free で証明されている。
+open_questions: grid-level flatness / holonomy criterion、source-ref token identity の injective reflection、lossy tuple transport の obstruction criterion、tuple protected data の finite-square criterion instance。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SupportAntichainSquareCriterion.lean` は、
+Cycle 3 の profile-curvature square を Cycle 12 の `FiniteSquareCriterion.FiniteSquare` として読み直す。
+visible reading は scalar reading と verdict のみを保持し、protected invariant は selected support family と
+repair hitting requirement の組として置く。
+
+Lean 証拠は次を固定する。
+
+- `profileCurvatureSquare`: Cycle 3 の四辺 transport と seed を generic finite square として表す。
+- `profileCurvature_endpointPairOfSquare`: generic finite-square endpoints が named law-first / cover-first paths と一致する。
+- `SameScalarVerdictSurface`: scalar / verdict のみを保持する visible reading。
+- `SameSupportRepairInvariant`: support family と repair hitting requirement を保持する protected invariant。
+- `supportRepairSquareReading`: visible scalar/verdict と protected support/repair を組にした square reading。
+- `profileCurvature_supportRepair_visibleFlat`: 二つの endpoints は visible scalar/verdict では flat である。
+- `lawFirst_supportFamily_nonempty_antichain`: law-first endpoint の support family は nonempty antichain である。
+- `coverFirst_supportFamily_nonempty_antichain`: cover-first endpoint の support family は nonempty antichain である。
+- `profileCurvature_supportFamily_discrepancy`: endpoints は support family で分岐する。
+- `profileCurvature_repairHitting_discrepancy`: endpoints は repair hitting requirement で分岐する。
+- `profileCurvature_instantiates_supportAntichainCriterion`: support/repair protected invariant は generic finite-square criterion の reading-curved instance である。
+- `profileCurvature_no_visibleFaithfulness_for_supportRepair`: scalar/verdict visible reading は support/repair invariant に faithful ではない。
+- `profileCurvature_readingCurved_implies_curvatureCell`: finite-square reading-curvature は旧 Cycle 3 の `CurvatureCell` と整合する。
+- `same_scalar_verdict_but_supportAntichainSquare_curved`: visible flatness、support-family antichain evidence、support/repair discrepancy、reading-curvature、nonfaithfulness をまとめる theorem package。
+
+この結果により、Cycle 12 の finite-square criterion は trace data だけでなく、atom-supported support family と
+repair hitting requirement にも適用できることが固定された。主張は selected finite square / selected reading /
+selected invariant に相対化され、新しい finite square witness、generic criterion の新発見、global flatness、
+global no-holonomy、source extraction completeness、ArchMap correctness、全 repair semantics は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 14 後の total SCORE は 1870 である。
-次に進める場合は、grid-level flatness / holonomy criterion、support antichain / tuple protected data の
-finite-square criterion instance、source-ref token identity の injective reflection、または lossy tuple transport の
-obstruction criterion を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 15 後の total SCORE は 1950 である。
+次に進める場合は、grid-level flatness / holonomy criterion、source-ref token identity の injective reflection、
+lossy tuple transport の obstruction criterion、または tuple protected data の finite-square criterion instance を狙う。
