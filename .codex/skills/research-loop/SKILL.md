@@ -79,16 +79,18 @@ G0 状態確認
 G1 探索と候補生成
 G2 価値スコア審判
 G3 Lean 検証または証拠固定
+G3.5 候補カード同期
 G4 SCORE 確定とレポート
 G5 PR レビューとマージ
 G6 研究フェーズ区切り判定
 ```
 
 ひとサイクルで PR に入れる主成果は原則ひとつにする。ただし一つの貢献を構成する補題群はまとめてよい。
+研究主張の revise は一巡だけにする。Lean の機械的修正、候補カード同期、PR メタデータ修正は二巡まで許すが、同じゲートで三度止まる場合は `proof stagnation`、`review stagnation`、または SCORE 減点として扱う。
 
 ### G0 状態確認
 
-1. `git status` を確認する。ユーザーの未コミット変更があれば勝手に戻さない。作業対象と衝突する場合は止まる。
+1. `git status` と `git ls-files --others --exclude-standard` を確認する。ユーザーの未コミット変更や未追跡ファイルがあれば勝手に戻さない。作業対象と衝突する場合は止まる。
 2. `main` を最新化する。
 3. tracking Issue `Research Loop: <goal-id>` を探す。なければ作る。
 4. 未完の PR があれば新しいブランチを切らずに続ける。
@@ -107,6 +109,7 @@ G6 研究フェーズ区切り判定
 - 驚き、圧縮、射程、反例性、計算可能性、古典理論や CS / SWE への橋のうち少なくとも一つを持つ。
 - 証明または証拠の道筋があり、単なる願望や名前だけの予想ではない。
 - claim boundary を守り、AAT / Lean / tooling の責務境界を混同しない。
+- 直前までのサイクル、spine、report、または open frontier の何を閉じる、鋭くする、合成する、置き換えるのかが明確である。
 
 候補種別を明記する。
 
@@ -130,6 +133,12 @@ mathematical_interest:
 goal_advancement:
 dullness_risk:
 proof_or_evidence_plan:
+planned_theorem_names:
+visible_projection:
+protected_structure:
+exactness_or_minimality_claim:
+nonfaithfulness_or_failure_mode:
+previous_cycle_delta:
 ```
 
 ### G2 価値スコア審判
@@ -170,7 +179,7 @@ checked:
 unchecked:
 ```
 
-三者が `accept` した候補のうち、期待 SCORE と研究価値が最も高いものを picked にする。A が `reject` した候補は数学的に進めない。B が `reject` した候補は GOAL に貢献しない。C が `reject` した候補は repo 全体の研究価値が不足している。正しいが低 SCORE の候補は、必要な補助結果でない限り採らない。`revise` は一度だけ直して再審判する。`reject` は `status: archived` とし、理由を残す。
+三者が `accept` した候補のうち、期待 SCORE と研究価値が最も高いものを picked にする。A が `reject` した候補は数学的に進めない。B が `reject` した候補は GOAL に貢献しない。C が `reject` した候補は repo 全体の研究価値が不足している。正しいが低 SCORE の候補は、必要な補助結果でない限り採らない。`revise` は一度だけ直して再審判する。審判が exactness、minimality、nonfaithfulness、typed transport、preservation/reflection などを要求した場合は、G3 へ進む前に候補カードと Lean 予定 statement に明示する。`reject` は `status: archived` とし、理由を残す。
 
 ### G3 Lean 検証または証拠固定
 
@@ -182,7 +191,20 @@ picked の性質に応じて証拠を固定する。
 2. 独立サブエージェントの公理検査が通る。
 3. 独立サブエージェントの Lean 形式化品質監査を通る。
 
-公理検査では、候補カードの主張文、Lean ファイル、claim boundary だけを渡す。`#print axioms <name>` を流し、定理候補では標準的な公理(`propext` / `Classical.choice` / `Quot.sound`)以外の公理や `sorryAx` がないこと、予想候補では `sorryAx` が結論部の一箇所だけにとどまること、前提・型・定義に sorry がないこと、Lean の命題が候補の主張と型の水準で一致し弱められていないことを確かめる。
+公理検査では、候補カードの主張文、Lean ファイル、claim boundary だけを渡す。`#print axioms <name>` を、レポートや候補カードに載せる全 declaration に対して流す。定理候補では `sorryAx`、非標準公理、相談されていない `axiom` がないこと、予想候補では `sorryAx` が結論部の一箇所だけにとどまること、前提・型・定義に sorry がないこと、Lean の命題が候補の主張と型の水準で一致し弱められていないことを確かめる。
+
+有限 witness、computability、trace/support、repair frontier、最小反例などの具体構成では、`propext` / `Classical.choice` / `Quot.sound` を自動的に clean と扱わない。`Set` equality や `↔` の `simp` が `propext` を導入した場合は、可能な範囲で `cases`、`constructor`、`intro`、`rfl`、矛盾消去、明示的 witness 構成へ戻す。標準公理が残る場合は、G3 で理由を明示し、G4 SCORE 監査が `x2.0` に値するかを承認しなければならない。
+
+ローカルでは対象範囲に応じて次を実行または同等に確認する。
+
+```bash
+lake env lean Formal/AG/Research/<file>.lean
+lake build FormalAGResearch
+#print axioms <declaration>
+rg -n "\\b(axiom|admit|sorry|unsafe)\\b" Formal/AG/Research
+rg -nP "[\\x{200B}-\\x{200F}\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}]" <changed-files>
+rg -n "$HOME|${TMPDIR%/}" <changed-files>
+```
 
 Lean 形式化品質監査では、候補の数学的命題が Lean で適切に表現されているかを確認する。型や仮定が強すぎて自明化していないか、弱すぎて元の主張を失っていないか、パラメータと claim boundary が明示されているか、vacuous な前提や到達不能な型で成功扱いしていないか、定理名と statement が研究レポートに載せられる水準かを見る。
 
@@ -195,9 +217,26 @@ Lean 形式化品質監査では、候補の数学的命題が Lean で適切に
 
 証拠が弱い成果は multiplier を低くする。重要だが証明できていない insight は `orientation` として扱い、`proved-in-research` と呼ばない。
 
+### G3.5 候補カード同期
+
+G4 へ進む前に、候補カード、証拠、Lean declaration、審判メモを同期する。候補カードは生成時の期待値ではなく、実際に固定された証拠の index として読める状態にする。
+
+候補カードには最低限、次を反映する。
+
+- `status: picked`。
+- 実際の `evidence_stage`。
+- 実際に通った Lean ファイルと declaration 名。
+- G3 後の `expected_base_score`、`expected_evidence_multiplier`、`expected_final_score`。期待値が実証済みの証拠とかけ離れていれば下げる。
+- proof/evidence plan の実績化。予定ではなく、何が証明され、何が証明されていないかを書く。
+- exactness、minimality、nonfaithfulness、failure mode、typed transport、preservation/reflection など、G2/G3 で追加要求された構造。
+- `#print axioms` と Lean 形式化品質監査の要約。
+- resolved revise と残った unchecked。
+
+候補カード、Lean declaration、report に載せる theorem 名、SCORE 監査入力がずれている場合は G4 に進まない。
+
 ### G4 SCORE 確定とレポート
 
-検証後、独立サブエージェントに SCORE 監査を行わせる。渡すのは GOAL、候補カード、証拠、G2 の三審判結果、diff だけにする。
+検証と G3.5 同期後、独立サブエージェントに SCORE 監査を行わせる。渡すのは GOAL、同期済み候補カード、証拠、G2 の三審判結果、G3 の監査結果、diff だけにする。
 
 監査は次を返す。
 
@@ -216,7 +255,7 @@ checked:
 unchecked:
 ```
 
-`confirm` または `reduce` の場合だけ `research/reports/<goal-id>.md` に書く。レポートは定理一覧ではなく、GOAL の能力がどう増えたかを書く。
+`confirm` または `reduce` の場合だけ `research/reports/<goal-id>.md` に書く。レポートは定理一覧ではなく、GOAL の能力がどう増えたかを書く。レポート、カテゴリ別 SCORE、total SCORE、proof portfolio、cycle section、Next Frontier / phase boundary メモは、候補カードの期待値ではなく G4 監査後の値で同時に更新する。
 
 各成果には次を残す。
 
@@ -230,18 +269,23 @@ unchecked:
 
 ひとつの picked の成果をひとつの PR にまとめる。PR には候補カード、Lean ファイルまたは証拠、レポート、tracking Issue の SCORE 更新を含める。
 
+tracking Issue は研究状態の正本であり、フェーズ区切りでも自動で閉じない。PR 本文では原則 `Refs #<tracking-issue>` を使う。人間が明示的に GOAL / tracking Issue の終了を指示した場合だけ `Closes #<tracking-issue>` を使う。
+
 PR 前にセルフレビューを行い、次を確認する。
 
 - G2 の価値判断、G3 の証拠、G4 の SCORE が diff に反映されている。
 - Lean 形式化品質監査の結果が diff と SCORE に反映されている。
 - `git diff --check` が通る。
+- `git diff --cached --check` が通る。
+- `git ls-files --others --exclude-standard` の未追跡ファイルを確認し、必要なものは含め、不要なものは PR に入れない。
 - 不可視 Unicode と双方向制御文字が混入していない。
 - ローカル絶対パス、個人情報、私的 fixture が公開物に入っていない。
 - 保護対象の数学本文や docs/note を編集していない。
+- PR 本文が tracking Issue を誤って close しない。
 
 PR レビューは原則として `$review-pr <PR番号>`、すなわち [review-pr](../review-pr/SKILL.md) skill に従って独立サブエージェントに行わせる。レビュー対象は diff、GOAL、候補カード、SCORE 監査結果、ゲート基準だけにする。マージ可能、要修正、判定不能の三つで判定する。同じ PR の修正は二巡までとし、それを超えたらレビューの停滞として止まる。
 
-マージするのは、独立レビューがマージ可能と判じ、かつ CI または必要なローカル検証が通っているときだけである。
+マージするのは、独立レビューがマージ可能と判じ、かつ CI または必要なローカル検証が通っているときだけである。`gh pr merge` がローカル worktree の `main` checkout 競合などで非ゼロ終了した場合は、直ちに blocked とせず、`gh pr view <PR> --json state,mergedAt,mergeCommit` で GitHub 上の merge 状態を確認する。
 
 ### G6 研究フェーズ区切り判定
 
@@ -261,7 +305,7 @@ GOAL は「完全達成」を判定する対象ではない。判定するのは
 - report が coherent な節または paper seed として読める。
 - 独立審判が、GOAL の研究能力が実質的に増え、次のサイクルを続けるより整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いと判定する。
 
-フェーズ区切りなら Issue は閉じず、phase summary コメントを残して止まる。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、別 GOAL を立てる、といった判断は人間に返す。区切りでなければ同じ GOAL で次サイクルへ戻る。
+フェーズ区切りなら Issue は閉じず、phase summary コメントを残して止まる。phase summary には、merged PR、merge commit、cycle ごとの SCORE、total SCORE、threshold、portfolio constraint、CI / 独立レビュー結果、report の現在地、次の frontier、人間に返す判断を含める。最後に tracking Issue が open のままであることを確認する。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、別 GOAL を立てる、といった判断は人間に返す。区切りでなければ同じ GOAL で次サイクルへ戻る。
 
 ## 停止条件
 
@@ -314,6 +358,12 @@ expected_final_score:
 score_reason:
 dullness_risk:
 proof_or_evidence_plan:
+planned_theorem_names:
+visible_projection:
+protected_structure:
+exactness_or_minimality_claim:
+nonfaithfulness_or_failure_mode:
+previous_cycle_delta:
 checked:
 unchecked:
 ```
@@ -385,7 +435,8 @@ unchecked:
 ```text
 Check the Lean evidence for candidate <candidate>.
 Inputs: candidate card <path>, Lean file <path>, GOAL claim boundary.
-Run or inspect #print axioms for the named declarations.
+Run or inspect #print axioms for every declaration that will be reported as evidence.
+For finite witness, computability, trace/support, repair frontier, or minimal counterexample claims, do not automatically treat propext/Classical.choice/Quot.sound as clean. If standard axioms remain, explain why the construction still deserves its evidence multiplier.
 Confirm that Formal/AG is only imported/referenced and not edited by this loop.
 Return:
 verdict: pass | fail | cannot-determine
@@ -393,6 +444,7 @@ build_status:
 axioms:
 has_sorryAx:
 allowed_axioms_only:
+standard_axiom_justification:
 fidelity_to_candidate:
 formal_ag_boundary_ok:
 reason:
@@ -421,11 +473,33 @@ checked:
 unchecked:
 ```
 
+**G3.5 候補カード同期**
+
+```text
+Audit whether candidate card <path>, Lean/evidence files, judge memos, and the planned report entry agree.
+Inputs: GOAL <goal-id>, candidate card <path>, evidence files, G2 judge outputs, G3 axiom check, G3 formalization quality audit.
+Do not change the score. Check synchronization only.
+Return:
+verdict: synced | revise | fail | cannot-determine
+status_is_picked:
+evidence_stage_matches:
+lean_declarations_match:
+expected_scores_not_stale:
+proof_plan_reflects_actual_evidence:
+exactness_minimality_or_failure_mode_reflected:
+axiom_and_formalization_audits_summarized:
+resolved_revises_recorded:
+report_names_match:
+reason:
+checked:
+unchecked:
+```
+
 **G4 SCORE 監査**
 
 ```text
 Audit the final SCORE for candidate <candidate>.
-Inputs: GOAL <goal-id>, candidate card <path>, evidence files, G2 judge A/B/C outputs, G3 axiom check, G3 formalization quality audit, and current diff.
+Inputs: GOAL <goal-id>, synchronized candidate card <path>, evidence files, G2 judge A/B/C outputs, G3 axiom check, G3 formalization quality audit, G3.5 sync audit, and current diff.
 Do not preserve the proposed score unless the evidence supports it.
 Return:
 score_verdict: confirm | reduce | reject
@@ -453,6 +527,9 @@ In addition to the normal PR review, check the research-loop gates:
 - Lean formalization quality audit is represented faithfully
 - Formal/AG is not directly edited
 - protected math docs and docs/note are not edited
+- git diff --check, git diff --cached --check, and untracked-file hygiene were checked
+- PR body uses Refs for the tracking Issue unless the human explicitly requested closure
+- GitHub merge state is verified after merge attempts
 Return the review-pr verdict and any research-loop-specific findings.
 ```
 
@@ -461,13 +538,15 @@ Return the review-pr verdict and any research-loop-specific findings.
 ```text
 Judge whether the current work forms a good research phase boundary for GOAL <goal-id>.
 Inputs: GOAL, tracking Issue SCORE ledger, research/reports/<goal-id>.md, category scores, evidence stages, phase boundary criteria.
-Do not judge the GOAL as completely achieved. Judge whether this phase is coherent enough to stop and return to the human.
+Do not judge the GOAL as completely achieved. Do not close the tracking Issue. Judge whether this phase is coherent enough to stop and return to the human with a phase summary.
 Return:
 verdict: phase-boundary | continue | blocked | goal-defect
 total_score:
 portfolio_constraint:
 coherent_report_or_paper_seed:
 research_kiri:
+phase_summary_required_fields:
+tracking_issue_remains_open:
 next_best_action:
 reason:
 checked:
@@ -480,6 +559,8 @@ unchecked:
 - AAT の内側に source observation、measurement tooling、ArchMap validation の完全性 claim を持ち込まない。
 - Lean の依存は `Formal/AG/Research` から `Formal/AG` への一方向に保つ。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
 - `axiom`、予想以外の `sorry`、`unsafe` を相談なく持ち込まない。
+- tracking Issue は研究状態の正本であり、明示的な人間指示なしに `Closes` で閉じない。
+- staged diff と unstaged diff の両方を検査し、未追跡ファイルを確認してから PR を出す。
 - 破壊的な git 操作(`reset --hard`、`checkout --`、force push)は使わない。
 - `.lake` を一時出力置き場に使わない。一時出力は `.tmp/` または `/private/tmp` に置く。
 
