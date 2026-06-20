@@ -6,3 +6,5 @@ import Formal.AG.Research.QualitySurface.TraceTransport
 import Formal.AG.Research.QualitySurface.StateSeparation
 import Formal.AG.Research.QualitySurface.TraceLocus
 import Formal.AG.Research.QualitySurface.TraceCurvature
+import Formal.AG.Research.QualitySurface.ReadingAdequacy
+import Formal.AG.Research.QualitySurface.CodebaseTracePacket
