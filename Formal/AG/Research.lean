@@ -13,3 +13,4 @@ import Formal.AG.Research.QualitySurface.ProfileTupleIntegration
 import Formal.AG.Research.QualitySurface.FiniteSquareCriterion
 import Formal.AG.Research.QualitySurface.SourceRefTupleBridge
 import Formal.AG.Research.QualitySurface.TupleTransportExactness
+import Formal.AG.Research.QualitySurface.SupportAntichainSquareCriterion
