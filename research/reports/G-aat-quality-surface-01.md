@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2920
+- total SCORE: 3040
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -30,8 +30,9 @@
   - profile-curvature / certificate-transport / invariance / obstruction / traceability: 120
   - traceability / profile-curvature / certificate-transport / computability / repair-potential: 120
   - traceability / certificate-transport / invariance / computability / quality-surface: 120
+  - traceability / repair-potential / certificate-transport / obstruction / invariance: 120
 - evidence portfolio:
-  - proved-in-research: 24
+  - proved-in-research: 25
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1062,8 +1063,52 @@ source-ref exactness を要求すれば hidden packet holonomy は tuple protect
 selected endpoint tuple に相対化され、source extraction completeness、ArchMap correctness、canonical packet
 extractor、任意 codebase traceability、実コード全体の品質判定は結論しない。
 
+## Cycle 25: Finite source-ref repair holonomy annihilation restores exact visualization
+
+```text
+candidate: Finite source-ref repair holonomy annihilation restores exact visualization
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: traceability/repair-potential/certificate-transport/obstruction/invariance
+goal_delta: supplied exact source-ref repair action を hidden packet holonomy を消す before/after diagram として固定し、repair 後に packet zero holonomy、tuple zero holonomy、source-ref exact visualization が復元されることを示した。
+project_value_delta: Cycle 21 の repair trajectory、Cycle 23 の packet holonomy、Cycle 24 の exact visualization detector を report / paper 用の repair-holonomy annihilation package に統合した。
+formalization_quality: pass。post-repair protected-data agreement、packet zero holonomy、tuple zero holonomy、source-ref exact visualization restoration、pre-repair lossy non-exact contrast が axiom-free / sorry-free で証明されている。
+open_questions: genuine repair/transport commutator、component defect composition law、selected decomposition を越える grid localization calculus。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SourceRefRepairHolonomy.lean` は、
+Cycle 21 の supplied storage repair action を、finite source-ref packet holonomy を消す操作として読む。
+repair 前の `fullPacket / partialPacket` pair は visible packet-to-tuple surface では flat だが source-ref exact
+ではない。一方、`partialPacket` に `storageRepairAction` を適用した `storageRepairPacket` は、
+`fullPacket` と protected data で一致する。
+
+Lean 証拠は次を固定する。
+
+- `storageRepairPacket_sameProtectedData_fullPacket`: repaired packet は full packet と obligation、
+  repair frontier、source-ref table で一致する。
+- `storageRepairPacket_noPacketHolonomy_fullPacket`: post-repair pair は packet zero holonomy を持つ。
+- `storageRepairPacket_noTupleHolonomy_fullPacket`: packet-to-tuple bridge を通して tuple zero holonomy が成立する。
+- `storageRepairPacket_sourceRefExactVisualization`: post-repair pair は source-ref exact visualization である。
+- `repairRestores_sourceRefExactVisualization`: pre-repair full/partial pair は non-exact だが、full/repaired pair は exact である。
+- `repairAnnihilates_packetHolonomy`: pre-repair packet holonomy defect は repair 後に zero defect へ消える。
+- `repairHolonomy_before_after_contrast`: visible support surface は repair 前後の protected holonomy annihilation を検出しない。
+- `sourceRefRepairHolonomyAnnihilation_package`: exact fill、visible preservation、post-repair missing/frontier collapse、
+  protected-data agreement、exact visualization restoration、pre-repair lossy holonomy を束ねる theorem package。
+
+この結果により、finite codebase trace repair は単なる source-ref table 更新ではなく、hidden source-ref packet
+holonomy を annihilate し exact visualization を復元する certificate-geometric step として扱える。主張は
+supplied finite packet family、declared exact fill repair action、explicit packet-to-tuple bridge、selected endpoint
+tuple に相対化され、任意 repair reachability、source extraction completeness、ArchMap correctness、canonical
+extractor、global transport law、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 24 後の total SCORE は 2920 である。
-次に進める場合は、finite codebase trace holonomy packet の transport / repair commutator、component defect の合成則、
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 25 後の total SCORE は 3040 である。
+次に進める場合は、genuine finite repair/transport commutator、component defect の合成則、
 または selected decomposition を越える grid localization calculus を狙う。
