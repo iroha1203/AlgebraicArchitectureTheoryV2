@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4480
+- total SCORE: 4580
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -41,8 +41,9 @@
   - obstruction / repair-potential / traceability / invariance / quality-surface: 130
   - repair-potential / certificate-transport / traceability / invariance / obstruction: 260
   - repair-potential / obstruction / traceability / invariance: 150
+  - obstruction / certificate-transport / traceability / invariance / quality-surface: 100
 - evidence portfolio:
-  - proved-in-research: 36
+  - proved-in-research: 37
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1587,9 +1588,53 @@ visible laws に残る。したがって report や tooling surface では、fro
 packet transport laws に相対化され、canonical transport、canonical repair planning、source extraction completeness、
 ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 37: Transport table-law deletion localizes the selected route defect
+
+```text
+candidate: Transport table-law deletion localizes the selected route defect
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 50
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 100
+category: obstruction/certificate-transport/traceability/invariance/quality-surface
+goal_delta: selected repair/transport route square 上で、visible / obligation / frontier / action naturality が flat でも source-ref table law deletion による endpoint table defect と exact visualization failure が残ることを固定した。
+project_value_delta: lawful criterion minimality matrix の table-law cell を補強し、frontier correctness と source-ref exactness failure を別表示する根拠を追加した。
+formalization_quality: pass。主張は selected finite witness に限定され、global minimality や whole-codebase quality へ越境していない。reported declarations は axiom-free / sorry-free。
+open_questions: support/action/obligation/visible law の独立必要性、全 matrix ではなく selected cell 群としての整理、route defect support calculus。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TransportTableLawRouteLocalization.lean` は、Cycle 29 の
+`sourceRefTokenSwapTransport` を selected repair/transport route square に持ち上げる。
+対象は supplied full packet、token-swap packet update、full table を再供給する selected repair action に相対化される。
+
+Lean 証拠は次を固定する。
+
+- `fullTableResupplyRepairAction`: selected full/token-swapped packets 上で full source-ref table を再供給する repair action。
+- `tokenSwapRoute_repairThenTransportPacket` / `tokenSwapRoute_transportThenRepairPacket`: token-swap update と re-supply action から作る二つの route endpoints。
+- `tokenSwapRoute_nonTableTransportLaws`: token-swap transport は support、missing locus、repair frontier を preserve / reflect する。
+- `tokenSwapRoute_selfActionNaturality`: selected repair action は self action naturality を満たす。
+- `tokenSwapRoute_not_lawfulSquare`: ただし transport table law がないため `LawfulRepairTransportSquare` にはならない。
+- `tokenSwapRoute_visiblePacketSurface` / `tokenSwapRoute_visibleTupleSurface`: route endpoints は visible packet / tuple surface で flat。
+- `tokenSwapRoute_obligation_flat` / `tokenSwapRoute_repairFrontier_flat`: route endpoints は obligation と repair frontier でも flat。
+- `tokenSwapRoute_selectedSourceRefTableDefect`: selected endpoint source-ref table component に route defect が局在する。
+- `tokenSwapRoute_hasPacketHolonomyDefect`: selected table defect は nonzero packet holonomy を与える。
+- `tokenSwapRoute_lossyPacketToTupleVisualization`: visible tuple flatness と packet holonomy defect が同じ route square に共存する。
+- `tokenSwapRoute_not_sourceRefExactVisualization`: selected table defect は source-ref exact visualization を阻害する。
+- `transportTableLawSelectedLocalization_package`: table-law-minus assumptions、flat components、selected table defect、lossy visualization、non-exactness を束ねる。
+
+この結果により、visible/support/frontier/obligation/action-naturality が flat でも、transport table law を削ると
+selected source-ref token identity の route defect が残ることが分かる。これは global な lawful criterion minimality
+matrix の完全分類ではなく、table-law deletion による selected localization cell である。主張は supplied finite
+source-ref packets、token-swap update、declared repair action、selected route endpoint comparison に相対化され、
+canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 36 後の total SCORE は 4480 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 37 後の total SCORE は 4580 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
