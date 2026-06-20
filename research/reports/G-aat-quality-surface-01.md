@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4580
+- total SCORE: 4720
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -42,8 +42,9 @@
   - repair-potential / certificate-transport / traceability / invariance / obstruction: 260
   - repair-potential / obstruction / traceability / invariance: 150
   - obstruction / certificate-transport / traceability / invariance / quality-surface: 100
+  - certificate-transport / traceability / obstruction / invariance / repair-potential / computability: 140
 - evidence portfolio:
-  - proved-in-research: 37
+  - proved-in-research: 38
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1632,9 +1633,50 @@ matrix の完全分類ではなく、table-law deletion による selected local
 source-ref packets、token-swap update、declared repair action、selected route endpoint comparison に相対化され、
 canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 38: Route defect support calculus for selected repair/transport endpoints
+
+```text
+candidate: Route defect support calculus for selected repair/transport endpoints
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: certificate-transport/traceability/obstruction/invariance/repair-potential/computability
+goal_delta: repair/transport endpoint defect を component-indexed support calculus として読み、empty iff zero holonomy、tuple projection、zero-leg propagation、selected exact support 計算を固定した。
+project_value_delta: visible-flat route の table-only two-coordinate support と multi-component triple support を同じ route support calculus で比較できるようにした。
+formalization_quality: pass。主張は finite SourceRefPacket、selected endpoint pair、explicit packet-to-tuple bridge に限定され、global minimality matrix や whole-codebase quality へ越境していない。reported declarations は axiom-free / sorry-free。
+open_questions: support/action/obligation/visible law deletion cells、route defect support の minimal support family 化、loss-aware visualization surface への整理。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/RouteDefectSupport.lean` は、route endpoint pair の protected defect を
+`RouteDefectSupport` として読む。`RouteComponentAgreement` は obligation、atom-indexed repair frontier、
+atom-indexed source-ref table の component agreement を与え、`RouteDefectSupportEmpty` は全 component agreement を
+pointwise に要求する。
+
+Lean 証拠は次を固定する。
+
+- `routeDefectSupport_iff_packetHolonomyDefect`: route defect support は component-indexed packet holonomy defect と一致する。
+- `routeDefectSupport_empty_iff_noPacketHolonomy`: empty route defect support は packet zero holonomy と同値。
+- `routeDefectSupport_projects_to_tupleDefects`: route defect support は packet-to-tuple bridge で tuple protected component defect へ射影される。
+- `routeDefectSupport_propagates_left_of_zero` / `routeDefectSupport_propagates_right_of_zero`: zero packet-holonomy leg に沿って defect support は preserve / reflect される。
+- `tokenSwapRoute_defectSupport_exact_tablePair`: Cycle 37 table-law route は endpoint / worker source-ref table の exact two-table support を持ち、obligation、全 repair frontier、storage table coordinate は flat。
+- `visibleRepairTransport_defectSupport_triple`: Cycle 28 visible-only route は obligation、storage repair frontier、storage source-ref table の exact triple support を持ち、storage 以外の repair frontier / table coordinates は flat。
+- `routeDefectSupportCalculus_package`: empty criterion、tuple projection、zero-leg propagation、two selected exact support computations を束ねる。
+
+この結果により、visible route flatness は route defect support に faithful ではないことが、二つの異なる finite witness で
+明確になる。Cycle 37 の table-law deletion は table coordinate pair に defect support を局在させ、Cycle 28 の visible-only
+route は obligation / frontier / table の multi-component support を持つ。主張は supplied finite source-ref packets、
+selected route endpoint pair、explicit packet-to-tuple bridge に相対化され、lawful criterion minimality matrix の完全分類、
+canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、
+実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 37 後の total SCORE は 4580 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 38 後の total SCORE は 4720 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
