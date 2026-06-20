@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2210
+- total SCORE: 2320
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -24,8 +24,9 @@
   - traceability / invariance / atom-supported-quality-geometry: 90
   - traceability / certificate-transport / repair-potential / invariance: 90
   - quality-surface / profile-curvature / certificate-transport / traceability / repair-potential: 80
+  - certificate-transport / obstruction / invariance / repair-potential / traceability: 110
 - evidence portfolio:
-  - proved-in-research: 18
+  - proved-in-research: 19
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -755,8 +756,56 @@ Lean 証拠は次を固定する。
 相対化され、canonical global tuple transport、任意 profile grid の flatness、source extraction completeness、
 ArchMap correctness、実コード全体の traceability、全 repair semantics は結論しない。
 
+## Cycle 19: Finite component-law independence witnesses for tuple transport
+
+```text
+candidate: Finite component-law independence witnesses for tuple transport
+candidate_type: orientation
+evidence_stage: proved-in-research
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: certificate-transport/obstruction/invariance/repair-potential/traceability
+goal_delta: Cycle 14 の十分条件を逆向きの有限 obstruction witness 群へ変換し、support / trace-none / repair-frontier component law の欠落が missing locus または exact repair frontier を壊すことを固定した。
+project_value_delta: Research / Lean / paper seed に lossless tuple transport の境界を説明する finite obstruction calculus を追加した。global minimality、任意 transport 分類、tooling / source completeness には拡張しない。
+formalization_quality: pass。trace / repair witnesses は visible tuple surface preservation、support witnesses は scalar / verdict-only preservation に分離され、component-law failure と missing-locus / exact-repair failure が axiom-free / sorry-free で証明されている。
+open_questions: grid-level flatness / holonomy criterion、source-ref exactness detects lossy packet-to-tuple visualization、finite codebase trace example への接続、tuple holonomy defect invariant。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/TupleTransportComponentLaws.lean` は、
+Cycle 14 の `BidirectionalTupleTransport` の十分条件を、有限 component-law failure witness として
+逆向きに読む。trace / repair frontier を変える witnesses は Cycle 11 の visible tuple surface
+`(sigma, nu, selectedSupport)` を保つ。support を変える witnesses は selected support 自体を動かすため、
+visible tuple surface preserving とは呼ばず、scalar / verdict-only reading の下で分離する。
+
+Lean 証拠は次を固定する。
+
+- `SameTupleScalarVerdict`: support を含まない scalar / verdict-only reading。
+- `traceErasingTransport` / `traceCreatingTransport`: trace-none component law failure witnesses。
+- `repairErasingTransport` / `repairCreatingTransport`: repair-frontier component law failure witnesses。
+- `supportDroppingTransport` / `supportExpandingTransport`: support preservation / reflection failure witnesses。
+- `traceErasing_preserves_visibleTupleSurface` / `traceCreating_preserves_visibleTupleSurface`: trace witnesses は visible tuple surface を保つ。
+- `repairErasing_preserves_visibleTupleSurface` / `repairCreating_preserves_visibleTupleSurface`: repair witnesses は visible tuple surface を保つ。
+- `supportDropping_preserves_scalarVerdict` / `supportExpanding_preserves_scalarVerdict`: support witnesses は scalar / verdict を保つ。
+- `traceNoneReflection_failure_obstructs_missingLocus_reflection`: trace erasure は trace-none reflection と missing-locus reflection を壊す。
+- `traceNonePreservation_failure_obstructs_missingLocus_preservation`: trace creation は trace-none preservation と missing-locus preservation を壊す。
+- `repairPreservation_failure_obstructs_exactRepair_preservation`: repair erasure は repair preservation と exact repair preservation を壊す。
+- `repairReflection_failure_obstructs_exactRepair_preservation`: repair creation は repair reflection と exact repair preservation を壊す。
+- `supportPreservation_failure_obstructs_missingLocus_preservation`: support dropping は support preservation と missing-locus preservation を壊す。
+- `supportReflection_failure_obstructs_missingLocus_reflection`: support expansion は support reflection と missing-locus reflection を壊す。
+- `tupleTransport_componentLaws_independence_package`: visible / scalar-verdict preservation と component-law failure witnesses をまとめる theorem package。
+
+この結果により、tuple transport exactness は単なる sufficiency theorem ではなく、どの component law を
+落とすとどの protected exactness が壊れるかを有限 witness として持つ。主張は supplied finite tuple
+transports と selected witnesses に相対化され、complete necessity/sufficiency classification、
+global minimality theorem、canonical global tuple transport、source extraction completeness、ArchMap correctness、
+実コード全体の traceability は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 18 後の total SCORE は 2210 である。
-次に進める場合は、grid-level flatness / holonomy criterion、lossy tuple transport obstruction、
-source-ref exactness detects lossy packet-to-tuple visualization、または finite codebase trace example への接続を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 19 後の total SCORE は 2320 である。
+次に進める場合は、grid-level flatness / holonomy criterion、source-ref exactness detects lossy packet-to-tuple visualization、
+finite codebase trace example への接続、または tuple holonomy defect invariant を狙う。
