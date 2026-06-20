@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1520
+- total SCORE: 1660
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -17,8 +17,9 @@
   - traceability / computability / quality-surface / repair-potential: 150
   - profile-curvature / quality-surface / certificate-transport / ridge-fold / traceability: 130
   - unification / atom-supported-quality-geometry / traceability / repair-potential: 110
+  - profile-curvature / certificate-transport / ridge-fold / invariance: 140
 - evidence portfolio:
-  - proved-in-research: 11
+  - proved-in-research: 12
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -438,9 +439,55 @@ Lean 証拠は次を固定する。
 profile fiber 上の protected tuple geometry として読める。主張は supplied trace data と finite profile witness に
 相対化され、source extraction completeness、global flatness、実コード全体の品質判定、現行 tooling schema impact は結論しない。
 
+## Cycle 12: Arbitrary finite square protected-invariant curvature criterion
+
+```text
+candidate: Arbitrary finite square protected-invariant curvature criterion
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: profile-curvature/certificate-transport/ridge-fold/invariance
+goal_delta: finite square profile-curvature criterion を typed path composites 上で再利用できる形にし、cycle 7 trace square を trace missing locus / repair frontier の instance として固定した。
+project_value_delta: finite witness 群を generic protected-invariant curvature criterion へつなぎ、report / paper で witness から判定基準へ移る節を支える。
+formalization_quality: pass。`SquareEdgeTransport`、`FiniteSquare`、`endpointPairOfSquare`、square-level curvature theorem、faithful no-holonomy theorem、cycle 7 trace missing / repair frontier instances が axiom-free / sorry-free で証明されている。
+open_questions: support antichain / tuple protected data への additional instance、grid-level flatness / holonomy criterion、non-definitional tuple transport theorem、source-ref packet と profile tuple の preservation/reflection。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/FiniteSquareCriterion.lean` は、有限 square を四頂点と四つの
+typed edge transport、および seed certificate からなる generic data として定義する。
+`endpointPairOfSquare` は law-first / cover-first の二つの path composite endpoint を取り出す。
+その endpoint pair に対して chosen visible reading と chosen protected invariant を与え、
+visible flatness と protected discrepancy を reading-curvature として読む。
+
+Lean 証拠は次を固定する。
+
+- `SquareEdgeTransport`: profile vertex 間の typed edge transport。
+- `FiniteSquare`: lower-left / lower-right / upper-left / upper-right、seed、四つの edge transport からなる finite square。
+- `endpointPairOfSquare`: finite square の二つの path composite endpoint。
+- `finiteSquare_curvature_of_visible_agreement_protected_discrepancy`: visible flat かつ protected invariant discrepancy があれば reading-curved である。
+- `finiteSquare_no_holonomy_of_faithful_reading`: visible reading が protected invariant に faithful なら protected holonomy discrepancy は起きない。
+- `finiteSquare_not_faithful_of_curvature`: reading-curved square は visible faithfulness を否定する。
+- `finiteSquare_curvature_of_square_visible_protected_discrepancy`: square data から直接 reading-curvature を読む。
+- `finiteSquare_no_holonomy_of_square_faithful_reading`: square data 上の faithful no-holonomy theorem。
+- `traceCurvatureSquare`: cycle 7 の trace-curvature witness を generic finite square として表す。
+- `traceCurvature_endpointPairOfSquare`: generic square endpoint pair が cycle 7 の named law-first / cover-first endpoints と一致する。
+- `traceCurvature_instantiates_traceMissingCriterion`: trace missing locus は finite-square criterion の instance である。
+- `traceCurvature_instantiates_repairFrontierCriterion`: repair frontier は finite-square criterion の instance である。
+- `same_trace_surface_but_finiteSquareCriterion_curved`: 同じ visible trace surface の下で、trace missing locus と repair frontier の両方が reading-curved である。
+
+この結果により、profile curvature は witness の列挙だけでなく、選んだ reading がどの protected invariant に
+faithful でないかを finite square の path composite で判定する形へ整理された。主張は selected reading /
+selected invariant / supplied finite evidence に相対化され、global flatness、source extraction completeness、
+実コード全体の品質判定、現行 tooling schema impact は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 11 後の total SCORE は 1520 である。
-次に進める場合は、任意有限 square criterion、profile tuple に沿う non-definitional transport theorem、
-source-ref packet と profile tuple の統合、grid-level flatness / holonomy criterion、または source-ref evidence を
-実 tooling artifact と同期する将来 surface を狙う。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 12 後の total SCORE は 1660 である。
+次に進める場合は、profile tuple に沿う non-definitional transport theorem、source-ref packet と profile tuple の
+preservation/reflection、grid-level flatness / holonomy criterion、または support antichain / tuple protected data の
+finite-square criterion instance を狙う。
