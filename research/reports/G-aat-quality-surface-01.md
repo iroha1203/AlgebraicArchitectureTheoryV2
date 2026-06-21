@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6810
+- total SCORE: 6950
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -58,8 +58,9 @@
   - obstruction / certificate-transport / repair-potential / traceability / invariance / quality-surface: 140
   - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
   - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
+  - obstruction / certificate-transport / repair-potential / traceability / invariance / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 53
+  - proved-in-research: 54
 
 ## Phase synthesis
 
@@ -75,7 +76,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-53 件の Lean-proved research artifacts は、次の paper seed を形成している。
+54 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -118,8 +119,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 53 後の total SCORE は 6810 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 53 件持ち、
+Cycle 54 後の total SCORE は 6950 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 54 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -2427,9 +2428,49 @@ Lean 証拠は次を固定する。
 主張は supplied route slots、staged selected correction semantics、explicit source-ref packet bridge に相対化され、
 arbitrary repair planner、runtime patch synthesis、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 54: Failing slot certificate
+
+```text
+candidate: Failing slot certificate
+candidate_type: obstruction-certificate / closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: obstruction / certificate-transport / repair-potential / traceability / invariance / quality-surface
+goal_delta: Cycle 53 の family exactness failure を、slot と stage failure を持つ explicit certificate object として取り出せることを固定した。
+project_value_delta: route-family failure を boolean ではなく reportable obstruction certificate として扱う interface を作り、minimal failing slot theorem と computable finite scan instance への bridge を作った。
+rival_delta: ADL / conformance checker は per-route failing status を表示できるが、family exactness failure iff certificate と no-certificate exactness theorem は与えない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch` は pass。generic certificate declarations は標準 `propext` / `Classical.choice` / `Quot.sound` のみに依存し、mixed witness existence は axiom-free。Lean statement は `Slot : Type u` 全般であり、finite enumeration や computable scan は主張しない。
+open_questions: minimal failing slot theorem、computable finite scan instance、heterogeneous route interaction。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/FailingSlotCertificate.lean` は、
+staged assignment `Slot -> RepairStage` に対して failing slot certificate `FailingSlotWitness` を定義する。
+certificate は failing slot と、その slot が `allBranches` stage でない証拠を持つ。
+
+Lean 証拠は次を固定する。
+
+- `failingSlotCertificate_obstructs_familyExact`: failing-slot certificate は family source-ref exactness を阻む。
+- `not_familyExact_iff_exists_failingSlotCertificate`: family exactness failure は failing-slot certificate の存在と同値である。
+- `familyExact_iff_no_failingSlotCertificate`: family exactness は failing-slot certificate が存在しないことと同値である。
+- `mixedRouteSlotFailingCertificate`: mixed route-slot assignment の secondary slot は concrete failing-slot certificate である。
+- `mixedRouteSlotFailingCertificate_obstructs` /
+  `mixedRouteSlot_exists_failingSlotCertificate`: mixed assignment failure はこの certificate で説明される。
+- `failingSlotCertificate_package`: failure/certificate equivalence、no-certificate exactness、certificate obstruction、mixed witness を束ねる。
+
+この結果により、route family exactness の失敗は単なる否定命題ではなく、
+Quality Surface 上で運べる obstruction certificate として読める。
+主張は supplied route slots、staged selected correction semantics、explicit source-ref packet bridge に相対化され、
+finite enumeration、computable scan、arbitrary repair planner、runtime patch synthesis、
+source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 53 後の total SCORE は 6810 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 54 後の total SCORE は 6950 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
