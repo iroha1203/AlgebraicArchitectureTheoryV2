@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9498
+- total SCORE: 9634
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -75,8 +75,9 @@
   - repair-potential / profile-curvature / certificate-transport / obstruction / quality-surface / traceability: 156
   - obstruction / minimality / repair-potential / certificate-transport / quality-surface / computability: 168
   - profile-curvature / certificate-transport / repair-potential / obstruction / minimality / quality-surface / unification: 168
+  - obstruction / invariance / minimality / certificate-transport / quality-surface: 136
 - evidence portfolio:
-  - proved-in-research: 70
+  - proved-in-research: 71
 
 ## Phase synthesis
 
@@ -141,16 +142,17 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 70 後の total SCORE は 9498 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 71 後の total SCORE は 9634 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 70 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 71 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
 component support bitset / law minimality matrix、declared repair transversal theorem、
 finite overlap obstruction basis / repair-transversal duality theorem、
 repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
-antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem を含む。
+antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem、
+selected branch-reflection failure theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3297,3 +3299,58 @@ path-indexed branch obligation を失うことを Lean-proved な projection los
 threshold 10000 にはまだ未達であるため、次 cycle では refinement-invariant Cech overlap support、
 general exchange-cell family、path-indexed viewer projection rule、または genius target に近い
 atlas-refinement invariant support transport theorem を狙う。
+
+## Cycle 71: Selected branch-reflection failure for naive refinement readings
+
+```text
+candidate: Selected branch-reflection failure for naive refinement readings
+candidate_type: orientation
+evidence_stage: proved-in-research
+base_score: 68
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 136
+category: obstruction / invariance / minimality / certificate-transport / quality-surface
+goal_delta: refinement-invariant support transport gains a necessary-hypothesis counterexample: visible component-union preservation does not encode the branch-reflection datum needed by repair transversality.
+project_value_delta: Turns Cycle 70 projection loss into a selected finite no-go theorem for too-weak refinement readings, while keeping global atlas-refinement transport out of scope.
+rival_delta: ADL / conformance refinement views can preserve visible component sets, but they do not by themselves preserve or reflect the refined repair-frontier singleton branch required by branch-transversal repair obligations.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/NaiveRefinementSupportCounterexample.lean`, `lake build FormalAGResearch`, and full `lake build` passed. Full build warning is the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning only. All reported Cycle 71 declarations are axiom-free; no `sorryAx`, custom axiom, `propext`, `Classical.choice`, `Quot.sound`, or `unsafe` appears in the reported declarations.
+open_questions: positive atlas-refinement support transport theorem; stronger non-tautological branch-reflection API; viewer projection kernel rule; general exchange-cell family theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/NaiveRefinementSupportCounterexample.lean`
+adds a selected finite branch-reflection failure for naive refinement readings.
+The naive reading keeps the coarse trace branch and pairs the refined trace /
+repair-frontier components into one refined branch.  The reflected selected
+reading keeps the refined repair-frontier singleton branch as an independent
+selected branch.
+
+Lean proves:
+
+- `naiveRefinement_preserves_visibleUnion`: the naive paired reading and reflected selected reading have the same visible component-union projection.
+- `reflectedSelected_reflects_repairFrontierSingleton`: the reflected selected reading contains the refined repair-frontier singleton.
+- `naiveReading_not_reflects_repairFrontierSingleton`: the naive paired reading does not reflect that singleton as an independent branch.
+- `traceOnly_hits_naiveRefinementBranches`: trace-only support is a transversal for the naive paired reading.
+- `traceOnly_not_hits_reflectedSelectedBranches`: trace-only support is not a transversal for the reflected selected reading.
+- `reflectedRepairFrontier_minimal_obstruction`: the selected missing datum is the reflected repair-frontier singleton.
+- `dropRefinedRepairFrontier_restores_traceOnlyTransversal`: deleting that singleton restores trace-only transversality for the selected finite family.
+- `selectedBranchReflectionFailure`: visible-union preservation, branch-reflection failure, trace-only separation, and deletion/restoration.
+- `naiveRefinementCounterexample_package`: the selected finite no-go package.
+
+This cycle does not define a global refinement morphism or prove a positive
+atlas-refinement transport theorem.  The `branchReflectedBy` predicate is
+membership-level and fit only for this selected finite witness; a future
+positive theorem will need a stronger refinement-map / branch-reflection API.
+The claim also does not assert global minimality, runtime repair synthesis,
+source extraction completeness, ArchMap correctness, arbitrary route
+enumeration, global sheaf completeness, or whole-codebase quality. G2 四審判は
+いずれも `genius_eligibility: no` を返し、G3 は Lean proof と独立監査を通った。
+
+### Next Frontier
+
+Cycle 71 後の total SCORE は 9634 であり、threshold 10000 までは残り 366 SCORE である。
+この cycle は positive refinement transport theorem ではなく、その前提不足を固定する no-go result である。
+次 cycle では positive atlas-refinement support transport theorem、viewer projection kernel rule、
+または general exchange-cell family theorem を狙う。
