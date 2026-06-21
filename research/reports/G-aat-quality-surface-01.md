@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9330
+- total SCORE: 9498
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -74,8 +74,9 @@
   - profile-curvature / certificate-transport / obstruction / repair-potential / quality-surface / traceability: 176
   - repair-potential / profile-curvature / certificate-transport / obstruction / quality-surface / traceability: 156
   - obstruction / minimality / repair-potential / certificate-transport / quality-surface / computability: 168
+  - profile-curvature / certificate-transport / repair-potential / obstruction / minimality / quality-surface / unification: 168
 - evidence portfolio:
-  - proved-in-research: 69
+  - proved-in-research: 70
 
 ## Phase synthesis
 
@@ -140,16 +141,16 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 69 後の total SCORE は 9330 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 70 後の total SCORE は 9498 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 69 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 70 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
 component support bitset / law minimality matrix、declared repair transversal theorem、
 finite overlap obstruction basis / repair-transversal duality theorem、
 repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
-antichain Cech overlap branch-transversal theorem を含む。
+antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3243,3 +3244,56 @@ antichain Cech overlap branch-transversal calculus を備えた。
 threshold 10000 には未達であるため、次 cycle では non-singleton overlap basis calculus、
 refinement-invariant Cech overlap support、curvature basis exchange、
 general repair/refinement exchange cells、または component support hitting under atlas refinement を狙う。
+
+## Cycle 70: Curvature basis exchange for repair/refinement exchange cells
+
+```text
+candidate: Curvature basis exchange for repair/refinement exchange cells
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 84
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 168
+category: profile-curvature / certificate-transport / repair-potential / obstruction / minimality / quality-surface / unification
+goal_delta: selected repair/refinement exchange cells now carry a side-indexed Cech branch layer; common clearance is exact branch hitting over `ExchangeSide × BridgeComponent`, not merely component-union hitting.
+project_value_delta: Packages Cycle 67 Cech curvature, Cycle 68 repair-basin exchange, and Cycle 69 branch-transversal nonfaithfulness as a reusable finite basis-exchange calculus for Quality Surface projection rules.
+rival_delta: ADL / conformance surfaces can retain repair/refinement views and component sets, but they do not determine the path-indexed branch-transversal class; the Lean witness makes that projection loss explicit.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/CurvatureBasisExchange.lean` and `lake build FormalAGResearch` passed. Core side-grounding, selected/collapsed visible-union nonfaithfulness, trace-only hit/miss, residual exchange branch, and selected-family nontransversal declarations are axiom-free; exact Cech grounding, common-clearance iff, trace-only common-clearance failure, and the package use only standard `propext` inherited from existing Cech predicate-equality evidence. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported.
+open_questions: global basis-exchange theory beyond the selected finite witness; refinement-invariant support transport; viewer projection rules for path-indexed branch incidence; external ADL related-work comparison; non-selected exchange-cell families.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/CurvatureBasisExchange.lean` adds a
+side-indexed exchange layer over the selected repair/refinement exchange cell.
+An `ExchangeBranchSupport` is a predicate on `ExchangeSide × BridgeComponent`,
+so the protected datum records whether a branch belongs to the coarse or
+refined path.
+
+Lean proves:
+
+- `coarseTrace_antichainCechOverlapBasis` and `refinedTwoSingleton_antichainCechOverlapBasis`: the selected coarse trace branch and refined trace / repair-frontier branches are grounded in exact selected Cech overlap bases.
+- `selectedBasisExchangeFamily_sideGrounded`: every selected exchange branch is the side lift of a branch grounded on the coarse or refined exact basis.
+- `commonClearance_iff_hits_selectedBasisExchange`: for component-complete plans, common clearance of the selected exchange cell is equivalent to hitting every selected path-indexed exchange branch.
+- `selected_collapsed_same_visibleUnion`: the selected side-indexed family and a collapsed visible family have the same visible component-union projection.
+- `traceOnly_hits_collapsedVisibleExchange`: the trace-only plan hits the collapsed visible branch.
+- `traceOnly_refinedRepairFrontierExchange_residual` and `traceOnly_not_hits_selectedBasisExchange`: the same trace-only plan misses the refined repair-frontier exchange branch, leaving residual exchange-branch support and failing selected exchange transversality.
+- `traceOnly_fails_commonExchangeClearance`: trace-only support fails common clearance of the selected repair/refinement exchange cell.
+- `sameVisibleUnion_not_faithful_to_basisExchange`: visible component union is not faithful to the path-indexed basis-exchange transversal class.
+- `curvatureBasisExchange_package`: the side-wise exactness, branch-hitting criterion, trace-only failure, and nonfaithfulness package.
+
+This cycle remains a selected finite theorem package. It does not assert
+global matroid basis exchange, canonical atlas refinement, runtime repair
+synthesis, source extraction completeness, ArchMap correctness, arbitrary route
+enumeration, global sheaf completeness, or whole-codebase quality. G2 四審判は
+いずれも `genius_eligibility: no` を返し、G3 は Lean proof と独立監査を通った。
+
+### Next Frontier
+
+Cycle 70 後の total SCORE は 9498 であり、threshold 10000 までは残り 502 SCORE である。
+このフェーズの report seed は、repair/refinement exchange cell の可視 projection が component union を保持しても
+path-indexed branch obligation を失うことを Lean-proved な projection loss として持った。
+threshold 10000 にはまだ未達であるため、次 cycle では refinement-invariant Cech overlap support、
+general exchange-cell family、path-indexed viewer projection rule、または genius target に近い
+atlas-refinement invariant support transport theorem を狙う。
