@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4980
+- total SCORE: 5110
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -45,8 +45,9 @@
   - certificate-transport / traceability / obstruction / invariance / repair-potential / computability: 140
   - certificate-transport / quality-surface / traceability: 110
   - certificate-transport / obstruction / invariance / computability / repair-potential: 150
+  - repair-potential / obstruction / traceability / atom-supported-quality-geometry / invariance: 130
 - evidence portfolio:
-  - proved-in-research: 40
+  - proved-in-research: 41
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1773,10 +1774,60 @@ endpoint support だけでは path 内部の defect excursion を失うことが
 global additive defect group、canonical transport、canonical repair planning、source extraction completeness、
 ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 41: Minimal internal excursion support family hitting theorem
+
+```text
+candidate: Minimal internal excursion support family hitting theorem
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 65
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 130
+category: repair-potential/obstruction/traceability/atom-supported-quality-geometry/invariance
+goal_delta: Cycle 40 の internal excursion exact support を selected minimal internal support family と hitting necessity へ持ち上げ、endpoint-only correction failure と endpoint+worker all-hit を固定した。
+project_value_delta: support-local repair calculus と route-history internal excursion support を接続し、Quality Surface の repair-potential / obstruction / traceability frontier を前進させた。
+formalization_quality: pass。`InternalExcursionEliminates` は all-hit そのものではなく after-correction branch 不在として定義され、hitting theorem は missed branch remains との矛盾から導かれる。reported declarations は axiom-free / sorry-free。
+open_questions: arbitrary-length route-chain support compression、profile path integrated internal support、non-selected branch semantics。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/InternalExcursionMinSupport.lean` は、
+Cycle 40 の token-swap/un-swap internal excursion を selected minimal support family として読む。
+`InternalExcursionAtom` は endpoint table と worker table の二つの selected protected coordinates を持ち、
+`internalExcursionAtomComponent` がそれらを `SourceRefPacketProtectedComponent` へ埋め込む。
+
+Lean 証拠は次を固定する。
+
+- `tokenSwapUnswap_selectedInternalSupport_grounded`: token-swap/un-swap chain の selected endpoint/worker
+  internal support は Cycle 40 の exact table-pair computation に grounded であり、obligation、全 repair frontier、
+  storage table coordinate には出ない。
+- `InternalExcursionBranch` / `internalExcursionBranchAtom`: endpoint branch と worker branch を selected minimal
+  internal support branch として分ける。
+- `BranchRemainsAfterCorrection`: branch は grounded かつ correction に hit されないとき after-correction support として残る。
+- `InternalExcursionEliminates`: correction が internal excursion を eliminate するとは、after-correction branch が残らないこと。
+- `missed_branch_remains_afterCorrection`: missed branch は残る。
+- `hits_every_minInternalSupport_of_eliminates`: elimination する correction は全 selected branch を hit する。
+- `endpointOnlyCorrection_misses_workerTable` /
+  `endpointOnlyCorrection_workerBranch_remains` /
+  `endpointOnlyCorrection_does_not_eliminate`: endpoint-only correction は worker branch を miss し、internal excursion を
+  eliminate しない。
+- `endpointWorkerCorrection_eliminates` /
+  `endpointWorkerCorrection_hits_every_minInternalSupport`: endpoint+worker correction は selected branch をすべて hit する。
+- `internalExcursionMinimalSupport_package`: selected branch grounding、nonempty/distinct branches、endpoint-only failure、
+  endpoint+worker all-hit を束ねる。
+
+この結果により、endpoint support からは消える route-internal excursion でも、selected minimal support family としては
+correction necessity を持つことが分かる。Cycle 1 の support-hitting idea と Cycle 40 の endpoint-empty internal excursion
+を同じ有限 support calculus で接続した。主張は supplied finite source-ref packets、selected length-two route chain、
+selected internal support atom vocabulary に相対化され、global repair planning、source extraction completeness、
+ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 40 後の total SCORE は 4980 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 41 後の total SCORE は 5110 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
-または selected support-defect localization を狙う。threshold までは残り 20 SCORE である。
+または selected support-defect localization を狙う。threshold は達成済みであるため、PR マージ後に phase boundary 判定へ進む。
