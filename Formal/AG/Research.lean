@@ -52,3 +52,4 @@ import Formal.AG.Research.QualitySurface.ParametrizedAtlasTransition
 import Formal.AG.Research.QualitySurface.SelectedSupportDefectLocalization
 import Formal.AG.Research.QualitySurface.MultiRouteCorrectionSystem
 import Formal.AG.Research.QualitySurface.FiniteRouteFamilyExactLocus
+import Formal.AG.Research.QualitySurface.FailingSlotCertificate
