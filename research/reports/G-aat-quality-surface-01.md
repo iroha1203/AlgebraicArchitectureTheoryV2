@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6530
+- total SCORE: 6670
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -56,8 +56,9 @@
   - certificate-transport / obstruction / repair-potential / traceability / invariance / quality-surface: 140
   - certificate-transport / repair-potential / obstruction / traceability / invariance / quality-surface: 140
   - obstruction / certificate-transport / repair-potential / traceability / invariance / quality-surface: 140
+  - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 51
+  - proved-in-research: 52
 
 ## Phase synthesis
 
@@ -73,7 +74,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-51 件の Lean-proved research artifacts は、次の paper seed を形成している。
+52 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -116,8 +117,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 51 後の total SCORE は 6530 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 51 件持ち、
+Cycle 52 後の total SCORE は 6670 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 52 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -2344,11 +2345,53 @@ Cycle 47 の family localization theorem を置き換えるのではなく、rou
 主張は supplied source-ref packets、selected protected components、explicit source-ref packet bridge に相対化され、
 source extraction completeness、ArchMap correctness、global repair planning、runtime patch synthesis、実コード全体の品質判定は結論しない。
 
+## Cycle 52: Multi-route correction system
+
+```text
+candidate: Multi-route correction system
+candidate_type: multi-route / closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: repair-potential/obstruction/certificate-transport/traceability/invariance/quality-surface
+goal_delta: 同じ staged correction route schema を二つの slot に置いた non-singleton family を定義し、family exactness が両 slot の all-branches stage を要求することを固定した。
+project_value_delta: single-route exactness と family exactness を分離し、mixed pair により一つの route が exact でも family exactness には足りないことを Lean finite witness とした。
+rival_delta: ADL / conformance checker は per-route fixed 表示を出せるが、non-singleton family exactness の all-slot gate を theorem としては与えない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch` は pass。package と supporting declarations は標準 `propext` / `Quot.sound` のみに依存する。claim は同じ staged route schema の two-slot finite witness に限定される。
+open_questions: arbitrary finite non-singleton family exact locus、minimal failing slot theorem、heterogeneous route interaction。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/MultiRouteCorrectionSystem.lean` は、
+`primary` / `secondary` の二つの `RouteSlot` を持つ staged correction family を定義する。
+各 slot は同じ staged selected correction route schema を持つが、stage assignment は `StagePair` で別々に与える。
+
+Lean 証拠は次を固定する。
+
+- `pairFamilySourceRefExact_iff_allBranches`: two-route family が source-ref exact であることは、primary / secondary の両 slot が `allBranches` stage にあることと同値である。
+- `StagePairLe` /
+  `pairFamilySourceRefExact_upwardClosed`: componentwise stage order に沿って family exactness は upward-closed である。
+- `allBranchesPair_sourceRefExact`: 両 slot が `allBranches` の pair は family exact である。
+- `mixedPair_primary_sourceRefExact`: mixed pair では primary route は exact である。
+- `mixedPair_secondary_protectedSupportLoss`: mixed pair の secondary route は protected-support loss である。
+- `mixedPair_not_familySourceRefExact`: mixed pair は family exact ではない。
+- `multiRouteCorrectionSystem_package`: exact locus、upward closure、all-hit pair、mixed-pair separation を束ねる。
+
+この結果により、single-route exactness と family exactness が分離される。
+一つの route slot が exact でも、selected route family 全体の exactness gate は全 slot の required stage を要求する。
+主張は同じ staged correction route schema を two slot に置いた finite witness であり、
+異種 route 間の相互作用、arbitrary multi-route planners、runtime patch synthesis、
+source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 51 後の total SCORE は 6530 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 52 後の total SCORE は 6670 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
 次フェーズへ進める場合は、lawful criterion の necessity / minimality、
-または multi-route non-singleton correction systems を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
+arbitrary finite non-singleton family exact locus、
+または minimal failing slot theorem を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
