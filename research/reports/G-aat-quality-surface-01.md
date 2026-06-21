@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6390
+- total SCORE: 6530
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -55,8 +55,9 @@
   - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
   - certificate-transport / obstruction / repair-potential / traceability / invariance / quality-surface: 140
   - certificate-transport / repair-potential / obstruction / traceability / invariance / quality-surface: 140
+  - obstruction / certificate-transport / repair-potential / traceability / invariance / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 50
+  - proved-in-research: 51
 
 ## Phase synthesis
 
@@ -72,7 +73,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-50 件の Lean-proved research artifacts は、次の paper seed を形成している。
+51 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -115,8 +116,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 50 後の total SCORE は 6390 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 50 件持ち、
+Cycle 51 後の total SCORE は 6530 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 51 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -2298,12 +2299,56 @@ transition relation 上の exactness non-regression と restoration crossing と
 arbitrary atlas transition maps、baseline cell との transition、global repair planner、runtime patch synthesis、
 source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 51: Selected support-defect localization
+
+```text
+candidate: Selected support-defect localization
+candidate_type: localization / closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: obstruction/certificate-transport/repair-potential/traceability/invariance/quality-surface
+goal_delta: selected support-defect localization を route-level certificate として切り出し、localized branch agreement criterion と branch-level obstruction theorem を Lean で固定した。
+project_value_delta: Cycle 47 の family localization を置き換えるのではなく、visible route / corrected route の concrete instances を持つ route-level support-defect certificate surface を追加した。
+rival_delta: ADL / conformance checker は component mismatch を列挙できるが、selected branch localization certificate と branch defect exactness obstruction theorem としては与えない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch` は pass。generic cover criterion 系は標準 `propext` / `Classical.choice` / `Quot.sound` に依存し、branch obstruction と concrete defect witnesses は axiom-free。
+open_questions: multi-route non-singleton correction systems、minimality of localization covers、paper-level lawful criterion synthesis。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SelectedSupportDefectLocalization.lean` は、
+selected support-defect localization を `RouteSupportLocalization` として定義する。
+localization は protected route defect を selected branch component の像で cover する certificate である。
+
+Lean 証拠は次を固定する。
+
+- `routeSupportEmpty_iff_localizedBranches`: localization cover の下で、empty protected support は全 localized branch agreement と同値である。
+- `sourceRefExact_iff_visible_localizedBranches`: source-ref exactness は visible tuple flatness と localized branch agreement に同値である。
+- `localizedBranchDefect_obstructs_sourceRefExact`: localized branch defect は source-ref exactness を阻む。
+- `visibleRouteSupportLocalization`: visible repair/transport route の defects を selected route-defect branches で localize する。
+- `visibleRoute_exact_iff_visible_localizedBranches`: visible route の exactness criterion を localized branches で読む。
+- `visibleRoute_obligation_localizedDefect` /
+  `visibleRoute_obligationDefect_obstructs_sourceRefExact`: obligation branch defect が visible route exactness を阻む。
+- `correctedRouteSupportLocalization`: corrected selected route の protected defects を selected route-defect branches で localize する。
+- `correctedRoute_exact_iff_visible_localizedBranches`: corrected route exactness を localized branch agreement で読む。
+- `allRouteDefectCorrection_localizedBranchesAgree`: all-hit correction はすべての localized branches に agreement を与える。
+- `obligationOnlyCorrection_storageRepair_localizedDefect` /
+  `obligationOnlyCorrection_localizedDefect_obstructs_sourceRefExact`: obligation-only correction の storage-repair localized defect が exactness を阻む。
+- `selectedSupportDefectLocalization_package`: generic criterion、branch obstruction、visible/corrected concrete instances を束ねる。
+
+この結果により、component mismatch list は selected branch localization certificate として読める。
+Cycle 47 の family localization theorem を置き換えるのではなく、route-level certificate と branch-level obstruction theorem として切り出した成果である。
+主張は supplied source-ref packets、selected protected components、explicit source-ref packet bridge に相対化され、
+source extraction completeness、ArchMap correctness、global repair planning、runtime patch synthesis、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 50 後の total SCORE は 6390 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 51 後の total SCORE は 6530 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
 次フェーズへ進める場合は、lawful criterion の necessity / minimality、
-selected support-defect localization の generic theorem、
 または multi-route non-singleton correction systems を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
