@@ -39,3 +39,4 @@ import Formal.AG.Research.QualitySurface.TransportTableLawRouteLocalization
 import Formal.AG.Research.QualitySurface.RouteDefectSupport
 import Formal.AG.Research.QualitySurface.VisibleLawDeletionProtectedZero
 import Formal.AG.Research.QualitySurface.RouteDefectExcursionSupport
+import Formal.AG.Research.QualitySurface.InternalExcursionMinSupport
