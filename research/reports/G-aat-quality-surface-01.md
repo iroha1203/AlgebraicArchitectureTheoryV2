@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5250
+- total SCORE: 5390
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -47,8 +47,9 @@
   - certificate-transport / obstruction / invariance / computability / repair-potential: 150
   - repair-potential / obstruction / traceability / atom-supported-quality-geometry / invariance: 130
   - certificate-transport / obstruction / traceability / quality-surface: 140
+  - obstruction / repair-potential / traceability / atom-supported-quality-geometry: 140
 - evidence portfolio:
-  - proved-in-research: 42
+  - proved-in-research: 43
 
 ## Phase synthesis
 
@@ -64,7 +65,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-42 件の Lean-proved research artifacts は、次の paper seed を形成している。
+43 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -107,8 +108,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 41 後の total SCORE は 5110 であり、このフェーズの tracking Issue active threshold 5000 を超えた。
-portfolio constraint も満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 42 件持ち、
+Cycle 43 後の total SCORE は 5390 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 43 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -1928,9 +1929,56 @@ law-deletion matrix として扱える。主張は supplied finite source-ref pa
 packet-to-tuple bridge、selected deletion cells に相対化され、global law minimality、canonical repair planning、
 source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 43: Selected route defect support hitting theorem
+
+```text
+candidate: Selected route defect support hitting theorem
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: obstruction/repair-potential/traceability/atom-supported-quality-geometry
+goal_delta: visible-flat endpoint route defect support を selected singleton-minimal branch family と selected protected-component packet correction theorem へ持ち上げ、support-local repair necessity frontier を前進させた。
+project_value_delta: Cycle 38 の endpoint route support、Cycle 41 の hitting calculus、Cycle 42 の exact-visualization criterion を接続し、paper seed の source-ref exact visualization failure / repair-support necessity 節を強化した。
+rival_delta: ADL / conformance checker は selected route mismatch を検出できるが、protected route defect を singleton-minimal support family として読み、selected protected-component correction が全 branch を hit する必要性までは固定しない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch`、reported declarations の `#print axioms` は pass / no axioms。主張は selected finite packet route と selected protected-component agreement に限定され、global repair planner、ArchMap correctness、source extraction completeness、whole-codebase quality へ越境しない。
+open_questions: off-selected flatness を合成した selected route support empty theorem、loss-aware commutator atlas adequacy、lawful criterion minimality と selected correction frontier の paper-level synthesis。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SelectedRouteDefectSupportHitting.lean` は、
+Cycle 28 / 38 の visible-flat repair/transport endpoint route defect を selected branch family として読む。
+selected branch は obligation、storage repair-frontier、storage source-ref table の三つであり、
+`RouteDefectAtom` から protected packet component へ埋め込まれる。
+
+Lean 証拠は次を固定する。
+
+- `visibleRoute_selectedDefectSupport_grounded`: visible-flat route の selected support は obligation、
+  storage repair-frontier、storage source-ref table に grounded であり、off-storage repair/table coordinates は flat である。
+- `IsSelectedMinimalRouteDefectBranch` / `routeDefectBranch_selectedMinimal`:
+  各 selected branch は singleton support として minimal である。
+- `missed_routeDefectBranch_remains`: grounded branch を correction が miss すると、その branch は after-correction defect として残る。
+- `hits_every_selectedRouteDefectSupport_of_eliminates`: selected route defect を eliminate する correction は全 selected branch を hit する。
+- `correctedVisibleRouteLeft`: hit された selected protected component を右 endpoint からコピーする有限 packet correction semantics。
+- `correctedBranchAgreement_iff_hits`: branch を hit することと、corrected packet が右 endpoint とその branch の protected component で一致することは同値である。
+- `sourceRefRouteCorrection_eliminates_iff_hits` /
+  `sourceRefRouteCorrection_hits_every_of_eliminates`: selected protected-component packet correction は全 selected branch hitting と同値であり、eliminate するなら全 branch を hit する。
+- `obligationOnly_packetCorrection_does_not_eliminate` /
+  `allRouteDefect_packetCorrection_eliminates`: obligation-only correction は storage repair branch を miss するため selected route defect を eliminate せず、all-branch correction は eliminate する。
+- `selectedRouteDefectSupportHitting_package`: selected support grounding、source-ref exact visualization failure、singleton minimality、Bool-level hitting、packet-level selected correction theorem を束ねる。
+
+この結果により、visible tuple equivalence の下で残る source-ref exact visualization failure は、
+単なる mismatch list ではなく、selected singleton-minimal support family と selected protected-component correction necessity を持つ
+finite certificate geometry として読める。主張は supplied finite source-ref packets、selected endpoint route、
+selected protected component vocabulary に相対化され、global repair planner、canonical correction、source extraction completeness、
+ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 42 後の total SCORE は 5250 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 43 後の total SCORE は 5390 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
