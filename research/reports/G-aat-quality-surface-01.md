@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5390
+- total SCORE: 5530
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -48,8 +48,9 @@
   - repair-potential / obstruction / traceability / atom-supported-quality-geometry / invariance: 130
   - certificate-transport / obstruction / traceability / quality-surface: 140
   - obstruction / repair-potential / traceability / atom-supported-quality-geometry: 140
+  - obstruction / repair-potential / certificate-transport / traceability / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 43
+  - proved-in-research: 44
 
 ## Phase synthesis
 
@@ -65,7 +66,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-43 件の Lean-proved research artifacts は、次の paper seed を形成している。
+44 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -108,8 +109,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 43 後の total SCORE は 5390 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 43 件持ち、
+Cycle 44 後の total SCORE は 5530 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 44 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -1976,9 +1977,51 @@ finite certificate geometry として読める。主張は supplied finite sourc
 selected protected component vocabulary に相対化され、global repair planner、canonical correction、source extraction completeness、
 ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 44: Selected route correction exactness theorem
+
+```text
+candidate: Selected route correction exactness theorem
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: obstruction/repair-potential/certificate-transport/traceability/quality-surface
+goal_delta: selected branch hitting、protected route support empty、source-ref exact visualization restoration を同値として束ね、support-local repair theorem を exactness restoration criterion へ接続した。
+project_value_delta: Cycle 38 の off-selected flatness、Cycle 42 の exact-visualization criterion、Cycle 43 の selected hitting theorem を一つの finite route correction theorem として合成した。
+rival_delta: ADL / conformance checker は route mismatch を検出できるが、selected support branches を hit することが protected support empty と source-ref exact visualization restoration に同値であることまでは証明対象にしない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch`、reported declarations の `#print axioms` は pass / no axioms。主張は supplied finite route と selected correction semantics に限定され、global correction planner、canonical runtime patch、ArchMap correctness、source extraction completeness、whole-codebase quality へ越境しない。
+open_questions: loss-aware commutator atlas adequacy、lawful criterion minimality と selected correction frontier の paper-level synthesis、selected route correction exactness の parametrized family。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SelectedRouteCorrectionExactness.lean` は、
+Cycle 43 の selected protected-component correction を Cycle 38 の off-selected flatness と Cycle 42 の
+exact visualization criterion に接続する。
+
+Lean 証拠は次を固定する。
+
+- `correctedVisibleRoute_supportSurface_equivalent` /
+  `correctedVisibleRoute_tupleVisible`: selected correction は visible packet / tuple surface を変えない。
+- `correctedVisibleRoute_supportEmpty_of_hits`: 全 selected branch を hit すると、corrected endpoint route の protected route support は空になる。
+- `hits_every_selectedRouteDefectSupport_of_correctedSupportEmpty`: corrected endpoint route の protected support が空なら、全 selected branch が hit されている。
+- `correctedVisibleRoute_supportEmpty_iff_hits`: protected route support empty と all selected branch hitting は同値である。
+- `correctedVisibleRoute_exactVisualization_iff_hits`: visible tuple surface が固定されているため、source-ref exact visualization restoration と all selected branch hitting は同値である。
+- `allRouteDefectCorrection_supportEmpty` /
+  `allRouteDefectCorrection_sourceRefExactVisualization`: all-branch correction は protected route support を空にし、source-ref exact visualization を回復する。
+- `obligationOnlyCorrection_not_supportEmpty` /
+  `obligationOnlyCorrection_not_sourceRefExactVisualization`: obligation-only correction は storage repair branch を miss するため、protected support empty も exact visualization restoration も成立しない。
+- `selectedRouteCorrectionExactness_package`: visible surface preservation、support-empty iff、exact-visualization iff、positive / negative witness を束ねる。
+
+この結果により、route mismatch の検出面から repair-exactness criterion へ進む有限 theorem が得られた。
+主張は supplied finite source-ref packets、selected endpoint route、selected correction vocabulary、packet-to-tuple bridge に相対化され、
+global correction planner、canonical runtime patch、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 43 後の total SCORE は 5390 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 44 後の total SCORE は 5530 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
@@ -1986,4 +2029,5 @@ finite grid phenomena、related-work separation を備えた。
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
 selected support-defect localization、
-または loss-aware commutator atlas adequacy を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
+loss-aware commutator atlas adequacy、
+または selected route correction exactness の parametrized family を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
