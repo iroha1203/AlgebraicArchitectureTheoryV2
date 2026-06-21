@@ -9,7 +9,7 @@
 ```text
 GOAL(研究で成し遂げたいこと)
   → 候補を出す
-  → 三審判が価値を判定する
+  → 四審判が価値とライバルに対する有効性を判定する
   → Lean 検証または証拠固定を行う
   → SCORE を監査して report / PR にまとめる
   → 研究フェーズとしてキリが良ければ止まり、そうでなければ同じ GOAL で次へ進む
@@ -35,10 +35,12 @@ GOAL(研究で成し遂げたいこと)
 
 tracking Issue は、GOAL の「完全達成」を機械的に閉じるためのものではない。SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。
 
+GOAL は `rival` を持つ。`rival` は、その GOAL が比較対象にする既存概念、手法、tooling、理論枠組みである。候補は GOAL の内部で面白いだけでなく、rival がすでに得意なことを踏まえ、どの能力で優位性、新規性、統合力、分離力、検証可能性を作るかを示す。G2 では審判 D がこの比較を担当し、rival の言い換えに留まる候補を落とす。
+
 ## 候補カードの状態
 
 候補のカードは一件につき一ファイルとし、frontmatter で二つの状態を持つ。
 
-ひとつは候補そのものの進み具合を表す `status` で、生成された時点の `idea` から、三審判を通った `picked`、選にもれたか検証に失敗した `archived` へと移る。もうひとつは証拠段階を表す `evidence_stage` で、`proved-in-research`、`conjectured-sorry`、`finite-evidence`、`orientation-evidence` などをとる。
+ひとつは候補そのものの進み具合を表す `status` で、生成された時点の `idea` から、四審判を通った `picked`、選にもれたか検証に失敗した `archived` へと移る。もうひとつは証拠段階を表す `evidence_stage` で、`proved-in-research`、`conjectured-sorry`、`finite-evidence`、`orientation-evidence` などをとる。
 
 Lean に関する細かい段階を記録する場合は、補助的に `lean` を使ってよい。値は `none`、`stated`、`conjectured-sorry`、`proved-in-research`、`failed` とする。ただし SCORE は Lean ファイル数や定理数ではなく、GOAL の能力がどう増えたかに対して与える。

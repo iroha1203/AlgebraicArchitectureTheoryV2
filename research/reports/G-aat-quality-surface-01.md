@@ -92,6 +92,18 @@ formal certificate や sheaf consistency の研究は、局所証拠、大域整
 profile transport、loss-aware reading projection を同じ有限対象の中で結ぶ点にある。したがって source extraction
 completeness、ArchMap correctness、実コード全体の品質判定はここでは主張しない。
 
+### Rival delta
+
+この GOAL の rival は、静的解析器、ADL / architecture description language 解析器、
+architecture conformance checker、品質 metric dashboard である。これらは rule violation、
+dependency / component graph、declared architecture との一致、thresholded score、CI gate を与える。
+
+このフェーズの Quality Geometry は、その検出面を finite atom vocabulary と source-reference field に相対化し、
+certificate tuple、minimal atom support family、profile-indexed comparison map、transport / curvature / fold / obstruction、
+repair frontier を同じ有限対象の中で結ぶ。静的解析器や ADL 解析器が得意な検出・構造解析・適合性判定の上に、
+support family、trace exactness、route-internal defect excursion、repair necessity、reading loss を載せることで、
+品質判断を certificate geometry として扱うための第一フェーズを作った。
+
 ### Phase result
 
 Cycle 41 後の total SCORE は 5110 であり、`research/GOALS.md` の threshold 5000 を超えた。
