@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6110
+- total SCORE: 6250
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -53,8 +53,9 @@
   - obstruction / repair-potential / certificate-transport / traceability / invariance / quality-surface: 140
   - certificate-transport / obstruction / repair-potential / traceability / quality-surface: 160
   - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
+  - certificate-transport / obstruction / repair-potential / traceability / invariance / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 48
+  - proved-in-research: 49
 
 ## Phase synthesis
 
@@ -70,7 +71,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-48 件の Lean-proved research artifacts は、次の paper seed を形成している。
+49 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -113,8 +114,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 48 後の total SCORE は 6110 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 48 件持ち、
+Cycle 49 後の total SCORE は 6250 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 49 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -2207,12 +2208,58 @@ Lean 証拠は次を固定する。
 主張は selected route-defect atom vocabulary、selected correction semantics、explicit source-ref packet bridge に相対化され、
 global repair planner、runtime patch synthesis、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 49: Parametrized loss-aware atlas
+
+```text
+candidate: Parametrized loss-aware atlas
+candidate_type: closure / atlas-parametrization
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: certificate-transport/obstruction/repair-potential/traceability/invariance/quality-surface
+goal_delta: baseline loss-aware cells と staged correction cells を同じ finite atlas type に入れ、staged cells の visible flatness と protected-support / exactness / exact-restoration locus を Lean で固定した。
+project_value_delta: Cycle 45 の loss-aware atlas と Cycle 48 の correction-stage exact locus を接続し、repair stage parameter を loss-aware certificate atlas に載せる adapter を追加した。
+rival_delta: ADL / conformance checker は violation と fix candidate を列挙できるが、visible flatness が一定でも protected support empty / source-ref exact / exact restoration locus が一致することを theorem として与えない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch` は pass。baseline exactness criterion は axiom-free、staged locus/mode/package declarations は標準 `propext` / `Quot.sound` のみに依存する。claim は baseline cells + staged correction cells の finite atlas に限定される。
+open_questions: generic selected support-defect localization、multi-route non-singleton correction systems、parametrized atlas transition maps。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ParametrizedLossAwareAtlas.lean` は、
+baseline loss-aware cells と staged correction cells を
+`ParametrizedLossAwareCell` にまとめる。
+baseline cells は Cycle 45 の `LossAwareAtlasCell` をそのまま読み、
+staged correction cells は Cycle 48 の `RepairStage` に沿った corrected route を読む。
+
+Lean 証拠は次を固定する。
+
+- `paramCell_exact_iff_visible_empty`: parametrized atlas cell の source-ref exactness は visible flatness と empty protected support に同値である。
+- `stagedCell_visibleTupleFlat`: staged correction cell は全 stage で visible tuple flatness を保つ。
+- `stagedCell_supportEmpty_iff_allBranches`: staged correction cell の protected support empty locus は `allBranches` stage と一致する。
+- `stagedCell_sourceRefExact_iff_allBranches`: staged correction cell の source-ref exact locus も `allBranches` stage と一致する。
+- `stagedCell_protectedSupportLoss_of_not_allBranches`: `allBranches` 以外の staged correction cell は protected-support loss cell である。
+- `stagedCell_allBranches_is_exactRestoration` /
+  `stagedCell_exactRestoration_iff_allBranches`: exact restoration locus も `allBranches` stage と一致する。
+- `baseline_visibleLawDeletion_is_visibleLawLoss` /
+  `baseline_tableLawDeletion_is_protectedSupportLoss`: baseline visible-law loss と protected-support loss を parametrized atlas に持ち上げる。
+- `parametrizedLossAwareAtlas_has_all_modes` /
+  `parametrizedLossAwareAtlas_package`: visible-law loss、protected-support loss、exact restoration の mode witness と staged locus theorem を束ねる。
+
+この結果により、loss-aware atlas は static な mismatch table ではなく、
+repair stage parameter に沿って protected support と exact restoration locus がどこで開くかを読む finite certificate atlas になる。
+主張は baseline cells + staged correction cells の finite atlas に限定され、任意の parametrized atlas や transition map までは主張しない。
+global repair planner、runtime patch synthesis、source extraction completeness、ArchMap correctness、実コード全体の品質判定も結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 48 後の total SCORE は 6110 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 49 後の total SCORE は 6250 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
 次フェーズへ進める場合は、lawful criterion の necessity / minimality、
 selected support-defect localization の generic theorem、
-または parametrized loss-aware commutator atlas を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
+parametrized atlas transition maps、
+または multi-route non-singleton correction systems を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
