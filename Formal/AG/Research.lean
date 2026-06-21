@@ -61,3 +61,4 @@ import Formal.AG.Research.QualitySurface.SourceRefHandoffObstructionLocus
 import Formal.AG.Research.QualitySurface.RepairTransportHandoffObstructionBridge
 import Formal.AG.Research.QualitySurface.SourceRefHandoffComponentSupport
 import Formal.AG.Research.QualitySurface.HandoffRepairTransversal
+import Formal.AG.Research.QualitySurface.HandoffCechExactness
