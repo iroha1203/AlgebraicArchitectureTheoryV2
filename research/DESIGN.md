@@ -6,7 +6,9 @@
 
 **SCORE を theorem count ではなく研究貢献に与える。** 定理数、ファイル数、証明の容易さは主報酬ではない。主報酬は、GOAL の見方を変えること、複数の現象を圧縮すること、新しい測定量や obstruction を作ること、次の研究を開くことに与える。証拠段階は multiplier であり、Lean proof は研究価値を検証する強い証拠として扱う。
 
-**候補は三審判で落とす。** 審判 A は厳密性と claim boundary を見る。審判 B は GOAL への研究価値を見る。審判 C は repo 全体の価値、つまり AAT / SFT / Tooling / Website / Research の全体像に照らした自然さを見る。三者のどれかを通らない候補は、正しくても picked にしない。
+**候補は四審判で落とす。** 審判 A は厳密性と claim boundary を見る。審判 B は GOAL への研究価値を見る。審判 C は repo 全体の価値、つまり AAT / SFT / Tooling / Website / Research の全体像に照らした自然さを見る。審判 D は GOAL の `rival` に対する有効性を見る。四者のどれかを通らない候補は、正しくても picked にしない。
+
+**ライバルを GOAL の報酬関数に入れる。** 研究成果は、内部的に綺麗な定式化であるだけでは足りない。静的解析器、ADL 解析器、architecture conformance checker、metric dashboard など、既存の強い相手がすでに与える能力を踏まえ、その相手に対して何を新しく扱えるかで評価する。候補カード、G2 審判 D、G4 SCORE 監査、report の `rival_delta` を連動させることで、既存手法の言い換えを高 SCORE にしない。
 
 **Lean をループの中の検証ゲートにする。** 生成した主張をそのまま信じないために、`lake build`、公理検査、Lean 形式化品質監査を通してからレポートに残す。定理候補は証明の穴(sorry)を残さず完全に証明し、予想は結論部だけを sorry で保留する。Lean 形式化品質監査では、命題が強すぎて自明化していないか、弱すぎて元の主張を失っていないか、claim boundary が型と仮定に反映されているかを見る。
 

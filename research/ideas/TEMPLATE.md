@@ -7,6 +7,7 @@ expected_base_score:
 expected_evidence_multiplier:
 expected_final_score:
 evidence_stage:
+rival_advantage:
 origin: NT-XX
 tags: []
 created: 2026-06-14
@@ -42,6 +43,10 @@ created: 2026-06-14
 
 (この候補が GOAL のどの能力カテゴリをどう増やすかを一文で述べる。)
 
+## ライバルに対する有効性
+
+(GOAL の `rival` がすでに持つ能力を踏まえ、この候補がどの点で優位性、新規性、統合力、分離力、検証可能性を持つかを書く。静的解析器、ADL 解析器、architecture conformance checker、metric dashboard の言い換えに留まる場合は picked にしない。)
+
 ## SCORE 見込み
 
 - `score_reason`:
@@ -61,6 +66,7 @@ created: 2026-06-14
 - 厳密性:
 - 研究価値:
 - repo 全体価値:
+- ライバル比較:
 
 ## 関連
 
