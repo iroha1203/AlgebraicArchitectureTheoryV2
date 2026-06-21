@@ -40,3 +40,4 @@ import Formal.AG.Research.QualitySurface.RouteDefectSupport
 import Formal.AG.Research.QualitySurface.VisibleLawDeletionProtectedZero
 import Formal.AG.Research.QualitySurface.RouteDefectExcursionSupport
 import Formal.AG.Research.QualitySurface.InternalExcursionMinSupport
+import Formal.AG.Research.QualitySurface.ExactVisualizationCriterionMinimality
