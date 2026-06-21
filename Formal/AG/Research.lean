@@ -54,3 +54,4 @@ import Formal.AG.Research.QualitySurface.MultiRouteCorrectionSystem
 import Formal.AG.Research.QualitySurface.FiniteRouteFamilyExactLocus
 import Formal.AG.Research.QualitySurface.FailingSlotCertificate
 import Formal.AG.Research.QualitySurface.FiniteRouteScan
+import Formal.AG.Research.QualitySurface.RouteHolonomyObstructionSupport
