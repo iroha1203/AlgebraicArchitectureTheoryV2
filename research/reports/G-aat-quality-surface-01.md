@@ -106,7 +106,7 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 41 後の total SCORE は 5110 であり、`research/GOALS.md` の threshold 5000 を超えた。
+Cycle 41 後の total SCORE は 5110 であり、このフェーズの tracking Issue active threshold 5000 を超えた。
 portfolio constraint も満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 41 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
@@ -1888,7 +1888,7 @@ ArchMap correctness、実コード全体の品質判定は結論しない。
 
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 41 後の total SCORE は 5110 である。
+このフェーズの tracking Issue active threshold は 5000 であり、cycle 41 後の total SCORE は 5110 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。

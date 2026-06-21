@@ -23,7 +23,7 @@ GOAL(研究で成し遂げたいこと)
 
 | 場所 | 置くもの |
 | --- | --- |
-| `GOALS.md` | GOAL そのものと、候補を採点する reward function。SCORE threshold と phase boundary criteria もここに置く |
+| `GOALS.md` | GOAL そのものと、候補を採点する reward function。threshold policy と phase boundary criteria もここに置く |
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
@@ -31,9 +31,9 @@ GOAL(研究で成し遂げたいこと)
 
 ## 状態の正本
 
-ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、候補カード、PR、iteration comment をこの Issue に集約する。`GOALS.md` やカードの frontmatter、検証結果のレポートはいずれもその写しであり、作業を中断してもこの Issue を読めば同じ地点から再開できる。
+ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`GOALS.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。
 
-tracking Issue は、GOAL の「完全達成」を機械的に閉じるためのものではない。SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。
+tracking Issue は、GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。
 
 GOAL は `rival` を持つ。`rival` は、その GOAL が比較対象にする既存概念、手法、tooling、理論枠組みである。候補は GOAL の内部で面白いだけでなく、rival がすでに得意なことを踏まえ、どの能力で優位性、新規性、統合力、分離力、検証可能性を作るかを示す。G2 では審判 D がこの比較を担当し、rival の言い換えに留まる候補を落とす。
 

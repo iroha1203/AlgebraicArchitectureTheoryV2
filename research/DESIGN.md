@@ -14,8 +14,8 @@
 
 **検証は独立したライブラリ `FormalAGResearch` で行う。** Lean のライブラリ `Formal` は起点から参照を辿って到達するファイルしかビルドしないため、どこからも参照されていない壊れたファイルがあっても `lake build Formal` は通ってしまう。これでは検証の合否を判定できない。そこで `Formal/AG/Research/` のすべてのファイルをビルドする独立したライブラリを用意し、その成否を合格の信号とする。正式版である `Formal/AG` とは疎結合に保ち、依存は `Formal/AG/Research` から `Formal/AG` への一方向だけに限る。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
 
-**状態の正本は tracking Issue 一つに集める。** GOALS.md の台帳も、候補カードの frontmatter も、検証結果のレポートも、すべてその写しである。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴は Issue のコメントとして残し、そのための専用ファイルは作らない。
+**状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。GOALS.md の GOAL 定義、候補カードの frontmatter、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴と threshold 設定は Issue のコメントとして残し、そのための専用ファイルは作らない。
 
-**停止は GOAL の完全達成ではなく研究フェーズの区切りとして読む。** 研究 GOAL は、完全達成を機械的に判定できる性質のものではない。SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。
+**停止は GOAL の完全達成ではなく研究フェーズの区切りとして読む。** 研究 GOAL は、完全達成を機械的に判定できる性質のものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。
 
 **research はトップレベルに置き、検証結果は `research/reports/` にまとめる。** docs は読むための場所、research は手を動かす場所という住み分けである。検証または証拠固定を経た結果は `research/reports/` に置き、メモにすぎない docs/note には置かない。AAT の数学本文への取り込みや正式版への昇格をループの外に置くのは、検証ゲートでは判定できない人間の判断、すなわち本文へどう位置づけるかや理論との整合を、ループの不変条件に紛れ込ませないためである。
