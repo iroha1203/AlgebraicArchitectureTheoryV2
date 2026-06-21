@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5970
+- total SCORE: 6110
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -52,8 +52,9 @@
   - obstruction / repair-potential / certificate-transport / traceability / quality-surface / computability: 140
   - obstruction / repair-potential / certificate-transport / traceability / invariance / quality-surface: 140
   - certificate-transport / obstruction / repair-potential / traceability / quality-surface: 160
+  - repair-potential / obstruction / certificate-transport / traceability / invariance / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 47
+  - proved-in-research: 48
 
 ## Phase synthesis
 
@@ -69,7 +70,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-47 件の Lean-proved research artifacts は、次の paper seed を形成している。
+48 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -112,8 +113,8 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 ### Phase result
 
-Cycle 47 後の total SCORE は 5970 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 47 件持ち、
+Cycle 48 後の total SCORE は 6110 であり、このフェーズの tracking Issue active threshold 7000 には未達である。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 48 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
@@ -2163,13 +2164,55 @@ concrete localization cover の主張は singleton corrected route family に限
 complete diagnostic coverage for all codebases、ArchMap correctness、source extraction completeness、
 global repair planning、実コード全体の品質判定は結論しない。
 
+## Cycle 48: Parametrized selected correction system
+
+```text
+candidate: Parametrized selected correction system
+candidate_type: closure / parametrization
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: repair-potential/obstruction/certificate-transport/traceability/invariance/quality-surface
+goal_delta: selected correction を hit-set order 上の parametrized correction system として読み、source-ref exactness の monotonicity と upward-closed exact locus を Lean で固定した。
+project_value_delta: Cycle 44/47 の exactness theorem を、monotone correction system と concrete staged exact locus に接続し、repair trajectory を certificate geometry として扱う adapter を追加した。
+rival_delta: ADL / conformance checker は violation と fix candidate を列挙できるが、selected hit-set order 上の exactness monotonicity と upward-closed exact locus を theorem として与えない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch` は pass。generic monotonicity theorem は axiom-free、concrete staged witness と package は標準 `propext` / `Quot.sound` のみに依存する。`StageLe` は一般 poset ではなく、concrete three-stage schedule の relation として使う。
+open_questions: parametrized loss-aware atlas、generic selected support-defect localization、multi-route non-singleton correction systems。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ParametrizedSelectedCorrectionSystem.lean` は、
+selected route correction を parameterized system として読むための順序構造を追加する。
+`CorrectionLe left right` は、`left` が hit した selected atom を `right` も hit するという hit-set order である。
+
+Lean 証拠は次を固定する。
+
+- `correctionSourceRefExact_iff_hitsAllBranches`: correction の source-ref exactness は all selected branch hitting と同値である。
+- `correctionHitsAllBranches_monotone` /
+  `correctionSourceRefExact_monotone`: `CorrectionLe` に沿って selected branch hitting と source-ref exactness は monotone である。
+- `systemSourceRefExact_iff_hitsAllBranches`: parameterized correction system 全体の exactness は、各 parameter で all selected branch hitting が成り立つことに同値である。
+- `MonotoneCorrectionSystem` /
+  `monotoneCorrectionSystem_exact_upwardClosed`: monotone correction system では exact locus が upward-closed である。
+- `stagedCorrectionSystem_monotone`: `uncorrected -> obligationOnly -> allBranches` の concrete staged schedule は `StageLe` に沿って monotone である。
+- `stagedCorrection_exact_iff_allBranches` /
+  `stagedCorrectionSystem_exactAt_iff_allBranches`: concrete staged schedule の exact locus は `allBranches` stage のみである。
+- `stagedCorrectionSystem_not_sourceRefExact`: staged system は全 stage exact ではない。
+- `parametrizedSelectedCorrectionSystem_package`: correction-level criterion、system-level criterion、upward-closed exact locus、concrete staged exact locus を束ねる。
+
+この結果により、repair trajectory は fix candidate list ではなく、selected atom hit-set order 上の certificate trajectory として読める。
+ただし `StageLe` はこの concrete schedule の relation であり、一般 poset law までは主張しない。
+主張は selected route-defect atom vocabulary、selected correction semantics、explicit source-ref packet bridge に相対化され、
+global repair planner、runtime patch synthesis、source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 7000 であり、cycle 47 後の total SCORE は 5970 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 48 後の total SCORE は 6110 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
 次フェーズへ進める場合は、lawful criterion の necessity / minimality、
-parametrized selected correction system、
 selected support-defect localization の generic theorem、
 または parametrized loss-aware commutator atlas を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
