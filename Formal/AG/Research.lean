@@ -44,3 +44,4 @@ import Formal.AG.Research.QualitySurface.ExactVisualizationCriterionMinimality
 import Formal.AG.Research.QualitySurface.SelectedRouteDefectSupportHitting
 import Formal.AG.Research.QualitySurface.SelectedRouteCorrectionExactness
 import Formal.AG.Research.QualitySurface.LossAwareCommutatorAtlas
+import Formal.AG.Research.QualitySurface.RouteDefectLocalRepairCalculusBridge
