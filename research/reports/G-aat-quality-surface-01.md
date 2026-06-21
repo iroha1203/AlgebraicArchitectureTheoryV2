@@ -49,6 +49,56 @@
 - evidence portfolio:
   - proved-in-research: 41
 
+## Phase synthesis
+
+このフェーズで得た対象は、固定した architecture `A` に対する profile-indexed certificate geometry である。
+profile 圏 `Prof_A` の各点 `p` に certificate space `C_A(p)` を置き、profile change `u : p -> q` に沿う
+comparison map `Phi_u : C_A(p) -> C_A(q)` を考える。Quality Surface は、この Grothendieck construction の
+二次元 profile slice として読む。典型的には law-strengthening axis と cover-refinement axis の有限 grid を選び、
+各 cell に certificate と reading projection を置き、edge / square / route-chain に沿う transport の差を調べる。
+
+certificate の基本単位は
+`Cert_A(p) = (sigma_p, omega_p, S_p, R_p, nu_p, T_p)` である。ここで `sigma_p` は multi-axis quality signature、
+`omega_p` は obstruction certificate、`S_p` は selected minimal atom support family、`R_p` は repair frontier、
+`nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
+この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
+
+41 件の Lean-proved research artifacts は、次の paper seed を形成している。
+
+- scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
+- local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
+- 二次元 profile square では、同じ scalar / verdict の下で support や repair frontier が path-dependent に分岐しうる。
+- finite grid 上で curvature、fold、ridge、obstruction、trace field、source-ref exactness を分けて扱える。
+- endpoint view では消える route-internal defect excursion も、selected internal support family と repair necessity を持つ。
+
+### Related-work separation
+
+既存の品質モデルや architecture metric は、品質軸を scalar score、weighted aggregate、thresholded verdict として扱うことが多い。
+この report の主張は、新しい aggregate metric ではない。品質の基本単位を、support、repair frontier、obstruction、
+verdict、trace field を同時に持つ certificate に移し、projection が何を失うかを Lean finite witness で固定する。
+
+software landscape visualization や multi-objective optimization は、設計状態を探索空間や objective surface として扱う。
+Quality Surface はそれと似た可視化語彙を使えるが、対象は探索 heuristic ではなく、profile-indexed certificate space と
+comparison map の coherence / non-coherence である。ridge、fold、curvature は見た目の山谷ではなく、transport 後の
+certificate tuple がどこで同一視され、どこで分岐するかを表す。
+
+architecture conformance や static analysis は、選ばれた rule violation の検出、件数化、CI gate として有用である。
+この report は、それらの検出器そのものを置き換えない。ArchMap / observation layer が供給した有限 atom vocabulary と
+source-reference field に相対化し、その上で obstruction support、repair necessity、trace exactness を AAT 側の
+certificate geometry として読む。
+
+formal certificate や sheaf consistency の研究は、局所証拠、大域整合、obstruction を扱う。このフェーズの差分は、
+証明対象を単独の consistency claim に閉じず、certificate tuple、minimal atom support family、repair hitting theorem、
+profile transport、loss-aware reading projection を同じ有限対象の中で結ぶ点にある。したがって source extraction
+completeness、ArchMap correctness、実コード全体の品質判定はここでは主張しない。
+
+### Phase result
+
+Cycle 41 後の total SCORE は 5110 であり、`research/GOALS.md` の threshold 5000 を超えた。
+portfolio constraint も満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 41 件持ち、
+atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
+scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
+
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
 ```text
@@ -1827,7 +1877,10 @@ ArchMap correctness、実コード全体の品質判定は結論しない。
 ### Next Frontier
 
 現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 41 後の total SCORE は 5110 である。
-次に進める場合は、lawful criterion の necessity / minimality、
+このフェーズの report seed は、atom-supported quality geometry の定義、
+Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
+finite grid phenomena、related-work separation を備えた。
+次フェーズへ進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
 または selected support-defect localization を狙う。threshold は達成済みであるため、PR マージ後に phase boundary 判定へ進む。
