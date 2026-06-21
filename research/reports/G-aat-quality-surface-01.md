@@ -48,7 +48,7 @@
   - repair-potential / obstruction / traceability / atom-supported-quality-geometry / invariance: 130
   - certificate-transport / obstruction / traceability / quality-surface: 140
 - evidence portfolio:
-  - proved-in-research: 41
+  - proved-in-research: 42
 
 ## Phase synthesis
 
@@ -64,7 +64,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-41 件の Lean-proved research artifacts は、次の paper seed を形成している。
+42 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -108,7 +108,7 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 41 後の total SCORE は 5110 であり、このフェーズの tracking Issue active threshold 5000 を超えた。
-portfolio constraint も満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 41 件持ち、
+portfolio constraint も満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 42 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
