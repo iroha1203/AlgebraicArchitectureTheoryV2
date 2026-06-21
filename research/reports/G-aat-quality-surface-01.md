@@ -125,9 +125,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 58 後の total SCORE は 7546 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 59 後の total SCORE は 7706 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 58 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 59 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example を含む。
 
