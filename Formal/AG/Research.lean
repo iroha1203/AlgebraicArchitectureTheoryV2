@@ -48,3 +48,4 @@ import Formal.AG.Research.QualitySurface.RouteDefectLocalRepairCalculusBridge
 import Formal.AG.Research.QualitySurface.SelectedRouteFamilyExactness
 import Formal.AG.Research.QualitySurface.ParametrizedSelectedCorrectionSystem
 import Formal.AG.Research.QualitySurface.ParametrizedLossAwareAtlas
+import Formal.AG.Research.QualitySurface.ParametrizedAtlasTransition
