@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9006
+- total SCORE: 9162
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -72,8 +72,9 @@
   - obstruction / certificate-transport / traceability / quality-surface / computability / invariance / repair-potential: 168
   - obstruction / computability / repair-potential / traceability / minimality / quality-surface / certificate-transport: 172
   - profile-curvature / certificate-transport / obstruction / repair-potential / quality-surface / traceability: 176
+  - repair-potential / profile-curvature / certificate-transport / obstruction / quality-surface / traceability: 156
 - evidence portfolio:
-  - proved-in-research: 67
+  - proved-in-research: 68
 
 ## Phase synthesis
 
@@ -89,7 +90,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-67 件の Lean-proved research artifacts は、次の paper seed を形成している。
+68 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -99,6 +100,7 @@ certificate の基本単位は
 - repair / transport endpoint pair の順序差を source-ref handoff obstruction locus に戻して読める。
 - source-ref handoff obstruction locus を component-indexed support と三 law minimality matrix として読める。
 - component support を declared repair clearance の transversal condition として読める。
+- repair/refinement exchange cell では、同じ visible/local projection の下でも coarse trace basin と refined trace-plus-repair-frontier basin の membership が分離しうる。
 
 ### Related-work separation
 
@@ -136,15 +138,15 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 67 後の total SCORE は 9006 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 68 後の total SCORE は 9162 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 67 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 68 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
 component support bitset / law minimality matrix、declared repair transversal theorem、
 finite overlap obstruction basis / repair-transversal duality theorem、
-repair/transport Cech commutator curvature theorem を含む。
+repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3137,14 +3139,56 @@ canonical global curvature、runtime repair synthesis、source extraction comple
 arbitrary route enumeration、global sheaf completeness、実コード全体の品質判定は結論しない。
 G2 四審判はいずれも `genius_eligibility: no` を返し、G4 は通常 SCORE として base 88 を confirm した。
 
+## Cycle 68: Repair-basin exchange obstruction for refine-then-repair versus repair-then-refine
+
+```text
+candidate: Repair-basin exchange obstruction for refine-then-repair versus repair-then-refine
+candidate_type: bridge
+evidence_stage: proved-in-research
+base_score: 78
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 156
+category: repair-potential / profile-curvature / certificate-transport / obstruction / quality-surface / traceability
+goal_delta: The Quality Surface gains a selected finite repair/refinement exchange cell whose two paths share visible/local projection while separating coarse trace-basin clearance from refined trace-plus-repair-frontier basin membership.
+project_value_delta: Packages Cycle 66 overlap-basis repair duality and Cycle 67 Cech commutator curvature as a finite selected repair-basin exchange witness with a positive common-clearance criterion and trace-only obstruction.
+rival_delta: ADL / conformance surfaces can compare refinement and repair views, but the Lean package records a protected repair-basin membership gap hidden by the same visible/local projection.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/RepairBasinExchangeObstruction.lean`, `lake build FormalAGResearch`, and full `lake build` passed. Full build warning is the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe`; declarations use only standard `propext` and, for selected visible/local/package results, existing selected-cover `Quot.sound`.
+open_questions: general repair/refinement exchange cells beyond the selected witness; formal minimality/uniqueness of basin exchange failures; refinement-invariant Cech overlap support; non-singleton overlap basis calculus.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/RepairBasinExchangeObstruction.lean`
+defines a selected finite `RepairRefinementBasinCell` with endpoints, visible
+projection, `coarsePath`, and `refinedPath` only. Exactness, bases, clearance,
+and obstruction are proved as theorems rather than stored as fields.
+
+Lean proves:
+
+- `repairRefinement_paths_same_visibleLocal`: selected coarse/refined paths share visible/local projection.
+- `coarsePath_overlapBasis` and `refinedPath_overlapBasis`: the coarse trace basin and refined trace-plus-repair-frontier basin are exact selected overlap bases.
+- `commonClearance_iff_hits_unionBasis`: component-complete repair plans clear both sides iff they hit the union of the selected bases.
+- `repairRefinement_basinMembership_commutes_of_compatible`: union-basis hitting gives selected basin membership on both sides.
+- `traceOnlyRepairPlan_clears_coarseBasin` and `traceOnlyRepairPlan_fails_refinedBasin`: the selected trace-only plan clears the coarse basin but not the refined basin.
+- `repairRefinement_basinExchangeObstruction`: the trace-only plan witnesses a selected finite basin exchange obstruction.
+- `visibleRepairRefinement_not_faithful_to_basinExchange`: same visible/local projection is not faithful to protected repair-basin exchange.
+- `repairBasinExchangeObstruction_package`: the positive criterion, finite obstruction, and nonfaithfulness package.
+
+This result keeps `repair basin` inside selected finite overlap-basis /
+declared-clearance membership. It does not assert canonical global refinement,
+runtime repair generation, ArchMap correctness, source extraction completeness,
+arbitrary route enumeration, global sheaf completeness, or whole-codebase
+quality. G2 四審判はいずれも `genius_eligibility: no` を返し、G4 は通常 SCORE として base 78 を confirm した。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 10000 であり、cycle 67 後の total SCORE は 9006 である。
-threshold 10000 までは残り 994 SCORE である。
+次フェーズの tracking Issue active threshold は 10000 であり、cycle 68 後の total SCORE は 9162 である。
+threshold 10000 までは残り 838 SCORE である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation、handoff local-to-global overlap obstruction、
-repair/transport Cech commutator curvature を備えた。
+repair/transport Cech commutator curvature、repair-basin exchange obstruction を備えた。
 threshold 10000 には未達であるため、次 cycle では non-singleton overlap basis calculus、
 refinement-invariant Cech overlap support、curvature basis exchange、
-repair basin exchange obstruction、または component support hitting under atlas refinement を狙う。
+general repair/refinement exchange cells、または component support hitting under atlas refinement を狙う。
