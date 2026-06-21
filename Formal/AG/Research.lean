@@ -65,3 +65,4 @@ import Formal.AG.Research.QualitySurface.HandoffCechExactness
 import Formal.AG.Research.QualitySurface.OverlapObstructionBasis
 import Formal.AG.Research.QualitySurface.RepairTransportCechCommutatorCurvature
 import Formal.AG.Research.QualitySurface.RepairBasinExchangeObstruction
+import Formal.AG.Research.QualitySurface.AntichainOverlapBasisTransversal

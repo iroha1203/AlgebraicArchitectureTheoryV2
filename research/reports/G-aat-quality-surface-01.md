@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9162
+- total SCORE: 9330
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -73,8 +73,9 @@
   - obstruction / computability / repair-potential / traceability / minimality / quality-surface / certificate-transport: 172
   - profile-curvature / certificate-transport / obstruction / repair-potential / quality-surface / traceability: 176
   - repair-potential / profile-curvature / certificate-transport / obstruction / quality-surface / traceability: 156
+  - obstruction / minimality / repair-potential / certificate-transport / quality-surface / computability: 168
 - evidence portfolio:
-  - proved-in-research: 68
+  - proved-in-research: 69
 
 ## Phase synthesis
 
@@ -90,7 +91,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-68 件の Lean-proved research artifacts は、次の paper seed を形成している。
+69 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -101,6 +102,7 @@ certificate の基本単位は
 - source-ref handoff obstruction locus を component-indexed support と三 law minimality matrix として読める。
 - component support を declared repair clearance の transversal condition として読める。
 - repair/refinement exchange cell では、同じ visible/local projection の下でも coarse trace basin と refined trace-plus-repair-frontier basin の membership が分離しうる。
+- Cech overlap support は exact component basis だけでなく branch incidence を持ち、同じ visible component union でも branch-transversal class が分離しうる。
 
 ### Related-work separation
 
@@ -138,15 +140,16 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 68 後の total SCORE は 9162 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 69 後の total SCORE は 9330 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 68 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 69 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
 component support bitset / law minimality matrix、declared repair transversal theorem、
 finite overlap obstruction basis / repair-transversal duality theorem、
-repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem を含む。
+repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
+antichain Cech overlap branch-transversal theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3181,14 +3184,62 @@ runtime repair generation, ArchMap correctness, source extraction completeness,
 arbitrary route enumeration, global sheaf completeness, or whole-codebase
 quality. G2 四審判はいずれも `genius_eligibility: no` を返し、G4 は通常 SCORE として base 78 を confirm した。
 
+## Cycle 69: Antichain Cech overlap basis and transversal exactness
+
+```text
+candidate: Antichain Cech overlap basis and transversal exactness
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 84
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 168
+category: obstruction / minimality / repair-potential / certificate-transport / quality-surface / computability
+goal_delta: selected finite Cech overlap support now carries a branch-incidence layer over an exact component basis, separating visible component union from protected branch-transversal class.
+project_value_delta: Adds a Lean-proved non-singleton overlap basis calculus seed and a future projection-rule witness for branch incidence in Quality Surface views.
+rival_delta: ADL / conformance views that retain component sets or mismatch counts do not determine whether the same visible union came from two singleton branches or one paired branch; the Lean witness makes that projection loss explicit.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/AntichainOverlapBasisTransversal.lean`, `lake build FormalAGResearch`, and full `lake build` passed. Core residual / deletion / same-visible-union nonfaithfulness declarations are axiom-free; selected Cech grounding/package declarations use only standard `propext` inherited from existing Cech predicate-equality evidence. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` in reported declarations.
+open_questions: global all-branch deletion minimality; refinement-invariant branch support transport; curvature basis exchange; external ADL related-work comparison; future viewer projection rules for branch incidence.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/AntichainOverlapBasisTransversal.lean`
+adds branch predicates over `BridgeComponent` and packages an
+`AntichainCechOverlapBasis`: an exact selected Cech overlap component basis
+together with nonempty antichain branches whose union generates that basis.
+Branch clearance is a separate declared predicate, not the existing
+component-level `HandoffCechRepairObligation`.
+
+Lean proves:
+
+- `missedBranch_survives_as_residual`: a selected branch missed by a declared repair support remains as residual branch support.
+- `declaredBranchClearance_iff_hits_antichainOverlapBasis`: in a branch-complete regime, clearing selected branches is equivalent to hitting every selected branch.
+- `twoSingleton_antichainCechOverlapBasis` and `singlePair_antichainCechOverlapBasis`: the selected curved Cech overlap basis supports both the two-singleton branch family and the one-pair branch family.
+- `dropTraceBranch_breaks_antichainGeneration`: deleting the selected trace branch breaks generation of the selected trace / repair-frontier component basis.
+- `traceOnly_repairFrontierBranch_residual`: the trace-only repair plan leaves the repair-frontier singleton branch as residual branch support.
+- `traceOnly_branchClearance_singlePair_not_componentCechObligation`: the trace-only plan clears the paired branch but still fails the component-level Cech repair obligation for the selected curved path.
+- `sameVisibleUnion_not_faithful_to_branchTransversal`: the two-singleton branch family and the one-pair branch family have the same visible component union, but the trace-only repair support is a transversal only for the one-pair family.
+- `antichainOverlapBasisTransversal_package`: the selected branch incidence, residual support, branch deletion, and nonfaithfulness package.
+
+This cycle is a selected finite branch calculus, not a global Cech minimality
+or matroid theorem.  The theorem package keeps the main claim inside exact
+selected overlap component bases, branch-level declared repair semantics, and
+lossful visible component-union projection.  It does not assert runtime repair
+synthesis, canonical global minimality, source extraction completeness,
+ArchMap correctness, arbitrary route enumeration, global sheaf completeness,
+or whole-codebase quality.  G2 四審判はいずれも `genius_eligibility: no` を返し、
+G4 は通常 SCORE として base 84 を confirm した。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 10000 であり、cycle 68 後の total SCORE は 9162 である。
-threshold 10000 までは残り 838 SCORE である。
+次フェーズの tracking Issue active threshold は 10000 であり、cycle 69 後の total SCORE は 9330 である。
+threshold 10000 までは残り 670 SCORE である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation、handoff local-to-global overlap obstruction、
-repair/transport Cech commutator curvature、repair-basin exchange obstruction を備えた。
+repair/transport Cech commutator curvature、repair-basin exchange obstruction、
+antichain Cech overlap branch-transversal calculus を備えた。
 threshold 10000 には未達であるため、次 cycle では non-singleton overlap basis calculus、
 refinement-invariant Cech overlap support、curvature basis exchange、
 general repair/refinement exchange cells、または component support hitting under atlas refinement を狙う。
