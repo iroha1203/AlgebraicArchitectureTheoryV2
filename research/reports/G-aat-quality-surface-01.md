@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5110
+- total SCORE: 5250
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -46,6 +46,7 @@
   - certificate-transport / quality-surface / traceability: 110
   - certificate-transport / obstruction / invariance / computability / repair-potential: 150
   - repair-potential / obstruction / traceability / atom-supported-quality-geometry / invariance: 130
+  - certificate-transport / obstruction / traceability / quality-surface: 140
 - evidence portfolio:
   - proved-in-research: 41
 
@@ -1886,13 +1887,55 @@ correction necessity を持つことが分かる。Cycle 1 の support-hitting i
 selected internal support atom vocabulary に相対化され、global repair planning、source extraction completeness、
 ArchMap correctness、実コード全体の品質判定は結論しない。
 
+## Cycle 42: Exact-visualization criterion and four-law selected minimality matrix
+
+```text
+candidate: Exact-visualization criterion and four-law selected minimality matrix
+candidate_type: unification
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: certificate-transport/obstruction/traceability/quality-surface
+goal_delta: selected repair/transport exact-visualization criterion を、visible equivalence + empty protected route support の同値と四 law deletion cell に整理し、transport / obstruction frontier を前進させた。
+project_value_delta: Cycle 24/37/39 の exactness / deletion witness に新規 obligation/action deletion cells を加え、lawful criterion minimality matrix を paper seed 用の theorem package として固定した。
+rival_delta: ADL / conformance checker が失敗検出に留まりやすいところを、どの law の欠落がどの visible / protected defect を生むかという finite certificate geometry の matrix として示した。ただし selected finite witness であり、global ADL replacement ではない。
+formalization_quality: pass。`lake env lean`、`lake build FormalAGResearch`、reported declarations の `#print axioms` は pass / no axioms。主張は selected finite witness に限定され、global law minimality、tooling completeness、whole-codebase quality へ越境していない。
+open_questions: arbitrary deletion matrix の parametrized structure、selected commutator defect support の hitting necessity、loss-aware commutator atlas adequacy。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ExactVisualizationCriterionMinimality.lean` は、
+source-ref exact visualization を route-support calculus へ接続する。
+packet-induced tuple view では、`SourceRefExactVisualization` は
+`TupleVisibleVisualizationEquivalent` と `RouteDefectSupportEmpty` の同時成立と同値である。
+
+Lean 証拠は次を固定する。
+
+- `exactVisualization_iff_visible_emptyRouteSupport`: exact visualization は visible tuple equivalence と empty protected route support の同値条件である。
+- `VisibleLawDeletionNecessityWitness`: visible law を削ると protected route support は empty のままでも visible tuple equivalence と exact visualization が失敗する。
+- `ObligationLawDeletionCell`: obligation law を削ると他の packet transport / action naturality を保っても obligation defect が局在し、exact visualization が失敗する。
+- `TableLawDeletionNecessityWitness`: transport table law を削ると visible surface は flat でも endpoint / worker table defect support が残り、exact visualization が失敗する。
+- `ActionNaturalityDeletionCell`: action naturality を削ると visible / obligation / packet transport laws は保たれても storage repair-frontier / table support に defect が残る。
+- `fourLawSelectedMinimalityMatrix`: visible、obligation、table、action-naturalness の selected deletion cells を一つの matrix として束ねる。
+- `exactVisualizationCriterionMinimality_package`: criterion と four-law selected matrix をまとめる theorem package。
+
+この結果により、lawful repair/transport criterion は単なる十分条件ではなく、
+selected finite commutator 上でどの law を落とすとどの visible / protected 成分が exactness を壊すかを読む
+law-deletion matrix として扱える。主張は supplied finite source-ref packets、selected route endpoints、
+packet-to-tuple bridge、selected deletion cells に相対化され、global law minimality、canonical repair planning、
+source extraction completeness、ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-このフェーズの tracking Issue active threshold は 5000 であり、cycle 41 後の total SCORE は 5110 である。
+次フェーズの tracking Issue active threshold は 7000 であり、cycle 42 後の total SCORE は 5250 である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
 次フェーズへ進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
-または selected support-defect localization を狙う。threshold は達成済みであるため、PR マージ後に phase boundary 判定へ進む。
+selected support-defect localization、
+または loss-aware commutator atlas adequacy を狙う。threshold 7000 には未達であるため、次 cycle へ進む。
