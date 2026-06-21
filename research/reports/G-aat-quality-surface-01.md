@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 8326
+- total SCORE: 8490
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -68,8 +68,9 @@
   - obstruction / certificate-transport / traceability / computability / invariance / quality-surface: 160
   - repair-potential / certificate-transport / obstruction / traceability / quality-surface: 140
   - obstruction / computability / traceability / certificate-transport / invariance: 160
+  - repair-potential / obstruction / traceability / computability / invariance / certificate-transport: 164
 - evidence portfolio:
-  - proved-in-research: 63
+  - proved-in-research: 64
 
 ## Phase synthesis
 
@@ -85,7 +86,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-63 件の Lean-proved research artifacts は、次の paper seed を形成している。
+64 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -94,6 +95,7 @@ certificate の基本単位は
 - endpoint view では消える route-internal defect excursion も、selected internal support family と repair necessity を持つ。
 - repair / transport endpoint pair の順序差を source-ref handoff obstruction locus に戻して読める。
 - source-ref handoff obstruction locus を component-indexed support と三 law minimality matrix として読める。
+- component support を declared repair clearance の transversal condition として読める。
 
 ### Related-work separation
 
@@ -131,13 +133,13 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 63 後の total SCORE は 8326 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 64 後の total SCORE は 8490 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 63 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 64 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
-component support bitset / law minimality matrix を含む。
+component support bitset / law minimality matrix、declared repair transversal theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -2926,13 +2928,72 @@ finite `BridgeComponent` vocabulary に相対化される。global canonical min
 source extraction completeness、ArchMap correctness、arbitrary route enumeration、実コード全体の品質判定は結論しない。
 G2 四審判はいずれも `genius_eligibility: no` を返し、G4 は通常 SCORE として base 80 を confirm した。
 
+## Cycle 64: Component-support transversal theorem for handoff repairs
+
+```text
+candidate: Component-support transversal theorem for handoff repairs
+candidate_type: closure / bridge
+evidence_stage: proved-in-research
+base_score: 82
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 164
+category: repair-potential / obstruction / traceability / computability / invariance / certificate-transport
+goal_delta: Cycle 63 の component support invariant を、declared repair clearance、component-complete iff、singleton minimal transversal、visible repair shape nonfaithfulness を持つ repair necessity calculus へ進めた。
+project_value_delta: Cycle 61-63 の handoff obstruction / support 系列を repair-potential frontier に接続し、次の refinement invariance / finite holonomy-obstruction program の足場を作った。
+rival_delta: ADL / conformance tools の failure display に対し、protected component support を必ず hit する必要性と、同じ one-component visible shape が異なる repair support を隠すことを Lean theorem として固定した。
+formalization_quality: pass。`lake env lean`、`lake env lean Formal/AG/Research.lean`、`lake build FormalAGResearch`、full `lake build` は pass。full build の警告は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter 警告のみである。core repair / transversal definitions と visible projection は axiom-free。exact component-support iff、singleton minimal transversal、nonfaithfulness、package theorem は標準 `propext` のみに依存する。`sorryAx`、custom axiom、`Classical.choice`、`Quot.sound`、`unsafe` はない。
+open_questions: refinement-invariant handoff obstruction loci、component support hitting under atlas refinement、finite handoff holonomy-obstruction basis theorem、finite Cech-style holonomy-obstruction exactness package。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/HandoffRepairTransversal.lean` は、
+source-ref handoff component support を declared repair transversal condition として読む。
+repair plan は `touched : BridgeComponent -> Prop` と declared clearance `clears : BridgeComponent -> Prop`
+を持ち、`clears_only_if_touched` によって clear する component は必ず touched される。
+ここで `clears` は runtime repair result ではなく、selected finite atlas 上の declared component-support
+clearance predicate である。
+
+Lean 証拠は次を固定する。
+
+- `HandoffRepairPlan`: declared component-level repair plan。
+- `DeclaredResidualComponentSupport`: supported だが declared clear されていない component support。
+- `DeclaredHandoffRepairClears`: atlas の全 component support を declared clear する predicate。
+- `HandoffRepairTransversal`: repair support が handoff component support を hit する predicate。
+- `ComponentCompleteHandoffRepairPlan`: touched supported component を必ず clear する regime。
+- `missedHandoffComponentSupport_survives`: touched されていない component support は declared residual support として残る。
+- `hitsEveryHandoffComponentSupport_of_declaredClearance`: declared clearance は repair support transversal を強制する。
+- `declaredClearance_iff_hitsEvery_of_componentComplete`: component-complete regime では declared clearance と transversal は同値である。
+- `supportLawDeletion_componentSupport_iff`、`traceLawDeletion_componentSupport_iff`、
+  `repairFrontierLawDeletion_componentSupport_iff`: Cycle 63 の三 deletion atlas は、それぞれ support / trace /
+  repair-frontier component ちょうどを support として持つ。
+- `supportLawDeletion_minimalTransversal`、`traceLawDeletion_minimalTransversal`、
+  `repairFrontierLawDeletion_minimalTransversal`: 三 deletion witness の required repair support は singleton
+  inclusion-minimal transversal である。
+- `VisibleRepairShape` と `visibleOneComponentRepairShapeProjection`: protected component identity を忘れる
+  one-component visible shape projection。
+- `support_trace_transversalSupport_distinct`: support singleton と trace singleton は protected repair support として異なる。
+- `oneComponentRepairShape_not_faithful_to_repairTransversal`: visible projection は同じでも、protected repair
+  transversal support は異なりうる。
+- `handoffRepairTransversal_package`: declared clearance / transversal iff、singleton minimal transversals、
+  visible-shape nonfaithfulness を束ねる。
+
+この結果により、source-ref handoff component support は failure display ではなく、declared repair が hit すべき
+protected repair support hypergraph として読める。ADL / conformance surface が一つの component repair として
+見せる repair shape は、support / trace / repair-frontier の protected repair transversal を復元しない。
+ただし主張は selected finite source-ref handoff atlas、finite `BridgeComponent` vocabulary、
+declared component-level repair predicate に相対化される。runtime repair synthesis、global minimal repair planning、
+source extraction completeness、ArchMap correctness、arbitrary route enumeration、実コード全体の品質判定は結論しない。
+G2 四審判はいずれも `genius_eligibility: no` を返し、G4 は通常 SCORE として base 82 を confirm した。
+
 ### Next Frontier
 
-次フェーズの tracking Issue active threshold は 10000 であり、cycle 63 後の total SCORE は 8326 である。
-threshold 10000 までは残り 1674 SCORE である。
+次フェーズの tracking Issue active threshold は 10000 であり、cycle 64 後の total SCORE は 8490 である。
+threshold 10000 までは残り 1510 SCORE である。
 このフェーズの report seed は、atom-supported quality geometry の定義、
 Quality Surface as 2D profile slice、certificate tuple、comparison map / transport、
 finite grid phenomena、related-work separation を備えた。
-threshold 10000 には未達であるため、次 cycle では component support hitting theorem for handoff repairs、
-handoff atlas refinement invariance、finite holonomy-obstruction correspondence の broader theorem program、
-または handoff component support を repair planning / refinement invariant へ接続する theorem を狙う。
+threshold 10000 には未達であるため、次 cycle では handoff atlas refinement invariance、
+component support hitting under atlas refinement、finite handoff holonomy-obstruction basis theorem、
+finite Cech-style holonomy-obstruction exactness package、または law-refinement commutator curvature を狙う。
