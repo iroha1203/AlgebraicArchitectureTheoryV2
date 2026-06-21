@@ -58,3 +58,4 @@ import Formal.AG.Research.QualitySurface.RouteHolonomyObstructionSupport
 import Formal.AG.Research.QualitySurface.SourceRefHandoffBridge
 import Formal.AG.Research.QualitySurface.SourceRefHandoffHolonomyCorrespondence
 import Formal.AG.Research.QualitySurface.SourceRefHandoffObstructionLocus
+import Formal.AG.Research.QualitySurface.RepairTransportHandoffObstructionBridge
