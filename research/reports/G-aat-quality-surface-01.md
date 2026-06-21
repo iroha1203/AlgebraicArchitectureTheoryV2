@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4830
+- total SCORE: 4980
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -44,8 +44,9 @@
   - obstruction / certificate-transport / traceability / invariance / quality-surface: 100
   - certificate-transport / traceability / obstruction / invariance / repair-potential / computability: 140
   - certificate-transport / quality-surface / traceability: 110
+  - certificate-transport / obstruction / invariance / computability / repair-potential: 150
 - evidence portfolio:
-  - proved-in-research: 39
+  - proved-in-research: 40
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -1723,10 +1724,59 @@ Lean 証拠は次を固定する。
 canonical transport、canonical repair planning、source extraction completeness、ArchMap correctness、
 実コード全体の品質判定は結論しない。
 
+## Cycle 40: Route-chain defect excursion support and selected local-to-global localization
+
+```text
+candidate: Route-chain defect excursion support and selected local-to-global localization
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 75
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 150
+category: certificate-transport/obstruction/invariance/computability/repair-potential
+goal_delta: route endpoint support を length-two route chain の internal defect excursion certificate に持ち上げ、zero boundary leg では endpoint support へ局在し、token-swap/un-swap では endpoint empty のまま internal exact table-pair support が残ることを固定した。
+project_value_delta: loss-aware Quality Surface / selected commutator localization に対し、endpoint dashboard が path-internal defect excursion に faithful でない有限証拠を追加した。
+formalization_quality: pass。内部 support、zero-boundary localization、exact endpoint/worker table pair、off-coordinate nonmembership、endpoint/internal nonfaithfulness が Lean で表現されている。reported declarations は axiom-free / sorry-free。
+open_questions: arbitrary-length route chain abstraction、minimal internal excursion support family、selected profile curvature path への統合。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/RouteDefectExcursionSupport.lean` は、
+route endpoint pair の defect support を length-two route chain の内部 support として読み直す。
+`InternalRouteDefectSupport left middle right component` は二つの leg の route defect support の合併であり、
+`EndpointRouteDefectSupport` は chain の endpoints だけを見る。
+
+Lean 証拠は次を固定する。
+
+- `internalRouteDefectSupport_eq_endpoint_leftZero` /
+  `internalRouteDefectSupport_eq_endpoint_rightZero`: 片側 boundary leg が protected-zero なら、
+  internal support は endpoint support と componentwise に一致する。
+- `sourceRefExact_of_visible_and_emptyRouteSupport`: visible tuple equivalence と empty route defect support から
+  source-ref exact visualization が得られる。
+- `tokenSwapUnswap_endpointSupport_empty`: token-swap/un-swap chain は endpoint support が空である。
+- `tokenSwapUnswap_internalSupport_exact_tablePair`: 同じ chain の internal support は endpoint/worker source-ref table
+  coordinates に正確に局在し、obligation、全 repair frontier、storage table coordinate には出ない。
+- `tokenSwapUnswap_endpointTable_excursion`: endpoint table coordinate は endpoint では消えるが内部には現れる
+  route defect excursion である。
+- `flat_tokenSwapUnswap_sameEndpointSupport`: flat chain と token-swap/un-swap chain は endpoint support で一致する。
+- `endpointSupport_not_faithful_to_internalSupport`: しかし両者の internal support は一致しないため、
+  endpoint support は path-internal defect excursion に faithful ではない。
+- `routeDefectExcursionSupport_package`: zero-boundary localization、source-ref exactness criterion、
+  token-swap/un-swap exact internal support、endpoint/internal nonfaithfulness を束ねる。
+
+この結果により、Cycle 38 の endpoint route support calculus と Cycle 39 の visible/protected 分離の後に、
+endpoint support だけでは path 内部の defect excursion を失うことが有限証拠として固定された。
+一方で、片側 boundary leg が protected-zero と分かる regime では、endpoint defect support を selected local cell へ戻せる。
+主張は supplied finite source-ref packets、selected length-two route chain、explicit packet-to-tuple bridge に相対化され、
+global additive defect group、canonical transport、canonical repair planning、source extraction completeness、
+ArchMap correctness、実コード全体の品質判定は結論しない。
+
 ### Next Frontier
 
-現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 39 後の total SCORE は 4830 である。
+現在の `research/GOALS.md` の SCORE threshold は 5000 であり、cycle 40 後の total SCORE は 4980 である。
 次に進める場合は、lawful criterion の necessity / minimality、
 selected commutator localization、
 lawful repair/transport criterion minimality matrix、
-または selected support-defect localization を狙う。threshold までは残り 170 SCORE である。
+または selected support-defect localization を狙う。threshold までは残り 20 SCORE である。
