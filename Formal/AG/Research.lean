@@ -75,3 +75,4 @@ import Formal.AG.Research.QualitySurface.ArbitraryBranchFamilyAdequacy
 import Formal.AG.Research.QualitySurface.ComponentRefinementSupportLift
 import Formal.AG.Research.QualitySurface.SemanticRepairCocycleWitness
 import Formal.AG.Research.QualitySurface.SemanticSupportProjectionKernel
+import Formal.AG.Research.QualitySurface.ComponentClearanceSemanticObstruction
