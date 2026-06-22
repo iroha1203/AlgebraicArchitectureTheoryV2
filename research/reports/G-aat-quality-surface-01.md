@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9970
+- total SCORE: 10090
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -78,8 +78,9 @@
   - obstruction / invariance / minimality / certificate-transport / quality-surface: 136
   - computability / repair-potential / certificate-transport / obstruction / quality-surface: 160
   - computability / certificate-transport / invariance / repair-potential / obstruction / quality-surface: 176
+  - computability / minimality / obstruction / repair-potential / certificate-transport / quality-surface: 120
 - evidence portfolio:
-  - proved-in-research: 73
+  - proved-in-research: 74
 
 ## Phase synthesis
 
@@ -95,7 +96,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-73 件の Lean-proved research artifacts は、次の paper seed を形成している。
+74 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -108,6 +109,7 @@ certificate の基本単位は
 - repair/refinement exchange cell では、同じ visible/local projection の下でも coarse trace basin と refined trace-plus-repair-frontier basin の membership が分離しうる。
 - Cech overlap support は exact component basis だけでなく branch incidence を持ち、同じ visible component union でも branch-transversal class が分離しうる。
 - branch-reflection transport は、visible union preservation ではなく branch-local support-lift closure と missing reflected branch witness で判定される。
+- selected residual scan の returned branch は selector-relative prefix exactness と singleton-deletion restoration semantics を持つ。
 
 ### Related-work separation
 
@@ -145,9 +147,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 73 後の total SCORE は 9970 である。
-現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 73 件持ち、
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
+現在の 10000 threshold には到達した。tracking Issue は phase summary と人間判断のため open のまま残す。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 74 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -156,7 +158,7 @@ finite overlap obstruction basis / repair-transversal duality theorem、
 repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
 antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem、
 selected branch-reflection failure theorem、selector-relative branch-transversal scan kernel、
-branch-reflection adequacy kernel を含む。
+branch-reflection adequacy kernel、selected residual scan prefix-minimality theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3469,3 +3471,54 @@ Cycle 73 後の total SCORE は 9970 であり、threshold 10000 までは残り
 点数合わせの小補題ではフェーズ区切りの品質を落とすため、次 cycle では component-level refinement relation を持つ
 stronger support lift、selected residual scan の prefix exactness / minimality、
 または arbitrary finite branch family に近い executable adequacy checking を狙う。
+
+## Cycle 74: Prefix-minimal residual scan theorem for selected branch diagnostics
+
+```text
+candidate: Prefix-minimal residual scan theorem for selected branch diagnostics
+candidate_type: closure
+evidence_stage: proved-in-research
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: computability / minimality / obstruction / repair-potential / certificate-transport / quality-surface
+goal_delta: selected residual scan gains prefix-exact diagnostic semantics: earlier selected branches are hit, earlier singleton deletions do not restore trace-only selected transversality, and deleting the returned residual branch does restore it.
+project_value_delta: Closes the Cycle 72/73 residual-scan frontier as a selector-relative minimal repair certificate for the phase report, while leaving general finite branch checking and component-level refinement to the next phase.
+rival_delta: ADL / conformance dashboards can show a first failing row, but this result proves a protected path-indexed residual with prefix-hit and deletion/restoration semantics that visible collapsed readings cannot recover.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SelectedResidualScanPrefixMinimality.lean`, `lake build Formal.AG.Research.QualitySurface.SelectedResidualScanPrefixMinimality`, and `lake build FormalAGResearch` passed. Several core finite witness declarations are axiom-free; package/prefix declarations use standard `propext` only. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported. G3 formalization audit passed. G4 confirmed base 60, multiplier 2.0, penalty 0, final +120.
+open_questions: list-based prefix predicate for variable scan orders; executable adequacy checking for arbitrary finite branch families; component-level refinement relation / stronger support lift theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SelectedResidualScanPrefixMinimality.lean`
+adds selector-relative prefix exactness and singleton-deletion minimality for
+the selected residual scan.  `selectedPrefixBefore` fixes the strict prefix
+relation for the selected scan order.  The theorem package is scoped to the
+selected trace-only finite witness and does not claim global repair minimality.
+
+Lean proves:
+
+- `firstMissedSelectedBranch?_some_prefixHit`: if the selected scan returns a later code, every selected code before it is hit.
+- `traceOnly_firstResidual_prefixExact`: trace-only support returns the refined repair-frontier residual, hits every earlier selected code, and misses the returned residual.
+- `dropSelectedScanBranch`: selector-relative singleton branch deletion.
+- `traceOnly_dropCoarseTrace_not_restore_selectedTransversal`: deleting the earlier coarse trace branch does not restore trace-only selected transversality.
+- `traceOnly_dropRefinedTrace_not_restore_selectedTransversal`: deleting the earlier refined trace branch does not restore trace-only selected transversality.
+- `traceOnly_noEarlierDeletionRestoresSelectedTransversal`: no selected singleton deletion before the returned residual restores transversality.
+- `traceOnly_returnedDeletionRestoresSelectedTransversal`: deleting the returned refined repair-frontier residual restores trace-only selected transversality.
+- `selectedResidualPrefix_visibleContrast`: the selected prefix-minimal residual is invisible to the collapsed visible scan.
+- `selectedResidualScanPrefixMinimality_package`: the prefix-exactness, singleton-deletion minimality, and visible contrast package.
+
+This cycle remains selector-relative.  It does not assert a global canonical
+repair order, global minimal repair, runtime repair synthesis, source
+extraction completeness, ArchMap correctness, global sheaf completeness, or
+whole-codebase quality.  G2 四審判はいずれも `genius_eligibility: no` を返し、
+G3 は Lean proof と独立監査を通った。G4 は通常 SCORE として base 60 を
+confirm し、genius は通常 SCORE へ戻した。
+
+### Phase Boundary Status
+
+Cycle 74 後の total SCORE は 10090 であり、active threshold 10000 に到達した。
+portfolio constraint は満たしており、report は coherent な paper seed として読める。
+tracking Issue は open のまま、G6 phase-boundary judgment と phase summary へ進む。
