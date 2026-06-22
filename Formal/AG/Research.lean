@@ -68,3 +68,4 @@ import Formal.AG.Research.QualitySurface.RepairBasinExchangeObstruction
 import Formal.AG.Research.QualitySurface.AntichainOverlapBasisTransversal
 import Formal.AG.Research.QualitySurface.CurvatureBasisExchange
 import Formal.AG.Research.QualitySurface.NaiveRefinementSupportCounterexample
+import Formal.AG.Research.QualitySurface.BranchTransversalScanKernel
