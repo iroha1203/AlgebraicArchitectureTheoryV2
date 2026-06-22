@@ -81,3 +81,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualAliasNonfaithfulness
 import Formal.AG.Research.QualitySurface.SemanticFiberAwareViewerCriterion
 import Formal.AG.Research.QualitySurface.SemanticResidualComponentFaithfulness
 import Formal.AG.Research.QualitySurface.SemanticResidualAliasClassification
+import Formal.AG.Research.QualitySurface.SemanticResidualTransportNaturality
