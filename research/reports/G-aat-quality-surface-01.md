@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 10508
+- total SCORE: 10668
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -82,8 +82,9 @@
   - computability / certificate-transport / repair-potential / obstruction / invariance / quality-surface: 168
   - genius-support / certificate-transport / repair-potential / computability: 140
   - semantic-obstruction / repair-coherence / projection-nonfaithfulness / certificate-transport / quality-surface: 110
+  - semantic-obstruction / projection-nonfaithfulness / repair-coherence / certificate-transport / quality-surface: 160
 - evidence portfolio:
-  - proved-in-research: 77
+  - proved-in-research: 78
 
 ## Phase synthesis
 
@@ -99,7 +100,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-77 件の Lean-proved research artifacts は、次の paper seed を形成している。
+78 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -116,6 +117,7 @@ certificate の基本単位は
 - finite target order に相対化した branch-family adequacy checker は、`none` を support-lift adequacy と、`some` を protected missing branch witness として返し、visible projection では復元できない adequacy result を固定する。
 - component-level refinement support lift は、explicit component lift と support-closure law から finite branch-family adequacy coverage を生成し、trace-only support では refined repair-frontier branch を cover できない no-go witness を持つ。
 - finite semantic repair cocycle witness は、local branch-family adequacy pass と同じ chart-list projection の下でも semantic repair residual emptiness が決まらないことを、semantic atom / residual / transversal / projection nonfaithfulness の有限証拠として固定する。
+- semantic support projection kernel は、residual fiber singleton なら component projection が semantic repair closure を反映すること、そして non-singleton fiber では同じ component projection / local adequacy surface から semantic residual closure が分かれることを示す。
 
 ### Related-work separation
 
@@ -154,9 +156,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
 その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
-現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 77 後の total SCORE は 10508 である。
+現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 78 後の total SCORE は 10668 である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 77 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 78 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -168,7 +170,8 @@ selected branch-reflection failure theorem、selector-relative branch-transversa
 branch-reflection adequacy kernel、selected residual scan prefix-minimality theorem、
 arbitrary finite branch-family adequacy checker theorem、
 component-level refinement support-lift theorem、
-finite semantic repair cocycle witness theorem を含む。
+finite semantic repair cocycle witness theorem、
+semantic support projection kernel theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3721,4 +3724,82 @@ genius unlock.
 Cycle 77 後の total SCORE は 10508 であり、active threshold 12000 までは残り 1492 SCORE である。
 次 cycle では、projection-kernel rule for loss-aware Quality Surface drill-down、
 support-lift cocycle exactness criterion、semantic support nonfaithfulness over component-preserving refinement、
+またはより強い finite semantic repair-gluing obstruction theorem を狙う。genius unlock はまだ成立していない。
+
+## Cycle 78: Semantic support projection kernel for repair-residual closure
+
+```text
+candidate: Semantic support projection kernel for repair-residual closure
+candidate_type: genius-support / unification / projection-kernel
+evidence_stage: proved-in-research
+base_score: 80
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 160
+category: semantic-obstruction / projection-nonfaithfulness / repair-coherence / certificate-transport / quality-surface
+goal_delta: Cycle 77 の semantic residual witness を、residual fiber singleton criterion と selected non-singleton fiber counterexample へ強化した。
+project_value_delta: Research Lean layer に、component projection が semantic repair closure を反映する十分条件と、その条件が壊れる finite projection-kernel witness を追加した。
+rival_delta: ADL / conformance / dashboard / component-projected AI-review summaries は component-level support rows と local adequacy pass を保存できるが、semantic fiber obligations を保持しなければ refined repair-residual closure を復元できない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean` and `lake build FormalAGResearch` passed. Generic projection criterion and core support/projection declarations are axiom-free; selected counterexample, component-projected adequacy, and package declarations use only standard `propext`. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported. G2 four-judge review accepted base 80, multiplier 2.0, genius support; G4 confirmed final +160.
+open_questions: component repair clearance versus semantic gluing exactness; stronger finite semantic repair-gluing obstruction theorem; viewer drill-down schema for semantic fibers; support-lift cocycle exactness criterion.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticSupportProjectionKernel.lean`
+adds a refined semantic repair vocabulary that splits the repair-frontier
+component into a visible surface atom and a protected obligation atom.  Both
+can project to the same `BridgeComponent.repairFrontier`, so component-level
+support and local adequacy can agree while semantic residual closure differs.
+
+Lean proves:
+
+- `RefinedSemanticRepairAtom`: refined semantic atoms for trace, repair-frontier surface, and repair-frontier obligation.
+- `refinedSemanticComponent`: projection to protected bridge components.
+- `surfaceRepairSupport`: semantic support that records surface repair-frontier information but misses the obligation.
+- `obligationRepairSupport`: semantic support that records the protected repair-frontier obligation.
+- `completeRepairSupport`: support containing every refined semantic atom.
+- `componentSupportOfRefinedSemantic`: component support induced by refined semantic support.
+- `surfaceRepairSupport_projects_to_componentSupport`: surface support projects to trace plus repair-frontier component support.
+- `obligationRepairSupport_projects_to_componentSupport`: obligation-aware support projects to the same component support.
+- `completeRepairSupport_projects_to_componentSupport`: complete support projects to the same component support.
+- `surface_and_obligation_same_componentProjection`: surface and obligation supports are indistinguishable after component projection.
+- `surface_and_complete_same_componentProjection`: surface and complete supports are indistinguishable after component projection.
+- `SemanticComponentSupport`: generic component support induced by a semantic projection.
+- `SemanticProjectedResidual`: generic residual induced by a projection and Cech cover.
+- `SemanticRepairClosed`: semantic support closes every projected semantic residual.
+- `ResidualFiberSingleton`: residual components have singleton semantic fibers.
+- `componentProjection_reflects_semanticRepairClosed_of_residualFiberSingleton`: singleton residual fibers make component projection reflect semantic repair closure.
+- `completeRepairSupport_semanticRepairClosed`: complete support closes the selected projected residuals.
+- `surfaceRepairSupport_not_semanticRepairClosed`: surface support does not close the selected projected residuals.
+- `refinedSemanticProjection_not_residualFiberSingleton`: the selected refined projection has a non-singleton residual fiber.
+- `selected_projectionKernel_not_faithful_to_semanticRepairClosed`: same component projection and local adequacy do not determine semantic repair closure in the selected witness.
+- `RefinedSemanticRepairResidual`: selected refined residual predicate.
+- `RefinedSemanticRepairTransversal`: refined support hits every selected residual.
+- `refinedRepairFrontierResidual`: selected cover carries the refined repair-frontier obligation residual.
+- `surfaceRepairSupport_misses_refinedResidual`: surface support misses the refined residual.
+- `obligationRepairSupport_hits_refinedResidual`: obligation-aware support hits the refined residual.
+- `ComponentProjectedLocalAdequacy`: component projection plus local branch adequacy pass.
+- `surfaceRepairSupport_componentProjectedAdequacy`: surface support passes that component-projected surface.
+- `obligationRepairSupport_componentProjectedAdequacy`: obligation-aware support passes that component-projected surface.
+- `componentProjection_not_faithful_to_refinedSemanticClearance`: same component projection and same local adequacy pass do not determine refined semantic residual clearance.
+- `semanticSupportProjectionKernel_package`: the theorem package.
+
+This cycle is explicitly finite and witness-level, with one generic sufficient
+criterion.  It does not claim general sheaf gluing, source extraction
+completeness, ArchMap correctness, runtime repair synthesis, canonical global
+semantic ontology, global sheaf completeness, or whole-codebase quality.  G2
+The selected counterexample shows that the singleton condition cannot be
+dropped for this witness; it does not claim that every non-singleton semantic
+fiber produces nonfaithfulness.
+四審判はいずれも accept / base 80 / genius support と判定し、G4 は通常 SCORE
+として +160 を confirm した。The open genius target remains `Semantic
+repair-gluing obstruction theorem for finite atom-supported quality atlases`;
+this cycle is a support node, not a genius unlock.
+
+### Next Frontier
+
+Cycle 78 後の total SCORE は 10668 であり、active threshold 12000 までは残り 1332 SCORE である。
+次 cycle では、component repair clearance versus semantic gluing exactness、
+support-lift cocycle exactness criterion、viewer drill-down schema for semantic fibers、
 またはより強い finite semantic repair-gluing obstruction theorem を狙う。genius unlock はまだ成立していない。
