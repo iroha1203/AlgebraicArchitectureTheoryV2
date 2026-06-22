@@ -13,8 +13,17 @@
 - AAT は、Atom を primitive architectural fact として公理化し、law を方程式系として重ねる
   代数幾何的アーキテクチャ論である。Atom family から生成される architecture object を、
   lawful locus、obstruction、sheaf、cohomology、derived / stacky structure として読む。
-- AAT の強みは、言語、フレームワーク、実装形態を越えたアーキテクチャ構造を、局所性、
-  貼り合わせ、obstruction、変形、高次構造まで含むひとつの幾何学的基盤で扱える点にある。
+- AAT は比喩ではなく、Atom を基礎単位としてアーキテクチャを本物の代数幾何の対象にする。
+  そのため、特定のプログラミング言語、フレームワーク、ADL、実装形態に依存せず、
+  言語を越えた architectural fact を同じ数学的基盤で扱える。
+- AAT の強みは、アーキテクチャを geometry として扱い、局所性、貼り合わせ、obstruction、
+  変形、高次構造、repair 可能性を site / sheaf / law algebra / cohomology の同じ土台で
+  分析できる点にある。既存の設計パターンも、経験則ではなく local model、幾何構造、
+  gluing condition、singularity、obstruction、cohomological phenomenon として再解釈できる。
+- semantic atom は、静的解析では扱いにくい意味論、責務、補償、不変条件、業務意味、
+  side-effect discipline を AAT の対象へ持ち込むための基礎単位である。局所的には整合する
+  architectural data、certificate、repair が大域的に貼り合わない問題は、必要に応じて
+  `H^1` obstruction などの cohomological obstruction として読む。
 - SFT は、artifact、practice、AI、review、CI、operational feedback が software evolution の
   reachable future をどう変えるかを扱う。AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
 - SFT の強みは、個別の artifact や workflow を、software evolution の reachable future を変える
