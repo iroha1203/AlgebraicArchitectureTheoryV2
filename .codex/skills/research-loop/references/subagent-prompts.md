@@ -10,16 +10,27 @@
 
 **G1 候補生成**
 
+G1 では四体に次の探索ロールを一つずつ割り当てる。同じ agent に複数ロールを渡さない。
+
+- `closer`: 既存 frontier、report、open gap を読み、最も強い closure / computability / exactness 候補を探す。ただし定義展開や小補題量産は避ける。
+- `obstruction`: spine や直近成果の弱点を壊す counterexample、nonfaithfulness、failure mode、必要条件、no-go result を探す。
+- `unifier`: 複数の現象を一つの構成、不変量、duality、coherence criterion、bridge として圧縮する候補を探す。
+- `wildcard`: 高リスク高リターンの orientation / genius-target / rival-axis rewrite を探す。証拠計画がない願望は出さない。
+
 ```text
 Use the research-loop criteria to generate candidate research contributions for GOAL <goal-id>.
+Your G1 exploration role is: <closer | obstruction | unifier | wildcard>.
 Read only: research/GOALS.md, research/ideas/TEMPLATE.md, research/reports/<goal-id>.md if it exists, the tracking Issue summary supplied by the main agent, and the source references explicitly named by the GOAL.
 Do not edit files.
-Search freely from your own angle and make your candidates distinct from obvious spine-filling when possible.
+Search from your assigned role. Do not imitate the other G1 roles, and do not converge to the safest obvious spine-filling candidate unless your role makes it genuinely strongest.
 Generate mathematically nontrivial, interesting candidates that create visible progress toward the GOAL. Avoid definition unfolding, immediate corollaries, renaming, vague conjectures, and candidates whose value is only that they look easy to formalize.
 Also consider whether there is a rare genius candidate. Do not force one; return `genius_potential: no` for ordinary candidates.
 If an open `genius target theorem` exists in the tracking Issue, include at least one candidate that advances that target, or explain why another candidate should take priority.
+If the user explicitly asked for breakthrough / genius work and no open target exists, include at least one `genius-target` candidate or explain why no credible target exists.
+For each candidate, stress-test it against every rival named by the GOAL, including any strong rival. Do not assume a fixed rival list.
 Return at least 1 candidate and preferably 3 candidates.
 For each candidate, provide:
+exploration_role:
 title:
 candidate_type: closure | orientation | unification | computability | bridge | genius | genius-target | genius-support
 capability_category:
@@ -43,6 +54,7 @@ protected_structure:
 exactness_or_minimality_claim:
 nonfaithfulness_or_failure_mode:
 previous_cycle_delta:
+rival_stress_test:
 checked:
 unchecked:
 ```
@@ -121,9 +133,10 @@ unchecked:
 **G2 審判 D: ライバル比較**
 
 ```text
-Judge this candidate only against the GOAL's rival.
+Judge this candidate only against the GOAL's rival field.
 Inputs: GOAL <goal-id>, its rival field, candidate card <path>, reward rubric, dullness filter, current report if any, and tracking Issue genius target/support summary when relevant.
-Do not judge by mathematical elegance alone. Judge whether the candidate creates a capability that the rival does not provide, combines rival capabilities into a stronger object, or gives a precise failure / nonfaithfulness / obstruction that the rival misses.
+Do not judge by mathematical elegance alone. Judge whether the candidate creates a capability that the named rival(s) do not provide, combines rival capabilities into a stronger object, or gives a precise failure / nonfaithfulness / obstruction that the rival misses.
+If the GOAL names multiple rivals or a strong rival, compare against each named rival separately before giving the overall verdict.
 If the candidate asks for genius scoring, judge whether it rewrites the comparison axis itself rather than merely outperforming the rival on an existing metric.
 If this is a genius-target or genius-support candidate, judge whether the target theorem would create a new comparison axis against the rival, and whether this support cycle materially advances that axis.
 Return:
@@ -133,8 +146,10 @@ genius_eligibility: yes | no | cannot-determine
 category:
 reason:
 rival_understanding:
+rival_by_rival_delta:
 advantage_over_rival:
 novelty_against_rival:
+recoverability_gap:
 not_merely_rival_rephrasing:
 required_evidence:
 checked:
@@ -227,6 +242,7 @@ category:
 genius_verdict: confirm | downgrade-to-normal | reject | not-applicable
 goal_delta:
 rival_delta:
+rival_stress_test:
 project_value_delta:
 formalization_quality:
 research_kiri_contribution:
