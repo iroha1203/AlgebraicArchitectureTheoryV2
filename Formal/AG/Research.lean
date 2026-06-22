@@ -80,3 +80,4 @@ import Formal.AG.Research.QualitySurface.VisibleLocalSemanticGluingObstruction
 import Formal.AG.Research.QualitySurface.SemanticResidualAliasNonfaithfulness
 import Formal.AG.Research.QualitySurface.SemanticFiberAwareViewerCriterion
 import Formal.AG.Research.QualitySurface.SemanticResidualComponentFaithfulness
+import Formal.AG.Research.QualitySurface.SemanticResidualAliasClassification
