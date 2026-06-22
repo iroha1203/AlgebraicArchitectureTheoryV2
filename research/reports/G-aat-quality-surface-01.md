@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 10258
+- total SCORE: 10398
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -80,8 +80,9 @@
   - computability / certificate-transport / invariance / repair-potential / obstruction / quality-surface: 176
   - computability / minimality / obstruction / repair-potential / certificate-transport / quality-surface: 120
   - computability / certificate-transport / repair-potential / obstruction / invariance / quality-surface: 168
+  - genius-support / certificate-transport / repair-potential / computability: 140
 - evidence portfolio:
-  - proved-in-research: 75
+  - proved-in-research: 76
 
 ## Phase synthesis
 
@@ -97,7 +98,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-75 件の Lean-proved research artifacts は、次の paper seed を形成している。
+76 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -112,6 +113,7 @@ certificate の基本単位は
 - branch-reflection transport は、visible union preservation ではなく branch-local support-lift closure と missing reflected branch witness で判定される。
 - selected residual scan の returned branch は selector-relative prefix exactness と singleton-deletion restoration semantics を持つ。
 - finite target order に相対化した branch-family adequacy checker は、`none` を support-lift adequacy と、`some` を protected missing branch witness として返し、visible projection では復元できない adequacy result を固定する。
+- component-level refinement support lift は、explicit component lift と support-closure law から finite branch-family adequacy coverage を生成し、trace-only support では refined repair-frontier branch を cover できない no-go witness を持つ。
 
 ### Related-work separation
 
@@ -150,9 +152,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
 その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
-現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 75 後の total SCORE は 10258 である。
+現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 76 後の total SCORE は 10398 である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 75 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 76 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -162,7 +164,8 @@ repair/transport Cech commutator curvature theorem、repair-basin exchange obstr
 antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem、
 selected branch-reflection failure theorem、selector-relative branch-transversal scan kernel、
 branch-reflection adequacy kernel、selected residual scan prefix-minimality theorem、
-arbitrary finite branch-family adequacy checker theorem を含む。
+arbitrary finite branch-family adequacy checker theorem、
+component-level refinement support-lift theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3588,3 +3591,65 @@ Cycle 75 後の total SCORE は 10258 であり、active threshold 12000 まで�
 次 cycle では、component-level refinement support-lift theorem、projection kernel rule for loss-aware Quality Surface drill-down、
 または finite semantic repair cocycle witness を狙う。genius unlock はまだ成立しておらず、semantic repair-gluing obstruction theorem の
 support map を積む段階にある。
+
+## Cycle 76: Component-level refinement support-lift theorem
+
+```text
+candidate: Component-level refinement support-lift theorem
+candidate_type: closure / unification / genius-support
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: genius-support / certificate-transport / repair-potential / computability
+goal_delta: Cycle 75 の supplied coverage predicate を explicit component lift と support-closure law から生成し、local branch-family adequacy checker を semantic repair-gluing target へ運ぶための support-lift node を固定した。
+project_value_delta: Research Lean layer に、component refinement と repair-support-preserving branch-family transport を分ける theorem package を追加し、future semantic cocycle / projection-kernel work の前提を作った。
+rival_delta: ADL / static analysis / conformance / dashboard / AI-review は visible component preservation や refinement row を扱えるが、support-preserving branch lift、target repair-frontier coverage、branch-family adequacy transport を theorem-level evidence として固定しない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/ComponentRefinementSupportLift.lean` and `lake build FormalAGResearch` passed. Core bridge / no-go declarations are axiom-free; selected checker / package declarations use only standard `propext`. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported. G3 formalization audit passed. G4 confirmed base 70, multiplier 2.0, penalty 0, final +140.
+open_questions: finite semantic repair cocycle witness for the open genius target; projection-kernel rule for loss-aware Quality Surface drill-down; support-lift cocycle exactness criterion; semantic support nonfaithfulness over component-preserving refinement.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ComponentRefinementSupportLift.lean`
+adds a component-level coverage generator for the finite branch-family adequacy
+checker.  A code-indexed `componentLift` sends source exchange components into
+target branch components, and `ComponentSupportLiftClosed` sends touched source
+support into touched target support.  Together they produce the existing
+`SupportLiftClosedForBranch` witness needed by branch-reflection adequacy.
+
+Lean proves:
+
+- `BranchComponentLiftClosed`: a component lift sends source branch components into the target branch.
+- `ComponentSupportLiftClosed`: a component lift sends source support into target support.
+- `branchComponentLiftClosed_gives_supportLiftClosedForBranch`: branch membership lift plus support lift gives the branch-local support-lift kernel.
+- `CodeComponentLiftCovered`: a target code is covered by an explicit component lift from a source branch.
+- `codeComponentLiftCovered_gives_codeReflectionCovered`: component-lift coverage refines to the Cycle 75 reflection coverage predicate.
+- `listedComponentLiftCoverage_gives_branchFamilyAdequacy`: listed component-lift coverage plus exact target-order enumeration gives branch-family adequacy.
+- `firstUncoveredComponentLift?_none_gives_branchFamilyAdequacy`: no component-lift residual implies branch-family adequacy.
+- `selectedCollapsedComponentLift`: selected lift from the collapsed visible source branch to each selected target branch.
+- `selectedCollapsedComponentLift_covers_code`: trace plus repair-frontier support covers every selected code under the selected lift.
+- `traceOnly_componentLift_not_covers_refinedRepairFrontier`: trace-only support cannot cover the refined repair-frontier target branch by any component lift.
+- `selectedComponentLift_firstUncovered_none`: the selected component-lift checker returns no residual under trace plus repair-frontier support.
+- `selectedComponentLift_gives_branchFamilyAdequacy`: the selected component lift gives adequacy from the collapsed visible family to the selected family.
+- `componentLift_transports_selectedReflection`: component-level lift evidence transports collapsed visible transversality to selected branch-reflection transversality.
+- `componentLift_closes_selected_residual`: the selected trace-only residual is closed exactly by the component lift with trace plus repair-frontier support, while trace-only remains impossible.
+- `componentRefinementSupportLift_package`: the generic component-lift bridge, selected pass, selected transversal transport, and trace-only no-go package.
+
+This cycle is explicitly finite and support-relative. It does not claim global
+atlas refinement, canonical source extraction, ArchMap correctness, runtime
+repair synthesis, global sheaf completeness, or whole-codebase quality.  G2
+strict review lowered the base score to 70 because part of the generic bridge
+is an adapter into prior support-lift adequacy machinery; G4 confirmed the
+normal SCORE.  The open genius target remains `Semantic repair-gluing
+obstruction theorem for finite atom-supported quality atlases`; this cycle is
+a support node, not a genius unlock.
+
+### Next Frontier
+
+Cycle 76 後の total SCORE は 10398 であり、active threshold 12000 までは残り 1602 SCORE である。
+次 cycle では、finite semantic repair cocycle witness を第一候補として狙う。これは open genius target の中核 support node であり、
+local adequacy pass と global semantic repair-gluing failure の分離を Lean finite witness として固定する可能性がある。
+代替として、projection-kernel rule for loss-aware Quality Surface drill-down、support-lift cocycle exactness criterion、
+semantic support nonfaithfulness over component-preserving refinement を検討する。
