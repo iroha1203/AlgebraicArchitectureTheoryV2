@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9634
+- total SCORE: 9794
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -76,8 +76,9 @@
   - obstruction / minimality / repair-potential / certificate-transport / quality-surface / computability: 168
   - profile-curvature / certificate-transport / repair-potential / obstruction / minimality / quality-surface / unification: 168
   - obstruction / invariance / minimality / certificate-transport / quality-surface: 136
+  - computability / repair-potential / certificate-transport / obstruction / quality-surface: 160
 - evidence portfolio:
-  - proved-in-research: 71
+  - proved-in-research: 72
 
 ## Phase synthesis
 
@@ -93,7 +94,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-69 件の Lean-proved research artifacts は、次の paper seed を形成している。
+72 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -142,9 +143,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 71 後の total SCORE は 9634 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 72 後の total SCORE は 9794 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 71 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 72 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -3354,3 +3355,59 @@ Cycle 71 後の total SCORE は 9634 であり、threshold 10000 までは残り
 この cycle は positive refinement transport theorem ではなく、その前提不足を固定する no-go result である。
 次 cycle では positive atlas-refinement support transport theorem、viewer projection kernel rule、
 または general exchange-cell family theorem を狙う。
+
+## Cycle 72: Selector-relative branch-transversal scan kernel
+
+```text
+candidate: Selector-relative branch-transversal scan kernel
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 80
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 160
+category: computability / repair-potential / certificate-transport / obstruction / quality-surface
+goal_delta: selected repair failure is now a residual-producing finite kernel: the first missed path-indexed branch code is computed and tied back to selected exchange transversality.
+project_value_delta: Converts Cycle 70/71 projection-loss and branch-reflection no-go results into a reusable finite scan object for later viewer projection and refinement transport criteria.
+rival_delta: ADL / conformance dashboards can display visible violations, but they do not determine the selected path-indexed residual branch or prove deletion/restoration inside certificate geometry.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/BranchTransversalScanKernel.lean`, `lake build FormalAGResearch`, and full `lake build` passed. Full build warning is the pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning only. Selector type, branch interpretation, selected order, hit predicates, scan functions, and the concrete residual predicate are axiom-free. Selector enumeration, list / iff wrappers, trace-only concrete scan theorem, deletion/restoration, visible-equivalent kernel pair, nonfaithfulness, and the package use only standard `propext`; no `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported. G3 formalization audit passed with the caveat that the generic scan recursion itself is not new. G4 confirmed base 80, multiplier 2.0, penalty 0, final +160.
+open_questions: positive atlas-refinement support transport theorem; prefix exactness for branch residual scans; projection kernel minimality beyond the selected pair; general exchange-cell scan family.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/BranchTransversalScanKernel.lean` adds a
+selector-code scan kernel for the selected repair/refinement exchange family.
+The kernel scans a fixed ordered list of selected path-indexed branch codes and
+returns an `Option` residual code for the first missed branch.
+
+Lean proves:
+
+- `selectedScanBranchFamily_complete`: selector codes enumerate exactly `selectedBasisExchangeFamily`.
+- `selectedScanBranchHit_iff_exchangeHit`: hitting a selector code is equivalent to hitting the interpreted exchange branch.
+- `firstMissedSelectedBranch?`: the ordered selected residual selector.
+- `firstMissedSelectedBranch?_some_mem` and `firstMissedSelectedBranch?_some_missed`: returned residual codes are listed and genuinely missed.
+- `firstMissedSelectedBranch?_none_iff_transversal`: no selected residual iff selected exchange-branch transversality.
+- `traceOnly_firstMissedSelectedBranch`: trace-only repair first misses the refined repair-frontier selector code.
+- `traceOnly_firstMissedSelectedBranch_residual`: the returned residual is a selected missed branch.
+- `dropFirstMissed_restores_traceOnlyTransversal`: deleting the first missed selected residual restores trace-only transversality for the selected finite family.
+- `collapsedVisible_firstMissedBranch_traceOnly`: trace-only repair has no residual for the collapsed visible reading.
+- `visibleEquivalent_residualKernelPair`: the selected and collapsed readings have the same visible component-union projection but different residual behavior.
+- `visibleUnion_not_faithful_to_branchScanKernel`: visible union is not faithful to the branch scan kernel.
+- `branchTransversalScanKernel_package`: the finite scan package.
+
+This cycle remains selector-relative.  It does not claim a global canonical
+repair order, global minimality, runtime repair synthesis, source extraction
+completeness, ArchMap correctness, arbitrary route enumeration, global sheaf
+completeness, or whole-codebase quality.  G2 strictness reduced the base score
+from the initial 88 to 80 because the repository already has generic ordered
+scan machinery; the value comes from the branch-specific selector enumeration,
+concrete residual, deletion/restoration, and visible-equivalent kernel pair.
+G2 四審判はいずれも `genius_eligibility: no` を返し、G3 は Lean proof と独立監査を通った。
+
+### Next Frontier
+
+Cycle 72 後の total SCORE は 9794 であり、threshold 10000 までは残り 206 SCORE である。
+この cycle で residual-producing scan kernel は得たが、positive atlas-refinement support transport theorem は未到達である。
+次 cycle では positive atlas-refinement support transport theorem、branch-reflection adequacy kernel、
+または selected scan prefix exactness / projection-kernel minimality を狙う。
