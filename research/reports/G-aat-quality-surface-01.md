@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 10090
+- total SCORE: 10258
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -79,8 +79,9 @@
   - computability / repair-potential / certificate-transport / obstruction / quality-surface: 160
   - computability / certificate-transport / invariance / repair-potential / obstruction / quality-surface: 176
   - computability / minimality / obstruction / repair-potential / certificate-transport / quality-surface: 120
+  - computability / certificate-transport / repair-potential / obstruction / invariance / quality-surface: 168
 - evidence portfolio:
-  - proved-in-research: 74
+  - proved-in-research: 75
 
 ## Phase synthesis
 
@@ -96,7 +97,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-74 件の Lean-proved research artifacts は、次の paper seed を形成している。
+75 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -110,6 +111,7 @@ certificate の基本単位は
 - Cech overlap support は exact component basis だけでなく branch incidence を持ち、同じ visible component union でも branch-transversal class が分離しうる。
 - branch-reflection transport は、visible union preservation ではなく branch-local support-lift closure と missing reflected branch witness で判定される。
 - selected residual scan の returned branch は selector-relative prefix exactness と singleton-deletion restoration semantics を持つ。
+- finite target order に相対化した branch-family adequacy checker は、`none` を support-lift adequacy と、`some` を protected missing branch witness として返し、visible projection では復元できない adequacy result を固定する。
 
 ### Related-work separation
 
@@ -148,8 +150,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
 その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
-現在の 10000 threshold には到達した。tracking Issue は phase summary と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 74 件持ち、
+現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 75 後の total SCORE は 10258 である。
+tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 75 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -158,7 +161,8 @@ finite overlap obstruction basis / repair-transversal duality theorem、
 repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
 antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem、
 selected branch-reflection failure theorem、selector-relative branch-transversal scan kernel、
-branch-reflection adequacy kernel、selected residual scan prefix-minimality theorem を含む。
+branch-reflection adequacy kernel、selected residual scan prefix-minimality theorem、
+arbitrary finite branch-family adequacy checker theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3522,3 +3526,65 @@ confirm し、genius は通常 SCORE へ戻した。
 Cycle 74 後の total SCORE は 10090 であり、active threshold 10000 に到達した。
 portfolio constraint は満たしており、report は coherent な paper seed として読める。
 tracking Issue は open のまま、G6 phase-boundary judgment と phase summary へ進む。
+
+## Cycle 75: Arbitrary finite branch-family adequacy checker with witness-complete residuals
+
+```text
+candidate: Arbitrary finite branch-family adequacy checker with witness-complete residuals
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 84
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 168
+category: computability / certificate-transport / repair-potential / obstruction / invariance / quality-surface
+goal_delta: finite target-order branch adequacy now has a witness-complete executable checker: `none` is equivalent to support-lift adequacy under exact target-order enumeration, and `some` returns a listed target branch that is genuinely uncovered.
+project_value_delta: Turns Cycle 72-74 selected residual and adequacy kernels into a reusable finite adequacy witness engine, and supplies the first support node for the semantic repair-gluing obstruction genius target.
+rival_delta: ADL / conformance / dashboard / AI-review readings can show visible pass-fail rows or component unions, but they do not recover the protected branch-reflection coverage, support-lift closure, missing reflected branch witness, or repair-transversal transport theorem fixed here.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/ArbitraryBranchFamilyAdequacy.lean` and `lake build FormalAGResearch` passed. Definitions and core transport theorems are axiom-free; list / iff / selected-collapsed witness / package theorems use only standard `propext`. No `sorryAx`, custom axiom, `Classical.choice`, `Quot.sound`, or `unsafe` was reported. G3 formalization audit passed.
+open_questions: component-level refinement support-lift theorem; projection-kernel rule for loss-aware Quality Surface drill-down; finite semantic repair cocycle witness for the open genius target; order-invariance / confluence conditions for residual scans.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/ArbitraryBranchFamilyAdequacy.lean`
+adds a finite target-order adequacy checker for branch-reflection transport.
+The checker is explicitly relative to a supplied target order that exactly
+enumerates the target branch family, a decidable coverage predicate, a supplied
+branch-reflection relation, and declared repair support.
+
+Lean proves:
+
+- `TargetOrderEnumerates`: exact enumeration of a target family by a finite target order.
+- `ListedTargetCodesCovered`: all target codes in the supplied order are covered.
+- `CodeReflectionCovered`: a target code is covered by a source branch and support-lift closure.
+- `firstUncoveredTargetBranch?`: the finite checker returning the first uncovered target code.
+- `firstUncoveredTargetBranch?_some_mem`: returned target codes belong to the supplied order.
+- `firstUncoveredTargetBranch?_some_uncovered`: returned target codes are genuinely uncovered.
+- `firstUncoveredTargetBranch?_some_witness`: returned codes are listed target-family members and uncovered under exact enumeration.
+- `firstUncoveredTargetBranch?_none_iff_listedAdequate`: `none` iff every listed code is covered.
+- `listedCoverage_gives_branchFamilyAdequacy`: listed coverage plus exact enumeration gives family-level adequacy.
+- `firstUncoveredTargetBranch?_none_iff_adequate`: `none` iff branch-family reflection adequacy under exact target-order enumeration.
+- `branchFamilyAdequacy_transportsTransversal`: adequate branch-reflection transport sends source transversality to target transversality.
+- `selectedTraceOnlyCoveredByCollapsed_iff_reflection`: the selected finite coverage predicate agrees with reflected support-lift coverage from the collapsed visible source family.
+- `selected_firstUncoveredTargetBranch`: the selected checker returns the refined repair-frontier residual.
+- `collapsed_firstUncoveredTargetBranch_none`: the collapsed visible checker returns no residual.
+- `selected_firstUncoveredTargetBranch_witness`: the selected residual is listed, targeted, and uncovered.
+- `visibleUnion_not_faithful_to_arbitraryAdequacyCheck`: visible component-union projection does not determine the finite adequacy checker result.
+- `arbitraryBranchFamilyAdequacyChecker_package`: the generic checker, transport theorem, and selected/collapsed nonfaithfulness package.
+
+This cycle does not claim a canonical global branch order, global atlas
+refinement, runtime repair synthesis, source extraction completeness, ArchMap
+correctness, global sheaf completeness, or whole-codebase quality. G2 四審判は
+いずれも `genius_eligibility: no` を返し、G3 は Lean proof と独立監査を通った。
+G4 は通常 SCORE として base 84 を confirm し、genius は通常 SCORE へ戻した。
+The open genius target remains `Semantic repair-gluing obstruction theorem for
+finite atom-supported quality atlases`; this cycle is a normal SCORE support
+node, not a genius unlock.
+
+### Next Frontier
+
+Cycle 75 後の total SCORE は 10258 であり、active threshold 12000 までは残り 1742 SCORE である。
+次 cycle では、component-level refinement support-lift theorem、projection kernel rule for loss-aware Quality Surface drill-down、
+または finite semantic repair cocycle witness を狙う。genius unlock はまだ成立しておらず、semantic repair-gluing obstruction theorem の
+support map を積む段階にある。
