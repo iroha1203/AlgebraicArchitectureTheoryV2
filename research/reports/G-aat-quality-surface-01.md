@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 11992
+- total SCORE: 12052
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -92,8 +92,9 @@
   - semantic-obstruction / computability / transport-naturality / repair-coherence / quality-surface: 156
   - semantic-obstruction / projection-nonfaithfulness / repair-coherence / certificate-transport / quality-surface: 130
   - semantic-obstruction / indexed-transport / repair-coherence / certificate-transport / quality-surface: 168
+  - semantic-obstruction / indexed-transport / edge-obstruction / repair-coherence / certificate-transport / quality-surface: 60
 - evidence portfolio:
-  - proved-in-research: 87
+  - proved-in-research: 88
 
 ## Phase synthesis
 
@@ -109,7 +110,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-87 件の Lean-proved research artifacts は、次の paper seed を形成している。
+88 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -134,6 +135,7 @@ certificate の基本単位は
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
 - semantic residual alias classification は、same component projection と explicit missed residual witness の下で residual alias gap と missed residual normal form が一致することを示す。
 - semantic residual indexed transport は、indexed finite overlap family 上の residual support transport と selected frontier-to-flat residual transition no-go を示す。
+- semantic residual edge transition obstruction は、residual-present source から residual-free target への edge が transition closure を阻む一般 criterion を示す。
 
 ### Related-work separation
 
@@ -172,9 +174,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
 その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
-現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 87 後の total SCORE は 11992 である。
+現在の active threshold は tracking Issue 上で 12000 に更新され、Cycle 88 後の total SCORE は 12052 である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 87 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 88 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -194,7 +196,8 @@ semantic residual alias nonfaithfulness theorem、
 semantic-fiber-aware viewer criterion theorem、
 semantic residual component faithfulness theorem、
 semantic residual alias classification theorem、
-semantic residual indexed transport theorem を含む。
+semantic residual indexed transport theorem、
+semantic residual edge transition obstruction theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4443,3 +4446,52 @@ base 82、repo 統合と rival 比較は base 84 と判定した。G4 は expect
 Cycle 87 後の total SCORE は 11992 であり、active threshold 12000 までは残り 8 SCORE である。
 次 cycle では、transition scanner、edge-order minimality、または finite atlas semantic repair-gluing obstruction one-way theorem の小さな support node を狙う。
 genius unlock はまだ成立していない。
+
+## Cycle 88: Semantic residual edge transition obstruction
+
+```text
+candidate: Semantic residual edge transition obstruction
+candidate_type: closure / edge-obstruction / genius-support
+evidence_stage: proved-in-research
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 60
+category: semantic-obstruction / indexed-transport / edge-obstruction / repair-coherence / certificate-transport / quality-surface
+goal_delta: Cycle 87 の selected frontier-to-flat no-go の原因を、source residual present / target residual-free の再利用可能な edge-local obstruction criterion として抽出した。
+project_value_delta: Research Lean layer に、broader atlas-edge family theorem / finite semantic repair-gluing obstruction theorem へ使える小さな edge obstruction kernel と selected instance を追加した。
+rival_delta: ADL / dashboard / AI review summary が per-overlap view を出せても、source residual presence と target residual-free condition の組み合わせが transition closure を不可能にすることを certificate として分離する。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualEdgeTransitionObstruction`, `lake build Formal.AG.Research`, and `lake build` passed. The full build only replayed pre-existing `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warnings. Axiom probe reported the generic edge criterion axiom-free; selected residual-present / residual-free / no-go / package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: broader atlas-edge obstruction theorem; residual-present / residual-free mismatch minimality or finite-family characterization; transition scanner.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualEdgeTransitionObstruction.lean`
+extracts the edge-local obstruction criterion behind Cycle 87.  If an atlas
+edge starts at an index with a semantic residual and ends at an index with no
+semantic residuals, then any transition closure along that edge is impossible.
+
+Lean proves:
+
+- `IndexedResidualFreeAt`: a selected overlap index has no semantic projected residuals.
+- `IndexedResidualPresentAt`: a selected overlap index has at least one semantic projected residual.
+- `residualTransitionClosed_obstructed_of_edge_residualFree`: residual-present source plus residual-free target obstructs residual transition closure.
+- `selected_repairFrontierResidualPresent`: the selected repair-frontier index has the obligation residual.
+- `selected_flatIndexedResidualFree`: the selected flat index has no refined semantic residual.
+- `selected_no_frontierToFlatResidualTransition_by_freeTarget`: the Cycle 87 selected frontier-to-flat no-go follows from the generic criterion.
+- `semanticResidualEdgeTransitionObstruction_package`: theorem package.
+
+This cycle is intentionally small.  It is not a `genius unlock`, not a new
+global gluing theorem, and not a claim about arbitrary atlas minimality,
+source extraction completeness, ArchMap correctness, runtime repair synthesis,
+UI correctness, or whole-codebase quality.  G2 accepted the candidate with
+base scores 18 / 20 / 30 / 38; G4 confirmed base 30 / multiplier 2.0 /
+final +60.  Cycle 88 raises total SCORE from 11992 to 12052, passing the active
+threshold 12000.
+
+### Phase Boundary Candidate
+
+Cycle 88 後の total SCORE は 12052 であり、tracking Issue active threshold 12000 を超えた。
+portfolio constraint は既に満たされており、この phase は G6 phase boundary 判定に進める。
+genius unlock は成立していないが、open target `Semantic repair-gluing obstruction theorem for finite atom-supported quality atlases` に対する support node は増えた。
