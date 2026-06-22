@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 9794
+- total SCORE: 9970
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -77,8 +77,9 @@
   - profile-curvature / certificate-transport / repair-potential / obstruction / minimality / quality-surface / unification: 168
   - obstruction / invariance / minimality / certificate-transport / quality-surface: 136
   - computability / repair-potential / certificate-transport / obstruction / quality-surface: 160
+  - computability / certificate-transport / invariance / repair-potential / obstruction / quality-surface: 176
 - evidence portfolio:
-  - proved-in-research: 72
+  - proved-in-research: 73
 
 ## Phase synthesis
 
@@ -94,7 +95,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-72 件の Lean-proved research artifacts は、次の paper seed を形成している。
+73 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -106,6 +107,7 @@ certificate の基本単位は
 - component support を declared repair clearance の transversal condition として読める。
 - repair/refinement exchange cell では、同じ visible/local projection の下でも coarse trace basin と refined trace-plus-repair-frontier basin の membership が分離しうる。
 - Cech overlap support は exact component basis だけでなく branch incidence を持ち、同じ visible component union でも branch-transversal class が分離しうる。
+- branch-reflection transport は、visible union preservation ではなく branch-local support-lift closure と missing reflected branch witness で判定される。
 
 ### Related-work separation
 
@@ -143,9 +145,9 @@ support family、trace exactness、route-internal defect excursion、repair nece
 ### Phase result
 
 Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 7000 に到達した。
-その後、tracking Issue の active threshold は 10000 に更新され、Cycle 72 後の total SCORE は 9794 である。
+その後、tracking Issue の active threshold は 10000 に更新され、Cycle 73 後の total SCORE は 9970 である。
 現在の 10000 threshold には未達であり、tracking Issue は open のまま継続する。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 72 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 73 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -153,7 +155,8 @@ component support bitset / law minimality matrix、declared repair transversal t
 finite overlap obstruction basis / repair-transversal duality theorem、
 repair/transport Cech commutator curvature theorem、repair-basin exchange obstruction theorem、
 antichain Cech overlap branch-transversal theorem、curvature basis exchange theorem、
-selected branch-reflection failure theorem を含む。
+selected branch-reflection failure theorem、selector-relative branch-transversal scan kernel、
+branch-reflection adequacy kernel を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -3411,3 +3414,58 @@ Cycle 72 後の total SCORE は 9794 であり、threshold 10000 までは残り
 この cycle で residual-producing scan kernel は得たが、positive atlas-refinement support transport theorem は未到達である。
 次 cycle では positive atlas-refinement support transport theorem、branch-reflection adequacy kernel、
 または selected scan prefix exactness / projection-kernel minimality を狙う。
+
+## Cycle 73: Branch-reflection adequacy kernel for refinement support transport
+
+```text
+candidate: Branch-reflection adequacy kernel for refinement support transport
+candidate_type: computability
+evidence_stage: proved-in-research
+base_score: 88
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 176
+category: computability / certificate-transport / invariance / repair-potential / obstruction / quality-surface
+goal_delta: repair/refinement transport gains a finite pass/fail adequacy kernel: branch-local support-lift closure transports coarse branch-transversal clearance to refined selected branches, while missing reflected branches block transport even under visible-union preservation.
+project_value_delta: Converts Cycle 71 branch-reflection no-go and Cycle 72 residual scan into a positive support-lift criterion plus a concrete non-adequacy witness for Quality Surface refinement projection.
+rival_delta: ADL / conformance views can preserve refined component sets and visible unions, but they do not determine branch-local repair-support lift or return the missing reflected repair-frontier branch that blocks repair-transversal transport.
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/BranchReflectionAdequacyKernel.lean` and `lake build FormalAGResearch` passed. The 14 reported declarations are axiom-free; no `sorryAx`, custom axiom, `propext`, `Classical.choice`, `Quot.sound`, or `unsafe` appears in the reported declarations. G3 formalization audit passed. G4 confirmed base 88, multiplier 2.0, penalty 0, final +176.
+open_questions: component-level refinement relation for stronger support lift; executable adequacy checking for arbitrary finite branch families; prefix exactness/minimality for selected residual scans; general atlas-refinement transport theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/BranchReflectionAdequacyKernel.lean`
+adds a branch-local support-lift adequacy condition for finite
+branch-reflection transport.  `SupportLiftClosedForBranch` consumes a concrete
+coarse branch hit witness and returns a concrete refined branch hit witness.
+`BranchReflectionTransportAdequate` pairs every refined branch with a coarse
+branch carrying that closure condition.
+
+Lean proves:
+
+- `branchReflectionKernel_pass_preservesTransversal`: adequate branch-reflection transport plus coarse branch transversality implies refined branch transversality.
+- `traceRepairFrontierSupport_hits_collapsedVisible`: trace / repair-frontier support hits the collapsed visible branch.
+- `selectedAllExchangeAdequate`: the collapsed visible family is adequate for the selected reflected family when support touches both trace and repair-frontier.
+- `allExchangeSupport_transports_selectedReflection`: the selected positive pass witness.
+- `BranchReflectionCoverageFailure`: a source reading can fail to cover a reflected branch required by the target reading.
+- `reflectedRepairFrontier_coverageFailure`: the naive reading misses the reflected repair-frontier singleton.
+- `traceOnly_not_branchReflectionAdequate_naive_to_reflected`: trace-only support cannot be an adequate transport kernel from naive to reflected selected reading.
+- `branchReflectionKernel_fail_returnsMissingBranch`: the reflected repair-frontier singleton is the missing branch witness blocking adequacy.
+- `missingReflection_witnessesTransportFailure`: visible preservation does not prevent missing branch reflection from breaking transport.
+- `visibleUnion_not_faithful_to_reflectionAdequacy`: visible component union is not faithful to branch-reflection adequacy.
+- `branchReflectionAdequacyKernel_package`: the pass/fail theorem package.
+
+This cycle remains a selected finite theorem package.  It does not claim
+global atlas refinement, canonical refinement transport, runtime repair
+synthesis, source extraction completeness, ArchMap correctness, global sheaf
+completeness, or whole-codebase quality.  G2 四審判はいずれも
+`genius_eligibility: no` を返し、G3 は Lean proof と独立監査を通った。
+G4 は通常 SCORE として base 88 を confirm し、genius は通常 SCORE へ戻した。
+
+### Next Frontier
+
+Cycle 73 後の total SCORE は 9970 であり、threshold 10000 までは残り 30 SCORE である。
+点数合わせの小補題ではフェーズ区切りの品質を落とすため、次 cycle では component-level refinement relation を持つ
+stronger support lift、selected residual scan の prefix exactness / minimality、
+または arbitrary finite branch family に近い executable adequacy checking を狙う。
