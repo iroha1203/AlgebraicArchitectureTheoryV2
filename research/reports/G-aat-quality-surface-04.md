@@ -4,15 +4,16 @@
 
 ## Current SCORE
 
-- total SCORE: 866
+- total SCORE: 1050
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
   - functoriality / cover-refinement / site-morphism / profile-law-transport / anti-weakening: 180
   - nonabelian-transition / higher-triple-overlap / layer-independence / anti-weakening: 176
   - true-sheaf-H1 / exactness / semantic-repair-descent / effective-descent / representation-adequacy / anti-weakening: 180
+  - nonabelian-H1-torsor / semantic-repair-descent / effective-descent / anti-weakening: 184
 - evidence portfolio:
-  - proved-in-research: 5
+  - proved-in-research: 6
 
 ## Target Proof State
 
@@ -30,11 +31,13 @@
   - quotient-style finite/small sheaf `H1` envelope with explicit `Z1/B1/H1` class relation
   - sheaf `H1` zero/nonzero comparison with the tower first-layer obstruction
   - nonzero sheaf `H1` no-global theorem and zero sheaf `H1` effective-descent theorem under explicit discharge
+  - finite/small pointed nonabelian repair torsor envelope with explicit trivialization/effective-descent discharge
+  - nonzero nonabelian `H1` no-effective-descent theorem and no-global theorem under explicit tower comparison
+  - anti-weakening witness that first-layer sheaf `H1` zero is not enough for effective nonabelian descent
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - full nonabelian `H^1` / torsor descent adequacy beyond finite token and selected transition witness
   - true `H^2` / stacky descent or stack effectiveness theorem
   - finite computable shadow connection to concrete ArchSig artifact schema
   - target-strength universality / factorization theorem
@@ -270,3 +273,49 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は quotient-style first-layer sheaf `H1` envelope に限定される。実 `Quot` / arbitrary sheaf cohomology / arbitrary Grothendieck site は主張しない。`SemanticRepairSheafH1ExactnessDischarge` は boundary primitive の semantic faithfulness のみを持ち、`GlobalSemanticRepairCoherent`、`SemanticRepairH1Zero`、tower vanish、effective descent、reflection / completeness、finite-shadow completeness、torsor triviality、stack effectiveness は field に入れない。full nonabelian `H^1`、true `H^2` / stacky descent、concrete ArchSig finite shadow adequacy、target-strength universality は残る。
+
+## Cycle 6: Finite Pointed Nonabelian Repair Torsor Descent Envelope
+
+```text
+candidate: Finite Pointed Nonabelian Repair Torsor Descent Envelope
+parent_tracking_issue: #2482
+tracking_issue: #2492
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 92
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 184
+category: nonabelian-H1-torsor / semantic-repair-descent / effective-descent / anti-weakening
+goal_delta: Bool-level nonabelian torsor tokenを、finite/small pointed torsor、nonabelian `Z1/B1/H1` zero/nonzero、effective descent witness、visible discharge theorem へ上げた。
+project_value_delta: G-04 の target theorem が要求する nonabelian `H1` / torsor descent adequacy を、selected witness から theorem package へ進めた。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が扱う local repair signal を、noncommuting repair-choice twisting の pointed torsor obstruction と effective descent theorem へ持ち上げた。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTorsor`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_nonabelian_torsor_axioms.lean` は pass。reported declarations は axiom-free。
+target_progress: support-node
+proof_obligation_delta: `FinitePointedRepairTorsor`、`NonabelianRepairTorsorDescentDischarge`、nonabelian `Z1/B1/H1` zero/nonzero、`EffectiveNonabelianRepairDescent`、torsor triviality/effective descent equivalence、nonzero/no-descent、legacy transition-shadow comparison、sheaf H1 zero plus effective nonabelian descent theorem を追加した。
+open_questions: true `H^2` / stacky descent、concrete ArchSig finite shadow connection、target-strength universality / factorization、G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTorsor.lean` は、finite/small pointed repair-choice torsor envelope を導入する。`FinitePointedRepairTorsor` は repair-choice vocabulary、selected transition、repair gauge、effective repair predicate だけを持ち、torsor triviality、effective descent、global coherence、tower vanish、stack effectiveness を field にしない。
+
+Lean 証拠は次に分かれる。
+
+- `NonabelianRepairTorsorDescentDischarge`: pointed torsor trivialization から effective repair witness への visible discharge。
+- `NonabelianCechZ1` / `NonabelianCechB1`: selected transition の cocycle / trivialization boundary surface。
+- `NonabelianRepairH1Zero` / `NonabelianRepairH1Nonzero`: nonabelian `H1` zero/nonzero class。
+- `EffectiveNonabelianRepairDescent`: effective repair witness を持つ独立 predicate。
+- `nonabelianH1Zero_iff_pointedTorsorTrivial`: zero nonabelian `H1` class と pointed torsor triviality の同値。
+- `pointedTorsorTrivial_iff_effectiveNonabelianRepairDescent`: explicit discharge の下で、torsor triviality と effective descent を往復する。
+- `effectiveNonabelianRepairDescent_iff_nonabelianH1Zero`: effective descent と zero nonabelian `H1` の同値。
+- `nonzero_nonabelianH1_no_effectiveDescent`: nonzero nonabelian `H1` は effective descent を阻害する。
+- `no_globalRepairCoherent_of_nonzero_nonabelianH1`: explicit tower comparison と sheaf `H1` discharge の下で、nonzero nonabelian `H1` は global coherence を阻害する。
+- `globalRepairCoherent_of_sheafH1_zero_and_effectiveNonabelianDescent`: sheaf `H1` zero と effective nonabelian descent と higher/stack vanish から global coherence を構成する。
+- `selectedTransitionLayer_noncommuting_forces_torsorNonzero`: Cycle 4 の selected transition witness を pointed torsor nonzero shadow として回収する。
+- `sheafH1Zero_not_enough_for_effectiveNonabelianDescent`: first-layer sheaf `H1` zero だけでは effective nonabelian descent が出ない anti-weakening witness。
+- `finitePointedNonabelianRepairTorsorDescentEnvelope_package`: Cycle 6 theorem package。
+
+### Target Boundary
+
+この cycle は finite/small pointed nonabelian repair torsor descent envelope に限定される。unrestricted nonabelian cohomology、arbitrary Grothendieck-site torsor、runtime repair synthesis、ArchMap correctness、true `H2` / stacky effectiveness、whole-codebase quality は主張しない。effective descent は `FinitePointedRepairTorsor` の field ではなく、`NonabelianRepairTorsorDescentDischarge` と theorem によって露出する。target theorem completion には true `H2` / stacky descent、concrete ArchSig finite shadow adequacy、target-strength universality、final G6 completion audit が残る。
