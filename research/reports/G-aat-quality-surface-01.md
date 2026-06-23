@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 14402
+- total SCORE: 14570
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -107,8 +107,9 @@
   - semantic-obstruction / status-drop-adapter / repair-necessity / cross-carrier-transport / genius-support: 180
   - semantic-obstruction / status-drop-scanner / computability / repair-necessity / genius-support: 176
   - semantic-obstruction / status-drop-scanner / atlas-map-induced / repair-necessity / genius-support: 172
+  - semantic-obstruction / status-drop-scanner / generated-mapped-order / repair-necessity / genius-support: 168
 - evidence portfolio:
-  - proved-in-research: 102
+  - proved-in-research: 103
 
 ## Phase synthesis
 
@@ -124,7 +125,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-102 件の Lean-proved research artifacts は、次の paper seed を形成している。
+103 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -155,6 +156,7 @@ certificate の基本単位は
 - semantic residual mapped status-drop repair hitting は、exact status readings と mapIndex 付き unhit preservation laws により、status-drop repair-hitting necessity が finite carrier/schema change をまたいで transport されることを示す。
 - semantic residual status-drop scanner は、complete supplied edge order 上の finite scanner `none` が no-drop/canonical vanishing と同値であり、target scanner `none` が old/mapped old status-drop hit necessity を強制することを示す。
 - semantic residual induced status-drop scanner hitting は、ResidualCutInducingAtlasMap と complete target scanner `none` から source-side old status-drop hit obligation を直接読む bridge を与える。
+- semantic residual mapped status-drop scanner order は、source-complete edge order の map image 上の target scanner `none` だけで mapped old status-drop hit obligation を読めることを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -217,8 +219,9 @@ Cycle 99 後の total SCORE は 13874 であり、tracking Issue active threshol
 Cycle 100 後の total SCORE は 14054 であり、tracking Issue active threshold 15000 までは残り 946 SCORE である。
 Cycle 101 後の total SCORE は 14230 であり、tracking Issue active threshold 15000 までは残り 770 SCORE である。
 Cycle 102 後の total SCORE は 14402 であり、tracking Issue active threshold 15000 までは残り 598 SCORE である。
+Cycle 103 後の total SCORE は 14570 であり、tracking Issue active threshold 15000 までは残り 430 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 102 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 103 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -253,7 +256,8 @@ semantic residual status-drop adapter theorem、
 semantic residual status-drop repair-hitting theorem、
 semantic residual mapped status-drop repair-hitting theorem、
 semantic residual status-drop scanner theorem、
-semantic residual induced status-drop scanner hitting theorem を含む。
+semantic residual induced status-drop scanner hitting theorem、
+semantic residual mapped status-drop scanner order theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -5600,4 +5604,73 @@ whole-codebase quality, or arbitrary atlas category/functoriality.
 
 Cycle 102 後の total SCORE は 14402 であり、tracking Issue active threshold 15000 までは残り 598 SCORE である。
 次 cycle では、generated mapped edge-order scanner completeness、finite pre-H1 support without cohomology overclaim、target nonempty contradiction from scanner none、または genuine semantic repair-gluing obstruction theorem を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 103: Generated mapped status-drop scanner order
+
+```text
+candidate: Generated mapped status-drop scanner order
+candidate_type: mapped source-order status-drop scanner theorem / generated target-order bridge / repair-necessity
+evidence_stage: proved-in-research
+base_score: 84
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 168
+category: semantic-obstruction / status-drop-scanner / generated-mapped-order / repair-necessity / genius-support
+goal_delta: Cycle 102 の complete target edge-order bridge を、source-complete edge order の map image 上の target scanner none bridge へ弱めた。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、generated mapped edge order、mapped old status-drop coverage、scanner none to hit theorem、selected generated-order witness、theorem package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は mapped target edge list を表示できても、source-complete order の map image 上の scanner none が source hit obligations を強制することを Lean theorem として保証できない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualMappedStatusDropScannerOrder.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualMappedStatusDropScannerOrder`, and `lake build FormalAGResearch` passed. Axiom probe reported standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: generated order coverage for richer target subfamilies; finite pre-H1 support without cohomology overclaim; target nonempty contradiction from scanner none; genuine semantic repair-gluing obstruction theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualMappedStatusDropScannerOrder.lean`
+turns a source-side finite edge order into a target scanner surface by mapping
+each source edge pair through `mapResidualPair`.  If the source order is
+complete for the old atlas, Lean proves that the generated mapped target order
+covers every mapped old status drop.
+
+This weakens the hand-supplied target-order assumption used in Cycle 102.  The
+target order no longer has to cover every target active edge.  It only has to
+cover the mapped old status drops that can witness failure of source-side
+repair hitting.  Therefore target scanner `none` on the generated mapped order
+forces all old status drops to be hit.
+
+The induced-atlas-map version specializes this to `ResidualCutInducingAtlasMap`.
+The selected witness proves that the selected source scan order maps exactly to
+the selected extended target scan order, the generated scanner returns the
+mapped frontier-to-flat drop, and a generated-order target scanner `none` claim
+would require the source frontier-to-flat hit.
+
+Lean proves:
+
+- `mapResidualEdgeOrder`: maps a source finite edge order into the target carrier.
+- `MappedOldStatusDropsCovered`: coverage predicate for mapped old status drops.
+- `mapResidualEdgeOrder_covers_mappedOldStatusDrops`: source order completeness gives mapped old status-drop coverage.
+- `targetMappedCoveredScannerNone_forces_allMappedOldStatusDropsHit`: scanner `none` on a covered target order forces all old hits.
+- `targetMappedSourceOrderScannerNone_forces_allMappedOldStatusDropsHit`: generated mapped source order version.
+- `targetMappedSourceOrderScannerNone_forces_mappedOldStatusDropHit`: pointwise generated-order version.
+- `residualCutInducingAtlasMap_mappedSourceOrderScannerNone_forces_oldStatusDropsHit`: induced-atlas-map generated-order version.
+- `residualCutInducingAtlasMap_mappedSourceOrderScannerNone_forces_oldStatusDropHit`: pointwise induced-atlas-map version.
+- `selectedFrontierFlatScanOrder_complete`: selected source order completeness.
+- `selectedGeneratedMappedStatusDropScanOrder_eq`: selected generated mapped order equals the selected extended order.
+- `selectedGeneratedMapped_firstResidualStatusDrop`: selected generated scanner hit.
+- `selectedGeneratedMapped_targetScannerNone_requires_frontierFlatStatusHit`: selected generated-order scanner `none` requires source hit.
+- `semanticResidualMappedStatusDropScannerOrder_package`: theorem package.
+
+This cycle is a `genius-support` bridge, not a `genius unlock`.  It proves
+that a computable target scanner surface can be generated from source
+certificate geometry for mapped old status-drop obligations.  It does not
+prove the generated order covers all target edges, canonical global order, hit
+sufficiency, repair synthesis, global minimality, vanishing-to-closure, true
+`H^1` / Cech / coboundary quotient, status extraction, ArchMap correctness,
+runtime repair synthesis, tooling runtime extraction, UI correctness,
+whole-codebase quality, or arbitrary atlas category/functoriality.
+
+### Next Frontier
+
+Cycle 103 後の total SCORE は 14570 であり、tracking Issue active threshold 15000 までは残り 430 SCORE である。
+次 cycle では、target nonempty contradiction from scanner none、finite pre-H1 support without cohomology overclaim、generated mapped order coverage for richer subfamilies、または genuine semantic repair-gluing obstruction theorem を狙う。
 genius unlock はまだ成立していない。
