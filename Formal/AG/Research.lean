@@ -98,3 +98,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualStatusDropAdapter
 import Formal.AG.Research.QualitySurface.SemanticResidualStatusDropRepairHitting
 import Formal.AG.Research.QualitySurface.SemanticResidualMappedStatusDropRepairHitting
 import Formal.AG.Research.QualitySurface.SemanticResidualStatusDropScanner
+import Formal.AG.Research.QualitySurface.SemanticResidualInducedStatusDropScannerHitting
