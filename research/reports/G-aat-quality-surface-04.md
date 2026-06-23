@@ -4,13 +4,14 @@
 
 ## Current SCORE
 
-- total SCORE: 510
+- total SCORE: 686
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
   - functoriality / cover-refinement / site-morphism / profile-law-transport / anti-weakening: 180
+  - nonabelian-transition / higher-triple-overlap / layer-independence / anti-weakening: 176
 - evidence portfolio:
-  - proved-in-research: 3
+  - proved-in-research: 4
 
 ## Target Proof State
 
@@ -24,11 +25,11 @@
   - finite/local certificate discharge of `LayeredRepairAdequacy`
   - anti-weakening witness that the discharge prism does not imply `H1Vanishes`, tower vanishing, or global coherence
   - finite/small tower morphism functoriality and discharge-prism transport
+  - finite nonabelian repair-choice transition and higher triple-overlap defect witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - richer nonabelian torsor transition law and triple-overlap higher coherence witness
   - finite computable shadow connection to concrete ArchSig artifact schema
   - G6-level audit that finite/small target boundary is sufficient for target completion
 - target completion status: `target-proof-checkpoint-candidate`; do not treat this report alone as `target-theorem-proved`
@@ -170,3 +171,48 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は finite/small target boundary の functoriality checkpoint に限定される。true sheaf `H1` functoriality、arbitrary site morphism、cover-refinement completeness、runtime extraction completeness、ArchMap correctness、repair synthesis completenessは主張しない。G-04 target completion には nonabelian / higher witness、concrete finite shadow connection、G6 completion audit が残る。
+
+## Cycle 4: Nonabelian Triple-Overlap Witness
+
+```text
+candidate: Nonabelian Triple-Overlap Witness
+tracking_issue: #2488
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 88
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 176
+category: nonabelian-transition / higher-triple-overlap / layer-independence / anti-weakening
+goal_delta: finite nonabelian repair-choice transition layer と triple-overlap defect witness を Lean に固定し、first-layer `H1Vanishes` だけでは tower/global coherence に足りないことを support-node として示した。
+project_value_delta: G-01 holonomy / commutator 系で積んできた有限 witness による hidden obstruction 分離を、G-04 obstruction tower の後続層へ接続した。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が拾える局所不一致を、first-layer `H1` と独立に tower vanish / global coherence を妨げる後続層として theorem 化した。
+formalization_quality: pass。`lake build Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTriple`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_nonabelian_triple_axioms.lean` は pass。reported declarations は axiom-free。
+target_progress: support-node
+proof_obligation_delta: `RepairChoiceToken`、`FiniteRepairChoiceTransitionLayer`、`TransitionLayerSoundness`、noncommuting pair obstruction、triple-overlap defect obstruction、selected `H1Vanishes` but no tower/global witness を追加した。
+open_questions: true sheaf/quotient `H1`、full nonabelian `H^1` / `H^2` / stacky descent、concrete ArchSig finite shadow connection、G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairNonabelianTriple.lean` は、有限 repair-choice transition layer を導入する。`RepairChoiceToken` は `left`, `right`, `leftRight`, `rightLeft` を区別し、selected pair では `left ∘ right = leftRight`、`right ∘ left = rightLeft` となる。selected layer は pair noncommuting と triple-overlap defect を同時に持つ。
+
+Lean 証拠は次に分かれる。
+
+- `TransitionLayerSoundness`: tower token vanish から selected transition law coherence への one-way bridge。tower vanishing、global coherence、target equivalence は field に入れない。
+- `noncommuting_obstructs_nonabelianTorsorTrivial`: noncommuting selected pair は nonabelian torsor triviality を阻害する。
+- `tripleOverlapDefect_obstructs_higherCoherenceVanishes`: triple-overlap defect は higher coherence vanish を阻害する。
+- `noncommuting_obstructs_obstructionTowerVanishes`: noncommuting selected pair は tower vanish を阻害する。
+- `tripleOverlapDefect_obstructs_obstructionTowerVanishes`: triple-overlap defect は tower vanish を阻害する。
+- `noncommuting_obstructs_globalRepairCoherent`: explicit adequacy の下で noncommuting selected pair は global coherence を阻害する。
+- `tripleOverlapDefect_obstructs_globalRepairCoherent`: explicit adequacy の下で triple-overlap defect は global coherence を阻害する。
+- `selectedTransitionDefectTower_h1Vanishes`: selected tower は first-layer `H1Vanishes` を満たす。
+- `selectedTransitionDefectTower_not_obstructionTowerVanishes`: selected tower は後続層の defect により tower vanish しない。
+- `selectedTransitionDefectTower_not_globalCoherent`: selected tower は global semantic repair coherence を持たない。
+- `h1Vanishes_not_enough_for_globalCoherent_due_transitionDefect`: first-layer `H1Vanishes` だけでは nonabelian / higher transition defect を越えて global coherence へ到達しない。
+- `finiteNonabelianTripleOverlap_package`: Cycle 4 theorem package。
+
+### Target Boundary
+
+この cycle は finite selected transition witness に限定される。full nonabelian `H^1`、true torsor descent、true `H^2`、arbitrary higher stack、stack effectiveness theorem、concrete ArchSig finite shadow connection はまだ主張しない。G-04 target completion には true sheaf `H1`、finite shadow connection、G6 completion audit が残る。
