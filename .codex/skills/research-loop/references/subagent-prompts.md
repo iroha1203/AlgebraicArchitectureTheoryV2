@@ -248,7 +248,7 @@ Inputs: GOAL <goal-id>, GOAL rival, synchronized candidate card <path>, evidence
 Do not preserve the proposed score unless the evidence supports it.
 If genius scoring is proposed, confirm it only when all four G2 judges returned `genius_eligibility: yes` and the evidence shows a rare 1000-point breakthrough. Otherwise set `genius_verdict: downgrade-to-normal` and score on the normal 0-100 base scale.
 If the candidate is a genius-target or genius-support cycle, audit target/support accounting separately from SCORE: target seeding does not unlock 1000 points by itself, support cycles score normally, and genius unlock requires the target theorem evidence to pass G2/G3/G4. If a genius-target is useful only as a research-program seed and has insufficient evidence for normal SCORE, return `score_verdict: seed-only`, `base_score: 0`, `final_score: 0`, and record the target/support map to the tracking Issue only.
-If the GOAL is in `research mode: target-theorem`, audit proof progress separately from SCORE. SCORE can reward support progress, but target completion requires the GOAL-card target theorem completion criteria. Do not treat SCORE threshold as proof completion.
+If the GOAL is in `research mode: target-theorem`, audit proof progress separately from SCORE. SCORE can reward support progress, but target completion requires the GOAL-card target theorem completion criteria. Do not treat SCORE threshold as proof completion. If the theorem statement or package contains material premises or hypothesis arguments, list them and audit whether the GOAL-card completion criteria require them to be discharged. Do not return `target_progress: target-proved` while a required premise remains only as an undischarged theorem argument.
 Return:
 score_verdict: confirm | reduce | reject | seed-only
 base_score:
@@ -259,6 +259,8 @@ category:
 genius_verdict: confirm | downgrade-to-normal | reject | not-applicable
 target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proved | target-refuted | not-applicable
 proof_obligation_delta:
+material_premises:
+premise_discharge_status:
 goal_delta:
 rival_delta:
 rival_stress_test:
@@ -292,10 +294,10 @@ Return the review-pr verdict and any research-loop-specific findings.
 
 ```text
 Judge whether the current work forms a good research phase boundary or target-theorem checkpoint for GOAL <goal-id>.
-Inputs: GOAL, GOAL rival, tracking Issue active threshold if any, tracking Issue SCORE ledger, tracking Issue target theorem state if any, research/reports/<goal-id>.md, category scores, evidence stages, phase boundary criteria, target theorem completion criteria and target failure policy when relevant.
+Inputs: GOAL, GOAL rival, tracking Issue active threshold if any, tracking Issue SCORE ledger, tracking Issue target theorem state if any, research/reports/<goal-id>.md, category scores, evidence stages, phase boundary criteria, target theorem completion criteria, target premise discharge policy, and target failure policy when relevant.
 Treat research/GOALS.md as a read-only invariant. If status, threshold policy, rubric, frontier, spine, research mode, target theorem, target theorem completion criteria, or target failure policy should change, return that as a human action proposal. Treat active threshold changes as tracking-Issue state changes, not GOALS.md edits.
 For score-phase GOALs, do not judge the GOAL as completely achieved. Do not close the tracking Issue. Judge whether this phase is coherent enough to stop and return to the human with a phase summary.
-For target-theorem GOALs, first judge whether the GOAL-card target theorem completion criteria are satisfied. If they are, return `target-theorem-proved`. If the target is not proved but the support map needs human judgment, return `target-proof-checkpoint`. If the target statement is refuted, return `target-refuted`.
+For target-theorem GOALs, first judge whether the GOAL-card target theorem completion criteria are satisfied. Inspect the Lean theorem/package statement, list material premises, class/structure arguments, hypothesis arguments, and certificate arguments, and decide whether each one is target-boundary context or a premise that must be discharged before completion. If the GOAL-card completion criteria require premise discharge, return `target-theorem-proved` only when those premises are backed by Lean theorem, finite witness, or concrete certificate evidence. If the theorem package is conditional and a required premise remains only as an undischarged argument, return `target-proof-checkpoint`. If the target statement is refuted, return `target-refuted`.
 Return:
 verdict: phase-boundary | continue | blocked | goal-defect | target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked
 total_score:
@@ -304,6 +306,8 @@ target_completion_status: not-applicable | satisfied | not-satisfied | refuted |
 completed_support_nodes:
 remaining_support_nodes:
 proof_blockers:
+material_premises:
+premise_discharge_audit:
 portfolio_constraint:
 coherent_report_or_paper_seed:
 rival_phase_delta:

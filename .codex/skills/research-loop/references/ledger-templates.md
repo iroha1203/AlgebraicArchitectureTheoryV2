@@ -216,6 +216,10 @@ Target theorem completion judgment
 verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
 target theorem: <name from GOAL card>
 completion criteria: <satisfied | not-satisfied | refuted | cannot-determine>
+material premises:
+- <premise / hypothesis / certificate argument and why it is material>
+premise discharge audit:
+- <premise>: <discharged | not-discharged | target-boundary | cannot-determine> via <evidence>
 target proof artifacts:
 - <Lean theorem / theorem package / report section / candidate card>
 G3 proof audit: <pass | fail | not-applicable>
@@ -238,6 +242,12 @@ goal: <goal-id>
 verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
 target_theorem: <target>
 completion_criteria_status: <satisfied | not-satisfied | refuted | cannot-determine>
+material_premises:
+  - <premise>
+premise_discharge:
+  - premise: <premise>
+    status: <discharged | not-discharged | target-boundary | cannot-determine>
+    evidence: <Lean declaration / finite witness / concrete certificate / null>
 proof_artifacts:
   - <artifact>
 completed_support_nodes:
