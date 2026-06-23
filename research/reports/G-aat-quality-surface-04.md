@@ -4,14 +4,15 @@
 
 ## Current SCORE
 
-- total SCORE: 686
+- total SCORE: 866
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
   - functoriality / cover-refinement / site-morphism / profile-law-transport / anti-weakening: 180
   - nonabelian-transition / higher-triple-overlap / layer-independence / anti-weakening: 176
+  - true-sheaf-H1 / exactness / semantic-repair-descent / effective-descent / representation-adequacy / anti-weakening: 180
 - evidence portfolio:
-  - proved-in-research: 4
+  - proved-in-research: 5
 
 ## Target Proof State
 
@@ -26,12 +27,18 @@
   - anti-weakening witness that the discharge prism does not imply `H1Vanishes`, tower vanishing, or global coherence
   - finite/small tower morphism functoriality and discharge-prism transport
   - finite nonabelian repair-choice transition and higher triple-overlap defect witness
+  - quotient-style finite/small sheaf `H1` envelope with explicit `Z1/B1/H1` class relation
+  - sheaf `H1` zero/nonzero comparison with the tower first-layer obstruction
+  - nonzero sheaf `H1` no-global theorem and zero sheaf `H1` effective-descent theorem under explicit discharge
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
+  - full nonabelian `H^1` / torsor descent adequacy beyond finite token and selected transition witness
+  - true `H^2` / stacky descent or stack effectiveness theorem
   - finite computable shadow connection to concrete ArchSig artifact schema
-  - G6-level audit that finite/small target boundary is sufficient for target completion
+  - target-strength universality / factorization theorem
+  - final G6-level target completion audit after remaining material premise discharge
 - target completion status: `target-proof-checkpoint-candidate`; do not treat this report alone as `target-theorem-proved`
 
 ## Cycle 1: Finite Semantic Repair Obstruction Tower Package
@@ -216,3 +223,50 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は finite selected transition witness に限定される。full nonabelian `H^1`、true torsor descent、true `H^2`、arbitrary higher stack、stack effectiveness theorem、concrete ArchSig finite shadow connection はまだ主張しない。G-04 target completion には true sheaf `H1`、finite shadow connection、G6 completion audit が残る。
+
+## Cycle 5: True Sheaf H1 Exactness Envelope
+
+```text
+candidate: True Sheaf H1 Exactness Envelope
+parent_tracking_issue: #2482
+tracking_issue: #2490
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 90
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 180
+category: true-sheaf-H1 / exactness / semantic-repair-descent / effective-descent / representation-adequacy / anti-weakening
+goal_delta: finite/small first-layer obstructionを、bare `B1` token から explicit `cohomologous` relation を持つ quotient-style sheaf `H1` envelope へ上げた。
+project_value_delta: G-04 の target theorem が要求する true sheaf / quotient-style `H1`、zero/nonzero class、effective descent、representation adequacy の first-layer proof surface を再利用可能な Lean file として分離した。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が読む local repair signal を、zero/nonzero obstruction class と explicit effective-descent discharge へ持ち上げる theorem surface を追加した。
+formalization_quality: pass。`lake build Formal.AG.Research.QualitySurface.SemanticRepairSheafH1`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_sheaf_h1_axioms.lean` は pass。reported declarations は axiom-free。G3 形式化品質監査は pass / target-support checkpoint。
+target_progress: support-node
+proof_obligation_delta: `SemanticRepairSite`、`SemanticResidualCoefficientSheaf`、`SemanticRepairSheafH1Envelope`、`SemanticRepairSheafH1ExactnessDischarge`、quotient-style `H1` zero/nonzero class、tower first-layer comparison、nonzero no-global、zero/effective descent under explicit discharge を追加した。
+open_questions: full nonabelian `H^1` / torsor descent adequacy、true `H^2` / stacky descent、concrete ArchSig finite shadow connection、target-strength universality / factorization、G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean` は、finite/small semantic repair site と residual coefficient sheaf を導入する。`SemanticRepairSheafH1Envelope` は `cohomologous : C1 -> C1 -> Prop` を explicit class relation として持ち、boundaries が zero class へ行くことと、zero-class cocycle が explicit boundary primitive を持つことを exactness field として露出する。これは target completion ではなく、first-layer `H1` support node である。
+
+Lean 証拠は次に分かれる。
+
+- `semanticRepairSheafH1_wellDefined`: selected residual は sheaf 1-cocycle。
+- `semanticRepairSheafH1_boundary_is_cocycle`: finite boundaries は sheaf 1-cocycle。
+- `semanticRepairSheafH1_boundary_zero_class`: finite boundaries は explicit class relation で zero。
+- `semanticRepairSheafH1_zeroClass_respects_sameClass`: zero-class predicate は explicit class relation で well-defined。
+- `h1Boundary_of_sheafH1Zero`: zero `H1` class から explicit boundary primitive を得る。
+- `sheafH1Zero_of_h1Boundary`: explicit boundary primitive から zero `H1` class を得る。
+- `sheafH1Zero_iff_h1Boundary`: quotient-style zero class と boundary membership の exactness。
+- `h1Vanishes_iff_sheafH1Zero_of_exactEnvelope`: finite tower first-layer vanishing と sheaf `H1` zero class の比較。
+- `h1Nonzero_iff_sheafH1Nonzero_of_exactEnvelope`: finite tower first-layer nonzero と sheaf `H1` nonzero class の比較。
+- `layeredAdequacy_of_sheafH1Discharge`: explicit sheaf `H1` discharge から finite tower adequacy を構成する。
+- `no_globalRepairCoherent_of_nonzero_sheafH1`: nonzero sheaf `H1` class は global semantic repair coherence を阻害する。
+- `globalRepairCoherent_of_sheafH1_zero`: zero sheaf `H1` class と後続層 vanish と explicit discharge から global semantic repair coherence を構成する。
+- `finiteTower_h1Shadow_of_sheafH1`: zero sheaf `H1` class は finite shadow triviality を含意する。
+- `semanticRepairSheafH1ExactnessEnvelope_package`: Cycle 5 theorem package。
+
+### Target Boundary
+
+この cycle は quotient-style first-layer sheaf `H1` envelope に限定される。実 `Quot` / arbitrary sheaf cohomology / arbitrary Grothendieck site は主張しない。`SemanticRepairSheafH1ExactnessDischarge` は boundary primitive の semantic faithfulness のみを持ち、`GlobalSemanticRepairCoherent`、`SemanticRepairH1Zero`、tower vanish、effective descent、reflection / completeness、finite-shadow completeness、torsor triviality、stack effectiveness は field に入れない。full nonabelian `H^1`、true `H^2` / stacky descent、concrete ArchSig finite shadow adequacy、target-strength universality は残る。
