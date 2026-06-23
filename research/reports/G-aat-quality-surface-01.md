@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 12326
+- total SCORE: 12482
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -95,8 +95,9 @@
   - semantic-obstruction / indexed-transport / edge-obstruction / repair-coherence / certificate-transport / quality-surface: 60
   - semantic-obstruction / finite-atlas-transition / repair-coherence / genius-support: 130
   - semantic-obstruction / finite-atlas-transition / computability / genius-support: 144
+  - semantic-obstruction / finite-atlas-transition / obstruction-class-support / genius-support: 156
 - evidence portfolio:
-  - proved-in-research: 90
+  - proved-in-research: 91
 
 ## Phase synthesis
 
@@ -112,7 +113,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-90 件の Lean-proved research artifacts は、次の paper seed を形成している。
+91 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -140,6 +141,7 @@ certificate の基本単位は
 - semantic residual edge transition obstruction は、residual-present source から residual-free target への edge が transition closure を阻む一般 criterion を示す。
 - semantic residual transition cut は、complete finite index / atom lists を持つ atlas skeleton 上で、single-edge residual cut witness が atlas-wide residual transition closure を阻むことを示す。
 - semantic residual transition cut scanner は、supplied finite edge order 上で first residual cut を検出し、`some` を proof-carrying cut certificate と obstruction へ、`none` を complete edge-order 下の no-cut exactness へ接続する。
+- semantic residual obstruction preclass は、residual transition cut support を finite degree-one preclass として切り出し、vanishing/nonzero criterion、same-support preservation、scanner measurement、selected nonzero obstruction を示す。
 
 ### Related-work separation
 
@@ -181,8 +183,9 @@ Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 70
 tracking Issue の active threshold は 12000 に更新され、Cycle 88 後の total SCORE は 12052 で 12000 phase boundary に到達した。
 その後、tracking Issue の active threshold は 15000 に更新され、Cycle 89 後の total SCORE は 12182 である。
 Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
+Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 90 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 91 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -205,7 +208,8 @@ semantic residual alias classification theorem、
 semantic residual indexed transport theorem、
 semantic residual edge transition obstruction theorem、
 semantic residual transition cut theorem、
-semantic residual transition cut scanner exactness theorem を含む。
+semantic residual transition cut scanner exactness theorem、
+semantic residual obstruction one-preclass theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4623,4 +4627,71 @@ update is total 12182 -> 12326, leaving 2674 SCORE to the active threshold
 
 Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
 次 cycle では、finite residual obstruction 1-preclass、obstruction-class formulation、または local-pass/global-fail taxonomy を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 91: Semantic residual obstruction one-preclass
+
+```text
+candidate: Semantic residual obstruction one-preclass
+candidate_type: obstruction-preclass / vanishing-nonzero criterion / genius-support
+evidence_stage: proved-in-research
+base_score: 78
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 156
+category: semantic-obstruction / finite-atlas-transition / obstruction-class-support / genius-support
+goal_delta: Cycle 89/90 の residual cut / scanner artifacts を、finite atlas edge family 上の residual obstruction one-preclass として固定した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、support exactness、vanishing/nonzero criterion、same-support preservation、scanner measurement、selected nonzero obstruction package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は edge row や violation summary を返せるが、semantic residual obstruction support predicate の vanishing/nonzero criterion と closure/data obstruction theorem を Lean artifact として保持しない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualObstructionPreclass.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualObstructionPreclass`, and `lake build FormalAGResearch` passed. Axiom probe reported the core vanishing/nonzero and same-support preservation theorems axiom-free; scanner bridge uses standard `propext`; selected nonzero witness and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: finite residual obstruction class beyond preclass; coboundary-like equivalence; local-pass/global-fail taxonomy; finite H^1-style vanishing/nonvanishing criterion for the open genius target.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualObstructionPreclass.lean`
+turns residual transition cut support into a finite degree-one obstruction
+preclass.  The preclass is an edge-supported predicate exact for residual
+transition cut pairs.  Its vanishing is exactly absence of residual transition
+cut certificates; its nonzero support obstructs residual transition closure
+and transition-coherent atlas data.  The scanner from Cycle 90 is now read as
+a measurement of this preclass, not as the obstruction object itself.
+
+Lean proves:
+
+- `ResidualObstructionOnePreclass`: edge-supported residual obstruction preclass with support exactness.
+- `residualObstructionOnePreclass`: canonical preclass whose support is `IsResidualTransitionCutPair`.
+- `ResidualObstructionOnePreclass.Vanishes`: empty preclass support.
+- `ResidualObstructionOnePreclass.Nonzero`: nonempty preclass support.
+- `SameResidualObstructionSupport`: equality of exposed obstruction supports.
+- `residualObstructionOnePreclass_support_exact`: canonical support is exactly the residual cut-pair predicate.
+- `sameResidualObstructionSupport_preserves_vanishes`: same support preserves vanishing.
+- `sameResidualObstructionSupport_preserves_nonzero`: same support preserves nonzero support.
+- `residualObstructionOnePreclass_vanishes_iff_no_cut`: vanishing is equivalent to no `ResidualTransitionCut`.
+- `residualObstructionOnePreclass_nonzero_iff_cut`: nonzero support is equivalent to a `ResidualTransitionCut`.
+- `residualObstructionOnePreclass_nonzero_obstructs_atlasTransitionClosure`: nonzero preclass obstructs atlas transition closure.
+- `residualObstructionOnePreclass_nonzero_obstructs_transitionCoherentData`: nonzero preclass obstructs transition-coherent atlas data.
+- `firstResidualTransitionCut?_some_preclassSupport`: scanner `some` lies in canonical preclass support.
+- `firstResidualTransitionCut?_some_preclassNonzero`: scanner `some` makes the canonical preclass nonzero.
+- `firstResidualTransitionCut?_none_iff_preclassVanishes`: complete edge-order scanner `none` is exact for preclass vanishing.
+- `firstResidualTransitionCut?_some_obstructs_via_preclass`: scanner `some` obstructs closure via nonzero preclass support.
+- `selected_frontierFlat_residualObstructionOnePreclass_support`: selected frontier-to-flat pair is in support.
+- `selected_residualObstructionOnePreclass_nonzero`: selected frontier-to-flat atlas has nonzero preclass support.
+- `selected_residualObstructionOnePreclass_obstructs_transitionClosure`: selected nonzero preclass obstructs transition closure.
+- `selected_residualObstructionOnePreclass_obstructs_transitionCoherentData`: selected nonzero preclass obstructs transition-coherent atlas data.
+- `semanticResidualObstructionPreclass_package`: theorem package.
+
+This cycle is a support node, not a `genius unlock`.  It is still a preclass
+support layer exact to the existing residual cut predicate, not a quotient
+cohomology class, coboundary calculus, or full obstruction-class theorem.  G2
+showed a broad score spread because of wrapper risk: 60 / 82 / 84 / 58.  G3
+and G3.5 passed after adding support exactness, same-support preservation,
+scanner measurement, selected concrete support, and explicit unchecked
+boundary.  G4 reduced the expected base to 78 and confirmed multiplier 2.0 /
+penalty 0 / final +156.
+
+### Next Frontier
+
+Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
+次 cycle では、finite residual obstruction class beyond preclass、coboundary-like equivalence、local-pass/global-fail taxonomy、または finite H^1-style vanishing/nonvanishing criterion を狙う。
 genius unlock はまだ成立していない。

@@ -87,3 +87,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualIndexedTransport
 import Formal.AG.Research.QualitySurface.SemanticResidualEdgeTransitionObstruction
 import Formal.AG.Research.QualitySurface.SemanticResidualTransitionCut
 import Formal.AG.Research.QualitySurface.SemanticResidualTransitionCutScanner
+import Formal.AG.Research.QualitySurface.SemanticResidualObstructionPreclass
