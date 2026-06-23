@@ -107,3 +107,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairGluingComplex
 import Formal.AG.Research.QualitySurface.SemanticRepairObstructionTower
 import Formal.AG.Research.QualitySurface.SemanticRepairAdequacyDischarge
 import Formal.AG.Research.QualitySurface.SemanticRepairTowerFunctoriality
+import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTriple
