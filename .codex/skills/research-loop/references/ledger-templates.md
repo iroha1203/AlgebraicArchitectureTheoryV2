@@ -1,6 +1,6 @@
 # Research Loop Ledger Templates
 
-この参照は、tracking Issue に cycle / merge / phase / genius target コメントを書くときだけ読む。
+この参照は、tracking Issue に cycle / merge / phase / genius target / target theorem proof コメントを書くときだけ読む。
 テンプレートは GOAL 非依存で使う。GOAL 固有の理論語彙は、各 GOAL の `rival`、`reward rubric`、`claim boundary`、候補カード、report から埋める。
 
 ## 原則
@@ -10,6 +10,8 @@
 - コメントは、人間向け要約と、後続 G6 が再構成できる ledger block の両方を持つ。
 - local path、private path、machine-specific identifier を public comment に入れない。
 - phase boundary は、phase summary コメント URL を残し、tracking Issue が open のままであることを確認して完了とする。
+- 大定理証明モードでは、target theorem の statement と completion criteria は GOAL カードを正本にする。tracking Issue には proof state、support node、blocker、PR、証拠段階だけを書く。
+- 大定理証明モードでは active threshold は任意である。threshold が設定されていない場合、`active_threshold` と `remaining` は `not-applicable` または YAML `null` とし、架空の threshold を書かない。
 
 ## Cycle SCORE Update
 
@@ -21,12 +23,14 @@ type: <candidate_type>
 evidence: <evidence_stage>
 score: +<final_score> = base <base_score> x multiplier <multiplier> - penalty <penalty>
 category: <category>
-total: <before> -> <after> / active threshold <threshold>
-remaining: <max(threshold-after, 0)>
+total: <before> -> <after> / active threshold <threshold | not-applicable>
+remaining: <max(threshold-after, 0) | not-applicable>
 genius: <not-applicable | downgraded-to-normal | target-seed | support-cycle | unlock>
+target_progress: <not-applicable | none | support-node | blocker-found | target-refined | target-proof-candidate | target-proved | target-refuted>
 
 GOAL delta: <one or two sentences>
 Rival delta: <one or two sentences comparing against each named rival at the right granularity>
+Target theorem delta: <if target-theorem mode, which support node / proof obligation changed>
 
 Evidence:
 - <changed or fixed evidence artifact>
@@ -50,10 +54,11 @@ penalty: <penalty>
 final_score: <final_score>
 total_before: <before>
 total_after: <after>
-active_threshold: <threshold>
-remaining: <remaining>
+active_threshold: <threshold or null>
+remaining: <remaining or null>
 genius_state: <state>
-stop_state: <continue | phase-boundary-candidate | blocked>
+target_progress: <state>
+stop_state: <continue | phase-boundary-candidate | target-proof-checkpoint-candidate | blocked>
 ```
 ````
 
@@ -66,15 +71,15 @@ picked: <candidate>
 PR: #<number> <merged | open | blocked>
 merge commit: <oid or none>
 score: +<final_score>
-new total: <after> / active threshold <threshold>
-remaining: <remaining>
+new total: <after> / active threshold <threshold | not-applicable>
+remaining: <remaining | not-applicable>
 
 CI:
 - <check name>: <pass | fail | pending | not-run>
 
 Independent G5 review: <mergeable | needs changes | blocked | not-run>, <short reason>
 
-Stop state before G6: <continue candidate | phase-boundary candidate | blocked>. <why>
+Stop state before G6: <continue candidate | phase-boundary candidate | target-proof-checkpoint candidate | blocked>. <why>
 
 Ledger:
 ```yaml
@@ -86,11 +91,11 @@ pr_state: <merged | open | blocked>
 merge_commit: <oid or null>
 final_score: <final_score>
 total_after: <after>
-active_threshold: <threshold>
-remaining: <remaining>
+active_threshold: <threshold or null>
+remaining: <remaining or null>
 checks_state: <pass | fail | pending | mixed>
 g5_review: <mergeable | needs-changes | blocked | not-run>
-stop_state_before_g6: <continue | phase-boundary-candidate | blocked>
+stop_state_before_g6: <continue | phase-boundary-candidate | target-proof-checkpoint-candidate | blocked>
 tracking_issue_closed: false
 ```
 ````
@@ -156,6 +161,95 @@ tracking_issue_closed: false
 ```
 ````
 
+## Target Theorem Proof Progress
+
+Use this when `research mode: target-theorem` is active. This is separate from `genius`; a target theorem can be ordinary, major, or genius-grade, but the proof state is tracked by the GOAL card and tracking Issue rather than by SCORE alone.
+
+````text
+Target theorem proof progress
+
+target theorem: <name from GOAL card>
+cycle: <N>
+candidate: <candidate>
+candidate type: <target-support | target-obstruction | target-refinement | target-proof | other>
+proof state: <unchanged | support-advanced | blocker-found | target-proof-candidate | target-proved | target-refuted>
+support node advanced: <node or none>
+support node completed: <yes | no | not-applicable>
+proof obligation delta: <what changed in the support map>
+completion criteria status: <not-met | partially-met | met | refuted | cannot-determine>
+SCORE effect: <+S normal SCORE | +0 seed/checkpoint>
+
+Evidence:
+- <Lean theorem / theorem package / finite witness / report section>
+
+Boundary:
+- target statement changed: false
+- GOAL card edit required: <yes | no>
+- claim boundary preserved: <yes | no | cannot-determine>
+
+Ledger:
+```yaml
+ledger_type: target_theorem_progress
+goal: <goal-id>
+target_theorem: <target>
+cycle: <N>
+candidate: <candidate>
+candidate_type: <candidate_type>
+proof_state: <unchanged | support-advanced | blocker-found | target-proof-candidate | target-proved | target-refuted>
+support_node: <node or null>
+support_node_completed: <true | false | null>
+proof_obligation_delta: <short>
+completion_criteria_status: <not-met | partially-met | met | refuted | cannot-determine>
+score_effect: <score or 0>
+goal_card_edit_required: <true | false>
+tracking_issue_closed: false
+```
+````
+
+## Target Theorem Completion Summary
+
+Use this only after G6 target completion judgment. Do not use it for a support cycle that merely reaches a SCORE threshold.
+
+````text
+Target theorem completion judgment
+
+verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
+target theorem: <name from GOAL card>
+completion criteria: <satisfied | not-satisfied | refuted | cannot-determine>
+target proof artifacts:
+- <Lean theorem / theorem package / report section / candidate card>
+G3 proof audit: <pass | fail | not-applicable>
+G3.5 sync: <pass | fail>
+G4 target audit: <pass | fail | cannot-determine>
+G5 review / CI: <pass | fail | pending | not-run>
+tracking_issue_remains_open: true
+
+Support map summary:
+- completed: <list>
+- remaining: <list>
+- blockers: <list>
+
+Human decision requested: <declare target complete | revise GOAL card | set next target | continue support cycles | stop>
+
+Ledger:
+```yaml
+ledger_type: target_theorem_completion
+goal: <goal-id>
+verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
+target_theorem: <target>
+completion_criteria_status: <satisfied | not-satisfied | refuted | cannot-determine>
+proof_artifacts:
+  - <artifact>
+completed_support_nodes:
+  - <node>
+remaining_support_nodes:
+  - <node>
+blockers:
+  - <blocker>
+tracking_issue_closed: false
+```
+````
+
 ## G6 Phase Summary
 
 ````text
@@ -163,7 +257,7 @@ G6 phase-boundary judgment / phase summary
 
 verdict: <phase-boundary | continue | blocked | goal-defect>
 total_score: <total>
-active_threshold: <threshold>
+active_threshold: <threshold | not-applicable>
 portfolio_constraint: <satisfied | not-satisfied | cannot-determine>
 coherent_report_or_paper_seed: <satisfied | not-satisfied | cannot-determine>
 rival_phase_delta: <satisfied | not-satisfied | cannot-determine>
@@ -184,7 +278,7 @@ ledger_type: phase_summary
 goal: <goal-id>
 verdict: <phase-boundary | continue | blocked | goal-defect>
 total_score: <total>
-active_threshold: <threshold>
+active_threshold: <threshold or null>
 portfolio_constraint: <state>
 rival_phase_delta: <state>
 merged_prs:
@@ -213,4 +307,4 @@ Before PR creation and again before G6 phase summary, search the report for stal
 rg -n "total SCORE|active threshold|remaining|Next Frontier|Phase Boundary|proved-in-research|Cycle [0-9]+" research/reports/<goal-id>.md
 ```
 
-Confirm that current totals, active threshold, remaining SCORE, proof portfolio counts, and phase-boundary language agree with the tracking Issue ledger.
+Confirm that current totals, active threshold or not-applicable state, remaining SCORE, proof portfolio counts, and phase-boundary / target-checkpoint language agree with the tracking Issue ledger.
