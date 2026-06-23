@@ -8,6 +8,14 @@ expected_evidence_multiplier:
 expected_final_score:
 evidence_stage:
 rival_advantage:
+genius_potential:
+genius_target:
+genius_support_role:
+target_theorem:
+target_support_node:
+target_progress:
+proof_obligation_delta:
+target_completion_role:
 origin: NT-XX
 tags: []
 created: 2026-06-14
@@ -25,7 +33,7 @@ created: 2026-06-14
 
 ## 候補種別
 
-`closure` / `orientation` / `unification` / `computability` / `bridge` のいずれかを選ぶ。
+`closure` / `orientation` / `unification` / `computability` / `bridge` / `genius` / `genius-target` / `genius-support` / `target-support` / `target-obstruction` / `target-refinement` / `target-proof` のいずれかを選ぶ。
 
 ## 依拠
 
@@ -52,6 +60,16 @@ created: 2026-06-14
 - `score_reason`:
 - `dullness_risk`:
 - `proof_or_evidence_plan`:
+
+## Target Theorem 寄与
+
+(`research mode: target-theorem` の GOAL で使う。通常 GOAL では `not-applicable` と書く。target theorem を弱めず、どの support node / proof obligation を進めるかを書く。)
+
+- `target_theorem`:
+- `target_support_node`:
+- `target_progress`:
+- `proof_obligation_delta`:
+- `target_completion_role`:
 
 ## CS / SWE への帰結
 

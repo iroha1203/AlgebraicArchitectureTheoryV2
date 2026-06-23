@@ -30,6 +30,11 @@ rival_stress_test:
 genius_potential:
 genius_target:
 genius_support_role:
+target_theorem:
+target_support_node:
+target_progress:
+proof_obligation_delta:
+target_completion_role:
 ```
 
 ## G3.5 同期項目
@@ -47,3 +52,5 @@ G4 へ進む前に、候補カードには最低限、次を反映する。
 - resolved revise と残った unchecked。
 - `genius` 候補の場合は、四審判の `genius_eligibility` と G4 で監査する根拠。通常スコアに戻した場合はその理由。
 - `genius-target` / `genius-support` の場合は、tracking Issue 上の target theorem、support map、unlock 条件、今回 cycle の support role と同期しているか。
+- `target-theorem` mode の場合は、GOAL カード上の target theorem、support map、completion criteria と同期しているか。
+- `target-support` / `target-obstruction` / `target-refinement` / `target-proof` の場合は、進めた support node、残った proof obligation、target statement を弱めていないこと、target completion criteria に対する現在地。
