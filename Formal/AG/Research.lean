@@ -105,3 +105,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualUnhitToTargetScannerBri
 import Formal.AG.Research.QualitySurface.SemanticResidualGeneratedTargetScannerProvenance
 import Formal.AG.Research.QualitySurface.SemanticRepairGluingComplex
 import Formal.AG.Research.QualitySurface.SemanticRepairObstructionTower
+import Formal.AG.Research.QualitySurface.SemanticRepairAdequacyDischarge
