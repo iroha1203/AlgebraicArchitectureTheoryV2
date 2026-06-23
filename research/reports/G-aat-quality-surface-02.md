@@ -4,26 +4,29 @@
 
 ## Current SCORE
 
-- total SCORE: 190
+- total SCORE: 370
 - category scores:
   - semantic-faithfulness / repair-coherence / global-gluing / semantic-obstruction / finite-complex: 190
+  - semantic-faithfulness / repair-coherence / global-gluing / finite-complex: 180
 - evidence portfolio:
-  - proved-in-research: 1
+  - proved-in-research: 2
 
 ## Target Proof State
 
 - target theorem: `Finite Semantic Repair-Gluing Descent Theorem`
-- proof state: finite / explicit-faithfulness descent package proved in research
+- proof state: finite / explicit-faithfulness descent package plus complete-support premise-discharge package proved in research
 - completed support nodes:
   - Stage 2 finite complex / `B1`
   - Stage 2.5 sufficiency / semantic faithfulness bridge
   - Stage 1 necessity and nonzero-obstruction contrapositive inside the finite package
   - visible/local witness validation and concrete nonzero calibration witness
+  - Stage 2.5b complete-support finite atlas class discharge of `SemanticFaithfulnessHypotheses`
+  - selected faithful boundary complex with obstruction vanish / global coherence / descent iff
 - open support nodes:
   - literal finite overlap-family enumeration as `overlapOrder`
   - restriction functoriality / coefficient structure for stricter Cech formulation
   - future true site/sheaf `H^1` upgrade
-- target completion status: pending G4 / G5 / G6 judgment; do not treat this report alone as completion
+- target completion status: target-proof-candidate pending G4 / G5 / G6 judgment; do not treat this report alone as completion
 
 ## Cycle 1: Finite Semantic Repair-Gluing Descent Package
 
@@ -85,3 +88,56 @@ No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or
 ### Target Boundary
 
 This result is finite and hypothesis-relative. It does not claim arbitrary site / sheaf cohomology, source extraction completeness, ArchMap correctness, runtime repair synthesis, global minimality, or whole-codebase quality. It proves the finite explicit-faithfulness descent package required for G-02, while leaving a stricter finite-atlas and true `H^1` formulation as future frontier.
+
+## Cycle 2: Complete-Support Boundary Faithfulness Discharge
+
+```text
+candidate: Complete-Support Boundary Faithfulness Discharge
+candidate_type: target-proof
+evidence_stage: proved-in-research
+base_score: 90
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 180
+category: semantic-faithfulness / repair-coherence / global-gluing / finite-complex
+goal_delta: Stage 2.5b の `SemanticFaithfulnessHypotheses` を、explicit complete-support finite atlas class 上の Lean theorem / certificate として放電した。
+project_value_delta: G-01 の complete semantic support と residual-component faithfulness 分解を、G-02 の target completion criteria に接続した。conditional descent package を未放電 premise 付きの checkpoint から、明示 certificate boundary 付きの target-proof candidate へ進めた。
+rival_delta: ADL、静的解析器、conformance checker、metric dashboard、強い AI review agent が扱える local green / component repair / repair plan と異なり、finite obstruction vanish を global semantic repair coherence へ持ち上げるための residual-component faithfulness discharge を theorem-level certificate として固定した。
+formalization_quality: pass。`CompleteRepairSupportBoundaryComplex` は `projection = refinedSemanticComponent`、`cover = repairFrontierOverlapBasisCover`、`supportOf primitive = completeRepairSupport` を certificate field として持ち、`completeRepairSupportBoundary_semanticFaithfulnessHypotheses` は既存の complete-support coverage / faithfulness 分解から `SemanticFaithfulnessHypotheses` を構成する。arbitrary atlas、true sheaf `H^1`、source extraction completeness は主張しない。
+target_progress: target-proof-candidate
+proof_obligation_delta: `completeRepairSupportBoundary_semanticFaithfulnessHypotheses`、`finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`、`selectedFaithfulBoundary_*`、`finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary` を追加し、Stage 2.5b の material premise を explicit complete-support finite atlas class では放電した。
+open_questions: arbitrary finite atlas ではなく explicit complete-support finite class に限定される。stricter finite-atlas formulation、overlap enumeration、restriction functoriality、true site/sheaf `H^1` upgrade は将来 frontier。
+```
+
+### Result
+
+`CompleteRepairSupportBoundaryComplex` は、complete refined semantic repair support を持つ finite atlas class である。この class では、boundary primitive が selected residual の `delta0` primitive であるたびに、support は residual components を覆い、かつ同じ component の alias ではなく actual residual atom へ faithful に戻る。
+
+Lean 証拠は三つに分かれる。
+
+- `completeRepairSupportBoundary_semanticFaithfulnessHypotheses`: complete-support finite atlas class は `SemanticFaithfulnessHypotheses` を放電する。
+- `finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`: complete-support finite atlas class では、global semantic repair coherence と obstruction vanish が同値である。
+- `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary`: conditional `hfaithful` 引数を外部 material premise として残さず、necessity / contrapositive / sufficiency / iff / witness validation / selected faithful boundary certificate を package 化する。
+
+`selectedFaithfulBoundaryComplex` は concrete calibration instance である。単一 primitive は `completeRepairSupport` を持ち、selected residual は `delta0` boundary であり、`selectedFaithfulBoundary_globalRepairCoherent` と `selectedFaithfulBoundary_descent_iff` が成立する。
+
+### Axiom Audit
+
+Complete-support boundary discharge:
+
+- `completeRepairSupportBoundary_semanticFaithfulnessHypotheses`: axiom-free
+- `finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`: axiom-free
+
+Selected faithful boundary and package surface:
+
+- `selectedFaithfulBoundary_semanticFaithfulnessHypotheses`: depends on `propext`
+- `selectedFaithfulBoundary_obstructionVanishes`: depends on `propext`
+- `selectedFaithfulBoundary_globalRepairCoherent`: depends on `propext`
+- `selectedFaithfulBoundary_descent_iff`: depends on `propext`
+- `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary`: depends on `propext`, `Quot.sound`
+
+No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe`.
+
+### Target Boundary
+
+This cycle does not claim arbitrary-atlas descent. It proves the target premise discharge for the explicit complete-support finite atlas class allowed by the GOAL's premise discharge policy. Outside that class, `SemanticFaithfulnessHypotheses` remains material unless separately discharged.
