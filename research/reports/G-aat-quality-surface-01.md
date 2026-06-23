@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 13166
+- total SCORE: 13342
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -100,8 +100,9 @@
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / invariance / genius-support: 172
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / transport-invariance / genius-support: 176
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / transport-induction / genius-support: 172
+  - semantic-obstruction / repair-necessity / finite-atlas-transition / obstruction-class-support / genius-support: 176
 - evidence portfolio:
-  - proved-in-research: 95
+  - proved-in-research: 96
 
 ## Phase synthesis
 
@@ -117,7 +118,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-95 件の Lean-proved research artifacts は、次の paper seed を形成している。
+96 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -141,6 +142,7 @@ certificate の基本単位は
 - semantic residual atlas gauge invariance は、raw edge family に harmless reverse-edge noise が混じっても same residual cut locus なら canonical obstruction class と nonzero obstruction reading が保存されることを示す。
 - semantic residual cut-locus transport は、finite carrier が変わっても supplied cut-preserving / cut-surjective map の下で canonical obstruction class と target no-go reading が移送されることを示す。
 - semantic residual atlas map laws は、edge preservation、residual-present preservation、residual-free preservation、target cut-data lift から residual cut-locus transport と canonical obstruction transport を誘導できることを示す。
+- semantic residual cut repair hitting は、old/new atlas 間で unhit cuts が persistence law を満たすなら、new canonical residual cut class の vanishing が old residual cut の edge/source/target hit を必要とすることを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -196,8 +198,9 @@ Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshol
 Cycle 93 後の total SCORE は 12818 であり、tracking Issue active threshold 15000 までは残り 2182 SCORE である。
 Cycle 94 後の total SCORE は 12994 であり、tracking Issue active threshold 15000 までは残り 2006 SCORE である。
 Cycle 95 後の total SCORE は 13166 であり、tracking Issue active threshold 15000 までは残り 1834 SCORE である。
+Cycle 96 後の total SCORE は 13342 であり、tracking Issue active threshold 15000 までは残り 1658 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 95 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 96 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -225,7 +228,8 @@ semantic residual obstruction one-preclass theorem、
 semantic residual obstruction class modulo cut-noise theorem、
 semantic residual atlas gauge invariance theorem、
 semantic residual cut-locus transport theorem、
-semantic residual atlas map law induction theorem を含む。
+semantic residual atlas map law induction theorem、
+semantic residual cut repair-hitting theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -5021,4 +5025,84 @@ tooling runtime extraction, UI correctness, or whole-codebase quality.
 
 Cycle 95 後の total SCORE は 13166 であり、tracking Issue active threshold 15000 までは残り 1834 SCORE である。
 次 cycle では、residual-present/residual-free mismatch minimality、local-pass/global-fail taxonomy、finite H1-style adapter、または genuine semantic repair-gluing obstruction theorem を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 96: Residual cut obstruction repair-hitting theorem
+
+```text
+candidate: Residual cut obstruction repair-hitting theorem
+candidate_type: finite residual repair-hitting theorem / obstruction-class-support / repair-necessity
+evidence_stage: proved-in-research
+base_score: 88
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 176
+category: semantic-obstruction / repair-necessity / finite-atlas-transition / obstruction-class-support / genius-support
+goal_delta: Cycle 92-95 の residual obstruction class / transport tower を、same-carrier old/new atlas 上の repair-hitting 必要条件へ戻した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、unhit residual cut persistence、new canonical vanishing forces old cut hit、unhit old cut preserves new nonzero obstruction、selected frontier-to-flat witness、theorem package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は residual-looking edges を list できるが、new residual cut class vanishing が old cut の edge/source/target hit を必要とすることを theorem として要求できない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualCutRepairHitting.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualCutRepairHitting`, and `lake build FormalAGResearch` passed. Axiom probe reported the generic repair-hitting theorem family axiom-free; selected witness and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: cross-carrier repair hitting via Cycle 95 map laws; local-pass/global-fail taxonomy after repair necessity; finite pre-H1 adapter; genuine semantic repair-gluing obstruction theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualCutRepairHitting.lean`
+turns the residual cut obstruction class into a repair-hitting necessity
+theorem.  For same-carrier old/new finite semantic repair atlas skeletons,
+`edgeHit`, `sourceHit`, and `targetHit` mark the loci touched by a repair.
+These hit predicates are supplied bookkeeping predicates, not repair
+operations extracted from implementation diffs.
+`UnhitResidualCutPersists` says that an old residual cut survives into the new
+atlas if none of those three loci is hit.
+
+Under this explicit persistence law, Lean proves that an unhit old residual
+cut makes the new canonical residual cut class nonzero.  Therefore, if the new
+canonical residual cut class vanishes, every old residual cut must be hit at
+the edge, source, or target locus.  The theorem is stated constructively:
+`ResidualCutHit` means the three miss predicates cannot all hold at once.
+
+Lean also proves that an unhit old residual cut obstructs new transition
+closure and rules out new transition-coherent atlas data.  The selected
+witness specializes this to the frontier-to-flat residual cut: for any new
+selected-carrier atlas, vanishing of the new canonical residual cut class
+requires hitting the selected frontier-to-flat cut somewhere.
+
+Lean proves:
+
+- `ResidualCutHit`: constructive repair-hit predicate for a residual cut.
+- `residualCutHit_of_edgeHit`: an edge hit hits the residual cut.
+- `residualCutHit_of_sourceHit`: a source-index hit hits the residual cut.
+- `residualCutHit_of_targetHit`: a target-index hit hits the residual cut.
+- `UnhitResidualCutPersists`: unhit old cuts persist into the new atlas.
+- `AllOldResidualCutsHit`: all old residual cuts are hit.
+- `unhit_oldResidualCut_persists_newCut`: an unhit old cut persists as a new cut.
+- `unhit_oldResidualCut_preserves_newCanonicalNonzero`: an unhit old cut keeps the new canonical class nonzero.
+- `newCanonicalVanishes_forces_oldResidualCutHit`: new vanishing forces a given old cut to be hit.
+- `newCanonicalVanishes_forces_allOldResidualCutsHit`: new vanishing forces every old cut to be hit.
+- `unhit_oldResidualCut_obstructs_newTransitionClosure`: an unhit old cut obstructs new transition closure.
+- `unhit_oldResidualCut_obstructs_newTransitionCoherentData`: an unhit old cut rules out new transition-coherent data.
+- `selectedFrontierFlatResidualCutPair`: selected frontier-to-flat cut pair.
+- `selectedFrontierFlatResidualCutPair_isCut`: selected pair is a residual cut.
+- `selectedNoHit_unhitResidualCutPersists`: identity selected atlas with no hit loci preserves cuts.
+- `selectedNoHit_preserves_canonicalNonzero`: no-hit selected witness remains nonzero.
+- `selected_newCanonicalVanishes_requires_frontierFlatCutHit`: selected new vanishing requires hitting the frontier-to-flat cut.
+- `selectedNoHit_obstructs_transitionClosure`: no-hit selected witness obstructs transition closure.
+- `selectedNoHit_obstructs_transitionCoherentData`: no-hit selected witness rules out coherent data.
+- `semanticResidualCutRepairHitting_package`: theorem package.
+
+This cycle is a strong support node, not a `genius unlock`.  It proves a
+necessary repair-hitting condition under a supplied persistence law.  It does
+not prove that hits suffice for repair success, that canonical vanishing
+implies transition closure, that a global minimal repair set exists, that an
+actual repair can be synthesized, that an arbitrary atlas category exists, or
+that a true `H^1` / Cech / coboundary quotient has been built.  It does not
+claim source extraction completeness, ArchMap correctness, runtime repair
+synthesis, tooling runtime extraction, UI correctness, or whole-codebase
+quality.
+
+### Next Frontier
+
+Cycle 96 後の total SCORE は 13342 であり、tracking Issue active threshold 15000 までは残り 1658 SCORE である。
+次 cycle では、cross-carrier repair hitting via Cycle 95 map laws、local-pass/global-fail taxonomy after repair necessity、finite pre-H1 adapter、または genuine semantic repair-gluing obstruction theorem を狙う。
 genius unlock はまだ成立していない。

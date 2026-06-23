@@ -92,3 +92,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualObstructionClass
 import Formal.AG.Research.QualitySurface.SemanticResidualAtlasGauge
 import Formal.AG.Research.QualitySurface.SemanticResidualAtlasMorphism
 import Formal.AG.Research.QualitySurface.SemanticResidualAtlasMapLaws
+import Formal.AG.Research.QualitySurface.SemanticResidualCutRepairHitting
