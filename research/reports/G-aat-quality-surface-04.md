@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1238
+- total SCORE: 1426
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -13,8 +13,9 @@
   - true-sheaf-H1 / exactness / semantic-repair-descent / effective-descent / representation-adequacy / anti-weakening: 180
   - nonabelian-H1-torsor / semantic-repair-descent / effective-descent / anti-weakening: 184
   - higher-H2-obstruction / stacky-descent / semantic-repair-descent / effective-descent / anti-weakening: 188
+  - universality / factorization / finite-computable-shadow / ArchSig-shadow-adequacy / anti-weakening: 188
 - evidence portfolio:
-  - proved-in-research: 7
+  - proved-in-research: 8
 
 ## Target Proof State
 
@@ -38,12 +39,14 @@
   - finite/small stacky `H2` repair descent envelope with explicit trivialization/effective-descent discharge
   - nonzero stacky `H2` no-effective-descent theorem and no-global theorem under explicit tower comparison
   - anti-weakening witness that sheaf `H1` zero plus effective nonabelian descent is not enough for stacky descent
+  - canonical all-layer finite tower shadow for `H1`, torsor, higher, and stack layers
+  - sound all-layer observation assignment factorization through the canonical tower shadow
+  - ArchSig-style bounded finite artifact schema and artifact-to-tower shadow adequacy theorem
+  - integrated finite target-strength shadow/factorization package with explicit reflection premise
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - finite computable shadow connection to concrete ArchSig artifact schema
-  - target-strength universality / factorization theorem
   - final G6-level target completion audit after remaining material premise discharge
 - target completion status: `target-proof-checkpoint-candidate`; do not treat this report alone as `target-theorem-proved`
 
@@ -369,3 +372,49 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は finite/small stacky `H2` repair descent envelope に限定される。unrestricted `H2`、arbitrary Grothendieck-site stack、unbounded higher stack、runtime repair synthesis、ArchMap correctness、whole-codebase quality は主張しない。effective stacky descent は `FiniteStackyRepairH2Envelope` の field ではなく、`StackyRepairDescentDischarge` と theorem によって露出する。target theorem completion には concrete ArchSig finite shadow adequacy、target-strength universality、final G6 completion audit が残る。
+
+## Cycle 8: Target-strength Universal Shadow Factorization
+
+```text
+candidate: Target-strength Universal Shadow Factorization
+parent_tracking_issue: #2482
+tracking_issue: #2496
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 94
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 188
+category: universality / factorization / finite-computable-shadow / ArchSig-shadow-adequacy / anti-weakening
+goal_delta: residual-level finite shadow theoremを、`H1`、torsor、higher、stack を読む canonical all-layer finite shadow と assignment / artifact factorization theorem へ上げた。
+project_value_delta: G-04 の target theorem が要求する finite computable shadow connection と target-strength universality / factorization を、finite/small theorem package として進めた。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review の local observation を、AAT obstruction tower の canonical finite shadow を経由する finite comparison theorem へ持ち上げた。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairUniversalShadow`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_universal_shadow_axioms.lean` は pass。reported declarations は axiom-free。
+target_progress: target-proof-checkpoint-candidate
+proof_obligation_delta: `FiniteTowerLayerShadow`、`canonicalTowerLayerShadow`、`FiniteTowerShadowReflection`、`SoundAllLayerObstructionAssignment`、all-layer assignment factorization、ArchSig-style finite artifact schema、artifact adequacy bridge、integrated target-strength package を追加した。
+open_questions: final G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean` は、finite/small canonical all-layer tower shadow を導入する。`SoundAllLayerObstructionAssignment` は finite observation algebra であり、global coherence、tower vanish、finite-shadow completeness、target equivalence、`factors_*` equality を field にしない。assignment observation は `canonicalTowerLayerShadow` を経由して定義され、factorization theorem はその経由性と extensionality を露出する。
+
+Lean 証拠は次に分かれる。
+
+- `FiniteTowerLayerShadow`: `H1`、torsor、higher、stack の all-layer finite shadow。
+- `canonicalTowerLayerShadow`: finite tower から canonical all-layer shadow を読む。
+- `obstructionTowerVanishes_to_canonicalShadowZero`: tower vanish から canonical shadow zero。
+- `FiniteTowerShadowReflection`: first-layer finite shadow zero から `H1Vanishes` へ戻す explicit reflection premise。
+- `canonicalShadowZero_to_obstructionTowerVanishes`: explicit reflection の下で canonical shadow zero から tower vanish。
+- `SoundAllLayerObstructionAssignment`: canonical shadow を読む finite observation algebra。
+- `soundAllLayerAssignment_factors_through_tower`: assignment observation は canonical tower shadow を経由する。
+- `soundAllLayerAssignment_extensional_on_shadow`: canonical shadow が等しい場合、assignment observation は同じ。
+- `soundAllLayerAssignment_preserves_shadow_zero`: zero shadow は assignment 下でも zero。
+- `ArchSigStyleFiniteShadowArtifact`: bounded evidence と non-conclusions を記録する finite artifact schema。
+- `archSigStyleArtifactOfTower_factors_through_tower`: concrete bounded artifact は canonical tower shadow を経由する。
+- `archSigStyleArtifact_matches_tower_layers`: explicit artifact adequacy bridge の下で arbitrary artifact が tower shadow の各 layer と一致する。
+- `targetStrengthUniversalShadowFactorization_package`: tower equivalence、canonical finite shadow soundness/reflection、assignment factorization、ArchSig-style artifact factorization をまとめる Cycle 8 theorem package。
+
+### Target Boundary
+
+この cycle は finite/small target boundary に限定される。ArchSig-style artifact は Lean 内の bounded finite schema / guardrail であり、実 ArchSig implementation correctness、ArchMap validation、runtime extraction completeness、whole-codebase quality、unrestricted universal property は主張しない。reflection / artifact adequacy は explicit theorem arguments であり、tower structure field には隠さない。target theorem completion は final G6 audit に委ねる。
