@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 13698
+- total SCORE: 13874
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -103,8 +103,9 @@
   - semantic-obstruction / repair-necessity / finite-atlas-transition / obstruction-class-support / genius-support: 176
   - semantic-obstruction / repair-necessity / cut-locus-transport / finite-atlas-transition / genius-support: 180
   - semantic-obstruction / status-drop-adapter / finite-atlas-transition / obstruction-class-support / genius-support: 176
+  - semantic-obstruction / status-drop-adapter / repair-necessity / finite-atlas-transition / genius-support: 176
 - evidence portfolio:
-  - proved-in-research: 98
+  - proved-in-research: 99
 
 ## Phase synthesis
 
@@ -120,7 +121,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-98 件の Lean-proved research artifacts は、次の paper seed を形成している。
+99 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -147,6 +148,7 @@ certificate の基本単位は
 - semantic residual cut repair hitting は、old/new atlas 間で unhit cuts が persistence law を満たすなら、new canonical residual cut class の vanishing が old residual cut の edge/source/target hit を必要とすることを示す。
 - semantic residual mapped repair hitting は、unhit edge/present/free preservation laws により、repair-hitting necessity が finite carrier/schema change をまたいで transport されることを示す。
 - semantic residual status-drop adapter は、supplied exact boolean residual status reading の下で canonical residual cut class が active true-to-false status-drop class と一致することを示す。
+- semantic residual status-drop repair hitting は、unhit edge/status preservation laws により、new status-drop absence または canonical vanishing が old true-to-false status drop の edge/source/target hit を必要とすることを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -205,8 +207,9 @@ Cycle 95 後の total SCORE は 13166 であり、tracking Issue active threshol
 Cycle 96 後の total SCORE は 13342 であり、tracking Issue active threshold 15000 までは残り 1658 SCORE である。
 Cycle 97 後の total SCORE は 13522 であり、tracking Issue active threshold 15000 までは残り 1478 SCORE である。
 Cycle 98 後の total SCORE は 13698 であり、tracking Issue active threshold 15000 までは残り 1302 SCORE である。
+Cycle 99 後の total SCORE は 13874 であり、tracking Issue active threshold 15000 までは残り 1126 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 98 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 99 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -237,7 +240,8 @@ semantic residual cut-locus transport theorem、
 semantic residual atlas map law induction theorem、
 semantic residual cut repair-hitting theorem、
 semantic residual mapped repair-hitting theorem、
-semantic residual status-drop adapter theorem を含む。
+semantic residual status-drop adapter theorem、
+semantic residual status-drop repair-hitting theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -5265,4 +5269,80 @@ correctness, or whole-codebase quality.
 
 Cycle 98 後の total SCORE は 13698 であり、tracking Issue active threshold 15000 までは残り 1302 SCORE である。
 次 cycle では、local-pass/global-fail taxonomy after status adapter、finite pre-H1 support without cohomology overclaim、cross-carrier minimality、または genuine semantic repair-gluing obstruction theorem を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 99: Residual status-drop repair-hitting necessity
+
+```text
+candidate: Residual status-drop repair-hitting necessity
+candidate_type: finite residual status-drop repair-hitting theorem / status-drop necessity / obstruction-class-support
+evidence_stage: proved-in-research
+base_score: 88
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 176
+category: semantic-obstruction / status-drop-adapter / repair-necessity / finite-atlas-transition / genius-support
+goal_delta: Cycle 98 の exact status-drop adapter を Cycle 96 の repair-hitting necessity と接続し、status-drop elimination を old drop hit obligation へ戻した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、status-drop repair transport、unhit edge/source-true/target-false preservation laws、drop persistence、new no-drop/canonical vanishing forces old drop hit、selected frontier-to-flat no-hit witness、theorem package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は status transition や red/green surface を表示できるが、new status-drop absence または canonical vanishing が old true-to-false drop の edge/source/target hit を必要とすることを Lean theorem として要求できない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualStatusDropRepairHitting`, and `lake build FormalAGResearch` passed. Axiom probe reported the generic status-drop repair-hitting theorem family axiom-free; selected witness and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: local-pass/global-fail taxonomy after status-drop repair necessity; cross-carrier status-drop repair hitting; finite pre-H1 support without cohomology overclaim; genuine semantic repair-gluing obstruction theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualStatusDropRepairHitting.lean`
+connects the finite status-drop adapter to repair-hitting necessity.  For
+same-carrier old/new finite semantic repair atlas skeletons, supplied exact
+boolean residual status readings record active residual status.  A
+`ResidualStatusDropRepairTransport` adds supplied hit predicates for edge,
+source-index, and target-index loci.  Its laws require old active edges,
+source `true` status, and target `false` status to be preserved whenever those
+loci are unhit.
+
+From those three unhit preservation laws, Lean proves that an unhit old
+true-to-false status drop persists as a new true-to-false status drop.  Thus
+the new atlas cannot have no status drops, nor can its canonical residual cut
+class vanish, unless every old status drop is hit at the edge, source, or
+target locus.
+
+The selected witness specializes this to the frontier-to-flat status drop with
+no hit predicates.  The selected old drop remains a canonical nonzero
+obstruction, and selected no-drop / canonical vanishing claims would require a
+frontier-to-flat hit.  The same selected no-hit witness also obstructs
+transition closure and transition-coherent atlas data.
+
+Lean proves:
+
+- `ResidualStatusDropRepairTransport`: same-carrier status-drop repair transport with unhit edge/source-true/target-false preservation laws.
+- `AllOldStatusDropsHit`: all old status drops are hit by supplied hit predicates.
+- `unhit_oldStatusDrop_persists_newStatusDrop`: an unhit old status drop persists as a new status drop.
+- `unhit_oldStatusDrop_preserves_newExistsStatusDrop`: an unhit old status drop gives an existing new status drop.
+- `unhit_oldStatusDrop_preserves_newCanonicalNonzero`: an unhit old status drop keeps the new canonical class nonzero.
+- `newNoStatusDrop_forces_oldStatusDropHit`: new absence of status drops forces a given old status drop to be hit.
+- `newNoStatusDrop_forces_allOldStatusDropsHit`: new absence of status drops forces all old status drops to be hit.
+- `newCanonicalVanishes_forces_oldStatusDropHit`: new canonical vanishing forces a given old status drop to be hit.
+- `newCanonicalVanishes_forces_allOldStatusDropsHit`: new canonical vanishing forces all old status drops to be hit.
+- `unhit_oldStatusDrop_obstructs_newTransitionClosure`: an unhit old status drop obstructs new transition closure.
+- `unhit_oldStatusDrop_obstructs_newTransitionCoherentData`: an unhit old status drop rules out new transition-coherent data.
+- `selectedNoHitStatusDropRepairTransport`: selected no-hit status-drop repair transport.
+- `selectedNoHitStatusDrop_preserves_canonicalNonzero`: selected no-hit status drop remains nonzero.
+- `selected_newNoStatusDrop_requires_frontierFlatHit`: selected no-drop claim requires frontier-to-flat hit.
+- `selected_newCanonicalVanishes_requires_frontierFlatHit`: selected canonical vanishing requires frontier-to-flat hit.
+- `selectedNoHitStatusDrop_obstructs_transitionClosure`: selected no-hit status drop obstructs transition closure.
+- `selectedNoHitStatusDrop_obstructs_transitionCoherentData`: selected no-hit status drop rules out coherent data.
+- `semanticResidualStatusDropRepairHitting_package`: theorem package.
+
+This cycle is a strong support node, not a `genius unlock`.  It proves a
+status-level repair-hitting necessary condition under supplied exact status
+readings and explicit unhit preservation laws.  It does not prove hit
+sufficiency, repair synthesis, global minimality, vanishing-to-closure, true
+`H^1` / Cech / coboundary quotient, status extraction, source extraction,
+ArchMap correctness, runtime repair synthesis, tooling runtime extraction, UI
+correctness, or whole-codebase quality.
+
+### Next Frontier
+
+Cycle 99 後の total SCORE は 13874 であり、tracking Issue active threshold 15000 までは残り 1126 SCORE である。
+次 cycle では、local-pass/global-fail taxonomy after status-drop repair necessity、cross-carrier status-drop repair hitting、finite pre-H1 support without cohomology overclaim、または genuine semantic repair-gluing obstruction theorem を狙う。
 genius unlock はまだ成立していない。
