@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 12818
+- total SCORE: 12994
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -98,8 +98,9 @@
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / genius-support: 156
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / projection-nonfaithfulness / genius-support: 164
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / invariance / genius-support: 172
+  - semantic-obstruction / finite-atlas-transition / obstruction-class-support / transport-invariance / genius-support: 176
 - evidence portfolio:
-  - proved-in-research: 93
+  - proved-in-research: 94
 
 ## Phase synthesis
 
@@ -115,7 +116,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-93 件の Lean-proved research artifacts は、次の paper seed を形成している。
+94 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -137,6 +138,7 @@ certificate の基本単位は
 - visible/local semantic gluing obstruction は、visible/local repair-transport profile と declared component clearance があっても finite semantic repair-gluing exactness を反映できないことを selected finite atlas theorem として示す。
 - semantic residual obstruction class modulo cut-noise は、raw diagnostic support に off-cut noise が混じっても residual cut-locus class reading が不変であることを示し、preclass support から finite obstruction class frontier へ進める。
 - semantic residual atlas gauge invariance は、raw edge family に harmless reverse-edge noise が混じっても same residual cut locus なら canonical obstruction class と nonzero obstruction reading が保存されることを示す。
+- semantic residual cut-locus transport は、finite carrier が変わっても supplied cut-preserving / cut-surjective map の下で canonical obstruction class と target no-go reading が移送されることを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -190,8 +192,9 @@ Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshol
 Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
 Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshold 15000 までは残り 2354 SCORE である。
 Cycle 93 後の total SCORE は 12818 であり、tracking Issue active threshold 15000 までは残り 2182 SCORE である。
+Cycle 94 後の total SCORE は 12994 であり、tracking Issue active threshold 15000 までは残り 2006 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 93 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 94 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -217,7 +220,8 @@ semantic residual transition cut theorem、
 semantic residual transition cut scanner exactness theorem、
 semantic residual obstruction one-preclass theorem、
 semantic residual obstruction class modulo cut-noise theorem、
-semantic residual atlas gauge invariance theorem を含む。
+semantic residual atlas gauge invariance theorem、
+semantic residual cut-locus transport theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4846,4 +4850,87 @@ is not a residual cut pair because `flat` is residual-free.
 
 Cycle 93 後の total SCORE は 12818 であり、tracking Issue active threshold 15000 までは残り 2182 SCORE である。
 次 cycle では、support-preserving atlas morphisms beyond same carrier、residual-present/residual-free mismatch minimality、local-pass/global-fail taxonomy、または finite H1-style adapter を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 94: Semantic residual cut-locus transport beyond same carrier
+
+```text
+candidate: Semantic residual cut-locus transport beyond same carrier
+candidate_type: finite cut-locus transport / obstruction-class-support / carrier-change
+evidence_stage: proved-in-research
+base_score: 88
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 176
+category: semantic-obstruction / finite-atlas-transition / obstruction-class-support / transport-invariance / genius-support
+goal_delta: Cycle 93 の same-carrier atlas gauge invariance を、異なる finite index carrier 間の supplied residual cut-locus transport へ上げた。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、cut-locus embedding/equivalence、cut-supported cochain pushforward、canonical vanishing/nonzero transport、selected extended carrier witness、target obstruction package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は diagnostics を別 schema へ移せるが、cut-preserving / cut-surjective finite map の下で obstruction class と target no-go theorem を transport する Lean artifact は持たない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualAtlasMorphism.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualAtlasMorphism`, and `lake build FormalAGResearch` passed. Axiom probe reported generic push/transport/canonical theorem axiom-free; selected cut-surjectivity uses standard `propext`; selected nonzero and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: finite cut-locus transport induced from explicit edge/present/free maps; local-pass/global-fail taxonomy; residual-present/residual-free mismatch minimality; finite H1-style adapter toward the open genius target.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualAtlasMorphism.lean`
+transports residual cut-locus obstruction classes across finite maps whose
+source and target atlas skeletons may have different index carriers.
+`ResidualCutLocusEmbedding` maps source residual cut pairs to target residual
+cut pairs.  `pushResidualCutCochain` pushes source cut-supported support to a
+target cochain and preserves `CutVanishes` / `CutNonzero` exactly.  Nonzero
+source support therefore produces a target nonzero obstruction and rules out
+target residual transition closure / transition-coherent data.
+
+`ResidualCutLocusEquivalence` adds target cut-surjectivity.  Under that
+stronger hypothesis, the pushforward of the canonical source cochain agrees
+with the canonical target cochain on target cut pairs, and canonical
+`CutVanishes` / `CutNonzero` are equivalent.
+
+Lean proves:
+
+- `mapResidualPair`: index-pair map induced by an index map.
+- `ResidualCutLocusEmbedding`: finite map preserving residual cut pairs.
+- `ResidualCutLocusEquivalence`: cut-preserving map covering every target cut.
+- `pushResidualCutCochain`: pushforward of cut-supported source cochains.
+- `pushResidualCutCochain_nonzero_of_sourceNonzero`: source nonzero pushes to target nonzero.
+- `pushResidualCutCochain_targetVanishes_to_sourceVanishes`: target push vanishing implies source vanishing.
+- `pushResidualCutCochain_sourceVanishes_to_targetVanishes`: source vanishing implies target push vanishing.
+- `pushResidualCutCochain_cutVanishes_iff`: pushforward preserves vanishing exactly.
+- `pushResidualCutCochain_cutNonzero_iff`: pushforward preserves nonzero exactly.
+- `pushResidualCutCochain_nonzero_obstructs_targetTransitionClosure`: source nonzero obstructs target transition closure through pushforward.
+- `pushResidualCutCochain_nonzero_obstructs_targetTransitionCoherentData`: source nonzero rules out target transition-coherent data through pushforward.
+- `residualCutLocusEquivalence_pushCanonical_agrees_targetCanonical_onCut`: pushed canonical source cochain agrees with target canonical support on target cuts.
+- `residualCutLocusEquivalence_preserves_canonicalCutVanishes`: cut-surjective equivalence preserves canonical vanishing.
+- `residualCutLocusEquivalence_preserves_canonicalCutNonzero`: cut-surjective equivalence preserves canonical nonzero.
+- `SelectedExtendedOverlapIndex`: `Option SelectedSemanticOverlapIndex` carrier with isolated `none`.
+- `selectedToExtendedIndex`: selected index embedding into the extended carrier.
+- `selectedExtendedToSelectedIndex`: readback for projection/cover reuse.
+- `selectedExtendedFrontierFlatEdge`: target edge family with no active edge involving `none`.
+- `selectedExtendedFrontierFlatAtlasSkeleton`: extended selected atlas.
+- `selectedExtended_none_no_outgoing_edge`: `none` has no outgoing active edge.
+- `selectedExtended_none_no_incoming_edge`: `none` has no incoming active edge.
+- `selectedExtended_none_not_cut_source`: `none` is never the source of a residual cut pair.
+- `selectedExtended_none_not_cut_target`: `none` is never the target of a residual cut pair.
+- `selectedToExtendedResidualCutEmbedding`: selected source cut locus embeds into the extended target.
+- `selectedToExtended_cut_surjective`: every extended target cut comes from a selected source cut.
+- `selectedToExtendedResidualCutEquivalence`: selected source and extended target are cut-locus equivalent.
+- `selectedExtended_pushCanonicalCutClass_nonzero`: pushed selected canonical class is nonzero in the extended target.
+- `selectedExtended_canonicalCutClass_nonzero`: extended target canonical class is nonzero.
+- `selectedExtended_canonicalCutClass_obstructs_transitionClosure`: extended canonical class obstructs target transition closure.
+- `selectedExtended_canonicalCutClass_obstructs_transitionCoherentData`: extended canonical class rules out target transition-coherent data.
+- `semanticResidualAtlasMorphism_package`: theorem package.
+
+This cycle is a support node, not a `genius unlock`.  It proves finite
+residual cut-locus transport for supplied maps, not an arbitrary atlas
+category, atom-map semantic completeness, projection/cover naturality,
+functorial sheaf transport, true `H^1`, Cech quotient, coboundary quotient,
+or vanishing-to-closure theorem.  The selected witness genuinely changes the
+index carrier by adding isolated `none`; all target cuts are still images of
+selected source cuts, so the selected obstruction class transports to the
+extended atlas.
+
+### Next Frontier
+
+Cycle 94 後の total SCORE は 12994 であり、tracking Issue active threshold 15000 までは残り 2006 SCORE である。
+次 cycle では、cut-locus transport induced from edge/present/free preservation、local-pass/global-fail taxonomy、residual-present/residual-free mismatch minimality、または finite H1-style adapter を狙う。
 genius unlock はまだ成立していない。

@@ -90,3 +90,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualTransitionCutScanner
 import Formal.AG.Research.QualitySurface.SemanticResidualObstructionPreclass
 import Formal.AG.Research.QualitySurface.SemanticResidualObstructionClass
 import Formal.AG.Research.QualitySurface.SemanticResidualAtlasGauge
+import Formal.AG.Research.QualitySurface.SemanticResidualAtlasMorphism
