@@ -4,12 +4,13 @@
 
 ## Current SCORE
 
-- total SCORE: 330
+- total SCORE: 510
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
+  - functoriality / cover-refinement / site-morphism / profile-law-transport / anti-weakening: 180
 - evidence portfolio:
-  - proved-in-research: 2
+  - proved-in-research: 3
 
 ## Target Proof State
 
@@ -22,11 +23,11 @@
   - tower vanish / no-global / effective-descent directions under `LayeredRepairAdequacy`
   - finite/local certificate discharge of `LayeredRepairAdequacy`
   - anti-weakening witness that the discharge prism does not imply `H1Vanishes`, tower vanishing, or global coherence
+  - finite/small tower morphism functoriality and discharge-prism transport
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - cover-refinement / site-morphism / profile-law functoriality theorem
   - richer nonabelian torsor transition law and triple-overlap higher coherence witness
   - finite computable shadow connection to concrete ArchSig artifact schema
   - G6-level audit that finite/small target boundary is sufficient for target completion
@@ -123,3 +124,49 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は `LayeredRepairAdequacy` の finite/local discharge に限定される。true sheaf `H1`、unbounded higher / stacky obstruction、functoriality、concrete ArchSig artifact schema との finite computable shadow 接続はまだ残る。G2 A 再審判は `accept / base_score 90 / target_progress: support-node` と判定したが、これは `target-theorem-proved` 判定ではない。
+
+## Cycle 3: Layered Repair Tower Functoriality
+
+```text
+candidate: Layered Repair Tower Functoriality
+tracking_issue: #2486
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 90
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 180
+category: functoriality / cover-refinement / site-morphism / profile-law-transport / anti-weakening
+goal_delta: finite/small obstruction tower morphism と discharge-prism transport を Lean に固定し、G-04 の functoriality blocker を support-node として減らした。
+project_value_delta: Cycle 1/2 の isolated finite tower theorem と adequacy discharge を、cover-refinement / site-morphism / profile-law transport に耐える theorem surface へ拡張した。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が扱う artifact mapping と違い、どの obstruction data が保存され、どの reflection claim が別 boundary-lift certificate を要するかを Lean theorem として分離した。
+formalization_quality: pass。`lake build Formal.AG.Research.QualitySurface.SemanticRepairTowerFunctoriality`、`lake env lean Formal/AG/Research.lean`、`.tmp/g04_functoriality_axioms.lean` は pass。reported declarations は axiom-free。
+target_progress: support-node
+proof_obligation_delta: `FiniteObstructionTowerMorphism`、`BoundaryLiftCertificate`、`DischargePrismTransport`、first-layer preservation/reflection、nonzero transport、finite shadow preservation、tower vanish preservation、discharge prism transport、global coherence transport under prism を追加した。
+open_questions: true sheaf/quotient `H1`、richer nonabelian torsor transition law、higher triple-overlap witness、concrete ArchSig finite shadow connection、G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairTowerFunctoriality.lean` は、finite/small tower 間の explicit morphism を導入する。morphism は `C0/C1/C2` map、`delta0/delta1` 可換性、selected residual 保存、finite shadow false preservation、nonabelian / higher / stack token の forward preservation だけを持つ。`H1Vanishes`、`ObstructionTowerVanishes`、`GlobalSemanticRepairCoherent`、target equivalence、finite-shadow reflection は field に入れない。
+
+Lean 証拠は次に分かれる。
+
+- `cechZ1_of_towerMorphism`: finite 1-cocycle は tower morphism で transport される。
+- `cechB1_of_towerMorphism`: first-layer boundary は tower morphism で transport される。
+- `h1Vanishes_of_towerMorphism`: `H1Vanishes` の forward preservation。
+- `finiteShadowTrivial_of_towerMorphism`: finite-shadow zero reading の forward preservation。
+- `obstructionTowerVanishes_transport_of_morphism`: tower vanish の layerwise forward preservation。
+- `BoundaryLiftCertificate`: reflection を morphism field ではなく target boundary primitive の source lift certificate として切り出す。
+- `h1Vanishes_reflects_of_boundaryLift`: explicit boundary lift の下で `H1Vanishes` を reflection する。
+- `h1Nonzero_transport_of_boundaryLift`: boundary lift の下で nonzero first-layer obstruction を transport する。
+- `DischargePrismTransport`: target coverage / faithfulness / local semantic closure bridge と source prism からの transport witness だけを持つ prism transport certificate。
+- `dischargePrism_transport`: source discharge prism を target discharge prism へ運ぶ。
+- `layeredAdequacy_transport_of_dischargePrism`: transported prism から target `LayeredRepairAdequacy` を構成する。
+- `globalRepairCoherent_transport_of_dischargePrism`: source global coherence を tower vanishing と transported prism 経由で target global coherence へ運ぶ。
+- `layeredRepairTowerFunctoriality_package`: first-layer preservation/reflection、nonzero transport、tower vanish transport、global coherence transport、target discharge prism existence を束ねる。
+
+### Target Boundary
+
+この cycle は finite/small target boundary の functoriality checkpoint に限定される。true sheaf `H1` functoriality、arbitrary site morphism、cover-refinement completeness、runtime extraction completeness、ArchMap correctness、repair synthesis completenessは主張しない。G-04 target completion には nonabelian / higher witness、concrete finite shadow connection、G6 completion audit が残る。
