@@ -353,6 +353,138 @@ theorem selectedVisibleLocalWitness_noGlobalRepairCoherent :
   rcases hglobal with ⟨primitive, hboundary, _hclosed⟩
   exact selectedVisibleLocalWitness_boundary_not_residual primitive hboundary
 
+/-! ## Faithfulness discharge certificate -/
+
+/--
+An explicit finite atlas class whose boundary primitives use the complete
+refined semantic repair support on the selected repair-frontier cover.
+
+This class is the Stage 2.5b discharge boundary for the target theorem: within
+this finite class, semantic faithfulness is not an undischarged premise because
+it follows from the already proved complete-support component coverage and
+residual-component faithfulness theorems.
+-/
+structure CompleteRepairSupportBoundaryComplex where
+  K : FiniteSemanticRepairGluingComplex RefinedSemanticRepairAtom
+  projection_eq : K.projection = refinedSemanticComponent
+  cover_eq : K.cover = repairFrontierOverlapBasisCover
+  support_eq : forall primitive, K.supportOf primitive = completeRepairSupport
+
+/--
+The complete-support finite atlas class discharges `SemanticFaithfulnessHypotheses`.
+-/
+theorem completeRepairSupportBoundary_semanticFaithfulnessHypotheses
+    (L : CompleteRepairSupportBoundaryComplex) :
+    SemanticFaithfulnessHypotheses L.K := by
+  constructor
+  · intro primitive _hboundary
+    simpa [L.projection_eq, L.cover_eq, L.support_eq primitive] using
+      completeRepairSupport_closed_decomposes_as_componentCoverage_and_faithfulness.1
+  · intro primitive _hboundary
+    simpa [L.projection_eq, L.cover_eq, L.support_eq primitive] using
+      completeRepairSupport_closed_decomposes_as_componentCoverage_and_faithfulness.2
+
+/--
+Finite semantic repair-gluing descent for the complete-support finite atlas
+class, with the faithfulness premise discharged by the class certificate.
+-/
+theorem finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary
+    (L : CompleteRepairSupportBoundaryComplex) :
+    GlobalSemanticRepairCoherent L.K <-> ObstructionClassVanishes L.K := by
+  exact
+    finiteSemanticRepairGluingDescent_iff L.K
+      (completeRepairSupportBoundary_semanticFaithfulnessHypotheses L)
+
+/--
+Concrete faithful calibration complex: its single boundary primitive has the
+complete refined semantic repair support and its selected residual is a
+`delta0` boundary.
+-/
+def selectedFaithfulBoundaryComplex :
+    FiniteSemanticRepairGluingComplex RefinedSemanticRepairAtom where
+  Chart := Unit
+  Overlap := fun _ _ => Unit
+  chartOrder := [()]
+  chart_complete := by
+    intro chart
+    cases chart
+    simp
+  C0 := Unit
+  C1 := Bool
+  c0Order := [()]
+  c0_complete := by
+    intro primitive
+    cases primitive
+    simp
+  c1Order := [false, true]
+  c1_complete := by
+    intro cochain
+    cases cochain <;> simp
+  projection := refinedSemanticComponent
+  cover := repairFrontierOverlapBasisCover
+  supportOf := fun _ => completeRepairSupport
+  leftRestriction := fun _ {_source} {_target} _overlap _atom => True
+  rightRestriction := fun _ {_source} {_target} _overlap _atom => False
+  cochainAt := fun cochain {_source} {_target} _overlap _atom => cochain = true
+  delta0 := fun _ => true
+  delta0_exact := by
+    intro primitive source target overlap atom
+    cases primitive
+    cases source
+    cases target
+    cases overlap
+    simp
+  residual := true
+
+/-- The selected faithful complex belongs to the complete-support boundary class. -/
+def selectedFaithfulBoundaryClass :
+    CompleteRepairSupportBoundaryComplex where
+  K := selectedFaithfulBoundaryComplex
+  projection_eq := rfl
+  cover_eq := rfl
+  support_eq := by
+    intro primitive
+    cases primitive
+    rfl
+
+/--
+Concrete discharge of `SemanticFaithfulnessHypotheses` for the selected
+faithful boundary complex.
+-/
+theorem selectedFaithfulBoundary_semanticFaithfulnessHypotheses :
+    SemanticFaithfulnessHypotheses selectedFaithfulBoundaryComplex := by
+  exact
+    completeRepairSupportBoundary_semanticFaithfulnessHypotheses
+      selectedFaithfulBoundaryClass
+
+/-- The selected faithful boundary complex has vanishing finite obstruction. -/
+theorem selectedFaithfulBoundary_obstructionVanishes :
+    ObstructionClassVanishes selectedFaithfulBoundaryComplex := by
+  exact ⟨(), rfl⟩
+
+/--
+The selected faithful boundary complex has a global semantic repair coherent
+certificate without leaving `SemanticFaithfulnessHypotheses` undischarged.
+-/
+theorem selectedFaithfulBoundary_globalRepairCoherent :
+    GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex := by
+  exact
+    globalRepairCoherent_of_obstructionVanishes
+      selectedFaithfulBoundaryComplex
+      selectedFaithfulBoundary_semanticFaithfulnessHypotheses
+      selectedFaithfulBoundary_obstructionVanishes
+
+/--
+Concrete finite descent equivalence for the selected faithful boundary complex,
+with all semantic faithfulness evidence discharged.
+-/
+theorem selectedFaithfulBoundary_descent_iff :
+    GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex <->
+      ObstructionClassVanishes selectedFaithfulBoundaryComplex := by
+  exact
+    finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary
+      selectedFaithfulBoundaryClass
+
 /-! ## Theorem package -/
 
 /--
@@ -395,6 +527,11 @@ theorem finiteSemanticRepairGluingDescent_package
         ComponentClearanceSemanticObstruction.traceRepairFrontierDeclaredPlan /\
       ObstructionClassNonzero selectedVisibleLocalWitnessComplex /\
       Not (GlobalSemanticRepairCoherent selectedVisibleLocalWitnessComplex) /\
+      SemanticFaithfulnessHypotheses selectedFaithfulBoundaryComplex /\
+      ObstructionClassVanishes selectedFaithfulBoundaryComplex /\
+      GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex /\
+      (GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex <->
+        ObstructionClassVanishes selectedFaithfulBoundaryComplex) /\
       Not
         (forall cell : RepairTransportCechCommutatorCurvature.RepairTransportCechCommutatorCell,
           forall plan : HandoffRepairTransversalTheorem.HandoffRepairPlan,
@@ -414,6 +551,81 @@ theorem finiteSemanticRepairGluingDescent_package
       visibleLocalSemanticGluing_witness_validation.1,
       selectedVisibleLocalWitness_obstructionNonzero,
       selectedVisibleLocalWitness_noGlobalRepairCoherent,
+      selectedFaithfulBoundary_semanticFaithfulnessHypotheses,
+      selectedFaithfulBoundary_obstructionVanishes,
+      selectedFaithfulBoundary_globalRepairCoherent,
+      selectedFaithfulBoundary_descent_iff,
+      visibleLocalSemanticGluing_witness_validation.2.1⟩
+
+/--
+Finite Semantic Repair-Gluing Descent theorem package for the complete-support
+finite atlas class, with `SemanticFaithfulnessHypotheses` discharged by the
+class certificate rather than left as a theorem argument.
+-/
+theorem finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary
+    (L : CompleteRepairSupportBoundaryComplex) :
+    (GlobalSemanticRepairCoherent L.K -> ObstructionClassVanishes L.K) /\
+      (ObstructionClassNonzero L.K -> Not (GlobalSemanticRepairCoherent L.K)) /\
+      (ObstructionClassVanishes L.K -> GlobalSemanticRepairCoherent L.K) /\
+      (GlobalSemanticRepairCoherent L.K <-> ObstructionClassVanishes L.K) /\
+      SemanticFaithfulnessHypotheses L.K /\
+      (forall {Atom' : Type u}
+        {projection : Atom' -> BridgeComponent}
+        {cover : HandoffCechCover}
+        {support : Atom' -> Prop},
+        SemanticRepairClosed projection cover support <->
+          ResidualComponentCoveredSupport projection cover support /\
+            ResidualComponentFaithfulSupport projection cover support) /\
+      (forall {Source : Type u}
+        {Target : Type v}
+        {sourceProjection : Source -> BridgeComponent}
+        {sourceCover : HandoffCechCover}
+        {sourceSupport : Source -> Prop}
+        {targetProjection : Target -> BridgeComponent}
+        {targetCover : HandoffCechCover}
+        {targetSupport : Target -> Prop},
+        ResidualSupportTransport
+            sourceProjection sourceCover sourceSupport
+            targetProjection targetCover targetSupport ->
+          (SemanticRepairClosed sourceProjection sourceCover sourceSupport <->
+            SemanticRepairClosed targetProjection targetCover targetSupport)) /\
+      VisibleLocalDeclaredClearanceSemanticObstruction
+        RepairTransportCechCommutatorCurvature.selectedRepairTransportCechCommutatorCell
+        ComponentClearanceSemanticObstruction.traceRepairFrontierDeclaredPlan /\
+      ObstructionClassNonzero selectedVisibleLocalWitnessComplex /\
+      Not (GlobalSemanticRepairCoherent selectedVisibleLocalWitnessComplex) /\
+      SemanticFaithfulnessHypotheses selectedFaithfulBoundaryComplex /\
+      ObstructionClassVanishes selectedFaithfulBoundaryComplex /\
+      GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex /\
+      (GlobalSemanticRepairCoherent selectedFaithfulBoundaryComplex <->
+        ObstructionClassVanishes selectedFaithfulBoundaryComplex) /\
+      Not
+        (forall cell : RepairTransportCechCommutatorCurvature.RepairTransportCechCommutatorCell,
+          forall plan : HandoffRepairTransversalTheorem.HandoffRepairPlan,
+            VisibleLocalDeclaredClearanceProfile cell plan ->
+              SemanticRepairCocycleWitness.SemanticRepairGluingExact cell.flatPath ->
+                SemanticRepairCocycleWitness.SemanticRepairGluingExact cell.curvedPath) := by
+  have hfaithful :
+      SemanticFaithfulnessHypotheses L.K :=
+    completeRepairSupportBoundary_semanticFaithfulnessHypotheses L
+  exact
+    ⟨globalRepairCoherent_forces_obstructionVanishes L.K,
+      no_globalRepairCoherent_of_nonzero_obstruction L.K,
+      globalRepairCoherent_of_obstructionVanishes L.K hfaithful,
+      finiteSemanticRepairGluingDescent_iff L.K hfaithful,
+      hfaithful,
+      fun {_Atom'} {_projection} {_cover} {_support} =>
+        residualComponentFaithfulness_bridge_for_descent,
+      fun {_Source} {_Target} {_sourceProjection} {_sourceCover} {_sourceSupport}
+          {_targetProjection} {_targetCover} {_targetSupport} transport =>
+        residualSupportTransport_bridge_for_descent transport,
+      visibleLocalSemanticGluing_witness_validation.1,
+      selectedVisibleLocalWitness_obstructionNonzero,
+      selectedVisibleLocalWitness_noGlobalRepairCoherent,
+      selectedFaithfulBoundary_semanticFaithfulnessHypotheses,
+      selectedFaithfulBoundary_obstructionVanishes,
+      selectedFaithfulBoundary_globalRepairCoherent,
+      selectedFaithfulBoundary_descent_iff,
       visibleLocalSemanticGluing_witness_validation.2.1⟩
 
 end SemanticRepairGluingComplex
