@@ -4,11 +4,12 @@
 
 ## Current SCORE
 
-- total SCORE: 150
+- total SCORE: 330
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
+  - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
 - evidence portfolio:
-  - proved-in-research: 1
+  - proved-in-research: 2
 
 ## Target Proof State
 
@@ -19,6 +20,8 @@
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
   - first-layer well-definedness and finite-shadow soundness
   - tower vanish / no-global / effective-descent directions under `LayeredRepairAdequacy`
+  - finite/local certificate discharge of `LayeredRepairAdequacy`
+  - anti-weakening witness that the discharge prism does not imply `H1Vanishes`, tower vanishing, or global coherence
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -75,3 +78,48 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は arbitrary site / unbounded stack / runtime extraction / ArchMap correctness / repair synthesis completeness / whole-codebase quality を主張しない。G2 A は、per-premise discharge table と checkpoint status の追加後、`target-proof-checkpoint-candidate` として accept した。したがって、この結果は G-04 の証明距離を大きく縮めるが、G6 completion audit なしに `target-theorem-proved` と呼ばない。
+
+## Cycle 2: Finite Layered Repair Certificate Discharge
+
+```text
+candidate: Finite Layered Repair Certificate Discharge
+tracking_issue: #2484
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+base_score: 90
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 180
+category: semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening
+goal_delta: Cycle 1 の `LayeredRepairAdequacy` visible material premise を、finite/local certificate prism からの構成 theorem として放電した。これは target completion ではなく、G6 blocker を減らす support-node。
+project_value_delta: material premise discharge と anti-weakening audit を Lean theorem と witness に落とし、G-02 weak finite shadow と G-04 finite tower の接続を再利用可能な import に分離した。
+rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が読む local repair signal を、そのまま global coherence と見なさず、semantic closure に必要な coverage / faithfulness / local bridge と非隠蔽 witness に分解した。
+formalization_quality: pass。`lake build Formal.AG.Research.QualitySurface.SemanticRepairAdequacyDischarge`、`lake build FormalAGResearch`、`.tmp/g04_adequacy_discharge_axioms.lean` は pass。reported discharge theorem / witness theorem は axiom-free。
+target_progress: support-node
+proof_obligation_delta: `FiniteBoundarySemanticClosureCertificate`、`LayeredRepairDischargePrism`、`boundarySemanticClosed_of_finiteBoundaryCertificate`、`layeredRepairAdequacy_of_dischargePrism`、prism 版 target-boundary package、G-02 weak finite shadow instance、prism が `H1Vanishes` / `ObstructionTowerVanishes` / `GlobalSemanticRepairCoherent` を含意しない witness を追加した。
+open_questions: true sheaf/quotient `H1`、cover-refinement / site-morphism / profile-law functoriality、richer nonabelian torsor transition law、higher triple-overlap witness、concrete ArchSig finite shadow connection、G6 completion audit。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairAdequacyDischarge.lean` は、Cycle 1 の finite tower を変更せずに、`LayeredRepairAdequacy` を lower-level certificate から構成する別 file として追加する。`FiniteBoundarySemanticClosureCertificate` は、finite enumeration、boundary primitive の coverage、boundary primitive の faithfulness、coverage と faithfulness から semantic closure への local bridge だけを持つ。`LayeredRepairAdequacy`、`GlobalSemanticRepairCoherent`、`ObstructionTowerVanishes`、`H1Vanishes`、target equivalence、torsor triviality、stack effectiveness、finite-shadow completeness は certificate field に入れない。
+
+Lean 証拠は次に分かれる。
+
+- `boundarySemanticClosed_of_finiteBoundaryCertificate`: finite/local certificate から boundary primitive の semantic closure を導く。
+- `layeredRepairAdequacy_of_dischargePrism`: discharge prism から `LayeredRepairAdequacy` を構成する。
+- `semanticRepair_semanticFaithfulness_of_dischargePrism`: semantic faithfulness discharge を prism 経由に置き換える。
+- `semanticRepair_transportCoverage_of_dischargePrism`: transport / coverage discharge を prism 経由に置き換える。
+- `globalRepairCoherent_of_obstructionTowerVanishes_of_dischargePrism`: tower vanish から global coherence への方向を prism で放電する。
+- `universalSemanticRepairObstructionTower_iff_of_dischargePrism`: finite target-boundary equivalence の adequacy 引数を prism で放電する。
+- `universalSemanticRepairObstructionTower_package_of_dischargePrism`: Cycle 1 package theorem を prism 版として束ねる。
+- `finiteGluingComplex_dischargePrism`: G-02 weak finite shadow が semantic faithfulness hypotheses から discharge prism を持つことを示す。
+- `finiteGluingComplex_as_obstructionTower_shadow_of_dischargePrism`: G-02 finite descent theorem を prism 経由で回収する。
+- `dischargePrism_not_h1Vanishes`: prism が first-layer `H1` vanishing を含意しない。
+- `dischargePrism_not_obstructionTowerVanishes`: prism が tower vanishing を含意しない。
+- `dischargePrism_not_globalCoherent`: prism が global semantic repair coherence を含意しない。
+
+### Target Boundary
+
+この cycle は `LayeredRepairAdequacy` の finite/local discharge に限定される。true sheaf `H1`、unbounded higher / stacky obstruction、functoriality、concrete ArchSig artifact schema との finite computable shadow 接続はまだ残る。G2 A 再審判は `accept / base_score 90 / target_progress: support-node` と判定したが、これは `target-theorem-proved` 判定ではない。
