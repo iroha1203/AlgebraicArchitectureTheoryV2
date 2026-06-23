@@ -101,3 +101,4 @@ import Formal.AG.Research.QualitySurface.SemanticResidualStatusDropScanner
 import Formal.AG.Research.QualitySurface.SemanticResidualInducedStatusDropScannerHitting
 import Formal.AG.Research.QualitySurface.SemanticResidualMappedStatusDropScannerOrder
 import Formal.AG.Research.QualitySurface.SemanticResidualUnhitStatusDropScanner
+import Formal.AG.Research.QualitySurface.SemanticResidualUnhitToTargetScannerBridge

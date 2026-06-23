@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 14746
+- total SCORE: 14886
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -109,8 +109,9 @@
   - semantic-obstruction / status-drop-scanner / atlas-map-induced / repair-necessity / genius-support: 172
   - semantic-obstruction / status-drop-scanner / generated-mapped-order / repair-necessity / genius-support: 168
   - semantic-obstruction / status-drop-scanner / repair-hit-exactness / mapped-target-obstruction / genius-support: 176
+  - semantic-obstruction / status-drop-scanner / alarm-bridge / mapped-target-scanner / genius-support: 140
 - evidence portfolio:
-  - proved-in-research: 104
+  - proved-in-research: 105
 
 ## Phase synthesis
 
@@ -126,7 +127,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-104 件の Lean-proved research artifacts は、次の paper seed を形成している。
+105 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -159,6 +160,7 @@ certificate の基本単位は
 - semantic residual induced status-drop scanner hitting は、ResidualCutInducingAtlasMap と complete target scanner `none` から source-side old status-drop hit obligation を直接読む bridge を与える。
 - semantic residual mapped status-drop scanner order は、source-complete edge order の map image 上の target scanner `none` だけで mapped old status-drop hit obligation を読めることを示す。
 - semantic residual unhit status-drop scanner は、source order 上の unhit old status drop scanner が some なら mapped target obstruction を、complete order 上の none なら all-hit exactness を与えることを示す。
+- semantic residual unhit-to-target scanner bridge は、source unhit scanner hit が generated mapped target scanner nonempty を強制し、target scanner none が source unhit scanner none を強制することを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -223,8 +225,9 @@ Cycle 101 後の total SCORE は 14230 であり、tracking Issue active thresho
 Cycle 102 後の total SCORE は 14402 であり、tracking Issue active threshold 15000 までは残り 598 SCORE である。
 Cycle 103 後の total SCORE は 14570 であり、tracking Issue active threshold 15000 までは残り 430 SCORE である。
 Cycle 104 後の total SCORE は 14746 であり、tracking Issue active threshold 15000 までは残り 254 SCORE である。
+Cycle 105 後の total SCORE は 14886 であり、tracking Issue active threshold 15000 までは残り 114 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 104 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 105 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -261,7 +264,8 @@ semantic residual mapped status-drop repair-hitting theorem、
 semantic residual status-drop scanner theorem、
 semantic residual induced status-drop scanner hitting theorem、
 semantic residual mapped status-drop scanner order theorem、
-semantic residual unhit status-drop scanner theorem を含む。
+semantic residual unhit status-drop scanner theorem、
+semantic residual unhit-to-target scanner bridge theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -5754,4 +5758,62 @@ whole-codebase quality, or arbitrary atlas category/functoriality.
 
 Cycle 104 後の total SCORE は 14746 であり、tracking Issue active threshold 15000 までは残り 254 SCORE である。
 次 cycle では、finite pre-H1 support without cohomology overclaim、scanner-derived local-pass/global-fail split、repair-hit minimality under source orders、または genuine semantic repair-gluing obstruction theorem を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 105: Source unhit to generated target scanner bridge
+
+```text
+candidate: Source unhit to generated target scanner bridge
+candidate_type: source unhit scanner to generated target scanner bridge / alarm consistency theorem
+evidence_stage: proved-in-research
+base_score: 70
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 140
+category: semantic-obstruction / status-drop-scanner / alarm-bridge / mapped-target-scanner / genius-support
+goal_delta: Cycle 104 の source unhit scanner と Cycle 103 の generated mapped target scanner を接続し、source red witness が target generated scanner nonempty を強制することを示した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、source-unhit-to-target-scanner non-none theorem、target-none-to-source-none theorem、selected alarm bridge、theorem package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は source witness と target scan result を並べられるが、source unhit hit と target scanner none の相互矛盾不能性を Lean theorem として保証できない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualUnhitToTargetScannerBridge.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualUnhitToTargetScannerBridge`, and `lake build FormalAGResearch` passed. Axiom probe reported standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: scanner-derived local-pass/global-fail split; finite pre-H1 support without cohomology overclaim; repair-hit minimality under source orders; genuine semantic repair-gluing obstruction theorem.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualUnhitToTargetScannerBridge.lean`
+connects the source-side unhit status-drop scanner to the generated mapped
+target status-drop scanner.  If the source scanner returns `some pair`, the
+generated mapped target scanner cannot return `none`; by case analysis on the
+target scanner option, Lean extracts an actual `some targetPair`.
+
+Conversely, if the generated mapped target scanner returns `none` on the
+mapped source order, Cycle 103 forces all mapped old status drops to be hit,
+and Cycle 104 then forces the source unhit scanner to return `none` on a
+complete source order.
+
+The selected witness shows the selected source frontier-to-flat unhit scanner
+hit gives a generated target scanner hit, and that the selected generated
+target scanner cannot be `none`.
+
+Lean proves:
+
+- `sourceUnhitScannerSome_forces_mappedTargetScannerNotNone`: source unhit scanner hit rules out generated target scanner `none`.
+- `sourceUnhitScannerSome_gives_mappedTargetScannerHit`: source unhit scanner hit gives a generated target scanner hit.
+- `mappedTargetScannerNone_forces_sourceUnhitScannerNone`: generated target scanner `none` forces source unhit scanner `none`.
+- `selected_sourceUnhitScannerSome_gives_generatedTargetScannerHit`: selected source hit gives selected generated target hit.
+- `selected_generatedTargetScanner_not_none`: selected generated target scanner cannot be `none`.
+- `semanticResidualUnhitToTargetScannerBridge_package`: theorem package.
+
+This cycle is a `genius-support` bridge, not a `genius unlock`.  It aligns two
+finite diagnostic scanner surfaces and proves their red/green alarms are
+consistent.  It does not prove target-wide order completeness, hit sufficiency,
+repair synthesis, global minimality, vanishing-to-closure, true `H^1` / Cech /
+coboundary quotient, ArchMap correctness, runtime repair synthesis, tooling
+runtime extraction, UI correctness, whole-codebase quality, or arbitrary atlas
+category/functoriality.
+
+### Next Frontier
+
+Cycle 105 後の total SCORE は 14886 であり、tracking Issue active threshold 15000 までは残り 114 SCORE である。
+次 cycle では、scanner-derived local-pass/global-fail split、finite pre-H1 support without cohomology overclaim、repair-hit minimality under source orders、または genuine semantic repair-gluing obstruction theorem を狙う。
 genius unlock はまだ成立していない。
