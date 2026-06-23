@@ -26,11 +26,12 @@ category: <category>
 total: <before> -> <after> / active threshold <threshold | not-applicable>
 remaining: <max(threshold-after, 0) | not-applicable>
 genius: <not-applicable | downgraded-to-normal | target-seed | support-cycle | unlock>
-target_progress: <not-applicable | none | support-node | blocker-found | target-refined | target-proof-candidate | target-proved | target-refuted>
+target_progress: <not-applicable | none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted>
 
 GOAL delta: <one or two sentences>
 Rival delta: <one or two sentences comparing against each named rival at the right granularity>
 Target theorem delta: <if target-theorem mode, which support node / proof obligation changed>
+Target premise audit: <if target-theorem mode, material premises, discharge status, ledger delta, and anti-weakening verdict>
 
 Evidence:
 - <changed or fixed evidence artifact>
@@ -58,6 +59,17 @@ active_threshold: <threshold or null>
 remaining: <remaining or null>
 genius_state: <state>
 target_progress: <state>
+proof_obligation_delta: <delta or null>
+material_premises:
+  - <premise>
+premise_discharge_status:
+  - premise: <premise>
+    status: <discharged | not-discharged | ambient-boundary | direction-hypothesis | cannot-determine>
+    evidence: <Lean declaration / finite witness / concrete certificate / null>
+material_premise_ledger_delta:
+  - <added | changed | removed | none>
+new_material_premise: <yes | no | cannot-determine>
+anti_weakening_verdict: <pass | fail | cannot-determine>
 stop_state: <continue | phase-boundary-candidate | target-proof-checkpoint-candidate | blocked>
 ```
 ````
@@ -216,10 +228,20 @@ Target theorem completion judgment
 verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
 target theorem: <name from GOAL card>
 completion criteria: <satisfied | not-satisfied | refuted | cannot-determine>
+mathematical referee verdict: <accept-main-theorem | checkpoint | reject | refuted | cannot-determine>
 material premises:
 - <premise / hypothesis / certificate argument and why it is material>
 premise discharge audit:
 - <premise>: <discharged | not-discharged | target-boundary | cannot-determine> via <evidence>
+referee-level proof audit:
+- statement precision: <pass | fail | cannot-determine>
+- natural language vs Lean statement: <pass | fail | cannot-determine>
+- quantifier / scope audit: <pass | fail | cannot-determine>
+- direction coverage: <all-directions | missing-direction | cannot-determine>
+- nonvacuity: <pass | fail | cannot-determine>
+- definition unfolding: <no-conclusion-baked-in | conclusion-baked-in | cannot-determine>
+- proof dependency graph: <acyclic-and-checked | circular | cannot-determine>
+- counterexample search: <no-counterexample-found | counterexample-found | not-run | cannot-determine>
 target proof artifacts:
 - <Lean theorem / theorem package / report section / candidate card>
 G3 proof audit: <pass | fail | not-applicable>
@@ -242,14 +264,33 @@ goal: <goal-id>
 verdict: <target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked | continue>
 target_theorem: <target>
 completion_criteria_status: <satisfied | not-satisfied | refuted | cannot-determine>
+target_proved_gate: <pass | fail | cannot-determine>
+mathematical_referee_verdict: <accept-main-theorem | checkpoint | reject | refuted | cannot-determine>
+theorem_statement_audit: <pass | fail | cannot-determine>
 material_premises:
   - <premise>
 premise_discharge:
   - premise: <premise>
     status: <discharged | not-discharged | target-boundary | cannot-determine>
     evidence: <Lean declaration / finite witness / concrete certificate / null>
+material_premise_ledger_audit: <pass | fail | cannot-determine>
+hidden_conclusion_premise_audit: <none-found | hidden-premise-found | cannot-determine>
 proof_artifacts:
   - <artifact>
+referee_audit:
+  natural_language_vs_lean: <pass | fail | cannot-determine>
+  quantifier_scope: <pass | fail | cannot-determine>
+  direction_coverage: <all-directions | missing-direction | cannot-determine>
+  nonvacuity: <pass | fail | cannot-determine>
+  definition_unfolding: <no-conclusion-baked-in | conclusion-baked-in | cannot-determine>
+  proof_dependency_graph: <acyclic-and-checked | circular | cannot-determine>
+  circularity: <none-found | circular | cannot-determine>
+  counterexample_search: <no-counterexample-found | counterexample-found | not-run | cannot-determine>
+axiom_audit_status: <pass | fail | cannot-determine>
+artifact_sync_audit: <pass | fail | cannot-determine>
+g4_g5_target_verdict_audit: <pass | fail | cannot-determine>
+unchecked_items_block_completion:
+  - <unchecked item>
 completed_support_nodes:
   - <node>
 remaining_support_nodes:
