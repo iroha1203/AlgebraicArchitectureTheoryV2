@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 12182
+- total SCORE: 12326
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -94,8 +94,9 @@
   - semantic-obstruction / indexed-transport / repair-coherence / certificate-transport / quality-surface: 168
   - semantic-obstruction / indexed-transport / edge-obstruction / repair-coherence / certificate-transport / quality-surface: 60
   - semantic-obstruction / finite-atlas-transition / repair-coherence / genius-support: 130
+  - semantic-obstruction / finite-atlas-transition / computability / genius-support: 144
 - evidence portfolio:
-  - proved-in-research: 89
+  - proved-in-research: 90
 
 ## Phase synthesis
 
@@ -111,7 +112,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-89 件の Lean-proved research artifacts は、次の paper seed を形成している。
+90 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -138,6 +139,7 @@ certificate の基本単位は
 - semantic residual indexed transport は、indexed finite overlap family 上の residual support transport と selected frontier-to-flat residual transition no-go を示す。
 - semantic residual edge transition obstruction は、residual-present source から residual-free target への edge が transition closure を阻む一般 criterion を示す。
 - semantic residual transition cut は、complete finite index / atom lists を持つ atlas skeleton 上で、single-edge residual cut witness が atlas-wide residual transition closure を阻むことを示す。
+- semantic residual transition cut scanner は、supplied finite edge order 上で first residual cut を検出し、`some` を proof-carrying cut certificate と obstruction へ、`none` を complete edge-order 下の no-cut exactness へ接続する。
 
 ### Related-work separation
 
@@ -178,8 +180,9 @@ Cycle 55 後に total SCORE 7090 で当時の tracking Issue active threshold 70
 その後、tracking Issue の active threshold は 10000 に更新され、Cycle 74 後の total SCORE は 10090 である。
 tracking Issue の active threshold は 12000 に更新され、Cycle 88 後の total SCORE は 12052 で 12000 phase boundary に到達した。
 その後、tracking Issue の active threshold は 15000 に更新され、Cycle 89 後の total SCORE は 12182 である。
+Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 89 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 90 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -200,7 +203,9 @@ semantic-fiber-aware viewer criterion theorem、
 semantic residual component faithfulness theorem、
 semantic residual alias classification theorem、
 semantic residual indexed transport theorem、
-semantic residual edge transition obstruction theorem を含む。
+semantic residual edge transition obstruction theorem、
+semantic residual transition cut theorem、
+semantic residual transition cut scanner exactness theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4554,4 +4559,68 @@ to a Cycle 88 lift, and confirmed base 65 / multiplier 2.0 / final +130.
 
 Cycle 89 後の total SCORE は 12182 であり、tracking Issue active threshold 15000 までは残り 2818 SCORE である。
 次 cycle では、minimal residual cut theorem、finite transition scanner exactness、または obstruction-class formulation を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 90: Supplied-order residual transition cut scanner exactness
+
+```text
+candidate: Supplied-order residual transition cut scanner exactness
+candidate_type: computability / exactness / genius-support
+evidence_stage: proved-in-research
+base_score: 72
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 144
+category: semantic-obstruction / finite-atlas-transition / computability / genius-support
+goal_delta: Cycle 89 の finite atlas cut certificate を、supplied finite edge order 上の proof-carrying diagnostic selector として固定した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、`some -> ResidualTransitionCut -> closure/data obstruction` と `none -> no cut` exactness を接続する finite transition scanner theorem を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は edge row や疑わしい violation を返せるが、返った edge pair から Lean の residual transition cut certificate を復元し、その certificate が transition closure/data を阻むことまでは theorem artifact として保持しない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualTransitionCutScanner.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualTransitionCutScanner`, and `lake build FormalAGResearch` passed. Axiom probe reported standard `propext` for generic scanner theorems and standard `propext` / `Quot.sound` for the selected witness/package only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: finite residual obstruction 1-preclass; obstruction-class formulation; local-pass/global-fail taxonomy; finite H^1-style vanishing/nonvanishing criterion for the open genius target.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualTransitionCutScanner.lean`
+turns the Cycle 89 cut certificate into a finite scanner exactness theorem.
+The scanner is relative to a supplied finite edge order and a decidable cut
+predicate.  It does not construct a canonical global edge order and does not
+claim that absence of residual cuts implies residual transition closure.
+
+Lean proves:
+
+- `IsResidualTransitionCutPair`: active source/target pair whose source has a semantic residual and whose target is residual-free.
+- `ListedAtlasEdgesComplete`: supplied finite edge order covers the active edge family.
+- `ListedResidualTransitionCutsClear`: listed edge order has no residual transition cut pair.
+- `residualTransitionCut_of_pair`: cut pair predicate gives a structured `ResidualTransitionCut`.
+- `residualTransitionCut_pair_isCut`: structured cut determines its pair predicate.
+- `firstResidualTransitionCut?`: first residual transition cut scanner over a supplied edge order.
+- `firstResidualTransitionCut?_some_mem`: returned pair is listed.
+- `firstResidualTransitionCut?_some_pairCut`: returned pair satisfies the cut predicate.
+- `firstResidualTransitionCut?_some_cut`: returned pair recovers a `ResidualTransitionCut`.
+- `firstResidualTransitionCut?_some_obstructs_atlasTransitionClosure`: returned scanner cut obstructs atlas residual transition closure.
+- `firstResidualTransitionCut?_some_obstructs_transitionCoherentData`: returned scanner cut obstructs transition-coherent atlas data.
+- `PrefixBeforeFirstCut`: supplied-order prefix-clear witness for the returned pair.
+- `firstResidualTransitionCut?_some_prefixClear`: scanner result is first relative to the supplied order.
+- `firstResidualTransitionCut?_none_iff_listedCutsClear`: `none` is exact for listed cut-freeness.
+- `firstResidualTransitionCut?_none_iff_noResidualTransitionCut`: under edge-order completeness, `none` is exact for absence of `ResidualTransitionCut`.
+- `selectedFrontierFlatScanOrder`: selected order with a non-cut edge followed by the frontier-to-flat cut.
+- `selectedFrontierFlatCutPairDecidable`: concrete selected decidability instance without `Classical.choice`.
+- `selected_firstResidualTransitionCut`: selected scanner returns `(repairFrontier, flat)`.
+- `selected_firstResidualTransitionCut_prefixClear`: selected scanner result is supplied-order prefix-clear.
+- `selected_firstResidualTransitionCut_obstructs_transitionClosure`: selected scanner result obstructs transition closure.
+- `selected_firstResidualTransitionCut_obstructs_transitionCoherentData`: selected scanner result obstructs transition-coherent atlas data.
+- `semanticResidualTransitionCutScanner_package`: theorem package.
+
+This cycle is a support node, not a `genius unlock`.  G2 accepted the narrowed
+claim with base scores 70 / 72 / 78 / 72 and `genius_eligibility: no`
+throughout.  G4 confirmed base 72 / multiplier 2.0 / penalty 0 / final +144.
+The G4 text contained an arithmetic slip on remaining SCORE; the correct
+update is total 12182 -> 12326, leaving 2674 SCORE to the active threshold
+15000.
+
+### Next Frontier
+
+Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
+次 cycle では、finite residual obstruction 1-preclass、obstruction-class formulation、または local-pass/global-fail taxonomy を狙う。
 genius unlock はまだ成立していない。
