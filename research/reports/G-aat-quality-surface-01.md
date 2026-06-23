@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 12646
+- total SCORE: 12818
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -97,8 +97,9 @@
   - semantic-obstruction / finite-atlas-transition / computability / genius-support: 144
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / genius-support: 156
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / projection-nonfaithfulness / genius-support: 164
+  - semantic-obstruction / finite-atlas-transition / obstruction-class-support / invariance / genius-support: 172
 - evidence portfolio:
-  - proved-in-research: 92
+  - proved-in-research: 93
 
 ## Phase synthesis
 
@@ -114,7 +115,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-92 件の Lean-proved research artifacts は、次の paper seed を形成している。
+93 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -135,6 +136,7 @@ certificate の基本単位は
 - component clearance semantic obstruction は、declared component-level repair clearance と semantic residual emptiness を分離し、component repair row が green でも semantic exactness が認証されたわけではないことを示す。
 - visible/local semantic gluing obstruction は、visible/local repair-transport profile と declared component clearance があっても finite semantic repair-gluing exactness を反映できないことを selected finite atlas theorem として示す。
 - semantic residual obstruction class modulo cut-noise は、raw diagnostic support に off-cut noise が混じっても residual cut-locus class reading が不変であることを示し、preclass support から finite obstruction class frontier へ進める。
+- semantic residual atlas gauge invariance は、raw edge family に harmless reverse-edge noise が混じっても same residual cut locus なら canonical obstruction class と nonzero obstruction reading が保存されることを示す。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -187,8 +189,9 @@ tracking Issue の active threshold は 12000 に更新され、Cycle 88 後の 
 Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
 Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
 Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshold 15000 までは残り 2354 SCORE である。
+Cycle 93 後の total SCORE は 12818 であり、tracking Issue active threshold 15000 までは残り 2182 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 92 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 93 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -213,7 +216,8 @@ semantic residual edge transition obstruction theorem、
 semantic residual transition cut theorem、
 semantic residual transition cut scanner exactness theorem、
 semantic residual obstruction one-preclass theorem、
-semantic residual obstruction class modulo cut-noise theorem を含む。
+semantic residual obstruction class modulo cut-noise theorem、
+semantic residual atlas gauge invariance theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4772,4 +4776,74 @@ canonical representative.
 
 Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshold 15000 までは残り 2354 SCORE である。
 次 cycle では、residual-present/residual-free mismatch minimality、local-pass/global-fail taxonomy、support-preserving atlas morphism / gauge equivalence、または finite H1-style adapter を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 93: Semantic residual atlas gauge invariance
+
+```text
+candidate: Semantic residual atlas gauge invariance
+candidate_type: invariant-hardening / same-carrier atlas gauge / obstruction-class-support
+evidence_stage: proved-in-research
+base_score: 86
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 172
+category: semantic-obstruction / finite-atlas-transition / obstruction-class-support / invariance / genius-support
+goal_delta: Cycle 92 の cut-noise obstruction class を、raw cochain representative の不変性から same-carrier atlas edge presentation の不変性へ上げた。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、`SameResidualCutLocus`、gauge-related class preservation、canonical class transfer、selected raw-edge noisy atlas witness、noisy target obstruction package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は noisy edge rows や raw presentation differences を扱えるが、same residual cut locus による semantic residual obstruction class invariance と nonzero no-go theorem を Lean artifact として保持しない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualAtlasGauge.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualAtlasGauge`, and `lake build FormalAGResearch` passed. Axiom probe reported generic preservation, canonical transfer, and target obstruction theorems axiom-free; selected witness and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: support-preserving atlas morphisms beyond same carrier; residual-present/residual-free mismatch minimality; local-pass/global-fail taxonomy; finite H1-style adapter toward the open genius target.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualAtlasGauge.lean`
+turns the Cycle 92 cut-noise class reading into a same-carrier atlas gauge
+invariance theorem.  `SameResidualCutLocus` says that two finite semantic
+repair atlas skeletons over the same `Index` / `Atom` carrier expose exactly
+the same residual transition cut pairs.  `SameResidualCutClassGaugeRelated`
+then compares raw cochain supports on the left residual cut locus.  With both
+pieces, cut-locus `CutVanishes` and `CutNonzero` transfer across atlas
+presentations, and a nonzero source class obstructs target transition closure
+and transition-coherent atlas data.
+
+Lean proves:
+
+- `SameResidualCutLocus`: same-carrier atlases expose the same residual transition cut locus.
+- `SameResidualCutClassGaugeRelated`: cochain supports agree on the left cut locus.
+- `sameResidualCutLocus_refl`, `sameResidualCutLocus_symm`, `sameResidualCutLocus_trans`: same-cut-locus laws.
+- `sameResidualCutClassGaugeRelated_preserves_cutVanishes`: gauge-related classes preserve cut-locus vanishing.
+- `sameResidualCutClassGaugeRelated_preserves_cutNonzero`: gauge-related classes preserve cut-locus nonzero support.
+- `sameResidualCutLocus_gaugeRelated_canonical`: canonical cochains are gauge-related under same cut locus.
+- `sameResidualCutLocus_preserves_canonicalCutVanishes`: same cut locus preserves canonical vanishing.
+- `sameResidualCutLocus_preserves_canonicalCutNonzero`: same cut locus preserves canonical nonzero.
+- `gaugeRelated_nonzero_obstructs_targetTransitionClosure`: a gauge-related nonzero source class obstructs target transition closure.
+- `gaugeRelated_nonzero_obstructs_targetTransitionCoherentData`: a gauge-related nonzero source class rules out target transition-coherent data.
+- `selectedEdgeNoisyFrontierFlatEdge`: selected edge family with reverse raw edge noise.
+- `selectedEdgeNoisyFrontierFlatAtlasSkeleton`: selected raw-edge noisy atlas over the same carrier.
+- `selectedEdgeNoisy_rawEdge_differs_from_selected`: noisy atlas has a reverse raw edge absent from the original.
+- `selected_flatIndexedResidualNotPresent`: `flat` is not residual-present.
+- `selectedEdgeNoisy_reverse_not_residualCutPair`: reverse raw edge is active but not a residual cut pair because `flat` is residual-free.
+- `selectedEdgeNoisy_sameResidualCutLocus_selected`: original and noisy selected atlases expose the same residual cut locus.
+- `selectedEdgeNoisy_canonicalGaugeRelated_selected`: canonical classes are gauge-related for the selected original/noisy pair.
+- `selectedEdgeNoisy_canonicalCutClass_nonzero`: noisy selected atlas has nonzero canonical residual cut class.
+- `selectedEdgeNoisy_canonicalCutClass_obstructs_transitionClosure`: noisy selected canonical class obstructs transition closure.
+- `selectedEdgeNoisy_canonicalCutClass_obstructs_transitionCoherentData`: noisy selected canonical class rules out transition-coherent data.
+- `semanticResidualAtlasGauge_package`: theorem package.
+
+This cycle is a support node, not a `genius unlock`.  It is a same-carrier
+cut-locus gauge invariance theorem, not arbitrary atlas morphism
+functoriality, true `H^1`, Cech quotient, coboundary quotient, or
+vanishing-to-closure theorem.  It does not claim global minimality, source
+extraction completeness, ArchMap correctness, runtime repair synthesis,
+tooling runtime extraction, UI correctness, or whole-codebase quality.  The
+selected witness changes the raw edge family itself, not merely a cochain
+representative: `(flat, repairFrontier)` is active in the noisy atlas, but it
+is not a residual cut pair because `flat` is residual-free.
+
+### Next Frontier
+
+Cycle 93 後の total SCORE は 12818 であり、tracking Issue active threshold 15000 までは残り 2182 SCORE である。
+次 cycle では、support-preserving atlas morphisms beyond same carrier、residual-present/residual-free mismatch minimality、local-pass/global-fail taxonomy、または finite H1-style adapter を狙う。
 genius unlock はまだ成立していない。
