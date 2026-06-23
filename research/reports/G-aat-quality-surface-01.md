@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 12482
+- total SCORE: 12646
 - category scores:
   - obstruction / repair-potential / atom-supported-quality-geometry: 120
   - ridge-fold / atom-supported-quality-geometry / repair-potential / multi-axis-signature: 160
@@ -96,8 +96,9 @@
   - semantic-obstruction / finite-atlas-transition / repair-coherence / genius-support: 130
   - semantic-obstruction / finite-atlas-transition / computability / genius-support: 144
   - semantic-obstruction / finite-atlas-transition / obstruction-class-support / genius-support: 156
+  - semantic-obstruction / finite-atlas-transition / obstruction-class-support / projection-nonfaithfulness / genius-support: 164
 - evidence portfolio:
-  - proved-in-research: 91
+  - proved-in-research: 92
 
 ## Phase synthesis
 
@@ -113,7 +114,7 @@ certificate の基本単位は
 `nu_p` は verdict / reading discipline、`T_p` は atom support から source-reference field へ戻る trace information を担う。
 この tuple を一つの scalar に潰さないことが、このフェーズの中心的な分離である。
 
-91 件の Lean-proved research artifacts は、次の paper seed を形成している。
+92 件の Lean-proved research artifacts は、次の paper seed を形成している。
 
 - scalar reading や verdict が一致しても、support family と repair hitting requirement は復元できない。
 - local repair が obstruction を eliminate するなら、selected minimal support family を hit しなければならない。
@@ -133,6 +134,7 @@ certificate の基本単位は
 - semantic support projection kernel は、residual fiber singleton なら component projection が semantic repair closure を反映すること、そして non-singleton fiber では同じ component projection / local adequacy surface から semantic residual closure が分かれることを示す。
 - component clearance semantic obstruction は、declared component-level repair clearance と semantic residual emptiness を分離し、component repair row が green でも semantic exactness が認証されたわけではないことを示す。
 - visible/local semantic gluing obstruction は、visible/local repair-transport profile と declared component clearance があっても finite semantic repair-gluing exactness を反映できないことを selected finite atlas theorem として示す。
+- semantic residual obstruction class modulo cut-noise は、raw diagnostic support に off-cut noise が混じっても residual cut-locus class reading が不変であることを示し、preclass support から finite obstruction class frontier へ進める。
 - semantic residual alias nonfaithfulness は、actual residual atom を欠いたまま同じ component を alias atom で cover する gap が semantic repair closure の component-projection faithfulness を壊すことを generic criterion として示す。
 - semantic-fiber-aware viewer criterion は、atom-level support equivalence が semantic repair closure を反映する十分な reading surface であり、component-only reading は selected alias gap で失敗することを示す。
 - semantic residual component faithfulness は、semantic repair closure の cover-relative exact reading kernel を residual atom support equivalence として切り出し、component coverage と residual-component faithfulness の分解で component-only surface の失敗を説明する。
@@ -184,8 +186,9 @@ tracking Issue の active threshold は 12000 に更新され、Cycle 88 後の 
 その後、tracking Issue の active threshold は 15000 に更新され、Cycle 89 後の total SCORE は 12182 である。
 Cycle 90 後の total SCORE は 12326 であり、tracking Issue active threshold 15000 までは残り 2674 SCORE である。
 Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
+Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshold 15000 までは残り 2354 SCORE である。
 tracking Issue は次フェーズ継続と人間判断のため open のまま残す。
-portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 91 件持ち、
+portfolio constraint は満たしている。成果は 4 カテゴリ以上に分散し、`proved-in-research` artifact を 92 件持ち、
 atom support / traceability、certificate transport / profile curvature / ridge-fold、support-local repair theorem、
 scalar-collapse counterexample、finite trace / source-ref exactness example、source-ref handoff holonomy correspondence、
 order-independent source-ref handoff obstruction locus、repair/transport handoff obstruction bridge、
@@ -209,7 +212,8 @@ semantic residual indexed transport theorem、
 semantic residual edge transition obstruction theorem、
 semantic residual transition cut theorem、
 semantic residual transition cut scanner exactness theorem、
-semantic residual obstruction one-preclass theorem を含む。
+semantic residual obstruction one-preclass theorem、
+semantic residual obstruction class modulo cut-noise theorem を含む。
 
 ## Cycle 1: Minimal-support hitting theorem for local repair
 
@@ -4694,4 +4698,78 @@ penalty 0 / final +156.
 
 Cycle 91 後の total SCORE は 12482 であり、tracking Issue active threshold 15000 までは残り 2518 SCORE である。
 次 cycle では、finite residual obstruction class beyond preclass、coboundary-like equivalence、local-pass/global-fail taxonomy、または finite H^1-style vanishing/nonvanishing criterion を狙う。
+genius unlock はまだ成立していない。
+
+## Cycle 92: Semantic residual obstruction class modulo cut-noise
+
+```text
+candidate: Semantic residual obstruction class modulo cut-noise
+candidate_type: obstruction-class-support / cut-locus equivalence / projection-noise
+evidence_stage: proved-in-research
+base_score: 82
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 164
+category: semantic-obstruction / finite-atlas-transition / obstruction-class-support / projection-nonfaithfulness / genius-support
+goal_delta: Cycle 91 の residual obstruction one-preclass を、raw cochain representative と cut-locus class reading に分離し、off-cut raw support noise を消す有限同値として固定した。
+project_value_delta: Research Lean layer と `Formal.AG.Research` aggregate import に、`CutNoiseEquivalent`、cut-locus vanishing/nonzero preservation、canonical cut class iff、scanner bridge、selected noisy representative の raw/class separation package を追加した。
+rival_delta: ADL / static analysis / conformance dashboard / metric dashboard / AI summary は raw diagnostic rows を返せるが、off-cut noise を含む representative と residual cut-locus obstruction class の同値不変性を Lean artifact として保持しない。
+formalization_quality: pass. `lake env lean Formal/AG/Research/QualitySurface/SemanticResidualObstructionClass.lean`, `lake build Formal.AG.Research.QualitySurface.SemanticResidualObstructionClass`, and `lake build FormalAGResearch` passed. Axiom probe reported `cutNoiseEquivalent_preserves_cutVanishes`, `cutNoiseEquivalent_preserves_cutNonzero`, `canonicalResidualCutClass_vanishes_iff_no_cut`, and `canonicalResidualCutClass_nonzero_iff_cut` axiom-free; scanner bridge and selected noisy equivalence use standard `propext`; selected noisy nonzero and package use standard `propext` / `Quot.sound` only. No `sorryAx`, custom axiom, `Classical.choice`, or `unsafe` was reported.
+open_questions: residual-present/residual-free mismatch minimality; local-pass/global-fail taxonomy; finite residual obstruction class with stronger morphism/gauge equivalence; true H1-style adapter for the open genius target.
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticResidualObstructionClass.lean`
+turns Cycle 91 の preclass support layer into a finite cut-locus obstruction
+class reading.  A `ResidualCutCochain` carries raw support over index pairs.
+`CutNoiseEquivalent` compares representatives only on
+`IsResidualTransitionCutPair`; therefore off-cut diagnostic noise is ignored
+by the obstruction class reading.  `CutVanishes` and `CutNonzero` are
+cut-locus relative predicates, not raw-support emptiness predicates.
+
+Lean proves:
+
+- `ResidualCutCochain`: raw support over a finite semantic repair atlas.
+- `canonicalResidualCutCochain`: canonical representative supported exactly on residual transition cut pairs.
+- `CutNoiseEquivalent`: class equivalence comparing support only on the residual cut locus.
+- `ResidualCutCochain.CutVanishes`: no raw support on residual cut pairs.
+- `ResidualCutCochain.CutNonzero`: support on some residual cut pair.
+- `cutNoiseEquivalent_refl`, `cutNoiseEquivalent_symm`, `cutNoiseEquivalent_trans`: equivalence laws.
+- `cutNoiseEquivalent_preserves_cutVanishes`: cut-noise equivalence preserves class vanishing.
+- `cutNoiseEquivalent_preserves_cutNonzero`: cut-noise equivalence preserves class nonzero support.
+- `canonicalResidualCutCochain_support_exact`: canonical support is exactly the residual cut-pair predicate.
+- `canonicalResidualCutClass_vanishes_iff_no_cut`: canonical class vanishing is equivalent to absence of residual transition cuts.
+- `canonicalResidualCutClass_nonzero_iff_cut`: canonical class nonzero is equivalent to existence of a residual transition cut.
+- `residualCutClass_nonzero_obstructs_atlasTransitionClosure`: any nonzero cut class obstructs residual transition closure.
+- `residualCutClass_nonzero_obstructs_transitionCoherentData`: any nonzero cut class rules out transition-coherent atlas data.
+- `firstResidualTransitionCut?_some_cutClassNonzero`: scanner `some` makes the canonical cut class nonzero.
+- `firstResidualTransitionCut?_none_iff_canonicalCutClassVanishes`: complete supplied edge-order scanner `none` is exact for canonical cut-class vanishing.
+- `firstResidualTransitionCut?_some_obstructs_via_cutClass`: scanner `some` obstructs closure via class nonzero.
+- `selected_flatFrontier_not_residualCutPair`: selected reverse pair is not a residual cut pair.
+- `selectedBoundaryNoisyResidualCutCochain`: selected noisy representative adding raw support on the reverse non-cut pair.
+- `selectedBoundaryNoisy_rawSupport_differs_from_canonical`: selected noisy representative differs from canonical raw support.
+- `selectedBoundaryNoisy_cutNoiseEquivalent_canonical`: selected noisy representative is cut-noise equivalent to canonical.
+- `selected_canonicalResidualCutClass_nonzero`: selected canonical class is nonzero.
+- `selectedBoundaryNoisy_residualCutClass_nonzero`: selected noisy class is nonzero.
+- `selectedBoundaryNoisy_residualCutClass_obstructs_transitionClosure`: selected noisy class obstructs transition closure.
+- `selectedBoundaryNoisy_residualCutClass_obstructs_transitionCoherentData`: selected noisy class obstructs transition-coherent atlas data.
+- `semanticResidualObstructionClass_package`: theorem package.
+
+This cycle is a support node, not a `genius unlock`.  It is a quotient-style
+cut-locus class reading, not a true `H^1` class, Cech quotient, coboundary
+quotient, or coboundary calculus.  It does not claim `class vanishes ->
+transition closure`, global minimal representative, source extraction
+completeness, ArchMap correctness, runtime repair synthesis, tooling runtime
+extraction, UI correctness, or whole-codebase quality.  G2 required the
+central revision that vanishing/nonzero be cut-locus relative, because raw
+support emptiness is not preserved by an equivalence that ignores off-cut
+pairs.  G3 passed after confirming the selected noisy representative has
+genuinely different raw support while remaining cut-noise equivalent to the
+canonical representative.
+
+### Next Frontier
+
+Cycle 92 後の total SCORE は 12646 であり、tracking Issue active threshold 15000 までは残り 2354 SCORE である。
+次 cycle では、residual-present/residual-free mismatch minimality、local-pass/global-fail taxonomy、support-preserving atlas morphism / gauge equivalence、または finite H1-style adapter を狙う。
 genius unlock はまだ成立していない。
