@@ -115,3 +115,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairUniversalShadow
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetFactorization
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteShadowSeparation
