@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3458
+- total SCORE: 3542
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -33,8 +33,9 @@
   - current-shadow-determinacy / coordinate-obligation / anti-weakening: 72
   - finite-query-current-shadow / coordinate-obligation / anti-weakening: 76
   - finite-query-current-shadow / readings-insensitive / anti-weakening: 68
+  - finite-query-current-shadow / post-fiber-invariance / anti-weakening: 84
 - evidence portfolio:
-  - proved-in-research: 27
+  - proved-in-research: 28
 
 ## Target Proof State
 
@@ -59,7 +60,8 @@
 - latest Cycle 24 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793938947
 - latest Cycle 25 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794065744
 - latest Cycle 26 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794162254
-- Cycle 27 support ledger: pending; #2482 currently has no Cycle 27 target progress comment, so the latest posted tracking ledger remains the Cycle 26 support ledger.
+- latest Cycle 27 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794247657
+- Cycle 28 support ledger: pending; #2482 currently has no Cycle 28 target progress comment, so the latest posted tracking ledger remains the Cycle 27 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -105,6 +107,7 @@
   - current-shadow support determinacy decomposed into source-trace coordinate extensionality obligations
   - finite query current-shadow factorization reduced to query-coordinate extensionality obligations
   - reading-insensitive finite query observations factored through current shadow without query-coordinate discharge
+  - finite query observation-level current-shadow factorization characterized by post-map fiber invariance
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1232,6 +1235,45 @@ open_questions: semantic soundness から query-coordinate current-shadow extens
 ### Target Boundary
 
 この cycle は target theorem completion ではない。reading-insensitive / shadow-only post-map という明示条件のもとで factorization するだけであり、query-coordinate extensionality や arbitrary semantic observation factorization を放電しない。semantic soundness、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
+
+## Cycle 28: Query Post Fiber Invariance
+
+```text
+candidate: Query Post Fiber Invariance
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 42
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 84
+score_note: finite query-generated observation の observation-level current-shadow factorization を post-map fiber invariance と同値化する。semantic soundness discharge ではない。
+category: finite-query-current-shadow / post-fiber-invariance / anti-weakening
+goal_delta: finite query observation が current shadow に factor する必要十分条件を、same current-shadow 上で実現可能な query readings に対する post-map invariance として定式化した。
+project_value_delta: query-coordinate route と reading-insensitive route を exact observation-level criterion に統合し、残 premise を hidden factorization ではなく fiber invariance として露出した。
+rival_delta: bounded diagnostic query の current-shadow reducibility を、coordinate preservation ではなく post-map fiber invariance として判定できる theorem boundary を与えた。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryPostFiberInvariance.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryPostFiberInvariance`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `QueryReadingsRealizableAtCurrentShadow`、`QueryPostInvariantOnCurrentShadowFibers`、`queryTraceGeneratedObservation_shadowExtensional_iff_postInvariantOnCurrentShadowFibers`、`finiteTraceQueryObservation_shadowExtensional_iff_postInvariantOnCurrentShadowFibers` を追加した。
+open_questions: semantic soundness から post-fiber invariance への extraction theorem、post-map kernel / relevance analysis、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryPostFiberInvariance.lean` は、finite query-generated observation の current-shadow factorization に対する exact observation-level criterion を与える。
+
+- `QueryReadingsRealizableAtCurrentShadow`: fixed current shadow 上で実現可能な query readings。
+- `QueryPostInvariantOnCurrentShadowFibers`: same current-shadow fiber 上の query readings を post-map が区別しない条件。
+- `queryTraceGeneratedObservation_shadowExtensional_iff_postInvariantOnCurrentShadowFibers`: generated observation の current-shadow extensionality と post-fiber invariance の同値。
+- `finiteTraceQueryObservation_shadowExtensional_iff_postInvariantOnCurrentShadowFibers`: `FiniteTraceQueryObservation` package 版。
+- `finiteTraceQueryObservation_eq_canonicalShadowFactor_of_postInvariantOnCurrentShadowFibers`: exact criterion から canonical shadow factorization。
+- `postInvariantOnCurrentShadowFibers_of_queryCoordinateCurrentShadowExtensional`: Cycle 26 の coordinate route は fiber invariance を含意する。
+- `postInvariantOnCurrentShadowFibers_of_queryReadingsInsensitive`: Cycle 27 の reading-insensitive route も fiber invariance を含意する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。finite query-generated observation に限定した exact criterion であり、semantic soundness から `QueryPostInvariantOnCurrentShadowFibers` を導出していない。arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
 ## Superseded G6 Completion Judgment
 
