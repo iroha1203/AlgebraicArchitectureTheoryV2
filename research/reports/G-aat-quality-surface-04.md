@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1786
+- total SCORE: 1942
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -16,8 +16,9 @@
   - universality / factorization / finite-computable-shadow / ArchSig-shadow-adequacy / anti-weakening: 188
   - exact-finite-shadow-reflection / finite-computable-shadow / universal-factorization / target-completion / anti-weakening: 176
   - semantic-repair-descent / true-sheaf-H1 / nonabelian-H1-torsor / stacky-descent / universal-factorization / anti-weakening: 184
+  - target-surface / S_A-R_A-T_A-St_A / finite-certificate / semantic-repair-obstruction-tower / anti-weakening: 156
 - evidence portfolio:
-  - proved-in-research: 10
+  - proved-in-research: 11
 
 ## Target Proof State
 
@@ -26,6 +27,7 @@
 - superseded G6 ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4784702871
 - latest `$math-lean-review` checkpoint audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4790464969
 - latest Cycle 10 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4791699115
+- latest Cycle 11 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4791868155
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -54,13 +56,15 @@
   - canonical ArchSig-style artifact adequacy without arbitrary artifact premise
   - shadow-extensional observation pointwise universal factorization / uniqueness
   - finite-certificate integrated target theorem package
+  - explicit finite/small target surface for `S_A`, `R_A`, `T_A`, `St_A`, and finite-certificate `Obs(A)`
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - target-strength theorem over explicit `S_A`, `R_A`, `T_A`, and `St_A`, rather than only finite tower shadow/envelope support
-  - target-level sheaf exactness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
+  - true sheaf `H1` object-level universality beyond the finite/small `S_A/R_A/T_A/St_A` surface
+  - target-level representation adequacy / semantic faithfulness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
   - sound semantic repair-gluing obstruction assignment factorization beyond finite shadow-extensional observations
+  - cover / site / profile-law functoriality for the target surface
   - final T6 `$math-lean-review` gate with `No major findings`
 - target completion status: `target-proof-checkpoint`
 - tracking issue status: #2482 remains open for human disposition, as required by the research-loop target completion ledger template
@@ -515,6 +519,43 @@ open_questions: target-level `S_A/R_A/T_A/St_A` theorem surface、true sheaf `H1
 ### Target Boundary
 
 この cycle は target theorem completion ではない。T2 A は target-proof として reject、T2 C は external torsor/stack comparison の除去を認めた。有限 certificate follow-up 後の T4 re-audit は、`sheafDischarge` と raw layer decidability を finite certificate により finite/small package 内では放電済みと見なし、score を 92 / 184 に上げた。ただし target-level `S_A/R_A/T_A/St_A`、true sheaf object-level universality、arbitrary sound assignment factorization、target-strength representation adequacy / functoriality は未完であり、`target-theorem-proved` ではない。
+
+## Cycle 11: Explicit `S_A/R_A/T_A/St_A` Target Surface
+
+```text
+candidate: Target `S_A/R_A/T_A/St_A` Surface
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as checkpoint
+base_score: 78
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 156
+category: target-surface / S_A-R_A-T_A-St_A / finite-certificate / semantic-repair-obstruction-tower / anti-weakening
+goal_delta: GOAL statement の `S_A/R_A/T_A/St_A` と Cycle 10 finite-certificate theorem package の対応を Lean declaration として固定し、finite-certificate `Obs(A)` package を target surface 上に置いた。
+project_value_delta: target theorem の自然言語 surface と Lean theorem surface の間に残っていた曖昧さを減らし、候補 theorem / report / future T6 review で同じ object names を参照できるようにした。
+rival_delta: ADL、静的解析、conformance checker、AI review が local repair signal を扱えても、semantic repair site、residual coefficient sheaf、nonabelian torsor、stack-valued descent object を一つの theorem surface として分離しない点を明確化した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: target-proof-checkpoint-candidate
+proof_obligation_delta: `UniversalSemanticRepairTargetSurface`、`S_A`、`R_A`、`T_A`、`St_A`、`Obs_A`、`UniversalSemanticRepairTargetCertificates`、`Obs_A_ofFiniteCertificates`、`targetSurface_objects_are_explicit`、`universalSemanticRepairTargetSurface_package_of_finiteCertificates` を追加した。surface / certificate は global coherence、tower vanish、`H1` zero、effective descent、target equivalence を field に持たない。
+open_questions: true sheaf `H1` object-level universality、arbitrary sound semantic repair-gluing assignment の完全因子化、cover / site / profile-law functoriality、full representation adequacy / semantic faithfulness、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean` は、G-04 の target theorem statement に現れる objects を explicit Lean surface として導入する。
+
+- `UniversalSemanticRepairTargetSurface`: `S_A/R_A/T_A/St_A` を構成する sheaf envelope、pointed torsor、stacky `H2` envelope を束ねる。
+- `S_A`、`R_A`、`T_A`、`St_A`: target surface の projection。
+- `Obs_A`: integrated obstruction tower induced by the target surface。
+- `UniversalSemanticRepairTargetCertificates`: finite boundary semantic closure と finite repair-order completeness certificates。
+- `Obs_A_ofFiniteCertificates`: finite certificates から構成される `Obs(A)`。
+- `universalSemanticRepairTargetSurface_package_of_finiteCertificates`: well-defined sheaf / torsor / stacky selected components、tower vanish / global coherence equivalence、finite-shadow factorization を target surface 上で束ねる theorem package。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。T2 A/C は hidden conclusion premise がないことを確認し、checkpoint として accept した。T4 は `confirm as checkpoint`、final SCORE 156 とした。finite computability boundary として `[DecidableEq Choice]`、`[DecidableEq Coherence]`、local `effectiveRepair` decidability、finite repair-order completeness、finite/small surface が残る。full target には true sheaf object-level universality、arbitrary sound assignment factorization、cover / site / profile-law functoriality、full representation adequacy、T6 `$math-lean-review` が残る。
 
 ## Superseded G6 Completion Judgment
 
