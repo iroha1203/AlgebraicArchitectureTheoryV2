@@ -124,3 +124,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairFiniteSupportMembership
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteSupportCompleteness
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryAdmissibility
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryExtensionality
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryObservation
