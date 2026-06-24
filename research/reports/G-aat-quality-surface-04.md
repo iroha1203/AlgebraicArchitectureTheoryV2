@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 1942
+- total SCORE: 2078
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -17,8 +17,9 @@
   - exact-finite-shadow-reflection / finite-computable-shadow / universal-factorization / target-completion / anti-weakening: 176
   - semantic-repair-descent / true-sheaf-H1 / nonabelian-H1-torsor / stacky-descent / universal-factorization / anti-weakening: 184
   - target-surface / S_A-R_A-T_A-St_A / finite-certificate / semantic-repair-obstruction-tower / anti-weakening: 156
+  - shadow-extensionality / assignment-factorization / target-surface / representation-adequacy / anti-weakening: 136
 - evidence portfolio:
-  - proved-in-research: 11
+  - proved-in-research: 12
 
 ## Target Proof State
 
@@ -28,6 +29,7 @@
 - latest `$math-lean-review` checkpoint audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4790464969
 - latest Cycle 10 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4791699115
 - latest Cycle 11 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4791868155
+- latest Cycle 12 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792033552
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -57,13 +59,14 @@
   - shadow-extensional observation pointwise universal factorization / uniqueness
   - finite-certificate integrated target theorem package
   - explicit finite/small target surface for `S_A`, `R_A`, `T_A`, `St_A`, and finite-certificate `Obs(A)`
+  - target-surface factorization for shadow-extensional observations and the necessity of shadow-extensionality for canonical finite-shadow factorization
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
   - true sheaf `H1` object-level universality beyond the finite/small `S_A/R_A/T_A/St_A` surface
   - target-level representation adequacy / semantic faithfulness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
-  - sound semantic repair-gluing obstruction assignment factorization beyond finite shadow-extensional observations
+  - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation`
   - cover / site / profile-law functoriality for the target surface
   - final T6 `$math-lean-review` gate with `No major findings`
 - target completion status: `target-proof-checkpoint`
@@ -556,6 +559,43 @@ open_questions: true sheaf `H1` object-level universality、arbitrary sound sema
 ### Target Boundary
 
 この cycle は target theorem completion ではない。T2 A/C は hidden conclusion premise がないことを確認し、checkpoint として accept した。T4 は `confirm as checkpoint`、final SCORE 156 とした。finite computability boundary として `[DecidableEq Choice]`、`[DecidableEq Coherence]`、local `effectiveRepair` decidability、finite repair-order completeness、finite/small surface が残る。full target には true sheaf object-level universality、arbitrary sound assignment factorization、cover / site / profile-law functoriality、full representation adequacy、T6 `$math-lean-review` が残る。
+
+## Cycle 12: Shadow-Extensional Factorization Gap
+
+```text
+candidate: Shadow-Extensional Factorization Gap
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as checkpoint
+base_score: 68
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 136
+category: shadow-extensionality / assignment-factorization / target-surface / representation-adequacy / anti-weakening
+goal_delta: target surface 上の arbitrary codomain assignment factorization を `ShadowExtensionalTowerObservation` に相対化して切り出し、canonical finite shadow を通る factorization には shadow-extensionality が必要であることを theorem として固定した。
+project_value_delta: 「任意 sound semantic repair-gluing assignment が factor する」という未完 node を、semantic soundness -> shadow-extensionality / representation adequacy の証明義務へ鋭く分解した。
+rival_delta: ADL、静的解析、metric dashboard、AI review の有限観測が semantic repair obstruction を完全に読むには、canonical finite shadow に関する extensionality か、より豊かな tower information が必要であることを theorem-level の境界にした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTargetFactorization.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: target-proof-checkpoint-candidate
+proof_obligation_delta: `ShadowExtensionalObstructionAssignment`、`targetSurfaceLayerShadow`、`shadowExtensionalAssignmentFactor`、`shadowExtensionalAssignment_factors`、`targetSurfaceAssignmentReads`、`targetSurfaceAssignment_factors_through_ObsA_shadow`、`shadowExtensional_of_factorization`、`targetSurfaceShadowExtensionalObservation_universalFactorization`、`targetSurfaceShadowExtensionalAssignment_package` を追加した。
+open_questions: semantic soundness が `ShadowExtensionalTowerObservation` を含意する theorem、finite shadow の full representation adequacy、cover / site / profile-law functoriality、true sheaf `H1` object-level universality、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairTargetFactorization.lean` は、Cycle 12 で target surface 上の assignment factorization を `Obs(A)` の canonical finite shadow に相対化して切り出す。
+
+- `ShadowExtensionalObstructionAssignment`: finite tower observation と `ShadowExtensionalTowerObservation` を first-class に束ねる。
+- `targetSurfaceLayerShadow`: `Obs_A_ofFiniteCertificates A certificates` の canonical finite all-layer shadow。
+- `shadowExtensionalAssignment_factors`: shadow-extensional assignment は canonical tower shadow を通じて factor する。
+- `targetSurfaceAssignment_factors_through_ObsA_shadow`: target surface reading は `Obs(A)` の canonical finite shadow を通じて factor する。
+- `shadowExtensional_of_factorization`: canonical finite shadow を通る factorization があれば、observation は shadow-extensional である。
+- `targetSurfaceShadowExtensionalObservation_universalFactorization`: shadow-extensional observation の universal factorization を target surface 上に特殊化する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。T1 obstruction は、finite target-surface adapter だけで unrestricted arbitrary sound assignment factorization を主張するのは不可と判定した。T2 は、`shadow_extensional` が visible material premise であり、global coherence、tower vanish、effective descent、target equivalence、factorization equality を hidden field にしていないことを確認した。残る full target obligation は、semantic soundness から shadow-extensionality / representation adequacy を出す theorem、または finite shadow では不足する反例境界の固定である。
 
 ## Superseded G6 Completion Judgment
 
