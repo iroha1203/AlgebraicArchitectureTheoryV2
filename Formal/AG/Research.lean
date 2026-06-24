@@ -128,3 +128,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryObservation
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentation
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCanonicalBridge
 import Formal.AG.Research.QualitySurface.SemanticRepairCurrentShadowCoordinateObligations
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCurrentShadowCoordinates
