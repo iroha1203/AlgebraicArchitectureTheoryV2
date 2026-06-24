@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2534
+- total SCORE: 2634
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -21,8 +21,9 @@
   - finite-shadow-representation / source-trace-separation / representation-adequacy / anti-weakening: 160
   - trace-aware-finite-shadow / representation-bridge / anti-weakening: 160
   - finite-trace-probe-shadow / probe-generated-observation-factorization / anti-weakening: 136
+  - finite-trace-support / canonical-atom-probes / anti-weakening: 100
 - evidence portfolio:
-  - proved-in-research: 15
+  - proved-in-research: 16
 
 ## Target Proof State
 
@@ -35,6 +36,7 @@
 - latest Cycle 12 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792033552
 - latest Cycle 13 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792238679
 - latest Cycle 14 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792402681
+- latest Cycle 15 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792598017
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -68,6 +70,7 @@
   - finite shadow trace separation showing current four-bit shadow is not representation-adequate for source-trace-sensitive observations
   - one-coordinate trace-aware finite shadow enrichment factoring the selected source-trace observation
   - finite trace-probe shadow enrichment factoring supplied probe vectors and probe-generated observations
+  - finite atom-support-generated trace probes as a canonical refinement of supplied probe families
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -724,6 +727,51 @@ open_questions: full trace-aware finite shadow adequacy、finite probe completen
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`SourceTraceProbe Atom := (Atom -> Bool) -> Bool` は supplied source-reference trace field から読む入力幾何であり、probe family の completeness、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。factorization は arbitrary semantic observation ではなく、supplied probe vector、four-bit layer plus probe vector から生成される observation、または既に current shadow を通じて factor する observation に限定される。full finite computable shadow adequacy と non-circular admissible observation theorem は未完のままである。
+
+## Cycle 16: Finite Trace Support
+
+```text
+candidate: Finite Trace Support
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as target-refined
+base_score: 50
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 100
+category: finite-trace-support / canonical-atom-probes / anti-weakening
+goal_delta: Cycle 15 の supplied finite probe family を、ordered finite atom support から生成される canonical probes へ特殊化し、Cycle 15 trace-probe shadow との compatibility、support trace vector、support-generated observation の factorization を証明した。
+project_value_delta: arbitrary supplied probe family の境界を、監査しやすい finite atom support boundary に整理した。ただし finite probe completeness certificate や admissible observation theorem は未放電のまま残す。
+rival_delta: ADL、静的解析、metric dashboard、AI review が保持する source-reference support list を、AAT 側の finite trace-probe shadow に写す canonical specialization を固定した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: target-refined
+proof_obligation_delta: `supportTraceProbes`、`supportTraceVector`、`traceProbeReadings_supportTraceProbes`、`canonicalSupportTraceProbeTowerLayerShadow_eq_traceProbeShadow`、`canonicalSupportTraceProbeTowerLayerShadow`、`supportTraceProbeShadow_projects_to_currentShadow`、`supportTraceProbeShadow_sourceTraceReadings_eq`、`supportTraceVector_factors_through_supportTraceProbeShadow`、`supportTraceGeneratedObservation_factors_through_supportTraceProbeShadow`、`supportTraceGeneratedObservation_same_of_same_supportTraceProbeShadow`、`SupportTraceShadowExtensional`、`supportTraceShadowExtensional_of_factorization`、`selectedSourceTraceSupport_probes_eq`、`sourceTraceObservation_factors_through_supportTraceProbeShadow`、`selected_traceTrue_supportTraceShadow_readings_ne`、`selected_traceTrue_supportTraceShadow_layer_agrees` を追加した。
+open_questions: finite probe completeness certificate、admissible semantic observation class の non-circular shadow-extensionality theorem、full representation adequacy、target-level material premise discharge、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean` は、Cycle 15 の trace-probe shadow を finite atom support 由来の canonical probe family に特殊化する。
+
+- `supportTraceProbes`: ordered finite support list の各 atom を読む canonical source-trace probe family。
+- `supportTraceVector`: source-trace token を finite support 上に制限した Boolean vector。
+- `traceProbeReadings_supportTraceProbes`: canonical support probes の readings は support trace vector と一致する。
+- `canonicalSupportTraceProbeTowerLayerShadow_eq_traceProbeShadow`: direct finite-support trace shadow は Cycle 15 の generic trace-probe shadow の support-probe instance と一致する。
+- `canonicalSupportTraceProbeTowerLayerShadow`: finite support trace vector を直接保持する support trace shadow。
+- `supportTraceProbeShadow_projects_to_currentShadow`: support trace shadow は current four-bit shadow へ射影する。
+- `supportTraceVector_factors_through_supportTraceProbeShadow`: support trace vector は support trace shadow を通じて factor する。
+- `supportTraceGeneratedObservation_factors_through_supportTraceProbeShadow`: four-bit layer と support trace vector から生成される observation は support trace shadow を通じて factor する。
+- `SupportTraceShadowExtensional`: support trace shadow に対する extensionality を necessary property として定義する。
+- `supportTraceShadowExtensional_of_factorization`: support trace shadow を通る factorization は support trace extensionality を含意する。
+- `selectedSourceTraceSupport_probes_eq`: Cycle 13 witness の singleton support は Cycle 15 の selected probe family を回収する。
+- `sourceTraceObservation_factors_through_supportTraceProbeShadow`: Cycle 13 の source-trace observation は singleton support trace shadow を通じて factor する。
+- `selected_traceTrue_supportTraceShadow_readings_ne`: Cycle 13 の pair は singleton support readings で分離される。
+- `selected_traceTrue_supportTraceShadow_layer_agrees`: 同じ pair は four-bit layer component では一致したままである。
+
+### Target Boundary
+
+この cycle は target theorem completion ではなく、Cycle 15 の supplied probe family を finite atom support に特殊化する refinement である。`support : List Atom` は ordered finite input geometry であり、complete、minimal、duplicate-free、permutation-invariant な basis とは主張しない。support trace vector を持つだけで finite computable shadow adequacy、full trace completeness、admissible semantic observation theorem、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality が放電されるわけではない。
 
 ## Superseded G6 Completion Judgment
 
