@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3542
+- total SCORE: 3620
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -34,8 +34,9 @@
   - finite-query-current-shadow / coordinate-obligation / anti-weakening: 76
   - finite-query-current-shadow / readings-insensitive / anti-weakening: 68
   - finite-query-current-shadow / post-fiber-invariance / anti-weakening: 84
+  - finite-query-current-shadow / explicit-fiber-factor / anti-weakening: 78
 - evidence portfolio:
-  - proved-in-research: 28
+  - proved-in-research: 29
 
 ## Target Proof State
 
@@ -61,7 +62,8 @@
 - latest Cycle 25 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794065744
 - latest Cycle 26 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794162254
 - latest Cycle 27 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794247657
-- Cycle 28 support ledger: pending; #2482 currently has no Cycle 28 target progress comment, so the latest posted tracking ledger remains the Cycle 27 support ledger.
+- latest Cycle 28 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794323531
+- Cycle 29 support ledger: pending; #2482 currently has no Cycle 29 target progress comment, so the latest posted tracking ledger remains the Cycle 28 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -108,6 +110,7 @@
   - finite query current-shadow factorization reduced to query-coordinate extensionality obligations
   - reading-insensitive finite query observations factored through current shadow without query-coordinate discharge
   - finite query observation-level current-shadow factorization characterized by post-map fiber invariance
+  - explicit representative-induced current-shadow factor for finite query post-fiber invariant observations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1274,6 +1277,45 @@ open_questions: semantic soundness から post-fiber invariance への extractio
 ### Target Boundary
 
 この cycle は target theorem completion ではない。finite query-generated observation に限定した exact criterion であり、semantic soundness から `QueryPostInvariantOnCurrentShadowFibers` を導出していない。arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
+
+## Cycle 29: Query Canonical Fiber Factor
+
+```text
+candidate: Query Canonical Fiber Factor
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 39
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 78
+score_note: Cycle 28 の exact criterion から induced factor を構成し、realized fibers 上の pointwise uniqueness を証明する。post-fiber invariance discharge ではない。
+category: finite-query-current-shadow / explicit-fiber-factor / anti-weakening
+goal_delta: `QueryPostInvariantOnCurrentShadowFibers` のもとで、representative tower から得る canonical query-post factor が generated observation を factor し、一意であることを証明した。
+project_value_delta: finite query current-shadow factorization を opaque existence ではなく explicit representative-induced factor として固定した。
+rival_delta: bounded diagnostic query が current shadow へ落ちる場合の factor を検査可能な形で定義した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryFiberFactor.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryFiberFactor`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `canonicalQueryPostFiberFactor`、`post_eq_canonicalQueryPostFiberFactor_of_postInvariant`、`finiteTraceQueryObservation_eq_canonicalQueryPostFiberFactor_of_postInvariant`、`canonicalQueryPostFiberFactor_pointwise_unique`、`queryTraceGeneratedObservation_explicitFiberFactorization` を追加した。
+open_questions: semantic soundness から post-fiber invariance への extraction theorem、post-map kernel / relevance analysis、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryFiberFactor.lean` は、post-fiber invariance premise から finite query-generated observation の explicit factor を構成する。
+
+- `canonicalQueryPostFiberFactor`: current shadow の canonical representative tower の query readings で `post` を読む factor。
+- `queryReadingsRealizableAtCurrentShadow_representative`: representative tower が factor の読み取り vector を実現すること。
+- `post_eq_canonicalQueryPostFiberFactor_of_postInvariant`: realized query-reading value は canonical factor と一致する。
+- `queryTraceGeneratedObservation_eq_canonicalQueryPostFiberFactor_of_postInvariant`: generated observation の explicit current-shadow factorization。
+- `finiteTraceQueryObservation_eq_canonicalQueryPostFiberFactor_of_postInvariant`: `FiniteTraceQueryObservation` package 版。
+- `canonicalQueryPostFiberFactor_pointwise_unique`: realized fibers 上で post-map と一致する factor は点ごとに canonical factor と一致する。
+- `queryTraceGeneratedObservation_explicitFiberFactorization`: factorization と一意性の package theorem。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`QueryPostInvariantOnCurrentShadowFibers` を仮定して factor を構成するだけであり、その premise を semantic soundness から導出していない。arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
 ## Superseded G6 Completion Judgment
 

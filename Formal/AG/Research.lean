@@ -131,3 +131,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairCurrentShadowCoordinateOb
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCurrentShadowCoordinates
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryReadingInsensitive
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryPostFiberInvariance
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryFiberFactor
