@@ -1,0 +1,4 @@
+interface:
+  display_name: "Math Lean Review"
+  short_description: "数学命題とLean証明を厳格に査読する"
+  default_prompt: "Use $math-lean-review with 4 parallel subagents to audit this theorem statement against its Lean implementation."
