@@ -130,3 +130,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCanonicalBridg
 import Formal.AG.Research.QualitySurface.SemanticRepairCurrentShadowCoordinateObligations
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCurrentShadowCoordinates
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryReadingInsensitive
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryPostFiberInvariance
