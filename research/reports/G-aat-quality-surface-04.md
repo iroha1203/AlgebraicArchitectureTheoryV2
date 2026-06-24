@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2958
+- total SCORE: 3018
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -26,8 +26,9 @@
   - finite-trace-support / membership-coordinate-factorization / anti-weakening: 64
   - finite-trace-support-completeness / explicit-certificate / anti-weakening: 84
   - finite-query-admissibility / query-supported-factorization / anti-weakening: 80
+  - finite-query-admissibility / support-shadow-extensionality / anti-weakening: 60
 - evidence portfolio:
-  - proved-in-research: 20
+  - proved-in-research: 21
 
 ## Target Proof State
 
@@ -45,7 +46,8 @@
 - latest Cycle 17 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792997055
 - latest Cycle 18 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793115420
 - latest Cycle 19 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793212357
-- Cycle 20 support ledger: pending; #2482 currently has no Cycle 20 target progress comment, so the latest posted tracking ledger remains the Cycle 19 support ledger.
+- latest Cycle 20 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793309756
+- Cycle 21 support ledger: pending; #2482 currently has no Cycle 21 target progress comment, so the latest posted tracking ledger remains the Cycle 20 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -84,6 +86,7 @@
   - finite support membership-coordinate factorization showing that listed trace coordinates factor through the support shadow
   - explicit finite support completeness certificate giving pointwise source-trace coordinate factorization
   - finite trace-query admissibility theorem for query-generated observations under an explicit query-support premise
+  - finite query support-shadow extensionality for supported query-generated observations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -941,6 +944,42 @@ open_questions: arbitrary semantic observation factorization、semantic soundnes
 ### Target Boundary
 
 この cycle は target theorem completion ではない。結論は finite query-generated observation に限定され、arbitrary semantic observation、query manifest の自動抽出、support completeness の自動導出、semantic soundness から query-supported admissibility への定理、full representation adequacy、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。`QuerySupportedBy` は theorem premise として明示され、hidden certificate field ではない。
+
+## Cycle 21: Finite Query Support-Shadow Extensionality
+
+```text
+candidate: Finite Query Support-Shadow Extensionality
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 60
+category: finite-query-admissibility / support-shadow-extensionality / anti-weakening
+goal_delta: Cycle 20 の supported finite query factorization を `SupportTraceShadowExtensional support` interface に接続し、supported query vector と query-generated observation が same support shadow 上で一致することを証明した。
+project_value_delta: bounded finite query diagnostics の support-shadow stability を explicit theorem として固定した。ただし canonical all-layer shadow extensionality や arbitrary semantic observation theorem は未放電のまま残す。
+rival_delta: query manifest が support manifest に含まれる diagnostic は support trace shadow に対して安定であることを、AAT 側の extensionality theorem として明示した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryExtensionality.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryExtensionality`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `queryTraceVector_supportTraceShadowExtensional`、`queryTraceGeneratedObservation_supportTraceShadowExtensional`、`queryTraceVector_same_of_same_supportTraceShadow`、`queryTraceGeneratedObservation_same_of_same_supportTraceShadow`、`boolTrueTraceQueryGeneratedObservation_supportTraceShadowExtensional` を追加した。
+open_questions: canonical all-layer `ShadowExtensionalTowerObservation` への橋、arbitrary semantic observation factorization、semantic soundness / representation adequacy theorem、target-level material premise discharge、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryExtensionality.lean` は、Cycle 20 の finite query factorization を `SupportTraceShadowExtensional support` に接続する。
+
+- `queryTraceVector_supportTraceShadowExtensional`: supported finite query vector は support trace shadow に対して extensional。
+- `queryTraceGeneratedObservation_supportTraceShadowExtensional`: current layer と supported finite query vector から生成される observation は support trace shadow に対して extensional。
+- `queryTraceVector_same_of_same_supportTraceShadow`: same support trace shadow は supported query vector を一致させる。
+- `queryTraceGeneratedObservation_same_of_same_supportTraceShadow`: same support trace shadow は supported query-generated observation を一致させる。
+- `boolTrueTraceQueryGeneratedObservation_supportTraceShadowExtensional`: Cycle 20 の `[true]` query witness は complete Bool support shadow に対して extensional。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。extensionality は `SupportTraceShadowExtensional support` に限定され、canonical all-layer shadow の `ShadowExtensionalTowerObservation` ではない。対象 observation は `post : FiniteTowerLayerShadow -> List Bool -> Out` で生成される finite query observation に限定され、arbitrary semantic observation、semantic soundness から query manifest への抽出、full representation adequacy、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
 ## Superseded G6 Completion Judgment
 
