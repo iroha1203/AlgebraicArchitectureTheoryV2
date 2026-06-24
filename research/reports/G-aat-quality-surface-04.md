@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3242
+- total SCORE: 3314
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -30,8 +30,9 @@
   - finite-query-admissibility / generated-observation-package / anti-weakening: 68
   - finite-query-admissibility / visible-representation-certificate / anti-weakening: 76
   - finite-query-canonical-shadow / current-shadow-determined-support / anti-weakening: 80
+  - current-shadow-determinacy / coordinate-obligation / anti-weakening: 72
 - evidence portfolio:
-  - proved-in-research: 24
+  - proved-in-research: 25
 
 ## Target Proof State
 
@@ -53,7 +54,8 @@
 - latest Cycle 21 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793407562
 - latest Cycle 22 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793517652
 - latest Cycle 23 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793695669
-- Cycle 24 support ledger: pending; #2482 currently has no Cycle 24 target progress comment, so the latest posted tracking ledger remains the Cycle 23 support ledger.
+- latest Cycle 24 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793938947
+- Cycle 25 support ledger: pending; #2482 currently has no Cycle 25 target progress comment, so the latest posted tracking ledger remains the Cycle 24 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -96,6 +98,7 @@
   - finite query-generated observation package without arbitrary hidden observation fields
   - finite query observation representation certificate as a visible boundary for arbitrary-looking observations
   - current-shadow-determined finite query bridge to canonical all-layer shadow factorization
+  - current-shadow support determinacy decomposed into source-trace coordinate extensionality obligations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1105,6 +1108,46 @@ open_questions: semantic soundness から support-shadow determinacy / finite qu
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`CurrentShadowDeterminesSupportTraceShadow` と `FiniteTraceQueryObservationRepresentation.represents` は theorem boundary の visible material premise であり、semantic soundness から自動導出されない。対象は represented finite query observation に限定され、semantic soundness から support-shadow determinacy / representation extraction、arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
+
+## Cycle 25: Current-Shadow Coordinate Obligations
+
+```text
+candidate: Current-Shadow Coordinate Obligations
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 36
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 72
+score_note: support determinacy premise を pointwise coordinate obligation に分解し、Bool true obstruction も固定する。determinacy discharge ではない。
+category: current-shadow-determinacy / coordinate-obligation / anti-weakening
+goal_delta: `CurrentShadowDeterminesSupportTraceShadow support` を support 内の各 source-trace coordinate が current-shadow extensional であることと同値化した。
+project_value_delta: canonical shadow factorization の不足分を、source-trace coordinate ごとの extensionality obligation として切り出した。
+rival_delta: bounded diagnostic model が source trace に依存するなら、canonical current shadow だけで読むには coordinate extensionality が必要であることを theorem 化した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCurrentShadowCoordinateObligations.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairCurrentShadowCoordinateObligations`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `SourceTraceCoordinateCurrentShadowExtensional`、`SupportTraceCoordinatesCurrentShadowExtensional`、`currentShadowDeterminesSupportTraceShadow_iff_coordinateCurrentShadowExtensional`、`not_boolTrueSourceTraceCoordinateCurrentShadowExtensional` を追加した。
+open_questions: semantic soundness から coordinate current-shadow extensionality への extraction theorem、trace-sensitive coordinate の admissible exclusion、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairCurrentShadowCoordinateObligations.lean` は、Cycle 24 の support-shadow determinacy premise を coordinate obligation に分解する。
+
+- `SourceTraceCoordinateCurrentShadowExtensional`: source-trace coordinate が current canonical shadow に対して extensional であるという pointwise obligation。
+- `SupportTraceCoordinatesCurrentShadowExtensional`: finite support の全 listed coordinate が current-shadow extensional であるという support-level obligation。
+- `supportTraceVector_eq_of_coordinateCurrentShadowExtensional`: pointwise obligations から support trace vector equality を得る。
+- `currentShadowDeterminesSupportTraceShadow_of_coordinateCurrentShadowExtensional`: pointwise obligations から `CurrentShadowDeterminesSupportTraceShadow` を得る。
+- `coordinateCurrentShadowExtensional_of_currentShadowDeterminesSupportTraceShadow`: support determinacy から listed coordinate obligations を得る。
+- `currentShadowDeterminesSupportTraceShadow_iff_coordinateCurrentShadowExtensional`: support determinacy と coordinate obligations の同値。
+- `not_boolTrueSourceTraceCoordinateCurrentShadowExtensional`: Bool `true` source-trace coordinate は current-shadow extensional ではない。
+- `not_boolCompleteSupportCoordinatesCurrentShadowExtensional`: complete Bool support も coordinate obligations を満たさない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`CurrentShadowDeterminesSupportTraceShadow` を分解しただけであり、coordinate current-shadow extensionality を semantic soundness から導出していない。Bool witness は、trace-sensitive coordinate ではその obligation が失敗し得ることを示す。runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
 ## Superseded G6 Completion Judgment
 
