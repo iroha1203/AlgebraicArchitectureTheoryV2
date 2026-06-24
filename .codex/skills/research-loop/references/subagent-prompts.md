@@ -1,39 +1,24 @@
 # Research Loop Subagent Prompts
 
-このファイルは `research-loop` skill のサブエージェント標準プロンプト集である。サブエージェントを起動するときだけ、対応するゲートの見出しを読んで使う。
+このファイルは `$research-loop` のサブエージェント標準プロンプト集である。サブエージェントを起動するときだけ、対応するゲートの見出しを読んで使う。
 
 期待する結論、本体の推測、採点意図、成功させたい候補は追記しない。必要なパス、PR 番号、候補名だけを置換する。
 
-## サブエージェント標準プロンプト
+## G1 候補生成
 
-各サブエージェントには、次のプロンプトを必要なパス、PR 番号、候補名に置換して渡す。期待する結論や本体の推測は追記しない。
-
-**G1 候補生成**
-
-G1 では四体に次の探索ロールを一つずつ割り当てる。同じ agent に複数ロールを渡さない。
-
-- `closer`: 既存 frontier、report、open gap を読み、最も強い closure / computability / exactness 候補を探す。ただし定義展開や小補題量産は避ける。
-- `obstruction`: spine や直近成果の弱点を壊す counterexample、nonfaithfulness、failure mode、必要条件、no-go result を探す。
-- `unifier`: 複数の現象を一つの構成、不変量、duality、coherence criterion、bridge として圧縮する候補を探す。
-- `wildcard`: 高リスク高リターンの orientation / genius-target / target-obstruction / rival-axis rewrite を探す。証拠計画がない願望は出さない。
+四体に `closer`、`obstruction`、`unifier`、`wildcard` を一つずつ割り当てる。
 
 ```text
-Use the research-loop criteria to generate candidate research contributions for GOAL <goal-id>.
+Use the research-loop criteria to generate candidate research contributions for score-phase GOAL <goal-id>.
 Your G1 exploration role is: <closer | obstruction | unifier | wildcard>.
-Read only: research/GOALS.md, research/ideas/TEMPLATE.md, research/reports/<goal-id>.md if it exists, the tracking Issue summary supplied by the main agent, and the source references explicitly named by the GOAL.
-Do not edit files.
-Search from your assigned role. Do not imitate the other G1 roles, and do not converge to the safest obvious spine-filling candidate unless your role makes it genuinely strongest.
-Generate mathematically nontrivial, interesting candidates that create visible progress toward the GOAL. Avoid definition unfolding, immediate corollaries, renaming, vague conjectures, and candidates whose value is only that they look easy to formalize.
-If the GOAL is in `research mode: target-theorem`, include candidates that advance the GOAL-card target theorem, its support map, or its proof blockers. Do not weaken the target theorem to make an easy success.
-Also consider whether there is a rare genius candidate. Do not force one; return `genius_potential: no` for ordinary candidates.
-If an open `genius target theorem` exists in the tracking Issue, include at least one candidate that advances that target, or explain why another candidate should take priority.
-If the user explicitly asked for breakthrough / genius work and no open target exists, include at least one `genius-target` candidate or explain why no credible target exists.
-For each candidate, stress-test it against every rival named by the GOAL, including any strong rival. Do not assume a fixed rival list.
-Return at least 1 candidate and preferably 3 candidates.
+Read only: research/GOALS.md, research/ideas/TEMPLATE.md, research/reports/<goal-id>.md if it exists, the tracking Issue summary supplied by the main agent, and source references explicitly named by the GOAL.
+Do not edit files. Do not handle `research mode: target-theorem`; that belongs to $target-theorem-loop.
+Generate mathematically nontrivial candidates that create visible progress toward the GOAL. Avoid definition unfolding, immediate corollaries, renaming, vague conjectures, and candidates whose value is only that they look easy to formalize.
+Also consider whether there is a rare genius candidate. Do not force one. If you propose `genius`, `genius-target`, or `genius-support`, apply `references/genius-scoring.md`.
 For each candidate, provide:
 exploration_role:
 title:
-candidate_type: closure | orientation | unification | computability | bridge | genius | genius-target | genius-support | target-support | target-obstruction | target-refinement | target-proof
+candidate_type: closure | orientation | unification | computability | bridge | genius | genius-target | genius-support
 capability_category:
 claim:
 why_nontrivial:
@@ -46,11 +31,6 @@ expected_final_score:
 genius_potential: yes | no
 genius_target:
 genius_support_role:
-target_theorem:
-target_support_node:
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
-proof_obligation_delta:
-target_completion_role:
 score_reason:
 dullness_risk:
 proof_or_evidence_plan:
@@ -65,47 +45,36 @@ checked:
 unchecked:
 ```
 
-**G2 審判 A: 厳密性**
+## G2 審判 A: 厳密性
 
 ```text
 Judge this candidate only for rigor and boundary fidelity.
-Inputs: GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue target theorem / genius target/support summary when relevant, and named source references.
-Do not assume the candidate should pass.
-If the candidate asks for genius scoring, judge whether it is mathematically rigorous enough to be a rare 1000-point breakthrough without crossing the claim boundary.
-If this is a genius-target or genius-support candidate, judge whether the target theorem, support map, and current support role are mathematically coherent.
-If the GOAL is in `research mode: target-theorem`, judge whether the candidate preserves the target theorem statement, advances a real support node or proof blocker, and matches the GOAL-card completion criteria, material premise ledger, and anti-weakening rule. Reject or request revise if the candidate moves a conclusion-equivalent premise into a theorem argument, typeclass, structure field, certificate field, or opaque class membership.
+Inputs: score-phase GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue genius target/support summary when relevant, and named source references.
+Do not assume the candidate should pass. If the candidate asks for genius scoring, apply `references/genius-scoring.md` and judge whether it is mathematically rigorous enough to be a rare 1000-point breakthrough without crossing the claim boundary.
 Return:
 verdict: accept | revise | reject
 base_score:
 genius_eligibility: yes | no | cannot-determine
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
 category:
 reason:
 boundary_fidelity:
 is_immediate_corollary_or_rename:
 proof_or_counterexample_risk:
-material_premise_ledger_fit:
-hidden_or_new_material_premise:
-anti_weakening_verdict:
 required_evidence:
 checked:
 unchecked:
 ```
 
-**G2 審判 B: 研究価値**
+## G2 審判 B: 研究価値
 
 ```text
 Judge this candidate only for research value toward GOAL <goal-id>.
-Inputs: GOAL, candidate card <path>, reward rubric, dullness filter, current report if any, and tracking Issue target theorem / genius target/support summary when relevant.
-Do not judge by ease of proof. Judge by surprise, compression, leverage, and GOAL capability gain.
-If the candidate asks for genius scoring, judge whether it changes AAT's view or research program enough to deserve rare 1000-point treatment.
-If this is a genius-target or genius-support candidate, judge whether the target theorem creates a strong research game board and whether this cycle advances it.
-If the GOAL is in `research mode: target-theorem`, judge whether the candidate materially shortens the proof distance to the target theorem or usefully exposes a blocker/refutation.
+Inputs: GOAL, candidate card <path>, reward rubric, dullness filter, current report if any, and tracking Issue genius target/support summary when relevant.
+Do not judge by ease of proof. Judge by surprise, compression, leverage, and GOAL capability gain. If the candidate asks for genius scoring, apply `references/genius-scoring.md`.
 Return:
 verdict: accept | revise | reject
 base_score:
 genius_eligibility: yes | no | cannot-determine
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
 category:
 reason:
 goal_delta:
@@ -119,20 +88,15 @@ checked:
 unchecked:
 ```
 
-**G2 審判 C: プロジェクト全体価値**
+## G2 審判 C: プロジェクト全体価値
 
 ```text
 Judge this candidate from the viewpoint of the whole repository and research program.
-Inputs: GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue target theorem / genius target/support summary when relevant, research/README.md, research/GOALS.md, docs/README.md, and other repo overview files explicitly named by the GOAL.
-Do not judge only local mathematical interest. Judge whether this is valuable for AAT / SFT / Tooling / Website / Research as a whole.
-If the candidate asks for genius scoring, judge whether it creates a project-level bridge across multiple domains rather than an isolated local result.
-If this is a genius-target or genius-support candidate, judge whether the target/support structure is useful for the broader research program rather than bookkeeping.
-If the GOAL is in `research mode: target-theorem`, judge whether the candidate keeps the target theorem useful for the broader research program, not just as local bookkeeping.
+Inputs: GOAL <goal-id>, candidate card <path>, reward rubric, dullness filter, tracking Issue genius target/support summary when relevant, research/README.md, research/GOALS.md, docs/README.md, references/genius-scoring.md when genius scoring is proposed, and other repo overview files explicitly named by the GOAL.
 Return:
 verdict: accept | revise | reject
 base_score:
 genius_eligibility: yes | no | cannot-determine
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
 category:
 reason:
 repo_wide_value:
@@ -145,21 +109,16 @@ checked:
 unchecked:
 ```
 
-**G2 審判 D: ライバル比較**
+## G2 審判 D: ライバル比較
 
 ```text
 Judge this candidate only against the GOAL's rival field.
-Inputs: GOAL <goal-id>, its rival field, candidate card <path>, reward rubric, dullness filter, current report if any, and tracking Issue target theorem / genius target/support summary when relevant.
-Do not judge by mathematical elegance alone. Judge whether the candidate creates a capability that the named rival(s) do not provide, combines rival capabilities into a stronger object, or gives a precise failure / nonfaithfulness / obstruction that the rival misses.
-If the GOAL names multiple rivals or a strong rival, compare against each named rival separately before giving the overall verdict.
-If the candidate asks for genius scoring, judge whether it rewrites the comparison axis itself rather than merely outperforming the rival on an existing metric.
-If this is a genius-target or genius-support candidate, judge whether the target theorem would create a new comparison axis against the rival, and whether this support cycle materially advances that axis.
-If the GOAL is in `research mode: target-theorem`, judge whether the candidate preserves the target theorem's intended rival delta and whether the support cycle strengthens that delta.
+Inputs: GOAL <goal-id>, its rival field, candidate card <path>, reward rubric, dullness filter, current report if any, and tracking Issue genius target/support summary when relevant.
+Compare against each named rival separately before giving the overall verdict. If the candidate asks for genius scoring, apply `references/genius-scoring.md` and judge whether it creates or rewrites a rival comparison axis rather than merely outperforming a rival on an existing metric.
 Return:
 verdict: accept | revise | reject
 base_score:
 genius_eligibility: yes | no | cannot-determine
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
 category:
 reason:
 rival_understanding:
@@ -173,7 +132,7 @@ checked:
 unchecked:
 ```
 
-**G3 公理検査**
+## G3 公理検査
 
 ```text
 Check the Lean evidence for candidate <candidate>.
@@ -195,21 +154,18 @@ checked:
 unchecked:
 ```
 
-**G3 Lean 形式化品質監査**
+## G3 Lean 形式化品質監査
 
 ```text
 Audit whether the Lean formalization is an appropriate formal expression of the candidate's mathematical claim.
 Inputs: candidate card <path>, Lean file <path>, GOAL claim boundary, and the relevant theorem / definition names.
 Do not judge only whether Lean builds. Check whether the statement captures the intended proposition at the right strength.
-If the GOAL is in target-theorem mode, inspect theorem arguments, typeclass arguments, structure fields, certificate fields, and class membership. Flag any conclusion-equivalent premise hidden there rather than discharged.
 Return:
 verdict: pass | revise | fail | cannot-determine
 statement_matches_candidate:
 not_too_weak:
 not_too_strong_or_vacuous:
 parameters_and_assumptions_explicit:
-material_premises_visible:
-no_hidden_conclusion_premise:
 claim_boundary_encoded:
 definitions_fit_for_reuse:
 names_and_structure_clear:
@@ -219,7 +175,7 @@ checked:
 unchecked:
 ```
 
-**G3.5 候補カード同期**
+## G3.5 候補カード同期
 
 ```text
 Audit whether candidate card <path>, Lean/evidence files, judge memos, and the planned report entry agree.
@@ -238,23 +194,18 @@ axiom_and_formalization_audits_summarized:
 resolved_revises_recorded:
 genius_evidence_synced:
 genius_target_or_support_synced:
-target_theorem_synced:
-proof_obligation_delta_synced:
 report_names_match:
 reason:
 checked:
 unchecked:
 ```
 
-**G4 SCORE 監査**
+## G4 SCORE 監査
 
 ```text
 Audit the final SCORE for candidate <candidate>.
-Inputs: GOAL <goal-id>, GOAL rival, synchronized candidate card <path>, evidence files, G2 judge A/B/C/D outputs, G3 axiom check, G3 formalization quality audit, G3.5 sync audit, tracking Issue SCORE/support ledger, tracking Issue target theorem state when relevant, and current diff.
-Do not preserve the proposed score unless the evidence supports it.
-If genius scoring is proposed, confirm it only when all four G2 judges returned `genius_eligibility: yes` and the evidence shows a rare 1000-point breakthrough. Otherwise set `genius_verdict: downgrade-to-normal` and score on the normal 0-100 base scale.
-If the candidate is a genius-target or genius-support cycle, audit target/support accounting separately from SCORE: target seeding does not unlock 1000 points by itself, support cycles score normally, and genius unlock requires the target theorem evidence to pass G2/G3/G4. If a genius-target is useful only as a research-program seed and has insufficient evidence for normal SCORE, return `score_verdict: seed-only`, `base_score: 0`, `final_score: 0`, and record the target/support map to the tracking Issue only.
-If the GOAL is in `research mode: target-theorem`, audit proof progress separately from SCORE. SCORE can reward support progress, but target completion requires the GOAL-card target theorem completion criteria, target material premise ledger, and target anti-weakening rule. Do not treat SCORE threshold as proof completion. If the theorem statement or package contains material premises, hypothesis arguments, typeclass arguments, structure fields, certificate fields, or opaque class memberships, list them and audit whether the GOAL-card ledger requires them to be discharged. Do not return `target_progress: target-proved` while a required premise remains only as an undischarged theorem argument or while a conclusion-equivalent premise is hidden in a class, structure, certificate, or membership condition.
+Inputs: GOAL <goal-id>, GOAL rival, synchronized candidate card <path>, evidence files, G2 judge A/B/C/D outputs, G3 axiom check, G3 formalization quality audit, G3.5 sync audit, tracking Issue SCORE/support ledger, and current diff.
+Do not preserve the proposed score unless the evidence supports it. If genius scoring is proposed, apply `references/genius-scoring.md`; confirm it only when all four G2 judges returned `genius_eligibility: yes`, the evidence shows a rare 1000-point breakthrough, and support-cycle SCORE is not being double-counted as the unlock score.
 Return:
 score_verdict: confirm | reduce | reject | seed-only
 base_score:
@@ -263,13 +214,6 @@ penalty:
 final_score:
 category:
 genius_verdict: confirm | downgrade-to-normal | reject | not-applicable
-target_progress: none | support-node | blocker-found | target-refined | target-proof-candidate | target-proof-checkpoint-candidate | target-proved | target-refuted | not-applicable
-proof_obligation_delta:
-material_premises:
-premise_discharge_status:
-material_premise_ledger_delta:
-new_material_premise:
-anti_weakening_verdict:
 goal_delta:
 rival_delta:
 rival_stress_test:
@@ -281,7 +225,7 @@ checked:
 unchecked:
 ```
 
-**G5 PR レビュー**
+## G5 PR レビュー
 
 ```text
 Use $review-pr <PR-number> and apply the review-pr skill.
@@ -289,9 +233,6 @@ In addition to the normal PR review, check the research-loop gates:
 - candidate card, evidence, report, and tracking Issue SCORE update agree
 - SCORE audit is represented faithfully
 - G2 judge D rival comparison and G4 rival_delta are represented faithfully
-- target theorem proof state and proof_obligation_delta are represented faithfully when target-theorem mode is active
-- material premise ledger, premise discharge status, new or hidden material premise findings, and anti-weakening verdict are represented faithfully when target-theorem mode is active
-- G4 `target_progress` distinguishes `target-proof-candidate` from `target-proof-checkpoint-candidate` and does not promote checkpoint candidates to completion
 - Lean formalization quality audit is represented faithfully
 - Formal/AG is not directly edited
 - protected math docs and docs/note are not edited
@@ -301,41 +242,17 @@ In addition to the normal PR review, check the research-loop gates:
 Return the review-pr verdict and any research-loop-specific findings.
 ```
 
-**G6 フェーズ区切り判定**
+## G6 フェーズ区切り判定
 
 ```text
-Judge whether the current work forms a good research phase boundary or target-theorem checkpoint for GOAL <goal-id>.
-Inputs: GOAL, GOAL rival, tracking Issue active threshold if any, tracking Issue SCORE ledger, tracking Issue target theorem state if any, research/reports/<goal-id>.md, category scores, evidence stages, phase boundary criteria, target theorem completion criteria, target premise discharge policy, target material premise ledger, target anti-weakening rule, target proof artifacts, proof obligation delta, G3/G3.5/G4/G5 target verdicts, and target failure policy when relevant.
-Treat research/GOALS.md as a read-only invariant. If status, threshold policy, rubric, frontier, spine, research mode, target theorem, target theorem completion criteria, material premise ledger, anti-weakening rule, or target failure policy should change, return that as a human action proposal. Treat active threshold changes as tracking-Issue state changes, not GOALS.md edits.
-For score-phase GOALs, do not judge the GOAL as completely achieved. Do not close the tracking Issue. Judge whether this phase is coherent enough to stop and return to the human with a phase summary.
-For target-theorem GOALs, act as a strict but fair mathematical referee for a claimed main theorem. First judge whether the GOAL-card target theorem completion criteria are satisfied. Reconstruct the precise theorem from the natural-language target, Lean declaration, definitions after unfolding, proof artifacts, and report. Audit the quantifier order, universe/index/site/cover/coefficient scope, all implication or iff directions, non-vacuity, proof dependency graph, circularity risk, counterexample attempts, and whether each proof step actually proves the claimed mathematical proposition rather than a weaker formal surrogate. Inspect the Lean theorem/package statement, list material premises, theorem arguments, typeclass arguments, class/structure arguments, hypothesis arguments, certificate arguments, opaque membership conditions, and inherited fields introduced through instances, then compare them with the material premise ledger. Decide whether each one is target-boundary context, direction-hypothesis, or a premise that must be discharged before completion. If the GOAL-card completion criteria, target premise discharge policy, or material premise ledger require premise discharge, return `target-theorem-proved` only when those premises are backed by Lean theorem, finite witness, or concrete certificate evidence. If the theorem package is conditional and a required premise remains only as an undischarged argument, if a new unledgered material premise appears, if a conclusion-equivalent premise is hidden in a theorem argument, typeclass, class/structure/certificate/membership condition, if an iff/necessity/sufficiency direction is missing, if the result is vacuous under the chosen boundary, if the proof DAG is circular, if a definition bakes in the conclusion, or if the theorem statement, axiom audit, premise list, discharge artifact, proof dependency graph, report sync, candidate-card sync, or G4/G5 target verdict cannot be checked, return `target-proof-checkpoint`. G6 is fail-closed: `cannot-determine`, unchecked items, unresolved G4/G5 findings, stale tracking-Issue/report state, or any proof step that cannot be explained at paper-referee rigor cannot produce `target-theorem-proved`. If the target statement is refuted, return `target-refuted`.
+Judge whether the current work forms a good research phase boundary for score-phase GOAL <goal-id>.
+Inputs: GOAL, GOAL rival, tracking Issue active threshold, tracking Issue SCORE ledger, research/reports/<goal-id>.md, category scores, evidence stages, and phase boundary criteria.
+If total_score >= active_threshold, treat this as `score-threshold reached` and judge whether it is a phase boundary. Do not judge the GOAL as completely achieved. Do not close the tracking Issue. Judge whether this phase is coherent enough to stop and return to the human with a phase summary. If you return `continue` despite threshold reach, state the exact missing portfolio constraint, report coherence, rival delta, or phase-boundary criterion.
 Return:
-verdict: phase-boundary | continue | blocked | goal-defect | target-theorem-proved | target-proof-checkpoint | target-refuted | target-blocked
+verdict: phase-boundary | continue | blocked | goal-defect
 total_score:
-active_threshold: <threshold | not-applicable>
-target_completion_status: not-applicable | satisfied | not-satisfied | refuted | cannot-determine
-target_proved_gate: pass | fail | cannot-determine
-mathematical_referee_verdict: accept-main-theorem | checkpoint | reject | refuted | cannot-determine
-completed_support_nodes:
-remaining_support_nodes:
-proof_blockers:
-material_premises:
-premise_discharge_audit:
-material_premise_ledger_audit:
-hidden_conclusion_premise_audit:
-theorem_statement_audit:
-natural_language_vs_lean_audit:
-quantifier_scope_audit:
-direction_coverage_audit:
-nonvacuity_audit:
-definition_unfolding_audit:
-proof_dependency_graph_audit:
-circularity_audit:
-counterexample_search_audit:
-axiom_audit_status:
-artifact_sync_audit:
-g4_g5_target_verdict_audit:
-unchecked_items_block_completion:
+active_threshold:
+threshold_reached: yes | no
 portfolio_constraint:
 coherent_report_or_paper_seed:
 rival_phase_delta:

@@ -15,9 +15,9 @@ GOAL(研究で成し遂げたいこと)
   → 研究フェーズとしてキリが良ければ止まり、そうでなければ同じ GOAL で次へ進む
 ```
 
-`target-theorem` の GOAL では基本サイクルは同じだが、SCORE threshold は補助台帳であり、完了条件は GOAL カードの `target theorem completion criteria` を満たすことである。support lemma、反例、normalization、bridge は通常どおり審判・検証・PR を通すが、target theorem 本体が未証明なら SCORE 到達だけでは完了扱いにしない。
+`target-theorem` の GOAL では、探索型ループとは別に大定理証明専用ループを使う。SCORE threshold は補助台帳であり、完了条件は GOAL カードの `target theorem completion criteria` を満たすことである。support lemma、反例、normalization、bridge は審判・検証・PR を通すが、target theorem 本体が未証明なら SCORE 到達だけでは完了扱いにしない。完了判定では `$math-lean-review` の 4 並列査読を必須 gate にし、実行できない場合や `No major findings` 以外の場合は `target-theorem-proved` にしない。
 
-この流れを自動で回すのが `$research-loop` であり、`$research-loop <goal-id>` で起動する。回せるのは active な GOAL だけで、draft を active に昇格させるのは人間が判断する。各段のゲート、止まる条件、安全規則は、すべて [`$research-loop` の定義](../.codex/skills/research-loop/SKILL.md)にある。
+探索型の流れを自動で回すのが `$research-loop` であり、`$research-loop <goal-id>` で起動する。`research mode: target-theorem` の GOAL は `$target-theorem-loop <goal-id>` で起動する。回せるのは active な GOAL だけで、draft を active に昇格させるのは人間が判断する。各段のゲート、止まる条件、安全規則は、探索型は [`$research-loop` の定義](../.codex/skills/research-loop/SKILL.md)、大定理証明型は [`$target-theorem-loop` の定義](../.codex/skills/target-theorem-loop/SKILL.md) にある。
 
 ## 置き場所
 
@@ -33,9 +33,9 @@ GOAL(研究で成し遂げたいこと)
 
 ## 状態の正本
 
-ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`GOALS.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では target theorem の statement と completion criteria は `GOALS.md` が正本で、tracking Issue には proof state、完了 support node、未完 support node、blocker、PR を置く。
+ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`GOALS.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では target theorem の statement と completion criteria は `GOALS.md` が正本で、tracking Issue には proof state、完了 support node、未完 support node、blocker、PR、`$math-lean-review` の completion gate 結果を置く。
 
-tracking Issue は、通常 GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。`target-theorem` では、GOAL カードの completion criteria を満たして target theorem が証明された場合だけ `target-theorem-proved` として止まる。target が未証明なら、threshold 到達は checkpoint にすぎない。
+tracking Issue は、通常 GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。`target-theorem` では、GOAL カードの completion criteria を満たし、さらに `$math-lean-review` gate を通った場合だけ `target-theorem-proved` として止まる。target が未証明、または `$math-lean-review` が通らない場合は checkpoint にすぎない。
 
 GOAL は `rival` を持つ。`rival` は、その GOAL が比較対象にする既存概念、手法、tooling、理論枠組みである。候補は GOAL の内部で面白いだけでなく、rival がすでに得意なことを踏まえ、どの能力で優位性、新規性、統合力、分離力、検証可能性を作るかを示す。G2 では審判 D がこの比較を担当し、rival の言い換えに留まる候補を落とす。
 
