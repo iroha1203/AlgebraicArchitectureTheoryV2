@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2398
+- total SCORE: 2534
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -20,8 +20,9 @@
   - shadow-extensionality / assignment-factorization / target-surface / representation-adequacy / anti-weakening: 136
   - finite-shadow-representation / source-trace-separation / representation-adequacy / anti-weakening: 160
   - trace-aware-finite-shadow / representation-bridge / anti-weakening: 160
+  - finite-trace-probe-shadow / probe-generated-observation-factorization / anti-weakening: 136
 - evidence portfolio:
-  - proved-in-research: 14
+  - proved-in-research: 15
 
 ## Target Proof State
 
@@ -66,6 +67,7 @@
   - target-surface factorization for shadow-extensional observations and the necessity of shadow-extensionality for canonical finite-shadow factorization
   - finite shadow trace separation showing current four-bit shadow is not representation-adequate for source-trace-sensitive observations
   - one-coordinate trace-aware finite shadow enrichment factoring the selected source-trace observation
+  - finite trace-probe shadow enrichment factoring supplied probe vectors and probe-generated observations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -73,7 +75,7 @@
   - true sheaf `H1` object-level universality beyond the finite/small `S_A/R_A/T_A/St_A` surface
   - target-level representation adequacy / semantic faithfulness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
   - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation`
-  - full trace-aware finite shadow adequacy or a non-circular admissible-observation theorem excluding trace-sensitive non-extensional readings
+  - full trace-aware finite shadow adequacy, finite probe completeness certificate, or a non-circular admissible-observation theorem excluding trace-sensitive non-extensional readings
   - cover / site / profile-law functoriality for the target surface
   - final T6 `$math-lean-review` gate with `No major findings`
 - target completion status: `target-proof-checkpoint`
@@ -678,6 +680,50 @@ open_questions: full trace-aware finite shadow adequacy、principled finite trac
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`traceCoordinate : (Atom -> Bool) -> Bool` は supplied source-reference trace field から読む入力幾何であり、ArchSig / ArchMap correctness、runtime trace extraction completeness、whole-codebase quality は主張しない。full finite computable shadow adequacy、arbitrary semantic observation factorization、semantic soundness から shadow-extensionality への theorem は未完のままである。
+
+## Cycle 15: Finite Trace-Probe Shadow
+
+```text
+candidate: Finite Trace-Probe Shadow
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 68
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 136
+category: finite-trace-probe-shadow / probe-generated-observation-factorization / anti-weakening
+goal_delta: Cycle 14 の one-coordinate trace-aware shadow を supplied finite trace-probe family へ拡張し、probe vector と four-bit layer plus probe vector から生成される observation が enriched shadow を通じて factor することを証明した。
+project_value_delta: finite computable shadow adequacy / representation adequacy node を、arbitrary observation の未放電主張ではなく、明示的な finite probe-generated observation class に分解した。
+rival_delta: ADL、静的解析、metric dashboard、AI review が保持できる source reference / trace token を、AAT 側で supplied finite probe family として finite shadow に入れる境界を theorem として固定した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairTraceProbeShadow`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `SourceTraceProbe`、`TraceProbeFiniteTowerLayerShadow`、`traceProbeReadings`、`canonicalTraceProbeTowerLayerShadow`、`traceProbeShadow_projects_to_currentShadow`、`traceProbeVectorObservation_factors_through_traceProbeShadow`、`traceProbeGeneratedObservation_factors_through_traceProbeShadow`、`TraceProbeShadowExtensional`、`traceProbeShadowExtensional_of_factorization`、`traceProbeShadowExtensional_of_currentShadowExtensional`、`currentShadowExtensionalObservation_factors_through_traceProbeShadow`、`singletonTraceProbeShadow_is_traceAwareShadow`、`sourceTraceObservation_factors_through_traceProbeShadow`、`selected_traceTrue_traceProbeShadow_readings_ne`、`selected_traceTrue_traceProbeShadow_layer_agrees` を追加した。
+open_questions: full trace-aware finite shadow adequacy、finite probe completeness certificate、admissible semantic observation class の non-circular shadow-extensionality theorem、target-level material premise discharge、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean` は、Cycle 14 の one-coordinate enriched shadow を finite trace-probe family へ拡張する。
+
+- `TraceProbeFiniteTowerLayerShadow`: current four-bit `FiniteTowerLayerShadow` と supplied source-trace probe readings の有限 list を束ねる enriched shadow。
+- `canonicalTraceProbeTowerLayerShadow`: tower の canonical four-bit shadow と supplied probe vector reading を組にする。
+- `traceProbeShadow_projects_to_currentShadow`: enriched shadow は current four-bit shadow へ射影する。
+- `traceProbeVectorObservation_factors_through_traceProbeShadow`: supplied probe vector 全体は enriched shadow を通じて factor する。
+- `traceProbeGeneratedObservation_factors_through_traceProbeShadow`: four-bit layer と supplied probe vector から生成される observation は enriched shadow を通じて factor する。
+- `TraceProbeShadowExtensional`: trace-probe shadow に対する extensionality を necessary property として定義する。
+- `traceProbeShadowExtensional_of_factorization`: enriched shadow を通る factorization は trace-probe extensionality を含意する。
+- `traceProbeShadowExtensional_of_currentShadowExtensional`: current four-bit shadow-extensional observation は任意の trace-probe enrichment に対して extensional である。
+- `currentShadowExtensionalObservation_factors_through_traceProbeShadow`: current four-bit shadow を通じて factor する observation は、trace readings を忘れることで trace-probe shadow も通じて factor する。
+- `singletonTraceProbeShadow_is_traceAwareShadow`: Cycle 14 の trace-aware shadow は singleton probe family の場合として回収される。
+- `sourceTraceObservation_factors_through_traceProbeShadow`: Cycle 13 の `PUnit` source-trace observation は singleton probe shadow を通じて factor する。
+- `selected_traceTrue_traceProbeShadow_readings_ne`: Cycle 13 の pair は singleton probe readings で分離される。
+- `selected_traceTrue_traceProbeShadow_layer_agrees`: 同じ pair は four-bit layer component では一致したままである。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`SourceTraceProbe Atom := (Atom -> Bool) -> Bool` は supplied source-reference trace field から読む入力幾何であり、probe family の completeness、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。factorization は arbitrary semantic observation ではなく、supplied probe vector、four-bit layer plus probe vector から生成される observation、または既に current shadow を通じて factor する observation に限定される。full finite computable shadow adequacy と non-circular admissible observation theorem は未完のままである。
 
 ## Superseded G6 Completion Judgment
 
