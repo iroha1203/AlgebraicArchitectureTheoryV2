@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2634
+- total SCORE: 2730
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -22,8 +22,9 @@
   - trace-aware-finite-shadow / representation-bridge / anti-weakening: 160
   - finite-trace-probe-shadow / probe-generated-observation-factorization / anti-weakening: 136
   - finite-trace-support / canonical-atom-probes / anti-weakening: 100
+  - finite-trace-support-boundary / missed-coordinate-separation / anti-weakening: 96
 - evidence portfolio:
-  - proved-in-research: 16
+  - proved-in-research: 17
 
 ## Target Proof State
 
@@ -37,6 +38,8 @@
 - latest Cycle 13 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792238679
 - latest Cycle 14 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792402681
 - latest Cycle 15 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792598017
+- latest Cycle 16 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792832188
+- Cycle 17 refinement ledger: pending; #2482 currently has no Cycle 17 target progress comment, so the latest posted tracking ledger remains the Cycle 16 refinement ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -71,6 +74,7 @@
   - one-coordinate trace-aware finite shadow enrichment factoring the selected source-trace observation
   - finite trace-probe shadow enrichment factoring supplied probe vectors and probe-generated observations
   - finite atom-support-generated trace probes as a canonical refinement of supplied probe families
+  - finite support missed-coordinate separation showing that a concrete support shadow can miss an omitted trace coordinate
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -772,6 +776,45 @@ open_questions: finite probe completeness certificate、admissible semantic obse
 ### Target Boundary
 
 この cycle は target theorem completion ではなく、Cycle 15 の supplied probe family を finite atom support に特殊化する refinement である。`support : List Atom` は ordered finite input geometry であり、complete、minimal、duplicate-free、permutation-invariant な basis とは主張しない。support trace vector を持つだけで finite computable shadow adequacy、full trace completeness、admissible semantic observation theorem、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality が放電されるわけではない。
+
+## Cycle 17: Finite Support Missed Coordinate Boundary
+
+```text
+candidate: Finite Support Missed Coordinate Boundary
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as target-refined
+base_score: 48
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 96
+category: finite-trace-support-boundary / missed-coordinate-separation / anti-weakening
+goal_delta: Cycle 16 の finite support trace shadow について、support `[false]` が読まない `true` trace coordinate を分離する Bool witness を追加し、この concrete support shadow だけでは full trace capture を保証できない境界を固定した。
+project_value_delta: finite support trace diagnostics の claim boundary を fail-closed にし、full trace adequacy には support/probe completeness certificate または admissible observation theorem が別途必要であることを concrete no-factorization theorem として残した。
+rival_delta: source-reference support list を使う tooling が support 外 coordinate を落とす限界を、AAT 側の finite theorem として明示した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteSupportSeparation.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteSupportSeparation`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: target-refined
+proof_obligation_delta: `no_supportTraceShadowFactor_of_sameShadow_observation_ne`、`boolFalseOnlyTraceSupport`、`boolTraceBaseTower`、`boolTraceMissedTrueTower`、`boolMissedTraceObservation`、`bool_missedTrue_same_supportTraceShadow`、`boolMissedTraceObservation_separates_pair`、`boolMissedTraceObservation_no_supportTraceShadowFactor`、`bool_missedTrue_same_currentShadow` を追加した。
+open_questions: finite support/probe completeness certificate、admissible semantic observation class の non-circular shadow-extensionality theorem、full representation adequacy、target-level material premise discharge、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteSupportSeparation.lean` は、finite support trace shadow が、それだけでは support 外 source-trace coordinate の保持を保証しないことを concrete witness で固定する。
+
+- `no_supportTraceShadowFactor_of_sameShadow_observation_ne`: 同じ support trace shadow を持つ二つの tower を observation が分離するなら、その observation は support trace shadow を通じて factor できない。
+- `boolFalseOnlyTraceSupport`: `Bool` atom の `false` coordinate だけを読む finite support。
+- `boolTraceBaseTower` / `boolTraceMissedTrueTower`: four-bit shadow と support trace vector は同じだが、missed `true` coordinate だけが異なる finite witness pair。
+- `boolMissedTraceObservation`: support 外の `true` trace coordinate を読む observation。
+- `bool_missedTrue_same_supportTraceShadow`: witness pair は `boolFalseOnlyTraceSupport` の support trace shadow では一致する。
+- `boolMissedTraceObservation_separates_pair`: missed coordinate observation は witness pair を分離する。
+- `boolMissedTraceObservation_no_supportTraceShadowFactor`: missed coordinate observation は `boolFalseOnlyTraceSupport` の support trace shadow を通じて factor できない。
+- `bool_missedTrue_same_currentShadow`: 同じ pair は current four-bit shadow に戻しても一致する。
+
+### Target Boundary
+
+この cycle は target theorem completion でも full trace incompleteness theorem でもない。結論は、特定の finite support `[false]` が omitted `true` coordinate observation を保持しないという finite witness と generic same-support-shadow separation theorem に限定される。任意 support、任意 omitted coordinate、任意 semantic observation、任意 finite shadow への不可能性は主張しない。omitted coordinate が常に semantic に relevant であるとも主張しない。finite support/probe completeness、full representation adequacy、admissible observation theorem、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は未放電のままである。
 
 ## Superseded G6 Completion Judgment
 
