@@ -1358,6 +1358,45 @@ open_questions: semantic reading collapse certificate、query-post faithfulness 
 
 この cycle は target theorem completion ではない。`SemanticReadingCollapsesCurrentShadowQueryFibers` と `SemanticReadingFaithfulToQueryPost` は theorem argument として残り、semantic soundness extraction や arbitrary semantic observation factorization は未放電である。`reading.Equivalent` を post-kernel や same-current-shadow relation として都合よく選ぶだけでは target completion にはならない。
 
+## Cycle 31: Query Post-Fiber Separation Obstruction
+
+```text
+candidate: Query Post-Fiber Separation Obstruction
+parent_tracking_issue: #2482
+candidate_type: target-obstruction
+evidence_stage: proved-in-research
+score_status: T4 confirmed as blocker-found
+base_score: 36
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 72
+score_note: Cycle 28 exact criterion の negative side を固定する。same current-shadow query fiber を post-map が分離する場合、current-shadow extensionality / factorization は不可能。
+category: finite-query-current-shadow / post-fiber-separation / necessary-condition / anti-weakening
+goal_delta: `QueryPostFiberSeparation` を定義し、それが `QueryPostInvariantOnCurrentShadowFibers`、generated observation の current-shadow extensionality、current-shadow factorization を阻むことを証明した。
+project_value_delta: Cycle 30 の semantic reading collapse / query-post faithfulness obligations が必要条件を持つことを concrete Bool witness で固定した。
+rival_delta: finite query package や trace-sensitive diagnostic readout だけでは current-shadow factorization を正当化できず、post-fiber no-separation が必要であることを theorem surface にした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryPostFiberObstruction.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryPostFiberObstruction`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: blocker-found
+proof_obligation_delta: `QueryPostFiberSeparation`、`not_postInvariantOnCurrentShadowFibers_of_queryPostFiberSeparation`、`no_queryTraceGeneratedObservation_currentShadowFactor_of_queryPostFiberSeparation`、`boolFirstQueryReadingPost_currentShadowFiber_separates`、`boolFirstQueryReadingPost_no_currentShadowFactor` を追加した。
+open_questions: positive semantic reading collapse certificate、query-post faithfulness certificate、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryPostFiberObstruction.lean` は、post-fiber invariance の obstruction 側を定式化する。
+
+- `QueryPostFiberSeparation`: same current shadow 上で実現可能な二つの query-reading vector を post-map が分離すること。
+- `not_postInvariantOnCurrentShadowFibers_of_queryPostFiberSeparation`: separation は post-fiber invariance を否定する。
+- `not_queryTraceGeneratedObservation_shadowExtensional_of_queryPostFiberSeparation`: separation は generated observation の current-shadow extensionality を否定する。
+- `no_queryTraceGeneratedObservation_currentShadowFactor_of_queryPostFiberSeparation`: separation は current-shadow factorization を否定する。
+- `boolFirstQueryReadingPost_currentShadowFiber_separates`: Bool `[true]` first-reading post-map の concrete separation witness。
+- `not_boolFirstQueryReadingPostInvariantOnCurrentShadowFibers`: concrete post-map は `QueryPostInvariantOnCurrentShadowFibers` を満たさない。
+- `boolFirstQueryReadingPost_no_currentShadowFactor`: concrete first-reading generated observation は current-shadow factor を持たない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではなく、target theorem 全体の refutation でもない。post-fiber separation を示す concrete obstruction であり、positive semantic soundness extraction にはこの separation を排除する reading collapse / post faithfulness certificate が必要であることを固定する。
+
 ## Superseded G6 Completion Judgment
 
 ```text
