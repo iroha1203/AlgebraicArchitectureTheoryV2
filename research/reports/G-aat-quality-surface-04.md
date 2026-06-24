@@ -1317,6 +1317,47 @@ open_questions: semantic soundness から post-fiber invariance への extractio
 
 この cycle は target theorem completion ではない。`QueryPostInvariantOnCurrentShadowFibers` を仮定して factor を構成するだけであり、その premise を semantic soundness から導出していない。arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
+## Cycle 30: Semantic Reading Post-Fiber Bridge
+
+```text
+candidate: Semantic Reading Post-Fiber Bridge
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+score_note: semantic reading collapse + query-post faithfulness から Cycle 28 の post-fiber invariance premise を導き、Cycle 29 の explicit factor を universal `canonicalShadowFactor` API に接続する。reading obligations 自体は未放電。
+category: finite-query-current-shadow / semantic-reading-adequacy / post-fiber-invariance / anti-weakening
+goal_delta: `QueryPostInvariantOnCurrentShadowFibers` を semantic reading collapse と query-post faithfulness という二つの明示 obligation に分解し、そこから explicit factorization と canonical factor agreement を証明した。
+project_value_delta: semantic soundness extraction の未放電 premise を theorem argument として可視化し、ReadingAdequacy API、finite query factorization、universal canonical factor API の proof DAG edge を接続した。
+rival_delta: ADL、静的解析、AI review が「semantic に sound」と言うだけでは current-shadow factorization は出ず、reading collapse と post faithfulness が必要であることを theorem surface にした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySemanticSoundness.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQuerySemanticSoundness`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `TowerSemanticReading`、`SameQueryPostValue`、`SemanticReadingFaithfulToQueryPost`、`SemanticReadingCollapsesCurrentShadowQueryFibers`、`postInvariantOnCurrentShadowFibers_of_semanticReadingAdequacy`、`finiteTraceQueryObservation_semanticReadingAdequacy_canonicalFactorAgreement_package` を追加した。
+open_questions: semantic reading collapse certificate、query-post faithfulness certificate、post-fiber separation obstruction、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQuerySemanticSoundness.lean` は、finite query-generated observation の current-shadow factorization に対する semantic-reading bridge を定式化する。
+
+- `TowerSemanticReading`: finite semantic repair obstruction tower 上の semantic reading。
+- `SameQueryPostValue`: fixed query / post-map が二つの tower で同じ generated post value を返すこと。
+- `SemanticReadingFaithfulToQueryPost`: semantic reading equivalence が `SameQueryPostValue` に faithful であること。
+- `SemanticReadingCollapsesCurrentShadowQueryFibers`: semantic reading が同一 current shadow 上の実現可能 query-reading fiber を同一視すること。
+- `postInvariantOnCurrentShadowFibers_of_semanticReadingAdequacy`: reading collapse と query-post faithfulness から `QueryPostInvariantOnCurrentShadowFibers` を導く。
+- `queryTraceGeneratedObservation_eq_canonicalQueryPostFiberFactor_of_semanticReadingAdequacy`: semantic-reading adequacy から explicit query-post factorization。
+- `finiteTraceQueryObservation_semanticReadingAdequacy_explicitFiberFactorization`: finite query package 版の factorization / uniqueness package。
+- `canonicalShadowFactor_eq_canonicalQueryPostFiberFactor_of_postInvariant`: Cycle 29 の explicit factor と universal `canonicalShadowFactor` の agreement。
+- `finiteTraceQueryObservation_semanticReadingAdequacy_canonicalFactorAgreement_package`: semantic-reading adequacy から factorization と universal factor agreement を束ねる package theorem。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`SemanticReadingCollapsesCurrentShadowQueryFibers` と `SemanticReadingFaithfulToQueryPost` は theorem argument として残り、semantic soundness extraction や arbitrary semantic observation factorization は未放電である。`reading.Equivalent` を post-kernel や same-current-shadow relation として都合よく選ぶだけでは target completion にはならない。
+
 ## Superseded G6 Completion Judgment
 
 ```text
