@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 2878
+- total SCORE: 2958
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -25,8 +25,9 @@
   - finite-trace-support-boundary / missed-coordinate-separation / anti-weakening: 96
   - finite-trace-support / membership-coordinate-factorization / anti-weakening: 64
   - finite-trace-support-completeness / explicit-certificate / anti-weakening: 84
+  - finite-query-admissibility / query-supported-factorization / anti-weakening: 80
 - evidence portfolio:
-  - proved-in-research: 19
+  - proved-in-research: 20
 
 ## Target Proof State
 
@@ -43,7 +44,8 @@
 - latest Cycle 16 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792832188
 - latest Cycle 17 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4792997055
 - latest Cycle 18 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793115420
-- Cycle 19 support ledger: pending; #2482 currently has no Cycle 19 target progress comment, so the latest posted tracking ledger remains the Cycle 18 support ledger.
+- latest Cycle 19 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793212357
+- Cycle 20 support ledger: pending; #2482 currently has no Cycle 20 target progress comment, so the latest posted tracking ledger remains the Cycle 19 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -81,6 +83,7 @@
   - finite support missed-coordinate separation showing that a concrete support shadow can miss an omitted trace coordinate
   - finite support membership-coordinate factorization showing that listed trace coordinates factor through the support shadow
   - explicit finite support completeness certificate giving pointwise source-trace coordinate factorization
+  - finite trace-query admissibility theorem for query-generated observations under an explicit query-support premise
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -900,6 +903,44 @@ open_questions: admissible semantic observation class の non-circular shadow-ex
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`FiniteSupportComplete` は source-trace coordinate coverage の明示 premise であり、support の runtime extraction、minimality、duplicate-free、semantic admissibility、arbitrary observation factorization、support completeness の自動導出、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。complete support certificate があっても、non-circular admissible-observation theorem と full representation adequacy は未放電のままである。
+
+## Cycle 20: Finite Query Admissibility
+
+```text
+candidate: Finite Query Admissibility
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+category: finite-query-admissibility / query-supported-factorization / anti-weakening
+goal_delta: `QuerySupportedBy support query := ∀ atom, atom ∈ query -> atom ∈ support` を明示 premise として導入し、supported finite trace-query vector と query-generated observation が support trace shadow を通じて factor することを証明した。
+project_value_delta: admissible observation を曖昧にせず、finite query と support manifest の包含関係から factorization できる bounded observation class を Lean theorem として固定した。
+rival_delta: source-reference support list を使う tooling が diagnostic query を support manifest に対して監査できることを、AAT 側の finite factorization theorem に落とした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryAdmissibility.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryAdmissibility`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `QuerySupportedBy`、`queryTraceVector_factors_through_supportTraceShadow`、`queryTraceGeneratedObservation_factors_through_supportTraceShadow`、`boolTrueTraceQuery`、`boolTrueTraceQuery_supportedBy_completeBoolSupport`、`boolTrueTraceQuery_factors_through_completeBoolSupport`、`boolTrueTraceQueryGeneratedObservation_factors` を追加した。
+open_questions: arbitrary semantic observation factorization、semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation`、target-level material premise discharge、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryAdmissibility.lean` は、finite query-generated observation の admissibility を explicit support condition として扱う。query が読む coordinate が support に含まれている場合だけ、その query vector と query-generated observation は support trace shadow を通じて factor する。
+
+- `QuerySupportedBy`: every queried atom is explicitly listed in the support という visible premise。
+- `queryTraceVector_factors_through_supportTraceShadow`: supported finite query vector は support trace shadow を通じて factor する。
+- `queryTraceGeneratedObservation_factors_through_supportTraceShadow`: current four-bit layer と supported query vector から生成される observation は support trace shadow を通じて factor する。
+- `boolTrueTraceQuery`: `Bool` atom の `true` coordinate を読む singleton query。
+- `boolTrueTraceQuery_supportedBy_completeBoolSupport`: `[true]` query は complete Bool support `[false, true]` に support される。
+- `boolTrueTraceQuery_factors_through_completeBoolSupport`: `[true]` query vector は complete Bool support shadow を通じて factor する。
+- `boolTrueTraceQueryGeneratedObservation_factors`: current layer と `[true]` query vector から生成される observation は complete Bool support shadow を通じて factor する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。結論は finite query-generated observation に限定され、arbitrary semantic observation、query manifest の自動抽出、support completeness の自動導出、semantic soundness から query-supported admissibility への定理、full representation adequacy、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。`QuerySupportedBy` は theorem premise として明示され、hidden certificate field ではない。
 
 ## Superseded G6 Completion Judgment
 
