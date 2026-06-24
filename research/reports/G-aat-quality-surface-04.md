@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3390
+- total SCORE: 3458
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -32,8 +32,9 @@
   - finite-query-canonical-shadow / current-shadow-determined-support / anti-weakening: 80
   - current-shadow-determinacy / coordinate-obligation / anti-weakening: 72
   - finite-query-current-shadow / coordinate-obligation / anti-weakening: 76
+  - finite-query-current-shadow / readings-insensitive / anti-weakening: 68
 - evidence portfolio:
-  - proved-in-research: 26
+  - proved-in-research: 27
 
 ## Target Proof State
 
@@ -57,7 +58,8 @@
 - latest Cycle 23 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793695669
 - latest Cycle 24 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4793938947
 - latest Cycle 25 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794065744
-- Cycle 26 support ledger: pending; #2482 currently has no Cycle 26 target progress comment, so the latest posted tracking ledger remains the Cycle 25 support ledger.
+- latest Cycle 26 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794162254
+- Cycle 27 support ledger: pending; #2482 currently has no Cycle 27 target progress comment, so the latest posted tracking ledger remains the Cycle 26 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -102,6 +104,7 @@
   - current-shadow-determined finite query bridge to canonical all-layer shadow factorization
   - current-shadow support determinacy decomposed into source-trace coordinate extensionality obligations
   - finite query current-shadow factorization reduced to query-coordinate extensionality obligations
+  - reading-insensitive finite query observations factored through current shadow without query-coordinate discharge
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1190,6 +1193,45 @@ open_questions: semantic soundness から query-coordinate current-shadow extens
 ### Target Boundary
 
 この cycle は target theorem completion ではない。finite query-generated observation の current-shadow factorization は query-coordinate current-shadow extensionality を仮定する。semantic soundness からその obligation を導出しておらず、Bool witness は trace-sensitive query では失敗し得ることを示す。arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
+
+## Cycle 27: Query Reading-Insensitive Boundary
+
+```text
+candidate: Query Reading-Insensitive Boundary
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 34
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 68
+score_note: observation-level factorization では query-coordinate obligation が必要条件ではないことを固定する。reading-insensitive post-map の十分条件であり、query-coordinate discharge ではない。
+category: finite-query-current-shadow / readings-insensitive / anti-weakening
+goal_delta: finite query-generated observation が query readings を無視する場合、query coordinate が current-shadow extensional でなくても current shadow に factor することを証明した。
+project_value_delta: Cycle 26 の query-vector iff を observation-level iff と誤読しないための theorem boundary を追加した。
+rival_delta: trace-sensitive query を含む diagnostic でも、downstream readout が readings を捨てるなら current-shadow analysis に落ちることを theorem 化した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryReadingInsensitive.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryReadingInsensitive`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `QueryReadingsInsensitive`、`finiteTraceQueryObservation_shadowExtensional_of_queryReadingsInsensitive`、`finiteTraceQueryObservation_eq_canonicalShadowFactor_of_queryReadingsInsensitive`、`boolTrueQueryCoordinateObligation_not_necessary_for_observationExtensional` を追加した。
+open_questions: semantic soundness から query-coordinate current-shadow extensionality への extraction theorem、post-map kernel / relevance analysis、trace-sensitive query の admissible exclusion、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryReadingInsensitive.lean` は、finite query-generated observation の current-shadow factorization に対する reading-insensitive route を定式化する。
+
+- `QueryReadingsInsensitive`: fixed current shadow の下で query readings を無視する post-map。
+- `queryTraceGeneratedObservation_shadowExtensional_of_queryReadingsInsensitive`: reading-insensitive post-map から current-shadow extensionality を得る。
+- `finiteTraceQueryObservation_shadowExtensional_of_queryReadingsInsensitive`: `FiniteTraceQueryObservation` package 版。
+- `finiteTraceQueryObservation_eq_canonicalShadowFactor_of_queryReadingsInsensitive`: canonical shadow factorization。
+- `shadowOnlyPost` / `shadowOnlyPost_queryReadingsInsensitive`: current shadow だけを読む post-map は reading-insensitive。
+- `boolTrueShadowOnlyFiniteTraceQueryObservation_shadowExtensional`: Bool `[true]` query でも shadow-only post-map なら current-shadow extensional。
+- `boolTrueQueryCoordinateObligation_not_necessary_for_observationExtensional`: query-coordinate obligation は observation-level extensionality の必要条件ではない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。reading-insensitive / shadow-only post-map という明示条件のもとで factorization するだけであり、query-coordinate extensionality や arbitrary semantic observation factorization を放電しない。semantic soundness、runtime extraction correctness、ArchSig / ArchMap correctness、whole-codebase quality は主張しない。
 
 ## Superseded G6 Completion Judgment
 
