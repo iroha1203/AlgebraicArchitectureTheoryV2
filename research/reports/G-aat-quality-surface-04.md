@@ -1397,6 +1397,43 @@ open_questions: positive semantic reading collapse certificate、query-post fait
 
 この cycle は target theorem completion ではなく、target theorem 全体の refutation でもない。post-fiber separation を示す concrete obstruction であり、positive semantic soundness extraction にはこの separation を排除する reading collapse / post faithfulness certificate が必要であることを固定する。
 
+## Cycle 32: Semantic Reading No-Separation Bridge
+
+```text
+candidate: Semantic Reading No-Separation Bridge
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 37
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 74
+score_note: Cycle 30 の semantic-reading adequacy bridge と Cycle 31 の post-fiber separation obstruction を接続し、semantic-reading adequacy が separation を排除することを証明する。
+category: finite-query-current-shadow / semantic-reading-adequacy / no-separation / anti-weakening
+goal_delta: semantic reading collapse と query-post faithfulness から `QueryPostFiberSeparation` の否定を導き、separation witness が semantic-reading adequacy package を否定する contrapositive も証明した。
+project_value_delta: positive route と obstruction route の proof DAG edge を閉じ、future semantic-reading certificate が満たすべき no-separation consequence を theorem surface にした。
+rival_delta: finite query diagnostic が current-shadow summary に降りるには、semantic reading collapse / post faithfulness が post-fiber separation を排除することを示す必要がある。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryNoSeparation.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryNoSeparation`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。
+target_progress: support-node
+proof_obligation_delta: `not_queryPostFiberSeparation_of_semanticReadingAdequacy`、`no_semanticReadingAdequacy_of_queryPostFiberSeparation`、`finiteTraceQueryObservation_no_queryPostFiberSeparation_of_semanticReadingAdequacy`、`finiteTraceQueryObservation_no_semanticReadingAdequacy_of_queryPostFiberSeparation`、`no_boolFirstQueryReadingPost_semanticReadingAdequacy` を追加した。
+open_questions: concrete positive semantic reading collapse certificate、query-post faithfulness certificate、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryNoSeparation.lean` は、semantic-reading adequacy と post-fiber separation obstruction の接続を定式化する。
+
+- `not_queryPostFiberSeparation_of_semanticReadingAdequacy`: semantic reading collapse と query-post faithfulness は post-fiber separation を排除する。
+- `no_semanticReadingAdequacy_of_queryPostFiberSeparation`: separation witness は semantic-reading adequacy package の存在を否定する。
+- `finiteTraceQueryObservation_no_queryPostFiberSeparation_of_semanticReadingAdequacy`: finite query package 版の no-separation theorem。
+- `finiteTraceQueryObservation_no_semanticReadingAdequacy_of_queryPostFiberSeparation`: finite query package 版の contrapositive theorem。
+- `no_boolFirstQueryReadingPost_semanticReadingAdequacy`: Bool `[true]` first-reading obstruction には semantic-reading adequacy package が存在しない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`SemanticReadingCollapsesCurrentShadowQueryFibers` と `SemanticReadingFaithfulToQueryPost` は依然として theorem argument であり、positive semantic soundness extraction は未放電である。Cycle 32 は、その obligations が与えられた場合に separation obstruction を排除できることだけを示す。
+
 ## Superseded G6 Completion Judgment
 
 ```text
