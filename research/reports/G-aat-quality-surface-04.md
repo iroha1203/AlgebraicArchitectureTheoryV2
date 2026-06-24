@@ -21,7 +21,8 @@
 ## Target Proof State
 
 - target theorem: `Universal Semantic Repair Obstruction Tower Theorem`
-- proof state: exact finite-shadow target-proof candidate under G4/G5/G6 audit
+- proof state: target theorem proved within the finite/small target boundary
+- final G6 ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4784702871
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -49,14 +50,14 @@
   - exact-shadow discharge-prism transport
   - canonical ArchSig-style artifact adequacy without arbitrary artifact premise
   - shadow-extensional observation pointwise universal factorization / uniqueness
-  - finite-certificate integrated target package candidate
+  - finite-certificate integrated target theorem package
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
-  - G5 review / CI for Cycle 9 PR
-  - final G6-level target completion audit after merge
-- target completion status: `target-proof-candidate`; do not treat this report alone as `target-theorem-proved`
+  - none for the G-04 target theorem inside the finite/small target boundary
+- target completion status: `target-theorem-proved`
+- tracking issue status: #2482 remains open for human disposition, as required by the research-loop target completion ledger template
 
 ## Cycle 1: Finite Semantic Repair Obstruction Tower Package
 
@@ -444,10 +445,10 @@ category: exact-finite-shadow-reflection / finite-computable-shadow / universal-
 goal_delta: Cycle 8 G6 blocker だった `FiniteTowerShadowReflection`、artifact adequacy、universal factorization、final integration を exact finite boundary shadow と finite certificate 版 target package へ押し下げた。
 project_value_delta: exact status-reading / finite boundary decision、finite-list completeness、discharge-prism transport、canonical artifact adequacy、shadow-extensional universal factorization を同じ Lean theorem surface に統合した。
 rival_delta: ADL、静的解析、conformance checker、metric dashboard、AI review が local observation を出せても、exact finite shadow reflection と pointwise universal factorization / uniqueness を theorem-level で与えない点を分離した。
-formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_target_completion_axioms.lean` は pass。reported declarations は axiom-free。G4 material-premise gate は pass-to-G5/G6。
-target_progress: target-proof-candidate
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_target_completion_axioms.lean` は pass。reported declarations は axiom-free。G4 material-premise gate は pass-to-G5/G6。G5 review / CI は pass。final G6 は `target-theorem-proved`。
+target_progress: target-proved
 proof_obligation_delta: `FiniteTowerShadowReflection` を finite boundary decision / finite-list completeness から theorem として discharge し、canonical artifact adequacy と shadow-extensional universal factorization を finite-certificate target package に統合した。
-open_questions: G5 review / CI, final G6 completion audit.
+open_questions: none for the G-04 target theorem inside the finite/small target boundary.
 ```
 
 ### Result
@@ -469,3 +470,20 @@ Lean 証拠は次に分かれる。
 ### Target Boundary
 
 この cycle は finite/small target boundary に限定される。`decideBoundary` は exact status-reading / finite boundary membership の決定手続きであり、selected residual が boundary であることを仮定しない。finite certificate 版では、`c0Order` completeness と `DecidableEq C1` からこの decision を構成する。`LayeredRepairDischargePrism` は Cycle 2 で非隠蔽 witness を持つ finite/local coverage-faithfulness certificate であり、`H1Vanishes`、tower vanishing、global coherence を field に含めない。canonical artifact adequacy は Lean 内 bounded artifact schema の theorem であり、実 ArchSig / ArchMap / runtime extraction correctness は主張しない。universal factorization は任意観測全般ではなく、`ShadowExtensionalTowerObservation` に対する pointwise factorization / uniqueness として読む。
+
+## Final G6 Completion Judgment
+
+```text
+verdict: target-theorem-proved
+target_theorem: Universal Semantic Repair Obstruction Tower Theorem
+completion_criteria_status: satisfied
+target_proved_gate: pass
+mathematical_referee_verdict: accept-main-theorem
+latest_merge_commit: adc9be4984385be8d548ee2c162be3a4b5e5acd6
+final_score: 1602
+tracking_issue: #2482 remains open for human disposition
+```
+
+G6 は、`universalSemanticRepairTargetCompletion_package_of_finiteCertificate` が `LayeredRepairAdequacy`、`FiniteTowerShadowReflection`、arbitrary artifact adequacy を direct premise として残していないことを確認した。`finiteBoundaryDecisionOfCertificate` は finite primitive-list completeness と decidable cochain equality から boundary decision を構成し、selected residual が boundary であることを仮定しない。`LayeredRepairDischargePrism` は `H1Vanishes`、tower vanishing、global coherence を field に持たず、`ShadowExtensionalTowerObservation` は canonical shadow に対する extensional observation の universal property として読む。
+
+この完了判定は finite/small target boundary 内のものだが、これは GOAL card の target theorem boundary と一致する。arbitrary site、unbounded infinity-stack、実 Rust ArchSig correctness、ArchMap validation、runtime extraction completeness、whole-codebase quality は引き続き主張しない。
