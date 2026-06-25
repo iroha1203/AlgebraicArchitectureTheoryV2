@@ -80,7 +80,7 @@
   - finite-query-representation / support-boundary-obstruction / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / anti-weakening: 80
   - finite-query-representation / support-self-recovery / support-boundary-gap / current-shadow-factorization / coordinate-certificate / anti-weakening: 78
 - evidence portfolio:
-  - proved-in-research: 74
+  - proved-in-research: 75
 
 ## Target Proof State
 
@@ -153,6 +153,7 @@
 - latest Cycle 72 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799851378
 - latest Cycle 73 support ledger: synced in #2482; PR #2565 merged.
 - latest Cycle 74 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801393803
+- latest Cycle 75 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801706078
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3402,6 +3403,67 @@ factorization, support-control, current-shadow-reading faithfulness, or explicit
 coordinate certification.  Target-level semantic soundness, arbitrary
 representation adequacy, finite shadow adequacy for all observations, global
 coherence, tower vanishing, and the final `$math-lean-review` gate remain open.
+
+## Cycle 75: Current-Shadow Trace-Reading Representation Bridge
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: non-recovery representation bridge into the support-boundary certificate route without hiding coordinate extensionality
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationBridge.lean
+    declarations:
+      - CurrentShadowTraceReadingRepresentation
+      - CurrentShadowTraceReadingRepresentable
+      - queryCurrentShadowCoordinateCertificate_of_currentShadowTraceReadingRepresentation_of_querySupportedBy
+      - queryCurrentShadowCoordinateCertificate_of_currentShadowTraceReadingRepresentation
+      - currentShadowTraceReadingRepresentable_iff_queryCurrentShadowCoordinateCertificate
+      - supportTraceShadowRepresentation_currentShadowFaithfulness_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_currentShadowTraceReadingRepresentation
+premise_delta:
+  discharged:
+    - explicit current-shadow trace-reading representation yields `QueryCurrentShadowCoordinateCertificate`
+    - the bridge restricts along `QuerySupportedBy support query`
+    - the support-shadow target route can be entered from the representation witness without taking coordinate certificate, raw factorization, support-control, current-shadow-reading faithfulness, or recovery as theorem arguments
+    - proposition-level representability is exactly the coordinate-certificate boundary, preventing a weaker representation-adequacy reading
+  remaining:
+    - non-circular construction of `CurrentShadowTraceReadingRepresentation` from primitive / probe / trace completeness or target-level semantic representation data
+    - global target-level representation adequacy, full semantic faithfulness, nonabelian descent adequacy, true sheaf `H^1` universality, and final `$math-lean-review`
+blocking_findings:
+  - none for this cycle; the representation witness itself remains visible boundary data
+next_obligation: construct `CurrentShadowTraceReadingRepresentation` from primitive/probe/trace completeness or target-level semantic representation data without assuming an equivalent coordinate-certificate field
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationBridge.lean`
+adds a non-recovery bridge from explicit current-shadow reader data to the
+certificate-visible support-shadow target route.
+
+- `CurrentShadowTraceReadingRepresentation`: concrete reader data for listed
+  support coordinates from `FiniteTowerLayerShadow`.
+- `CurrentShadowTraceReadingRepresentable`: proposition-level reader existence
+  boundary.
+- `queryCurrentShadowCoordinateCertificate_of_currentShadowTraceReadingRepresentation_of_querySupportedBy`:
+  restricts the representation witness along a supported query and constructs
+  the coordinate certificate.
+- `currentShadowTraceReadingRepresentable_iff_queryCurrentShadowCoordinateCertificate`:
+  records that this representability boundary is exactly the existing
+  coordinate-certificate surface.
+- `supportTraceShadowRepresentation_currentShadowFaithfulness_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_currentShadowTraceReadingRepresentation`:
+  extracts the certificate from the representation witness and enters the
+  current-shadow faithfulness / recovery / semantic adequacy / current-shadow
+  factorization / target-surface route package.
+
+### Target Boundary
+
+This cycle is not target theorem completion.  It proves the bridge from an
+explicit representation witness into the certificate route, but does not yet
+construct that witness from primitive/probe/trace completeness or target-level
+semantic representation data.  Arbitrary semantic observation adequacy, global
+target-level representation adequacy, true sheaf `H^1` universality, tower
+vanishing, and the final `$math-lean-review` gate remain open.
 
 ## Superseded G6 Completion Judgment
 
