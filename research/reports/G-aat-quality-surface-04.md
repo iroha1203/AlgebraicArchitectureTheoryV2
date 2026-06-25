@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4604
+- total SCORE: 4712
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -47,8 +47,9 @@
   - finite-query-representation / recoverable-readings / coordinate-extraction / anti-weakening: 88
   - finite-query-representation / realized-recovery / coordinate-extraction / anti-weakening: 88
   - finite-query-representation / support-shadow-recovery / realized-recovery-discharge / anti-weakening: 96
+  - finite-query-representation / recovered-current-shadow-factorization / coordinate-criterion / anti-weakening: 108
 - evidence portfolio:
-  - proved-in-research: 41
+  - proved-in-research: 42
 
 ## Target Proof State
 
@@ -137,6 +138,7 @@
   - recoverable-readings post-map boundary extracting query-coordinate extensionality under visible decoder premises
   - realized-tower recovery boundary transporting represented observation recovery to current-shadow coordinate extraction
   - support-shadow decoder theorem discharging realized query-reading recovery for canonical support-shadow observations / representations
+  - recovered represented current-shadow factorization criterion under visible recovery, with complete-support recovery/no-current-factor anti-weakening witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1849,6 +1851,54 @@ semantic soundness、representation adequacy、global repair coherence、
 obstruction vanishing を field や opaque membership に隠していない。support-shadow
 recovery は current-shadow adequacy ではなく、次の proof obligation は current-shadow
 factorization / semantic-reading adequacy を非循環に抽出することである。
+
+## Cycle 42: Recovered Current-Shadow Factorization Criterion
+
+```text
+candidate: Recovered Current-Shadow Factorization Criterion
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 54
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 108
+score_note: visible recovery を持つ represented finite-query observation で、current-shadow factorization / canonical current-shadow reading faithfulness / semantic-reading adequacy を query-coordinate criterion と同値化する。
+category: finite-query-representation / recovered-current-shadow-factorization / coordinate-criterion / anti-weakening
+goal_delta: Cycle 41 の support-shadow recovery discharge を current-shadow adequacy へ昇格させず、visible recovery 下の exact coordinate boundary として固定した。
+project_value_delta: finite output recovery と current-shadow descent adequacy を分離し、representation adequacy へ進むための non-hidden coordinate obligation を明示した。
+rival_delta: ADL / 静的解析 / metric dashboard が返す finite readings は current-shadow representation adequacy ではなく、coordinate/current-shadow certificate が別途必要であることを theorem-level にした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRecoveredFactorization`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_recovered_factorization_axioms.lean` は pass。reported declarations 7 件は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `representedFiniteTraceQueryObservation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`、`representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`、`representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`、canonical support-shadow specialization 3 件、Bool complete-support recovery/no-current-factor witness を追加した。
+premise_discharge_status: `ObservationRecoversQueryReadings` は theorem argument として visible。canonical support-shadow representation では Cycle 41 theorem により discharged。`QueryTraceCoordinatesCurrentShadowExtensional` は exact coordinate boundary として visible。semantic soundness / arbitrary representation adequacy / arbitrary semantic observation factorization / target completion は not discharged。
+anti_weakening_verdict: T2 C pass as target-support; reject if recovery, support-shadow representation, or coordinate extensionality is promoted to arbitrary representation adequacy or target theorem completion.
+open_questions: semantic soundness / representation adequacy から coordinate criterion を非循環に抽出する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoveredFactorization.lean`
+は、visible recovery を持つ represented finite-query observation に対して
+current-shadow factorization / faithfulness の exact criterion を定式化する。
+
+- `representedFiniteTraceQueryObservation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`: visible recovery 下で raw current-shadow factorization と query-coordinate current-shadow extensionality は同値。
+- `representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`: visible recovery 下で canonical current-shadow reading faithfulness と coordinate criterion は同値。
+- `representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional_of_observationRecoversQueryReadings`: visible recovery 下で semantic-reading adequacy existence と coordinate criterion は同値。
+- `supportTraceShadowRepresentation_currentShadowFactor_iff_queryCoordinateCurrentShadowExtensional`: canonical support-shadow representation では Cycle 41 recovery が放電され、factorization は support-coordinate criterion と同値。
+- `supportTraceShadowRepresentation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional`: support-shadow faithfulness も同じ coordinate boundary に縮約される。
+- `supportTraceShadowRepresentation_semanticReadingAdequacy_iff_queryCoordinateCurrentShadowExtensional`: support-shadow semantic-reading adequacy existence も同じ coordinate boundary と同値。
+- `boolCompleteSupportTraceShadow_recoversBoolTrueReadings_but_no_currentShadowFactor`: complete Bool support shadow は Bool `[true]` readings を recover するが、current shadow には factor しない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`ObservationRecoversQueryReadings`
+と `QueryTraceCoordinatesCurrentShadowExtensional` は visible theorem data / exact
+coordinate boundary であり、semantic soundness、arbitrary representation adequacy、
+global repair coherence、obstruction vanishing を structure field、typeclass、
+certificate field、opaque membership に隠していない。T2/T3/T4 は support-node として
+accept / pass / confirm したが、T6 は未実行である。
 
 ## Superseded G6 Completion Judgment
 
