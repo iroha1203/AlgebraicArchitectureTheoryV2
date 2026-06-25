@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4800
+- total SCORE: 4876
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -49,8 +49,9 @@
   - finite-query-representation / support-shadow-recovery / realized-recovery-discharge / anti-weakening: 96
   - finite-query-representation / recovered-current-shadow-factorization / coordinate-criterion / anti-weakening: 108
   - finite-query-representation / supported-current-shadow-factorization / support-determinacy / anti-weakening: 88
+  - finite-query-representation / explicit-current-shadow-coordinate-certificate / current-shadow-adequacy-boundary / anti-weakening: 76
 - evidence portfolio:
-  - proved-in-research: 43
+  - proved-in-research: 44
 
 ## Target Proof State
 
@@ -91,7 +92,8 @@
 - latest Cycle 40 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795686447
 - latest Cycle 41 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795889021
 - latest Cycle 42 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796064316
-- Cycle 43 support ledger: pending
+- latest Cycle 43 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796207967
+- Cycle 44 support ledger: pending
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -144,6 +146,7 @@
   - support-shadow decoder theorem discharging realized query-reading recovery for canonical support-shadow observations / representations
   - recovered represented current-shadow factorization criterion under visible recovery, with complete-support recovery/no-current-factor anti-weakening witness
   - supported current-shadow factorization boundary restricting visible support-level determinacy to explicitly supported finite queries
+  - explicit per-coordinate current-shadow factor certificate boundary with Bool support-factor/no-current-factor witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -1953,6 +1956,59 @@ representation adequacy、finite shadow adequacy、global repair coherence、obs
 vanishing を structure field、typeclass、certificate field、opaque membership に隠して
 いない。`repr.package.query_supported` は finite query admissibility の package instance
 であって、premise discharge とは数えない。
+
+## Cycle 44: Explicit Current-Shadow Coordinate Certificates
+
+```text
+candidate: Explicit Current-Shadow Coordinate Certificates
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: confirmed by T4 target progress / SCORE audit
+base_score: 38
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 76
+score_note: source-trace coordinate current-shadow factor certificate を明示し、query-coordinate obligation / support determinacy と同値な visible certificate surface として固定した。
+category: finite-query-representation / explicit-current-shadow-coordinate-certificate / current-shadow-adequacy-boundary / anti-weakening
+goal_delta: Cycle 43 で visible-undischarged だった support-level determinacy を、per-coordinate current-shadow factor certificate の有限 family として監査可能にした。
+project_value_delta: support membership / query-reading recovery と current-shadow adequacy をさらに分離し、current-shadow factorization には coordinate ごとの explicit factor certificate が必要であることを theorem-level にした。
+rival_delta: ADL / 静的解析 / metric dashboard が返す support membership や recovered readings は per-coordinate current-shadow factor certificate ではないことを、Bool support-factor/no-current-factor witness と合わせて固定した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryExplicitCurrentShadowCertificates`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_explicit_current_shadow_certificates_axioms.lean` は pass。reported declarations 18 件は `#print axioms` で axiom-free。`git diff --check`、placeholder scan、hidden / bidi Unicode scan、local absolute path scan は clean。
+target_progress: support-node
+proof_obligation_delta: `SourceTraceCoordinateCurrentShadowFactor`、coordinate factor/extensionality iff、query certificate iff query-coordinate extensionality、certificate-driven query determinacy / raw and represented finite-query factorization、support determinacy iff support-coordinate factor family、singleton query factor aggregation、Bool support-factor/no-current-factor witness を追加した。
+premise_discharge_status: per-coordinate factor certificate は visible theorem data。semantic soundness / arbitrary representation adequacy / finite shadow adequacy / arbitrary semantic observation factorization / target completion は not discharged。
+anti_weakening_verdict: T2 C pass as target-support; reject if coordinate factor certificates are hidden in semantic soundness, representation adequacy, finite shadow adequacy, global coherence, obstruction vanish, typeclass membership, certificate field, or target theorem completion.
+open_questions: per-coordinate current-shadow factor certificates を semantic soundness / representation adequacy / finite certificate から非循環に構成する theorem、trace-sensitive coordinate の admissible exclusion / discharge、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryExplicitCurrentShadowCertificates.lean`
+は、current-shadow factorization に必要な coordinate-level certificate surface を固定する。
+
+- `SourceTraceCoordinateCurrentShadowFactor`: source-trace coordinate observation が current canonical shadow 上の factor で計算できるという visible certificate。
+- `sourceTraceCoordinateCurrentShadowFactor_iff_currentShadowExtensional`: coordinate factor certificate と coordinate current-shadow extensionality は同値。
+- `QueryCurrentShadowCoordinateCertificate`: finite query の各 coordinate が current-shadow factor certificate を持つこと。
+- `queryCoordinateCurrentShadowExtensional_iff_certificate`: query-coordinate current-shadow obligation と explicit certificate は同値。
+- `supportedFiniteQueryCurrentShadowCertificate_of_currentShadowDeterminesSupportTraceShadow`: Cycle 43 の support determinacy premise から explicit supported-query certificate を抽出する。ただし premise 自体は discharge しない。
+- `currentShadowDeterminesTraceQuery_of_queryCurrentShadowCoordinateCertificate`: explicit certificate から query-level determinacy を得る。
+- `queryTraceReadings_currentShadowFactor_of_queryCurrentShadowCoordinateCertificate`: raw query readings は explicit certificate 下で current shadow に factor する。
+- `supportedQueryGeneratedObservation_currentShadowFactor_of_supportedCurrentShadowCertificate`: supported generated observation 版。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_of_queryCurrentShadowCoordinateCertificate`: represented finite-query observation 版。
+- `currentShadowDeterminesSupportTraceShadow_iff_supportCoordinateCurrentShadowFactors`: support-level determinacy は support coordinate の factor certificate family と同値。
+- `sourceTraceCoordinateCurrentShadowFactor_of_singletonQueryReadings_currentShadowFactor`: singleton query readings の current-shadow factor から coordinate factor certificate を得る。
+- `currentShadowDeterminesSupportTraceShadow_of_singletonQueryReadings_currentShadowFactors`: singleton query-reading factor certificates の finite family から support determinacy を得る。
+- `boolTrueSourceTraceCoordinate_supportFactor_but_no_currentShadowFactor`: Bool `true` coordinate は complete support shadow には factor するが current shadow には factor しない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`SourceTraceCoordinateCurrentShadowFactor`
+と `QueryCurrentShadowCoordinateCertificate` は visible proof obligation / certificate
+surface であり、semantic soundness、representation adequacy、finite shadow adequacy、
+global repair coherence、obstruction vanishing を structure field、typeclass、
+certificate field、opaque membership に隠していない。Bool witness は support membership /
+complete support / recovery を current-shadow adequacy と同一視できないことを示す。
 
 ## Superseded G6 Completion Judgment
 
