@@ -3594,6 +3594,66 @@ adequacy data that yields this boundary without assuming raw factorization,
 coordinate certificate, support-control, or current-shadow-reading faithfulness
 as theorem input.
 
+## Cycle 78: Representation Adequacy Necessary Conditions
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix the source-trace/current-shadow coordinate condition required by any non-circular current-shadow representation adequacy data
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions.lean
+    declarations:
+      - currentShadowTraceReadingRepresentable_iff_supportTraceCoordinatesCurrentShadowExtensional
+      - supportTraceCoordinatesCurrentShadowExtensional_of_currentShadowTraceReadingRepresentation
+      - not_boolCompleteTraceSupport_representationAdequacyNecessaryCoordinates
+      - boolCompleteSupportTraceShadow_complete_selfRecovery_noRepresentationAdequacyNecessaryCoordinates
+      - boolTrueConstantPost_factor_semanticAdequacy_noSeparation_but_not_representationAdequacyNecessaryCoordinates
+premise_delta:
+  discharged:
+    - `CurrentShadowTraceReadingRepresentable` is equivalent to support-coordinate current-shadow extensionality
+    - any concrete `CurrentShadowTraceReadingRepresentation` yields the necessary support-coordinate current-shadow extensionality condition
+    - complete Bool support/probe completeness and support-shadow self-recovery do not satisfy the necessary coordinate condition
+    - raw factorization / semantic adequacy / no-separation for the Bool constant post-map do not satisfy the represented query's coordinate condition
+  remaining:
+    - non-circular construction of `CurrentShadowTraceReadingRepresentation` from target-level current-shadow adequacy data
+    - representation adequacy discharge without assuming equivalent coordinate certificate, raw factorization, support-control, or current-shadow-reading faithfulness
+    - global G-04 target theorem completion, true sheaf `H^1` universality, nonabelian descent adequacy, and final `$math-lean-review`
+blocking_findings:
+  - weaker or repackaged finite-query routes do not discharge the source-trace/current-shadow coordinate condition required for representation adequacy
+next_obligation: construct target-level current-shadow adequacy data yielding `CurrentShadowTraceReadingRepresentation` without hiding coordinate-certificate-equivalent boundary data
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions.lean`
+fixes the necessary-condition gate for future representation-adequacy
+discharge attempts.
+
+- `currentShadowTraceReadingRepresentable_iff_supportTraceCoordinatesCurrentShadowExtensional`:
+  proposition-level current-shadow trace-reading representability is exactly
+  support-coordinate current-shadow extensionality.
+- `supportTraceCoordinatesCurrentShadowExtensional_of_currentShadowTraceReadingRepresentation`:
+  any concrete representation witness supplies the required coordinate
+  extensionality.
+- `boolCompleteSupportTraceShadow_complete_selfRecovery_noRepresentationAdequacyNecessaryCoordinates`:
+  complete Bool support, support-shadow coordinate factors, and support-shadow
+  self-recovery still do not satisfy the required coordinate condition.
+- `boolTrueConstantPost_factor_semanticAdequacy_noSeparation_but_not_representationAdequacyNecessaryCoordinates`:
+  raw current-shadow factorization, semantic-reading adequacy, and no
+  post-fiber separation for the Bool constant post-map still do not produce the
+  represented Bool `[true]` query's coordinate condition.
+
+### Target Boundary
+
+This cycle is not target theorem completion and not target-level
+representation adequacy discharge.  It fixes the necessary source-trace /
+current-shadow coordinate obligation that any non-circular adequacy theorem
+must provide.  The remaining proof still needs target-level current-shadow
+adequacy data that yields this coordinate condition without hiding a
+coordinate-certificate-equivalent premise.
+
 ## Superseded G6 Completion Judgment
 
 ```text
