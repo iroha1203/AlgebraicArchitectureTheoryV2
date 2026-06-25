@@ -11,9 +11,9 @@ T0 で `research mode: target-theorem` の GOAL card を検査するときだけ
 - `claim boundary`: 通常の GOAL claim boundary。
 - `target theorem`: 証明したい大定理の名前と自然言語 statement。
 - `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、証拠段階。
-- `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / report section / candidate card。
+- `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
 - `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
-- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、T3.5 同期、T4 監査、T5 レビュー、T6 `$math-lean-review` を含む完了条件。
+- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、T3 audit、report / tracking Issue 同期、final review packet、4 並列査読すべての veto なし、final `$math-lean-review` を含む完了条件。
 - `target premise discharge policy`: target theorem の実質的前提を target boundary として残すのか、completion までに theorem / finite witness / concrete certificate で discharge するのか。
 - `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required`)、必要 discharge artifact、結論相当 premise ではない理由。
 - `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque membership に移して成功扱いしない規則。
@@ -26,8 +26,8 @@ T0 で `research mode: target-theorem` の GOAL card を検査するときだけ
 - GOAL が active ではない。
 - `research mode: target-theorem` ではない。
 - target theorem / boundary / proof artifacts / proof strategy / completion criteria が不足している。
-- completion criteria が SCORE threshold 到達や PR merge だけになっている。
-- completion criteria に `$math-lean-review` の正式 4 並列査読 gate が含まれていない、またはこの skill 側で gate を実行できない。
+- completion criteria が SCORE threshold、candidate card、PR merge だけになっている。
+- completion criteria に final `$math-lean-review` の正式 4 並列査読 gate が含まれていない、またはこの skill 側で gate を実行できない。
 - target theorem の結論に必要な実質的前提があるのに、target boundary として残すのか completion までに discharge するのかが不明。
 - target material premise ledger または anti-weakening rule がなく、completion 時に premise を監査できない。
 - material premise ledger が faithfulness、exactness、coverage、sheaf condition、effectivity、triviality、representation adequacy などを `ambient-boundary` として残しているのに、結論相当 premise ではない理由がない。
