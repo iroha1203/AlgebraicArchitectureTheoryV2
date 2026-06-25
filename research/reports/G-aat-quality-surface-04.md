@@ -160,6 +160,7 @@
 - latest Cycle 88 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803541379
 - latest Cycle 89 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803656573
 - latest Cycle 90 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803779353
+- latest Cycle 91 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803887418
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -4371,6 +4372,59 @@ input, not target theorem completion.  It does not reclassify
 counterexample remains the boundary.  The strengthened nonabelian certificate
 is still material input unless a later cycle constructs it from visible
 non-conclusion data, and the stacky visible discharge remains open.
+
+## Cycle 91: Stacky Visible Descent Certificate Bridge
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: supply Cycle 87's visible stacky descent input from a stronger finite stacky descent certificate, not from finite decision completeness or zero selected `H2`
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean
+    declarations:
+      - FiniteStackyRepairDescentCertificate
+      - finiteStackyRepairDecisionCertificate_of_descentCertificate
+      - stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - integratedClassSurfaceReflectionCertificate_of_descentCertificates
+      - classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
+premise_delta:
+  discharged:
+    - the raw `StackyRepairDescentDischarge` input can now be supplied by an explicit stronger finite stacky descent certificate
+    - the stronger stacky certificate keeps finite repair-order completeness separate from `effective_of_trivialization`
+    - Cycle 89's blocker remains valid: finite decision completeness, selected-boundary triviality, and zero selected `H2` are still not counted as stacky discharge
+  remaining:
+    - the stronger nonabelian and stacky descent certificates are still material inputs unless constructed from non-conclusion boundary data
+    - final target theorem review and final `$math-lean-review` remain open
+blocking_findings:
+  - none
+next_obligation: construct the strengthened descent certificates from visible non-conclusion data, or keep both certificates as explicit material inputs in the final review packet
+```
+
+### Result
+
+Cycle 91 adds the stacky counterpart of Cycle 90:
+`FiniteStackyRepairDescentCertificate`.  It contains the existing finite
+stacky decision certificate as `finite`, but also carries the visible
+`effective_of_trivialization` field required by `StackyRepairDescentDischarge`.
+
+`stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate` forgets
+this stronger certificate to the visible stacky discharge record.  The
+integrated class-surface audit then uses both strengthened descent certificates
+in `integratedClassSurfaceReflectionCertificate_of_descentCertificates` and
+`classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates`.
+
+### Target Boundary
+
+This is a proof-obligation discharge for the raw stacky visible discharge
+input, not target theorem completion.  It does not reclassify
+`FiniteStackyRepairDecisionCertificate`, `StackyRepairTrivial`, or
+`StackyRepairH2Zero` as sufficient; the Cycle 89 counterexample remains the
+boundary.  Both strengthened descent certificates are still material inputs
+unless a later cycle constructs them from visible non-conclusion data.
 
 ## Superseded G6 Completion Judgment
 
