@@ -1326,6 +1326,47 @@ structure FiniteStackyRepairDecisionCertificate
     (stack : FiniteStackyRepairH2Envelope Coherence Repair) where
   repair_complete : forall repair, repair ∈ stack.repairOrder
 
+/--
+A stronger finite stacky repair certificate carrying the visible discharge
+from every selected-boundary trivialization to effectiveness.
+
+The `finite` field is the finite search certificate used for decision
+procedures.  The `effective_of_trivialization` field is intentionally separate:
+Cycle 89 shows that finite repair-order completeness and selected `H2` zero
+alone cannot supply it.
+-/
+structure FiniteStackyRepairDescentCertificate
+    {Coherence : Type z}
+    {Repair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence Repair) where
+  finite : FiniteStackyRepairDecisionCertificate stack
+  effective_of_trivialization :
+    forall repair,
+      stack.boundary2 repair = stack.selected2Cocycle ->
+        stack.effectiveRepair repair
+
+/-- Forget the strengthened stacky descent certificate down to finite completeness. -/
+theorem finiteStackyRepairDecisionCertificate_of_descentCertificate
+    {Coherence : Type z}
+    {Repair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence Repair}
+    (certificate : FiniteStackyRepairDescentCertificate stack) :
+    FiniteStackyRepairDecisionCertificate stack :=
+  certificate.finite
+
+/--
+The strengthened finite stacky descent certificate supplies the visible
+`StackyRepairDescentDischarge` required by class-surface reflection.
+-/
+theorem stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+    {Coherence : Type z}
+    {Repair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence Repair}
+    (certificate : FiniteStackyRepairDescentCertificate stack) :
+    StackyRepairDescentDischarge stack where
+  effective_of_trivialization :=
+    certificate.effective_of_trivialization
+
 theorem listedStackyBoundary_complete_of_certificate
     {Coherence : Type z}
     {Repair : Type r}

@@ -465,6 +465,74 @@ theorem classSurfaceEqualities_to_integratedTowerVanishes_of_nonabelianDescentCe
       stack stackRelation stackDischarge
 
 /--
+Construct the reflection certificate from strengthened nonabelian and stacky
+finite descent certificates.
+
+Both finite decision certificates remain separate from the visible
+`effective_of_trivialization` discharge fields.
+-/
+theorem integratedClassSurfaceReflectionCertificate_of_descentCertificates
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDescentCertificate torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDescentCertificate stack) :
+    IntegratedClassSurfaceReflectionCertificate
+      E torsorRelation stackRelation :=
+  integratedClassSurfaceReflectionCertificate_of_visibleDischarges
+    E torsorRelation
+    (nonabelianRepairTorsorDescentDischarge_of_finiteNonabelianRepairDescentCertificate
+      torsorCertificate)
+    stackRelation
+    (stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+      stackCertificate)
+
+/--
+Class-surface equalities imply integrated tower vanishing when the nonabelian
+and stacky visible discharges are both supplied by strengthened finite descent
+certificates.
+-/
+theorem classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDescentCertificate torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDescentCertificate stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) := by
+  exact
+    classSurfaceEqualities_to_integratedTowerVanishes_of_visibleDischarges
+      E torsor torsorRelation
+      (nonabelianRepairTorsorDescentDischarge_of_finiteNonabelianRepairDescentCertificate
+        torsorCertificate)
+      stack stackRelation
+      (stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+        stackCertificate)
+
+/--
 Cycle 85 final-premise audit package.
 
 It exposes both directions side by side: the existing one-way bridge requires
