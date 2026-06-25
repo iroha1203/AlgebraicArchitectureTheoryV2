@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 7190
+- total SCORE: 7444
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -75,8 +75,11 @@
   - finite-query-representation / support-shadow-recovery / support-control-independence / anti-weakening: 82
   - finite-query-representation / current-shadow-reading-faithfulness / support-shadow-target-route / anti-weakening: 84
   - finite-query-representation / support-shadow-recovery / current-shadow-reading-faithfulness-independence / anti-weakening: 84
+  - finite-query-representation / current-shadow-reading-faithfulness / coordinate-certificate / support-shadow-target-route / anti-weakening: 88
+  - finite-query-representation / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / target-route / anti-weakening: 86
+  - finite-query-representation / support-boundary-obstruction / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / anti-weakening: 80
 - evidence portfolio:
-  - proved-in-research: 69
+  - proved-in-research: 72
 
 ## Target Proof State
 
@@ -145,7 +148,8 @@
 - latest Cycle 68 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799161381
 - latest Cycle 69 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799319730
 - latest Cycle 70 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799455064
-- Cycle 71 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 71 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799610512
+- Cycle 72 support ledger: pending PR / tracking Issue comment.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -214,6 +218,9 @@
   - support-shadow recovery / current-shadow factorization / target-surface route under visible coordinate extensionality
   - support-shadow recovery / current-shadow factorization / target-surface route under explicit coordinate certificate
   - complete support-shadow recovery / coordinate-certificate independence witness
+  - support-shadow current-shadow-reading faithfulness / explicit coordinate-certificate exact boundary and certificate-visible target route
+  - support-shadow raw current-shadow factorization / support-control / current-shadow-reading faithfulness / coordinate-certificate boundary square
+  - support-boundary obstruction from no raw current-shadow factorization, with complete Bool recovery/no-boundary witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -3262,6 +3269,45 @@ open_questions: support-boundary premise を target-level semantic soundness、r
 
 この cycle は target theorem completion ではない。raw factorization、support-control、current-shadow reading faithfulness、
 coordinate certificate は同じ finite support boundary だが、その boundary 自体は visible premise として残る。
+arbitrary semantic observation adequacy、target-level representation adequacy、global coherence、tower vanishing、
+target theorem completion は主張しない。
+
+## Cycle 72: Support-Shadow Boundary Obstruction
+
+```text
+candidate: Support-Shadow Boundary Obstruction
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as support-boundary obstruction; base 40 x multiplier 2.0 = final 80
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+score_note: no raw current-shadow factorization が support-control / current-shadow reading faithfulness / explicit coordinate certificate をすべて遮断することを一般 theorem と Bool witness で固定した。
+category: finite-query-representation / support-boundary-obstruction / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / anti-weakening
+goal_delta: Cycle71 support boundary square の obstruction side を追加し、complete Bool support recovery が square に入らないことを一括証明した。
+project_value_delta: support recovery と support-boundary membership の差を no-factorization obstruction として検索可能にした。
+rival_delta: recovery-only analyzer は raw current-shadow factorization がなければ support route premise を満たさないことを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_boundary_obstruction_axioms.lean` は pass。reported declarations 2 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: no-factorization から no-support-control / no-faithfulness / no-certificate を得る一般 theorem と、complete Bool recovery/no-boundary package を追加した。
+premise_discharge_status: support recovery は support boundary square を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as support-boundary obstruction; reject if recovery-only evidence is counted as factorization, support-control, faithfulness, certificate, or target completion.
+open_questions: support-boundary premise を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryObstruction.lean`
+は、Cycle71 support boundary square の否定側を固定する。
+
+- `no_supportTraceShadowBoundary_of_no_currentShadowFactor`: raw current-shadow factorization がなければ support-control、current-shadow reading faithfulness、coordinate certificate はすべて失敗する。
+- `boolCompleteSupportTraceShadow_recovery_noSupportBoundarySquare`: complete Bool support shadow は Bool `[true]` readings を recover するが、raw factorization、support-control、faithfulness、coordinate certificate をすべて満たさない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。support-shadow recovery と support-boundary membership の分離であり、
 arbitrary semantic observation adequacy、target-level representation adequacy、global coherence、tower vanishing、
 target theorem completion は主張しない。
 
