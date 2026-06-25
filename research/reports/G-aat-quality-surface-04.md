@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6334
+- total SCORE: 6424
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -65,8 +65,9 @@
   - finite-query-representation / target-surface-entry / universal-factorization / anti-weakening: 88
   - finite-query-representation / current-shadow-factorization / exact-boundary / anti-weakening: 96
   - finite-query-representation / current-shadow-factorization / target-surface-universal-factorization / anti-weakening: 84
+  - finite-query-representation / current-shadow-factorization / recovery-coordinate-independence / anti-weakening: 90
 - evidence portfolio:
-  - proved-in-research: 59
+  - proved-in-research: 60
 
 ## Target Proof State
 
@@ -124,6 +125,7 @@
 - latest Cycle 57 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797902403
 - latest Cycle 58 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798000398
 - latest Cycle 59 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798092381
+- latest Cycle 60 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798184786
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -186,6 +188,7 @@
   - represented finite-query entry route into target-surface universal factorization
   - raw current-shadow factorization exact boundary for represented finite-query observations
   - raw current-shadow factorization route into target-surface universal factorization
+  - raw current-shadow factorization recovery / coordinate-certificate independence witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2750,6 +2753,48 @@ open_questions: visible recovery premise を target-level semantic soundness、r
 factorization の十分条件だが、target-level semantic soundness、arbitrary representation adequacy、finite shadow
 adequacy for all observations ではない。coordinate certificate など exact-boundary face との交換では
 `ObservationRecoversQueryReadings` と `[DecidableEq Out]` が visible theorem data として残る。
+
+## Cycle 60: Raw Current-Shadow Factor Recovery / Certificate Independence
+
+```text
+candidate: Raw Current-Shadow Factor Recovery / Certificate Independence
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as anti-weakening witness; base 45 x multiplier 2.0 = final 90
+base_score: 45
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 90
+score_note: raw current-shadow factorization / no-separation / target-surface universal factorization が recovery や coordinate certificate を含まない Bool witness を固定した。
+category: finite-query-representation / current-shadow-factorization / recovery-coordinate-independence / anti-weakening
+goal_delta: raw current-shadow factorization face の anti-weakening boundary を補強し、factorization claim と decoder / certificate claim の非含意を明示した。
+project_value_delta: route graph の premise 境界を補強し、raw factorization を coordinate adequacy の代替として読めないことを theorem API に固定した。
+rival_delta: ADL / static analyzer / metric dashboard / AI reviewer が global factorization や target-surface factorization を示しても、query-coordinate recovery は別証明であることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_current_shadow_factor_independence_axioms.lean` は pass。reported declarations 4 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: raw current-shadow factorization + no-separation + target-surface universal factorization でも coordinate certificate / recovery を含まない anti-weakening theorem を追加した。
+premise_discharge_status: raw factorization は recovery/certificate を discharge しない。target-level semantic soundness / representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as recovery/certificate independence witness; reject if raw factorization is counted as coordinate adequacy or decoder recovery.
+open_questions: visible recovery premise を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorIndependence.lean`
+は、Bool constant post-map による raw factorization recovery/certificate independence witness を固定する。
+
+- `boolTrueConstantPost_currentShadowFactor_but_not_queryCurrentShadowCoordinateCertificate`: raw current-shadow factorization は coordinate certificate を含まない。
+- `boolTrueConstantPost_currentShadowFactor_but_not_observationRecoversQueryReadings`: raw current-shadow factorization は realized-tower recovery を含まない。
+- `boolTrueConstantPost_currentShadowFactor_noSeparation_but_not_queryCurrentShadowCoordinateCertificate`: raw factorization + no-separation でも coordinate certificate は出ない。
+- `boolTrueConstantPost_currentShadowFactor_targetSurfaceUniversalFactorization_but_not_queryCurrentShadowCoordinateCertificate`: raw factorization + target-surface universal factorization でも coordinate certificate は出ない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。raw current-shadow factorization、no-separation、target-surface
+universal factorization は、coordinate certificate や recovery を自動的に discharge しない。target-level semantic
+soundness、arbitrary representation adequacy、finite shadow adequacy for all observations、global coherence、
+tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
