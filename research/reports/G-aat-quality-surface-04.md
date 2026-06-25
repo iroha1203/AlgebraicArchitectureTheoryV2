@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6940
+- total SCORE: 7022
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -72,8 +72,9 @@
   - finite-query-representation / explicit-coordinate-certificate / support-shadow-target-route / anti-weakening: 88
   - finite-query-representation / support-shadow-recovery / coordinate-certificate-independence / anti-weakening: 84
   - finite-query-representation / support-control / support-shadow-target-route / anti-weakening: 86
+  - finite-query-representation / support-shadow-recovery / support-control-independence / anti-weakening: 82
 - evidence portfolio:
-  - proved-in-research: 66
+  - proved-in-research: 67
 
 ## Target Proof State
 
@@ -137,7 +138,8 @@
 - latest Cycle 63 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798455276
 - latest Cycle 64 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798539263
 - latest Cycle 65 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798610806
-- Cycle 66 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 66 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798799932
+- Cycle 67 support ledger: pending PR / tracking Issue comment.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3054,6 +3056,45 @@ open_questions: support-control premise を target-level semantic soundness、re
 この cycle は target theorem completion ではない。support-control premise は visible premise として残る。canonical
 support-shadow representation の finite route であり、arbitrary semantic observation adequacy、target-level
 representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 67: Support-Control Premise Independence
+
+```text
+candidate: Support-Control Premise Independence
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as anti-weakening witness; base 41 x multiplier 2.0 = final 82
+base_score: 41
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 82
+score_note: complete Bool support-shadow recovery だけでは Cycle66 の support-control premise が得られないことを fixed witness として追加した。
+category: finite-query-representation / support-shadow-recovery / support-control-independence / anti-weakening
+goal_delta: Cycle66 positive support-control route の premise を support recovery から自動 discharge できないことを明示した。
+project_value_delta: support recovery、support-control、current-shadow factorization、coordinate certificate の境界を theorem API で保護した。
+rival_delta: finite support evidence や trace recovery を持つ analyzer でも support-control は別証明であることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_control_independence_axioms.lean` は pass。reported declarations 2 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: complete Bool support-shadow recovery / no-support-control / no-current-factor / no-coordinate-certificate witness を追加した。
+premise_discharge_status: support recovery は support-control premise を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as support-recovery/support-control independence witness; reject if complete support recovery is counted as support-control or target completion.
+open_questions: support-control premise を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportControlIndependence.lean`
+は、complete Bool support-shadow recovery が support-control premise を自動生成しないことを固定する。
+
+- `boolCompleteSupportTraceShadow_recoversBoolTrueReadings_but_not_currentShadowDeterminesSupportTraceShadow`: complete support shadow は Bool `[true]` readings を recover するが support-control は満たさない。
+- `boolCompleteSupportTraceShadow_recovery_noSupportControl_noCurrentFactor_noCoordinateCertificate`: recovery、no-support-control、no-current-factor、no-certificate を一つの witness package に束ねる。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。complete support-shadow recovery は support-control premise を
+自動的に discharge しない。canonical Bool witness の anti-weakening result であり、arbitrary semantic observation
+adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
