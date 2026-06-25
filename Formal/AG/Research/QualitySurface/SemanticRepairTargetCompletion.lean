@@ -1104,6 +1104,46 @@ structure FiniteNonabelianRepairDecisionCertificate
     (torsor : FinitePointedRepairTorsor Choice Repair) where
   repair_complete : forall repair, repair ∈ torsor.repairOrder
 
+/--
+A stronger finite nonabelian repair certificate carrying the visible discharge
+from every selected-transition trivialization to effectiveness.
+
+The `finite` field is the finite search certificate used for decision
+procedures.  The `effective_of_trivialization` field is intentionally separate:
+Cycle 88 shows that finite repair-order completeness alone cannot supply it.
+-/
+structure FiniteNonabelianRepairDescentCertificate
+    {Choice : Type z}
+    {Repair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice Repair) where
+  finite : FiniteNonabelianRepairDecisionCertificate torsor
+  effective_of_trivialization :
+    forall repair,
+      torsor.gauge repair = torsor.selectedTransition ->
+        torsor.effectiveRepair repair
+
+/-- Forget the strengthened descent certificate down to finite completeness. -/
+theorem finiteNonabelianRepairDecisionCertificate_of_descentCertificate
+    {Choice : Type z}
+    {Repair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice Repair}
+    (certificate : FiniteNonabelianRepairDescentCertificate torsor) :
+    FiniteNonabelianRepairDecisionCertificate torsor :=
+  certificate.finite
+
+/--
+The strengthened finite nonabelian descent certificate supplies the visible
+`NonabelianRepairTorsorDescentDischarge` required by class-surface reflection.
+-/
+theorem nonabelianRepairTorsorDescentDischarge_of_finiteNonabelianRepairDescentCertificate
+    {Choice : Type z}
+    {Repair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice Repair}
+    (certificate : FiniteNonabelianRepairDescentCertificate torsor) :
+    NonabelianRepairTorsorDescentDischarge torsor where
+  effective_of_trivialization :=
+    certificate.effective_of_trivialization
+
 theorem listedEffectiveNonabelianRepair_complete_of_certificate
     {Choice : Type z}
     {Repair : Type r}
