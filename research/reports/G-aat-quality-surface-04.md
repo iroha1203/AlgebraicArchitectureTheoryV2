@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4014
+- total SCORE: 4092
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -40,8 +40,9 @@
   - finite-query-current-shadow / semantic-reading-adequacy / no-separation / anti-weakening: 74
   - finite-query-current-shadow / semantic-reading-normalization / factorization-criterion / anti-weakening: 86
   - finite-query-representation / post-fiber-invariance / current-shadow-factorization / anti-weakening: 82
+  - finite-query-representation / no-separation / obstruction-boundary / anti-weakening: 78
 - evidence portfolio:
-  - proved-in-research: 34
+  - proved-in-research: 35
 
 ## Target Proof State
 
@@ -73,7 +74,8 @@
 - latest Cycle 31 obstruction ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794575068
 - latest Cycle 32 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794651559
 - latest Cycle 33 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794770254
-- Cycle 34 support ledger: pending until PR #2526 is merged; latest posted tracking ledger remains the Cycle 33 support ledger.
+- latest Cycle 34 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794905224
+- Cycle 35 support ledger: pending until the Cycle 35 PR is merged.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -1521,6 +1523,47 @@ open_questions: semantic soundness / representation adequacy から `ShadowExten
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`FiniteTraceQueryObservationRepresentation` 単体から post-invariance を出していない。`ShadowExtensionalTowerObservation observe`、current-shadow factorization、`CurrentShadowDeterminesSupportTraceShadow` は exact criterion の片側または visible sufficient premise であり、semantic soundness から自動抽出済みとは主張しない。arbitrary semantic observation factorization と T6 `$math-lean-review` は未完である。
+
+## Cycle 35: Representation No-Separation Exact Criterion
+
+```text
+candidate: Representation No-Separation Exact Criterion
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 39
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 78
+score_note: visible finite-query representation 上で、represented observation の extensionality / factorization / semantic-reading adequacy と no separated post-fiber を exact criterion として接続する。
+category: finite-query-representation / no-separation / obstruction-boundary / anti-weakening
+goal_delta: separated post-fiber が represented extensionality、current-shadow factorization、semantic-reading adequacy を阻むことを theorem surface にし、`[DecidableEq Out]` 境界で no-separation と represented extensionality を同値化した。
+project_value_delta: semantic soundness / representation adequacy が将来 discharge すべき no-separation obligation を、represented observation 側の exact criterion として固定した。
+rival_delta: finite query representation があるだけでは observation は current-shadow summary に降りず、post-fiber separation を排除する必要がある。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationNoSeparation`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_representation_no_separation_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `not_representedFiniteTraceQueryObservation_shadowExtensional_of_queryPostFiberSeparation`、`no_representedFiniteTraceQueryObservation_currentShadowFactor_of_queryPostFiberSeparation`、`no_representedFiniteTraceQueryObservation_semanticReadingAdequacy_of_queryPostFiberSeparation`、`representedFiniteTraceQueryObservation_shadowExtensional_iff_no_queryPostFiberSeparation`、`representedFiniteTraceQueryObservation_currentShadowFactor_iff_no_queryPostFiberSeparation`、`representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_no_queryPostFiberSeparation`、Bool represented no-separation obstruction witnesses を追加した。
+open_questions: semantic soundness / representation adequacy から no-separation を非循環に抽出する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationNoSeparation.lean` は、visible finite-query representation と post-fiber separation obstruction の exact criterion を定式化する。
+
+- `not_representedFiniteTraceQueryObservation_shadowExtensional_of_queryPostFiberSeparation`: separated post-fiber は represented observation の canonical-shadow extensionality を阻む。
+- `no_representedFiniteTraceQueryObservation_currentShadowFactor_of_queryPostFiberSeparation`: separated post-fiber は represented observation の raw current-shadow factorization を阻む。
+- `no_representedFiniteTraceQueryObservation_semanticReadingAdequacy_of_queryPostFiberSeparation`: separated post-fiber は representing package の semantic-reading adequacy を阻む。
+- `representedFiniteTraceQueryObservation_shadowExtensional_iff_no_queryPostFiberSeparation`: `[DecidableEq Out]` 境界で、represented extensionality と no-separation は同値。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_iff_no_queryPostFiberSeparation`: `[DecidableEq Out]` 境界で、represented factorization と no-separation は同値。
+- `representedFiniteTraceQueryObservation_semanticReadingAdequacy_iff_no_queryPostFiberSeparation`: semantic-reading adequacy existence と no-separation は同値。
+- `representedFiniteTraceQueryObservation_shadowExtensional_of_no_queryPostFiberSeparation`: no-separation から represented extensionality を取り出す bridge。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_of_no_queryPostFiberSeparation`: no-separation から represented current-shadow factorization を取り出す bridge。
+- `boolFirstRepresentedFiniteTraceQueryObservation_queryPostFiberSeparation` / `not_boolFirstRepresentedFiniteTraceQueryObservation_no_queryPostFiberSeparation`: Bool first-reading represented obstruction は no-separation を満たさない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。no-separation を仮定または `[DecidableEq Out]` exactness で扱うだけであり、semantic soundness や representation adequacy から no-separation を導出していない。separated post-fiber の排除、arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
 
 ## Superseded G6 Completion Judgment
 
