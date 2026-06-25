@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4508
+- total SCORE: 4604
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -46,8 +46,9 @@
   - finite-query-representation / query-coordinate-obligation / faithfulness-extraction / anti-weakening: 80
   - finite-query-representation / recoverable-readings / coordinate-extraction / anti-weakening: 88
   - finite-query-representation / realized-recovery / coordinate-extraction / anti-weakening: 88
+  - finite-query-representation / support-shadow-recovery / realized-recovery-discharge / anti-weakening: 96
 - evidence portfolio:
-  - proved-in-research: 40
+  - proved-in-research: 41
 
 ## Target Proof State
 
@@ -85,7 +86,7 @@
 - latest Cycle 37 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795291750
 - latest Cycle 38 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795410917
 - latest Cycle 39 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795520719
-- Cycle 40 refinement ledger: pending until the Cycle 40 PR is merged.
+- latest Cycle 40 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795686447
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -135,13 +136,14 @@
   - explicit representative-induced current-shadow factor for finite query post-fiber invariant observations
   - recoverable-readings post-map boundary extracting query-coordinate extensionality under visible decoder premises
   - realized-tower recovery boundary transporting represented observation recovery to current-shadow coordinate extraction
+  - support-shadow decoder theorem discharging realized query-reading recovery for canonical support-shadow observations / representations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
   - true sheaf `H1` object-level universality beyond the finite/small `S_A/R_A/T_A/St_A` surface
   - target-level representation adequacy / semantic faithfulness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
-  - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation` or realized query-reading recovery without hiding coordinate extensionality
+  - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation` or current-shadow factorization without hiding coordinate extensionality
   - full trace-aware finite shadow adequacy, finite probe completeness certificate, or a non-circular admissible-observation theorem excluding trace-sensitive non-extensional readings
   - cover / site / profile-law functoriality for the target surface
   - final T6 `$math-lean-review` gate with `No major findings`
@@ -1800,6 +1802,53 @@ query-coordinate extensionality、global repair coherence、obstruction vanishin
 structure field や opaque class membership に隠していない。T2/T3/T4 は
 `target-refined` として accept / pass / confirm したが、material premise は
 visible-undischarged のままである。
+
+## Cycle 41: Support-Shadow Realized Recovery Discharge
+
+```text
+candidate: Support-Shadow Realized Recovery Discharge
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 48
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 96
+score_note: Cycle 40 の visible realized recovery premise を、canonical support-shadow observation / representation では concrete decoder theorem として放電した。
+category: finite-query-representation / support-shadow-recovery / realized-recovery-discharge / anti-weakening
+goal_delta: `QuerySupportedBy support query` または `FiniteSupportComplete support` の visible certificate から、support-shadow output が realized tower の query readings を recover することを証明し、support-shadow representation では `QueryReadingsRecoveringPostOnRealizedTowers` を discharge した。
+project_value_delta: recovery を semantic adequacy と呼ばず、support-shadow output が十分な readings を含む場合だけ decoder を構成する proof node として固定した。
+rival_delta: local query output の存在と current-shadow descent を分離し、ADL / 静的解析 / metric dashboard が返す finite reading を AAT の semantic adequacy と混同しない境界を theorem-level にした。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationSupportRecovery`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_support_recovery_axioms.lean` は pass。reported declarations 5 件は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `supportTraceShadowObservation_recoversSupportedQueryReadings`、`completeSupportTraceShadowObservation_recoversQueryReadings`、`supportTraceShadowFiniteTraceQueryObservation_recoversQueryReadings`、`supportTraceShadowRepresentation_recoversQueryReadingsOnRealizedTowers`、`boolTrueCompleteSupportTraceShadowObservation_recoversQueryReadings` を追加した。
+premise_discharge_status: `ObservationRecoversQueryReadings` は supported canonical support-shadow observation で discharged。`QueryReadingsRecoveringPostOnRealizedTowers` は canonical support-shadow representation で discharged。current-shadow factorization、semantic-reading faithfulness、query-coordinate extensionality、semantic soundness / representation adequacy は not discharged。
+anti_weakening_verdict: pass as target-support; reject if promoted to current-shadow adequacy, arbitrary representation adequacy, or target theorem completion.
+open_questions: current-shadow factorization / semantic-reading adequacy の非循環抽出、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationSupportRecovery.lean`
+は、support-shadow output が持つ source-trace readings から query readings を
+recover する decoder を明示する。
+
+- `supportTraceShadowObservation_recoversSupportedQueryReadings`: supported query は canonical support trace shadow から readings を recover する。
+- `completeSupportTraceShadowObservation_recoversQueryReadings`: complete support なら任意 query の readings を recover する。
+- `supportTraceShadowFiniteTraceQueryObservation_recoversQueryReadings`: canonical support-shadow finite query observation は自分の support readings を recover する。
+- `supportTraceShadowRepresentation_recoversQueryReadingsOnRealizedTowers`: support-shadow finite-query representation では Cycle 40 の realized-post recovery premise が discharge される。
+- `boolTrueCompleteSupportTraceShadowObservation_recoversQueryReadings`: complete Bool support shadow は Bool `[true]` query readings を recover する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`QuerySupportedBy support query`
+と `FiniteSupportComplete support` は visible input geometry であり、current-shadow
+factorization、query-coordinate extensionality、semantic-reading faithfulness、
+semantic soundness、representation adequacy、global repair coherence、
+obstruction vanishing を field や opaque membership に隠していない。support-shadow
+recovery は current-shadow adequacy ではなく、次の proof obligation は current-shadow
+factorization / semantic-reading adequacy を非循環に抽出することである。
 
 ## Superseded G6 Completion Judgment
 
