@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 3620
+- total SCORE: 4014
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -35,8 +35,13 @@
   - finite-query-current-shadow / readings-insensitive / anti-weakening: 68
   - finite-query-current-shadow / post-fiber-invariance / anti-weakening: 84
   - finite-query-current-shadow / explicit-fiber-factor / anti-weakening: 78
+  - finite-query-current-shadow / semantic-reading-adequacy / post-fiber-invariance / anti-weakening: 80
+  - finite-query-current-shadow / post-fiber-separation / necessary-condition / anti-weakening: 72
+  - finite-query-current-shadow / semantic-reading-adequacy / no-separation / anti-weakening: 74
+  - finite-query-current-shadow / semantic-reading-normalization / factorization-criterion / anti-weakening: 86
+  - finite-query-representation / post-fiber-invariance / current-shadow-factorization / anti-weakening: 82
 - evidence portfolio:
-  - proved-in-research: 29
+  - proved-in-research: 34
 
 ## Target Proof State
 
@@ -63,7 +68,12 @@
 - latest Cycle 26 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794162254
 - latest Cycle 27 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794247657
 - latest Cycle 28 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794323531
-- Cycle 29 support ledger: pending; #2482 currently has no Cycle 29 target progress comment, so the latest posted tracking ledger remains the Cycle 28 support ledger.
+- Cycle 29 support ledger: pending; #2482 currently has no Cycle 29 target progress comment.
+- latest Cycle 30 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794505225
+- latest Cycle 31 obstruction ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794575068
+- latest Cycle 32 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794651559
+- latest Cycle 33 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794770254
+- Cycle 34 support ledger: pending until PR #2526 is merged; latest posted tracking ledger remains the Cycle 33 support ledger.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
