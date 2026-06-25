@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6596
+- total SCORE: 6682
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -68,8 +68,9 @@
   - finite-query-representation / current-shadow-factorization / recovery-coordinate-independence / anti-weakening: 90
   - finite-query-representation / current-shadow-factorization / semantic-reading-adequacy / recovery-coordinate-independence / anti-weakening: 92
   - finite-query-representation / combined-recovery-implication-obstruction / anti-weakening: 80
+  - finite-query-representation / support-shadow-recovery / target-surface-route / anti-weakening: 86
 - evidence portfolio:
-  - proved-in-research: 62
+  - proved-in-research: 63
 
 ## Target Proof State
 
@@ -130,6 +131,7 @@
 - latest Cycle 60 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798184786
 - latest Cycle 61 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798278415
 - latest Cycle 62 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798353868
+- latest Cycle 63 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798455276
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -195,6 +197,7 @@
   - raw current-shadow factorization recovery / coordinate-certificate independence witness
   - raw current-shadow factorization plus semantic-reading adequacy recovery / coordinate-certificate independence witness
   - combined recovery-free face implication obstruction witness
+  - support-shadow recovery / current-shadow factorization / target-surface route under visible coordinate extensionality
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2883,6 +2886,46 @@ open_questions: visible recovery premise を target-level semantic soundness、r
 この cycle は target theorem completion ではない。これは implication obstruction package であり、target-level
 semantic soundness、arbitrary representation adequacy、finite shadow adequacy for all observations、global coherence、
 tower vanishing、target theorem completion は主張しない。
+
+## Cycle 63: Support-Shadow Recovery Target-Surface Route
+
+```text
+candidate: Support-Shadow Recovery Target-Surface Route
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as visible-premise positive route; base 43 x multiplier 2.0 = final 86
+base_score: 43
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 86
+score_note: visible support-coordinate current-shadow extensionality から support-shadow recovery、semantic adequacy、current-shadow factorization、target-surface universal factorization までの route を固定した。
+category: finite-query-representation / support-shadow-recovery / target-surface-route / anti-weakening
+goal_delta: finite support-shadow representation の positive route を premise-visible に整理し、support recovery と current-shadow adequacy の混同を避けた。
+project_value_delta: anti-weakening 境界だけでなく、visible coordinate premise がある場合の constructive route を theorem API に追加した。
+rival_delta: finite support evidence を持つ analyzer が coordinate extensionality を明示できる場合だけ target-surface route へ接続できることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_shadow_route_axioms.lean` は pass。reported declarations 3 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: canonical finite support-shadow representation の support recovery / semantic adequacy / current-shadow factorization / target-surface universal factorization route を visible coordinate extensionality premise 付きで追加した。
+premise_discharge_status: support-coordinate current-shadow extensionality は visible premise として残る。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as visible-premise support route; reject if support recovery alone is counted as current-shadow adequacy or target completion.
+open_questions: support-coordinate current-shadow extensionality を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute.lean`
+は、canonical support-shadow representation の visible-premise target-surface route を固定する。
+
+- `supportTraceShadowRepresentation_recovery_semanticAdequacy_currentShadowFactor_of_queryCoordinateCurrentShadowExtensional`: support-coordinate current-shadow extensionality から support-shadow recovery、semantic adequacy、current-shadow factorization を得る。
+- `targetSurfaceSupportTraceShadowRepresentation_universalFactorization_of_queryCoordinateCurrentShadowExtensional`: support-coordinate current-shadow extensionality から target-surface universal factorization を得る。
+- `supportTraceShadowRepresentation_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_queryCoordinateCurrentShadowExtensional`: recovery、semantic adequacy、current-shadow factorization、target-surface route を一つの package に束ねる。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。support-coordinate current-shadow extensionality は visible premise
+として残る。canonical support-shadow representation の finite route であり、arbitrary semantic observation adequacy、
+target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
