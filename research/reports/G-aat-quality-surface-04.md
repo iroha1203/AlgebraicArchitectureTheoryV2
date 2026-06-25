@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6516
+- total SCORE: 6596
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -67,8 +67,9 @@
   - finite-query-representation / current-shadow-factorization / target-surface-universal-factorization / anti-weakening: 84
   - finite-query-representation / current-shadow-factorization / recovery-coordinate-independence / anti-weakening: 90
   - finite-query-representation / current-shadow-factorization / semantic-reading-adequacy / recovery-coordinate-independence / anti-weakening: 92
+  - finite-query-representation / combined-recovery-implication-obstruction / anti-weakening: 80
 - evidence portfolio:
-  - proved-in-research: 61
+  - proved-in-research: 62
 
 ## Target Proof State
 
@@ -128,6 +129,7 @@
 - latest Cycle 59 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798092381
 - latest Cycle 60 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798184786
 - latest Cycle 61 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798278415
+- latest Cycle 62 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798353868
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -192,6 +194,7 @@
   - raw current-shadow factorization route into target-surface universal factorization
   - raw current-shadow factorization recovery / coordinate-certificate independence witness
   - raw current-shadow factorization plus semantic-reading adequacy recovery / coordinate-certificate independence witness
+  - combined recovery-free face implication obstruction witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2838,6 +2841,48 @@ open_questions: visible recovery premise を target-level semantic soundness、r
 post-map / observation の recovery-free factorization 境界であり、query coordinate の realized recovery や explicit
 certificate を自動的に discharge しない。target-level semantic soundness、arbitrary representation adequacy、finite
 shadow adequacy for all observations、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 62: Combined Recovery-Free Face Implication Obstruction
+
+```text
+candidate: Combined Recovery-Free Face Implication Obstruction
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as non-implication anti-weakening package; base 40 x multiplier 2.0 = final 80
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+score_note: factorization + semantic adequacy + no-separation / target universal factorization から recovery や coordinate certificate が従う implication を Bool witness で否定した。
+category: finite-query-representation / combined-recovery-implication-obstruction / anti-weakening
+goal_delta: combined recovery-free faces を hidden recovery discharge として使う route を theorem API 上で遮断した。
+project_value_delta: finite-query exact route graph の non-implication 境界を明示し、後続 theorem が premise を誤って強化しにくくした。
+rival_delta: ADL / static analyzer / metric dashboard / AI reviewer が factorization と semantic adequacy を並べても、decoder recovery は別証明であることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCombinedRecoveryImplicationObstruction.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceCombinedRecoveryImplicationObstruction`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_combined_recovery_implication_obstruction_axioms.lean` は pass。reported declarations 5 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: combined recovery-free faces から observation-level recovery / post-map recovery / coordinate certificate への implication が成立しない theorem を追加した。
+premise_discharge_status: factorization + semantic adequacy + no-separation / target universal factorization は recovery/certificate を discharge しない。target-level semantic soundness / representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as implication obstruction witness; reject if any combined recovery-free face is counted as recovery/certificate discharge.
+open_questions: visible recovery premise を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCombinedRecoveryImplicationObstruction.lean`
+は、combined recovery-free faces から recovery / coordinate certificate への implication obstruction を固定する。
+
+- `not_boolTrueConstantPost_currentShadowFactor_semanticAdequacy_noSeparation_to_observationRecoversQueryReadings`: raw factorization + semantic adequacy + no-separation から observation-level recovery は従わない。
+- `not_boolTrueConstantPost_currentShadowFactor_semanticAdequacy_noSeparation_to_queryReadingsRecoveringPostOnRealizedTowers`: raw factorization + semantic adequacy + no-separation から post-map recovery は従わない。
+- `not_boolTrueConstantPost_currentShadowFactor_semanticAdequacy_noSeparation_to_queryCurrentShadowCoordinateCertificate`: raw factorization + semantic adequacy + no-separation から coordinate certificate は従わない。
+- `not_boolTrueConstantPost_currentShadowFactor_semanticAdequacy_targetSurfaceUniversalFactorization_to_observationRecoversQueryReadings`: target-surface universal factorization を加えても observation-level recovery は従わない。
+- `not_boolTrueConstantPost_currentShadowFactor_semanticAdequacy_targetSurfaceUniversalFactorization_to_queryCurrentShadowCoordinateCertificate`: target-surface universal factorization を加えても coordinate certificate は従わない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。これは implication obstruction package であり、target-level
+semantic soundness、arbitrary representation adequacy、finite shadow adequacy for all observations、global coherence、
+tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
