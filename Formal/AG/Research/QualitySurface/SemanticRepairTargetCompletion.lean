@@ -1434,6 +1434,93 @@ def effectiveStackyRepairDescentDecisionOfCertificate
           (listedEffectiveStackyRepair_complete_of_certificate
             certificate heffective))
 
+/-! ## Stacky finite-decision certificate boundary -/
+
+/--
+A finite stacky repair envelope whose repair list is complete and whose
+selected 2-cocycle is a boundary, but whose unique boundary witness is not
+effective.
+
+This witness separates finite stacky repair-order completeness from the
+stronger `StackyRepairDescentDischarge.effective_of_trivialization` field.
+-/
+def finiteDecisionButNoStackyDischargeEnvelope :
+    FiniteStackyRepairH2Envelope Bool Unit where
+  coherenceOrder := [false, true]
+  repairOrder := [()]
+  neutral2 := false
+  compose2 := fun coherence _ => coherence
+  selected2Cocycle := true
+  selected2_cocycle := rfl
+  boundary2 := fun _ => true
+  effectiveRepair := fun _ => False
+
+/-- The stacky witness has finite repair-order completeness. -/
+theorem finiteDecisionButNoStackyDischarge_certificate :
+    FiniteStackyRepairDecisionCertificate
+      finiteDecisionButNoStackyDischargeEnvelope where
+  repair_complete := by
+    intro repair
+    cases repair
+    simp [finiteDecisionButNoStackyDischargeEnvelope]
+
+/-- The stacky witness has a selected-boundary trivialization. -/
+theorem finiteDecisionButNoStackyDischarge_trivial :
+    StackyRepairTrivial finiteDecisionButNoStackyDischargeEnvelope := by
+  exact ⟨(), rfl⟩
+
+/-- The stacky witness has zero selected `H2`. -/
+theorem finiteDecisionButNoStackyDischarge_h2Zero :
+    StackyRepairH2Zero finiteDecisionButNoStackyDischargeEnvelope := by
+  exact
+    (stackyH2Zero_iff_stackyRepairTrivial
+      finiteDecisionButNoStackyDischargeEnvelope).2
+      finiteDecisionButNoStackyDischarge_trivial
+
+/-- The stacky witness has no effective stacky repair descent. -/
+theorem finiteDecisionButNoStackyDischarge_no_effectiveDescent :
+    Not
+      (EffectiveStackyRepairDescent
+        finiteDecisionButNoStackyDischargeEnvelope) := by
+  intro heffective
+  rcases heffective with ⟨repair, heff, _hboundary⟩
+  cases repair
+  exact heff
+
+/-- The stacky witness has no visible stacky descent discharge record. -/
+theorem finiteDecisionButNoStackyDischarge_no_descentDischarge :
+    Not
+      (StackyRepairDescentDischarge
+        finiteDecisionButNoStackyDischargeEnvelope) := by
+  intro discharge
+  exact discharge.effective_of_trivialization () rfl
+
+/--
+Finite stacky repair-order completeness does not supply the visible stacky
+descent discharge needed by Cycle 87.
+
+The finite certificate supports decision procedures for selected-boundary and
+effective-descent existence, but it does not turn every selected-boundary
+trivialization into an effective repair.
+-/
+theorem finiteStackyDecisionCertificate_not_enough_for_descentDischarge :
+    FiniteStackyRepairDecisionCertificate
+        finiteDecisionButNoStackyDischargeEnvelope /\
+      StackyRepairTrivial finiteDecisionButNoStackyDischargeEnvelope /\
+      StackyRepairH2Zero finiteDecisionButNoStackyDischargeEnvelope /\
+      Not
+        (EffectiveStackyRepairDescent
+          finiteDecisionButNoStackyDischargeEnvelope) /\
+      Not
+        (StackyRepairDescentDischarge
+          finiteDecisionButNoStackyDischargeEnvelope) := by
+  exact
+    ⟨finiteDecisionButNoStackyDischarge_certificate,
+      finiteDecisionButNoStackyDischarge_trivial,
+      finiteDecisionButNoStackyDischarge_h2Zero,
+      finiteDecisionButNoStackyDischarge_no_effectiveDescent,
+      finiteDecisionButNoStackyDischarge_no_descentDischarge⟩
+
 theorem integratedTower_globalCoherent_iff_layers
     {Atom : Type u}
     (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
