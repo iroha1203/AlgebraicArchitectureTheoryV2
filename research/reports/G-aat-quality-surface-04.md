@@ -144,7 +144,8 @@
 - latest Cycle 67 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799042483
 - latest Cycle 68 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799161381
 - latest Cycle 69 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799319730
-- Cycle 70 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 70 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799455064
+- Cycle 71 support ledger: pending PR / tracking Issue comment.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3221,6 +3222,48 @@ open_questions: coordinate certificate premise を target-level semantic soundne
 この cycle は target theorem completion ではない。current-shadow reading faithfulness と coordinate certificate は
 同じ support-control surface だが、その surface 自体は visible premise として残る。arbitrary semantic observation
 adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 71: Support-Shadow Boundary Square
+
+```text
+candidate: Support-Shadow Boundary Square
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as four-way support boundary; base 43 x multiplier 2.0 = final 86
+base_score: 43
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 86
+score_note: raw current-shadow factorization、support-control、current-shadow reading faithfulness、explicit coordinate certificate を canonical support-shadow の同一 finite boundary として固定した。
+category: finite-query-representation / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / target-route / anti-weakening
+goal_delta: Cycle70 の faithfulness/certificate surface に raw current-shadow factorization face を接続し、support-shadow route の premise audit square を追加した。
+project_value_delta: factorization / control / reading / certificate API を一つの theorem package で横断できるようにした。
+rival_delta: raw current-shadow factorization を示す analyzer と、support recovery だけの analyzer の差を明示した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_boundary_square_axioms.lean` は pass。reported declarations 4 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: support-shadow factorization / support-control / faithfulness / certificate exact boundary と、raw factorization から certificate-visible target route に入る package を追加した。
+premise_discharge_status: raw factorization / support-control / faithfulness / coordinate certificate は同じ visible support boundary として残る。support recovery はこの boundary を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as support-boundary square; reject if factorization, faithfulness, or certificate is treated as automatic target completion.
+open_questions: support-boundary premise を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundarySquare.lean`
+は、canonical support-shadow route の前提境界を square として固定する。
+
+- `supportTraceShadowRepresentation_currentShadowFactor_iff_currentShadowSemanticReading_faithful`: raw current-shadow factorization と current-shadow reading faithfulness は同値である。
+- `supportTraceShadowRepresentation_currentShadowFactor_iff_queryCurrentShadowCoordinateCertificate`: raw current-shadow factorization と explicit coordinate certificate は同値である。
+- `supportTraceShadowRepresentation_factor_control_faithfulness_certificate_boundary`: factorization、support-control、faithfulness、certificate の four-way boundary を束ねる。
+- `supportTraceShadowRepresentation_certificate_faithfulness_recovery_semanticAdequacy_targetSurfaceRoute_of_currentShadowFactor`: raw factorization から certificate / faithfulness を露出し、recovery / semantic adequacy / target-surface route へ入る。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。raw factorization、support-control、current-shadow reading faithfulness、
+coordinate certificate は同じ finite support boundary だが、その boundary 自体は visible premise として残る。
+arbitrary semantic observation adequacy、target-level representation adequacy、global coherence、tower vanishing、
+target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
