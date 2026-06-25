@@ -6,9 +6,9 @@
 
 **SCORE を theorem count ではなく研究貢献に与える。** 定理数、ファイル数、証明の容易さは主報酬ではない。主報酬は、GOAL の見方を変えること、複数の現象を圧縮すること、新しい測定量や obstruction を作ること、次の研究を開くことに与える。証拠段階は multiplier であり、Lean proof は研究価値を検証する強い証拠として扱う。
 
-**大定理証明モードを、SCORE 積み上げとは別の skill として分離する。** SCORE phase は広い frontier を探索し、研究能力の増分を積み上げるのに向いている。一方で、特定の大定理へ向かう研究では、補題や反例の価値を SCORE で測りつつ、完了条件を「target theorem の証明」に置く必要がある。このため `$research-loop` は探索型 GOAL 専用にし、`research mode: target-theorem` の GOAL は `$target-theorem-loop` で扱う。GOAL カードには target theorem、proof boundary、support map、completion criteria を定義し、tracking Issue には proof state と support node の進行状態を置く。target theorem の statement や completion criteria は人間が定める GOAL 定義であり、ループはそれを弱めて成功扱いしない。
+**大定理証明モードを、SCORE 積み上げとは別の skill として分離する。** SCORE phase は広い frontier を探索し、研究能力の増分を積み上げるのに向いている。一方で、特定の大定理へ向かう研究では、毎サイクル一つの proof obligation を潰し、Lean theorem / finite witness / concrete certificate または blocker として固定する方が速く厳密である。このため `$research-loop` は探索型 GOAL 専用にし、`research mode: target-theorem` の GOAL は `$target-theorem-loop` で扱う。GOAL カードには target theorem、proof boundary、proof obligation priority、completion criteria を定義し、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、final review 結果を置く。target theorem の statement や completion criteria は人間が定める GOAL 定義であり、ループはそれを弱めて成功扱いしない。
 
-**大定理の完了判定は `$math-lean-review` を必須 gate にする。** Lean が通ること、PR が merge されたこと、candidate card が proved と言うことだけでは主定理の証明完了にならない。`$target-theorem-loop` の最終判定では、数学査読 2 本と Lean 査読 2 本の `$math-lean-review` を実行し、GOAL claim と Lean theorem package の強さ、仮定放電、依存補題、axiom audit、台帳整合を fail-closed に確認する。`$math-lean-review` が実行できない、4 並列査読ができない、coverage gap が残る、または `No major findings` 以外の verdict であれば、`target-theorem-proved` ではなく checkpoint とする。
+**大定理の完了判定は `$math-lean-review` を必須 gate にする。** Lean が通ること、PR が merge されたこと、cycle result が proved と言うことだけでは主定理の証明完了にならない。`$target-theorem-loop` の最終判定では、final_review_packet を作り、数学査読 2 本と Lean 査読 2 本の `$math-lean-review` を実行し、GOAL claim と Lean theorem package の強さ、仮定放電、依存補題、axiom audit、台帳整合、anti-weakening を fail-closed に確認する。`$math-lean-review` が実行できない、4 並列査読ができない、coverage gap が残る、reviewer veto がある、または `No major findings` 以外の verdict であれば、`target-theorem-proved` ではなく checkpoint とする。
 
 **候補は四審判で落とす。** 審判 A は厳密性と claim boundary を見る。審判 B は GOAL への研究価値を見る。審判 C は repo 全体の価値、つまり AAT / SFT / Tooling / Website / Research の全体像に照らした自然さを見る。審判 D は GOAL の `rival` に対する有効性を見る。四者のどれかを通らない候補は、正しくても picked にしない。
 
@@ -18,7 +18,7 @@
 
 **検証は独立したライブラリ `FormalAGResearch` で行う。** Lean のライブラリ `Formal` は起点から参照を辿って到達するファイルしかビルドしないため、どこからも参照されていない壊れたファイルがあっても `lake build Formal` は通ってしまう。これでは検証の合否を判定できない。そこで `Formal/AG/Research/` のすべてのファイルをビルドする独立したライブラリを用意し、その成否を合格の信号とする。正式版である `Formal/AG` とは疎結合に保ち、依存は `Formal/AG/Research` から `Formal/AG` への一方向だけに限る。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
 
-**状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。GOALS.md の GOAL 定義、候補カードの frontmatter、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴と threshold 設定は Issue のコメントとして残し、そのための専用ファイルは作らない。
+**状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。GOALS.md の GOAL 定義、探索型 GOAL の候補カード frontmatter、target-theorem の cycle result、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴と threshold 設定は Issue のコメントとして残し、そのための専用ファイルは作らない。target-theorem では候補カードを作らず、report と tracking Issue をサイクル完了時にまとめて同期する。
 
 **停止は通常 GOAL では完全達成ではなく研究フェーズの区切りとして読む。** 通常 GOAL は、完全達成を機械的に判定できる性質のものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。`target-theorem` GOAL では例外的に、GOAL カードの completion criteria を満たし、かつ `$math-lean-review` gate を通った target theorem proof が完了条件になる。ただし、この場合も tracking Issue の closure は人間判断であり、ループは proof completion summary を残して返す。
 

@@ -1,54 +1,66 @@
 # Target Theorem Loop Ledger Templates
 
-tracking Issue に target proof progress / merge / completion コメントを書くときだけ読む。
+tracking Issue に target cycle result / merge / completion コメントを書くときだけ読む。
 
 ## 原則
 
 - target theorem の statement と completion criteria は `research/GOALS.md` を正本にする。
-- tracking Issue には proof state、support node、blocker、PR、証拠段階、補助 SCORE を置く。
+- tracking Issue には runtime state、proof obligation delta、blocker、PR、次 obligation を置く。
+- report には証拠索引、Lean declarations、premise_delta、completion 判定材料を置く。
+- SCORE と candidate card は使わない。
 - `Closes #N` は人間が明示した場合だけ使う。通常は `Refs #N`。
 - local path、private path、machine-specific identifier を public comment に入れない。
 - `$math-lean-review` の正式 verdict なしに `target-theorem-proved` ledger を書かない。
 
-## Target Cycle Progress
+## Target Cycle Result
 
 ````text
-Target theorem proof progress
+Target theorem cycle result
 
 target theorem: <name from GOAL card>
 cycle: <N>
-candidate: <candidate>
-candidate type: <target-support | target-obstruction | target-refinement | target-proof>
-proof state: <support-advanced | blocker-found | target-proof-candidate | target-proof-checkpoint-candidate | target-refuted>
-support node advanced: <node or none>
-support node completed: <yes | no | not-applicable>
+decision: <approve | reject>
+result type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+proof obligation: <one obligation chosen by T1 selector>
 proof obligation delta: <what changed>
-completion criteria status: <not-met | partially-met | candidate | refuted | cannot-determine>
-SCORE effect: <+S normal SCORE | +0 checkpoint>
+completion candidate: <yes | no>
 
 Evidence:
-- <Lean theorem / theorem package / finite witness / report section>
+- <Lean theorem / theorem package / finite witness / concrete certificate / blocker evidence>
 
-Boundary:
-- target statement changed: false
-- GOAL card edit required: <yes | no>
-- claim boundary preserved: <yes | no | cannot-determine>
+Premise delta:
+- discharged: <premise list or none>
+- remaining: <premise list or none>
+
+Blocking findings:
+- <finding or none>
+
+Next obligation:
+- <next proof obligation>
 
 Ledger:
 ```yaml
-ledger_type: target_theorem_progress
+ledger_type: target_cycle_result
 goal: <goal-id>
 target_theorem: <target>
 cycle: <N>
-candidate: <candidate>
-candidate_type: <candidate_type>
-proof_state: <support-advanced | blocker-found | target-proof-candidate | target-proof-checkpoint-candidate | target-refuted>
-support_node: <node or null>
-support_node_completed: <true | false | null>
+decision: <approve | reject>
+result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+proof_obligation: <short>
 proof_obligation_delta: <short>
-completion_criteria_status: <not-met | partially-met | candidate | refuted | cannot-determine>
-score_effect: <score or 0>
-goal_card_edit_required: <true | false>
+lean_artifacts:
+  - file: <repo-relative path or null>
+    declarations:
+      - <declaration>
+premise_delta:
+  discharged:
+    - <premise>
+  remaining:
+    - <premise>
+blocking_findings:
+  - <finding>
+next_obligation: <short>
+completion_candidate: <true | false>
 tracking_issue_closed: false
 ```
 ````
@@ -58,16 +70,15 @@ tracking_issue_closed: false
 ````text
 Cycle <N> merge update
 
-candidate: <candidate>
 PR: #<number> <merged | open | blocked>
 merge commit: <oid or none>
-target progress before T6: <support-node | blocker-found | target-proof-candidate | target-proof-checkpoint-candidate | target-refuted>
-score: +<final_score>
+cycle result: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+completion candidate: <yes | no>
 
 CI:
 - <check name>: <pass | fail | pending | not-run>
 
-Independent T5 review: <mergeable | needs changes | blocked | not-run>, <short reason>
+Independent PR review: <mergeable | needs changes | blocked | not-run>, <short reason>
 
 Ledger:
 ```yaml
@@ -77,10 +88,10 @@ cycle: <N>
 pr: <number>
 pr_state: <merged | open | blocked>
 merge_commit: <oid or null>
-target_progress_before_t6: <state>
-final_score: <final_score>
+result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+completion_candidate: <true | false>
 checks_state: <pass | fail | pending | mixed>
-t5_review: <mergeable | needs-changes | blocked | not-run>
+pr_review: <mergeable | needs-changes | blocked | not-run>
 tracking_issue_closed: false
 ```
 ````
@@ -95,7 +106,7 @@ Treat the PR as merged only if GitHub reports `state: MERGED` and a merge commit
 
 ## Target Completion Judgment
 
-Use this only after T6 and `$math-lean-review`.
+Use this only after final review and `$math-lean-review`.
 
 ````text
 Target theorem completion judgment
@@ -107,6 +118,25 @@ math-lean-review verdict: <No major findings | Reject / 証明として不十分
 math-lean-review required gate: <pass | fail>
 target proved gate: <pass | fail | cannot-determine>
 mathematical referee verdict: <accept-main-theorem | checkpoint | reject | refuted | cannot-determine>
+
+Final review packet:
+- goal claim: <present | missing>
+- completion criteria: <present | missing>
+- Lean declarations: <present | missing>
+- proof artifacts: <present | missing>
+- proof obligation summary: <present | missing>
+- material premise discharge: <present | missing>
+- axiom audit: <present | missing>
+- placeholder scan: <present | missing>
+- dependency DAG: <present | missing>
+- anti-weakening audit: <present | missing>
+- report / tracking Issue refs: <present | missing>
+
+Reviewer vetoes:
+- math reviewer A: <pass | veto | unchecked-central-claim>
+- math reviewer B: <pass | veto | unchecked-central-claim>
+- Lean reviewer A: <pass | veto | unchecked-central-claim>
+- Lean reviewer B: <pass | veto | unchecked-central-claim>
 
 Material premises:
 - <premise / hypothesis / certificate argument and why it is material>
@@ -122,8 +152,11 @@ Referee-level proof audit:
 - nonvacuity: <pass | fail | cannot-determine>
 - definition unfolding: <no-conclusion-baked-in | conclusion-baked-in | cannot-determine>
 - proof dependency graph: <acyclic-and-checked | circular | cannot-determine>
+- anti-weakening audit: <no-hidden-conclusion-premise | hidden-premise-found | cannot-determine>
+- dependency audit: <all-required-declarations-checked | gap | cannot-determine>
+- parent recheck: <pass | fail | cannot-determine>
 
-Support map summary:
+Proof obligation summary:
 - completed: <list>
 - remaining: <list>
 - blockers: <list>
@@ -138,16 +171,22 @@ completion_criteria_status: <satisfied | not-satisfied | refuted | cannot-determ
 math_lean_review_verdict: <verdict>
 math_lean_review_gate: <pass | fail>
 target_proved_gate: <pass | fail | cannot-determine>
+final_review_packet_status: <complete | incomplete>
+reviewer_vetoes:
+  - <reviewer / finding>
 material_premise_ledger_audit: <pass | fail | cannot-determine>
 hidden_conclusion_premise_audit: <none-found | hidden-premise-found | cannot-determine>
 axiom_audit_status: <pass | fail | cannot-determine>
+placeholder_scan_status: <pass | fail | cannot-determine>
+dependency_audit_status: <pass | fail | cannot-determine>
 artifact_sync_audit: <pass | fail | cannot-determine>
+parent_recheck_status: <pass | fail | cannot-determine>
 unchecked_items_block_completion:
   - <unchecked item>
-completed_support_nodes:
-  - <node>
-remaining_support_nodes:
-  - <node>
+completed_proof_obligations:
+  - <obligation>
+remaining_proof_obligations:
+  - <obligation>
 blockers:
   - <blocker>
 tracking_issue_closed: false
