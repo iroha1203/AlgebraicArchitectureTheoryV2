@@ -80,7 +80,7 @@
   - finite-query-representation / support-boundary-obstruction / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / anti-weakening: 80
   - finite-query-representation / support-self-recovery / support-boundary-gap / current-shadow-factorization / coordinate-certificate / anti-weakening: 78
 - evidence portfolio:
-  - proved-in-research: 75
+  - proved-in-research: 76
 
 ## Target Proof State
 
@@ -154,6 +154,7 @@
 - latest Cycle 73 support ledger: synced in #2482; PR #2565 merged.
 - latest Cycle 74 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801393803
 - latest Cycle 75 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801706078
+- latest Cycle 76 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801905154
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3464,6 +3465,66 @@ construct that witness from primitive/probe/trace completeness or target-level
 semantic representation data.  Arbitrary semantic observation adequacy, global
 target-level representation adequacy, true sheaf `H^1` universality, tower
 vanishing, and the final `$math-lean-review` gate remain open.
+
+## Cycle 76: Representation Construction Blocker
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: finite support/probe completeness and support-shadow self-recovery do not by themselves construct `CurrentShadowTraceReadingRepresentation`
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationConstructionBlocker.lean
+    declarations:
+      - not_boolCompleteTraceSupport_currentShadowTraceReadingRepresentable
+      - not_nonempty_boolCompleteTraceSupport_currentShadowTraceReadingRepresentation
+      - boolCompleteTraceSupport_supportShadowCoordinateFactors
+      - boolCompleteSupportTraceShadow_complete_selfRecovery_noCurrentShadowRepresentation
+premise_delta:
+  discharged:
+    - complete Bool support is finite-support complete and has support-shadow coordinate factorization for each listed Bool atom
+    - complete Bool support-shadow observation recovers its own support query readings
+    - the same complete Bool witness is not `CurrentShadowTraceReadingRepresentable`
+    - no concrete `CurrentShadowTraceReadingRepresentation` witness exists for complete Bool support
+    - the failure is derived through the Cycle 75 representability/certificate boundary and the existing complete Bool support-boundary gap, not assumed opaquely
+  remaining:
+    - construct `CurrentShadowTraceReadingRepresentation` from genuinely stronger target-level current-shadow adequacy data
+    - global target-level representation adequacy, semantic faithfulness, nonabelian descent adequacy, true sheaf `H^1` object-level universality, and final `$math-lean-review`
+blocking_findings:
+  - finite support/probe completeness and support-shadow self-recovery are insufficient as a construction route for current-shadow trace-reading representation
+next_obligation: prove a target-level current-shadow adequacy bridge that constructs `CurrentShadowTraceReadingRepresentation` without assuming an equivalent coordinate certificate or current-shadow factorization boundary
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationConstructionBlocker.lean`
+fixes the necessary-condition blocker left by Cycle 75.
+
+- `not_boolCompleteTraceSupport_currentShadowTraceReadingRepresentable`:
+  complete Bool support is not propositionally representable from the current
+  four-bit shadow.
+- `not_nonempty_boolCompleteTraceSupport_currentShadowTraceReadingRepresentation`:
+  there is no concrete current-shadow trace-reading representation witness for
+  complete Bool support.
+- `boolCompleteTraceSupport_supportShadowCoordinateFactors`:
+  every listed Bool atom still factors through the enriched support-trace
+  shadow.
+- `boolCompleteSupportTraceShadow_complete_selfRecovery_noCurrentShadowRepresentation`:
+  packages finite support completeness, support-shadow coordinate
+  factorization, support-shadow self-recovery, and failure of current-shadow
+  representation in one witness.
+
+### Target Boundary
+
+This cycle is not target theorem completion and not target theorem refutation.
+It prevents a false construction route: finite support/probe completeness or
+support-shadow recovery cannot be relabeled as current-shadow representation
+adequacy.  A future proof still needs genuinely stronger target-level
+current-shadow adequacy data.  Global target-level representation adequacy,
+semantic faithfulness, nonabelian descent adequacy, true sheaf `H^1`
+universality, tower vanishing, and the final `$math-lean-review` gate remain
+open.
 
 ## Superseded G6 Completion Judgment
 
