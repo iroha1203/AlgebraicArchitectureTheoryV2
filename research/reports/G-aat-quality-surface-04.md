@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4420
+- total SCORE: 4508
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -45,8 +45,9 @@
   - finite-query-representation / query-support-determinacy / faithfulness-extraction / anti-weakening: 84
   - finite-query-representation / query-coordinate-obligation / faithfulness-extraction / anti-weakening: 80
   - finite-query-representation / recoverable-readings / coordinate-extraction / anti-weakening: 88
+  - finite-query-representation / realized-recovery / coordinate-extraction / anti-weakening: 88
 - evidence portfolio:
-  - proved-in-research: 39
+  - proved-in-research: 40
 
 ## Target Proof State
 
@@ -83,7 +84,8 @@
 - latest Cycle 36 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795193106
 - latest Cycle 37 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795291750
 - latest Cycle 38 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795410917
-- Cycle 39 refinement ledger: pending until the Cycle 39 PR is merged.
+- latest Cycle 39 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795520719
+- Cycle 40 refinement ledger: pending until the Cycle 40 PR is merged.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -131,13 +133,15 @@
   - reading-insensitive finite query observations factored through current shadow without query-coordinate discharge
   - finite query observation-level current-shadow factorization characterized by post-map fiber invariance
   - explicit representative-induced current-shadow factor for finite query post-fiber invariant observations
+  - recoverable-readings post-map boundary extracting query-coordinate extensionality under visible decoder premises
+  - realized-tower recovery boundary transporting represented observation recovery to current-shadow coordinate extraction
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
 - open support nodes:
   - true sheaf `H1` object-level universality beyond the finite/small `S_A/R_A/T_A/St_A` surface
   - target-level representation adequacy / semantic faithfulness / nonabelian descent adequacy / stack effectiveness beyond the finite-certificate computability boundary
-  - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation`
+  - semantic soundness / representation adequacy theorem implying `ShadowExtensionalTowerObservation` or realized query-reading recovery without hiding coordinate extensionality
   - full trace-aware finite shadow adequacy, finite probe completeness certificate, or a non-circular admissible-observation theorem excluding trace-sensitive non-extensional readings
   - cover / site / profile-law functoriality for the target surface
   - final T6 `$math-lean-review` gate with `No major findings`
@@ -1741,6 +1745,61 @@ open_questions: uniformly recoverable post-map premise の semantic soundness / 
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`QueryReadingsRecoveringPost` は theorem argument として可視の uniformly output-decodable premise であり、representation package、typeclass、structure field、certificate field、opaque membership に隠していない。fixed support-shadow observation に対する semantic-reading adequacy existence は coordinate boundary と同値なので、それを独立 discharge 済みの adequacy と呼ぶこともできない。arbitrary semantic soundness / representation adequacy からの一般抽出、arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
+
+## Cycle 40: Realized Recovery Coordinate-Extraction Boundary
+
+```text
+candidate: Realized Recovery Coordinate-Extraction Boundary
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as target-refined
+base_score: 44
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 88
+score_note: Cycle 39 の uniformly output-decodable post-map premise を realized towers 上の recovery premise へ縮小し、visible represented-observation recovery から query-coordinate extraction へ運ぶ境界を固定した。
+category: finite-query-representation / realized-recovery / coordinate-extraction / anti-weakening
+goal_delta: `QueryReadingsRecoveringPostOnRealizedTowers` と `ObservationRecoversQueryReadings` を visible theorem premise として導入し、current-shadow faithfulness / extensionality / factorization と組み合わせた coordinate extraction theorem を追加した。
+project_value_delta: semantic soundness / representation adequacy が将来 discharge すべき recovery obligation を、arbitrary shadow/readings pair ではなく realized semantic repair tower 上の decoder condition として切り出した。
+rival_delta: finite query result を返すだけでは、observation output から realized tower の query readings が復元できるか、また current-shadow factorization を暗黙仮定していないかは分からない。Cycle 40 はこの差を theorem-level に固定する。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRealizedRecovery`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_realized_recovery_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: target-refined
+proof_obligation_delta: `QueryReadingsRecoveringPostOnRealizedTowers`、`ObservationRecoversQueryReadings`、Cycle 39 recovery premise の realized-tower restriction、represented observation recovery -> post-map recovery theorem、current-shadow faithfulness / extensionality / factorization から coordinate extraction へ進む theorem、raw query-readings observation recovery theorem、Bool constant-post no-recovery witness、Bool first-reading support-factor/no-current-factor/recovery witness を追加した。
+premise_discharge_status: `QueryReadingsRecoveringPostOnRealizedTowers` と `ObservationRecoversQueryReadings` は visible-undischarged。これは target-refinement としては pass だが、target theorem completion の discharge ではない。
+anti_weakening_verdict: pass as target-refinement; reject if promoted to target theorem completion.
+open_questions: realized-tower recovery premise の semantic soundness / representation adequacy certificate からの非循環抽出、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRealizedRecovery.lean`
+は、Cycle 39 の uniform recovery route を realized towers に相対化する。
+
+- `QueryReadingsRecoveringPostOnRealizedTowers`: post-map output から realized tower の query readings を復元する visible decoder premise。
+- `ObservationRecoversQueryReadings`: observation output から realized tower の query readings を復元する visible decoder premise。
+- `queryReadingsRecoveringPostOnRealizedTowers_of_queryReadingsRecoveringPost`: Cycle 39 の強い uniform recovery premise は realized-tower recovery を含意する。
+- `queryTraceVector_shadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPostOnRealizedTowers`: current-shadow reading faithfulness と realized recovery から query trace vector shadow-extensionality を得る。
+- `queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPostOnRealizedTowers`: realized recovery route で `QueryTraceCoordinatesCurrentShadowExtensional` を得る。
+- `queryReadingsRecoveringPostOnRealizedTowers_of_observationRecoversQueryReadings`: visible representation certificate は observation-level recovery を representing post-map recovery に運ぶ。
+- `representedFiniteTraceQueryObservation_queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_observationRecoversQueryReadings`: represented observation 版の current-shadow faithfulness + recovery extraction。
+- `representedFiniteTraceQueryObservation_queryCoordinateCurrentShadowExtensional_of_shadowExtensional_of_observationRecoversQueryReadings`: shadow-extensional represented observation 版。
+- `representedFiniteTraceQueryObservation_queryCoordinateCurrentShadowExtensional_of_currentShadowFactor_of_observationRecoversQueryReadings`: current-shadow factorization represented observation 版。
+- `queryTraceReadingsObservation_recoversQueryReadings` / `queryTraceReadingsRepresentation_recoversQueryReadingsOnRealizedTowers`: raw query-readings observation は realized readings を復元する。
+- `not_boolTrueConstantPost_queryReadingsRecoveringPostOnRealizedTowers`: constant Bool post-map は realized Bool `[true]` readings を復元しない。
+- `boolTrueConstantPost_currentShadowFaithful_but_not_queryReadingsRecoveringPostOnRealizedTowers`: current-shadow faithfulness だけでは recovery は出ない。
+- `boolFirstQueryRepresentation_supportFactor_no_currentFactor_but_recoversReadings`: Bool first-reading observation は support shadow に factor し、readings を復元するが、current shadow には factor しない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。
+`QueryReadingsRecoveringPostOnRealizedTowers` と
+`ObservationRecoversQueryReadings` は theorem argument として可視のままであり、
+semantic soundness、representation adequacy、current-shadow factorization、
+query-coordinate extensionality、global repair coherence、obstruction vanishing を
+structure field や opaque class membership に隠していない。T2/T3/T4 は
+`target-refined` として accept / pass / confirm したが、material premise は
+visible-undischarged のままである。
 
 ## Superseded G6 Completion Judgment
 
