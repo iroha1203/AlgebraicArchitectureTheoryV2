@@ -1,0 +1,192 @@
+import Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion
+import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1Universality
+import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianH1Universality
+import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2Universality
+
+/-!
+Cycle 84 evidence for `G-aat-quality-surface-04`.
+
+Cycles 81--83 added object-level quotient surfaces for sheaf `H1`,
+nonabelian repair `H1`, and stacky `H2`.  This file records the target-level
+integration audit connecting those quotient surfaces to the comparison-free
+integrated finite tower from `SemanticRepairTargetCompletion`.
+
+The bridge is intentionally one-way: integrated layer vanishing data gives
+equality of the selected quotient classes with the visible zero/neutral
+classes.  The file does not reflect quotient equality back to tower vanishing,
+effective descent, stack effectiveness, representation adequacy, or target
+theorem completion.
+-/
+
+namespace Formal.AG.Research
+namespace QualitySurface
+namespace SemanticRepairIntegratedClassSurfaceAudit
+
+open SemanticRepairObstructionTower
+open SemanticRepairSheafH1
+open SemanticRepairSheafH1Universality
+open SemanticRepairNonabelianTorsor
+open SemanticRepairNonabelianH1Universality
+open SemanticRepairStackyH2
+open SemanticRepairStackyH2Universality
+open SemanticRepairTargetCompletion
+
+universe u v w x y z r
+
+/-! ## Visible class-surface equality target -/
+
+/-- The zero sheaf `H1` class used by the integrated class-surface audit. -/
+def integratedSheafH1ZeroClass
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom) :
+    SemanticRepairH1Class E :=
+  semanticRepairH1Class_mk E E.coefficient.zero1
+    (semanticRepairSheafH1_zero_is_cocycle E)
+
+/--
+The class equalities supplied by the integrated target tower.
+
+This predicate deliberately records only class equalities.  It does not claim
+that class equality reflects effective descent or tower vanishing.
+-/
+def IntegratedLayerClassSurfaceEqualities
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    (stackRelation : StackyRepairH2ClassRelation stack) : Prop :=
+  semanticRepairH1_selectedResidualClass E =
+      integratedSheafH1ZeroClass E /\
+    nonabelianRepairH1_selectedTransitionClass torsorRelation =
+      nonabelianRepairH1_neutralClass torsorRelation /\
+    stackyRepairH2_selected2Class stackRelation =
+      stackyRepairH2_neutralClass stackRelation
+
+/-! ## Layer predicates give quotient-class equalities -/
+
+/-- Sheaf `H1` zero identifies the selected residual class with the zero class. -/
+theorem sheafH1Zero_selectedClass_eq_zeroClass
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (hzero : SemanticRepairH1Zero E) :
+    semanticRepairH1_selectedResidualClass E =
+      integratedSheafH1ZeroClass E := by
+  exact
+    semanticRepairH1Class_eq_of_sameClass
+      E
+      E.coefficient.residual_cocycle
+      (semanticRepairSheafH1_zero_is_cocycle E)
+      hzero.2
+
+/--
+Visible layer predicates induce the three quotient-class equalities.
+
+The nonabelian and stacky directions use only the safe one-way effectivity
+comparisons from Cycles 82 and 83.
+-/
+theorem integratedLayerClassSurfaceEqualities_of_layerPredicates
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (hsheaf : SemanticRepairH1Zero E)
+    (hnonabelian : EffectiveNonabelianRepairDescent torsor)
+    (hstacky : EffectiveStackyRepairDescent stack) :
+    IntegratedLayerClassSurfaceEqualities
+      E torsorRelation stackRelation := by
+  exact
+    ⟨sheafH1Zero_selectedClass_eq_zeroClass E hsheaf,
+      nonabelianRepairH1_selectedClass_eq_neutral_of_effectiveDescent
+        torsorRelation hnonabelian,
+      stackyRepairH2_selectedClass_eq_neutral_of_effectiveDescent
+        stackRelation hstacky⟩
+
+/-! ## Integrated tower audit bridge -/
+
+/--
+The comparison-free integrated finite tower supplies class-surface equalities.
+
+This theorem is one-way from the integrated tower's visible vanishing predicate
+to the quotient-class equalities.  It does not use class equality to prove
+vanishing and does not close the G-04 target theorem.
+-/
+theorem integratedTowerVanishes_to_classSurfaceEqualities
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) ->
+      IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation := by
+  intro hvanishes
+  have hlayers :
+      SemanticRepairH1Zero E /\
+        EffectiveNonabelianRepairDescent torsor /\
+        StackyRepairH2Zero stack /\
+        EffectiveStackyRepairDescent stack :=
+    (integratedTower_vanishes_iff_layers E torsor stack).1 hvanishes
+  exact
+    integratedLayerClassSurfaceEqualities_of_layerPredicates
+      E torsorRelation stackRelation
+      hlayers.1 hlayers.2.1 hlayers.2.2.2
+
+/--
+Cycle 84 checkpoint package.
+
+It bundles the transparent integrated tower equivalence with the safe one-way
+class-surface bridge.  The package intentionally has no converse from class
+equalities to tower vanishing and is not a target-theorem completion result.
+-/
+theorem integratedClassSurfaceAudit_checkpoint_package
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    (ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) <->
+      SemanticRepairH1Zero E /\
+        EffectiveNonabelianRepairDescent torsor /\
+        StackyRepairH2Zero stack /\
+        EffectiveStackyRepairDescent stack) /\
+      (ObstructionTowerVanishes
+          (toIntegratedSheafTorsorStackTower E torsor stack) ->
+        IntegratedLayerClassSurfaceEqualities
+          E torsorRelation stackRelation) := by
+  exact
+    ⟨integratedTower_vanishes_iff_layers E torsor stack,
+      integratedTowerVanishes_to_classSurfaceEqualities
+        E torsor torsorRelation stack stackRelation⟩
+
+end SemanticRepairIntegratedClassSurfaceAudit
+end QualitySurface
+end Formal.AG.Research
