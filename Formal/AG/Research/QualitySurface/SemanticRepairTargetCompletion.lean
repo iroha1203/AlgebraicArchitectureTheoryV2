@@ -1136,6 +1136,83 @@ def effectiveNonabelianRepairDescentDecisionOfCertificate
           (listedEffectiveNonabelianRepair_complete_of_certificate
             certificate heffective))
 
+/-! ## Nonabelian finite-decision certificate boundary -/
+
+/--
+A finite pointed torsor whose repair list is complete but whose unique
+selected-transition trivialization is not effective.
+
+This witness separates finite repair-order completeness from the stronger
+`NonabelianRepairTorsorDescentDischarge.effective_of_trivialization` field.
+-/
+def finiteDecisionButNoNonabelianDischargeTorsor :
+    FinitePointedRepairTorsor Bool Unit where
+  choiceOrder := [false, true]
+  repairOrder := [()]
+  neutral := false
+  compose := fun choice _ => choice
+  inverse := fun choice => choice
+  selectedTransition := true
+  selected_cocycle := rfl
+  gauge := fun _ => true
+  effectiveRepair := fun _ => False
+
+/-- The witness has finite repair-order completeness. -/
+theorem finiteDecisionButNoNonabelianDischarge_certificate :
+    FiniteNonabelianRepairDecisionCertificate
+      finiteDecisionButNoNonabelianDischargeTorsor where
+  repair_complete := by
+    intro repair
+    cases repair
+    simp [finiteDecisionButNoNonabelianDischargeTorsor]
+
+/-- The witness is trivial as a pointed torsor. -/
+theorem finiteDecisionButNoNonabelianDischarge_trivial :
+    PointedTorsorTrivial finiteDecisionButNoNonabelianDischargeTorsor := by
+  exact ⟨(), rfl⟩
+
+/-- The witness has no effective nonabelian repair descent. -/
+theorem finiteDecisionButNoNonabelianDischarge_no_effectiveDescent :
+    Not
+      (EffectiveNonabelianRepairDescent
+        finiteDecisionButNoNonabelianDischargeTorsor) := by
+  intro heffective
+  rcases heffective with ⟨repair, heff, _hgauge⟩
+  cases repair
+  exact heff
+
+/-- The witness has no visible nonabelian descent discharge record. -/
+theorem finiteDecisionButNoNonabelianDischarge_no_descentDischarge :
+    Not
+      (NonabelianRepairTorsorDescentDischarge
+        finiteDecisionButNoNonabelianDischargeTorsor) := by
+  intro discharge
+  exact discharge.effective_of_trivialization () rfl
+
+/--
+Finite repair-order completeness does not supply the visible nonabelian
+descent discharge needed by Cycle 87.
+
+The finite certificate supports a decision procedure for existence of an
+effective repair, but it does not turn every selected-transition
+trivialization into an effective repair.
+-/
+theorem finiteNonabelianDecisionCertificate_not_enough_for_descentDischarge :
+    FiniteNonabelianRepairDecisionCertificate
+        finiteDecisionButNoNonabelianDischargeTorsor /\
+      PointedTorsorTrivial finiteDecisionButNoNonabelianDischargeTorsor /\
+      Not
+        (EffectiveNonabelianRepairDescent
+          finiteDecisionButNoNonabelianDischargeTorsor) /\
+      Not
+        (NonabelianRepairTorsorDescentDischarge
+          finiteDecisionButNoNonabelianDischargeTorsor) := by
+  exact
+    ⟨finiteDecisionButNoNonabelianDischarge_certificate,
+      finiteDecisionButNoNonabelianDischarge_trivial,
+      finiteDecisionButNoNonabelianDischarge_no_effectiveDescent,
+      finiteDecisionButNoNonabelianDischarge_no_descentDischarge⟩
+
 /-- Listed stacky `H2` boundary witnesses. -/
 def ListedStackyBoundary
     {Coherence : Type z}
