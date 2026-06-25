@@ -80,7 +80,7 @@
   - finite-query-representation / support-boundary-obstruction / support-control / current-shadow-factorization / current-shadow-reading-faithfulness / coordinate-certificate / anti-weakening: 80
   - finite-query-representation / support-self-recovery / support-boundary-gap / current-shadow-factorization / coordinate-certificate / anti-weakening: 78
 - evidence portfolio:
-  - proved-in-research: 73
+  - proved-in-research: 74
 
 ## Target Proof State
 
@@ -151,7 +151,8 @@
 - latest Cycle 70 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799455064
 - latest Cycle 71 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799610512
 - latest Cycle 72 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799851378
-- Cycle 73 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 73 support ledger: synced in #2482; PR #2565 merged.
+- latest Cycle 74 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801393803
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -224,6 +225,7 @@
   - support-shadow raw current-shadow factorization / support-control / current-shadow-reading faithfulness / coordinate-certificate boundary square
   - support-boundary obstruction from no raw current-shadow factorization, with complete Bool recovery/no-boundary witness
   - support-shadow self-recovery / support-boundary gap witness for complete Bool support
+  - support-shadow self-recovery / individual support-boundary face gaps for raw factorization, support-control, faithfulness, and coordinate certificate
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -3352,6 +3354,54 @@ open_questions: support-boundary premise を target-level semantic soundness、r
 この cycle は target theorem completion ではない。support-shadow self-recovery と support-boundary membership の分離であり、
 arbitrary semantic observation adequacy、target-level representation adequacy、global coherence、tower vanishing、
 target theorem completion は主張しない。
+
+## Cycle 74: Support-Shadow Self-Recovery / Certificate Face Gaps
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: target-level representation adequacy bridge toward `ShadowExtensionalTowerObservation` / support-boundary membership without hiding coordinate extensionality
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap.lean
+    declarations:
+      - not_boolCompleteSupportTraceShadow_selfRecovery_to_currentShadowFactor
+      - not_boolCompleteSupportTraceShadow_selfRecovery_to_supportControl
+      - not_boolCompleteSupportTraceShadow_selfRecovery_to_currentShadowFaithfulness
+      - not_boolCompleteSupportTraceShadow_selfRecovery_to_coordinateCertificate
+      - boolCompleteSupportTraceShadow_selfRecovery_individualBoundaryGaps
+premise_delta:
+  discharged: none
+  remaining:
+    - target-level representation adequacy / semantic faithfulness theorem implying `ShadowExtensionalTowerObservation` or support-boundary membership
+    - non-circular construction of raw current-shadow factorization / support-control / current-shadow-reading faithfulness / coordinate certificate from target certificates
+blocking_findings:
+  - support-shadow self-recovery does not imply any individual support-boundary face for the complete Bool support-shadow witness
+next_obligation: construct a non-recovery-based representation bridge, or prove an explicit target certificate that yields the support-boundary face without hiding coordinate extensionality
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap.lean`
+decomposes the Cycle 73 self-recovery / boundary gap into the four individual
+support-boundary faces.
+
+- `not_boolCompleteSupportTraceShadow_selfRecovery_to_currentShadowFactor`: self-recovery does not imply raw current-shadow factorization.
+- `not_boolCompleteSupportTraceShadow_selfRecovery_to_supportControl`: self-recovery does not imply support-control.
+- `not_boolCompleteSupportTraceShadow_selfRecovery_to_currentShadowFaithfulness`: self-recovery does not imply current-shadow-reading faithfulness.
+- `not_boolCompleteSupportTraceShadow_selfRecovery_to_coordinateCertificate`: self-recovery does not imply the explicit coordinate certificate.
+- `boolCompleteSupportTraceShadow_selfRecovery_individualBoundaryGaps`: the complete Bool witness packages self-recovery together with all four boundary-face failures.
+
+### Target Boundary
+
+This cycle is not target theorem completion and not target theorem refutation.
+It fixes a blocker for the T1-selected representation-adequacy bridge: recovery
+or self-recovery cannot be used as a substitute for raw current-shadow
+factorization, support-control, current-shadow-reading faithfulness, or explicit
+coordinate certification.  Target-level semantic soundness, arbitrary
+representation adequacy, finite shadow adequacy for all observations, global
+coherence, tower vanishing, and the final `$math-lean-review` gate remain open.
 
 ## Superseded G6 Completion Judgment
 
