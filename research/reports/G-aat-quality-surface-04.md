@@ -1474,6 +1474,44 @@ open_questions: arbitrary semantic observation factorization、representation ad
 
 この cycle は target theorem completion ではない。collapse は canonical current-shadow reading に限って放電されたが、faithfulness は `QueryPostInvariantOnCurrentShadowFibers` と同値化されたのみであり、無条件 discharge ではない。no-separation から post-fiber invariance への逆向き exactness は `[DecidableEq Out]` を明示する。arbitrary semantic observation factorization、full representation adequacy、semantic soundness から post-fiber invariance への non-circular extraction は未完である。
 
+## Cycle 34: Representation Post-Invariance Exact Criterion
+
+```text
+candidate: Representation Post-Invariance Exact Criterion
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 41
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 82
+score_note: visible finite-query representation 上で、represented observation の shadow-extensionality / current-shadow factorization と package post-map の post-fiber invariance を同値化する。
+category: finite-query-representation / post-fiber-invariance / current-shadow-factorization / anti-weakening
+goal_delta: representation boundary で `QueryPostInvariantOnCurrentShadowFibers` を exact criterion として取り出し、semantic-reading adequacy existence と current-shadow factorization の同値も接続した。
+project_value_delta: representation adequacy / semantic soundness が将来満たすべき条件を theorem surface に固定し、representation certificate だけで post-invariance を放電したかのような過大主張を防ぐ。
+rival_delta: finite query diagnostic が represented observation として current-shadow summary に降りるには、represented observation の extensionality / factorization が package post-invariance と一致することを示せる必要がある。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationPostInvariant`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_representation_post_invariance_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `representedFiniteTraceQueryObservation_shadowExtensional_iff_postInvariant`、`representedFiniteTraceQueryObservation_currentShadowFactor_iff_postInvariant`、`representedFiniteTraceQueryObservation_canonicalShadowFactor_iff_postInvariant`、`representedFiniteTraceQueryObservation_currentShadowFactor_iff_semanticReadingAdequacy`、`representedFiniteTraceQueryObservation_postInvariant_of_currentShadowDeterminesSupportTraceShadow`、Bool represented-observation obstruction witnesses を追加した。
+open_questions: semantic soundness / representation adequacy から `ShadowExtensionalTowerObservation observe` または `CurrentShadowDeterminesSupportTraceShadow` を非循環に抽出する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationPostInvariant.lean` は、visible finite-query representation と post-fiber invariance の exact criterion を定式化する。
+
+- `representedFiniteTraceQueryObservation_shadowExtensional_iff_postInvariant`: represented observation の canonical-shadow extensionality は package post-map の post-fiber invariance と同値。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_iff_postInvariant`: raw current-shadow factorization は package post-invariance と同値。
+- `representedFiniteTraceQueryObservation_canonicalShadowFactor_iff_postInvariant`: canonical factor 版の同値。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_iff_semanticReadingAdequacy`: represented current-shadow factorization と package semantic-reading adequacy existence の同値。
+- `representedFiniteTraceQueryObservation_postInvariant_of_currentShadowDeterminesSupportTraceShadow`: support trace shadow が current shadow で決まれば package post-invariance が出る。
+- `not_boolFirstRepresentedFiniteTraceQueryObservation_shadowExtensional` / `boolFirstRepresentedFiniteTraceQueryObservation_no_currentShadowFactor`: Bool first-reading represented observation は extensionality / factorization を持たない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`FiniteTraceQueryObservationRepresentation` 単体から post-invariance を出していない。`ShadowExtensionalTowerObservation observe`、current-shadow factorization、`CurrentShadowDeterminesSupportTraceShadow` は exact criterion の片側または visible sufficient premise であり、semantic soundness から自動抽出済みとは主張しない。arbitrary semantic observation factorization と T6 `$math-lean-review` は未完である。
+
 ## Superseded G6 Completion Judgment
 
 ```text
