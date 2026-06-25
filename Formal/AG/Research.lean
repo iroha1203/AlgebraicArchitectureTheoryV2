@@ -113,6 +113,7 @@ import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTorsor
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2
+import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairUniversalShadow
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetCompletion
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
