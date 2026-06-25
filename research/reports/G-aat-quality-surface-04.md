@@ -3971,6 +3971,67 @@ The quotient equality and selected/neutral equality theorems use Lean's
 standard `Quot.sound`; the lift and universal factorization theorem do not
 introduce additional axioms.
 
+## Cycle 84: Integrated Class-Surface Audit Bridge
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-checkpoint
+completion_candidate: no
+proof_obligation: connect the sheaf `H1`, nonabelian `H1`, and stacky `H2` quotient surfaces to the comparison-free integrated target tower without reflecting class equality back to target completion
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - integratedSheafH1ZeroClass
+      - IntegratedLayerClassSurfaceEqualities
+      - sheafH1Zero_selectedClass_eq_zeroClass
+      - integratedLayerClassSurfaceEqualities_of_layerPredicates
+      - integratedTowerVanishes_to_classSurfaceEqualities
+      - integratedClassSurfaceAudit_checkpoint_package
+premise_delta:
+  discharged:
+    - the comparison-free integrated tower now has a visible one-way bridge from tower vanishing to the three quotient-class equalities
+    - sheaf `H1` zero identifies the selected residual class with the zero sheaf class
+    - effective nonabelian descent identifies the selected transition class with the neutral torsor class through the Cycle 82 visible relation data
+    - effective stacky descent identifies the selected 2-cocycle class with the neutral stacky class through the Cycle 83 visible relation data
+    - the checkpoint package keeps the transparent `integratedTower_vanishes_iff_layers` equivalence together with the one-way class-surface bridge
+  remaining:
+    - no converse from quotient-class equality to tower vanishing, effective descent, or stack effectiveness is claimed
+    - target-level completion remains open because final target theorem review and final `$math-lean-review` are not run
+    - the finite computable shadow representation line remains blocked unless new visible coordinate-discharge data is introduced
+blocking_findings:
+  - none for the one-way integrated class-surface audit bridge
+next_obligation: audit whether any remaining target-level material premise can be discharged without reopening the blocked representation line, or prepare the final review packet if no material premise remains in the finite/small boundary
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean`
+adds a checkpoint bridge from the integrated target tower to the object-level
+quotient surfaces introduced in Cycles 81--83.
+
+- `integratedSheafH1ZeroClass` names the zero sheaf `H1` quotient class.
+- `IntegratedLayerClassSurfaceEqualities` records exactly the three selected
+  class equalities: sheaf selected residual equals zero class, nonabelian
+  selected transition equals neutral class, and stacky selected 2-cocycle
+  equals neutral class.
+- `integratedLayerClassSurfaceEqualities_of_layerPredicates` proves those
+  equalities from visible layer predicates.
+- `integratedTowerVanishes_to_classSurfaceEqualities` proves that vanishing of
+  the comparison-free integrated tower gives those class equalities.
+- `integratedClassSurfaceAudit_checkpoint_package` bundles
+  `integratedTower_vanishes_iff_layers` with that one-way bridge.
+
+### Target Boundary
+
+This cycle is a target integration checkpoint, not target theorem completion.
+It does not use class equality to prove tower vanishing, does not reflect
+quotient equality back to effective descent or stack effectiveness, and does
+not discharge the blocked finite computable shadow representation line.
+
+All reported declarations depend only on Lean's standard `Quot.sound` through
+the underlying quotient equality theorems.
+
 ## Superseded G6 Completion Judgment
 
 ```text
