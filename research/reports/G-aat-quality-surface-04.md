@@ -163,6 +163,7 @@
 - latest Cycle 91 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803887418
 - latest Cycle 92 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4804002366
 - latest Cycle 93 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4804085634
+- Cycle 94 support ledger: pending; finite listed effectivity now constructs the strengthened nonabelian and stacky descent certificates.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -4522,6 +4523,64 @@ It exists so the final `$math-lean-review` packet cannot silently treat the
 certificate fields as discharged.  Both strengthened descent certificates
 remain explicit material inputs unless later supplied or constructed from
 stronger non-conclusion data.
+
+## Cycle 94: Listed-Effectivity Descent Certificate Construction
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: construct both strengthened descent certificates from visible finite listed-effectivity data
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean
+    declarations:
+      - ListedAllSelectedNonabelianRepairsEffective
+      - listedAllSelectedNonabelianRepairsEffective_of_mem
+      - finiteNonabelianRepairDescentCertificate_of_listedEffectivity
+      - ListedAllSelectedStackyRepairsEffective
+      - listedAllSelectedStackyRepairsEffective_of_mem
+      - finiteStackyRepairDescentCertificate_of_listedEffectivity
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - classSurfaceEqualities_to_integratedTowerVanishes_of_listedEffectivity
+      - finalPacket_listedEffectivityDischarge_package
+premise_delta:
+  discharged:
+    - finite nonabelian repair-order completeness plus listed selected-transition effectivity constructs `FiniteNonabelianRepairDescentCertificate`
+    - finite stacky repair-order completeness plus listed selected-boundary effectivity constructs `FiniteStackyRepairDescentCertificate`
+    - class-surface equalities can now use finite listed-effectivity certificates instead of explicit strengthened descent certificate inputs
+    - Cycle 92 blockers remain visible: finite/triviality/zero-H2 data alone still do not construct the strengthened descent certificates
+  remaining:
+    - listed selected-transition / selected-boundary effectivity remains visible finite discharge data
+    - final target theorem review and final `$math-lean-review` remain open
+blocking_findings:
+  - none for this cycle; the listed-effectivity data is intentionally stronger than the previously refuted finite/triviality data
+next_obligation: run a fail-closed final review packet audit against the new listed-effectivity discharge surface, then proceed to `$math-lean-review` only if that packet has no central unchecked material premise
+```
+
+### Result
+
+Cycle 94 adds finite listed-effectivity certificates for the nonabelian and
+stacky layers.  These certificates say that every listed repair trivializing
+the selected transition or selected stacky boundary is effective.  Together
+with repair-list completeness, they construct the strengthened descent
+certificates:
+
+- `finiteNonabelianRepairDescentCertificate_of_listedEffectivity`
+- `finiteStackyRepairDescentCertificate_of_listedEffectivity`
+
+The integrated audit then uses those constructions in
+`classSurfaceEqualities_to_integratedTowerVanishes_of_listedEffectivity` and
+`finalPacket_listedEffectivityDischarge_package`.
+
+### Target Boundary
+
+This is a proof-obligation discharge, not target theorem completion.  The cycle
+does not reclassify finite decision completeness, pointed triviality, selected
+`H2` zero, global coherence, or tower vanishing as sufficient.  The finite
+listed-effectivity data is the visible discharge artifact replacing the
+explicit strengthened descent certificate inputs.
 
 ## Superseded G6 Completion Judgment
 

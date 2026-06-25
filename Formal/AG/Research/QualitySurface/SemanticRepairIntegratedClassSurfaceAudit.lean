@@ -533,6 +533,50 @@ theorem classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
         stackCertificate)
 
 /--
+Class-surface equalities imply integrated tower vanishing when the strengthened
+nonabelian and stacky descent certificates are constructed from finite listed
+effectivity checks.
+
+The finite decision certificates still supply only repair-list completeness.
+The listed effectivity premises are the visible finite discharge data that
+Cycle 92 showed cannot be replaced by finite/triviality data alone.
+-/
+theorem classSurfaceEqualities_to_integratedTowerVanishes_of_listedEffectivity
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDecisionCertificate torsor)
+    (torsorEffectivity :
+      ListedAllSelectedNonabelianRepairsEffective torsor torsor.repairOrder)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDecisionCertificate stack)
+    (stackEffectivity :
+      ListedAllSelectedStackyRepairsEffective stack stack.repairOrder)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) := by
+  exact
+    classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
+      E torsor torsorRelation
+      (finiteNonabelianRepairDescentCertificate_of_listedEffectivity
+        torsorCertificate torsorEffectivity)
+      stack stackRelation
+      (finiteStackyRepairDescentCertificate_of_listedEffectivity
+        stackCertificate stackEffectivity)
+
+/--
 Fail-closed final packet checkpoint for the descent-certificate material
 premises.
 
@@ -575,6 +619,54 @@ theorem finalPacket_descentCertificateMaterialPremiseAudit_checkpoint
     ⟨classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
         E torsor torsorRelation torsorCertificate
         stack stackRelation stackCertificate,
+      finiteDecisionButNoNonabelianDescentCertificate,
+      finiteDecisionButNoStackyDescentCertificate⟩
+
+/--
+Cycle 94 listed-effectivity discharge package.
+
+It replaces the explicit strengthened descent certificate inputs in the
+class-surface reverse bridge by finite decision certificates plus finite listed
+effectivity checks.  The final two components keep the Cycle 92 blockers
+visible: finite/triviality data alone still cannot construct the strengthened
+descent certificates.
+-/
+theorem finalPacket_listedEffectivityDischarge_package
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDecisionCertificate torsor)
+    (torsorEffectivity :
+      ListedAllSelectedNonabelianRepairsEffective torsor torsor.repairOrder)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDecisionCertificate stack)
+    (stackEffectivity :
+      ListedAllSelectedStackyRepairsEffective stack stack.repairOrder)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    (IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack)) /\
+      Not
+        (FiniteNonabelianRepairDescentCertificate
+          finiteDecisionButNoNonabelianDischargeTorsor) /\
+      Not
+        (FiniteStackyRepairDescentCertificate
+          finiteDecisionButNoStackyDischargeEnvelope) := by
+  exact
+    ⟨classSurfaceEqualities_to_integratedTowerVanishes_of_listedEffectivity
+        E torsor torsorRelation torsorCertificate torsorEffectivity
+        stack stackRelation stackCertificate stackEffectivity,
       finiteDecisionButNoNonabelianDescentCertificate,
       finiteDecisionButNoStackyDescentCertificate⟩
 

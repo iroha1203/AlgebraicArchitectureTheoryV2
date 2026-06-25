@@ -1287,6 +1287,72 @@ theorem finiteNonabelianDecisionTrivial_not_enough_for_descentCertificate :
       finiteDecisionButNoNonabelianDischarge_trivial,
       finiteDecisionButNoNonabelianDescentCertificate⟩
 
+/-! ## Finite nonabelian listed effectivity certificate -/
+
+/--
+Finite-list certificate that every listed selected-transition trivialization is
+effective.
+
+This is stronger than finite repair-order completeness, but it is still a
+visible finite check over the supplied repair list.  It does not store global
+coherence, tower vanishing, or torsor triviality.
+-/
+def ListedAllSelectedNonabelianRepairsEffective
+    {Choice : Type z}
+    {Repair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice Repair) :
+    List Repair -> Prop
+  | [] => True
+  | repair :: rest =>
+      (torsor.gauge repair = torsor.selectedTransition ->
+        torsor.effectiveRepair repair) /\
+        ListedAllSelectedNonabelianRepairsEffective torsor rest
+
+theorem listedAllSelectedNonabelianRepairsEffective_of_mem
+    {Choice : Type z}
+    {Repair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice Repair)
+    {listed : List Repair}
+    {repair : Repair}
+    (hlisted :
+      ListedAllSelectedNonabelianRepairsEffective torsor listed)
+    (hmem : repair ∈ listed) :
+    torsor.gauge repair = torsor.selectedTransition ->
+      torsor.effectiveRepair repair := by
+  induction listed with
+  | nil =>
+      cases hmem
+  | cons head rest ih =>
+      cases hlisted with
+      | intro hhead htail =>
+          cases hmem with
+          | head =>
+              exact hhead
+          | tail _ hmemTail =>
+              exact ih htail hmemTail
+
+/--
+Finite repair-order completeness plus listed selected-transition effectivity
+constructs the strengthened nonabelian descent certificate.
+
+The construction does not use pointed torsor triviality as a sufficient
+condition; Cycle 92's blocker remains valid for finite/triviality data alone.
+-/
+theorem finiteNonabelianRepairDescentCertificate_of_listedEffectivity
+    {Choice : Type z}
+    {Repair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice Repair}
+    (certificate : FiniteNonabelianRepairDecisionCertificate torsor)
+    (effectivity :
+      ListedAllSelectedNonabelianRepairsEffective torsor torsor.repairOrder) :
+    FiniteNonabelianRepairDescentCertificate torsor where
+  finite := certificate
+  effective_of_trivialization := by
+    intro repair hgauge
+    exact
+      listedAllSelectedNonabelianRepairsEffective_of_mem torsor
+        effectivity (certificate.repair_complete repair) hgauge
+
 /-- Listed stacky `H2` boundary witnesses. -/
 def ListedStackyBoundary
     {Coherence : Type z}
@@ -1671,6 +1737,74 @@ theorem finiteStackyDecisionH2Zero_not_enough_for_descentCertificate :
       finiteDecisionButNoStackyDischarge_trivial,
       finiteDecisionButNoStackyDischarge_h2Zero,
       finiteDecisionButNoStackyDescentCertificate⟩
+
+/-! ## Finite stacky listed effectivity certificate -/
+
+/--
+Finite-list certificate that every listed selected-boundary trivialization is
+effective.
+
+This is the stacky analogue of
+`ListedAllSelectedNonabelianRepairsEffective`.  It remains a visible finite
+effectivity check over the supplied repair list, not a hidden stack
+effectiveness field on the envelope.
+-/
+def ListedAllSelectedStackyRepairsEffective
+    {Coherence : Type z}
+    {Repair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence Repair) :
+    List Repair -> Prop
+  | [] => True
+  | repair :: rest =>
+      (stack.boundary2 repair = stack.selected2Cocycle ->
+        stack.effectiveRepair repair) /\
+        ListedAllSelectedStackyRepairsEffective stack rest
+
+theorem listedAllSelectedStackyRepairsEffective_of_mem
+    {Coherence : Type z}
+    {Repair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence Repair)
+    {listed : List Repair}
+    {repair : Repair}
+    (hlisted :
+      ListedAllSelectedStackyRepairsEffective stack listed)
+    (hmem : repair ∈ listed) :
+    stack.boundary2 repair = stack.selected2Cocycle ->
+      stack.effectiveRepair repair := by
+  induction listed with
+  | nil =>
+      cases hmem
+  | cons head rest ih =>
+      cases hlisted with
+      | intro hhead htail =>
+          cases hmem with
+          | head =>
+              exact hhead
+          | tail _ hmemTail =>
+              exact ih htail hmemTail
+
+/--
+Finite stacky repair-order completeness plus listed selected-boundary
+effectivity constructs the strengthened stacky descent certificate.
+
+The construction does not use selected-boundary triviality or zero selected
+`H2` as sufficient conditions; Cycle 92's blocker remains valid for that
+weaker data alone.
+-/
+theorem finiteStackyRepairDescentCertificate_of_listedEffectivity
+    {Coherence : Type z}
+    {Repair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence Repair}
+    (certificate : FiniteStackyRepairDecisionCertificate stack)
+    (effectivity :
+      ListedAllSelectedStackyRepairsEffective stack stack.repairOrder) :
+    FiniteStackyRepairDescentCertificate stack where
+  finite := certificate
+  effective_of_trivialization := by
+    intro repair hboundary
+    exact
+      listedAllSelectedStackyRepairsEffective_of_mem stack
+        effectivity (certificate.repair_complete repair) hboundary
 
 theorem integratedTower_globalCoherent_iff_layers
     {Atom : Type u}
