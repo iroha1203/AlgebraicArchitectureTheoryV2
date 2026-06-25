@@ -1253,6 +1253,40 @@ theorem finiteNonabelianDecisionCertificate_not_enough_for_descentDischarge :
       finiteDecisionButNoNonabelianDischarge_no_effectiveDescent,
       finiteDecisionButNoNonabelianDischarge_no_descentDischarge⟩
 
+/--
+The Cycle 88 witness also blocks automatic construction of the strengthened
+finite nonabelian descent certificate from finite decision / triviality data.
+-/
+theorem finiteDecisionButNoNonabelianDescentCertificate :
+    Not
+      (FiniteNonabelianRepairDescentCertificate
+        finiteDecisionButNoNonabelianDischargeTorsor) := by
+  intro certificate
+  exact
+    finiteDecisionButNoNonabelianDischarge_no_descentDischarge
+      (nonabelianRepairTorsorDescentDischarge_of_finiteNonabelianRepairDescentCertificate
+        certificate)
+
+/--
+Finite nonabelian decision completeness and pointed triviality do not construct
+the strengthened descent certificate.
+
+This is the material-premise boundary left after the raw discharge bridge:
+`FiniteNonabelianRepairDescentCertificate` must either be supplied explicitly
+or constructed from stronger non-conclusion data in a later theorem.
+-/
+theorem finiteNonabelianDecisionTrivial_not_enough_for_descentCertificate :
+    FiniteNonabelianRepairDecisionCertificate
+        finiteDecisionButNoNonabelianDischargeTorsor /\
+      PointedTorsorTrivial finiteDecisionButNoNonabelianDischargeTorsor /\
+      Not
+        (FiniteNonabelianRepairDescentCertificate
+          finiteDecisionButNoNonabelianDischargeTorsor) := by
+  exact
+    ⟨finiteDecisionButNoNonabelianDischarge_certificate,
+      finiteDecisionButNoNonabelianDischarge_trivial,
+      finiteDecisionButNoNonabelianDescentCertificate⟩
+
 /-- Listed stacky `H2` boundary witnesses. -/
 def ListedStackyBoundary
     {Coherence : Type z}
@@ -1601,6 +1635,42 @@ theorem finiteStackyDecisionCertificate_not_enough_for_descentDischarge :
       finiteDecisionButNoStackyDischarge_h2Zero,
       finiteDecisionButNoStackyDischarge_no_effectiveDescent,
       finiteDecisionButNoStackyDischarge_no_descentDischarge⟩
+
+/--
+The Cycle 89 witness also blocks automatic construction of the strengthened
+finite stacky descent certificate from finite decision / zero `H2` data.
+-/
+theorem finiteDecisionButNoStackyDescentCertificate :
+    Not
+      (FiniteStackyRepairDescentCertificate
+        finiteDecisionButNoStackyDischargeEnvelope) := by
+  intro certificate
+  exact
+    finiteDecisionButNoStackyDischarge_no_descentDischarge
+      (stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+        certificate)
+
+/--
+Finite stacky decision completeness, selected-boundary triviality, and zero
+selected `H2` do not construct the strengthened stacky descent certificate.
+
+This is the material-premise boundary left after the raw discharge bridge:
+`FiniteStackyRepairDescentCertificate` must either be supplied explicitly or
+constructed from stronger non-conclusion data in a later theorem.
+-/
+theorem finiteStackyDecisionH2Zero_not_enough_for_descentCertificate :
+    FiniteStackyRepairDecisionCertificate
+        finiteDecisionButNoStackyDischargeEnvelope /\
+      StackyRepairTrivial finiteDecisionButNoStackyDischargeEnvelope /\
+      StackyRepairH2Zero finiteDecisionButNoStackyDischargeEnvelope /\
+      Not
+        (FiniteStackyRepairDescentCertificate
+          finiteDecisionButNoStackyDischargeEnvelope) := by
+  exact
+    ⟨finiteDecisionButNoStackyDischarge_certificate,
+      finiteDecisionButNoStackyDischarge_trivial,
+      finiteDecisionButNoStackyDischarge_h2Zero,
+      finiteDecisionButNoStackyDescentCertificate⟩
 
 theorem integratedTower_globalCoherent_iff_layers
     {Atom : Type u}
