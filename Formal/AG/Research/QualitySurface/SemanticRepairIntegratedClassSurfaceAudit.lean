@@ -227,6 +227,74 @@ structure IntegratedClassSurfaceReflectionCertificate
       EffectiveStackyRepairDescent stack
 
 /--
+Construct the reflection certificate from visible quotient relations and
+explicit descent discharge data.
+
+The certificate is not supplied as an assumption.  Its sheaf field follows
+from quotient reflection for the sheaf `H1` setoid.  The nonabelian and stacky
+fields first reflect quotient equality to the visible same-class relation, then
+use the relation's selected/neutral comparison and the explicit descent
+discharge data.
+-/
+theorem integratedClassSurfaceReflectionCertificate_of_visibleDischarges
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorDischarge :
+      NonabelianRepairTorsorDescentDischarge torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackDischarge : StackyRepairDescentDischarge stack) :
+    IntegratedClassSurfaceReflectionCertificate
+      E torsorRelation stackRelation where
+  sheaf_zero_of_selectedClass_eq_zero := by
+    intro heq
+    refine ⟨E.coefficient.residual_cocycle, ?_⟩
+    exact Quotient.exact heq
+  nonabelian_effective_of_selectedClass_eq_neutral := by
+    intro heq
+    have hsame :
+        NonabelianRepairH1SameClass
+          torsorRelation
+          ⟨torsor.selectedTransition, torsor.selected_cocycle⟩
+          ⟨torsor.neutral, torsorRelation.neutral_cocycle⟩ :=
+      Quotient.exact heq
+    have htrivial : PointedTorsorTrivial torsor :=
+      torsorRelation.selected_neutral_iff_trivial.1 hsame
+    exact
+      (pointedTorsorTrivial_iff_effectiveNonabelianRepairDescent
+        torsor torsorDischarge).1 htrivial
+  stack_h2Zero_of_selectedClass_eq_neutral := by
+    intro heq
+    have hsame :
+        StackyRepairH2SameClass
+          stackRelation
+          ⟨stack.selected2Cocycle, stack.selected2_cocycle⟩
+          ⟨stack.neutral2, stackRelation.neutral2_cocycle⟩ :=
+      Quotient.exact heq
+    have htrivial : StackyRepairTrivial stack :=
+      stackRelation.selected_neutral_iff_trivial.1 hsame
+    exact (stackyH2Zero_iff_stackyRepairTrivial stack).2 htrivial
+  stack_effective_of_selectedClass_eq_neutral := by
+    intro heq
+    have hsame :
+        StackyRepairH2SameClass
+          stackRelation
+          ⟨stack.selected2Cocycle, stack.selected2_cocycle⟩
+          ⟨stack.neutral2, stackRelation.neutral2_cocycle⟩ :=
+      Quotient.exact heq
+    have htrivial : StackyRepairTrivial stack :=
+      stackRelation.selected_neutral_iff_trivial.1 hsame
+    exact
+      (stackyRepairTrivial_iff_effectiveStackyRepairDescent
+        stack stackDischarge).1 htrivial
+
+/--
 With an explicit reflection certificate, quotient-class equalities recover the
 layer predicates used by the integrated target tower.
 
@@ -297,6 +365,41 @@ theorem classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertifica
     (integratedTower_vanishes_iff_layers E torsor stack).2
       (classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate
         E reflection hequalities)
+
+/--
+Class-surface equalities imply integrated tower vanishing from visible descent
+discharge data.
+
+This removes the opaque reflection-certificate argument by constructing the
+certificate from quotient reflection, selected/neutral relation data, and the
+explicit nonabelian / stacky descent discharges.
+-/
+theorem classSurfaceEqualities_to_integratedTowerVanishes_of_visibleDischarges
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorDischarge :
+      NonabelianRepairTorsorDescentDischarge torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackDischarge : StackyRepairDescentDischarge stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) := by
+  exact
+    classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate
+      E torsor stack
+      (integratedClassSurfaceReflectionCertificate_of_visibleDischarges
+        E torsorRelation torsorDischarge stackRelation stackDischarge)
 
 /--
 Cycle 85 final-premise audit package.
