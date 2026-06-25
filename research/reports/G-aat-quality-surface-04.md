@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5412
+- total SCORE: 5508
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -55,8 +55,9 @@
   - finite-query-representation / target-surface-admissibility / recovery-free-factorization / anti-weakening: 104
   - finite-query-representation / coordinate-certificate / target-surface-entry / anti-weakening: 112
   - finite-query-representation / post-fiber-separation / coordinate-certificate-obstruction / anti-weakening: 104
+  - finite-query-representation / target-surface-entry / recovery-independence / anti-weakening: 96
 - evidence portfolio:
-  - proved-in-research: 49
+  - proved-in-research: 50
 
 ## Target Proof State
 
@@ -103,7 +104,8 @@
 - latest Cycle 46 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796766474
 - latest Cycle 47 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796927513
 - latest Cycle 48 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797047506
-- Cycle 49 support ledger: pending
+- latest Cycle 49 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797163200
+- latest Cycle 50 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797267859
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -2275,6 +2277,52 @@ witness である。semantic soundness、arbitrary representation adequacy、fin
 for all observations、global coherence、tower vanishing は discharge しない。recovery なしに
 assignment entry から coordinate certificate が出るとは主張せず、fixed target surface での
 偶然の pointwise equality すべてを否定するものでもない。
+
+## Cycle 50: Recovery Independence for Target-Surface Entry
+
+```text
+candidate: Recovery Independence for Target-Surface Entry
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T2 accepted as target-obstruction / anti-weakening support; base 48 x multiplier 2.0 = final 96
+base_score: 48
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 96
+score_note: Bool constant represented finite-query observation は assignment entry と target-surface finite-shadow factorization に入るが、realized tower 上の Bool `[true]` query-reading recovery は不可能であることを固定した。
+category: finite-query-representation / target-surface-entry / recovery-independence / anti-weakening
+goal_delta: target-surface entry / assignment entry / universal factorization package が `ObservationRecoversQueryReadings` や `QueryReadingsRecoveringPostOnRealizedTowers` を含意しない Bool witness を追加した。
+project_value_delta: target-surface entry を recovery / decoder adequacy / coordinate extraction と混同しない fail-closed theorem boundary を固定した。
+rival_delta: ADL / static analyzer / metric dashboard / AI reviewer の constant finite output が target-surface API に入っても query-reading decoder にはならないことを Lean theorem として表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRecoveryIndependence.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceRecoveryIndependence`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_recovery_independence_axioms.lean` は pass。reported declarations 4 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: target-obstruction
+proof_obligation_delta: recovery-free target-surface entry と realized query-reading recovery の非含意を固定し、以後の theorem で recovery premise を visible に保つ必要を明示した。
+premise_discharge_status: post-invariance は Bool constant post-map で rfl により放電。negative side は existing Bool realized-tower recovery obstruction に依存。semantic soundness / representation adequacy / coordinate-certificate extraction / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: T2 accepted as target-obstruction / anti-weakening support; reject if counted as target-proof, semantic soundness, representation adequacy, or coordinate recovery.
+open_questions: recovery premise を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRecoveryIndependence.lean`
+は、target-surface entry が realized query-reading recovery を含意しないことを Bool
+constant post-map で固定する。
+
+- `not_boolTrueConstantFiniteTraceQueryObservation_observationRecoversQueryReadings`: Bool constant represented observation は realized tower 上の Bool `[true]` query readings を recover できない。
+- `boolTrueConstantPost_shadowExtensionalAssignment_but_not_observationRecoversQueryReadings`: assignment entry は成立するが observation-level recovery は成立しない。
+- `boolTrueConstantPost_targetSurfaceFactorization_but_not_observationRecoversQueryReadings`: target-surface pointwise finite-shadow factorization は成立するが observation-level recovery は成立しない。
+- `boolTrueConstantPost_targetSurfaceUniversalFactorization_but_not_observationRecoversQueryReadings`: target-surface factorization and uniqueness package は成立するが observation-level recovery は成立しない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。ここで固定したのは非含意であり、
+`ShadowExtensionalTowerObservation`、post-invariance、assignment entry、target-surface
+finite-shadow factorization は `ObservationRecoversQueryReadings` /
+`QueryReadingsRecoveringPostOnRealizedTowers` を含意しない。以後の theorem が query-coordinate
+recovery、semantic soundness、representation adequacy を必要とする場合、それらは theorem
+argument として可視に残すか、別の非循環 certificate から放電する必要がある。global coherence、
+tower vanishing、finite shadow adequacy for all observations、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
