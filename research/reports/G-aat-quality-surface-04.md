@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6770
+- total SCORE: 6854
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -70,8 +70,9 @@
   - finite-query-representation / combined-recovery-implication-obstruction / anti-weakening: 80
   - finite-query-representation / support-shadow-recovery / target-surface-route / anti-weakening: 86
   - finite-query-representation / explicit-coordinate-certificate / support-shadow-target-route / anti-weakening: 88
+  - finite-query-representation / support-shadow-recovery / coordinate-certificate-independence / anti-weakening: 84
 - evidence portfolio:
-  - proved-in-research: 64
+  - proved-in-research: 65
 
 ## Target Proof State
 
@@ -134,6 +135,7 @@
 - latest Cycle 62 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798353868
 - latest Cycle 63 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798455276
 - latest Cycle 64 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798539263
+- latest Cycle 65 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798610806
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -201,6 +203,7 @@
   - combined recovery-free face implication obstruction witness
   - support-shadow recovery / current-shadow factorization / target-surface route under visible coordinate extensionality
   - support-shadow recovery / current-shadow factorization / target-surface route under explicit coordinate certificate
+  - complete support-shadow recovery / coordinate-certificate independence witness
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2969,6 +2972,46 @@ open_questions: coordinate certificate を target-level semantic soundness、rep
 この cycle は target theorem completion ではない。coordinate certificate は visible premise として残る。canonical
 support-shadow representation の finite route であり、arbitrary semantic observation adequacy、target-level
 representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 65: Support-Shadow Recovery / Coordinate Certificate Independence
+
+```text
+candidate: Support-Shadow Recovery / Coordinate Certificate Independence
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as anti-weakening witness; base 42 x multiplier 2.0 = final 84
+base_score: 42
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 84
+score_note: complete Bool support-shadow recovery だけでは explicit coordinate certificate が得られないことを fixed witness として追加した。
+category: finite-query-representation / support-shadow-recovery / coordinate-certificate-independence / anti-weakening
+goal_delta: Cycle64 positive certificate route の premise を support recovery から自動 discharge できないことを明示した。
+project_value_delta: support recovery と current-shadow coordinate adequacy の境界を theorem API で保護した。
+rival_delta: finite support evidence や trace recovery を持つ analyzer でも coordinate certificate は別証明であることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_shadow_certificate_independence_axioms.lean` は pass。reported declarations 3 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: complete Bool support-shadow recovery / no-current-factor / no-coordinate-certificate witness を追加した。
+premise_discharge_status: support recovery は coordinate certificate を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as support-recovery/certificate independence witness; reject if complete support recovery is counted as coordinate certificate or target completion.
+open_questions: coordinate certificate を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportShadowCertificateIndependence.lean`
+は、complete Bool support-shadow recovery が coordinate certificate を自動生成しないことを固定する。
+
+- `not_boolCompleteTraceSupport_queryCurrentShadowCoordinateCertificate`: complete Bool support list には explicit coordinate certificate がない。
+- `boolCompleteSupportTraceShadow_recoversBoolTrueReadings_but_not_queryCurrentShadowCoordinateCertificate`: complete support shadow は Bool `[true]` readings を recover するが certificate は出ない。
+- `boolCompleteSupportTraceShadow_recovery_noCurrentFactor_noCoordinateCertificate`: recovery、no-current-factor、no-certificate を一つの witness package に束ねる。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。complete support-shadow recovery は explicit coordinate certificate を
+自動的に discharge しない。canonical Bool witness の anti-weakening result であり、arbitrary semantic observation
+adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
