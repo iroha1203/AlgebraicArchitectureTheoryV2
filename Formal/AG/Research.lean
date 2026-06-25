@@ -135,3 +135,4 @@ import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryPostFiberObstr
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryFiberFactor
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQuerySemanticSoundness
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryNoSeparation
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCurrentShadowReading
