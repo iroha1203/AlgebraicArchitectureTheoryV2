@@ -3526,6 +3526,74 @@ semantic faithfulness, nonabelian descent adequacy, true sheaf `H^1`
 universality, tower vanishing, and the final `$math-lean-review` gate remain
 open.
 
+## Cycle 77: Representation Adequacy Boundary
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: target-level current-shadow adequacy bridge without hiding coordinate-certificate-equivalent boundary data
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyBoundary.lean
+    declarations:
+      - currentShadowTraceReadingRepresentable_iff_supportTraceShadowCurrentFactor
+      - currentShadowTraceReadingRepresentable_of_supportTraceShadowCurrentFactor
+      - supportTraceShadowCurrentFactor_of_currentShadowTraceReadingRepresentable
+      - readSupportTraceCoordinate
+      - readSupportTraceCoordinate_supportTraceVector_of_mem
+      - currentShadowTraceReadingRepresentation_of_supportTraceShadowCurrentFactor
+      - nonempty_currentShadowTraceReadingRepresentation_of_supportTraceShadowCurrentFactor
+      - queryCurrentShadowCoordinateCertificate_of_supportTraceShadowCurrentFactor
+      - not_boolCompleteTraceSupport_supportTraceShadowCurrentFactor
+      - boolCompleteSupportTraceShadow_complete_selfRecovery_noCurrentShadowFactor_noRepresentation
+premise_delta:
+  discharged:
+    - raw current-shadow factorization of the canonical support-shadow observation constructs a concrete `CurrentShadowTraceReadingRepresentation`
+    - proposition-level `CurrentShadowTraceReadingRepresentable` is equivalent to raw support-shadow current factorization
+    - complete Bool support still has no raw current-shadow factorization and no concrete representation despite finite support completeness and support-shadow self-recovery
+  remaining:
+    - target-level representation adequacy from primitive / finite certificate / semantic representation data without assuming raw current-shadow factorization
+    - non-circular construction of current-shadow factorization / support-control / faithfulness / coordinate certificate from target-level adequacy data
+    - global target theorem completion, semantic faithfulness, nonabelian descent adequacy, true sheaf `H^1` universality, and final `$math-lean-review`
+blocking_findings:
+  - the Cycle 77 evidence fixes the exact representation/factorization boundary; it does not discharge target-level representation adequacy
+next_obligation: construct target-level current-shadow adequacy data that yields `CurrentShadowTraceReadingRepresentation` without assuming raw factorization, coordinate certificate, support-control, or current-shadow-reading faithfulness as equivalent boundary data
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyBoundary.lean`
+fixes the exact boundary left by Cycles 75 and 76.
+
+- `currentShadowTraceReadingRepresentable_iff_supportTraceShadowCurrentFactor`:
+  proposition-level current-shadow trace-reading representability is exactly
+  raw current-shadow factorization of the canonical support-shadow observation.
+- `currentShadowTraceReadingRepresentation_of_supportTraceShadowCurrentFactor`:
+  an explicit raw factor and factorization law construct a concrete
+  current-shadow trace-reading representation by reading the factored support
+  vector.
+- `nonempty_currentShadowTraceReadingRepresentation_of_supportTraceShadowCurrentFactor`:
+  an existential raw factorization gives a concrete representation witness as a
+  proposition-level existence theorem.
+- `not_boolCompleteTraceSupport_supportTraceShadowCurrentFactor` and
+  `boolCompleteSupportTraceShadow_complete_selfRecovery_noCurrentShadowFactor_noRepresentation`:
+  complete Bool support remains outside the boundary; finite support
+  completeness, support-shadow coordinate factors, and support-shadow
+  self-recovery coexist with no raw current-shadow factorization and no concrete
+  current-shadow representation.
+
+### Target Boundary
+
+This cycle is not target theorem completion.  It is also not a full discharge
+of representation adequacy.  Raw current-shadow factorization is now shown to
+be a valid construction route into `CurrentShadowTraceReadingRepresentation`,
+but it remains visible boundary data and is equivalent to proposition-level
+representability.  The next proof still needs target-level current-shadow
+adequacy data that yields this boundary without assuming raw factorization,
+coordinate certificate, support-control, or current-shadow-reading faithfulness
+as theorem input.
+
 ## Superseded G6 Completion Judgment
 
 ```text
