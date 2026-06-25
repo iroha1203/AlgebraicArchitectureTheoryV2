@@ -533,6 +533,52 @@ theorem classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
         stackCertificate)
 
 /--
+Fail-closed final packet checkpoint for the descent-certificate material
+premises.
+
+The first component is the strongest currently available reverse bridge:
+class-surface equalities imply integrated tower vanishing when both strengthened
+descent certificates are supplied.  The remaining components record that the
+existing finite/triviality witnesses do not construct those certificates.
+Thus a final review packet must keep both strengthened certificates explicit
+unless later theorems construct them from stronger non-conclusion data.
+-/
+theorem finalPacket_descentCertificateMaterialPremiseAudit_checkpoint
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDescentCertificate torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDescentCertificate stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    (IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack)) /\
+      Not
+        (FiniteNonabelianRepairDescentCertificate
+          finiteDecisionButNoNonabelianDischargeTorsor) /\
+      Not
+        (FiniteStackyRepairDescentCertificate
+          finiteDecisionButNoStackyDischargeEnvelope) := by
+  exact
+    ⟨classSurfaceEqualities_to_integratedTowerVanishes_of_descentCertificates
+        E torsor torsorRelation torsorCertificate
+        stack stackRelation stackCertificate,
+      finiteDecisionButNoNonabelianDescentCertificate,
+      finiteDecisionButNoStackyDescentCertificate⟩
+
+/--
 Cycle 85 final-premise audit package.
 
 It exposes both directions side by side: the existing one-way bridge requires
