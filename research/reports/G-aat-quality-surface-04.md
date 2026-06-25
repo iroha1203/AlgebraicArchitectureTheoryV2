@@ -163,7 +163,7 @@
 - latest Cycle 91 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803887418
 - latest Cycle 92 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4804002366
 - latest Cycle 93 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4804085634
-- Cycle 94 support ledger: pending; finite listed effectivity now constructs the strengthened nonabelian and stacky descent certificates.
+- latest Cycle 94 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4804242636
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -4581,6 +4581,47 @@ does not reclassify finite decision completeness, pointed triviality, selected
 `H2` zero, global coherence, or tower vanishing as sufficient.  The finite
 listed-effectivity data is the visible discharge artifact replacing the
 explicit strengthened descent certificate inputs.
+
+## Cycle 95: Listed-Effectivity Final Packet Readiness Checkpoint
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-checkpoint
+completion_candidate: no
+proof_obligation: run a fail-closed final review packet audit against the Cycle 94 listed-effectivity discharge surface
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - finalPacket_listedEffectivityReadiness_checkpoint
+premise_delta:
+  discharged:
+    - final packet now exposes the Cycle 94 class-surface bridge and both constructed strengthened descent certificates in one Lean theorem
+    - the checkpoint records that finite listed-effectivity is the required visible discharge surface for these certificates
+    - Cycle 92 blockers remain visible: finite/triviality/zero-H2 data alone still do not construct the strengthened descent certificates
+  remaining:
+    - listed selected-transition / selected-boundary effectivity is still a visible finite discharge datum that final review must inspect
+    - final `$math-lean-review` remains open and is not run in this cycle
+blocking_findings:
+  - none for this checkpoint; it is a fail-closed readiness audit, not target-theorem-proved
+next_obligation: prepare the final_review_packet and run `$math-lean-review` only if parent recheck confirms no central unchecked material premise remains
+```
+
+### Result
+
+Cycle 95 adds `finalPacket_listedEffectivityReadiness_checkpoint`.  The theorem
+bundles:
+
+- the Cycle 94 class-surface reverse bridge from finite listed-effectivity;
+- the constructed `FiniteNonabelianRepairDescentCertificate`;
+- the constructed `FiniteStackyRepairDescentCertificate`;
+- the Cycle 92 nonconstruction blockers for weaker finite/triviality data.
+
+### Target Boundary
+
+This checkpoint does not mark `target-theorem-proved`.  It is a final-packet
+readiness audit showing exactly which visible finite data supports the descent
+certificate discharge before the final `$math-lean-review` gate.
 
 ## Superseded G6 Completion Judgment
 

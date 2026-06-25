@@ -671,6 +671,63 @@ theorem finalPacket_listedEffectivityDischarge_package
       finiteDecisionButNoStackyDescentCertificate⟩
 
 /--
+Cycle 95 fail-closed final-review packet audit after the listed-effectivity
+discharge.
+
+The first component is the Cycle 94 bridge, using finite decision
+certificates plus listed selected-transition / selected-boundary effectivity
+to construct the strengthened descent certificates.  The remaining components
+keep the final packet honest: listed effectivity is still visible finite
+discharge data, while finite/triviality data alone remains insufficient.
+Thus the packet can proceed to final review only with the listed-effectivity
+surface present; it cannot silently fall back to the weaker Cycle 92 data.
+-/
+theorem finalPacket_listedEffectivityReadiness_checkpoint
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    (torsorCertificate :
+      FiniteNonabelianRepairDecisionCertificate torsor)
+    (torsorEffectivity :
+      ListedAllSelectedNonabelianRepairsEffective torsor torsor.repairOrder)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    (stackCertificate :
+      FiniteStackyRepairDecisionCertificate stack)
+    (stackEffectivity :
+      ListedAllSelectedStackyRepairsEffective stack stack.repairOrder)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    (IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack)) /\
+      FiniteNonabelianRepairDescentCertificate torsor /\
+      FiniteStackyRepairDescentCertificate stack /\
+      Not
+        (FiniteNonabelianRepairDescentCertificate
+          finiteDecisionButNoNonabelianDischargeTorsor) /\
+      Not
+        (FiniteStackyRepairDescentCertificate
+          finiteDecisionButNoStackyDischargeEnvelope) := by
+  exact
+    ⟨classSurfaceEqualities_to_integratedTowerVanishes_of_listedEffectivity
+        E torsor torsorRelation torsorCertificate torsorEffectivity
+        stack stackRelation stackCertificate stackEffectivity,
+      finiteNonabelianRepairDescentCertificate_of_listedEffectivity
+        torsorCertificate torsorEffectivity,
+      finiteStackyRepairDescentCertificate_of_listedEffectivity
+        stackCertificate stackEffectivity,
+      finiteDecisionButNoNonabelianDescentCertificate,
+      finiteDecisionButNoStackyDescentCertificate⟩
+
+/--
 Cycle 85 final-premise audit package.
 
 It exposes both directions side by side: the existing one-way bridge requires
