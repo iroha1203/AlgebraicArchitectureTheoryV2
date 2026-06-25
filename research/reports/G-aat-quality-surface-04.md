@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 6154
+- total SCORE: 6250
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -63,8 +63,9 @@
   - finite-query-representation / no-separation / semantic-adequacy-certificate-exactness / anti-weakening: 96
   - finite-query-representation / target-surface-entry / exact-boundary / anti-weakening: 92
   - finite-query-representation / target-surface-entry / universal-factorization / anti-weakening: 88
+  - finite-query-representation / current-shadow-factorization / exact-boundary / anti-weakening: 96
 - evidence portfolio:
-  - proved-in-research: 57
+  - proved-in-research: 58
 
 ## Target Proof State
 
@@ -120,6 +121,7 @@
 - latest Cycle 55 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797685236
 - latest Cycle 56 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797797636
 - latest Cycle 57 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797902403
+- latest Cycle 58 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798000398
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -180,6 +182,7 @@
   - post-fiber separation obstruction boundary for coordinate-certified assignment entry
   - represented finite-query entry exact boundary linking assignment entry, semantic-reading adequacy, no-separation, and coordinate certificates
   - represented finite-query entry route into target-surface universal factorization
+  - raw current-shadow factorization exact boundary for represented finite-query observations
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2661,6 +2664,48 @@ open_questions: visible recovery premise を target-level semantic soundness、r
 `ObservationRecoversQueryReadings` と `[DecidableEq Out]` が visible theorem data として残る。target-level
 semantic soundness、arbitrary representation adequacy、finite shadow adequacy for all observations、global
 coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 58: Raw Current-Shadow Factor Exact Boundary
+
+```text
+candidate: Raw Current-Shadow Factor Exact Boundary
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as raw finite-shadow factorization exact boundary; base 48 x multiplier 2.0 = final 96
+base_score: 48
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 96
+score_note: raw current-shadow factorization、assignment entry、semantic adequacy、no-separation、coordinate certificate の exact finite-query boundary を固定した。
+category: finite-query-representation / current-shadow-factorization / exact-boundary / anti-weakening
+goal_delta: target-surface一点 factorization より強い raw current-shadow factorization boundary を entry / semantic adequacy / no-separation / certificate と接続した。
+project_value_delta: factorization claim の強さを分離し、global current-shadow factorization と target-surface reading factorization を混同しない theorem surface を追加した。
+rival_delta: ADL / static analyzer / metric dashboard / AI reviewer の factorization claim が entry / post-invariance boundary にいること、certificate 交換には recovery が必要なことを Lean theorem として表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_current_shadow_factor_boundary_axioms.lean` は pass。reported declarations 3 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: raw current-shadow factorization と assignment entry の recovery-free iff、および visible recovery + decidable output 下の full exact boundary を追加した。
+premise_discharge_status: raw factorization / entry iff は recovery-free。coordinate certificate と no-separation を含む full exact package では `ObservationRecoversQueryReadings` と `[DecidableEq Out]` が visible theorem data。target-level semantic soundness / representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as raw finite-shadow factorization exact boundary; reject if raw factorization is confused with target-surface one-point factorization or if recovery-dependent certificate exchange is hidden.
+open_questions: visible recovery premise を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceCurrentShadowFactorBoundary.lean`
+は、represented finite-query observation の raw current-shadow factorization を assignment entry と exact に接続する。
+
+- `representedFiniteTraceQueryObservation_currentShadowFactor_iff_entry`: raw current-shadow factorization と assignment entry は recovery-free に同値。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_entry_semanticAdequacy_noSeparation_coordinateCertificate_exact_of_observationRecoversQueryReadings`: visible recovery + `[DecidableEq Out]` 下で raw factorization、entry、semantic adequacy、no-separation、coordinate certificate の exact boundary をまとめる。
+- `no_representedFiniteTraceQueryObservation_currentShadowFactor_entry_semanticAdequacy_coordinateCertificate_of_queryPostFiberSeparation`: separated post-fiber は recovery-free に raw factorization、entry、semantic adequacy、coordinate certificate を同時に block する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。raw factorization / entry iff は represented finite-query の
+post-invariance boundary であり、target-level semantic soundness や arbitrary representation adequacy ではない。
+coordinate certificate と no-separation を含む exact package では `ObservationRecoversQueryReadings` と
+`[DecidableEq Out]` が visible theorem data として残る。global coherence、tower vanishing、target theorem
+completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
