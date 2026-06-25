@@ -156,6 +156,7 @@
 - latest Cycle 75 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801706078
 - latest Cycle 76 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801905154
 - latest Cycle 86 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803291507
+- latest Cycle 87 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803417183
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -4156,6 +4157,60 @@ representation adequacy.  The target theorem remains at
 `target-proof-checkpoint` until the reflection certificate fields are
 constructed from non-conclusion finite/small boundary data or the final review
 records them as remaining material premises.
+
+## Cycle 87: Reflection Certificate Discharge Constructor
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: construct `IntegratedClassSurfaceReflectionCertificate` from visible quotient relations and explicit descent discharge data rather than supplying the certificate as an assumption
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - integratedClassSurfaceReflectionCertificate_of_visibleDischarges
+      - classSurfaceEqualities_to_integratedTowerVanishes_of_visibleDischarges
+premise_delta:
+  discharged:
+    - the reflection certificate is now constructible from quotient reflection, selected/neutral class relation data, and explicit nonabelian / stacky descent discharge data
+    - sheaf selected-class equality reflects to `SemanticRepairH1Zero` through the sheaf `H1` quotient setoid
+    - nonabelian selected/neutral class equality reflects to `EffectiveNonabelianRepairDescent` through `selected_neutral_iff_trivial` plus `NonabelianRepairTorsorDescentDischarge`
+    - stacky selected/neutral class equality reflects to `StackyRepairH2Zero` through the stacky `H2` quotient setoid and to `EffectiveStackyRepairDescent` through `StackyRepairDescentDischarge`
+    - class-surface equalities now imply integrated tower vanishing without passing an opaque `IntegratedClassSurfaceReflectionCertificate` argument
+  remaining:
+    - the explicit nonabelian and stacky descent discharge data remain visible inputs; they must not be hidden inside an ambient surface class
+    - final target theorem review and final `$math-lean-review` remain open
+    - the finite computable shadow representation line remains blocked unless new visible coordinate-discharge data is introduced
+blocking_findings:
+  - none for this reflection-certificate constructor obligation
+next_obligation: audit whether the visible descent discharge inputs are already covered by existing target-surface finite certificates, or record them explicitly in the final_review_packet material premise audit
+```
+
+### Result
+
+Cycle 87 extends
+`Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean`
+with a visible constructor for the Cycle 85 reflection certificate.
+
+- `integratedClassSurfaceReflectionCertificate_of_visibleDischarges` builds
+  `IntegratedClassSurfaceReflectionCertificate` from quotient equality
+  reflection, the Cycle 82/83 selected-neutral class relation data, and the
+  explicit nonabelian / stacky descent discharge records.
+- `classSurfaceEqualities_to_integratedTowerVanishes_of_visibleDischarges`
+  removes the opaque reflection-certificate argument from the reverse bridge:
+  class-surface equalities imply integrated tower vanishing once the explicit
+  nonabelian and stacky descent discharges are supplied.
+
+### Target Boundary
+
+This cycle discharges the Cycle 86 blocker that the reflection certificate was
+only an assumed certificate field.  It does not hide nonabelian descent
+adequacy or stack effectiveness: `NonabelianRepairTorsorDescentDischarge` and
+`StackyRepairDescentDischarge` remain visible theorem/certificate inputs.
+The two new declarations depend on Lean's standard `propext` through quotient
+equality reflection.  Therefore this is still not target theorem completion
+and does not run the final `$math-lean-review`.
 
 ## Superseded G6 Completion Judgment
 
