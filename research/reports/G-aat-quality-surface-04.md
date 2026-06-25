@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 5308
+- total SCORE: 5412
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -54,8 +54,9 @@
   - finite-query-representation / target-surface-factorization / finite-computable-shadow / anti-weakening: 124
   - finite-query-representation / target-surface-admissibility / recovery-free-factorization / anti-weakening: 104
   - finite-query-representation / coordinate-certificate / target-surface-entry / anti-weakening: 112
+  - finite-query-representation / post-fiber-separation / coordinate-certificate-obstruction / anti-weakening: 104
 - evidence portfolio:
-  - proved-in-research: 48
+  - proved-in-research: 49
 
 ## Target Proof State
 
@@ -101,7 +102,8 @@
 - latest Cycle 45 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796538673
 - latest Cycle 46 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796766474
 - latest Cycle 47 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796927513
-- Cycle 48 support ledger: pending
+- latest Cycle 48 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4797047506
+- Cycle 49 support ledger: pending
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -159,6 +161,7 @@
   - finite-query semantic-reading / no-separation recovery route into target-surface finite-shadow factorization
   - recovery-free represented finite-query target-surface admissibility boundary
   - explicit coordinate certificate boundary for represented target-surface entry
+  - post-fiber separation obstruction boundary for coordinate-certified assignment entry
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2227,6 +2230,51 @@ finite shadow adequacy for all observations、global coherence、tower vanishing
 argument として可視のままであり、sufficiency direction と target-surface factorization
 theorems には要求しない。recovery なしに assignment entry から coordinate certificate が出る
 とは主張しない。
+
+## Cycle 49: Post-Fiber Separation Coordinate-Certificate Boundary
+
+```text
+candidate: Post-Fiber Separation Coordinate-Certificate Boundary
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 accepted; base 52 x multiplier 2.0 = final 104
+base_score: 52
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 104
+score_note: Cycle 35 の post-fiber separation obstruction と Cycle 48 の coordinate-certificate entry boundary を接続し、separation が certificate / assignment entry を block することを固定した。
+category: finite-query-representation / post-fiber-separation / coordinate-certificate-obstruction / anti-weakening
+goal_delta: explicit coordinate certificate は separated post-fiber を排除し、visible recovery + `[DecidableEq Out]` 下では coordinate certificate と no-separation が同値になる theorem package を追加した。
+project_value_delta: finite-query post-map の separated fiber を coordinate-certified target-surface entry の obstruction として扱えるようにし、recovery decoder と adequacy claim を分離した。
+rival_delta: ADL / static analyzer / metric dashboard / AI reviewer の finite output が separated post-fiber を持つ場合、coordinate-certified target-surface entry へ入れないことを Lean theorem として固定した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_post_fiber_separation_coordinate_certificate_axioms.lean` は pass。reported declarations 4 件は `#print axioms` で axiom-free。`git diff --check`、unfinished-marker scan、hidden / bidi Unicode scan、local absolute path scan は clean。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: coordinate certificate から no post-fiber separation を recovery-free に構成し、visible recovery + decidable output 下で coordinate certificate と no-separation を同値化し、separated post-fiber が coordinate certificate / assignment entry を block する theorem を追加した。
+premise_discharge_status: `QueryCurrentShadowCoordinateCertificate` は visible certificate data。`ObservationRecoversQueryReadings` は exact iff の reverse direction の visible theorem data。`QueryPostFiberSeparation` は obstruction witness。semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: T2 accepted as target-support; reject if no-separation or coordinate certificate is counted as semantic soundness / representation adequacy, if recovery is hidden, or if recovery-free equivalence between assignment entry and coordinate certificate is claimed.
+open_questions: no-separation / coordinate certificate / recovery premise を target-level semantic soundness、representation adequacy、finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSeparationCertificateBoundary.lean`
+は、post-fiber separation を explicit coordinate-certificate entry の obstruction として固定する。
+
+- `representedFiniteTraceQueryObservation_no_queryPostFiberSeparation_of_queryCurrentShadowCoordinateCertificate`: coordinate certificate は recovery / decidability なしで separated post-fiber を排除する。
+- `representedFiniteTraceQueryObservation_queryCurrentShadowCoordinateCertificate_iff_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: `[DecidableEq Out]` と visible recovery 下で coordinate certificate と no-separation は同値。
+- `no_representedFiniteTraceQueryObservation_queryCurrentShadowCoordinateCertificate_of_queryPostFiberSeparation`: separated post-fiber は recovery / decidability なしで coordinate certificate を block する。
+- `no_representedFiniteTraceQueryObservation_shadowExtensionalAssignment_of_queryPostFiberSeparation`: separated post-fiber は recovery なしで assignment entry を block する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`QueryCurrentShadowCoordinateCertificate`
+は visible certificate data、`ObservationRecoversQueryReadings` は exact iff の reverse
+direction にだけ現れる visible theorem data、`QueryPostFiberSeparation` は obstruction
+witness である。semantic soundness、arbitrary representation adequacy、finite shadow adequacy
+for all observations、global coherence、tower vanishing は discharge しない。recovery なしに
+assignment entry から coordinate certificate が出るとは主張せず、fixed target surface での
+偶然の pointwise equality すべてを否定するものでもない。
 
 ## Superseded G6 Completion Judgment
 
