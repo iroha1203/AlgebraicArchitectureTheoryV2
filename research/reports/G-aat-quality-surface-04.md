@@ -4032,6 +4032,66 @@ not discharge the blocked finite computable shadow representation line.
 All reported declarations depend only on Lean's standard `Quot.sound` through
 the underlying quotient equality theorems.
 
+## Cycle 85: Final Premise Reflection Audit
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-checkpoint
+completion_candidate: no
+proof_obligation: make explicit that quotient-class equalities can be reflected back to layer predicates or integrated tower vanishing only under visible reflection certificate data
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - IntegratedClassSurfaceReflectionCertificate
+      - classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate
+      - classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate
+      - integratedClassSurfaceFinalPremiseAudit_checkpoint_package
+premise_delta:
+  discharged:
+    - the reverse use of class-surface equalities is now guarded by an explicit `IntegratedClassSurfaceReflectionCertificate`
+    - the certificate fields make sheaf zero reflection, nonabelian effectivity reflection, stacky `H2` zero reflection, and stacky effectivity reflection visible
+    - class-surface equalities imply layer predicates only after that reflection certificate is supplied
+    - class-surface equalities imply integrated tower vanishing only after that reflection certificate is supplied
+  remaining:
+    - no unqualified quotient-equality reflection is claimed
+    - no target theorem completion is claimed
+    - the finite computable shadow representation line remains blocked unless new visible coordinate-discharge data is introduced
+    - final target theorem review and final `$math-lean-review` remain open
+blocking_findings:
+  - none for this final-premise reflection audit checkpoint
+next_obligation: prepare or run the final target-theorem review packet only after confirming whether the visible reflection certificate should be treated as a remaining material premise or discharged by existing finite/small boundary data
+```
+
+### Result
+
+Cycle 85 extends
+`Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean`
+with the final-premise reflection audit.
+
+- `IntegratedClassSurfaceReflectionCertificate` is the explicit data required
+  to use quotient-class equalities in the reverse direction.
+- `classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate` recovers
+  the layer predicates only after that certificate is supplied.
+- `classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate`
+  recovers integrated tower vanishing only after that certificate is supplied.
+- `integratedClassSurfaceFinalPremiseAudit_checkpoint_package` exposes both
+  directions: the existing one-way bridge needs no reflection certificate, but
+  the reverse direction requires it.
+
+### Target Boundary
+
+This cycle is a premise audit checkpoint.  It prevents Cycle 84's
+class-surface equalities from being read as unqualified nonabelian descent
+adequacy, stack effectiveness, representation adequacy, or target theorem
+completion.  The reflection certificate is visible theorem data; it is not
+hidden inside a quotient relation, class membership, or target certificate
+field.
+
+The two reflection theorems are axiom-free.  The final checkpoint package
+depends on Lean's standard `Quot.sound` through the existing one-way
+class-equality bridge.
+
 ## Superseded G6 Completion Judgment
 
 ```text

@@ -187,6 +187,155 @@ theorem integratedClassSurfaceAudit_checkpoint_package
       integratedTowerVanishes_to_classSurfaceEqualities
         E torsor torsorRelation stack stackRelation⟩
 
+/-! ## Final premise audit for reflection -/
+
+/--
+Visible certificate required to use quotient-class equalities in the reverse
+direction.
+
+The fields are intentionally strong and explicit.  They are the material
+reflection data needed to turn class equalities back into layer predicates.
+Without such data, Cycle 84's one-way bridge must not be read as target
+completion.
+-/
+structure IntegratedClassSurfaceReflectionCertificate
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    (stackRelation : StackyRepairH2ClassRelation stack) where
+  sheaf_zero_of_selectedClass_eq_zero :
+    semanticRepairH1_selectedResidualClass E =
+        integratedSheafH1ZeroClass E ->
+      SemanticRepairH1Zero E
+  nonabelian_effective_of_selectedClass_eq_neutral :
+    nonabelianRepairH1_selectedTransitionClass torsorRelation =
+        nonabelianRepairH1_neutralClass torsorRelation ->
+      EffectiveNonabelianRepairDescent torsor
+  stack_h2Zero_of_selectedClass_eq_neutral :
+    stackyRepairH2_selected2Class stackRelation =
+        stackyRepairH2_neutralClass stackRelation ->
+      StackyRepairH2Zero stack
+  stack_effective_of_selectedClass_eq_neutral :
+    stackyRepairH2_selected2Class stackRelation =
+        stackyRepairH2_neutralClass stackRelation ->
+      EffectiveStackyRepairDescent stack
+
+/--
+With an explicit reflection certificate, quotient-class equalities recover the
+layer predicates used by the integrated target tower.
+
+This is the audited reverse direction.  The certificate is visible theorem
+data and is not hidden inside the quotient relation.
+-/
+theorem classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {torsor : FinitePointedRepairTorsor Choice TorsorRepair}
+    {torsorRelation : NonabelianRepairH1ClassRelation torsor}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {stack : FiniteStackyRepairH2Envelope Coherence StackRepair}
+    {stackRelation : StackyRepairH2ClassRelation stack}
+    (reflection :
+      IntegratedClassSurfaceReflectionCertificate
+        E torsorRelation stackRelation) :
+    IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      SemanticRepairH1Zero E /\
+        EffectiveNonabelianRepairDescent torsor /\
+        StackyRepairH2Zero stack /\
+        EffectiveStackyRepairDescent stack := by
+  intro hequalities
+  exact
+    ⟨reflection.sheaf_zero_of_selectedClass_eq_zero hequalities.1,
+      reflection.nonabelian_effective_of_selectedClass_eq_neutral
+        hequalities.2.1,
+      reflection.stack_h2Zero_of_selectedClass_eq_neutral
+        hequalities.2.2,
+      reflection.stack_effective_of_selectedClass_eq_neutral
+        hequalities.2.2⟩
+
+/--
+Class-surface equalities imply integrated tower vanishing only after the
+reflection certificate is supplied.
+
+This theorem makes the final-premise audit explicit: quotient equality alone
+is not used as a substitute for nonabelian descent adequacy, stack
+effectiveness, or target completion.
+-/
+theorem classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    {torsorRelation : NonabelianRepairH1ClassRelation torsor}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    {stackRelation : StackyRepairH2ClassRelation stack}
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)]
+    (reflection :
+      IntegratedClassSurfaceReflectionCertificate
+        E torsorRelation stackRelation) :
+    IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation ->
+      ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) := by
+  intro hequalities
+  exact
+    (integratedTower_vanishes_iff_layers E torsor stack).2
+      (classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate
+        E reflection hequalities)
+
+/--
+Cycle 85 final-premise audit package.
+
+It exposes both directions side by side: the existing one-way bridge requires
+no extra reflection data, while the reverse direction requires an explicit
+`IntegratedClassSurfaceReflectionCertificate`.
+-/
+theorem integratedClassSurfaceFinalPremiseAudit_checkpoint_package
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    (torsor : FinitePointedRepairTorsor Choice TorsorRepair)
+    (torsorRelation : NonabelianRepairH1ClassRelation torsor)
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (stack : FiniteStackyRepairH2Envelope Coherence StackRepair)
+    (stackRelation : StackyRepairH2ClassRelation stack)
+    [Decidable (EffectiveNonabelianRepairDescent torsor)]
+    [Decidable (StackyRepairH2Zero stack)]
+    [Decidable (EffectiveStackyRepairDescent stack)] :
+    (ObstructionTowerVanishes
+        (toIntegratedSheafTorsorStackTower E torsor stack) ->
+      IntegratedLayerClassSurfaceEqualities
+        E torsorRelation stackRelation) /\
+      (IntegratedClassSurfaceReflectionCertificate
+          E torsorRelation stackRelation ->
+        IntegratedLayerClassSurfaceEqualities
+          E torsorRelation stackRelation ->
+          ObstructionTowerVanishes
+            (toIntegratedSheafTorsorStackTower E torsor stack)) := by
+  exact
+    ⟨integratedTowerVanishes_to_classSurfaceEqualities
+        E torsor torsorRelation stack stackRelation,
+      fun reflection =>
+        classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate
+          E torsor stack reflection⟩
+
 end SemanticRepairIntegratedClassSurfaceAudit
 end QualitySurface
 end Formal.AG.Research
