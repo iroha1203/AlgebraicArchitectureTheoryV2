@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4092
+- total SCORE: 4168
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -41,8 +41,9 @@
   - finite-query-current-shadow / semantic-reading-normalization / factorization-criterion / anti-weakening: 86
   - finite-query-representation / post-fiber-invariance / current-shadow-factorization / anti-weakening: 82
   - finite-query-representation / no-separation / obstruction-boundary / anti-weakening: 78
+  - finite-query-representation / current-shadow-reading-faithfulness / semantic-soundness-obligation / anti-weakening: 76
 - evidence portfolio:
-  - proved-in-research: 35
+  - proved-in-research: 36
 
 ## Target Proof State
 
@@ -75,7 +76,8 @@
 - latest Cycle 32 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794651559
 - latest Cycle 33 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794770254
 - latest Cycle 34 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4794905224
-- Cycle 35 support ledger: pending until the Cycle 35 PR is merged.
+- latest Cycle 35 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795049135
+- Cycle 36 support ledger: pending until the Cycle 36 PR is merged.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -1564,6 +1566,46 @@ open_questions: semantic soundness / representation adequacy から no-separatio
 ### Target Boundary
 
 この cycle は target theorem completion ではない。no-separation を仮定または `[DecidableEq Out]` exactness で扱うだけであり、semantic soundness や representation adequacy から no-separation を導出していない。separated post-fiber の排除、arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
+
+## Cycle 36: Representation Current-Shadow Reading Faithfulness Criterion
+
+```text
+candidate: Representation Current-Shadow Reading Faithfulness Criterion
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 38
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 76
+score_note: visible finite-query representation 上で、canonical current-shadow reading faithfulness を represented observation の extensionality / factorization / no-separation と接続する。
+category: finite-query-representation / current-shadow-reading-faithfulness / semantic-soundness-obligation / anti-weakening
+goal_delta: canonical current-shadow reading の post faithfulness が represented observation の extensionality / current-shadow factorization と同値であり、separated post-fiber を排除することを theorem surface に固定した。
+project_value_delta: semantic soundness / representation adequacy が将来 discharge すべき premise を、no-separation より一段 semantic-reading 側の visible faithfulness obligation として切り出した。
+rival_delta: finite query representation が current-shadow summary に降りるには、canonical current-shadow reading への faithfulness が必要であり、faithfulness を仮定せずに representation だけから factorization は出ない。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationCurrentShadowReading.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationCurrentShadowReading`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_representation_current_shadow_reading_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_shadowExtensional`、`representedFiniteTraceQueryObservation_shadowExtensional_of_currentShadowSemanticReading_faithful`、`representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_of_shadowExtensional`、`representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_currentShadowFactor`、`representedFiniteTraceQueryObservation_currentShadowFactor_of_currentShadowSemanticReading_faithful`、`no_queryPostFiberSeparation_of_representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful`、`not_representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_of_queryPostFiberSeparation`、Bool represented current-shadow reading faithfulness obstruction を追加した。
+open_questions: semantic soundness / representation adequacy から canonical current-shadow reading faithfulness を非循環に抽出する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationCurrentShadowReading.lean` は、visible finite-query representation と canonical current-shadow semantic reading faithfulness の exact criterion を定式化する。
+
+- `representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_shadowExtensional`: canonical current-shadow reading faithfulness は represented observation の canonical-shadow extensionality と同値。
+- `representedFiniteTraceQueryObservation_shadowExtensional_of_currentShadowSemanticReading_faithful`: faithfulness から represented extensionality を取り出す bridge。
+- `representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_of_shadowExtensional`: represented extensionality から faithfulness を取り出す bridge。
+- `representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_iff_currentShadowFactor`: faithfulness は represented current-shadow factorization と同値。
+- `representedFiniteTraceQueryObservation_currentShadowFactor_of_currentShadowSemanticReading_faithful`: faithfulness から represented current-shadow factorization を取り出す bridge。
+- `no_queryPostFiberSeparation_of_representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful`: faithfulness は decidable-output assumption なしで separated post-fiber を排除する。
+- `not_representedFiniteTraceQueryObservation_currentShadowSemanticReading_faithful_of_queryPostFiberSeparation`: separated post-fiber は faithfulness を阻む。
+- `not_boolFirstRepresentedFiniteTraceQueryObservation_currentShadowSemanticReadingFaithful`: Bool first-reading represented obstruction は current-shadow reading faithfulness を満たさない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。canonical current-shadow reading faithfulness を theorem argument として扱うだけであり、semantic soundness や representation adequacy から faithfulness を導出していない。faithfulness extraction、arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
 
 ## Superseded G6 Completion Judgment
 
