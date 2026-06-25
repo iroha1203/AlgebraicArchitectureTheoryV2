@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4332
+- total SCORE: 4420
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -44,8 +44,9 @@
   - finite-query-representation / current-shadow-reading-faithfulness / semantic-soundness-obligation / anti-weakening: 76
   - finite-query-representation / query-support-determinacy / faithfulness-extraction / anti-weakening: 84
   - finite-query-representation / query-coordinate-obligation / faithfulness-extraction / anti-weakening: 80
+  - finite-query-representation / recoverable-readings / coordinate-extraction / anti-weakening: 88
 - evidence portfolio:
-  - proved-in-research: 38
+  - proved-in-research: 39
 
 ## Target Proof State
 
@@ -81,7 +82,8 @@
 - latest Cycle 35 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795049135
 - latest Cycle 36 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795193106
 - latest Cycle 37 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795291750
-- Cycle 38 refinement ledger: pending until the Cycle 38 PR is merged.
+- latest Cycle 38 refinement ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4795410917
+- Cycle 39 refinement ledger: pending until the Cycle 39 PR is merged.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -1694,6 +1696,51 @@ open_questions: query-coordinate extensionality の semantic soundness / represe
 ### Target Boundary
 
 この cycle は target theorem completion ではない。`QueryTraceCoordinatesCurrentShadowExtensional` は theorem argument / concrete certificate として可視のままであり、semantic soundness や representation adequacy から導出していない。support-shadow observation boundary では faithfulness と同値級なので、この premise を representation package、typeclass、certificate field、opaque membership に隠して completion と呼ぶことはできない。arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
+
+## Cycle 39: Recoverable Readings Coordinate-Extraction Boundary
+
+```text
+candidate: Recoverable Readings Coordinate-Extraction Boundary
+parent_tracking_issue: #2482
+candidate_type: target-refinement
+evidence_stage: proved-in-research
+score_status: T4 confirmed as target-refined
+base_score: 44
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 88
+score_note: uniformly output-decodable post-map class では current-shadow reading faithfulness から query-coordinate extensionality を非循環に抽出できる一方、arbitrary faithfulness では抽出できないことを Bool witness で固定した。
+category: finite-query-representation / recoverable-readings / coordinate-extraction / anti-weakening
+goal_delta: `QueryReadingsRecoveringPost` と canonical current-shadow reading faithfulness から query trace vector shadow-extensionality と `QueryTraceCoordinatesCurrentShadowExtensional` を導き、raw query-readings / query support-shadow observation では coordinate boundary と exact iff になることを証明した。
+project_value_delta: semantic soundness / representation adequacy から coordinate obligation へ進むための admissible extraction route を uniform decoder premise として明示し、support-shadow adequacy や current-shadow factorization を hidden completion premise にすることを防いだ。
+rival_delta: finite query representation、constant post-map faithfulness、support-shadow factorization だけでは current-shadow coordinate adequacy は出ない。Bool `[true]` witnesses は arbitrary faithfulness extraction と support-shadow-to-current-shadow factorization の失敗を分離する。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRecoverableReadings`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_recoverable_readings_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: target-refined
+proof_obligation_delta: `QueryReadingsRecoveringPost`、raw query-readings finite observation / representation、recoverable-post faithfulness -> coordinate extensionality theorem、raw query-readings faithfulness exact criterion、query support-shadow semantic adequacy exact criterion、support-shadow current-shadow factorization necessary condition、Bool `[true]` no-factor / no-adequacy / arbitrary faithfulness no-extraction witnesses を追加した。
+open_questions: uniformly recoverable post-map premise の semantic soundness / representation adequacy からの抽出、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryRepresentationRecoverableReadings.lean` は、Cycle 38 の query-coordinate boundary に対し、uniformly output-decodable post-map class からの extraction route と、その route を arbitrary semantic soundness と混同できない no-go boundary を追加する。
+
+- `QueryReadingsRecoveringPost`: post-map output から query readings を一様に復元する visible decoder premise。
+- `queryTraceVector_shadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPost`: current-shadow reading faithfulness と visible decoder から query trace vector shadow-extensionality を得る。
+- `queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPost`: visible decoder route で `QueryTraceCoordinatesCurrentShadowExtensional` を得る。
+- `finiteTraceQueryObservation_queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPost`: finite query package 版。
+- `representedFiniteTraceQueryObservation_queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPost`: represented observation 版。
+- `queryTraceReadingsObservation_currentShadowSemanticReading_faithful_iff_queryCoordinateCurrentShadowExtensional`: raw query-readings observation の faithfulness は coordinate boundary と同値。
+- `queryCoordinateCurrentShadowExtensional_iff_querySupportShadowObservation_exists_semanticReadingAdequacy`: fixed query support-shadow observation の semantic-reading adequacy existence は coordinate boundary と同値。
+- `queryCoordinateCurrentShadowExtensional_of_querySupportShadow_currentShadowFactor`: query support-shadow observation が current shadow に factor するなら coordinate boundary が必要。
+- `no_boolTrueQuerySupportShadow_currentShadowFactor`: Bool `[true]` query support-shadow observation は current shadow に factor しない。
+- `boolTrueConstantFiniteTraceQueryObservation_currentShadowFaithful_not_queryCoordinateCurrentShadowExtensional`: constant post-map は faithful でも coordinate extraction を与えない。
+- `boolFirstQueryRepresentation_supportFactor_but_no_currentShadowFactor`: Bool first-reading observation は support shadow に factor するが current shadow には factor しない。
+- `no_boolFirstRepresentedFiniteTraceQueryObservation_semanticReadingAdequacy`: Bool first-reading represented observation には semantic-reading adequacy package がない。
+- `not_boolTrueTraceQuerySupportShadowObservation_exists_semanticReadingAdequacy`: Bool `[true]` support-shadow observation には semantic-reading adequacy package がない。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。`QueryReadingsRecoveringPost` は theorem argument として可視の uniformly output-decodable premise であり、representation package、typeclass、structure field、certificate field、opaque membership に隠していない。fixed support-shadow observation に対する semantic-reading adequacy existence は coordinate boundary と同値なので、それを独立 discharge 済みの adequacy と呼ぶこともできない。arbitrary semantic soundness / representation adequacy からの一般抽出、arbitrary semantic observation factorization、T6 `$math-lean-review` は未完である。
 
 ## Superseded G6 Completion Judgment
 
