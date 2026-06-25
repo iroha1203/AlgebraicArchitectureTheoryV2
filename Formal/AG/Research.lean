@@ -109,6 +109,7 @@ import Formal.AG.Research.QualitySurface.SemanticRepairAdequacyDischarge
 import Formal.AG.Research.QualitySurface.SemanticRepairTowerFunctoriality
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTriple
 import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1
+import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTorsor
 import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2
 import Formal.AG.Research.QualitySurface.SemanticRepairUniversalShadow
