@@ -3654,6 +3654,62 @@ must provide.  The remaining proof still needs target-level current-shadow
 adequacy data that yields this coordinate condition without hiding a
 coordinate-certificate-equivalent premise.
 
+## Cycle 79: Target-Surface Certificate Insufficiency
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix that existing target-surface finite certificates do not discharge current-shadow representation adequacy
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationCertificateInsufficiency.lean
+    declarations:
+      - targetSurfaceCertificates_do_not_discharge_currentShadowTraceReadingRepresentation
+      - targetSurfaceCertificates_do_not_discharge_currentShadowTraceReadingRepresentationWitness
+      - targetSurfaceCertificates_do_not_discharge_representationAdequacyNecessaryCoordinates
+      - targetSurfaceFiniteCertificatePackage_with_boolRepresentationAdequacyBlocker
+premise_delta:
+  discharged:
+    - existing `UniversalSemanticRepairTargetCertificates` cannot be uniformly read as current-shadow trace-reading representation data for the Bool complete-support witness
+    - the same certificate package cannot uniformly provide a concrete `CurrentShadowTraceReadingRepresentation`
+    - the same certificate package cannot uniformly discharge support-coordinate current-shadow extensionality
+    - the target-surface finite-certificate theorem package coexists with the Bool representation-adequacy blocker
+  remaining:
+    - non-circular construction of `CurrentShadowTraceReadingRepresentation` from genuinely stronger target-level adequacy data
+    - representation adequacy discharge without assuming equivalent coordinate certificate, raw factorization, support-control, current-shadow-reading faithfulness, or target certificate fields that hide those conditions
+    - global G-04 target theorem completion, true sheaf `H^1` universality, nonabelian descent adequacy, and final `$math-lean-review`
+blocking_findings:
+  - finite target-surface certificate data remains valuable for the target theorem package but is insufficient for the separate current-shadow representation adequacy obligation
+next_obligation: either introduce genuinely stronger target-level adequacy data with visible coordinate discharge, or record target-blocked status for the finite computable shadow representation line
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationCertificateInsufficiency.lean`
+records the failure-policy checkpoint after Cycles 75--78.
+
+- `targetSurfaceCertificates_do_not_discharge_currentShadowTraceReadingRepresentation`:
+  a concrete target-surface certificate witness cannot be treated as a uniform
+  route to proposition-level current-shadow trace-reading representability of
+  the Bool complete support.
+- `targetSurfaceCertificates_do_not_discharge_currentShadowTraceReadingRepresentationWitness`:
+  the same certificate package does not uniformly produce a concrete
+  `CurrentShadowTraceReadingRepresentation` witness.
+- `targetSurfaceCertificates_do_not_discharge_representationAdequacyNecessaryCoordinates`:
+  finite target-surface certificates do not uniformly discharge the necessary
+  support-coordinate current-shadow extensionality condition.
+- `targetSurfaceFiniteCertificatePackage_with_boolRepresentationAdequacyBlocker`:
+  the target-surface finite-certificate theorem package remains available and
+  coexists with the Bool representation-adequacy blocker.
+
+### Target Boundary
+
+This cycle is not target theorem completion.  It is a blocker fix for the
+certificate route: target-surface certificates keep their existing theorem
+package value, but they cannot be counted as representation adequacy unless a
+separate, visible current-shadow coordinate discharge is provided.
+
 ## Superseded G6 Completion Judgment
 
 ```text
