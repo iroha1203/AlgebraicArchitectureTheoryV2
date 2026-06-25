@@ -155,6 +155,7 @@
 - latest Cycle 74 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801393803
 - latest Cycle 75 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801706078
 - latest Cycle 76 blocker ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4801905154
+- latest Cycle 86 checkpoint ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4803291507
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -4091,6 +4092,70 @@ field.
 The two reflection theorems are axiom-free.  The final checkpoint package
 depends on Lean's standard `Quot.sound` through the existing one-way
 class-equality bridge.
+
+## Cycle 86: Final Review Readiness Premise Classification
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-checkpoint
+completion_candidate: no
+proof_obligation: classify whether `IntegratedClassSurfaceReflectionCertificate` is already discharged by existing finite/small boundary data or remains a target-level material premise before final review
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairIntegratedClassSurfaceAudit.lean
+    declarations:
+      - IntegratedClassSurfaceReflectionCertificate
+      - classSurfaceEqualities_to_layerPredicates_of_reflectionCertificate
+      - classSurfaceEqualities_to_integratedTowerVanishes_of_reflectionCertificate
+      - integratedClassSurfaceFinalPremiseAudit_checkpoint_package
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean
+    declarations:
+      - integratedTower_vanishes_iff_layers
+      - universalSemanticRepairSheafTorsorStackCompletion_package
+premise_delta:
+  discharged:
+    - no new Lean premise is discharged in this report-only cycle
+    - the final-review readiness gate is fixed: the reflection certificate is visible theorem data, not an ambient boundary field
+  remaining:
+    - `IntegratedClassSurfaceReflectionCertificate` remains discharge-required unless a separate Lean theorem or concrete certificate constructs its four reflection fields from non-conclusion boundary data
+    - class-surface equalities alone do not discharge `SemanticRepairH1Zero`, `EffectiveNonabelianRepairDescent`, `StackyRepairH2Zero`, or `EffectiveStackyRepairDescent`
+    - the finite computable shadow representation line remains blocked unless new visible coordinate-discharge data is introduced
+    - final target theorem review and final `$math-lean-review` remain open
+blocking_findings:
+  - existing finite/small boundary data does not currently construct `IntegratedClassSurfaceReflectionCertificate`
+  - treating the certificate as already discharged would move conclusion-equivalent effectivity and vanishing data into a certificate field, violating the target anti-weakening rule
+next_obligation: either construct the reflection certificate fields from non-conclusion finite/small boundary data, or record the remaining material premise in a final_review_packet and expect the final review gate to fail closed
+```
+
+### Result
+
+Cycle 86 is a final-review readiness checkpoint.  It does not add a new Lean
+theorem.  Instead, it fixes the target-level reading of the Cycle 85
+reflection certificate before any final `$math-lean-review` attempt.
+
+`IntegratedClassSurfaceReflectionCertificate` is classified as a remaining
+`discharge-required` material premise.  Its fields recover:
+
+- sheaf `H1` zero from selected class equality;
+- effective nonabelian repair descent from selected/neutral torsor class
+  equality;
+- stacky `H2` zero from selected/neutral stacky class equality;
+- effective stacky repair descent from selected/neutral stacky class equality.
+
+Those are exactly the reverse-direction adequacy/effectivity facts that the
+G-04 material premise ledger requires to be discharged by theorem or concrete
+certificate.  They are not just site, cover, vocabulary, coefficient, torsor,
+stack object, or source-reference trace input geometry.
+
+### Target Boundary
+
+This cycle is not target theorem completion.  It explicitly prevents a final
+review packet from treating class-surface equality as a substitute for
+nonabelian descent adequacy, stack effectiveness, higher coherence, or
+representation adequacy.  The target theorem remains at
+`target-proof-checkpoint` until the reflection certificate fields are
+constructed from non-conclusion finite/small boundary data or the final review
+records them as remaining material premises.
 
 ## Superseded G6 Completion Judgment
 
