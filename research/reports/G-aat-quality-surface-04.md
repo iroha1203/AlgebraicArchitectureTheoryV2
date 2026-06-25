@@ -143,7 +143,8 @@
 - latest Cycle 66 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798799932
 - latest Cycle 67 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799042483
 - latest Cycle 68 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799161381
-- Cycle 69 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 69 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799319730
+- Cycle 70 support ledger: pending PR / tracking Issue comment.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3177,6 +3178,48 @@ open_questions: current-shadow reading faithfulness premise を target-level sem
 
 この cycle は target theorem completion ではない。complete support-shadow recovery は current-shadow reading faithfulness premise を
 自動的に discharge しない。canonical Bool witness の anti-weakening result であり、arbitrary semantic observation
+adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 70: Support-Shadow Faithfulness / Coordinate Certificate Target Route
+
+```text
+candidate: Support-Shadow Faithfulness / Coordinate Certificate Target Route
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as faithfulness/certificate exact boundary; base 44 x multiplier 2.0 = final 88
+base_score: 44
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 88
+score_note: support-shadow current-shadow-reading faithfulness と explicit coordinate certificate が同じ support-control surface であることを固定し、certificate-visible target route package を追加した。
+category: finite-query-representation / current-shadow-reading-faithfulness / coordinate-certificate / support-shadow-target-route / anti-weakening
+goal_delta: Cycle68 の faithfulness premise を explicit coordinate certificate surface に接続し、target route の前提境界を検索可能な theorem API にした。
+project_value_delta: reading API、coordinate certificate API、target-surface route API の三者を同一 support-control boundary として接続した。
+rival_delta: faithfulness claim を持つ analyzer は coordinate certificate obligation と同等の境界を満たす必要があることを表現した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_faithfulness_certificate_route_axioms.lean` は pass。reported declarations 5 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: support-shadow faithfulness / coordinate certificate iff と、certificate を先に露出する recovery / semantic adequacy / current-shadow factorization / target-surface route package を追加した。
+premise_discharge_status: coordinate certificate は visible theorem data として残る。support recovery は faithfulness / certificate premise を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as faithfulness/certificate support boundary; reject if coordinate certificate or current-shadow faithfulness is treated as automatic target completion.
+open_questions: coordinate certificate premise を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessCertificateRoute.lean`
+は、canonical support-shadow observation の current-shadow reading faithfulness と explicit coordinate certificate surface を同一視する。
+
+- `supportTraceShadowObservation_currentShadowSemanticReading_faithful_iff_queryCurrentShadowCoordinateCertificate`: support-shadow current-shadow reading faithfulness は explicit support-coordinate certificate と同値である。
+- `queryCurrentShadowCoordinateCertificate_of_supportTraceShadowObservation_currentShadowSemanticReading_faithful`: faithfulness から explicit coordinate certificate を抽出する。
+- `supportTraceShadowObservation_currentShadowSemanticReading_faithful_of_queryCurrentShadowCoordinateCertificate`: explicit coordinate certificate から faithfulness を得る。
+- `supportTraceShadowRepresentation_certificate_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_currentShadowSemanticReading_faithful`: faithfulness から certificate を露出し、その certificate で target-surface route へ進む。
+- `supportTraceShadowRepresentation_currentShadowFaithfulness_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_queryCurrentShadowCoordinateCertificate`: certificate から faithfulness と target-surface route を同時に得る。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。current-shadow reading faithfulness と coordinate certificate は
+同じ support-control surface だが、その surface 自体は visible premise として残る。arbitrary semantic observation
 adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
