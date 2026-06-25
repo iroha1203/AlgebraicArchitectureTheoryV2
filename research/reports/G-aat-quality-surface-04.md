@@ -1434,6 +1434,46 @@ open_questions: concrete positive semantic reading collapse certificate、query-
 
 この cycle は target theorem completion ではない。`SemanticReadingCollapsesCurrentShadowQueryFibers` と `SemanticReadingFaithfulToQueryPost` は依然として theorem argument であり、positive semantic soundness extraction は未放電である。Cycle 32 は、その obligations が与えられた場合に separation obstruction を排除できることだけを示す。
 
+## Cycle 33: Current-Shadow Semantic Reading Normalization
+
+```text
+candidate: Current-Shadow Semantic Reading Normalization
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: T4 confirmed as support-node
+base_score: 43
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 86
+score_note: canonical current-shadow semantic reading を定義し、collapse obligation をこの reading で放電し、faithfulness / semantic-reading adequacy existence / raw current-shadow factorization を post-fiber invariance と同値化する。
+category: finite-query-current-shadow / semantic-reading-normalization / factorization-criterion / anti-weakening
+goal_delta: `SemanticReadingCollapsesCurrentShadowQueryFibers` を canonical current-shadow reading で discharge し、`SemanticReadingFaithfulToQueryPost` は `QueryPostInvariantOnCurrentShadowFibers` と同値であることを証明した。
+project_value_delta: Cycle 30-32 の positive route と obstruction route を exact criterion に正規化し、semantic-reading adequacy を hidden premise ではなく post-fiber invariance / no-separation / current-shadow factorization と同じ条件として監査できるようにした。no-separation から invariance への逆向きは `[DecidableEq Out]` 境界で扱う。
+rival_delta: finite query diagnostic が current-shadow summary に降りるための条件を、semantic reading の曖昧な adequacy ではなく、post-fiber invariance と raw factorization の同値として固定する。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryCurrentShadowReading`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、`lake build`、`.tmp/g04_current_shadow_reading_axioms.lean` は pass。reported declarations は `#print axioms` で axiom-free。placeholder / hidden Unicode / local path scan と `git diff --check` は clean。`lake build` は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean:201,207` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: `currentShadowSemanticReading`、`currentShadowSemanticReading_collapsesCurrentShadowQueryFibers`、`currentShadowSemanticReading_faithfulToQueryPost_iff_postInvariantOnCurrentShadowFibers`、`exists_semanticReadingAdequacy_iff_postInvariantOnCurrentShadowFibers`、`not_currentShadowSemanticReading_faithfulToQueryPost_of_queryPostFiberSeparation`、`queryTraceGeneratedObservation_currentShadowFactor_iff_exists_semanticReadingAdequacy`、finite package versions、`not_boolFirstQueryReadingPost_currentShadowSemanticReadingFaithful` を追加した。
+open_questions: arbitrary semantic observation factorization、representation adequacy / semantic soundness から post-fiber invariance への non-circular extraction、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryCurrentShadowReading.lean` は、finite query fragment における semantic-reading adequacy の exact normalization を定式化する。
+
+- `currentShadowSemanticReading`: current canonical shadow が一致する tower を同値視する canonical reading。
+- `currentShadowSemanticReading_collapsesCurrentShadowQueryFibers`: この reading は任意 query の current-shadow query fiber を collapse する。
+- `currentShadowSemanticReading_faithfulToQueryPost_iff_postInvariantOnCurrentShadowFibers`: この reading の post faithfulness は post-fiber invariance と同値。
+- `exists_semanticReadingAdequacy_iff_postInvariantOnCurrentShadowFibers`: semantic-reading adequacy package の存在は exact post-fiber invariance と同値。
+- `not_queryPostFiberSeparation_iff_postInvariantOnCurrentShadowFibers`: `[DecidableEq Out]` 境界での no-separation と post-fiber invariance の exact criterion。
+- `not_currentShadowSemanticReading_faithfulToQueryPost_of_queryPostFiberSeparation`: separated post-fiber は canonical current-shadow reading の faithfulness を否定する。
+- `queryTraceGeneratedObservation_currentShadowFactor_iff_exists_semanticReadingAdequacy`: raw current-shadow factorization と semantic-reading adequacy existence の同値。
+- `not_boolFirstQueryReadingPost_currentShadowSemanticReadingFaithful`: Bool first-reading obstruction は canonical current-shadow reading の faithfulness も否定する。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。collapse は canonical current-shadow reading に限って放電されたが、faithfulness は `QueryPostInvariantOnCurrentShadowFibers` と同値化されたのみであり、無条件 discharge ではない。no-separation から post-fiber invariance への逆向き exactness は `[DecidableEq Out]` を明示する。arbitrary semantic observation factorization、full representation adequacy、semantic soundness から post-fiber invariance への non-circular extraction は未完である。
+
 ## Superseded G6 Completion Judgment
 
 ```text
