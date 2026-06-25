@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 4968
+- total SCORE: 5092
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -51,8 +51,9 @@
   - finite-query-representation / supported-current-shadow-factorization / support-determinacy / anti-weakening: 88
   - finite-query-representation / explicit-current-shadow-coordinate-certificate / current-shadow-adequacy-boundary / anti-weakening: 76
   - finite-query-representation / semantic-reading-recovery-certificate-extraction / anti-weakening: 92
+  - finite-query-representation / target-surface-factorization / finite-computable-shadow / anti-weakening: 124
 - evidence portfolio:
-  - proved-in-research: 45
+  - proved-in-research: 46
 
 ## Target Proof State
 
@@ -95,7 +96,8 @@
 - latest Cycle 42 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796064316
 - latest Cycle 43 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796207967
 - latest Cycle 44 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796372445
-- Cycle 45 support ledger: pending
+- latest Cycle 45 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4796538673
+- Cycle 46 support ledger: pending
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -150,6 +152,7 @@
   - supported current-shadow factorization boundary restricting visible support-level determinacy to explicitly supported finite queries
   - explicit per-coordinate current-shadow factor certificate boundary with Bool support-factor/no-current-factor witness
   - semantic-reading collapse / post faithfulness / realized recovery extraction of explicit current-shadow coordinate certificates
+  - finite-query semantic-reading / no-separation recovery route into target-surface finite-shadow factorization
   - nonabelian torsor, higher coherence, and stack effectiveness as explicit finite layers
   - sound assignment factorization through tower finite shadow
   - G-02 finite gluing complex comparison as weak finite shadow
@@ -2060,6 +2063,57 @@ semantic soundness、representation adequacy、finite shadow adequacy、global r
 obstruction vanishing を structure field、typeclass、certificate field、opaque membership に隠していない。
 arbitrary semantic observation factorization、runtime extraction correctness、ArchSig / ArchMap correctness、
 whole-codebase quality は主張しない。
+
+## Cycle 46: Finite Query Recovery Target-Surface Factorization
+
+```text
+candidate: Finite Query Recovery Target-Surface Factorization
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: confirmed by T4 target progress / SCORE audit
+base_score: 62
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 124
+score_note: Cycle 45 の finite-query coordinate certificate extraction を、Cycle 12 の target-surface `Obs(A)` finite-shadow factorization API へ接続した。
+category: finite-query-representation / target-surface-factorization / finite-computable-shadow / anti-weakening
+goal_delta: represented finite-query observations satisfying visible semantic-reading/recovery or no-separation/recovery premises now enter the target-surface finite-shadow factorization theorem without promoting them to arbitrary semantic observations.
+project_value_delta: finite query output, local diagnostic, support membership, recovery decoder, and obstruction-tower shadow adequacy の境界を Lean theorem として分離した。
+rival_delta: ADL / 静的解析 / metric dashboard / AI reviewer が返す finite output を尊重しつつ、それが AAT obstruction tower finite shadow を経由して読めるには no-separation / semantic-reading recovery が必要であることを theorem-level に固定した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceFactorization`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_target_surface_factorization_axioms.lean` は pass。reported declarations 10 件は `#print axioms` で axiom-free。`git diff --check`、placeholder scan、hidden / bidi Unicode scan、local absolute path scan は clean。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: no-separation + realized recovery から explicit current-shadow coordinate certificate を抽出し、semantic-reading / recovery route と no-separation / recovery route の represented observations を `ShadowExtensionalTowerObservation` / `ShadowExtensionalObstructionAssignment` に入れ、target-surface `Obs(A)` finite-shadow factorization and uniqueness package へ接続した。
+premise_discharge_status: no-separation / post-invariance、semantic-reading collapse、post faithfulness、realized recovery、observation recovery、target-surface finite certificates are visible theorem data。semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: T2 C pass as target-support; reject if `ShadowExtensionalObstructionAssignment`, no-separation, recovery, or semantic-reading adequacy are read as arbitrary semantic observation factorization, target-level representation adequacy discharge, global coherence, obstruction vanish, or target theorem completion.
+open_questions: no-separation / semantic-reading recovery premises を target-level semantic soundness / representation adequacy / finite certificate から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceFactorization.lean`
+は、finite-query certificate extraction を target-surface finite-shadow factorization へ接続する。
+
+- `queryCurrentShadowCoordinateCertificate_of_no_queryPostFiberSeparation_of_queryReadingsRecoveringPostOnRealizedTowers`: finite no-separation と realized recovery から explicit current-shadow coordinate certificate を得る。
+- `representedFiniteTraceQueryObservation_queryCurrentShadowCoordinateCertificate_of_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: represented observation 版。
+- `representedFiniteTraceQueryObservation_shadowExtensional_of_semanticReadingAdequacy_of_observationRecoversQueryReadings`: semantic-reading / recovery route で represented observation が current-shadow extensional になる。
+- `representedFiniteTraceQueryObservation_shadowExtensional_of_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: no-separation / recovery route で represented observation が current-shadow extensional になる。
+- `representedFiniteTraceQueryObservation_shadowExtensionalAssignment_of_semanticReadingAdequacy_of_observationRecoversQueryReadings`: semantic-reading route の represented observation を `ShadowExtensionalObstructionAssignment` として package する。
+- `representedFiniteTraceQueryObservation_shadowExtensionalAssignment_of_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: no-separation route の represented observation を `ShadowExtensionalObstructionAssignment` として package する。
+- `targetSurfaceRepresentedFiniteTraceQueryObservation_factors_through_ObsA_shadow_of_semanticReadingAdequacy_of_observationRecoversQueryReadings`: semantic-reading route の target-surface reading は `Obs(A)` finite shadow を経由して factor する。
+- `targetSurfaceRepresentedFiniteTraceQueryObservation_factors_through_ObsA_shadow_of_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: no-separation route の target-surface reading は `Obs(A)` finite shadow を経由して factor する。
+- `targetSurfaceRepresentedFiniteTraceQueryObservation_universalFactorization_of_semanticReadingAdequacy_of_observationRecoversQueryReadings`: semantic-reading route の factorization and uniqueness package。
+- `targetSurfaceRepresentedFiniteTraceQueryObservation_universalFactorization_of_no_queryPostFiberSeparation_of_observationRecoversQueryReadings`: no-separation route の factorization and uniqueness package。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。no-separation / post-invariance、
+semantic-reading collapse、post faithfulness、realized recovery、observation recovery、
+target-surface finite certificates は visible theorem data であり、arbitrary semantic observation
+factorization、target-level representation adequacy、finite shadow adequacy for all observations、
+global repair coherence、obstruction vanishing を structure field、typeclass、certificate field、
+opaque membership に隠していない。`ShadowExtensionalObstructionAssignment` は target-surface
+factorization API へ入るための明示 package であり、target theorem の completion criterion ではない。
 
 ## Superseded G6 Completion Judgment
 
