@@ -4,7 +4,7 @@
 
 ## Current SCORE
 
-- total SCORE: 7022
+- total SCORE: 7106
 - category scores:
   - universal-obstruction-tower / semantic-repair-descent / finite-computable-shadow / repair-coherence / local-pass-global-fail: 150
   - semantic-faithfulness-discharge / effective-descent / representation-adequacy / anti-weakening: 180
@@ -73,8 +73,9 @@
   - finite-query-representation / support-shadow-recovery / coordinate-certificate-independence / anti-weakening: 84
   - finite-query-representation / support-control / support-shadow-target-route / anti-weakening: 86
   - finite-query-representation / support-shadow-recovery / support-control-independence / anti-weakening: 82
+  - finite-query-representation / current-shadow-reading-faithfulness / support-shadow-target-route / anti-weakening: 84
 - evidence portfolio:
-  - proved-in-research: 67
+  - proved-in-research: 68
 
 ## Target Proof State
 
@@ -139,7 +140,8 @@
 - latest Cycle 64 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798539263
 - latest Cycle 65 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798610806
 - latest Cycle 66 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4798799932
-- Cycle 67 support ledger: pending PR / tracking Issue comment.
+- latest Cycle 67 support ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4799042483
+- Cycle 68 support ledger: pending PR / tracking Issue comment.
 - completed support nodes:
   - finite/small `FiniteSemanticRepairObstructionTower` interface
   - Cech-style `C0/C1/C2`, `delta0/delta1`, `Z1/B1/H1` surface
@@ -3095,6 +3097,46 @@ open_questions: support-control premise を target-level semantic soundness、re
 この cycle は target theorem completion ではない。complete support-shadow recovery は support-control premise を
 自動的に discharge しない。canonical Bool witness の anti-weakening result であり、arbitrary semantic observation
 adequacy、target-level representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
+
+## Cycle 68: Support-Shadow Current-Reading Faithfulness Target Route
+
+```text
+candidate: Support-Shadow Current-Reading Faithfulness Target Route
+parent_tracking_issue: #2482
+candidate_type: target-support
+evidence_stage: proved-in-research
+score_status: self-audit accepted as current-shadow-reading route; base 42 x multiplier 2.0 = final 84
+base_score: 42
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 84
+score_note: canonical current-shadow reading faithfulness から support-shadow recovery、semantic adequacy、current-shadow factorization、target-surface universal factorization までの route を固定した。
+category: finite-query-representation / current-shadow-reading-faithfulness / support-shadow-target-route / anti-weakening
+goal_delta: Cycle66 の support-control route を semantic-reading faithfulness premise から供給する route を追加した。
+project_value_delta: current-shadow reading API と target-surface route を theorem package で直接接続した。
+rival_delta: current-shadow reading faithfulness を示せる analyzer と単なる support recovery analyzer の差を明示した。
+formalization_quality: pass。`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`、`lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute`、`lake env lean Formal/AG/Research.lean`、`lake build Formal.AG.Research`、`lake build FormalAGResearch`、full `lake build`、`.tmp/g04_support_faithfulness_route_axioms.lean` は pass。reported declarations 3 件は `#print axioms` で axiom-free。full `lake build` の warning は既存の `Formal/Arch/Extension/FeatureExtensionExamples.lean` linter warning のみ。
+target_progress: support-node
+proof_obligation_delta: canonical finite support-shadow representation の current-shadow reading faithfulness premise 付き recovery / semantic adequacy / current-shadow factorization / target-surface universal factorization route を追加した。
+premise_discharge_status: current-shadow reading faithfulness premise は visible premise として残る。support recovery は faithfulness premise を discharge しない。target-level semantic soundness / arbitrary representation adequacy / finite shadow adequacy for all observations / global coherence / tower vanishing / target completion は not discharged。
+anti_weakening_verdict: accept as current-shadow-reading support route; reject if faithfulness premise is treated as automatically available or as target completion.
+open_questions: current-shadow reading faithfulness premise を target-level semantic soundness、representation adequacy、finite certificate generation から非循環に構成する theorem、arbitrary semantic observation factorization、T6 `$math-lean-review`。
+```
+
+### Result
+
+`Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceSupportFaithfulnessRoute.lean`
+は、canonical support-shadow representation の current-shadow-reading faithfulness route を固定する。
+
+- `supportTraceShadowRepresentation_recovery_semanticAdequacy_currentShadowFactor_of_currentShadowSemanticReading_faithful`: current-shadow reading faithfulness から support-shadow recovery、semantic adequacy、current-shadow factorization を得る。
+- `targetSurfaceSupportTraceShadowRepresentation_universalFactorization_of_currentShadowSemanticReading_faithful`: current-shadow reading faithfulness から target-surface universal factorization を得る。
+- `supportTraceShadowRepresentation_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_currentShadowSemanticReading_faithful`: recovery、semantic adequacy、current-shadow factorization、target-surface route を一つの faithfulness-facing package に束ねる。
+
+### Target Boundary
+
+この cycle は target theorem completion ではない。current-shadow reading faithfulness premise は visible premise として残る。
+canonical support-shadow representation の finite route であり、arbitrary semantic observation adequacy、target-level
+representation adequacy、global coherence、tower vanishing、target theorem completion は主張しない。
 
 ## Superseded G6 Completion Judgment
 
