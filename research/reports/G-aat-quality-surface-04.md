@@ -3710,6 +3710,59 @@ certificate route: target-surface certificates keep their existing theorem
 package value, but they cannot be counted as representation adequacy unless a
 separate, visible current-shadow coordinate discharge is provided.
 
+## Cycle 80: Finite Computable Shadow Representation Line Blocked
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocked
+completion_candidate: no
+proof_obligation: record that the finite computable shadow representation line is blocked without a new visible coordinate-discharge datum
+lean_artifacts:
+  - existing file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationBridge.lean
+  - existing file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationConstructionBlocker.lean
+  - existing file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyBoundary.lean
+  - existing file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions.lean
+  - existing file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryTargetSurfaceRepresentationCertificateInsufficiency.lean
+premise_delta:
+  discharged:
+    - the active finite computable shadow representation route has been reduced to a visible support-coordinate current-shadow extensionality obligation
+    - finite support/probe completeness, support-shadow self-recovery, raw current-shadow factorization, semantic adequacy/no-separation, and target-surface finite certificates have all been ruled out as non-circular discharge routes
+    - continuing to call the same certificate/recovery/support data "representation adequacy" would hide an equivalent coordinate-certificate premise
+  remaining:
+    - a genuinely stronger target-level datum that visibly constructs support-coordinate current-shadow extensionality, if such a datum is later introduced
+    - pivot to other G-04 target obligations such as true sheaf `H^1` universality, nonabelian descent adequacy, and stacky/higher effectiveness
+    - final `$math-lean-review` remains open
+blocking_findings:
+  - no currently formalized finite-certificate, recovery, support, semantic-adequacy, or target-surface package route discharges representation adequacy non-circularly
+next_obligation: pivot away from this blocked representation subline unless new visible coordinate-discharge data is introduced
+```
+
+### Result
+
+Cycle 80 is a failure-policy checkpoint, not a new theorem package.  The
+evidence is the accumulated Lean boundary from Cycles 75--79:
+
+- `CurrentShadowTraceReadingRepresentation` is equivalent in strength to the
+  explicit coordinate certificate / raw current-shadow factorization boundary.
+- Any successful representation construction must provide support-coordinate
+  current-shadow extensionality.
+- Complete finite support, support-shadow self-recovery, semantic
+  adequacy/no-separation, and target-surface finite certificates do not provide
+  that extensionality.
+
+Therefore the finite computable shadow representation line is blocked in its
+current form.  This does not mark G-04 as target-theorem-proved or globally
+blocked.  It only removes this line as the next proof route unless a genuinely
+new visible coordinate-discharge datum is introduced.
+
+### Target Boundary
+
+The global state remains `target-proof-checkpoint`.  A future cycle should
+pivot to a different G-04 target obligation, rather than weakening
+representation adequacy into a certificate field, class membership, raw
+factorization premise, or support/recovery assumption.
+
 ## Superseded G6 Completion Judgment
 
 ```text
