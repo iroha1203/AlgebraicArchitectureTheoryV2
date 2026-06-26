@@ -292,6 +292,182 @@ theorem archSigStyleArtifact_records_boundary
     ⟨adequacy.bounded_evidence_recorded,
       adequacy.non_conclusions_recorded⟩
 
+/-! ## Source-trace blocker for canonical layer universality -/
+
+/--
+A trace-variant representative tower with prescribed finite layer shadow and
+source trace reading.
+
+The finite obstruction layers are deliberately independent of the supplied
+source trace.  This makes it a small counterexample surface for attempts to
+classify every source-trace-sensitive observation by the canonical layer shadow
+alone.
+-/
+def traceVariantTowerOfShadow
+    (shadow : FiniteTowerLayerShadow)
+    (trace : Bool -> Bool) :
+    FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool where
+  Chart := PUnit
+  chartOrder := [PUnit.unit]
+  C0 := PUnit
+  C1 := Bool
+  C2 := PUnit
+  c0Order := [PUnit.unit]
+  c1Order := [false, true]
+  c2Zero := PUnit.unit
+  delta0 := fun _ => false
+  delta1 := fun _ => PUnit.unit
+  delta1_delta0_zero := by
+    intro primitive
+    rfl
+  residual := shadow.h1
+  residual_cocycle := rfl
+  primitiveSemanticallyClosed := fun _ => True
+  torsorObstruction := shadow.torsor
+  higherObstruction := shadow.higher
+  stackObstruction := shadow.stack
+  finiteShadow := fun cochain => cochain
+  finiteShadow_boundary_zero := by
+    intro primitive
+    rfl
+  sourceTraceToken := trace
+
+/-- Trace-variant towers have exactly the requested canonical layer shadow. -/
+theorem canonicalShadow_traceVariantTowerOfShadow
+    (shadow : FiniteTowerLayerShadow)
+    (trace : Bool -> Bool) :
+    canonicalTowerLayerShadow (traceVariantTowerOfShadow shadow trace) =
+      shadow := by
+  cases shadow
+  rfl
+
+/-- A source-trace-sensitive observation that ignores obstruction layers. -/
+def sourceTraceAtTrueObservation
+    (T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool) :
+    Bool :=
+  T.sourceTraceToken true
+
+/--
+The canonical layer shadow alone cannot classify every source-trace-sensitive
+semantic repair observation.
+
+This is the non-circular blocker behind the final-review veto: two towers may
+have the same selected obstruction layers while differing in supplied source
+trace data.
+-/
+theorem sourceTraceAtTrueObservation_not_factor_through_canonicalShadow :
+    Not
+      (exists factor : FiniteTowerLayerShadow -> Bool,
+        forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+          sourceTraceAtTrueObservation T =
+            factor (canonicalTowerLayerShadow T)) := by
+  intro hfactorization
+  rcases hfactorization with ⟨factor, hfactor⟩
+  let shadow := zeroFiniteTowerLayerShadow
+  have hfalse :
+      sourceTraceAtTrueObservation
+          (traceVariantTowerOfShadow shadow (fun _ => false)) =
+        factor
+          (canonicalTowerLayerShadow
+            (traceVariantTowerOfShadow shadow (fun _ => false))) :=
+    hfactor (traceVariantTowerOfShadow shadow (fun _ => false))
+  have htrue :
+      sourceTraceAtTrueObservation
+          (traceVariantTowerOfShadow shadow (fun token => token)) =
+        factor
+          (canonicalTowerLayerShadow
+            (traceVariantTowerOfShadow shadow (fun token => token))) :=
+    hfactor (traceVariantTowerOfShadow shadow (fun token => token))
+  rw [canonicalShadow_traceVariantTowerOfShadow] at hfalse
+  rw [canonicalShadow_traceVariantTowerOfShadow] at htrue
+  simp [shadow, sourceTraceAtTrueObservation, traceVariantTowerOfShadow] at hfalse htrue
+  rw [hfalse] at htrue
+  cases htrue
+
+/-- A trace-aware finite shadow for the Bool source-trace blocker surface. -/
+structure BoolTraceAwareTowerShadow where
+  layer : FiniteTowerLayerShadow
+  sourceAtTrue : Bool
+
+/-- The trace-aware shadow records both obstruction layers and the trace probe. -/
+def boolTraceAwareTowerShadow
+    (T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool) :
+    BoolTraceAwareTowerShadow where
+  layer := canonicalTowerLayerShadow T
+  sourceAtTrue := T.sourceTraceToken true
+
+/-- The source-trace observation factors through the trace-aware shadow. -/
+def sourceTraceAtTrueFactor
+    (shadow : BoolTraceAwareTowerShadow) : Bool :=
+  shadow.sourceAtTrue
+
+/--
+Adding the source trace probe to the finite shadow restores factorization for
+the trace-sensitive observation.
+-/
+theorem sourceTraceAtTrueObservation_factors_through_traceAwareShadow
+    (T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool) :
+    sourceTraceAtTrueObservation T =
+      sourceTraceAtTrueFactor (boolTraceAwareTowerShadow T) := by
+  rfl
+
+/--
+The trace-aware factor is pointwise unique among factors through the trace-aware
+shadow for the source-trace observation.
+-/
+theorem sourceTraceAtTrueFactor_pointwise_unique
+    {factor : BoolTraceAwareTowerShadow -> Bool}
+    (hfactor :
+      forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        sourceTraceAtTrueObservation T =
+          factor (boolTraceAwareTowerShadow T)) :
+    forall shadow : BoolTraceAwareTowerShadow,
+      factor shadow = sourceTraceAtTrueFactor shadow := by
+  intro shadow
+  let T :=
+    traceVariantTowerOfShadow shadow.layer
+      (fun token =>
+        match token with
+        | false => false
+        | true => shadow.sourceAtTrue)
+  have htower := hfactor T
+  cases shadow with
+  | mk layer sourceAtTrue =>
+      cases layer
+      cases sourceAtTrue <;>
+        simpa [T, sourceTraceAtTrueObservation, sourceTraceAtTrueFactor,
+          boolTraceAwareTowerShadow, traceVariantTowerOfShadow]
+          using htower.symm
+
+/--
+Package form of the source-trace universality blocker.
+
+The first component rules out canonical-layer-only universality for arbitrary
+source-trace-sensitive observations.  The second and third components show the
+minimal trace-aware repair route: once the trace probe is included in the shadow,
+the observation factors and the factor is pointwise unique.
+-/
+theorem sourceTraceUniversalityBlocker_package :
+    Not
+      (exists factor : FiniteTowerLayerShadow -> Bool,
+        forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+          sourceTraceAtTrueObservation T =
+            factor (canonicalTowerLayerShadow T)) /\
+      (forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        sourceTraceAtTrueObservation T =
+          sourceTraceAtTrueFactor (boolTraceAwareTowerShadow T)) /\
+      (forall factor : BoolTraceAwareTowerShadow -> Bool,
+        (forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+          sourceTraceAtTrueObservation T =
+            factor (boolTraceAwareTowerShadow T)) ->
+          forall shadow : BoolTraceAwareTowerShadow,
+            factor shadow = sourceTraceAtTrueFactor shadow) := by
+  exact
+    ⟨sourceTraceAtTrueObservation_not_factor_through_canonicalShadow,
+      sourceTraceAtTrueObservation_factors_through_traceAwareShadow,
+      fun factor hfactor =>
+        sourceTraceAtTrueFactor_pointwise_unique hfactor⟩
+
 /-! ## Integrated finite target-strength support package -/
 
 /--

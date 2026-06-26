@@ -4641,3 +4641,82 @@ G6 は、`universalSemanticRepairTargetCompletion_package_of_finiteCertificate` 
 この完了判定は finite/small target boundary 内のものだが、これは GOAL card の target theorem boundary と一致する。arbitrary site、unbounded infinity-stack、実 Rust ArchSig correctness、ArchMap validation、runtime extraction completeness、whole-codebase quality は引き続き主張しない。
 
 この判定は後続の `$math-lean-review` 4 並列査読で supersede された。現状の正式な proof state は `target-proof-checkpoint` であり、`target-theorem-proved` として扱わない。
+
+## Cycle 96: Source-Trace Universality Blocker
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix the final-review universality/factorization veto by showing that canonical finite layer shadow alone cannot classify source-trace-sensitive semantic repair observations
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean
+    declarations:
+      - traceVariantTowerOfShadow
+      - canonicalShadow_traceVariantTowerOfShadow
+      - sourceTraceAtTrueObservation
+      - sourceTraceAtTrueObservation_not_factor_through_canonicalShadow
+      - BoolTraceAwareTowerShadow
+      - boolTraceAwareTowerShadow
+      - sourceTraceAtTrueFactor
+      - sourceTraceAtTrueObservation_factors_through_traceAwareShadow
+      - sourceTraceAtTrueFactor_pointwise_unique
+      - sourceTraceUniversalityBlocker_package
+premise_delta:
+  discharged:
+    - canonical layer-shadow-only universality is refuted for source-trace-sensitive observations
+    - two towers can have the same selected obstruction layers while differing on supplied source trace data
+    - adding the source trace probe to the finite shadow restores factorization and pointwise uniqueness for the witness observation
+  remaining:
+    - the full GOAL-level target theorem is not complete
+    - a generalized trace-aware or assignment-aware semantic repair obstruction classifier is still needed for arbitrary sound semantic repair-gluing assignments
+    - the G-02 / ArchSig finite-shadow comparison, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` gate remain open
+blocking_findings:
+  - full arbitrary sound assignment factorization cannot be proved from canonical layer shadow alone
+next_obligation: define a GOAL-level trace-aware semantic repair obstruction assignment interface and prove its factorization theorem, or prove the next non-layer datum that any universal classifier must expose
+```
+
+### Result
+
+Cycle 96 adds a non-circular blocker for the final-review universality veto.
+`traceVariantTowerOfShadow` constructs two representative finite towers with
+the same `canonicalTowerLayerShadow` but different `sourceTraceToken` values.
+Therefore `sourceTraceAtTrueObservation_not_factor_through_canonicalShadow`
+proves that no factor through `FiniteTowerLayerShadow` can classify every
+source-trace-sensitive observation.
+
+The same cycle also records the minimal repair route for this blocker surface.
+`BoolTraceAwareTowerShadow` extends the layer shadow with the source trace probe,
+and `sourceTraceAtTrueObservation_factors_through_traceAwareShadow` plus
+`sourceTraceAtTrueFactor_pointwise_unique` prove factorization and pointwise
+uniqueness for the witness observation.  The package theorem
+`sourceTraceUniversalityBlocker_package` bundles the no-go result with the
+trace-aware positive bridge.
+
+### Formalization Quality
+
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairUniversalShadow.lean`,
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTargetCompletion.lean`,
+`lake build Formal.AG.Research.QualitySurface.SemanticRepairUniversalShadow`,
+`lake build FormalAGResearch`, and full `lake build` all pass.  The axiom audit
+shows only `propext` for
+`sourceTraceAtTrueObservation_not_factor_through_canonicalShadow` and
+`sourceTraceUniversalityBlocker_package`; the positive factorization and
+uniqueness theorems are axiom-free.  Placeholder, hidden Unicode, local path,
+and `git diff --check` scans are clean for the changed files.
+
+T3 audit returned `decision: approve`, `result_type: blocker-fixed`, and
+`completion_candidate: no`, with no required fixes.  The audit confirmed that
+the trace-aware positive component is limited to the witness observation and
+does not claim full GOAL-level arbitrary sound assignment universality.
+Tracking issue sync: #2482 comment
+`https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4805274123`.
+
+### Target Boundary
+
+This is a blocker-fixed cycle, not target theorem completion.  It prevents the
+target proof from silently treating canonical finite layer shadow as a universal
+classifier for source-trace-sensitive semantic repair assignments.  The next
+target step must either build the trace-aware assignment interface at GOAL
+strength or expose the next datum needed by a sound universal classifier.
