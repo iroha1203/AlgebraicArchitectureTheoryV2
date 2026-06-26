@@ -320,6 +320,70 @@ theorem universalSemanticRepairTargetSurface_package_of_finiteCertificates
       shadowExtensionalObservation_universalFactorization
         (Obs := Obs) observe extensional
 
+/--
+At the target surface with finite certificates, global coherence and all-layer
+obstruction vanishing are equivalent.
+
+The statement exposes the central equivalence without adding either side as a
+field of the surface or certificate package.
+-/
+theorem targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_finiteCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetCertificates A) :
+    GlobalSemanticRepairCoherent
+        (Obs_A_ofFiniteCertificates A certificates) <->
+      ObstructionTowerVanishes
+        (Obs_A_ofFiniteCertificates A certificates) := by
+  letI : Decidable (EffectiveNonabelianRepairDescent A.torsor) :=
+    effectiveNonabelianRepairDescentDecisionOfCertificate
+      A.torsor certificates.torsor
+  letI : Decidable (StackyRepairH2Zero A.stack) :=
+    stackyRepairH2ZeroDecisionOfCertificate
+      A.stack certificates.stack
+  letI : Decidable (EffectiveStackyRepairDescent A.stack) :=
+    effectiveStackyRepairDescentDecisionOfCertificate
+      A.stack certificates.stack
+  have hvanishes :
+      ObstructionTowerVanishes
+          (Obs_A_ofFiniteCertificates A certificates) <->
+        SemanticRepairH1Zero A.sheaf /\
+          EffectiveNonabelianRepairDescent A.torsor /\
+          StackyRepairH2Zero A.stack /\
+          EffectiveStackyRepairDescent A.stack := by
+    simpa [Obs_A_ofFiniteCertificates,
+      toIntegratedSheafTorsorStackTowerOfFiniteCertificates] using
+      integratedTower_vanishes_iff_layers A.sheaf A.torsor A.stack
+  have hglobal :
+      GlobalSemanticRepairCoherent
+          (Obs_A_ofFiniteCertificates A certificates) <->
+        SemanticRepairH1Zero A.sheaf /\
+          EffectiveNonabelianRepairDescent A.torsor /\
+          StackyRepairH2Zero A.stack /\
+          EffectiveStackyRepairDescent A.stack := by
+    simpa [Obs_A_ofFiniteCertificates,
+      toIntegratedSheafTorsorStackTowerOfFiniteCertificates] using
+      integratedTower_globalCoherent_iff_layers
+        A.sheaf
+        (targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
+          A certificates)
+        A.torsor A.stack
+  constructor
+  · intro hcoherent
+    exact hvanishes.2 (hglobal.1 hcoherent)
+  · intro hvanishing
+    exact hglobal.2 (hvanishes.1 hvanishing)
+
 end SemanticRepairTargetSurface
 end QualitySurface
 end Formal.AG.Research
