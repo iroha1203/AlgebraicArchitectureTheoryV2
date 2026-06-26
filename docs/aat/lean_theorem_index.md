@@ -5068,6 +5068,43 @@ AAT Lyapunov reading / selected path monotonicity、R9 の Force / Integrability
 surface、R10 の finite temporal examples までを実装する。
 未選択 event、外部 runtime、実時間、任意 future path への zero / lawful / safe / forecast theorem は結論しない。
 
+## Research Target Theorem Packages
+
+Research target theorem artifacts live under `Formal/AG/Research/` and remain
+research evidence, not canonical mathematical text. The GOAL card and tracking
+Issue define the theorem boundary; this index records the public Lean API needed
+for review.
+
+File: `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`.
+Tracking Issue: [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476).
+Report: [`research/reports/G-aat-quality-surface-02.md`](../../research/reports/G-aat-quality-surface-02.md).
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `SemanticRepairGluingComplex.FiniteSemanticRepairGluingComplex` | `structure` | finite semantic repair atlas、explicit chart list、explicit overlap / transition witness list `overlapOrder`、finite `C0` / `C1` lists、restriction-difference `delta0`、selected residual を束ねる。 | `defined only` |
+| `SemanticRepairGluingComplex.overlapOrder_complete` | `theorem` | 任意の overlap / transition witness が `overlapOrder` に現れることを読む accessor。 | `proved` |
+| `SemanticRepairGluingComplex.delta0_support_exact` | `theorem` | `delta0` が overlap 上の left / right restriction symmetric difference と一致する。 | `proved` |
+| `SemanticRepairGluingComplex.B1`, `ObstructionClassVanishes`, `ObstructionClassNonzero` | `def` | finite `B1` boundary predicate、selected residual の boundary vanishing、nonzero obstruction predicate。 | `defined only` |
+| `SemanticRepairGluingComplex.GlobalSemanticRepairCoherent` | `def` | boundary primitive と semantic closure を持つ global semantic repair coherent certificate の存在。 | `defined only` |
+| `SemanticRepairGluingComplex.SemanticFaithfulnessHypotheses` | `structure` | boundary primitive から residual component coverage と residual-component faithfulness を得る sufficiency 用 premise surface。 | `defined only` |
+| `SemanticRepairGluingComplex.globalRepairCoherent_forces_obstructionVanishes` | `theorem` | global semantic repair coherence から finite obstruction vanish を得る necessity direction。 | `proved` |
+| `SemanticRepairGluingComplex.no_globalRepairCoherent_of_nonzero_obstruction` | `theorem` | nonzero finite obstruction から global semantic repair coherence 不在を得る contrapositive direction。 | `proved` |
+| `SemanticRepairGluingComplex.globalRepairCoherent_of_obstructionVanishes`, `finiteSemanticRepairGluingDescent_iff` | `theorem` | `SemanticFaithfulnessHypotheses` の下で obstruction vanish から global coherence、および同値を得る conditional sufficiency package。 | `proved under explicit premise` |
+| `SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex` | `structure` | complete refined semantic repair support を持つ explicit finite atlas class。faithfulness / vanish / global coherence は field として持たない。 | `defined only` |
+| `SemanticRepairGluingComplex.completeRepairSupportBoundary_semanticFaithfulnessHypotheses` | `theorem` | complete-support finite atlas class では `SemanticFaithfulnessHypotheses` が放電される。 | `proved` |
+| `SemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary` | `theorem` | complete-support finite atlas class に相対化した finite semantic repair-gluing descent equivalence。 | `proved` |
+| `SemanticRepairGluingComplex.selectedVisibleLocalWitnessComplex`, `selectedVisibleLocalWitness_obstructionNonzero`, `selectedVisibleLocalWitness_noGlobalRepairCoherent` | `def` / `theorem` | visible / local / component clearance だけでは finite obstruction が消えない calibration witness。 | `defined only` / `proved` |
+| `SemanticRepairGluingComplex.selectedFaithfulBoundaryComplex`, `selectedFaithfulBoundary_descent_iff` | `def` / `theorem` | complete-support boundary による faithful calibration witness と finite descent equivalence。 | `defined only` / `proved` |
+| `SemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary` | `theorem` | necessity、contrapositive、sufficiency、faithfulness discharge、bridge theorem、witness validation を束ねた complete-support finite-class package。 | `proved` |
+
+Non-conclusions: この package は arbitrary finite atlas descent、true sheaf
+`H^1`、nonabelian / stacky descent、universal obstruction assignment、source
+extraction completeness、ArchMap validation、runtime repair synthesis、whole-codebase
+quality を主張しない。`SemanticFaithfulnessHypotheses` を generic theorem argument
+として残す theorem は checkpoint であり、completion claim は
+`CompleteRepairSupportBoundaryComplex` のような explicit finite atlas class に
+相対化された discharge theorem と一緒に読む。
+
 ## Reverse-Import Theorem Packages
 
 File: `Formal/Arch/Evolution/ReverseImportTheorems.lean`.
