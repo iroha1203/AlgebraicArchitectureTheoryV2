@@ -82,6 +82,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | targetObservationMappingAudit
   | traceProbeSoundAssignmentAudit
   | arbitraryUniversalityBlockerAudit
+  | enrichedBoundaryRepairAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -99,6 +100,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.targetObservationMappingAudit,
     TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit,
     TargetSurfaceFinalReviewDeclaration.arbitraryUniversalityBlockerAudit,
+    TargetSurfaceFinalReviewDeclaration.enrichedBoundaryRepairAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -114,6 +116,7 @@ inductive TargetSurfaceMaterialPremise where
   | finiteComputableShadowAdequacy
   | soundObstructionAssignmentFactorization
   | arbitrarySoundAssignmentUniversality
+  | sourceTraceBoundaryEnrichment
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -160,6 +163,8 @@ def targetSurfaceMaterialPremiseStatus :
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =>
       TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary
+  | TargetSurfaceMaterialPremise.sourceTraceBoundaryEnrichment =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
   | TargetSurfaceMaterialPremise.archMapCorrectness =>
@@ -596,6 +601,87 @@ theorem targetSurface_arbitraryUniversalityBlockerAudit :
           sourceTraceAtTrueTraceAwareAssignment T
 
 /--
+Audit for the finite support-trace enriched boundary required by the current
+source-trace blocker.
+
+This does not turn finite support-trace generated assignments into arbitrary
+semantic observation universality.  It records the theorem-derived repair
+available once the boundary includes explicit finite source-trace input
+geometry: the enriched shadow projects back to the current four-bit layer, all
+finite trace-aware assignments factor through it, and the source-trace blocker
+is absorbed by the `[true]` support witness.
+-/
+structure TargetSurfaceEnrichedBoundaryRepairAudit where
+  supportTraceShadowProjectsToCurrentShadow :
+    forall {Atom : Type u}
+        (support : List Atom)
+        (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom),
+      (canonicalSupportTraceProbeTowerLayerShadow support T).layer =
+        canonicalTowerLayerShadow T
+  traceAwareAssignmentFactorization :
+    forall {Atom : Type u}
+        {Out : Type s}
+        (assignment :
+          TraceAwareSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      forall T :
+        FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+        traceAwareAssignmentObserve assignment T =
+          traceAwareAssignmentFactor assignment
+            (canonicalSupportTraceProbeTowerLayerShadow
+              assignment.support T)
+  traceAwareAssignmentExtensionality :
+    forall {Atom : Type u}
+        {Out : Type s}
+        (assignment :
+          TraceAwareSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      SupportTraceShadowExtensional
+        (Atom := Atom)
+        assignment.support
+        (fun T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            traceAwareAssignmentObserve assignment T)
+  sourceTraceBlockerRefinedByEnrichment :
+    Not
+      (exists factor : FiniteTowerLayerShadow -> Bool,
+        forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+          sourceTraceAtTrueObservation T =
+            factor (canonicalTowerLayerShadow T)) /\
+      (forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        sourceTraceAtTrueObservation T =
+          traceAwareAssignmentFactor sourceTraceAtTrueTraceAwareAssignment
+            (canonicalSupportTraceProbeTowerLayerShadow
+              sourceTraceAtTrueTraceAwareAssignment.support T)) /\
+      SupportTraceShadowExtensional
+        (Atom := Bool)
+        sourceTraceAtTrueTraceAwareAssignment.support
+        (fun T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool =>
+          sourceTraceAtTrueObservation T)
+
+/--
+Derive the enriched-boundary audit from the finite support-trace shadow
+factorization and the source-trace blocker refinement package.
+-/
+theorem targetSurface_enrichedBoundaryRepairAudit :
+    TargetSurfaceEnrichedBoundaryRepairAudit where
+  supportTraceShadowProjectsToCurrentShadow := by
+    intro Atom support T
+    exact supportTraceProbeShadow_projects_to_currentShadow support T
+  traceAwareAssignmentFactorization := by
+    intro Atom Out assignment T
+    exact
+      traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow
+        assignment T
+  traceAwareAssignmentExtensionality := by
+    intro Atom Out assignment
+    exact
+      traceAwareSemanticRepairObstructionAssignment_extensional_on_supportTraceShadow
+        assignment
+  sourceTraceBlockerRefinedByEnrichment :=
+    traceAwareAssignment_refines_sourceTraceUniversalityBlocker_package
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -640,6 +726,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceTraceProbeSoundAssignmentAudit A certificates
   arbitraryUniversalityBlockerAudit :
     TargetSurfaceArbitraryUniversalityBlockerAudit
+  enrichedBoundaryRepairAudit :
+    TargetSurfaceEnrichedBoundaryRepairAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -705,6 +793,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =
         TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.sourceTraceBoundaryEnrichment =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -752,11 +843,15 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
       A certificates
   arbitraryUniversalityBlockerAudit :=
     targetSurface_arbitraryUniversalityBlockerAudit
+  enrichedBoundaryRepairAudit :=
+    targetSurface_enrichedBoundaryRepairAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
-    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    exact
+      ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl,
+        rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
