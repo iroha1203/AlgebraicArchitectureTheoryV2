@@ -1,3 +1,4 @@
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 
 /-!
@@ -24,6 +25,8 @@ open SemanticRepairSheafH1
 open SemanticRepairNonabelianTorsor
 open SemanticRepairStackyH2
 open SemanticRepairTargetCompletion
+open SemanticRepairTraceProbeShadow
+open SemanticRepairFiniteTraceSupport
 open SemanticRepairTargetSurface
 
 universe u v w x y z r s
@@ -73,6 +76,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | globalCoherenceVanishesIff
   | trueLayerStrengthDischarge
   | strengthTower
+  | traceProbeSoundAssignmentAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -87,6 +91,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.globalCoherenceVanishesIff,
     TargetSurfaceFinalReviewDeclaration.trueLayerStrengthDischarge,
     TargetSurfaceFinalReviewDeclaration.strengthTower,
+    TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -99,6 +104,7 @@ inductive TargetSurfaceMaterialPremise where
   | higherStackyEffectiveness
   | representationAdequacy
   | finiteComputableShadowAdequacy
+  | soundObstructionAssignmentFactorization
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -137,6 +143,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.representationAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.finiteComputableShadowAdequacy =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.soundObstructionAssignmentFactorization =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
@@ -284,6 +292,133 @@ theorem targetSurface_representationAdequacyAudit_of_strengthCertificates
       shadowExtensionalObservationFactorization := hshadowExtensional }
 
 /--
+Trace/probe-aware sound-assignment factorization exposed by the strengthened
+target surface.
+
+This audit is deliberately narrower than arbitrary semantic observation
+universality.  It covers sound assignments generated from explicit finite
+source-trace probes or a finite atom support, and it records the existing
+source-trace blocker showing that the canonical four-bit shadow alone cannot
+classify every source-trace-sensitive observation.  The finite support and
+probe family are input geometry, not hidden completeness or runtime extraction
+claims.
+-/
+structure TargetSurfaceTraceProbeSoundAssignmentAudit
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) where
+  traceProbeAssignmentFactorization :
+    forall (Out : Type s)
+        (assignment :
+          TraceProbeSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      traceProbeAssignmentObserve assignment
+          (Obs_A_ofStrengthCertificates A certificates) =
+        traceProbeAssignmentFactor assignment
+          (canonicalTraceProbeTowerLayerShadow assignment.probes
+            (Obs_A_ofStrengthCertificates A certificates))
+  traceProbeAssignmentExtensionality :
+    forall (Out : Type s)
+        (assignment :
+          TraceProbeSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      TraceProbeShadowExtensional
+        (Atom := Atom)
+        assignment.probes
+        (fun T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            traceProbeAssignmentObserve assignment T)
+  supportTraceAssignmentFactorization :
+    forall (Out : Type s)
+        (assignment :
+          TraceAwareSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      traceAwareAssignmentObserve assignment
+          (Obs_A_ofStrengthCertificates A certificates) =
+        traceAwareAssignmentFactor assignment
+          (canonicalSupportTraceProbeTowerLayerShadow assignment.support
+            (Obs_A_ofStrengthCertificates A certificates))
+  supportTraceAssignmentExtensionality :
+    forall (Out : Type s)
+        (assignment :
+          TraceAwareSemanticRepairObstructionAssignment
+            (Atom := Atom) Out),
+      SupportTraceShadowExtensional
+        (Atom := Atom)
+        assignment.support
+        (fun T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            traceAwareAssignmentObserve assignment T)
+  supportTraceRecoveryWitness :
+    forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+      sourceTraceAtTrueObservation T =
+        traceAwareAssignmentFactor sourceTraceAtTrueTraceAwareAssignment
+          (canonicalSupportTraceProbeTowerLayerShadow
+            sourceTraceAtTrueTraceAwareAssignment.support T)
+
+/--
+Derive the trace/probe-aware sound-assignment audit from the existing finite
+trace-probe and finite-support factorization theorems.
+-/
+theorem targetSurface_traceProbeSoundAssignmentAudit_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    TargetSurfaceTraceProbeSoundAssignmentAudit A certificates where
+  traceProbeAssignmentFactorization := by
+    intro Out assignment
+    exact
+      traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
+        assignment (Obs_A_ofStrengthCertificates A certificates)
+  traceProbeAssignmentExtensionality := by
+    intro Out assignment
+    exact
+      traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeShadow
+        assignment
+  supportTraceAssignmentFactorization := by
+    intro Out assignment
+    exact
+      traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow
+        assignment (Obs_A_ofStrengthCertificates A certificates)
+  supportTraceAssignmentExtensionality := by
+    intro Out assignment
+    exact
+      traceAwareSemanticRepairObstructionAssignment_extensional_on_supportTraceShadow
+        assignment
+  supportTraceRecoveryWitness := by
+    intro T
+    calc
+      sourceTraceAtTrueObservation T =
+          traceAwareAssignmentObserve
+            sourceTraceAtTrueTraceAwareAssignment T := by
+        rw [sourceTraceAtTrueTraceAwareAssignment_observe_eq]
+      _ = traceAwareAssignmentFactor sourceTraceAtTrueTraceAwareAssignment
+            (canonicalSupportTraceProbeTowerLayerShadow
+              sourceTraceAtTrueTraceAwareAssignment.support T) :=
+        traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow
+          sourceTraceAtTrueTraceAwareAssignment T
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -322,6 +457,8 @@ structure TargetSurfaceFinalReviewPacket
         (Obs_A_ofStrengthCertificates A certificates)
   representationAdequacyAudit :
     TargetSurfaceRepresentationAdequacyAudit A certificates
+  traceProbeSoundAssignmentAudit :
+    TargetSurfaceTraceProbeSoundAssignmentAudit A certificates
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -378,6 +515,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.finiteComputableShadowAdequacy =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.soundObstructionAssignmentFactorization =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -418,11 +558,14 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
   representationAdequacyAudit :=
     targetSurface_representationAdequacyAudit_of_strengthCertificates
       A certificates
+  traceProbeSoundAssignmentAudit :=
+    targetSurface_traceProbeSoundAssignmentAudit_of_strengthCertificates
+      A certificates
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
-    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
