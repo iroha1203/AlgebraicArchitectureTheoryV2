@@ -247,6 +247,116 @@ theorem traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeS
       (traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
         assignment right).symm
 
+/-! ## Trace-probe ArchSig-style bounded artifact surface -/
+
+/--
+A bounded ArchSig-style finite artifact enriched with supplied trace-probe
+readings.
+
+This is a Lean-side finite artifact shape.  The probe readings are supplied
+input geometry; the structure does not assert ArchMap / ArchSig runtime
+extraction correctness, trace completeness, semantic faithfulness, global
+coherence, obstruction vanishing, descent effectiveness, or target completion.
+-/
+structure TraceProbeArchSigStyleFiniteShadowArtifact where
+  measuredH1 : Bool
+  measuredTorsor : Bool
+  measuredHigher : Bool
+  measuredStack : Bool
+  sourceTraceReadings : List Bool
+  recordsBoundedEvidence : Bool
+  recordsNonConclusions : Bool
+
+/-- Read a trace-probe ArchSig-style artifact as an enriched finite shadow. -/
+def traceProbeArchSigStyleArtifactShadow
+    (artifact : TraceProbeArchSigStyleFiniteShadowArtifact) :
+    TraceProbeFiniteTowerLayerShadow where
+  layer :=
+    { h1 := artifact.measuredH1
+      torsor := artifact.measuredTorsor
+      higher := artifact.measuredHigher
+      stack := artifact.measuredStack }
+  sourceTraceReadings := artifact.sourceTraceReadings
+
+/-- Forget trace-probe readings back to the four-layer ArchSig-style artifact. -/
+def traceProbeArchSigStyleArtifact_project
+    (artifact : TraceProbeArchSigStyleFiniteShadowArtifact) :
+    ArchSigStyleFiniteShadowArtifact where
+  measuredH1 := artifact.measuredH1
+  measuredTorsor := artifact.measuredTorsor
+  measuredHigher := artifact.measuredHigher
+  measuredStack := artifact.measuredStack
+  recordsBoundedEvidence := artifact.recordsBoundedEvidence
+  recordsNonConclusions := artifact.recordsNonConclusions
+
+/-- Build the bounded trace-probe artifact associated to an enriched shadow. -/
+def traceProbeArchSigStyleArtifactOfShadow
+    (shadow : TraceProbeFiniteTowerLayerShadow) :
+    TraceProbeArchSigStyleFiniteShadowArtifact where
+  measuredH1 := shadow.layer.h1
+  measuredTorsor := shadow.layer.torsor
+  measuredHigher := shadow.layer.higher
+  measuredStack := shadow.layer.stack
+  sourceTraceReadings := shadow.sourceTraceReadings
+  recordsBoundedEvidence := true
+  recordsNonConclusions := true
+
+/-- Build the bounded trace-probe artifact associated to a finite tower. -/
+def traceProbeArchSigStyleArtifactOfTower
+    {Atom : Type u}
+    (probes : List (SourceTraceProbe Atom))
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    TraceProbeArchSigStyleFiniteShadowArtifact :=
+  traceProbeArchSigStyleArtifactOfShadow
+    (canonicalTraceProbeTowerLayerShadow probes T)
+
+/--
+The bounded trace-probe artifact of a tower factors through the enriched
+trace-probe shadow.
+-/
+theorem traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow
+    {Atom : Type u}
+    (probes : List (SourceTraceProbe Atom))
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    traceProbeArchSigStyleArtifactShadow
+        (traceProbeArchSigStyleArtifactOfTower probes T) =
+      canonicalTraceProbeTowerLayerShadow probes T := by
+  rfl
+
+/--
+Forgetting probe readings recovers the existing four-layer ArchSig-style
+artifact of the same tower.
+-/
+theorem traceProbeArchSigStyleArtifact_projects_to_archSigStyleArtifactShadow
+    {Atom : Type u}
+    (probes : List (SourceTraceProbe Atom))
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    archSigStyleArtifactShadow
+        (traceProbeArchSigStyleArtifact_project
+          (traceProbeArchSigStyleArtifactOfTower probes T)) =
+      archSigStyleArtifactShadow (archSigStyleArtifactOfTower T) := by
+  rfl
+
+/-- The bounded trace-probe artifact records evidence and non-conclusion flags. -/
+theorem traceProbeArchSigStyleArtifact_records_boundary
+    {Atom : Type u}
+    (probes : List (SourceTraceProbe Atom))
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    (traceProbeArchSigStyleArtifactOfTower probes T).recordsBoundedEvidence =
+        true /\
+      (traceProbeArchSigStyleArtifactOfTower probes T).recordsNonConclusions =
+        true := by
+  exact ⟨rfl, rfl⟩
+
+/-- The bounded trace-probe artifact stores exactly the supplied probe readings. -/
+theorem traceProbeArchSigStyleArtifact_probeReadings_eq
+    {Atom : Type u}
+    (probes : List (SourceTraceProbe Atom))
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    (traceProbeArchSigStyleArtifactOfTower probes T).sourceTraceReadings =
+      traceProbeReadings probes T.sourceTraceToken := by
+  rfl
+
 /--
 Any observation that factors through the trace-probe shadow is trace-probe
 extensional.
