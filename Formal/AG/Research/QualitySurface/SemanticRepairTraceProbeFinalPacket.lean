@@ -148,6 +148,34 @@ theorem traceProbeFinalReviewFiniteShadowPacket_sourceTraceToken_same_of_same_ar
     sourceTraceToken_same_of_same_completeTraceProbeArtifact
       (Atom := Atom) hcomplete hartifact
 
+/--
+Packet-local generated-observation faithfulness fragment.
+
+Complete trace-probe artifact equality preserves both the complete
+source-trace token and the probe-generated admissible observation value.  This
+is a finite generated-observation boundary theorem, not arbitrary semantic
+observation adequacy, runtime extraction correctness, or full semantic
+faithfulness.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_generatedObservationFaithfulness_of_same_artifact
+    {Atom : Type u}
+    {Out : Type z}
+    (obs : TraceProbeGeneratedAdmissibleObservation (Atom := Atom) Out)
+    (hcomplete : TraceProbeFamilyComplete obs.probes)
+    {left right :
+      FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom}
+    (hartifact :
+      traceProbeArchSigStyleArtifactOfTower obs.probes left =
+        traceProbeArchSigStyleArtifactOfTower obs.probes right) :
+    left.sourceTraceToken = right.sourceTraceToken ∧
+      traceProbeAssignmentObserve obs left =
+        traceProbeAssignmentObserve obs right := by
+  exact
+    ⟨traceProbeFinalReviewFiniteShadowPacket_sourceTraceToken_same_of_same_artifact
+        obs hcomplete hartifact,
+      traceProbeSemanticRepairObstructionAssignment_same_of_same_traceProbeArtifact
+        obs hartifact⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
