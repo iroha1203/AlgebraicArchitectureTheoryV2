@@ -227,6 +227,92 @@ def traceAwareAssignmentFactor
     Out :=
   assignment.post shadow.layer shadow.sourceTraceReadings
 
+/-- Support-list trace-aware assignments are probe-aware assignments. -/
+def traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceAwareSemanticRepairObstructionAssignment
+      (Atom := Atom) Out) :
+    TraceProbeSemanticRepairObstructionAssignment (Atom := Atom) Out where
+  probes := supportTraceProbes assignment.support
+  post := assignment.post
+
+/--
+The support-list observation agrees with the generic probe-aware observation
+for the canonical probes induced by the support list.
+-/
+theorem traceAwareAssignment_observe_eq_traceProbeAssignment_of_supportTraceProbes
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceAwareSemanticRepairObstructionAssignment
+      (Atom := Atom) Out)
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    traceAwareAssignmentObserve assignment T =
+      traceProbeAssignmentObserve
+        (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+          assignment) T := by
+  change
+    assignment.post (canonicalTowerLayerShadow T)
+        (supportTraceVector assignment.support T.sourceTraceToken) =
+      assignment.post (canonicalTowerLayerShadow T)
+        (traceProbeReadings (supportTraceProbes assignment.support)
+          T.sourceTraceToken)
+  exact
+    congrArg (assignment.post (canonicalTowerLayerShadow T))
+      (traceProbeReadings_supportTraceProbes assignment.support
+        T.sourceTraceToken).symm
+
+/--
+The support-list enriched shadow is the generic trace-probe shadow for the
+canonical probes induced by the support list.
+-/
+theorem traceAwareAssignment_supportTraceShadow_eq_traceProbeShadow_of_supportTraceProbes
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceAwareSemanticRepairObstructionAssignment
+      (Atom := Atom) Out)
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    canonicalSupportTraceProbeTowerLayerShadow assignment.support T =
+      canonicalTraceProbeTowerLayerShadow
+        (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+          assignment).probes T := by
+  exact canonicalSupportTraceProbeTowerLayerShadow_eq_traceProbeShadow
+    assignment.support T
+
+/--
+Cycle 97 support-list factorization is recovered as the special case of the
+generic probe-aware assignment factorization using `supportTraceProbes`.
+-/
+theorem traceAwareAssignment_factorization_from_traceProbeAssignment
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceAwareSemanticRepairObstructionAssignment
+      (Atom := Atom) Out)
+    (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom) :
+    traceAwareAssignmentObserve assignment T =
+      traceProbeAssignmentFactor
+        (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+          assignment)
+        (canonicalTraceProbeTowerLayerShadow
+          (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+            assignment).probes T) := by
+  calc
+    traceAwareAssignmentObserve assignment T =
+        traceProbeAssignmentObserve
+          (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+            assignment) T :=
+      traceAwareAssignment_observe_eq_traceProbeAssignment_of_supportTraceProbes
+        assignment T
+    _ = traceProbeAssignmentFactor
+          (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+            assignment)
+          (canonicalTraceProbeTowerLayerShadow
+            (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+              assignment).probes T) :=
+      traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
+        (traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+          assignment) T
+
 /--
 Every finite trace-aware assignment factors through the support-trace enriched
 tower shadow determined by its explicit support.
