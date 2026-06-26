@@ -53,6 +53,10 @@ structure FiniteSemanticRepairGluingComplex
   Overlap : Chart -> Chart -> Type w
   chartOrder : List Chart
   chart_complete : forall chart, chart ∈ chartOrder
+  overlapOrder : List (Sigma fun pair : Chart × Chart => Overlap pair.1 pair.2)
+  overlap_complete :
+    forall source target (overlap : Overlap source target),
+      Sigma.mk (source, target) overlap ∈ overlapOrder
   C0 : Type x
   C1 : Type y
   c0Order : List C0
@@ -92,6 +96,15 @@ theorem delta0_support_exact
       (K.rightRestriction primitive overlap atom /\
         Not (K.leftRestriction primitive overlap atom)) :=
   K.delta0_exact primitive source target overlap atom
+
+/-- Every overlap / transition witness is recorded in the finite overlap list. -/
+theorem overlapOrder_complete
+    {Atom : Type u}
+    (K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y} Atom)
+    (source target : K.Chart)
+    (overlap : K.Overlap source target) :
+    Sigma.mk (source, target) overlap ∈ K.overlapOrder :=
+  K.overlap_complete source target overlap
 
 /-- The finite `B1` subgroup/predicate: cochains that are `delta0` boundaries. -/
 def B1
@@ -298,6 +311,13 @@ def selectedVisibleLocalWitnessComplex :
     intro chart
     cases chart
     simp
+  overlapOrder := [⟨((), ()), ()⟩]
+  overlap_complete := by
+    intro source target overlap
+    cases source
+    cases target
+    cases overlap
+    simp
   C0 := Unit
   C1 := Bool
   c0Order := [()]
@@ -408,6 +428,13 @@ def selectedFaithfulBoundaryComplex :
   chart_complete := by
     intro chart
     cases chart
+    simp
+  overlapOrder := [⟨((), ()), ()⟩]
+  overlap_complete := by
+    intro source target overlap
+    cases source
+    cases target
+    cases overlap
     simp
   C0 := Unit
   C1 := Bool

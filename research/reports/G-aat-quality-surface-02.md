@@ -17,13 +17,13 @@
 - proof state: finite / explicit-faithfulness descent package plus complete-support premise-discharge package proved in research
 - completed support nodes:
   - Stage 2 finite complex / `B1`
+  - explicit finite overlap / transition-family enumeration as `overlapOrder`
   - Stage 2.5 sufficiency / semantic faithfulness bridge
   - Stage 1 necessity and nonzero-obstruction contrapositive inside the finite package
   - visible/local witness validation and concrete nonzero calibration witness
   - Stage 2.5b complete-support finite atlas class discharge of `SemanticFaithfulnessHypotheses`
   - selected faithful boundary complex with obstruction vanish / global coherence / descent iff
 - open support nodes:
-  - literal finite overlap-family enumeration as `overlapOrder`
   - restriction functoriality / coefficient structure for stricter Cech formulation
   - future true site/sheaf `H^1` upgrade
 - target completion status: target-proof-candidate pending G4 / G5 / G6 judgment; do not treat this report alone as completion
@@ -141,3 +141,40 @@ No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or
 ### Target Boundary
 
 This cycle does not claim arbitrary-atlas descent. It proves the target premise discharge for the explicit complete-support finite atlas class allowed by the GOAL's premise discharge policy. Outside that class, `SemanticFaithfulnessHypotheses` remains material unless separately discharged.
+
+## Target Cycle 3: Explicit Finite Overlap Boundary
+
+```text
+decision: approve
+result_type: blocker-fixed
+proof_obligation: explicit finite overlap / transition-family enumeration
+evidence_stage: proved-in-research
+completion_candidate: no
+goal_delta: `FiniteSemanticRepairGluingComplex` now records an explicit finite `overlapOrder` list and a completeness theorem for every overlap / transition witness.
+proof_obligation_delta: `overlapOrder`, `overlap_complete`, and `overlapOrder_complete` discharge the latest Issue #2476 boundary gap without adding faithfulness, obstruction vanish, or global coherence as hidden fields.
+open_questions: restriction functoriality / coefficient structure for stricter Cech formulation; future true site/sheaf `H^1` upgrade.
+```
+
+### Result
+
+`FiniteSemanticRepairGluingComplex` now contains an explicit finite overlap / transition-family boundary:
+
+- `overlapOrder`: finite list of dependent overlap witnesses.
+- `overlap_complete`: every `Overlap source target` witness is listed.
+- `overlapOrder_complete`: theorem-level accessor exposing the completeness field.
+
+The selected visible/local nonboundary witness and the selected faithful boundary witness both instantiate the finite overlap list. This fixes the former audit gap where `Chart` / `Overlap` existed but the finite transition family itself was not recorded as data.
+
+### Axiom Audit
+
+- `overlapOrder_complete`: axiom-free
+- `delta0_support_exact`: axiom-free
+- `completeRepairSupportBoundary_semanticFaithfulnessHypotheses`: axiom-free
+- `finiteSemanticRepairGluingDescent_iff_of_completeRepairSupportBoundary`: axiom-free
+- `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary`: depends on standard `propext`, `Quot.sound`
+
+No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe`.
+
+### Target Boundary
+
+This cycle only strengthens the finite input geometry. `overlapOrder` does not store `SemanticFaithfulnessHypotheses`, obstruction vanish, global coherence, or complete-support membership. Universal obstruction towers, nonabelian / stacky descent, arbitrary assignment universality, and true sheaf `H^1` remain outside G-02 completion.

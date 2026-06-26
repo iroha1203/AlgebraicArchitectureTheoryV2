@@ -1345,6 +1345,22 @@ R11 final ledger / no-sorry scan Issue: [#2326](https://github.com/iroha1203/Alg
 | `TerminalStateImpliesLawfulWithoutObstructionAssumptions` | `future proof obligation` / explicit non-goal for PRD-9 |
 | `GeneralForceIntegrabilityTheorem` | `future proof obligation` / explicit non-goal for PRD-9 |
 
+## Research Target Theorem Status
+
+Research target theorem artifacts under `Formal/AG/Research/` are tracked by
+their GOAL cards, reports, and GitHub tracking Issues. They are not canonical
+math text, but the following rows record the current Lean boundary needed for
+completion review.
+
+| 対象 | 現在の status | 詳細 |
+| --- | --- | --- |
+| `G-aat-quality-surface-02` Finite Semantic Repair-Gluing Descent Theorem | `proved under explicit complete-support finite atlas class` / `target review boundary`. | Tracking Issue [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476), [Lean theorem index](lean_theorem_index.md#research-target-theorem-packages), `research/reports/G-aat-quality-surface-02.md`, `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`. `FiniteSemanticRepairGluingComplex` now records explicit finite chart and overlap / transition witness lists, including `overlapOrder` and `overlapOrder_complete`. Stage 1 necessity and nonzero-obstruction contrapositive, Stage 2 finite `B1` / obstruction vanish, Stage 2.5a conditional sufficiency under `SemanticFaithfulnessHypotheses`, and Stage 2.5b complete-support finite-class discharge are Lean-proved. The completion reading is relative to `CompleteRepairSupportBoundaryComplex`; the generic `SemanticFaithfulnessHypotheses K` theorem remains a conditional checkpoint outside that explicit class. |
+
+Non-conclusions: this target package does not claim arbitrary finite atlas
+descent, true sheaf `H^1`, nonabelian / stacky descent, universal obstruction
+assignment, source extraction completeness, ArchMap validation, runtime repair
+synthesis, or whole-codebase quality.
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
