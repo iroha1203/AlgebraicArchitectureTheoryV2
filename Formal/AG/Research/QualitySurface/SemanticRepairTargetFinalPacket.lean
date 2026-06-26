@@ -114,6 +114,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | finiteQueryNecessaryCoordinateBoundaryAudit
   | traceProbePacketBoundaryAudit
   | currentBoundaryMaximalityAudit
+  | finalReadinessBoundaryAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -137,6 +138,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.finiteQueryNecessaryCoordinateBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.traceProbePacketBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.currentBoundaryMaximalityAudit,
+    TargetSurfaceFinalReviewDeclaration.finalReadinessBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -173,6 +175,22 @@ inductive TargetSurfaceMaterialPremiseStatus where
 inductive TargetSurfaceFinalReviewGateStatus where
   | notRun
   deriving DecidableEq
+
+/--
+Fail-closed readiness verdict for the strengthened target final-review packet.
+
+This is not a completion certificate.  It records that, under the current
+packet ledger, the final `$math-lean-review` gate must not be treated as ready
+while arbitrary sound-assignment universality remains blocked.
+-/
+inductive TargetSurfaceFinalReviewReadinessVerdict where
+  | notReadyDueToCurrentBoundary
+  deriving DecidableEq
+
+/-- The strengthened target packet is not yet ready for final review. -/
+def targetSurfaceFinalReviewReadiness :
+    TargetSurfaceFinalReviewReadinessVerdict :=
+  TargetSurfaceFinalReviewReadinessVerdict.notReadyDueToCurrentBoundary
 
 /-- The current final-review gate status for the strengthened target packet. -/
 def targetSurfaceFinalMathLeanReviewGateStatus :
@@ -1335,6 +1353,60 @@ theorem targetSurface_currentBoundaryMaximalityAudit :
       sourceTraceObservation_no_finiteShadowFactor⟩
 
 /--
+Final-readiness boundary audit for the strengthened target packet.
+
+This audit ties together the explicit ledger state after the current-boundary
+maximality result: the remaining arbitrary universality row is still blocked,
+the final review gate is still not run, runtime / ArchMap claims stay outside
+the target boundary, and the source-trace witness remains outside the current
+four-bit shadow.  It prevents the packet from being read as a target theorem
+completion certificate before the remaining blocker is discharged or the GOAL
+boundary is explicitly revised.
+-/
+structure TargetSurfaceFinalReadinessBoundaryAudit where
+  readinessVerdict :
+    targetSurfaceFinalReviewReadiness =
+      TargetSurfaceFinalReviewReadinessVerdict.notReadyDueToCurrentBoundary
+  arbitraryUniversalityStillBlocked :
+    targetSurfaceMaterialPremiseStatus
+      TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =
+      TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary
+  finalReviewGateStillNotRun :
+    targetSurfaceFinalMathLeanReviewGateStatus =
+      TargetSurfaceFinalReviewGateStatus.notRun
+  runtimeAndArchMapRemainOutsideTarget :
+    targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
+        TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary ∧
+      targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.archMapCorrectness =
+        TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
+  currentBoundaryProperForSourceTrace :
+    (¬ ShadowExtensionalTowerObservation
+        (sourceTraceObservation :
+          FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0}
+            PUnit.{u + 1} -> Bool)) ∧
+      ¬ ∃ factor : FiniteTowerLayerShadow -> Bool,
+        ∀ T :
+          FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0} PUnit.{u + 1},
+          sourceTraceObservation T =
+            factor (canonicalTowerLayerShadow T)
+
+/--
+Derive the fail-closed final-readiness audit from the packet ledger and the
+source-trace separation witness.
+-/
+theorem targetSurface_finalReadinessBoundaryAudit :
+    TargetSurfaceFinalReadinessBoundaryAudit where
+  readinessVerdict := rfl
+  arbitraryUniversalityStillBlocked := rfl
+  finalReviewGateStillNotRun := rfl
+  runtimeAndArchMapRemainOutsideTarget := ⟨rfl, rfl⟩
+  currentBoundaryProperForSourceTrace :=
+    ⟨sourceTraceObservation_not_shadowExtensional,
+      sourceTraceObservation_no_finiteShadowFactor⟩
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -1391,6 +1463,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceTraceProbePacketBoundaryAudit
   currentBoundaryMaximalityAudit :
     TargetSurfaceCurrentBoundaryMaximalityAudit
+  finalReadinessBoundaryAudit :
+    TargetSurfaceFinalReadinessBoundaryAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -1527,6 +1601,8 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_traceProbePacketBoundaryAudit
   currentBoundaryMaximalityAudit :=
     targetSurface_currentBoundaryMaximalityAudit
+  finalReadinessBoundaryAudit :=
+    targetSurface_finalReadinessBoundaryAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
