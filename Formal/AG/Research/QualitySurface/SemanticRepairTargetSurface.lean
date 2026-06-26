@@ -340,6 +340,32 @@ def Obs_A_ofFiniteCertificates
     A.torsor certificates.torsor
     A.stack certificates.stack
 
+/--
+The obstruction tower built from strengthened certificates by forgetting to
+ordinary finite target-surface certificates.
+
+This wrapper keeps the strengthened target surface readable without adding
+finite-shadow completeness, global coherence, obstruction vanishing, torsor
+triviality, or stack effectiveness as certificate fields.
+-/
+def Obs_A_ofStrengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom :=
+  Obs_A_ofFiniteCertificates
+    A (targetSurfaceFiniteCertificates_of_strengthCertificates certificates)
+
 /-! ## Target-surface theorem package -/
 
 /--
@@ -499,6 +525,78 @@ theorem targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_finiteCerti
     exact hvanishes.2 (hglobal.1 hcoherent)
   · intro hvanishing
     exact hglobal.2 (hvanishes.1 hvanishing)
+
+/--
+Strengthened target-surface finite-shadow and universality package.
+
+The theorem reads finite-shadow adequacy and factorization directly from
+`UniversalSemanticRepairTargetStrengthCertificates`, via the explicit forgetful
+map to ordinary finite certificates.  It proves the canonical bounded artifact
+adequacy and the two universality/factorization surfaces for the induced tower;
+it does not store representation adequacy, global coherence, tower vanishing,
+torsor triviality, stack effectiveness, or finite-shadow completeness in the
+certificate data.
+-/
+theorem targetSurface_strengthenedFiniteShadowFactorization_package
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    (archSigStyleArtifactShadow
+        (archSigStyleArtifactOfTower
+          (Obs_A_ofStrengthCertificates A certificates)) =
+      canonicalTowerLayerShadow
+        (Obs_A_ofStrengthCertificates A certificates)) /\
+      ArchSigStyleFiniteShadowAdequacy
+        (Obs_A_ofStrengthCertificates A certificates)
+        (archSigStyleArtifactOfTower
+          (Obs_A_ofStrengthCertificates A certificates)) /\
+      (forall assignment : SoundAllLayerObstructionAssignment,
+        assignmentLayerShadow assignment
+            (Obs_A_ofStrengthCertificates A certificates) =
+          assignmentReadsShadow assignment
+            (canonicalTowerLayerShadow
+              (Obs_A_ofStrengthCertificates A certificates))) /\
+      (forall (Obs : Type s)
+          (observe :
+            FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Obs),
+        ShadowExtensionalTowerObservation observe ->
+          (forall U,
+            observe U =
+              canonicalShadowFactor observe (canonicalTowerLayerShadow U)) /\
+          (forall factor : FiniteTowerLayerShadow -> Obs,
+            (forall U :
+              FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+                observe U = factor (canonicalTowerLayerShadow U)) ->
+              forall shadow,
+                factor shadow =
+                  canonicalShadowFactor observe shadow)) := by
+  refine
+    ⟨?_,
+      canonicalArchSigStyleArtifactAdequacy
+        (Obs_A_ofStrengthCertificates A certificates),
+      ?_,
+      ?_⟩
+  · rfl
+  · intro assignment
+    simpa [Obs_A_ofStrengthCertificates] using
+      soundAllLayerAssignment_factors_through_tower assignment
+        (Obs_A_ofFiniteCertificates A
+          (targetSurfaceFiniteCertificates_of_strengthCertificates
+            certificates))
+  · intro Obs observe extensional
+    exact
+      shadowExtensionalObservation_universalFactorization
+        (Obs := Obs) observe extensional
 
 end SemanticRepairTargetSurface
 end QualitySurface
