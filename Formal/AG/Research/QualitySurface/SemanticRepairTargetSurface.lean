@@ -158,6 +158,51 @@ structure UniversalSemanticRepairTargetCertificates
   stack :
     FiniteStackyRepairDecisionCertificate A.stack
 
+/--
+Target-surface semantic faithfulness discharge from the visible finite
+boundary certificate.
+
+This is only the sheaf-side exactness discharge: it does not use or store
+global coherence, obstruction vanishing, effective descent, torsor triviality,
+stack effectiveness, or finite-shadow completeness.
+-/
+def targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetCertificates A) :
+    SemanticRepairSheafH1ExactnessDischarge A.sheaf :=
+  sheafH1ExactnessDischarge_of_finiteBoundaryCertificate
+    certificates.boundary
+
+/--
+Every target-surface primitive whose boundary is the selected residual is
+semantically closed, provided by the finite boundary certificate.
+-/
+theorem targetSurface_boundaryPrimitiveSemanticallyClosed_of_finiteCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetCertificates A)
+    (primitive : A.sheaf.coefficient.C0)
+    (hboundary :
+      A.sheaf.coefficient.delta0 primitive =
+        A.sheaf.coefficient.residual) :
+    A.sheaf.primitiveSemanticallyClosed primitive := by
+  exact
+    (targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
+      A certificates).semanticFaithful_of_boundary primitive hboundary
+
 /-- The finite-certificate version of `Obs(A)`. -/
 def Obs_A_ofFiniteCertificates
     {Atom : Type u}

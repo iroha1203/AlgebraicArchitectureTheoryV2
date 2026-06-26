@@ -5673,3 +5673,45 @@ material blockers remain in the finite trace-probe packet inventory.
 This is a review-readiness rejection, not target theorem completion.  The final
 `$math-lean-review` gate was not run because the packet still contains central
 undischarged blockers rather than discharge theorems.
+
+## Cycle 115: Target-Surface Semantic Faithfulness Discharge
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: discharge semantic faithfulness from target-surface visible finite boundary certificates
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean
+    declarations:
+      - targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
+      - targetSurface_boundaryPrimitiveSemanticallyClosed_of_finiteCertificates
+premise_delta:
+  discharged:
+    - target-surface finite certificates now expose a `SemanticRepairSheafH1ExactnessDischarge A.sheaf`
+    - every primitive whose boundary is the selected residual is semantically closed from the visible finite boundary certificate
+    - the theorem depends on `FiniteBoundarySemanticClosureCertificate`, not on global coherence, obstruction vanishing, descent effectiveness, torsor triviality, stack effectiveness, or finite-shadow completeness
+  remaining:
+    - this is semantic-faithfulness discharge only, not full `LayeredRepairAdequacy`
+    - global coherence, obstruction vanishing, descent effectiveness, true sheaf/nonabelian/stacky strength, universality audit, finite-shadow adequacy, and final `$math-lean-review` remain open
+blocking_findings:
+  - final target completion is still not ready; Cycle 114's fail-closed review-readiness rejection remains valid until the other central material premises are discharged
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4806505513
+next_obligation: discharge another central material premise without hiding it behind conclusion-equivalent certificate fields
+```
+
+### Result
+
+Cycle 115 adds
+`targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates` and
+`targetSurface_boundaryPrimitiveSemanticallyClosed_of_finiteCertificates`.
+The target surface can now derive the sheaf-side semantic faithfulness
+discharge directly from `UniversalSemanticRepairTargetCertificates.boundary`.
+
+### Target Boundary
+
+This is not target theorem completion.  It closes one central semantic
+faithfulness obligation at the target-surface finite-certificate boundary, but
+does not assert global coherence, obstruction vanishing, effective descent,
+nonabelian or stacky descent strength, universality, or final review readiness.
