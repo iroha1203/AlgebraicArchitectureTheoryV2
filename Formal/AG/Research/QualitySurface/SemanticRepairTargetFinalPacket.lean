@@ -1,6 +1,8 @@
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRecoverableReadings
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteShadowSeparation
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 
@@ -38,13 +40,20 @@ open SemanticRepairFiniteQueryRepresentation
 open SemanticRepairFiniteQueryCanonicalBridge
 open SemanticRepairFiniteQueryCurrentShadowCoordinates
 open SemanticRepairFiniteQueryCurrentShadowReading
+open SemanticRepairCurrentShadowCoordinateObligations
 open SemanticRepairFiniteSupportCompleteness
+open SemanticRepairFiniteSupportMembership
+open SemanticRepairFiniteQueryAdmissibility
 open SemanticRepairFiniteQueryRepresentationSupportControl
 open SemanticRepairFiniteQueryRepresentationRealizedRecovery
 open SemanticRepairFiniteQuerySemanticSoundness
 open SemanticRepairFiniteQueryExplicitCurrentShadowCertificates
+open SemanticRepairFiniteQueryPostFiberObstruction
+open SemanticRepairFiniteQueryTargetSurfaceRepresentationBridge
 open SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute
 open SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
+open SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions
+open SemanticRepairFiniteQueryRepresentationRecoverableReadings
 
 universe u v w x y z r s
 
@@ -99,6 +108,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | enrichedBoundaryRepairAudit
   | soundAssignmentEnrichedLiftAudit
   | finiteQueryVisibleBoundaryAudit
+  | finiteQueryNecessaryCoordinateBoundaryAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -119,6 +129,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.enrichedBoundaryRepairAudit,
     TargetSurfaceFinalReviewDeclaration.soundAssignmentEnrichedLiftAudit,
     TargetSurfaceFinalReviewDeclaration.finiteQueryVisibleBoundaryAudit,
+    TargetSurfaceFinalReviewDeclaration.finiteQueryNecessaryCoordinateBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -137,6 +148,7 @@ inductive TargetSurfaceMaterialPremise where
   | sourceTraceBoundaryEnrichment
   | soundAssignmentEnrichedBoundaryLift
   | finiteQueryVisibleCoordinateBoundary
+  | finiteQueryNecessaryCoordinateBoundary
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -188,6 +200,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.soundAssignmentEnrichedBoundaryLift =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.finiteQueryVisibleCoordinateBoundary =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.finiteQueryNecessaryCoordinateBoundary =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
@@ -923,6 +937,161 @@ theorem targetSurface_finiteQueryVisibleBoundaryAudit :
     boolCompleteSupportTraceShadow_selfRecovery_individualBoundaryGaps
 
 /--
+Audit for the necessary finite-query coordinate boundary.
+
+This records that representation adequacy, current-shadow semantic-reading
+adequacy, and current-shadow factorization of the support-shadow observation
+all require the same visible query/support coordinate condition.  The Bool
+boundary examples show that complete support-shadow recovery, constant-post
+semantic adequacy, and support-shadow representation do not bypass this
+coordinate obligation.
+-/
+structure TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit where
+  supportRepresentationIffSupportCoordinates :
+    forall {Atom : Type u} (support : List Atom),
+      CurrentShadowTraceReadingRepresentable.{u, v, w, x, y}
+          (Atom := Atom) support ↔
+        SupportTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+          (Atom := Atom) support
+  supportRepresentationSuppliesSupportCoordinates :
+    forall {Atom : Type u}
+        {support : List Atom}
+        (_repr :
+          CurrentShadowTraceReadingRepresentation.{u, v, w, x, y}
+            (Atom := Atom) support),
+      SupportTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+        (Atom := Atom) support
+  recoveringCurrentShadowFaithfulnessSuppliesQueryCoordinates :
+    forall {Atom : Type u}
+        {query : List Atom}
+        {Out : Type s}
+        {post : FiniteTowerLayerShadow -> List Bool -> Out},
+      SemanticReadingFaithfulToQueryPost.{u, v, w, x, y, s}
+          (Atom := Atom)
+          (currentShadowSemanticReading.{u, v, w, x, y} (Atom := Atom))
+          query post ->
+        QueryReadingsRecoveringPost post ->
+        QueryTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+          query
+  supportShadowAdequacyIffQueryCoordinates :
+    forall {Atom : Type u} (query : List Atom),
+      QueryTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+          query ↔
+        ∃ reading : TowerSemanticReading.{u, v, w, x, y} (Atom := Atom),
+          SemanticReadingCollapsesCurrentShadowQueryFibers.{u, v, w, x, y}
+            (Atom := Atom) reading
+            (supportTraceShadowFiniteTraceQueryObservation query).query ∧
+          SemanticReadingFaithfulToQueryPost.{u, v, w, x, y, 0}
+            (Atom := Atom) reading
+            (supportTraceShadowFiniteTraceQueryObservation query).query
+            (supportTraceShadowFiniteTraceQueryObservation query).post
+  supportShadowCurrentFactorSuppliesQueryCoordinates :
+    forall {Atom : Type u}
+        (query : List Atom),
+      (∃ factor : FiniteTowerLayerShadow -> TraceProbeFiniteTowerLayerShadow,
+        ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          (supportTraceShadowFiniteTraceQueryObservation query).observe T =
+            factor (canonicalTowerLayerShadow T)) ->
+        QueryTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+          query
+  completeSupportRecoveryDoesNotDischargeNecessaryCoordinates :
+    FiniteSupportComplete boolCompleteTraceSupport ∧
+    (∀ atom : Bool, atom ∈ boolCompleteTraceSupport ->
+      ∃ factor : TraceProbeFiniteTowerLayerShadow -> Bool,
+        ∀ T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+          sourceTraceCoordinateObservation atom T =
+            factor (canonicalSupportTraceProbeTowerLayerShadow
+              boolCompleteTraceSupport T)) ∧
+    ObservationRecoversQueryReadings.{0, 0, 0, 0, 0, 0}
+      (Atom := Bool)
+      (supportTraceShadowFiniteTraceQueryObservation boolCompleteTraceSupport).query
+      (fun T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool =>
+        canonicalSupportTraceProbeTowerLayerShadow boolCompleteTraceSupport T) ∧
+    ¬ SupportTraceCoordinatesCurrentShadowExtensional.{0, 0, 0, 0, 0}
+      (Atom := Bool) boolCompleteTraceSupport ∧
+    ¬ CurrentShadowTraceReadingRepresentable.{0, 0, 0, 0, 0}
+      (Atom := Bool) boolCompleteTraceSupport
+  constantPostAdequacyDoesNotDischargeNecessaryCoordinates :
+    (∃ factor : FiniteTowerLayerShadow -> Bool,
+      ∀ T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        (boolTrueFiniteTraceQueryObservation
+          (fun _shadow _readings => false)).observe T =
+          factor (canonicalTowerLayerShadow T)) ∧
+    (∃ reading : TowerSemanticReading.{0, 0, 0, 0, 0} (Atom := Bool),
+      SemanticReadingCollapsesCurrentShadowQueryFibers.{0, 0, 0, 0, 0}
+        (Atom := Bool) reading boolTrueTraceQuery ∧
+      SemanticReadingFaithfulToQueryPost.{0, 0, 0, 0, 0, 0}
+        (Atom := Bool) reading boolTrueTraceQuery
+        (fun _shadow _readings => false)) ∧
+    (¬ QueryPostFiberSeparation.{0, 0, 0, 0, 0, 0}
+      (Atom := Bool)
+      boolTrueTraceQuery
+      (fun _shadow _readings => false)) ∧
+    ¬ QueryTraceCoordinatesCurrentShadowExtensional.{0, 0, 0, 0, 0}
+      (Atom := Bool) boolTrueTraceQuery ∧
+    ¬ CurrentShadowTraceReadingRepresentable.{0, 0, 0, 0, 0}
+      (Atom := Bool) boolTrueTraceQuery
+  boolTrueSupportShadowNoCurrentFactor :
+    ¬ ∃ factor : FiniteTowerLayerShadow -> TraceProbeFiniteTowerLayerShadow,
+      ∀ T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        (supportTraceShadowFiniteTraceQueryObservation
+          boolTrueTraceQuery).observe T =
+          factor (canonicalTowerLayerShadow T)
+  boolTrueSupportShadowNoSemanticAdequacy :
+    ¬ ∃ reading : TowerSemanticReading.{0, 0, 0, 0, 0} (Atom := Bool),
+      SemanticReadingCollapsesCurrentShadowQueryFibers.{0, 0, 0, 0, 0}
+        (Atom := Bool) reading
+        (supportTraceShadowFiniteTraceQueryObservation
+          boolTrueTraceQuery).query ∧
+      SemanticReadingFaithfulToQueryPost.{0, 0, 0, 0, 0, 0}
+        (Atom := Bool) reading
+        (supportTraceShadowFiniteTraceQueryObservation
+          boolTrueTraceQuery).query
+        (supportTraceShadowFiniteTraceQueryObservation
+          boolTrueTraceQuery).post
+
+/--
+Derive the necessary-coordinate boundary audit from the representation
+necessary-condition theorems and finite-query support-shadow boundary
+theorems.
+-/
+theorem targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit :
+    TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit where
+  supportRepresentationIffSupportCoordinates := by
+    intro Atom support
+    exact
+      currentShadowTraceReadingRepresentable_iff_supportTraceCoordinatesCurrentShadowExtensional
+        (Atom := Atom) support
+  supportRepresentationSuppliesSupportCoordinates := by
+    intro Atom support repr
+    exact
+      supportTraceCoordinatesCurrentShadowExtensional_of_currentShadowTraceReadingRepresentation
+        (Atom := Atom) repr
+  recoveringCurrentShadowFaithfulnessSuppliesQueryCoordinates := by
+    intro Atom query Out post hfaithful hrecover
+    exact
+      queryCoordinateCurrentShadowExtensional_of_currentShadowSemanticReading_faithful_of_queryReadingsRecoveringPost
+        (Atom := Atom) hfaithful hrecover
+  supportShadowAdequacyIffQueryCoordinates := by
+    intro Atom query
+    exact
+      queryCoordinateCurrentShadowExtensional_iff_querySupportShadowObservation_exists_semanticReadingAdequacy
+        (Atom := Atom) query
+  supportShadowCurrentFactorSuppliesQueryCoordinates := by
+    intro Atom query hfactor
+    exact
+      queryCoordinateCurrentShadowExtensional_of_querySupportShadow_currentShadowFactor
+        (Atom := Atom) query hfactor
+  completeSupportRecoveryDoesNotDischargeNecessaryCoordinates :=
+    boolCompleteSupportTraceShadow_complete_selfRecovery_noRepresentationAdequacyNecessaryCoordinates
+  constantPostAdequacyDoesNotDischargeNecessaryCoordinates :=
+    boolTrueConstantPost_factor_semanticAdequacy_noSeparation_but_not_representationAdequacyNecessaryCoordinates
+  boolTrueSupportShadowNoCurrentFactor :=
+    no_boolTrueQuerySupportShadow_currentShadowFactor
+  boolTrueSupportShadowNoSemanticAdequacy :=
+    not_boolTrueTraceQuerySupportShadowObservation_exists_semanticReadingAdequacy
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -973,6 +1142,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceSoundAssignmentEnrichedLiftAudit
   finiteQueryVisibleBoundaryAudit :
     TargetSurfaceFiniteQueryVisibleBoundaryAudit
+  finiteQueryNecessaryCoordinateBoundaryAudit :
+    TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -1047,6 +1218,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.finiteQueryVisibleCoordinateBoundary =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.finiteQueryNecessaryCoordinateBoundary =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -1100,13 +1274,15 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_soundAssignmentEnrichedLiftAudit
   finiteQueryVisibleBoundaryAudit :=
     targetSurface_finiteQueryVisibleBoundaryAudit
+  finiteQueryNecessaryCoordinateBoundaryAudit :=
+    targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
     exact
       ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl,
-        rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+        rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
