@@ -481,6 +481,68 @@ theorem traceProbeFinalReviewFiniteShadowPacket_globalCoherence_blocker :
       traceProbeFinalReviewSemanticFaithfulnessClosedTower_globalCoherent,
       traceProbeFinalReviewSemanticFaithfulnessOpenTower_not_globalCoherent⟩
 
+/-! ## True sheaf / nonabelian / stacky packet boundary -/
+
+/--
+A tiny external receipt wrapper for true sheaf/nonabelian/stacky strength.
+
+The finite trace-probe artifact does not contain these receipt bits.  They
+model the extra discharge metadata that a true-strength theorem would have to
+justify separately.
+-/
+structure TraceProbeTrueSheafNonabelianStackyReceipt where
+  artifact : TraceProbeArchSigStyleFiniteShadowArtifact
+  trueSheafH1Receipt : Bool
+  nonabelianDescentReceipt : Bool
+  stackEffectivenessReceipt : Bool
+
+/-- A true-strength receipt package whose Lean artifact is the selected artifact. -/
+def traceProbeFinalReviewTrueStrengthReceiptLeft :
+    TraceProbeTrueSheafNonabelianStackyReceipt where
+  artifact :=
+    traceProbeArchSigStyleArtifactOfTower
+      traceProbeFinalReviewPUnitProbes
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower
+  trueSheafH1Receipt := false
+  nonabelianDescentReceipt := false
+  stackEffectivenessReceipt := false
+
+/-- A matching package with the same artifact but different true-strength receipts. -/
+def traceProbeFinalReviewTrueStrengthReceiptRight :
+    TraceProbeTrueSheafNonabelianStackyReceipt where
+  artifact :=
+    traceProbeArchSigStyleArtifactOfTower
+      traceProbeFinalReviewPUnitProbes
+      traceProbeFinalReviewSemanticFaithfulnessOpenTower
+  trueSheafH1Receipt := true
+  nonabelianDescentReceipt := true
+  stackEffectivenessReceipt := true
+
+/--
+The finite trace-probe packet does not determine true
+sheaf/nonabelian/stacky strength metadata.
+
+The selected packages have equal Lean-side trace-probe artifacts but different
+receipt bits for true sheaf `H1`, nonabelian descent, and stack effectiveness.
+Thus true-strength discharge remains external to the finite packet.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_trueSheafNonabelianStackyStrength_blocker :
+    traceProbeFinalReviewTrueStrengthReceiptLeft.artifact =
+        traceProbeFinalReviewTrueStrengthReceiptRight.artifact ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.trueSheafH1Receipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.trueSheafH1Receipt ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.nonabelianDescentReceipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.nonabelianDescentReceipt ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.stackEffectivenessReceipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.stackEffectivenessReceipt := by
+  constructor
+  · rfl
+  constructor
+  · decide
+  constructor
+  · decide
+  · decide
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
