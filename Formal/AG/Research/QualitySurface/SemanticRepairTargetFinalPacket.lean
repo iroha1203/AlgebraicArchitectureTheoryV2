@@ -73,6 +73,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | globalCoherenceVanishesIff
   | trueLayerStrengthDischarge
   | strengthTower
+  | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
 
@@ -86,6 +87,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.globalCoherenceVanishesIff,
     TargetSurfaceFinalReviewDeclaration.trueLayerStrengthDischarge,
     TargetSurfaceFinalReviewDeclaration.strengthTower,
+    TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
 /-- Material-premise review rows for the strengthened target surface. -/
@@ -95,6 +97,7 @@ inductive TargetSurfaceMaterialPremise where
   | globalCoherenceVanishesEquivalence
   | nonabelianDescentAdequacy
   | higherStackyEffectiveness
+  | representationAdequacy
   | finiteComputableShadowAdequacy
   | runtimeExtractionCorrectness
   | archMapCorrectness
@@ -130,6 +133,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.nonabelianDescentAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.higherStackyEffectiveness =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.representationAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.finiteComputableShadowAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
@@ -198,6 +203,87 @@ theorem targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_strengthCer
       A (targetSurfaceFiniteCertificates_of_strengthCertificates certificates)
 
 /--
+The representation-adequacy audit row exposed by the strengthened target
+surface.
+
+This is a theorem-derived bounded audit: it records the ArchSig-style finite
+shadow adequacy, all-layer sound-assignment factorization, and
+shadow-extensional observation factorization obtained from the strengthened
+target-surface theorem.  It is intentionally not an input certificate and does
+not claim arbitrary runtime extraction, ArchMap correctness, or factorization
+for observations that are not known to be shadow-extensional.
+-/
+structure TargetSurfaceRepresentationAdequacyAudit
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) where
+  artifactShadowAdequacy :
+    ArchSigStyleFiniteShadowAdequacy
+      (Obs_A_ofStrengthCertificates A certificates)
+      (archSigStyleArtifactOfTower
+        (Obs_A_ofStrengthCertificates A certificates))
+  soundAssignmentFactorization :
+    forall assignment : SoundAllLayerObstructionAssignment,
+      assignmentLayerShadow assignment
+          (Obs_A_ofStrengthCertificates A certificates) =
+        assignmentReadsShadow assignment
+          (canonicalTowerLayerShadow
+            (Obs_A_ofStrengthCertificates A certificates))
+  shadowExtensionalObservationFactorization :
+    forall (Obs : Type s)
+        (observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Obs),
+      ShadowExtensionalTowerObservation observe ->
+        (forall U,
+          observe U =
+            canonicalShadowFactor observe (canonicalTowerLayerShadow U)) /\
+        (forall factor : FiniteTowerLayerShadow -> Obs,
+          (forall U :
+            FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+              observe U = factor (canonicalTowerLayerShadow U)) ->
+            forall shadow,
+              factor shadow =
+                canonicalShadowFactor observe shadow)
+
+/--
+Derive the bounded representation-adequacy audit from the strengthened
+target-surface factorization theorem.
+-/
+theorem targetSurface_representationAdequacyAudit_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    TargetSurfaceRepresentationAdequacyAudit A certificates := by
+  rcases targetSurface_strengthenedFiniteShadowFactorization_package
+      A certificates with
+    ⟨_hartifactShadow, hartifactAdequacy,
+      hsoundAssignment, hshadowExtensional⟩
+  exact
+    { artifactShadowAdequacy := hartifactAdequacy
+      soundAssignmentFactorization := hsoundAssignment
+      shadowExtensionalObservationFactorization := hshadowExtensional }
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -234,6 +320,8 @@ structure TargetSurfaceFinalReviewPacket
         (Obs_A_ofStrengthCertificates A certificates) <->
       ObstructionTowerVanishes
         (Obs_A_ofStrengthCertificates A certificates)
+  representationAdequacyAudit :
+    TargetSurfaceRepresentationAdequacyAudit A certificates
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -284,6 +372,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.higherStackyEffectiveness =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.representationAdequacy =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.finiteComputableShadowAdequacy =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
@@ -324,11 +415,14 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
   globalIff :=
     targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_strengthCertificates
       A certificates
+  representationAdequacyAudit :=
+    targetSurface_representationAdequacyAudit_of_strengthCertificates
+      A certificates
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
-    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
