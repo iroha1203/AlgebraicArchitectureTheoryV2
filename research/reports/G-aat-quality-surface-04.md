@@ -5358,3 +5358,50 @@ for the finite trace-probe packet.  It does not discharge arbitrary observation
 adequacy, runtime extraction correctness, full semantic faithfulness, global
 coherence, obstruction vanishing, descent effectiveness, true
 sheaf/nonabelian/stacky strength, or the final `$math-lean-review` gate.
+
+## Cycle 108: Runtime Extraction Correctness Boundary Blocker
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix the boundary showing Lean-side trace-probe artifact equality is not runtime extraction correctness
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeFinalPacket.lean
+    declarations:
+      - TraceProbeRuntimeExtractionReceipt
+      - traceProbeFinalReviewRuntimeReceiptLeft
+      - traceProbeFinalReviewRuntimeReceiptRight
+      - traceProbeFinalReviewFiniteShadowPacket_runtimeExtractionCorrectness_blocker
+premise_delta:
+  blocker_fixed:
+    - runtime extraction correctness is fixed as a genuine remaining blocker for the trace-probe packet
+    - two runtime receipt packages have equal Lean-side trace-probe artifacts
+    - the same packages differ on the external `runtimeReceipt` bit
+  remaining:
+    - this is blocker evidence, not runtime extraction correctness discharge
+    - no ArchMap correctness, ArchSig runtime extractor soundness, source extraction completeness, or tool implementation correctness is introduced
+    - full semantic faithfulness, global coherence, obstruction vanishing, descent effectiveness, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` remain open
+blocking_findings:
+  - runtime extraction correctness cannot be inferred from the Lean-side trace-probe artifact without extra runtime extraction evidence
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4806042988
+next_obligation: choose another remaining material premise and either discharge a finite-boundary theorem or fix a blocker without hiding the missing premise as an assumption
+```
+
+### Result
+
+Cycle 108 adds
+`traceProbeFinalReviewFiniteShadowPacket_runtimeExtractionCorrectness_blocker`.
+The theorem introduces a tiny `TraceProbeRuntimeExtractionReceipt` wrapper only
+to expose missing external evidence: two packages can have equal Lean-side
+trace-probe artifacts while differing on their `runtimeReceipt` bit.
+
+### Target Boundary
+
+This fixes runtime extraction correctness as a real remaining blocker for the
+finite trace-probe packet.  It does not prove ArchMap correctness, ArchSig
+runtime extractor soundness, source extraction completeness, tool
+implementation correctness, full semantic faithfulness, global coherence,
+obstruction vanishing, descent effectiveness, true sheaf/nonabelian/stacky
+strength, or the final `$math-lean-review` gate.

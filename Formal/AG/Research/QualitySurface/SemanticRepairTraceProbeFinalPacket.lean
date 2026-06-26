@@ -284,6 +284,53 @@ theorem traceProbeFinalReviewFiniteShadowPacket_arbitraryObservationAdequacy_blo
       traceProbeFinalReviewArbitraryChartOrderObservation, ?_⟩
   decide
 
+/-! ## Runtime extraction correctness boundary -/
+
+/--
+A tiny runtime-receipt wrapper used only to expose the boundary between the
+Lean-side trace-probe artifact and any external runtime extraction claim.
+
+The existing `TraceProbeArchSigStyleFiniteShadowArtifact` does not contain this
+receipt field; adding it here models the extra evidence that a runtime theorem
+would have to justify separately.
+-/
+structure TraceProbeRuntimeExtractionReceipt where
+  artifact : TraceProbeArchSigStyleFiniteShadowArtifact
+  runtimeReceipt : Bool
+
+/-- A runtime receipt package whose Lean artifact is the selected left artifact. -/
+def traceProbeFinalReviewRuntimeReceiptLeft :
+    TraceProbeRuntimeExtractionReceipt where
+  artifact :=
+    traceProbeArchSigStyleArtifactOfTower
+      traceProbeFinalReviewPUnitProbes
+      traceProbeFinalReviewArbitraryObservationLeftTower
+  runtimeReceipt := false
+
+/-- A runtime receipt package whose Lean artifact is the selected right artifact. -/
+def traceProbeFinalReviewRuntimeReceiptRight :
+    TraceProbeRuntimeExtractionReceipt where
+  artifact :=
+    traceProbeArchSigStyleArtifactOfTower
+      traceProbeFinalReviewPUnitProbes
+      traceProbeFinalReviewArbitraryObservationRightTower
+  runtimeReceipt := true
+
+/--
+The Lean-side finite trace-probe artifact does not determine runtime extraction
+correctness metadata.
+
+The selected receipts have equal Lean artifacts but different runtime receipt
+bits.  This keeps runtime extraction correctness as an external material
+premise instead of deriving it from the packet artifact projection.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_runtimeExtractionCorrectness_blocker :
+    traceProbeFinalReviewRuntimeReceiptLeft.artifact =
+        traceProbeFinalReviewRuntimeReceiptRight.artifact ∧
+      traceProbeFinalReviewRuntimeReceiptLeft.runtimeReceipt ≠
+        traceProbeFinalReviewRuntimeReceiptRight.runtimeReceipt := by
+  exact ⟨rfl, by intro h; cases h⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
