@@ -4794,3 +4794,81 @@ not target theorem completion.  It does not claim arbitrary assignment
 universality, trace-support completeness, runtime extraction correctness, or
 final semantic adequacy.  The enriched support-trace shadow remains required
 data.
+
+## Cycle 98: Generic Trace-Probe Assignment Factorization
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: extend the Cycle 97 explicit support-list assignment interface to arbitrary supplied finite source-trace probe families and prove factorization through `canonicalTraceProbeTowerLayerShadow`
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean
+    declarations:
+      - TraceProbeSemanticRepairObstructionAssignment
+      - traceProbeAssignmentObserve
+      - traceProbeAssignmentFactor
+      - traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
+      - traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeShadow
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean
+    declarations:
+      - traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes
+      - traceAwareAssignment_observe_eq_traceProbeAssignment_of_supportTraceProbes
+      - traceAwareAssignment_supportTraceShadow_eq_traceProbeShadow_of_supportTraceProbes
+      - traceAwareAssignment_factorization_from_traceProbeAssignment
+premise_delta:
+  discharged:
+    - finite probe-aware assignments now have an explicit Lean interface with only a supplied probe family and post-map
+    - every such assignment factors through the enriched `canonicalTraceProbeTowerLayerShadow`
+    - trace-probe extensionality is proved from equality of enriched trace-probe shadows, not assumed as a hidden premise
+    - the Cycle 97 support-list assignment interface is recovered as the special case induced by `supportTraceProbes assignment.support`
+  remaining:
+    - supplied finite probes remain input geometry, not a completeness or runtime-extraction theorem
+    - arbitrary sound semantic repair-gluing assignment universality is not proved
+    - canonical layer-shadow-only universality remains refuted by Cycle 96
+    - G-02 / ArchSig runtime comparison, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` remain open
+blocking_findings:
+  - none for the supplied finite probe-generated assignment class; the enriched probe shadow is required data
+next_obligation: compare the enriched finite trace-probe shadow boundary against the G-02 / ArchSig-style finite-shadow artifact surface, keeping runtime extraction and full universality outside the theorem claim
+```
+
+### Result
+
+Cycle 98 adds `TraceProbeSemanticRepairObstructionAssignment`, the generic
+finite probe-family version of Cycle 97's support-list assignment interface.
+The structure stores only `probes : List (SourceTraceProbe Atom)` and
+`post : FiniteTowerLayerShadow -> List Bool -> Out`.
+
+`traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow`
+proves that every such assignment factors through the enriched
+`canonicalTraceProbeTowerLayerShadow assignment.probes T`.
+`traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeShadow`
+proves extensionality from equality of enriched trace-probe shadows.
+
+The support-list assignment interface is connected back as a special case:
+`traceAwareAssignment_as_traceProbeAssignment_of_supportTraceProbes` converts a
+Cycle 97 assignment to the generic probe-aware assignment using
+`supportTraceProbes assignment.support`, and the bridge theorems relate the
+observations, shadows, and factorization route.
+
+### Formalization Quality
+
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean`,
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean`,
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryObservation.lean`,
+and `lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport`
+all pass.  The axiom audit shows that the generic probe-aware factorization and
+extensionality theorems are axiom-free; the support-list shadow bridge is
+axiom-free; the support-list observation and derived factorization bridge
+depend only on `propext`.
+Tracking issue sync: #2482 comment
+`https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4805431993`.
+
+### Target Boundary
+
+This is a proof-obligation discharge for supplied finite probe-generated
+assignments, not target theorem completion.  The supplied probe family is input
+geometry; no trace completeness, ArchMap / ArchSig extraction correctness,
+semantic faithfulness, global coherence, obstruction vanishing, descent
+effectiveness, or arbitrary assignment universality is claimed.
