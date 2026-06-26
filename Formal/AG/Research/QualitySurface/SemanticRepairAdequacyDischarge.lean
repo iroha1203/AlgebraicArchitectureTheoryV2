@@ -296,6 +296,114 @@ theorem finiteGluingComplex_as_obstructionTower_shadow_of_dischargePrism
               hvanishes,
             rfl, rfl, rfl⟩
 
+/-! ## G-02 complete-support certificate discharge -/
+
+/--
+The complete-support G-02 finite class has a boundary semantic-closure
+certificate without taking `SemanticFaithfulnessHypotheses` as an input.
+
+The certificate exposes boundary-local component coverage and component
+faithfulness separately, and only then bridges them to semantic closure.
+-/
+def completeRepairSupportBoundary_boundarySemanticClosureCertificate
+    (L : SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex) :
+    FiniteBoundarySemanticClosureCertificate
+      (SemanticRepairObstructionTower.ofFiniteSemanticRepairGluingComplex L.K) where
+  coverage := fun primitive =>
+    ResidualComponentCoveredSupport
+      L.K.projection L.K.cover (L.K.supportOf primitive)
+  faithfulness := fun primitive =>
+    ResidualComponentFaithfulSupport
+      L.K.projection L.K.cover (L.K.supportOf primitive)
+  c0_complete := by
+    intro primitive
+    exact L.K.c0_complete primitive
+  coverage_of_listed_boundary := by
+    intro primitive _hlisted _hboundary
+    rw [L.projection_eq, L.cover_eq, L.support_eq primitive]
+    exact
+      completeRepairSupport_closed_decomposes_as_componentCoverage_and_faithfulness.1
+  faithfulness_of_listed_boundary := by
+    intro primitive _hlisted _hboundary
+    rw [L.projection_eq, L.cover_eq, L.support_eq primitive]
+    exact
+      completeRepairSupport_closed_decomposes_as_componentCoverage_and_faithfulness.2
+  semantic_closed_of_coverage_and_faithfulness := by
+    intro primitive hcoverage hfaithfulness
+    exact
+      (semanticRepairClosed_iff_residualComponentCovered_and_faithful).mpr
+        ⟨hcoverage, hfaithfulness⟩
+
+/-- The complete-support G-02 finite class has a discharge prism. -/
+def completeRepairSupportBoundary_dischargePrism
+    (L : SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex) :
+    LayeredRepairDischargePrism
+      (SemanticRepairObstructionTower.ofFiniteSemanticRepairGluingComplex L.K) where
+  boundary := completeRepairSupportBoundary_boundarySemanticClosureCertificate L
+
+/--
+Derive G-02 `SemanticFaithfulnessHypotheses` from the explicit boundary
+certificate rather than taking it as a material premise.
+-/
+theorem completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate
+    (L : SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex) :
+    SemanticRepairGluingComplex.SemanticFaithfulnessHypotheses L.K := by
+  let certificate :=
+    completeRepairSupportBoundary_boundarySemanticClosureCertificate L
+  constructor
+  · intro primitive hboundary
+    exact
+      certificate.coverage_of_listed_boundary primitive
+        (certificate.c0_complete primitive) hboundary
+  · intro primitive hboundary
+    exact
+      certificate.faithfulness_of_listed_boundary primitive
+        (certificate.c0_complete primitive) hboundary
+
+/--
+The complete-support G-02 shadow bridge routed through the discharge prism.
+-/
+theorem completeRepairSupportBoundary_as_obstructionTower_shadow_of_dischargePrism
+    (L : SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex) :
+    SemanticRepairObstructionTower.GlobalSemanticRepairCoherent
+        (SemanticRepairObstructionTower.ofFiniteSemanticRepairGluingComplex L.K) <->
+      SemanticRepairGluingComplex.ObstructionClassVanishes L.K := by
+  exact
+    finiteGluingComplex_as_obstructionTower_shadow_of_dischargePrism
+      L.K
+      (completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate L)
+
+/--
+G-02 complete-support finite descent package with faithfulness discharged via
+the explicit finite boundary certificate / prism surface.
+-/
+theorem finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary_via_dischargePrism
+    (L : SemanticRepairGluingComplex.CompleteRepairSupportBoundaryComplex) :
+    (SemanticRepairGluingComplex.GlobalSemanticRepairCoherent L.K ->
+        SemanticRepairGluingComplex.ObstructionClassVanishes L.K) /\
+      (SemanticRepairGluingComplex.ObstructionClassNonzero L.K ->
+        Not (SemanticRepairGluingComplex.GlobalSemanticRepairCoherent L.K)) /\
+      (SemanticRepairGluingComplex.ObstructionClassVanishes L.K ->
+        SemanticRepairGluingComplex.GlobalSemanticRepairCoherent L.K) /\
+      (SemanticRepairGluingComplex.GlobalSemanticRepairCoherent L.K <->
+        SemanticRepairGluingComplex.ObstructionClassVanishes L.K) /\
+      SemanticRepairGluingComplex.SemanticFaithfulnessHypotheses L.K /\
+      (SemanticRepairObstructionTower.GlobalSemanticRepairCoherent
+          (SemanticRepairObstructionTower.ofFiniteSemanticRepairGluingComplex L.K) <->
+        SemanticRepairGluingComplex.ObstructionClassVanishes L.K) := by
+  have hfaithful :
+      SemanticRepairGluingComplex.SemanticFaithfulnessHypotheses L.K :=
+    completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate L
+  exact
+    ⟨SemanticRepairGluingComplex.globalRepairCoherent_forces_obstructionVanishes L.K,
+      SemanticRepairGluingComplex.no_globalRepairCoherent_of_nonzero_obstruction L.K,
+      SemanticRepairGluingComplex.globalRepairCoherent_of_obstructionVanishes
+        L.K hfaithful,
+      SemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_iff
+        L.K hfaithful,
+      hfaithful,
+      completeRepairSupportBoundary_as_obstructionTower_shadow_of_dischargePrism L⟩
+
 /-! ## Non-hiddenness witness -/
 
 /--

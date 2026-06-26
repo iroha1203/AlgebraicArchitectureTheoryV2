@@ -5076,6 +5076,7 @@ Issue define the theorem boundary; this index records the public Lean API needed
 for review.
 
 File: `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`.
+Certificate surface: `Formal/AG/Research/QualitySurface/SemanticRepairAdequacyDischarge.lean`.
 Tracking Issue: [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476).
 Report: [`research/reports/G-aat-quality-surface-02.md`](../../research/reports/G-aat-quality-surface-02.md).
 
@@ -5096,6 +5097,9 @@ Report: [`research/reports/G-aat-quality-surface-02.md`](../../research/reports/
 | `SemanticRepairGluingComplex.selectedVisibleLocalWitnessComplex`, `selectedVisibleLocalWitness_obstructionNonzero`, `selectedVisibleLocalWitness_noGlobalRepairCoherent` | `def` / `theorem` | visible / local / component clearance だけでは finite obstruction が消えない calibration witness。 | `defined only` / `proved` |
 | `SemanticRepairGluingComplex.selectedFaithfulBoundaryComplex`, `selectedFaithfulBoundary_descent_iff` | `def` / `theorem` | complete-support boundary による faithful calibration witness と finite descent equivalence。 | `defined only` / `proved` |
 | `SemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary` | `theorem` | necessity、contrapositive、sufficiency、faithfulness discharge、bridge theorem、witness validation を束ねた complete-support finite-class package。 | `proved` |
+| `SemanticRepairAdequacyDischarge.completeRepairSupportBoundary_boundarySemanticClosureCertificate` | `def` | complete-support finite class から boundary-local coverage / faithfulness / semantic-closure bridge を持つ finite boundary certificate を構成する。 | `proved construction` |
+| `SemanticRepairAdequacyDischarge.completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate` | `theorem` | `SemanticFaithfulnessHypotheses` を material premise として受け取らず、finite boundary certificate から導く。 | `proved` |
+| `SemanticRepairAdequacyDischarge.finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary_via_dischargePrism` | `theorem` | complete-support finite-class package を explicit certificate / discharge prism surface 経由で読む。 | `proved` |
 
 Non-conclusions: この package は arbitrary finite atlas descent、true sheaf
 `H^1`、nonabelian / stacky descent、universal obstruction assignment、source
