@@ -125,6 +125,29 @@ theorem traceProbeFinalReviewFiniteShadowPacket_checkpoint
   · intro T
     exact traceProbeArchSigStyleArtifact_records_boundary obs.probes T
 
+/--
+Packet-local source-trace extensionality for complete trace-probe artifacts.
+
+This only reuses the Cycle 104 source-trace token theorem inside the
+final-review finite-shadow packet.  The completeness certificate remains a
+visible coordinate-coverage premise and is not arbitrary semantic observation
+adequacy or semantic faithfulness.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_sourceTraceToken_same_of_same_artifact
+    {Atom : Type u}
+    {Out : Type z}
+    (obs : TraceProbeGeneratedAdmissibleObservation (Atom := Atom) Out)
+    (hcomplete : TraceProbeFamilyComplete obs.probes)
+    {left right :
+      FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom}
+    (hartifact :
+      traceProbeArchSigStyleArtifactOfTower obs.probes left =
+        traceProbeArchSigStyleArtifactOfTower obs.probes right) :
+    left.sourceTraceToken = right.sourceTraceToken := by
+  exact
+    sourceTraceToken_same_of_same_completeTraceProbeArtifact
+      (Atom := Atom) hcomplete hartifact
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
