@@ -4872,3 +4872,74 @@ assignments, not target theorem completion.  The supplied probe family is input
 geometry; no trace completeness, ArchMap / ArchSig extraction correctness,
 semantic faithfulness, global coherence, obstruction vanishing, descent
 effectiveness, or arbitrary assignment universality is claimed.
+
+## Cycle 99: Trace-Probe ArchSig-Style Artifact Boundary
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: compare the enriched finite trace-probe shadow with the existing ArchSig-style finite artifact surface by adding a bounded artifact projection that records the same four tower layers plus supplied probe readings
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean
+    declarations:
+      - TraceProbeArchSigStyleFiniteShadowArtifact
+      - traceProbeArchSigStyleArtifactShadow
+      - traceProbeArchSigStyleArtifact_project
+      - traceProbeArchSigStyleArtifactOfShadow
+      - traceProbeArchSigStyleArtifactOfTower
+      - traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow
+      - traceProbeArchSigStyleArtifact_projects_to_archSigStyleArtifactShadow
+      - traceProbeArchSigStyleArtifact_records_boundary
+      - traceProbeArchSigStyleArtifact_probeReadings_eq
+premise_delta:
+  discharged:
+    - enriched trace-probe shadows now have a bounded ArchSig-style finite artifact surface
+    - the artifact factors through `canonicalTraceProbeTowerLayerShadow`, not through canonical layer shadow alone
+    - forgetting probe readings recovers the existing four-layer ArchSig-style artifact shadow
+    - bounded-evidence and non-conclusion flags are explicit theorem outputs
+    - supplied probe readings are stored definitionally as `traceProbeReadings probes T.sourceTraceToken`
+  remaining:
+    - no ArchMap / ArchSig runtime extraction correctness is claimed
+    - supplied probe readings remain input geometry, not trace completeness
+    - arbitrary sound semantic repair-gluing assignment universality, G-02 / ArchSig runtime comparison, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` remain open
+blocking_findings:
+  - none for the bounded trace-probe artifact projection; the enriched probe shadow remains required data
+next_obligation: use this bounded artifact boundary as a final-review finite-shadow packet surface, then select either a finite probe completeness certificate obligation or a non-circular admissible-observation theorem
+```
+
+### Result
+
+Cycle 99 adds `TraceProbeArchSigStyleFiniteShadowArtifact`, a Lean-side bounded
+artifact shape for enriched finite trace-probe shadows.  The artifact records
+the same four selected obstruction-layer bits as the existing
+`ArchSigStyleFiniteShadowArtifact`, plus the supplied probe-reading vector.
+
+`traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow` proves
+that the artifact of a tower factors through
+`canonicalTraceProbeTowerLayerShadow`.  The projection theorem
+`traceProbeArchSigStyleArtifact_projects_to_archSigStyleArtifactShadow` shows
+that forgetting probe readings recovers the existing four-layer ArchSig-style
+artifact shadow.  `traceProbeArchSigStyleArtifact_records_boundary` keeps
+bounded-evidence and non-conclusion flags visible, and
+`traceProbeArchSigStyleArtifact_probeReadings_eq` records that the probe vector
+is exactly the supplied finite probe reading.
+
+### Formalization Quality
+
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean`,
+`lake build Formal.AG.Research.QualitySurface.SemanticRepairTraceProbeShadow`,
+and `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean`
+all pass.  The reported artifact factorization, projection, boundary, and
+probe-reading theorems are axiom-free.
+Tracking issue sync: #2482 comment
+`https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4805494927`.
+
+### Target Boundary
+
+This is a proof-obligation discharge for a bounded finite artifact surface, not
+target theorem completion and not a runtime ArchSig theorem.  The probe readings
+are supplied input geometry; no trace completeness, runtime extraction
+correctness, semantic faithfulness, global coherence, obstruction vanishing,
+descent effectiveness, or arbitrary assignment universality is claimed.
