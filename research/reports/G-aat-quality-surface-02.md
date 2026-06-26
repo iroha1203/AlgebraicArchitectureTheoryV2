@@ -14,7 +14,7 @@
 ## Target Proof State
 
 - target theorem: `Finite Semantic Repair-Gluing Descent Theorem`
-- proof state: finite / explicit-faithfulness descent package plus complete-support premise-discharge package proved in research
+- proof state: target theorem proved under explicit complete-support finite atlas class / certificate-discharged range
 - completed support nodes:
   - Stage 2 finite complex / `B1`
   - explicit finite overlap / transition-family enumeration as `overlapOrder`
@@ -24,10 +24,10 @@
   - Stage 2.5b complete-support finite atlas class discharge of `SemanticFaithfulnessHypotheses`
   - certificate-based complete-support discharge through finite boundary coverage / faithfulness decomposition
   - selected faithful boundary complex with obstruction vanish / global coherence / descent iff
-- open support nodes:
+- future non-blocking support nodes:
   - restriction functoriality / coefficient structure for stricter Cech formulation
   - future true site/sheaf `H^1` upgrade
-- target completion status: target-proof-candidate pending G4 / G5 / G6 judgment; do not treat this report alone as completion
+- target completion status: target-theorem-proved after final `$math-lean-review` gate; completion is relative to `CompleteRepairSupportBoundaryComplex` / certificate-based discharge and does not claim arbitrary finite atlas descent
 
 ## Cycle 1: Finite Semantic Repair-Gluing Descent Package
 
@@ -216,3 +216,32 @@ No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or
 ### Target Boundary
 
 This cycle does not claim arbitrary finite atlas descent and does not promote G-04 universal obstruction tower, nonabelian / stacky descent, or true sheaf `H^1` into G-02. The certificate fields remain boundary-local coverage and faithfulness data; they do not store obstruction vanish, global coherence, or target equivalence.
+
+## Final Target Review Gate
+
+```text
+decision: approve
+result_type: target-theorem-proved
+review_gate: $math-lean-review
+review_lanes:
+  - Lane A theorem-strength: No major findings
+  - Lane B premise-discharge / anti-weakening: No major findings
+  - Lane C Lean formalization integrity: No major findings
+  - Lane D ledger / docs / Issue completion: No major findings
+completion_scope: explicit complete-support finite atlas class / certificate-discharged semantic faithfulness range
+```
+
+### Completion Judgment
+
+G-02 is complete in the finite target-theorem sense recorded by the GOAL card:
+the Lean package proves necessity, nonzero-obstruction contrapositive,
+conditional sufficiency, and the complete-support finite-class discharge of
+`SemanticFaithfulnessHypotheses`. The final review gate found no major findings
+against theorem strength, premise discharge, Lean integrity, or ledger sync.
+
+The completion claim is intentionally relative to the explicit
+`CompleteRepairSupportBoundaryComplex` / certificate-based discharge surface.
+It does not claim arbitrary finite atlas descent, true sheaf `H^1`,
+nonabelian / stacky descent, universal obstruction assignment, source
+extraction completeness, ArchMap validation, runtime repair synthesis, or
+whole-codebase quality.
