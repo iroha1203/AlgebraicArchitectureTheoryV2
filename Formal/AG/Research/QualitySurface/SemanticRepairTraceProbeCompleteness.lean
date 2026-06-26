@@ -197,6 +197,79 @@ theorem boolCompleteTraceProbeFamily_complete :
     traceProbeFamilyComplete_of_finiteSupportComplete_supportTraceProbes
       boolCompleteTraceSupport_complete
 
+/-! ## Complete trace-probe artifact boundary -/
+
+/--
+Under an explicit probe-family completeness certificate, every source-trace
+coordinate factors through the bounded trace-probe artifact surface.
+
+This only composes the complete trace-probe shadow factorization with the
+Cycle 99 artifact projection.  It is not an ArchSig runtime extraction
+correctness theorem or arbitrary observation completeness.
+-/
+theorem sourceTraceCoordinate_factors_through_completeTraceProbeArtifact
+    {Atom : Type u}
+    {probes : List (SourceTraceProbe Atom)}
+    (hcomplete : TraceProbeFamilyComplete probes)
+    (atom : Atom) :
+    ∃ factor : TraceProbeArchSigStyleFiniteShadowArtifact -> Bool,
+      ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+        T.sourceTraceToken atom =
+          factor (traceProbeArchSigStyleArtifactOfTower probes T) := by
+  rcases
+    (sourceTraceCoordinate_factors_through_completeTraceProbeShadow
+      (Atom := Atom) hcomplete atom :
+      ∃ factor : TraceProbeFiniteTowerLayerShadow -> Bool,
+        ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          T.sourceTraceToken atom =
+            factor (canonicalTraceProbeTowerLayerShadow probes T)) with
+  ⟨shadowFactor, hshadowFactor⟩
+  exact
+    ⟨fun artifact =>
+        shadowFactor (traceProbeArchSigStyleArtifactShadow artifact),
+      by
+        intro T
+        calc
+          T.sourceTraceToken atom =
+              shadowFactor (canonicalTraceProbeTowerLayerShadow probes T) :=
+            hshadowFactor T
+          _ =
+              shadowFactor
+                (traceProbeArchSigStyleArtifactShadow
+                  (traceProbeArchSigStyleArtifactOfTower probes T)) := by
+            rw [traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow]⟩
+
+/--
+Equality of complete trace-probe artifacts implies pointwise equality of
+source-trace coordinates under the visible probe-family completeness
+certificate.
+-/
+theorem sourceTraceCoordinates_same_of_same_completeTraceProbeArtifact
+    {Atom : Type u}
+    {probes : List (SourceTraceProbe Atom)}
+    (hcomplete : TraceProbeFamilyComplete probes)
+    {left right :
+      FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom}
+    (hartifact :
+      traceProbeArchSigStyleArtifactOfTower probes left =
+        traceProbeArchSigStyleArtifactOfTower probes right)
+    (atom : Atom) :
+    left.sourceTraceToken atom = right.sourceTraceToken atom := by
+  apply
+    sourceTraceCoordinates_same_of_same_completeTraceProbeShadow
+      (Atom := Atom) hcomplete
+  calc
+    canonicalTraceProbeTowerLayerShadow probes left =
+        traceProbeArchSigStyleArtifactShadow
+          (traceProbeArchSigStyleArtifactOfTower probes left) := by
+      rw [traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow]
+    _ =
+        traceProbeArchSigStyleArtifactShadow
+          (traceProbeArchSigStyleArtifactOfTower probes right) := by
+      rw [hartifact]
+    _ = canonicalTraceProbeTowerLayerShadow probes right := by
+      rw [traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow]
+
 end SemanticRepairTraceProbeCompleteness
 end QualitySurface
 end Formal.AG.Research
