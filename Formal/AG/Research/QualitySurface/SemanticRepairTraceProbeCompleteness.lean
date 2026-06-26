@@ -270,6 +270,29 @@ theorem sourceTraceCoordinates_same_of_same_completeTraceProbeArtifact
     _ = canonicalTraceProbeTowerLayerShadow probes right := by
       rw [traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow]
 
+/--
+Under the visible finite probe-family completeness certificate, equality of the
+bounded trace-probe artifacts determines the whole source-trace token.
+
+This is still only source-trace extensionality for a supplied complete probe
+family.  It is not arbitrary semantic observation adequacy, semantic
+faithfulness, or runtime extraction correctness.
+-/
+theorem sourceTraceToken_same_of_same_completeTraceProbeArtifact
+    {Atom : Type u}
+    {probes : List (SourceTraceProbe Atom)}
+    (hcomplete : TraceProbeFamilyComplete probes)
+    {left right :
+      FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom}
+    (hartifact :
+      traceProbeArchSigStyleArtifactOfTower probes left =
+        traceProbeArchSigStyleArtifactOfTower probes right) :
+    left.sourceTraceToken = right.sourceTraceToken := by
+  funext atom
+  exact
+    sourceTraceCoordinates_same_of_same_completeTraceProbeArtifact
+      (Atom := Atom) hcomplete hartifact atom
+
 end SemanticRepairTraceProbeCompleteness
 end QualitySurface
 end Formal.AG.Research
