@@ -543,6 +543,95 @@ theorem traceProbeFinalReviewFiniteShadowPacket_trueSheafNonabelianStackyStrengt
   · decide
   · decide
 
+/-! ## Obstruction vanishing packet boundary -/
+
+/-- A finite tower whose obstruction tower vanishes while preserving the packet artifact. -/
+def traceProbeFinalReviewObstructionVanishesTower :
+    FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} PUnit where
+  Chart := PUnit
+  chartOrder := []
+  C0 := PUnit
+  C1 := PUnit
+  C2 := PUnit
+  c0Order := [PUnit.unit]
+  c1Order := [PUnit.unit]
+  c2Zero := PUnit.unit
+  delta0 := fun _ => PUnit.unit
+  delta1 := fun _ => PUnit.unit
+  delta1_delta0_zero := by intro primitive; cases primitive; rfl
+  residual := PUnit.unit
+  residual_cocycle := rfl
+  primitiveSemanticallyClosed := fun _ => True
+  torsorObstruction := false
+  higherObstruction := false
+  stackObstruction := false
+  finiteShadow := fun _ => false
+  finiteShadow_boundary_zero := by intro primitive; cases primitive; rfl
+  sourceTraceToken := fun _ => false
+
+/-- A matching packet-artifact tower whose first obstruction does not vanish. -/
+def traceProbeFinalReviewObstructionNonVanishesTower :
+    FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} PUnit where
+  Chart := PUnit
+  chartOrder := []
+  C0 := Empty
+  C1 := PUnit
+  C2 := PUnit
+  c0Order := []
+  c1Order := [PUnit.unit]
+  c2Zero := PUnit.unit
+  delta0 := Empty.elim
+  delta1 := fun _ => PUnit.unit
+  delta1_delta0_zero := by intro primitive; cases primitive
+  residual := PUnit.unit
+  residual_cocycle := rfl
+  primitiveSemanticallyClosed := Empty.elim
+  torsorObstruction := false
+  higherObstruction := false
+  stackObstruction := false
+  finiteShadow := fun _ => false
+  finiteShadow_boundary_zero := by intro primitive; cases primitive
+  sourceTraceToken := fun _ => false
+
+/-- The selected vanishing witness has all tower layers vanished. -/
+theorem traceProbeFinalReviewObstructionVanishesTower_vanishes :
+    ObstructionTowerVanishes traceProbeFinalReviewObstructionVanishesTower := by
+  exact ⟨⟨PUnit.unit, rfl⟩, rfl, rfl, rfl⟩
+
+/-- The matching packet-artifact witness has no first-layer boundary primitive. -/
+theorem traceProbeFinalReviewObstructionNonVanishesTower_not_vanishes :
+    ¬ ObstructionTowerVanishes
+        traceProbeFinalReviewObstructionNonVanishesTower := by
+  intro hvanishes
+  rcases hvanishes with ⟨hfirst, _htorsor, _hhigher, _hstack⟩
+  rcases hfirst with ⟨primitive, _hboundary⟩
+  cases primitive
+
+/--
+The finite trace-probe packet does not determine obstruction-tower vanishing.
+
+The witness towers have equal complete trace-probe artifacts and equal
+source-trace tokens, but only one has a vanished obstruction tower.  Thus
+packet equality does not discharge obstruction vanishing.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_obstructionVanishing_blocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewObstructionVanishesTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewObstructionNonVanishesTower ∧
+      traceProbeFinalReviewObstructionVanishesTower.sourceTraceToken =
+        traceProbeFinalReviewObstructionNonVanishesTower.sourceTraceToken ∧
+      ObstructionTowerVanishes
+        traceProbeFinalReviewObstructionVanishesTower ∧
+      ¬ ObstructionTowerVanishes
+        traceProbeFinalReviewObstructionNonVanishesTower := by
+  exact
+    ⟨rfl, rfl,
+      traceProbeFinalReviewObstructionVanishesTower_vanishes,
+      traceProbeFinalReviewObstructionNonVanishesTower_not_vanishes⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
