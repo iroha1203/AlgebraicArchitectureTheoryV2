@@ -113,6 +113,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | finiteQueryVisibleBoundaryAudit
   | finiteQueryNecessaryCoordinateBoundaryAudit
   | traceProbePacketBoundaryAudit
+  | currentBoundaryMaximalityAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -135,6 +136,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.finiteQueryVisibleBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.finiteQueryNecessaryCoordinateBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.traceProbePacketBoundaryAudit,
+    TargetSurfaceFinalReviewDeclaration.currentBoundaryMaximalityAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -1233,6 +1235,106 @@ theorem targetSurface_traceProbePacketBoundaryAudit :
     traceProbeFinalReview_not_ready_for_mathLeanReview
 
 /--
+Audit for the maximality of the current four-bit tower boundary.
+
+For the current canonical `FiniteTowerLayerShadow`, arbitrary observation
+factorization is equivalent to the visible
+`ShadowExtensionalTowerObservation` condition.  This records the precise
+non-hidden boundary: the target packet can factor any observation once
+extensionality is supplied, and any claimed factorization already implies that
+same extensionality.  The source-trace witness shows the boundary is proper for
+observations outside the current shadow.
+-/
+structure TargetSurfaceCurrentBoundaryMaximalityAudit where
+  factorizationIffShadowExtensionality :
+    forall {Atom : Type u}
+        {Out : Type s}
+        {observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Out},
+      (∃ factor : FiniteTowerLayerShadow -> Out,
+        ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          observe T = factor (canonicalTowerLayerShadow T)) ↔
+        ShadowExtensionalTowerObservation observe
+  universalFactorizationOfVisibleExtensionality :
+    forall {Atom : Type u}
+        {Out : Type s}
+        {observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Out},
+      ShadowExtensionalTowerObservation observe ->
+        (∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          observe T =
+            canonicalShadowFactor observe (canonicalTowerLayerShadow T)) ∧
+        (∀ factor : FiniteTowerLayerShadow -> Out,
+          (∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+            observe T = factor (canonicalTowerLayerShadow T)) ->
+          ∀ shadow : FiniteTowerLayerShadow,
+            factor shadow = canonicalShadowFactor observe shadow)
+  targetSurfaceRouteOfVisibleExtensionality :
+    forall {Atom : Type u}
+        {Choice : Type z}
+        {TorsorRepair : Type r}
+        {Coherence : Type z}
+        {StackRepair : Type r}
+        {Out : Type s}
+        (A :
+          UniversalSemanticRepairTargetSurface
+            Atom Choice TorsorRepair Coherence StackRepair)
+        [DecidableEq Choice]
+        [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+        [DecidableEq Coherence]
+        [forall repair, Decidable (A.stack.effectiveRepair repair)]
+        (certificates : UniversalSemanticRepairTargetCertificates A)
+        (observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Out),
+      ShadowExtensionalTowerObservation observe ->
+        (observe (Obs_A_ofFiniteCertificates A certificates) =
+          canonicalShadowFactor observe (targetSurfaceLayerShadow A certificates)) ∧
+        (∀ factor : FiniteTowerLayerShadow -> Out,
+          (∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+            observe T = factor (canonicalTowerLayerShadow T)) ->
+          factor (targetSurfaceLayerShadow A certificates) =
+            canonicalShadowFactor observe
+              (targetSurfaceLayerShadow A certificates))
+  sourceTraceOutsideCurrentBoundary :
+    (¬ ShadowExtensionalTowerObservation
+        (sourceTraceObservation :
+          FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0}
+            PUnit.{u + 1} -> Bool)) ∧
+      ¬ ∃ factor : FiniteTowerLayerShadow -> Bool,
+        ∀ T :
+          FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0} PUnit.{u + 1},
+          sourceTraceObservation T =
+            factor (canonicalTowerLayerShadow T)
+
+/--
+Derive the current-boundary maximality audit from universal factorization for
+shadow-extensional observations and the finite-shadow separation witness.
+-/
+theorem targetSurface_currentBoundaryMaximalityAudit :
+    TargetSurfaceCurrentBoundaryMaximalityAudit where
+  factorizationIffShadowExtensionality := by
+    intro Atom Out observe
+    constructor
+    · intro hfactor
+      rcases hfactor with ⟨factor, hfactor⟩
+      exact shadowExtensional_of_factorization factor hfactor
+    · intro hext
+      exact ⟨canonicalShadowFactor observe,
+        (shadowExtensionalObservation_universalFactorization observe hext).1⟩
+  universalFactorizationOfVisibleExtensionality := by
+    intro Atom Out observe hext
+    exact shadowExtensionalObservation_universalFactorization observe hext
+  targetSurfaceRouteOfVisibleExtensionality := by
+    intro Atom Choice TorsorRepair Coherence StackRepair Out A
+      _ _ _ _ certificates observe hext
+    exact
+      targetSurfaceShadowExtensionalObservation_universalFactorization
+        A certificates observe hext
+  sourceTraceOutsideCurrentBoundary :=
+    ⟨sourceTraceObservation_not_shadowExtensional,
+      sourceTraceObservation_no_finiteShadowFactor⟩
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -1287,6 +1389,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit
   traceProbePacketBoundaryAudit :
     TargetSurfaceTraceProbePacketBoundaryAudit
+  currentBoundaryMaximalityAudit :
+    TargetSurfaceCurrentBoundaryMaximalityAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -1421,6 +1525,8 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit
   traceProbePacketBoundaryAudit :=
     targetSurface_traceProbePacketBoundaryAudit
+  currentBoundaryMaximalityAudit :=
+    targetSurface_currentBoundaryMaximalityAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
