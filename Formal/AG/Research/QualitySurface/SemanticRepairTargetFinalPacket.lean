@@ -3,6 +3,7 @@ import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceS
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryRepresentationRecoverableReadings
+import Formal.AG.Research.QualitySurface.SemanticRepairTraceProbeFinalPacket
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteShadowSeparation
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 
@@ -54,6 +55,8 @@ open SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute
 open SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
 open SemanticRepairFiniteQueryTargetSurfaceRepresentationAdequacyNecessaryConditions
 open SemanticRepairFiniteQueryRepresentationRecoverableReadings
+open SemanticRepairTraceProbeCompleteness
+open SemanticRepairTraceProbeFinalPacket
 
 universe u v w x y z r s
 
@@ -109,6 +112,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | soundAssignmentEnrichedLiftAudit
   | finiteQueryVisibleBoundaryAudit
   | finiteQueryNecessaryCoordinateBoundaryAudit
+  | traceProbePacketBoundaryAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -130,6 +134,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.soundAssignmentEnrichedLiftAudit,
     TargetSurfaceFinalReviewDeclaration.finiteQueryVisibleBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.finiteQueryNecessaryCoordinateBoundaryAudit,
+    TargetSurfaceFinalReviewDeclaration.traceProbePacketBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -1092,6 +1097,142 @@ theorem targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit :
     not_boolTrueTraceQuerySupportShadowObservation_exists_semanticReadingAdequacy
 
 /--
+Audit that imports the finite trace-probe final-review boundary into the
+target final packet.
+
+The finite trace-probe packet records useful generated-observation and complete
+source-trace facts, but its own final-review boundary also proves that it does
+not determine arbitrary observations, runtime extraction correctness, full
+semantic faithfulness, global coherence, obstruction vanishing, descent
+effectiveness, or true sheaf/nonabelian/stacky strength metadata.  This audit
+keeps those blocker witnesses visible at the target packet instead of silently
+promoting finite trace-probe evidence to arbitrary universality.
+-/
+structure TargetSurfaceTraceProbePacketBoundaryAudit where
+  remainingInventoryRecordsCoreGaps :
+    TraceProbeFinalReviewRemainingMaterialPremise.arbitrarySemanticObservationAdequacy ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.runtimeExtractionCorrectness ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.semanticFaithfulness ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.globalCoherence ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.obstructionVanishing ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.descentEffectiveness ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.trueSheafNonabelianStackyStrength ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory ∧
+      TraceProbeFinalReviewRemainingMaterialPremise.mathLeanReviewGate ∈
+        traceProbeFinalReviewRemainingMaterialPremiseInventory
+  arbitraryObservationAdequacyBlocker :
+    TraceProbeFamilyComplete traceProbeFinalReviewPUnitProbes ∧
+      traceProbeArchSigStyleArtifactOfTower
+          traceProbeFinalReviewPUnitProbes
+          traceProbeFinalReviewArbitraryObservationLeftTower =
+        traceProbeArchSigStyleArtifactOfTower
+          traceProbeFinalReviewPUnitProbes
+          traceProbeFinalReviewArbitraryObservationRightTower ∧
+      traceProbeFinalReviewArbitraryObservationLeftTower.sourceTraceToken =
+        traceProbeFinalReviewArbitraryObservationRightTower.sourceTraceToken ∧
+      (∃ observe :
+          FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} PUnit -> Nat,
+        observe traceProbeFinalReviewArbitraryObservationLeftTower ≠
+          observe traceProbeFinalReviewArbitraryObservationRightTower)
+  runtimeExtractionCorrectnessBlocker :
+    traceProbeFinalReviewRuntimeReceiptLeft.artifact =
+        traceProbeFinalReviewRuntimeReceiptRight.artifact ∧
+      traceProbeFinalReviewRuntimeReceiptLeft.runtimeReceipt ≠
+        traceProbeFinalReviewRuntimeReceiptRight.runtimeReceipt
+  fullSemanticFaithfulnessBlocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.sourceTraceToken =
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower.sourceTraceToken ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.primitiveSemanticallyClosed
+          PUnit.unit ∧
+      ¬ traceProbeFinalReviewSemanticFaithfulnessOpenTower.primitiveSemanticallyClosed
+          PUnit.unit
+  descentEffectivenessBlocker :
+    ObstructionTowerVanishes traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      ¬ GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower
+  globalCoherenceBlocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.sourceTraceToken =
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower.sourceTraceToken ∧
+      GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower ∧
+      ¬ GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower
+  trueSheafNonabelianStackyStrengthBlocker :
+    traceProbeFinalReviewTrueStrengthReceiptLeft.artifact =
+        traceProbeFinalReviewTrueStrengthReceiptRight.artifact ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.trueSheafH1Receipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.trueSheafH1Receipt ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.nonabelianDescentReceipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.nonabelianDescentReceipt ∧
+      traceProbeFinalReviewTrueStrengthReceiptLeft.stackEffectivenessReceipt ≠
+        traceProbeFinalReviewTrueStrengthReceiptRight.stackEffectivenessReceipt
+  obstructionVanishingBlocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewObstructionVanishesTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewObstructionNonVanishesTower ∧
+      traceProbeFinalReviewObstructionVanishesTower.sourceTraceToken =
+        traceProbeFinalReviewObstructionNonVanishesTower.sourceTraceToken ∧
+      ObstructionTowerVanishes
+        traceProbeFinalReviewObstructionVanishesTower ∧
+      ¬ ObstructionTowerVanishes
+        traceProbeFinalReviewObstructionNonVanishesTower
+  mathLeanReviewNotReady :
+    traceProbeFinalReviewMathLeanReviewReadiness =
+        TraceProbeFinalReviewReadinessVerdict.notReadyForMathLeanReview ∧
+      traceProbeFinalReviewCentralBlockerInventory =
+        [ TraceProbeFinalReviewRemainingMaterialPremise.semanticFaithfulness,
+          TraceProbeFinalReviewRemainingMaterialPremise.globalCoherence,
+          TraceProbeFinalReviewRemainingMaterialPremise.obstructionVanishing,
+          TraceProbeFinalReviewRemainingMaterialPremise.descentEffectiveness,
+          TraceProbeFinalReviewRemainingMaterialPremise.trueSheafNonabelianStackyStrength ]
+
+/--
+Derive the target-level trace-probe packet boundary audit from the existing
+finite trace-probe final-review blocker witnesses.
+-/
+theorem targetSurface_traceProbePacketBoundaryAudit :
+    TargetSurfaceTraceProbePacketBoundaryAudit where
+  remainingInventoryRecordsCoreGaps :=
+    traceProbeFinalReviewRemainingMaterialPremiseInventory_records_core_gaps
+  arbitraryObservationAdequacyBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_arbitraryObservationAdequacy_blocker
+  runtimeExtractionCorrectnessBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_runtimeExtractionCorrectness_blocker
+  fullSemanticFaithfulnessBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_fullSemanticFaithfulness_blocker
+  descentEffectivenessBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_descentEffectiveness_blocker
+  globalCoherenceBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_globalCoherence_blocker
+  trueSheafNonabelianStackyStrengthBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_trueSheafNonabelianStackyStrength_blocker
+  obstructionVanishingBlocker :=
+    traceProbeFinalReviewFiniteShadowPacket_obstructionVanishing_blocker
+  mathLeanReviewNotReady :=
+    traceProbeFinalReview_not_ready_for_mathLeanReview
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -1144,6 +1285,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceFiniteQueryVisibleBoundaryAudit
   finiteQueryNecessaryCoordinateBoundaryAudit :
     TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit
+  traceProbePacketBoundaryAudit :
+    TargetSurfaceTraceProbePacketBoundaryAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -1276,6 +1419,8 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_finiteQueryVisibleBoundaryAudit
   finiteQueryNecessaryCoordinateBoundaryAudit :=
     targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit
+  traceProbePacketBoundaryAudit :=
+    targetSurface_traceProbePacketBoundaryAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
