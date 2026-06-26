@@ -4720,3 +4720,77 @@ target proof from silently treating canonical finite layer shadow as a universal
 classifier for source-trace-sensitive semantic repair assignments.  The next
 target step must either build the trace-aware assignment interface at GOAL
 strength or expose the next datum needed by a sound universal classifier.
+
+## Cycle 97: Finite Trace-Aware Assignment Factorization
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: define a finite trace-aware semantic repair obstruction assignment interface and prove that every assignment visibly generated from finite layer shadow plus explicit finite source-trace support factors through the corresponding enriched support-trace shadow
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean
+    declarations:
+      - TraceAwareSemanticRepairObstructionAssignment
+      - traceAwareAssignmentObserve
+      - traceAwareAssignmentFactor
+      - traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow
+      - traceAwareSemanticRepairObstructionAssignment_extensional_on_supportTraceShadow
+      - sourceTraceAtTrueTraceAwareAssignment
+      - sourceTraceAtTrueTraceAwareAssignment_observe_eq
+      - traceAwareAssignment_refines_sourceTraceUniversalityBlocker_package
+premise_delta:
+  discharged:
+    - finite trace-aware assignments now have an explicit Lean interface with only support-list and post-map data
+    - every such assignment factors through `canonicalSupportTraceProbeTowerLayerShadow` for its explicit support
+    - support-trace-shadow extensionality is proved from enriched-shadow equality, not assumed as a hidden premise
+    - the Cycle 96 source-trace blocker is refined by the `[true]` Bool support assignment while keeping canonical layer-shadow-only universality refuted
+  remaining:
+    - this does not prove arbitrary sound semantic repair assignment universality
+    - support completeness, ArchMap / ArchSig extraction correctness, semantic faithfulness, global coherence, obstruction vanishing, and descent effectiveness are not hidden in the assignment interface
+    - broad GOAL-level assignment-aware classifier, G-02 / ArchSig comparison, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` remain open
+blocking_findings:
+  - none for this finite trace-aware assignment class; the enriched support-trace shadow is required data
+next_obligation: extend from explicit finite support-generated assignments toward a broader assignment-aware classifier, or compare the enriched finite shadow boundary against the G-02 / ArchSig finite-shadow surface without promoting it to final universality
+```
+
+### Result
+
+Cycle 97 adds `TraceAwareSemanticRepairObstructionAssignment`, a finite
+assignment interface generated only from an explicit source-trace support and a
+post-map on `(FiniteTowerLayerShadow, List Bool)`.  The observation
+`traceAwareAssignmentObserve` therefore reads the current layer shadow together
+with `supportTraceVector assignment.support T.sourceTraceToken`.
+
+The theorem
+`traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow`
+proves definitional factorization through
+`canonicalSupportTraceProbeTowerLayerShadow assignment.support T`.
+`traceAwareSemanticRepairObstructionAssignment_extensional_on_supportTraceShadow`
+then proves extensionality from equality of enriched support-trace shadows.
+
+The theorem `traceAwareAssignment_refines_sourceTraceUniversalityBlocker_package`
+connects this interface back to Cycle 96: canonical layer-shadow-only
+universality remains refuted, while the `[true]` support assignment factors the
+same source-trace observation through the enriched support-trace shadow.
+
+### Formalization Quality
+
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteTraceSupport.lean`,
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryObservation.lean`,
+`lake env lean Formal/AG/Research/QualitySurface/SemanticRepairFiniteQueryCanonicalBridge.lean`,
+and `lake build Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport`
+all pass.  The axiom audit shows that the factorization, extensionality, and
+observation equality theorems are axiom-free; the refinement package depends
+only on `propext` through the Cycle 96 negative component.
+Tracking issue sync: #2482 comment
+`https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4805354316`.
+
+### Target Boundary
+
+This is a proof-obligation discharge for a finite trace-aware assignment class,
+not target theorem completion.  It does not claim arbitrary assignment
+universality, trace-support completeness, runtime extraction correctness, or
+final semantic adequacy.  The enriched support-trace shadow remains required
+data.
