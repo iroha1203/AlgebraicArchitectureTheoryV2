@@ -83,6 +83,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | traceProbeSoundAssignmentAudit
   | arbitraryUniversalityBlockerAudit
   | enrichedBoundaryRepairAudit
+  | soundAssignmentEnrichedLiftAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -101,6 +102,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit,
     TargetSurfaceFinalReviewDeclaration.arbitraryUniversalityBlockerAudit,
     TargetSurfaceFinalReviewDeclaration.enrichedBoundaryRepairAudit,
+    TargetSurfaceFinalReviewDeclaration.soundAssignmentEnrichedLiftAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -117,6 +119,7 @@ inductive TargetSurfaceMaterialPremise where
   | soundObstructionAssignmentFactorization
   | arbitrarySoundAssignmentUniversality
   | sourceTraceBoundaryEnrichment
+  | soundAssignmentEnrichedBoundaryLift
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -164,6 +167,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =>
       TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary
   | TargetSurfaceMaterialPremise.sourceTraceBoundaryEnrichment =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.soundAssignmentEnrichedBoundaryLift =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
@@ -682,6 +687,106 @@ theorem targetSurface_enrichedBoundaryRepairAudit :
     traceAwareAssignment_refines_sourceTraceUniversalityBlocker_package
 
 /--
+Audit that existing all-layer sound assignments lift to enriched trace
+boundaries by reading the four-bit layer projection.
+
+This is a monotone lift of the already defined `SoundAllLayerObstructionAssignment`
+surface.  It does not add source-trace sensitivity to all-layer assignments and
+does not claim arbitrary semantic observation universality.
+-/
+structure TargetSurfaceSoundAssignmentEnrichedLiftAudit where
+  traceProbeLiftFactorization :
+    forall {Atom : Type u}
+        (probes : List (SourceTraceProbe Atom))
+        (assignment : SoundAllLayerObstructionAssignment)
+        (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom),
+      assignmentLayerShadow assignment T =
+        assignmentReadsShadow assignment
+          (canonicalTraceProbeTowerLayerShadow probes T).layer
+  supportTraceLiftFactorization :
+    forall {Atom : Type u}
+        (support : List Atom)
+        (assignment : SoundAllLayerObstructionAssignment)
+        (T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom),
+      assignmentLayerShadow assignment T =
+        assignmentReadsShadow assignment
+          (canonicalSupportTraceProbeTowerLayerShadow support T).layer
+  traceProbeLiftExtensionality :
+    forall {Atom : Type u}
+        (probes : List (SourceTraceProbe Atom))
+        (assignment : SoundAllLayerObstructionAssignment),
+      TraceProbeShadowExtensional
+        (Atom := Atom)
+        probes
+        (fun T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            assignmentLayerShadow assignment T)
+  supportTraceLiftExtensionality :
+    forall {Atom : Type u}
+        (support : List Atom)
+        (assignment : SoundAllLayerObstructionAssignment),
+      SupportTraceShadowExtensional
+        (Atom := Atom)
+        support
+        (fun T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            assignmentLayerShadow assignment T)
+
+/--
+Derive the enriched-boundary lift audit for all-layer sound assignments.
+
+The factor through enriched shadows is the current four-bit shadow factor
+postcomposed with `.layer`, so the proof uses only definitional factorization
+and the projection from support-trace shadows to current shadows.
+-/
+theorem targetSurface_soundAssignmentEnrichedLiftAudit :
+    TargetSurfaceSoundAssignmentEnrichedLiftAudit where
+  traceProbeLiftFactorization := by
+    intro Atom probes assignment T
+    exact soundAllLayerAssignment_factors_through_tower assignment T
+  supportTraceLiftFactorization := by
+    intro Atom support assignment T
+    calc
+      assignmentLayerShadow assignment T =
+          assignmentReadsShadow assignment (canonicalTowerLayerShadow T) :=
+        soundAllLayerAssignment_factors_through_tower assignment T
+      _ = assignmentReadsShadow assignment
+          (canonicalSupportTraceProbeTowerLayerShadow support T).layer := by
+        rw [supportTraceProbeShadow_projects_to_currentShadow]
+  traceProbeLiftExtensionality := by
+    intro Atom probes assignment
+    exact
+      traceProbeShadowExtensional_of_currentShadowExtensional
+        (probes := probes)
+        (observe := fun T => assignmentLayerShadow assignment T)
+        (by
+          intro left right hshadow
+          calc
+            assignmentLayerShadow assignment left =
+                assignmentReadsShadow assignment (canonicalTowerLayerShadow left) :=
+              soundAllLayerAssignment_factors_through_tower assignment left
+            _ = assignmentReadsShadow assignment (canonicalTowerLayerShadow right) :=
+              soundAllLayerAssignment_extensional_on_shadow assignment hshadow
+            _ = assignmentLayerShadow assignment right :=
+              (soundAllLayerAssignment_factors_through_tower
+                assignment right).symm)
+  supportTraceLiftExtensionality := by
+    intro Atom support assignment left right hshadow
+    calc
+      assignmentLayerShadow assignment left =
+          assignmentReadsShadow assignment (canonicalTowerLayerShadow left) :=
+        soundAllLayerAssignment_factors_through_tower assignment left
+      _ = assignmentReadsShadow assignment (canonicalTowerLayerShadow right) :=
+        soundAllLayerAssignment_extensional_on_shadow assignment
+          (by
+            have hlayer :=
+              congrArg TraceProbeFiniteTowerLayerShadow.layer hshadow
+            simpa using hlayer)
+      _ = assignmentLayerShadow assignment right :=
+        (soundAllLayerAssignment_factors_through_tower
+          assignment right).symm
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -728,6 +833,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceArbitraryUniversalityBlockerAudit
   enrichedBoundaryRepairAudit :
     TargetSurfaceEnrichedBoundaryRepairAudit
+  soundAssignmentEnrichedLiftAudit :
+    TargetSurfaceSoundAssignmentEnrichedLiftAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -796,6 +903,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.sourceTraceBoundaryEnrichment =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.soundAssignmentEnrichedBoundaryLift =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -845,13 +955,15 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_arbitraryUniversalityBlockerAudit
   enrichedBoundaryRepairAudit :=
     targetSurface_enrichedBoundaryRepairAudit
+  soundAssignmentEnrichedLiftAudit :=
+    targetSurface_soundAssignmentEnrichedLiftAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
     exact
       ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl,
-        rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+        rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
