@@ -411,6 +411,42 @@ theorem traceProbeFinalReviewFiniteShadowPacket_fullSemanticFaithfulness_blocker
           PUnit.unit := by
   exact ⟨rfl, rfl, trivial, id⟩
 
+/-! ## Descent effectiveness boundary -/
+
+/-- The semantic-faithfulness open witness nevertheless vanishes in every tower layer. -/
+theorem traceProbeFinalReviewSemanticFaithfulnessOpenTower_obstructionTowerVanishes :
+    ObstructionTowerVanishes traceProbeFinalReviewSemanticFaithfulnessOpenTower := by
+  exact ⟨⟨PUnit.unit, rfl⟩, rfl, rfl, rfl⟩
+
+/-!
+The semantic-faithfulness open witness is not globally coherent, because its
+only possible boundary primitive is not semantically closed.
+-/
+theorem traceProbeFinalReviewSemanticFaithfulnessOpenTower_not_globalCoherent :
+    ¬ GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower := by
+  intro hglobal
+  rcases hglobal with
+    ⟨primitive, _hboundary, hclosed, _htorsor, _hhigher, _hstack⟩
+  cases primitive
+  exact hclosed
+
+/--
+Tower-layer vanishing alone does not provide descent effectiveness/global
+coherence at the packet boundary.
+
+The witness tower has all finite obstruction layers vanished but is still not
+globally coherent because no visible semantic-faithfulness/closure discharge is
+available.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_descentEffectiveness_blocker :
+    ObstructionTowerVanishes traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      ¬ GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower := by
+  exact
+    ⟨traceProbeFinalReviewSemanticFaithfulnessOpenTower_obstructionTowerVanishes,
+      traceProbeFinalReviewSemanticFaithfulnessOpenTower_not_globalCoherent⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
