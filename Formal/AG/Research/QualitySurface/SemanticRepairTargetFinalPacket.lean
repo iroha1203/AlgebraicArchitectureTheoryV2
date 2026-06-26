@@ -1,4 +1,5 @@
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteShadowSeparation
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 
 /-!
@@ -27,6 +28,8 @@ open SemanticRepairStackyH2
 open SemanticRepairTargetCompletion
 open SemanticRepairTraceProbeShadow
 open SemanticRepairFiniteTraceSupport
+open SemanticRepairTargetFactorization
+open SemanticRepairFiniteShadowSeparation
 open SemanticRepairTargetSurface
 
 universe u v w x y z r s
@@ -78,6 +81,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | strengthTower
   | targetObservationMappingAudit
   | traceProbeSoundAssignmentAudit
+  | arbitraryUniversalityBlockerAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -94,6 +98,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.strengthTower,
     TargetSurfaceFinalReviewDeclaration.targetObservationMappingAudit,
     TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit,
+    TargetSurfaceFinalReviewDeclaration.arbitraryUniversalityBlockerAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -108,6 +113,7 @@ inductive TargetSurfaceMaterialPremise where
   | representationAdequacy
   | finiteComputableShadowAdequacy
   | soundObstructionAssignmentFactorization
+  | arbitrarySoundAssignmentUniversality
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -116,6 +122,7 @@ inductive TargetSurfaceMaterialPremise where
 /-- Status labels for final-review material-premise rows. -/
 inductive TargetSurfaceMaterialPremiseStatus where
   | dischargedByTargetSurface
+  | blockedByCurrentTowerBoundary
   | outsideTargetBoundary
   | openFinalReviewGate
   deriving DecidableEq
@@ -151,6 +158,8 @@ def targetSurfaceMaterialPremiseStatus :
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.soundObstructionAssignmentFactorization =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =>
+      TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
   | TargetSurfaceMaterialPremise.archMapCorrectness =>
@@ -522,6 +531,71 @@ theorem targetSurface_traceProbeSoundAssignmentAudit_of_strengthCertificates
           sourceTraceAtTrueTraceAwareAssignment T
 
 /--
+Fail-closed audit for unrestricted assignment universality.
+
+The current target packet proves factorization for canonical-shadow
+assignments, shadow-extensional observations, and explicit finite
+trace/probe-generated assignments.  This audit records the remaining blocker:
+arbitrary observations cannot be promoted to canonical four-bit shadow
+factorization without proving the missing extensionality condition or enriching
+the tower boundary.  It is a blocker record, not a completion certificate.
+-/
+structure TargetSurfaceArbitraryUniversalityBlockerAudit where
+  factorizationImpliesShadowExtensionality :
+    forall {Atom : Type u}
+        {Out : Type s}
+        {observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Out}
+        (factor : FiniteTowerLayerShadow -> Out),
+      (forall T :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+        observe T = factor (canonicalTowerLayerShadow T)) ->
+        ShadowExtensionalTowerObservation observe
+  sourceTraceNotShadowExtensional :
+    ¬ ShadowExtensionalTowerObservation
+        (sourceTraceObservation :
+          FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0}
+            PUnit.{u + 1} -> Bool)
+  sourceTraceNoCanonicalShadowFactor :
+    ¬ ∃ factor : FiniteTowerLayerShadow -> Bool,
+      ∀ T :
+        FiniteSemanticRepairObstructionTower.{u, 0, 0, 0, 0} PUnit.{u + 1},
+        sourceTraceObservation T =
+          factor (canonicalTowerLayerShadow T)
+  traceAwareSupportRecovery :
+    forall T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+      sourceTraceAtTrueObservation T =
+        traceAwareAssignmentFactor sourceTraceAtTrueTraceAwareAssignment
+          (canonicalSupportTraceProbeTowerLayerShadow
+            sourceTraceAtTrueTraceAwareAssignment.support T)
+
+/--
+Derive the unrestricted-universality blocker audit from the current
+factorization necessity theorem and the source-trace separation witness.
+-/
+theorem targetSurface_arbitraryUniversalityBlockerAudit :
+    TargetSurfaceArbitraryUniversalityBlockerAudit where
+  factorizationImpliesShadowExtensionality := by
+    intro Atom Out observe factor hfactor
+    exact shadowExtensional_of_factorization factor hfactor
+  sourceTraceNotShadowExtensional :=
+    sourceTraceObservation_not_shadowExtensional
+  sourceTraceNoCanonicalShadowFactor :=
+    sourceTraceObservation_no_finiteShadowFactor
+  traceAwareSupportRecovery := by
+    intro T
+    calc
+      sourceTraceAtTrueObservation T =
+          traceAwareAssignmentObserve
+            sourceTraceAtTrueTraceAwareAssignment T := by
+        rw [sourceTraceAtTrueTraceAwareAssignment_observe_eq]
+      _ = traceAwareAssignmentFactor sourceTraceAtTrueTraceAwareAssignment
+            (canonicalSupportTraceProbeTowerLayerShadow
+              sourceTraceAtTrueTraceAwareAssignment.support T) :=
+        traceAwareSemanticRepairObstructionAssignment_factors_through_supportTraceShadow
+          sourceTraceAtTrueTraceAwareAssignment T
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -564,6 +638,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceRepresentationAdequacyAudit A certificates
   traceProbeSoundAssignmentAudit :
     TargetSurfaceTraceProbeSoundAssignmentAudit A certificates
+  arbitraryUniversalityBlockerAudit :
+    TargetSurfaceArbitraryUniversalityBlockerAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -626,6 +702,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.soundObstructionAssignmentFactorization =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.arbitrarySoundAssignmentUniversality =
+        TargetSurfaceMaterialPremiseStatus.blockedByCurrentTowerBoundary /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -671,11 +750,13 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
   traceProbeSoundAssignmentAudit :=
     targetSurface_traceProbeSoundAssignmentAudit_of_strengthCertificates
       A certificates
+  arbitraryUniversalityBlockerAudit :=
+    targetSurface_arbitraryUniversalityBlockerAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
-    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
