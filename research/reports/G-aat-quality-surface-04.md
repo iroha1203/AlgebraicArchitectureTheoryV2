@@ -6019,3 +6019,55 @@ theorem-derived, but it does not claim full arbitrary sound semantic
 repair-gluing obstruction assignment factorization.  The remaining blocker is
 the GOAL-level universality / representation-adequacy bridge beyond canonical
 finite-shadow and shadow-extensional observations.
+
+## Cycle 121: Trace/Probe-Aware Sound Assignment Audit Row
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: strengthen the sound-assignment factorization audit from canonical-shadow-only factorization to an explicit finite trace/probe-aware assignment surface
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetFinalPacket.lean
+    declarations:
+      - TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit
+      - TargetSurfaceMaterialPremise.soundObstructionAssignmentFactorization
+      - TargetSurfaceTraceProbeSoundAssignmentAudit
+      - targetSurface_traceProbeSoundAssignmentAudit_of_strengthCertificates
+      - TargetSurfaceFinalReviewPacket.traceProbeSoundAssignmentAudit
+      - targetSurface_finalReviewPacket_of_strengthCertificates
+premise_delta:
+  discharged:
+    - final-review packet now has an independent sound-obstruction-assignment factorization row
+    - `TargetSurfaceTraceProbeSoundAssignmentAudit` records theorem-derived factorization for finite probe-aware assignments through `canonicalTraceProbeTowerLayerShadow`
+    - the audit also records theorem-derived factorization for finite support-trace assignments through `canonicalSupportTraceProbeTowerLayerShadow`
+    - the audit records the support-trace recovery route for the source-trace blocker witness; the existing canonical-shadow-only blocker remains referenced as boundary evidence outside the packet theorem
+    - finite support and probe families are explicit input geometry, not hidden completeness, semantic faithfulness, runtime extraction, or ArchMap correctness claims
+  remaining:
+    - this still does not prove arbitrary semantic observation factorization without a finite trace/probe generation boundary
+    - it does not by itself complete the full GOAL-level `Obs(A)` / `GlobalSemanticRepairCoherent A` mapping audit
+    - final `$math-lean-review` must not be rerun as a completion gate until the remaining GOAL-level universality and mapping gaps are closed or the GOAL boundary is revised
+blocking_findings:
+  - full arbitrary sound semantic repair-gluing obstruction assignment universality remains open beyond finite trace/probe-aware generated assignments
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4807269875
+next_obligation: either lift the finite trace/probe-aware audit to the full GOAL-level sound assignment theorem, or fix the remaining `Obs(A)` / target-surface mapping gap and theorem-derived material-premise status audit before rerunning `$math-lean-review`
+```
+
+### Result
+
+Cycle 121 adds an independent sound-obstruction-assignment factorization row
+to the final-review packet and introduces
+`TargetSurfaceTraceProbeSoundAssignmentAudit`.  The audit is theorem-derived:
+it reuses the existing finite trace-probe and finite support-trace
+factorization theorems, and it records the support-trace recovery route for
+the existing source-trace counterexample against canonical-shadow-only
+universality.
+
+### Target Boundary
+
+This is not target theorem completion.  It strengthens the assignment
+factorization audit beyond pure canonical four-bit shadow extensionality by
+making the finite source-trace support / probe geometry explicit, but it does
+not claim arbitrary semantic observation factorization, runtime extraction
+correctness, ArchMap correctness, or whole-codebase observation completeness.
