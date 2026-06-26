@@ -76,6 +76,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | globalCoherenceVanishesIff
   | trueLayerStrengthDischarge
   | strengthTower
+  | targetObservationMappingAudit
   | traceProbeSoundAssignmentAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
@@ -91,6 +92,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.globalCoherenceVanishesIff,
     TargetSurfaceFinalReviewDeclaration.trueLayerStrengthDischarge,
     TargetSurfaceFinalReviewDeclaration.strengthTower,
+    TargetSurfaceFinalReviewDeclaration.targetObservationMappingAudit,
     TargetSurfaceFinalReviewDeclaration.traceProbeSoundAssignmentAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
@@ -102,6 +104,7 @@ inductive TargetSurfaceMaterialPremise where
   | globalCoherenceVanishesEquivalence
   | nonabelianDescentAdequacy
   | higherStackyEffectiveness
+  | targetObservationMapping
   | representationAdequacy
   | finiteComputableShadowAdequacy
   | soundObstructionAssignmentFactorization
@@ -139,6 +142,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.nonabelianDescentAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.higherStackyEffectiveness =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.targetObservationMapping =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.representationAdequacy =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
@@ -209,6 +214,104 @@ theorem targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_strengthCer
   simpa [Obs_A_ofStrengthCertificates] using
     targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_finiteCertificates
       A (targetSurfaceFiniteCertificates_of_strengthCertificates certificates)
+
+/--
+Target-observation mapping audit for the strengthened surface.
+
+This records the theorem-derived scope in which the packet's formal
+`Obs_A_ofStrengthCertificates A certificates` represents the GOAL-level
+target-surface `Obs(A)`: the objects are exactly `S_A/R_A/T_A/St_A`, the
+strengthened tower reduces to the finite certificate tower, and, under the
+certificate-derived descent decisions, it definitionally agrees with `Obs_A A`.
+It does not assert arbitrary semantic-observation factorization, runtime
+extraction correctness, or ArchMap correctness.
+-/
+structure TargetSurfaceObsMappingAudit
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) where
+  targetObjectsExplicit :
+    S_A A = A.sheaf.site /\
+      R_A A = A.sheaf.coefficient /\
+      T_A A = A.torsor /\
+      St_A A = A.stack
+  strengthTowerReducesToFiniteTower :
+    Obs_A_ofStrengthCertificates A certificates =
+      Obs_A_ofFiniteCertificates A
+        (targetSurfaceFiniteCertificates_of_strengthCertificates certificates)
+  strengthTowerAgreesWithTargetObs :
+    letI : Decidable (EffectiveNonabelianRepairDescent A.torsor) :=
+      effectiveNonabelianRepairDescentDecisionOfCertificate
+        A.torsor
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).torsor
+    letI : Decidable (StackyRepairH2Zero A.stack) :=
+      stackyRepairH2ZeroDecisionOfCertificate A.stack
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).stack
+    letI : Decidable (EffectiveStackyRepairDescent A.stack) :=
+      effectiveStackyRepairDescentDecisionOfCertificate A.stack
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).stack
+    Obs_A_ofStrengthCertificates A certificates = Obs_A A
+  targetObsGlobalIff :
+    letI : Decidable (EffectiveNonabelianRepairDescent A.torsor) :=
+      effectiveNonabelianRepairDescentDecisionOfCertificate
+        A.torsor
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).torsor
+    letI : Decidable (StackyRepairH2Zero A.stack) :=
+      stackyRepairH2ZeroDecisionOfCertificate A.stack
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).stack
+    letI : Decidable (EffectiveStackyRepairDescent A.stack) :=
+      effectiveStackyRepairDescentDecisionOfCertificate A.stack
+        (targetSurfaceFiniteCertificates_of_strengthCertificates
+          certificates).stack
+    GlobalSemanticRepairCoherent (Obs_A A) <->
+      ObstructionTowerVanishes (Obs_A A)
+
+/--
+Derive the target-observation mapping audit from the explicit target surface
+and the visible strengthened certificates.
+-/
+theorem targetSurface_obsMappingAudit_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    [DecidableEq Choice]
+    [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+    [DecidableEq Coherence]
+    [forall repair, Decidable (A.stack.effectiveRepair repair)]
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    TargetSurfaceObsMappingAudit A certificates where
+  targetObjectsExplicit :=
+    targetSurface_objects_are_explicit A
+  strengthTowerReducesToFiniteTower := by
+    rfl
+  strengthTowerAgreesWithTargetObs := by
+    simp [Obs_A_ofStrengthCertificates, Obs_A_ofFiniteCertificates, Obs_A,
+      toIntegratedSheafTorsorStackTowerOfFiniteCertificates]
+  targetObsGlobalIff := by
+    simpa [Obs_A_ofStrengthCertificates, Obs_A_ofFiniteCertificates, Obs_A,
+      toIntegratedSheafTorsorStackTowerOfFiniteCertificates] using
+      targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_strengthCertificates
+        A certificates
 
 /--
 The representation-adequacy audit row exposed by the strengthened target
@@ -455,6 +558,8 @@ structure TargetSurfaceFinalReviewPacket
         (Obs_A_ofStrengthCertificates A certificates) <->
       ObstructionTowerVanishes
         (Obs_A_ofStrengthCertificates A certificates)
+  obsMappingAudit :
+    TargetSurfaceObsMappingAudit A certificates
   representationAdequacyAudit :
     TargetSurfaceRepresentationAdequacyAudit A certificates
   traceProbeSoundAssignmentAudit :
@@ -509,6 +614,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.higherStackyEffectiveness =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.targetObservationMapping =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.representationAdequacy =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
@@ -555,6 +663,8 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
   globalIff :=
     targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_strengthCertificates
       A certificates
+  obsMappingAudit :=
+    targetSurface_obsMappingAudit_of_strengthCertificates A certificates
   representationAdequacyAudit :=
     targetSurface_representationAdequacyAudit_of_strengthCertificates
       A certificates
@@ -565,7 +675,7 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
-    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is

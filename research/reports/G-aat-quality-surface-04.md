@@ -6071,3 +6071,55 @@ factorization audit beyond pure canonical four-bit shadow extensionality by
 making the finite source-trace support / probe geometry explicit, but it does
 not claim arbitrary semantic observation factorization, runtime extraction
 correctness, ArchMap correctness, or whole-codebase observation completeness.
+
+## Cycle 122: Target-Surface Observation Mapping Audit Row
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: fix the `Obs(A)` / `GlobalSemanticRepairCoherent A` target-surface mapping gap with a theorem-derived final-review audit row
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetFinalPacket.lean
+    declarations:
+      - TargetSurfaceFinalReviewDeclaration.targetObservationMappingAudit
+      - TargetSurfaceMaterialPremise.targetObservationMapping
+      - TargetSurfaceObsMappingAudit
+      - targetSurface_obsMappingAudit_of_strengthCertificates
+      - TargetSurfaceFinalReviewPacket.obsMappingAudit
+      - targetSurface_finalReviewPacket_of_strengthCertificates
+premise_delta:
+  discharged:
+    - final-review packet now has an independent target-observation mapping declaration group and material-premise row
+    - `TargetSurfaceObsMappingAudit` records theorem-derived `S_A/R_A/T_A/St_A` object identities
+    - the audit proves `Obs_A_ofStrengthCertificates A certificates` reduces to the finite-certificate tower
+    - under certificate-derived descent decisions, the audit proves agreement with `Obs_A A`
+    - under the same derived decisions, the audit proves `GlobalSemanticRepairCoherent (Obs_A A) <-> ObstructionTowerVanishes (Obs_A A)`
+  remaining:
+    - arbitrary sound semantic repair-gluing obstruction assignment universality remains open
+    - arbitrary semantic observation factorization outside finite trace/probe or shadow-extensional boundaries remains open
+    - runtime extraction correctness and ArchMap correctness remain outside the target boundary, not discharged
+    - final `$math-lean-review` must not be rerun as a completion gate until the remaining universality blocker is closed or the GOAL boundary is revised
+blocking_findings:
+  - none for the selected target-observation mapping audit obligation
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4807394442
+next_obligation: lift the bounded assignment/observation audit to the full GOAL-level sound assignment theorem, or keep it as a remaining universality blocker before any final `$math-lean-review` gate
+```
+
+### Result
+
+Cycle 122 adds an independent target-observation mapping audit row to the
+final-review packet and introduces `TargetSurfaceObsMappingAudit`.  The audit
+is theorem-derived: it ties the strengthened packet tower back to the explicit
+target-surface objects and to `Obs_A A` under certificate-derived descent
+decisions, then states the corresponding `GlobalSemanticRepairCoherent` /
+`ObstructionTowerVanishes` equivalence on that target observation.
+
+### Target Boundary
+
+This is not target theorem completion.  It fixes the packet-level mapping
+gap for the strengthened target-surface observation, but it does not claim
+arbitrary semantic observation factorization, arbitrary sound semantic
+repair-gluing obstruction assignment universality, runtime extraction
+correctness, ArchMap correctness, or whole-codebase observation completeness.
