@@ -5756,3 +5756,49 @@ target-surface equivalence after the visible semantic faithfulness discharge,
 but it does not claim arbitrary-site sheaf completeness, runtime extraction
 correctness, unconditional global coherence, unconditional obstruction
 vanishing, or final review readiness.
+
+## Cycle 117: Target-Surface True Layer-Strength Discharge
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: expose target-surface true sheaf / nonabelian / stacky strength discharges from visible strengthened finite certificates
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean
+    declarations:
+      - UniversalSemanticRepairTargetStrengthCertificates
+      - targetSurfaceFiniteCertificates_of_strengthCertificates
+      - targetSurface_semanticFaithfulnessDischarge_of_strengthCertificates
+      - targetSurface_nonabelianDescentDischarge_of_strengthCertificates
+      - targetSurface_stackyDescentDischarge_of_strengthCertificates
+      - targetSurface_trueSheafNonabelianStackyStrength_of_strengthCertificates
+premise_delta:
+  discharged:
+    - strengthened target-surface certificates now expose the sheaf, nonabelian torsor, and stacky visible discharge records
+    - nonabelian and stacky discharge are constructed from strengthened finite descent certificates, not finite decision completeness alone, trace-probe packet equality, selected triviality, or zero `H2`
+    - the strength certificate forgets to ordinary finite decision certificates for existing target-surface theorem packages
+    - no global coherence, obstruction tower vanishing, effective descent conclusion, torsor triviality, stacky `H2` zero, or finite-shadow completeness is stored as a certificate field
+  remaining:
+    - this is layer-strength discharge data, not final target theorem completion
+    - universality audit, finite-shadow adequacy, dependency/final-review packet, and final `$math-lean-review` remain open
+blocking_findings:
+  - final target completion is still not ready until finite-shadow adequacy and universality/factorization coverage are audited against the strengthened target surface
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4806690379
+next_obligation: audit or discharge finite-shadow adequacy and universality/factorization for the strengthened target surface without hiding representation completeness
+```
+
+### Result
+
+Cycle 117 adds `UniversalSemanticRepairTargetStrengthCertificates` and visible
+discharge theorems for sheaf exactness, nonabelian torsor descent, and stacky
+descent.  The strengthened certificate package still forgets down to the
+ordinary finite target certificates used by earlier target-surface packages.
+
+### Target Boundary
+
+This is not target theorem completion.  It closes the target-surface true
+layer-strength discharge surface, but it does not prove arbitrary-site
+cohomology, runtime extraction correctness, finite-shadow representation
+adequacy, or final `$math-lean-review` readiness.

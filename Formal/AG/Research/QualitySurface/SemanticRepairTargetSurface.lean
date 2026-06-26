@@ -159,6 +159,52 @@ structure UniversalSemanticRepairTargetCertificates
     FiniteStackyRepairDecisionCertificate A.stack
 
 /--
+Strengthened target-surface certificates for true sheaf / nonabelian / stacky
+descent strength.
+
+The nonabelian and stacky fields are strengthened finite descent certificates:
+they expose finite/listed effectivity data sufficient to build the visible
+descent discharge records.  They do not store global coherence, tower
+vanishing, torsor triviality, stacky `H2` zero, effective descent, or
+finite-shadow completeness as fields.
+-/
+structure UniversalSemanticRepairTargetStrengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair) where
+  boundary :
+    FiniteBoundarySemanticClosureCertificate (toFiniteTower A.sheaf)
+  torsor :
+    FiniteNonabelianRepairDescentCertificate A.torsor
+  stack :
+    FiniteStackyRepairDescentCertificate A.stack
+
+/-- Forget the strengthened target-surface certificates to finite decision data. -/
+def targetSurfaceFiniteCertificates_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    {A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair}
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    UniversalSemanticRepairTargetCertificates A where
+  boundary := certificates.boundary
+  torsor :=
+    finiteNonabelianRepairDecisionCertificate_of_descentCertificate
+      certificates.torsor
+  stack :=
+    finiteStackyRepairDecisionCertificate_of_descentCertificate
+      certificates.stack
+
+/--
 Target-surface semantic faithfulness discharge from the visible finite
 boundary certificate.
 
@@ -202,6 +248,76 @@ theorem targetSurface_boundaryPrimitiveSemanticallyClosed_of_finiteCertificates
   exact
     (targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
       A certificates).semanticFaithful_of_boundary primitive hboundary
+
+/-- Target-surface semantic faithfulness discharge from the strengthened certificates. -/
+def targetSurface_semanticFaithfulnessDischarge_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    SemanticRepairSheafH1ExactnessDischarge A.sheaf :=
+  targetSurface_semanticFaithfulnessDischarge_of_finiteCertificates
+    A (targetSurfaceFiniteCertificates_of_strengthCertificates certificates)
+
+/-- The strengthened finite nonabelian target certificate gives visible descent discharge. -/
+def targetSurface_nonabelianDescentDischarge_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    NonabelianRepairTorsorDescentDischarge A.torsor :=
+  nonabelianRepairTorsorDescentDischarge_of_finiteNonabelianRepairDescentCertificate
+    certificates.torsor
+
+/-- The strengthened finite stacky target certificate gives visible descent discharge. -/
+def targetSurface_stackyDescentDischarge_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    StackyRepairDescentDischarge A.stack :=
+  stackyRepairDescentDischarge_of_finiteStackyRepairDescentCertificate
+    certificates.stack
+
+/--
+The strengthened target-surface certificates expose all visible layer-strength
+discharges required at the sheaf, nonabelian torsor, and stacky layers.
+-/
+theorem targetSurface_trueSheafNonabelianStackyStrength_of_strengthCertificates
+    {Atom : Type u}
+    {Choice : Type z}
+    {TorsorRepair : Type r}
+    {Coherence : Type z}
+    {StackRepair : Type r}
+    (A :
+      UniversalSemanticRepairTargetSurface
+        Atom Choice TorsorRepair Coherence StackRepair)
+    (certificates : UniversalSemanticRepairTargetStrengthCertificates A) :
+    SemanticRepairSheafH1ExactnessDischarge A.sheaf /\
+      NonabelianRepairTorsorDescentDischarge A.torsor /\
+      StackyRepairDescentDischarge A.stack := by
+  exact
+    ⟨targetSurface_semanticFaithfulnessDischarge_of_strengthCertificates
+        A certificates,
+      targetSurface_nonabelianDescentDischarge_of_strengthCertificates
+        A certificates,
+      targetSurface_stackyDescentDischarge_of_strengthCertificates
+        A certificates⟩
 
 /-- The finite-certificate version of `Obs(A)`. -/
 def Obs_A_ofFiniteCertificates
