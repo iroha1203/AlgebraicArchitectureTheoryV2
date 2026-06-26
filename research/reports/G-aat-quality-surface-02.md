@@ -22,6 +22,7 @@
   - Stage 1 necessity and nonzero-obstruction contrapositive inside the finite package
   - visible/local witness validation and concrete nonzero calibration witness
   - Stage 2.5b complete-support finite atlas class discharge of `SemanticFaithfulnessHypotheses`
+  - certificate-based complete-support discharge through finite boundary coverage / faithfulness decomposition
   - selected faithful boundary complex with obstruction vanish / global coherence / descent iff
 - open support nodes:
   - restriction functoriality / coefficient structure for stricter Cech formulation
@@ -178,3 +179,40 @@ No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or
 ### Target Boundary
 
 This cycle only strengthens the finite input geometry. `overlapOrder` does not store `SemanticFaithfulnessHypotheses`, obstruction vanish, global coherence, or complete-support membership. Universal obstruction towers, nonabelian / stacky descent, arbitrary assignment universality, and true sheaf `H^1` remain outside G-02 completion.
+
+## Target Cycle 4: Certificate-Based Complete-Support Discharge Surface
+
+```text
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: factor Stage 2.5b faithfulness discharge through explicit finite boundary certificate / prism
+evidence_stage: proved-in-research
+completion_candidate: no
+goal_delta: complete-support premise discharge now has an auditable certificate surface that exposes boundary-local coverage and boundary-local faithfulness separately before deriving semantic closure and G-02 faithfulness hypotheses.
+proof_obligation_delta: added `completeRepairSupportBoundary_boundarySemanticClosureCertificate`, `completeRepairSupportBoundary_dischargePrism`, `completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate`, `completeRepairSupportBoundary_as_obstructionTower_shadow_of_dischargePrism`, and `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary_via_dischargePrism`.
+open_questions: final review readiness / `$math-lean-review` packet; restriction functoriality / coefficient structure remains future frontier for stricter Cech formulation.
+```
+
+### Result
+
+`SemanticRepairAdequacyDischarge.lean` now gives the G-02 complete-support finite class a certificate-based discharge surface. The certificate does not take `SemanticFaithfulnessHypotheses` as input. Instead it records:
+
+- boundary-local residual component coverage;
+- boundary-local residual-component faithfulness;
+- a bridge from coverage plus faithfulness to semantic closure.
+
+`completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate` derives the G-02 `SemanticFaithfulnessHypotheses` from that certificate. `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary_via_dischargePrism` then routes the complete-support package through the certificate / prism surface.
+
+### Axiom Audit
+
+- `completeRepairSupportBoundary_boundarySemanticClosureCertificate`: axiom-free
+- `completeRepairSupportBoundary_dischargePrism`: axiom-free
+- `completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate`: axiom-free
+- `completeRepairSupportBoundary_as_obstructionTower_shadow_of_dischargePrism`: axiom-free
+- `finiteSemanticRepairGluingDescent_package_of_completeRepairSupportBoundary_via_dischargePrism`: axiom-free
+
+No reported declaration depends on `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe`.
+
+### Target Boundary
+
+This cycle does not claim arbitrary finite atlas descent and does not promote G-04 universal obstruction tower, nonabelian / stacky descent, or true sheaf `H^1` into G-02. The certificate fields remain boundary-local coverage and faithfulness data; they do not store obstruction vanish, global coherence, or target equivalence.
