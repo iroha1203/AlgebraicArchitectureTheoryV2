@@ -247,6 +247,51 @@ theorem traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeS
       (traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
         assignment right).symm
 
+/-! ## Probe-generated admissible observations -/
+
+/--
+A non-circular admissible observation surface for supplied trace probes.
+
+This is only an alias for the generated assignment syntax above.  It stores the
+supplied probes and a post-map from the current four-bit layer plus the supplied
+probe-reading vector.  It does not store factorization, extensionality,
+faithfulness, completeness, or runtime extraction correctness as fields.
+-/
+abbrev TraceProbeGeneratedAdmissibleObservation
+    {Atom : Type u}
+    (Out : Type z) :=
+  TraceProbeSemanticRepairObstructionAssignment (Atom := Atom) Out
+
+/--
+Every probe-generated admissible observation factors through its trace-probe
+shadow.  The factorization is derived from the generated syntax, not assumed as
+the admissibility definition.
+-/
+theorem traceProbeGeneratedAdmissibleObservation_factors_through_traceProbeShadow
+    {Atom : Type u}
+    {Out : Type z}
+    (obs : TraceProbeGeneratedAdmissibleObservation (Atom := Atom) Out) :
+    ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+      traceProbeAssignmentObserve obs T =
+        traceProbeAssignmentFactor obs
+          (canonicalTraceProbeTowerLayerShadow obs.probes T) := by
+  exact traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow obs
+
+/--
+Every probe-generated admissible observation is extensional for equality of its
+trace-probe shadow.
+-/
+theorem traceProbeGeneratedAdmissibleObservation_extensional_on_traceProbeShadow
+    {Atom : Type u}
+    {Out : Type z}
+    (obs : TraceProbeGeneratedAdmissibleObservation (Atom := Atom) Out) :
+    TraceProbeShadowExtensional
+      (Atom := Atom)
+      obs.probes
+      (fun T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+        traceProbeAssignmentObserve obs T) := by
+  exact traceProbeSemanticRepairObstructionAssignment_extensional_on_traceProbeShadow obs
+
 /-! ## Trace-probe ArchSig-style bounded artifact surface -/
 
 /--
@@ -356,6 +401,65 @@ theorem traceProbeArchSigStyleArtifact_probeReadings_eq
     (traceProbeArchSigStyleArtifactOfTower probes T).sourceTraceReadings =
       traceProbeReadings probes T.sourceTraceToken := by
   rfl
+
+/--
+Every probe-generated admissible observation factors through the bounded
+trace-probe artifact surface.
+-/
+theorem traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeArtifact
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceProbeSemanticRepairObstructionAssignment
+      (Atom := Atom) Out) :
+    ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+      traceProbeAssignmentObserve assignment T =
+        traceProbeAssignmentFactor assignment
+          (traceProbeArchSigStyleArtifactShadow
+            (traceProbeArchSigStyleArtifactOfTower assignment.probes T)) := by
+  intro T
+  calc
+    traceProbeAssignmentObserve assignment T =
+        traceProbeAssignmentFactor assignment
+          (canonicalTraceProbeTowerLayerShadow assignment.probes T) :=
+      traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeShadow
+        assignment T
+    _ =
+        traceProbeAssignmentFactor assignment
+          (traceProbeArchSigStyleArtifactShadow
+            (traceProbeArchSigStyleArtifactOfTower assignment.probes T)) := by
+      rw [traceProbeArchSigStyleArtifactOfTower_factors_through_traceProbeShadow]
+
+/--
+Equal bounded trace-probe artifacts give the same value for every
+probe-generated admissible observation.
+-/
+theorem traceProbeSemanticRepairObstructionAssignment_same_of_same_traceProbeArtifact
+    {Atom : Type u}
+    {Out : Type z}
+    (assignment : TraceProbeSemanticRepairObstructionAssignment
+      (Atom := Atom) Out)
+    {left right :
+      FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom}
+    (hartifact :
+      traceProbeArchSigStyleArtifactOfTower assignment.probes left =
+        traceProbeArchSigStyleArtifactOfTower assignment.probes right) :
+    traceProbeAssignmentObserve assignment left =
+      traceProbeAssignmentObserve assignment right := by
+  calc
+    traceProbeAssignmentObserve assignment left =
+        traceProbeAssignmentFactor assignment
+          (traceProbeArchSigStyleArtifactShadow
+            (traceProbeArchSigStyleArtifactOfTower assignment.probes left)) :=
+      traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeArtifact
+        assignment left
+    _ =
+        traceProbeAssignmentFactor assignment
+          (traceProbeArchSigStyleArtifactShadow
+            (traceProbeArchSigStyleArtifactOfTower assignment.probes right)) := by
+      rw [hartifact]
+    _ = traceProbeAssignmentObserve assignment right :=
+      (traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeArtifact
+        assignment right).symm
 
 /--
 Any observation that factors through the trace-probe shadow is trace-probe

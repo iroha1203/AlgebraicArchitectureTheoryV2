@@ -5066,3 +5066,55 @@ Lean-side finite surface over supplied probes; no ArchMap / ArchSig runtime
 correctness, arbitrary semantic observation completeness, semantic faithfulness,
 global coherence, obstruction vanishing, descent effectiveness, or full
 universality is claimed.
+
+## Cycle 102: Non-Circular Probe-Generated Admissible Observation Surface
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: define the admissible observation surface non-circularly as probe-generated assignment syntax and derive shadow/artifact factorization from that syntax
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeShadow.lean
+    declarations:
+      - TraceProbeGeneratedAdmissibleObservation
+      - traceProbeGeneratedAdmissibleObservation_factors_through_traceProbeShadow
+      - traceProbeGeneratedAdmissibleObservation_extensional_on_traceProbeShadow
+      - traceProbeSemanticRepairObstructionAssignment_factors_through_traceProbeArtifact
+      - traceProbeSemanticRepairObstructionAssignment_same_of_same_traceProbeArtifact
+premise_delta:
+  discharged:
+    - admissible probe-generated observations are now explicitly the generated assignment syntax, not a factorization predicate
+    - trace-probe shadow factorization and extensionality are derived from that syntax
+    - bounded artifact factorization and artifact extensionality are derived from the same syntax
+  remaining:
+    - this does not classify arbitrary semantic observations as admissible
+    - no runtime extraction correctness, semantic faithfulness, global coherence, obstruction vanishing, descent effectiveness, or full universality is claimed
+    - final-review finite-shadow packet integration, true sheaf/nonabelian/stacky strength, and final `$math-lean-review` remain open
+blocking_findings:
+  - none for the generated-observation surface; no factorization or extensionality field is added to the admissible syntax
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4805679764
+next_obligation: integrate this non-circular admissible surface into a final-review finite-shadow packet and inventory remaining material premises before any completion candidate
+```
+
+### Result
+
+Cycle 102 names `TraceProbeGeneratedAdmissibleObservation` as a non-circular
+admissible surface: it is an alias for the existing generated assignment syntax
+with supplied probes and a post-map from the current four-bit layer plus the
+supplied probe-reading vector.  It does not store factorization,
+extensionality, faithfulness, completeness, or runtime extraction correctness
+as fields.
+
+The derived theorems show that this generated surface factors through the
+trace-probe shadow, is extensional for trace-probe shadow equality, and also
+factors through the bounded trace-probe artifact surface.
+
+### Target Boundary
+
+This is a proof-obligation discharge for probe-generated admissible
+observations only, not target theorem completion.  It does not classify
+arbitrary semantic observations as admissible and does not prove runtime
+extraction correctness, semantic faithfulness, global coherence, obstruction
+vanishing, descent effectiveness, or full universality.
