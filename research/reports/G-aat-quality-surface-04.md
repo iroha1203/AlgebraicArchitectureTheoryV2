@@ -6330,3 +6330,59 @@ visible-coordinate-certified observations and explicitly rejects a hidden
 weakening from self-recovery to coordinate certification.  It does not
 discharge arbitrary semantic observation universality, and the final
 `$math-lean-review` gate remains unrun.
+
+## Cycle 127: Necessary Coordinate Boundary Audit
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix the residual between finite-query visible-coordinate routes and arbitrary universality by recording representation adequacy / semantic-reading adequacy / current-shadow factorization as necessary coordinate-boundary obligations
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetFinalPacket.lean
+    declarations:
+      - TargetSurfaceFinalReviewDeclaration.finiteQueryNecessaryCoordinateBoundaryAudit
+      - TargetSurfaceMaterialPremise.finiteQueryNecessaryCoordinateBoundary
+      - TargetSurfaceFiniteQueryNecessaryCoordinateBoundaryAudit
+      - targetSurface_finiteQueryNecessaryCoordinateBoundaryAudit
+      - TargetSurfaceFinalReviewPacket.finiteQueryNecessaryCoordinateBoundaryAudit
+      - targetSurface_finalReviewPacket_of_strengthCertificates
+premise_delta:
+  discharged:
+    - current-shadow trace-reading representability is recorded as exactly the support-coordinate current-shadow extensionality obligation
+    - concrete current-shadow trace-reading representations are recorded as supplying support-coordinate current-shadow extensionality
+    - recoverable current-shadow semantic-reading faithfulness is recorded as forcing query-coordinate current-shadow extensionality
+    - semantic-reading adequacy for support-shadow observations is recorded as equivalent to query-coordinate current-shadow extensionality
+    - support-shadow current-shadow factorization is recorded as forcing query-coordinate current-shadow extensionality
+    - complete Bool support-shadow recovery is recorded as insufficient for representation-adequacy necessary coordinates
+    - constant-post factorization / semantic adequacy / no post-fiber separation is recorded as insufficient for necessary query coordinates
+    - the Bool `[true]` support-shadow observation is recorded as having no current-shadow factor and no semantic-reading adequacy package
+  remaining:
+    - arbitrary sound semantic repair-gluing obstruction assignment universality remains blocked for the current four-bit tower boundary
+    - coordinate-boundary audits do not claim arbitrary semantic observation universality
+    - source-trace-sensitive observation completeness remains outside certificate-present finite-query routes
+    - final `$math-lean-review` remains not run and must stay fail-closed
+    - runtime extraction correctness and ArchMap correctness remain outside the target boundary
+blocking_findings:
+  - finite-query support-shadow / semantic adequacy / representation routes still require explicit current-shadow coordinate extensionality; they cannot silently discharge arbitrary universality
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4808169372
+next_obligation: either prove a non-hidden theorem generating the required coordinate/extensionality data for GOAL-relevant arbitrary assignments, or keep arbitrary sound semantic repair-gluing assignment universality as the remaining current-boundary blocker
+```
+
+### Result
+
+Cycle 127 adds a necessary-coordinate boundary audit to the target
+final-review packet.  The audit records that representation adequacy,
+current-shadow semantic-reading adequacy, and current-shadow factorization of
+support-shadow observations all force the same visible coordinate condition:
+query/support coordinates must be current-shadow extensional.
+
+### Target Boundary
+
+This is not target theorem completion.  The new audit is deliberately
+fail-closed: it prevents hidden promotion from support-shadow recovery,
+constant-post semantic adequacy, or support-shadow representation to arbitrary
+semantic observation universality.  `arbitrarySoundAssignmentUniversality`
+therefore remains blocked, and the final `$math-lean-review` gate remains
+unrun.
