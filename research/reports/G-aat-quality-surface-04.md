@@ -5715,3 +5715,44 @@ This is not target theorem completion.  It closes one central semantic
 faithfulness obligation at the target-surface finite-certificate boundary, but
 does not assert global coherence, obstruction vanishing, effective descent,
 nonabelian or stacky descent strength, universality, or final review readiness.
+
+## Cycle 116: Target-Surface Global Coherence / Vanishing Equivalence
+
+```text
+target_cycle_result:
+decision: approve
+result_type: proof-obligation-discharged
+completion_candidate: no
+proof_obligation: expose the target-surface finite-certificate equivalence between global coherence and all-layer obstruction vanishing
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTargetSurface.lean
+    declarations:
+      - targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_finiteCertificates
+premise_delta:
+  discharged:
+    - target-surface finite certificates now expose `GlobalSemanticRepairCoherent Obs(A) <-> ObstructionTowerVanishes Obs(A)`
+    - the equivalence is derived from layer iff theorems and the visible semantic faithfulness discharge from Cycle 115
+    - neither global coherence nor tower vanishing is stored as a field of the target surface or finite certificate package
+  remaining:
+    - this is a target-surface equivalence theorem, not unconditional construction of global coherence or obstruction vanishing
+    - true sheaf/nonabelian/stacky strength, universality audit, finite-shadow adequacy, and final `$math-lean-review` remain open
+blocking_findings:
+  - final target completion is still not ready until the remaining strength and adequacy requirements are audited and discharged
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4806590890
+next_obligation: discharge or audit the remaining true sheaf / nonabelian / stacky strength and finite-shadow adequacy without relying on trace-probe packet equality
+```
+
+### Result
+
+Cycle 116 adds
+`targetSurface_globalCoherent_iff_obstructionTowerVanishes_of_finiteCertificates`.
+The theorem isolates the central target-surface equivalence for
+`Obs_A_ofFiniteCertificates A certificates`.
+
+### Target Boundary
+
+This is not target theorem completion.  It proves the finite-certificate
+target-surface equivalence after the visible semantic faithfulness discharge,
+but it does not claim arbitrary-site sheaf completeness, runtime extraction
+correctness, unconditional global coherence, unconditional obstruction
+vanishing, or final review readiness.
