@@ -331,6 +331,86 @@ theorem traceProbeFinalReviewFiniteShadowPacket_runtimeExtractionCorrectness_blo
         traceProbeFinalReviewRuntimeReceiptRight.runtimeReceipt := by
   exact ⟨rfl, by intro h; cases h⟩
 
+/-! ## Full semantic faithfulness boundary -/
+
+/--
+A tower whose semantic closure predicate accepts the selected primitive.
+
+The selected trace-probe artifact does not read this predicate.
+-/
+def traceProbeFinalReviewSemanticFaithfulnessClosedTower :
+    FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} PUnit where
+  Chart := PUnit
+  chartOrder := []
+  C0 := PUnit
+  C1 := PUnit
+  C2 := PUnit
+  c0Order := [PUnit.unit]
+  c1Order := [PUnit.unit]
+  c2Zero := PUnit.unit
+  delta0 := fun _ => PUnit.unit
+  delta1 := fun _ => PUnit.unit
+  delta1_delta0_zero := by intro primitive; cases primitive; rfl
+  residual := PUnit.unit
+  residual_cocycle := rfl
+  primitiveSemanticallyClosed := fun _ => True
+  torsorObstruction := false
+  higherObstruction := false
+  stackObstruction := false
+  finiteShadow := fun _ => false
+  finiteShadow_boundary_zero := by intro primitive; cases primitive; rfl
+  sourceTraceToken := fun _ => false
+
+/--
+A matching tower whose semantic closure predicate rejects the selected
+primitive while preserving the same trace-probe artifact.
+-/
+def traceProbeFinalReviewSemanticFaithfulnessOpenTower :
+    FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} PUnit where
+  Chart := PUnit
+  chartOrder := []
+  C0 := PUnit
+  C1 := PUnit
+  C2 := PUnit
+  c0Order := [PUnit.unit]
+  c1Order := [PUnit.unit]
+  c2Zero := PUnit.unit
+  delta0 := fun _ => PUnit.unit
+  delta1 := fun _ => PUnit.unit
+  delta1_delta0_zero := by intro primitive; cases primitive; rfl
+  residual := PUnit.unit
+  residual_cocycle := rfl
+  primitiveSemanticallyClosed := fun _ => False
+  torsorObstruction := false
+  higherObstruction := false
+  stackObstruction := false
+  finiteShadow := fun _ => false
+  finiteShadow_boundary_zero := by intro primitive; cases primitive; rfl
+  sourceTraceToken := fun _ => false
+
+/--
+The finite trace-probe packet does not determine full semantic faithfulness.
+
+The witness towers have equal complete trace-probe artifacts and equal
+source-trace tokens, but differ on whether the selected boundary primitive is
+semantically closed.  Thus packet-local generated-observation faithfulness is
+not a discharge of the full semantic-faithfulness premise.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_fullSemanticFaithfulness_blocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.sourceTraceToken =
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower.sourceTraceToken ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.primitiveSemanticallyClosed
+          PUnit.unit ∧
+      ¬ traceProbeFinalReviewSemanticFaithfulnessOpenTower.primitiveSemanticallyClosed
+          PUnit.unit := by
+  exact ⟨rfl, rfl, trivial, id⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research
