@@ -447,6 +447,40 @@ theorem traceProbeFinalReviewFiniteShadowPacket_descentEffectiveness_blocker :
     ⟨traceProbeFinalReviewSemanticFaithfulnessOpenTower_obstructionTowerVanishes,
       traceProbeFinalReviewSemanticFaithfulnessOpenTower_not_globalCoherent⟩
 
+/-! ## Global coherence packet boundary -/
+
+/-- The semantic-faithfulness closed witness is globally coherent. -/
+theorem traceProbeFinalReviewSemanticFaithfulnessClosedTower_globalCoherent :
+    GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower := by
+  exact ⟨PUnit.unit, rfl, trivial, rfl, rfl, rfl⟩
+
+/--
+The finite trace-probe packet does not determine global semantic repair
+coherence.
+
+The closed/open witness towers have the same complete trace-probe artifact and
+the same source-trace token, but only the closed witness is globally coherent.
+Thus packet equality does not discharge global coherence.
+-/
+theorem traceProbeFinalReviewFiniteShadowPacket_globalCoherence_blocker :
+    traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower =
+      traceProbeArchSigStyleArtifactOfTower
+        traceProbeFinalReviewPUnitProbes
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower ∧
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower.sourceTraceToken =
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower.sourceTraceToken ∧
+      GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessClosedTower ∧
+      ¬ GlobalSemanticRepairCoherent
+        traceProbeFinalReviewSemanticFaithfulnessOpenTower := by
+  exact
+    ⟨rfl, rfl,
+      traceProbeFinalReviewSemanticFaithfulnessClosedTower_globalCoherent,
+      traceProbeFinalReviewSemanticFaithfulnessOpenTower_not_globalCoherent⟩
+
 end SemanticRepairTraceProbeFinalPacket
 end QualitySurface
 end Formal.AG.Research

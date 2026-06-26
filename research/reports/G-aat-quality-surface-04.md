@@ -5495,3 +5495,47 @@ This fixes descent effectiveness as a real remaining blocker for the finite
 trace-probe packet.  It does not prove `LayeredRepairAdequacy`, a semantic
 closure discharge, global coherence, true sheaf/nonabelian/stacky strength, or
 the final `$math-lean-review` gate.
+
+## Cycle 111: Global Coherence Packet Boundary Blocker
+
+```text
+target_cycle_result:
+decision: approve
+result_type: blocker-fixed
+completion_candidate: no
+proof_obligation: fix the boundary showing finite trace-probe packet equality does not determine global semantic repair coherence
+lean_artifacts:
+  - file: Formal/AG/Research/QualitySurface/SemanticRepairTraceProbeFinalPacket.lean
+    declarations:
+      - traceProbeFinalReviewSemanticFaithfulnessClosedTower_globalCoherent
+      - traceProbeFinalReviewFiniteShadowPacket_globalCoherence_blocker
+premise_delta:
+  blocker_fixed:
+    - global coherence is fixed as a genuine remaining blocker for the trace-probe packet
+    - the semantic-faithfulness closed witness is globally coherent
+    - the closed/open witnesses have equal complete trace-probe artifacts and equal source-trace tokens
+    - the open witness is not globally coherent
+  remaining:
+    - this is blocker evidence, not global coherence discharge
+    - no `LayeredRepairAdequacy`, semantic closure discharge, or packet-to-global-coherence premise is introduced
+    - true sheaf/nonabelian/stacky strength and final `$math-lean-review` remain open
+blocking_findings:
+  - finite trace-probe packet equality cannot be used as global semantic repair coherence at the target boundary
+tracking_issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2482#issuecomment-4806193649
+next_obligation: choose another remaining material premise, with special attention to true sheaf/nonabelian/stacky strength before any final math/Lean review gate
+```
+
+### Result
+
+Cycle 111 adds
+`traceProbeFinalReviewFiniteShadowPacket_globalCoherence_blocker`.
+The theorem compares the existing closed/open semantic-faithfulness witnesses:
+their finite trace-probe artifacts and source-trace tokens agree, while only
+the closed witness is globally coherent.
+
+### Target Boundary
+
+This fixes global coherence as a real remaining blocker for the finite
+trace-probe packet.  It does not prove `LayeredRepairAdequacy`, a semantic
+closure discharge, a packet-to-global-coherence principle, true
+sheaf/nonabelian/stacky strength, or the final `$math-lean-review` gate.
