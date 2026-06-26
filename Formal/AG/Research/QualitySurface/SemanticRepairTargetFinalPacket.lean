@@ -1,4 +1,6 @@
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteTraceSupport
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute
+import Formal.AG.Research.QualitySurface.SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
 import Formal.AG.Research.QualitySurface.SemanticRepairFiniteShadowSeparation
 import Formal.AG.Research.QualitySurface.SemanticRepairTargetSurface
 
@@ -31,6 +33,18 @@ open SemanticRepairFiniteTraceSupport
 open SemanticRepairTargetFactorization
 open SemanticRepairFiniteShadowSeparation
 open SemanticRepairTargetSurface
+open SemanticRepairFiniteQueryObservation
+open SemanticRepairFiniteQueryRepresentation
+open SemanticRepairFiniteQueryCanonicalBridge
+open SemanticRepairFiniteQueryCurrentShadowCoordinates
+open SemanticRepairFiniteQueryCurrentShadowReading
+open SemanticRepairFiniteSupportCompleteness
+open SemanticRepairFiniteQueryRepresentationSupportControl
+open SemanticRepairFiniteQueryRepresentationRealizedRecovery
+open SemanticRepairFiniteQuerySemanticSoundness
+open SemanticRepairFiniteQueryExplicitCurrentShadowCertificates
+open SemanticRepairFiniteQueryTargetSurfaceSupportShadowRoute
+open SemanticRepairFiniteQueryTargetSurfaceSupportBoundaryCertificateGap
 
 universe u v w x y z r s
 
@@ -84,6 +98,7 @@ inductive TargetSurfaceFinalReviewDeclaration where
   | arbitraryUniversalityBlockerAudit
   | enrichedBoundaryRepairAudit
   | soundAssignmentEnrichedLiftAudit
+  | finiteQueryVisibleBoundaryAudit
   | representationAdequacyAudit
   | strengthenedFiniteShadowFactorization
   deriving DecidableEq
@@ -103,6 +118,7 @@ def targetSurfaceFinalReviewDeclarations :
     TargetSurfaceFinalReviewDeclaration.arbitraryUniversalityBlockerAudit,
     TargetSurfaceFinalReviewDeclaration.enrichedBoundaryRepairAudit,
     TargetSurfaceFinalReviewDeclaration.soundAssignmentEnrichedLiftAudit,
+    TargetSurfaceFinalReviewDeclaration.finiteQueryVisibleBoundaryAudit,
     TargetSurfaceFinalReviewDeclaration.representationAdequacyAudit,
     TargetSurfaceFinalReviewDeclaration.strengthenedFiniteShadowFactorization ]
 
@@ -120,6 +136,7 @@ inductive TargetSurfaceMaterialPremise where
   | arbitrarySoundAssignmentUniversality
   | sourceTraceBoundaryEnrichment
   | soundAssignmentEnrichedBoundaryLift
+  | finiteQueryVisibleCoordinateBoundary
   | runtimeExtractionCorrectness
   | archMapCorrectness
   | mathLeanReviewGate
@@ -169,6 +186,8 @@ def targetSurfaceMaterialPremiseStatus :
   | TargetSurfaceMaterialPremise.sourceTraceBoundaryEnrichment =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.soundAssignmentEnrichedBoundaryLift =>
+      TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
+  | TargetSurfaceMaterialPremise.finiteQueryVisibleCoordinateBoundary =>
       TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface
   | TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =>
       TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary
@@ -787,6 +806,123 @@ theorem targetSurface_soundAssignmentEnrichedLiftAudit :
           assignment right).symm
 
 /--
+Audit for the finite-query visible-coordinate boundary.
+
+The positive route keeps `QueryTraceCoordinatesCurrentShadowExtensional`
+visible: with that finite certificate, the canonical support-trace shadow
+representation has recovery, semantic-reading adequacy, current-shadow
+factorization, and target-surface universal factorization.  The negative route
+records that self-recovery of the complete Bool support-shadow observation
+alone does not discharge the coordinate certificate or current-shadow factor.
+-/
+structure TargetSurfaceFiniteQueryVisibleBoundaryAudit where
+  supportShadowRouteOfVisibleCoordinates :
+    forall {Atom : Type u}
+        {Choice : Type z}
+        {TorsorRepair : Type r}
+        {Coherence : Type z}
+        {StackRepair : Type r}
+        (support : List Atom)
+        (_hcoords :
+          QueryTraceCoordinatesCurrentShadowExtensional.{u, v, w, x, y}
+            support)
+        (A :
+          UniversalSemanticRepairTargetSurface
+            Atom Choice TorsorRepair Coherence StackRepair)
+        [DecidableEq Choice]
+        [forall repair, Decidable (A.torsor.effectiveRepair repair)]
+        [DecidableEq Coherence]
+        [forall repair, Decidable (A.stack.effectiveRepair repair)]
+        (certificates : UniversalSemanticRepairTargetCertificates A),
+      ObservationRecoversQueryReadings.{u, v, w, x, y, 0}
+        (Atom := Atom)
+        (supportTraceShadowFiniteTraceQueryObservation support).query
+        (fun T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+          (supportTraceShadowFiniteTraceQueryObservation support).observe T) ∧
+      (∃ reading : TowerSemanticReading.{u, v, w, x, y} (Atom := Atom),
+        SemanticReadingCollapsesCurrentShadowQueryFibers.{u, v, w, x, y}
+          (Atom := Atom) reading
+          (supportTraceShadowFiniteTraceQueryObservation support).query ∧
+        SemanticReadingFaithfulToQueryPost.{u, v, w, x, y, 0}
+          (Atom := Atom) reading
+          (supportTraceShadowFiniteTraceQueryObservation support).query
+          (supportTraceShadowFiniteTraceQueryObservation support).post) ∧
+      (∃ factor : FiniteTowerLayerShadow -> TraceProbeFiniteTowerLayerShadow,
+        ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          (supportTraceShadowFiniteTraceQueryObservation support).observe T =
+            factor (canonicalTowerLayerShadow T)) ∧
+      (((fun T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+          (supportTraceShadowFiniteTraceQueryObservation support).observe T)
+          (Obs_A_ofFiniteCertificates A certificates) =
+        canonicalShadowFactor
+          (fun T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+            (supportTraceShadowFiniteTraceQueryObservation support).observe T)
+          (targetSurfaceLayerShadow A certificates)) /\
+        (∀ factor : FiniteTowerLayerShadow -> TraceProbeFiniteTowerLayerShadow,
+          (∀ U : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+            (supportTraceShadowFiniteTraceQueryObservation support).observe U =
+              factor (canonicalTowerLayerShadow U)) ->
+          factor (targetSurfaceLayerShadow A certificates) =
+            canonicalShadowFactor
+              (fun T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom =>
+                (supportTraceShadowFiniteTraceQueryObservation support).observe T)
+              (targetSurfaceLayerShadow A certificates)))
+  representedObservationFactorOfCoordinateCertificate :
+    forall {Atom : Type u}
+        {support : List Atom}
+        {Out : Type s}
+        {observe :
+          FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom -> Out}
+        (repr :
+          FiniteTraceQueryObservationRepresentation.{u, v, w, x, y, s}
+            support observe)
+        (_cert :
+          QueryCurrentShadowCoordinateCertificate.{u, v, w, x, y}
+            repr.package.query),
+      ∃ factor : FiniteTowerLayerShadow -> Out,
+        ∀ T : FiniteSemanticRepairObstructionTower.{u, v, w, x, y} Atom,
+          observe T = factor (canonicalTowerLayerShadow T)
+  selfRecoveryAloneBoundaryGaps :
+    ObservationRecoversQueryReadings.{0, 0, 0, 0, 0, 0}
+      (Atom := Bool)
+      (supportTraceShadowFiniteTraceQueryObservation boolCompleteTraceSupport).query
+      (fun T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool =>
+        canonicalSupportTraceProbeTowerLayerShadow boolCompleteTraceSupport T) ∧
+    (¬ ∃ factor : FiniteTowerLayerShadow -> TraceProbeFiniteTowerLayerShadow,
+      ∀ T : FiniteSemanticRepairObstructionTower.{0, 0, 0, 0, 0} Bool,
+        canonicalSupportTraceProbeTowerLayerShadow boolCompleteTraceSupport T =
+          factor (canonicalTowerLayerShadow T)) ∧
+    (¬ CurrentShadowDeterminesSupportTraceShadow.{0, 0, 0, 0, 0}
+      (Atom := Bool) boolCompleteTraceSupport) ∧
+    (¬ SemanticReadingFaithfulToQueryPost.{0, 0, 0, 0, 0, 0}
+      (Atom := Bool)
+      (currentShadowSemanticReading.{0, 0, 0, 0, 0} (Atom := Bool))
+      (supportTraceShadowFiniteTraceQueryObservation boolCompleteTraceSupport).query
+      (supportTraceShadowFiniteTraceQueryObservation boolCompleteTraceSupport).post) ∧
+    (¬ QueryCurrentShadowCoordinateCertificate.{0, 0, 0, 0, 0}
+      boolCompleteTraceSupport)
+
+/--
+Derive the finite-query visible-boundary audit from the existing support-shadow
+route theorem and the self-recovery gap theorem.
+-/
+theorem targetSurface_finiteQueryVisibleBoundaryAudit :
+    TargetSurfaceFiniteQueryVisibleBoundaryAudit where
+  supportShadowRouteOfVisibleCoordinates := by
+    intro Atom Choice TorsorRepair Coherence StackRepair support hcoords A
+      _ _ _ _ certificates
+    exact
+      supportTraceShadowRepresentation_recovery_semanticAdequacy_currentShadowFactor_targetSurfaceRoute_of_queryCoordinateCurrentShadowExtensional
+        (Atom := Atom) support hcoords A certificates
+  representedObservationFactorOfCoordinateCertificate := by
+    intro Atom support Out observe repr cert
+    exact
+      representedFiniteTraceQueryObservation_currentShadowFactor_of_queryCurrentShadowCoordinateCertificate
+        (Atom := Atom) repr cert
+  selfRecoveryAloneBoundaryGaps :=
+    boolCompleteSupportTraceShadow_selfRecovery_individualBoundaryGaps
+
+/--
 Reviewable final packet over the strengthened target-surface route.
 
 The proof fields intentionally assemble previously proved artifacts and the
@@ -835,6 +971,8 @@ structure TargetSurfaceFinalReviewPacket
     TargetSurfaceEnrichedBoundaryRepairAudit
   soundAssignmentEnrichedLiftAudit :
     TargetSurfaceSoundAssignmentEnrichedLiftAudit
+  finiteQueryVisibleBoundaryAudit :
+    TargetSurfaceFiniteQueryVisibleBoundaryAudit
   finiteShadowAndFactorization :
     (archSigStyleArtifactShadow
         (archSigStyleArtifactOfTower
@@ -906,6 +1044,9 @@ structure TargetSurfaceFinalReviewPacket
         TargetSurfaceMaterialPremise.soundAssignmentEnrichedBoundaryLift =
         TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
       targetSurfaceMaterialPremiseStatus
+        TargetSurfaceMaterialPremise.finiteQueryVisibleCoordinateBoundary =
+        TargetSurfaceMaterialPremiseStatus.dischargedByTargetSurface /\
+      targetSurfaceMaterialPremiseStatus
         TargetSurfaceMaterialPremise.runtimeExtractionCorrectness =
         TargetSurfaceMaterialPremiseStatus.outsideTargetBoundary /\
       targetSurfaceMaterialPremiseStatus
@@ -957,13 +1098,15 @@ def targetSurface_finalReviewPacket_of_strengthCertificates
     targetSurface_enrichedBoundaryRepairAudit
   soundAssignmentEnrichedLiftAudit :=
     targetSurface_soundAssignmentEnrichedLiftAudit
+  finiteQueryVisibleBoundaryAudit :=
+    targetSurface_finiteQueryVisibleBoundaryAudit
   finiteShadowAndFactorization :=
     targetSurface_strengthenedFiniteShadowFactorization_package A certificates
   finalReviewGate := rfl
   materialPremiseAudit := by
     exact
       ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl,
-        rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+        rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /--
 The final-review packet remains a checkpoint because the formal review gate is
