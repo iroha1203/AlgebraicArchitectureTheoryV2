@@ -2285,6 +2285,162 @@ theorem trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAbelian_package
     trueSheafH1SemanticRepairGluing_boundaryRelationAbelian_package
       data selected
 
+/--
+Boundary-relation cover data equipped with additive coefficient laws.
+
+The additive laws are coefficient algebra only.  They do not store a zero
+`H1` class, a boundary primitive for the residual, global coherence, exactness,
+or effective descent.
+-/
+structure SemanticRepairCoverH1BoundaryRelationAdditiveData
+    (Atom : Type u) where
+  boundaryRelation :
+    SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom
+  [c0AddCommGroup : AddCommGroup boundaryRelation.cech.C0]
+  [c1AddCommGroup : AddCommGroup boundaryRelation.cech.C1]
+  zero1_eq_zero : boundaryRelation.cech.zero1 = 0
+  delta0_zero : boundaryRelation.cech.delta0 0 = 0
+  delta0_add :
+    forall left right,
+      boundaryRelation.cech.delta0 (left + right) =
+        boundaryRelation.cech.delta0 left + boundaryRelation.cech.delta0 right
+  delta0_neg :
+    forall primitive,
+      boundaryRelation.cech.delta0 (-primitive) =
+        -boundaryRelation.cech.delta0 primitive
+
+/--
+Generate the target-strength additive Cech `H1 = Z1 / B1` data from the
+boundary-relation cover data and its coefficient algebra.
+-/
+def SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom) :
+    SemanticRepairAdditiveCechH1Data
+      (toSheafH1Envelope
+        data.boundaryRelation.toAbelianDescentData.toEnvelopeData) where
+  c0AddCommGroup := data.c0AddCommGroup
+  c1AddCommGroup := data.c1AddCommGroup
+  zero1_eq_zero := data.zero1_eq_zero
+  delta0_zero := data.delta0_zero
+  delta0_add := data.delta0_add
+  delta0_neg := data.delta0_neg
+
+/--
+Concrete Cycle 17 bridge: in the boundary-relation true-sheaf surface, global
+semantic repair coherence is equivalent to vanishing of the selected residual's
+additive Cech `H1 = Z1 / B1` class, with exactness and later-layer vanishings
+constructed from the cover data.
+-/
+theorem coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom) :
+    GlobalSemanticRepairCoherent
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+      SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data := by
+  exact
+    globalRepairCoherent_iff_additiveH1Zero
+      (toSheafH1Envelope
+        data.boundaryRelation.toAbelianDescentData.toEnvelopeData)
+      data.toAdditiveCechH1Data
+      (coverEnvelope_sheafH1ExactnessDischarge_of_certificate
+        (coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData
+          data.boundaryRelation))
+      rfl rfl rfl
+
+/--
+Cycle 17 package: true-sheaf boundary-relation data with additive coefficient
+laws supplies the target-strength additive `H1` gluing equivalence without
+external later-layer vanishing arguments.
+-/
+theorem trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover) :
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      CechZ1
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData)
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.residual /\
+      (forall primitive :
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.C0,
+        CechZ1
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)
+          ((toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+              primitive)) /\
+      (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope
+                data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+          SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data) /\
+      (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data ->
+        GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData))) /\
+      (GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) ->
+        SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data) /\
+      (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+        CechB1
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.residual) /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) := by
+  let selected :=
+    coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition
+      certificate
+  have hbridge :
+      GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+        SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data :=
+    coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero
+      data
+  exact
+    ⟨coverEnvelope_sheafConditionFor_of_certificate selected,
+      coverEnvelope_descent_of_sheafConditionCertificate selected,
+      selected.envelope_residual_cocycle,
+      selected.envelope_boundary_cocycle,
+      hbridge,
+      hbridge.2,
+      hbridge.1,
+      semanticRepairAdditiveH1Zero_iff_boundary data.toAdditiveCechH1Data,
+      rfl, rfl, rfl⟩
+
 end SemanticRepairTrueSheafH1
 end QualitySurface
 end Formal.AG.Research

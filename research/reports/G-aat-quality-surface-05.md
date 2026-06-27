@@ -1549,3 +1549,124 @@ Next obligation:
   `SemanticRepairTrueSheafH1.lean`, supplying the additive data and later-layer
   vanishings from existing construction theorems so that `htorsor`, `hhigher`,
   and `hstack` are not external final theorem premises.
+
+## Cycle 17 — true-sheaf boundary-relation additive final-review candidate
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: yes
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- declarations:
+  - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAdditiveData`
+  - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero`
+  - `SemanticRepairTrueSheafH1.trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`
+
+Proof-obligation delta:
+
+- instantiated the Cycle 16 additive bridge against the concrete
+  boundary-relation true-sheaf cover package.
+- supplied the additive `Z1 / B1` coefficient data from an explicit coefficient
+  algebra wrapper over `SemanticRepairCoverH1BoundaryRelationAbelianData`.
+- supplied exactness from
+  `coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData`.
+- supplied later-layer vanishings by `rfl` through
+  `toAbelianDescentData.toEnvelopeData`, so `htorsor`, `hhigher`, and `hstack`
+  are not external final theorem arguments.
+
+Premise delta:
+
+- discharged in this cycle:
+  - concrete `SemanticRepairAdditiveCechH1Data` provenance for the selected
+    boundary-relation true-sheaf cover surface.
+  - concrete exactness-discharge provenance for the additive bridge.
+  - concrete later-layer vanishing provenance for the additive bridge.
+  - target-strength
+    `GlobalSemanticRepairCoherent <-> SemanticRepairAdditiveH1Zero`
+    theorem package in the selected true-sheaf boundary-relation surface.
+- remaining:
+  - final-review packet fixation.
+  - final four-lane `$math-lean-review`.
+
+Certificate provenance:
+
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData` stores only coefficient
+  algebra: `AddCommGroup` instances, `zero1_eq_zero`, and `delta0`
+  zero/add/neg compatibility.
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data`
+  converts those coefficient laws into `SemanticRepairAdditiveCechH1Data`.
+- `coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero`
+  applies the Cycle 16 bridge using:
+  - exactness discharge generated from boundary-relation residual support.
+  - later-layer vanishings generated definitionally by the abelian-descent
+    envelope.
+- the final package exposes the target additive quotient predicate
+  `SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data`, not the rejected
+  `CechH1BoundaryZeroClass` detector.
+
+Proof-use audit:
+
+- the new package proof-uses:
+  - `globalRepairCoherent_iff_additiveH1Zero`.
+  - `coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData`.
+  - `coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`.
+  - `semanticRepairAdditiveH1Zero_iff_boundary`.
+- no residual primitive, global coherence proof, additive zero proof, or
+  effective-descent conclusion is supplied as a field.
+
+Structure-field escape audit:
+
+- no `GlobalSemanticRepairCoherent`, `SemanticRepairH1Zero`,
+  `SemanticRepairAdditiveH1Zero`, residual primitive, exactness conclusion,
+  effective-descent conclusion, or conclusion-equivalent fact was added as a
+  field.
+- the remaining true-sheaf certificate argument stores only selected-cover
+  topology membership and global AAT sheaf condition, following the Cycle 13
+  discharge path.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed file and scratch audit file
+- local/private path scan over changed file and scratch audit file
+- independent T3 audit: approve for Cycle 17, `completion_candidate: yes`.
+
+Axiom audit:
+
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data`:
+  `[propext]`
+- `coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero`:
+  `[propext, Quot.sound]`
+- `trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`:
+  `[propext, Quot.sound]`
+
+Final-review packet candidate:
+
+- target theorem claim boundary:
+  true-sheaf selected-cover semantic repair gluing is governed by the selected
+  residual's additive Cech `H1 = Z1 / B1` zero class, in the
+  boundary-relation surface without a universal `C1 -> C0` primitive selector.
+- main Lean declaration:
+  `SemanticRepairTrueSheafH1.trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`
+- support declarations:
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveCechH1Data`
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveH1Zero`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1Zero_iff_boundary`
+  - `SemanticRepairSheafH1.globalRepairCoherent_iff_additiveH1Zero`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`
+- current status:
+  `completion_candidate: yes`; `target-theorem-proved: no` until final
+  four-lane `$math-lean-review` returns `No major findings` in all lanes.
+
+Next obligation:
+
+- run final four-lane `$math-lean-review` against the final-review packet and
+  only then decide whether G-05 can move to `target-theorem-proved`.
