@@ -6670,3 +6670,167 @@ selected semantic-delta / presheaf-restriction source.  If that construction is
 not derivable inside the current vocabulary, the loop should keep the
 non-derivability boundary explicit rather than treating this checkpoint as
 completion.
+
+## Cycle 48 — current-surface-only finite-witness constructor boundary
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+
+### T1 Selection
+
+The selector chose the full current-surface-only non-derivability boundary
+left after Cycle 47:
+
+```text
+CurrentG06InputSurface-only constructor
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degree-0 CarrierSpecificAdditiveComparisonData
+  -> forbidden additive equivalence on an incompatible test surface
+```
+
+The accepted obligation was not to construct the finite witness from
+`CurrentG06InputSurface`.  It was to prove that such a constructor cannot be
+used as an unconditional current-surface-only discharge path for the whole
+finite lower-witness predicate.
+
+Rejected alternatives were:
+
+- claiming finite-witness construction from cover membership,
+  `AATSheafCondition`, `AATDescent`, presheaf laws, or the selected Cech
+  differential formula alone;
+- adding a new certificate or structure field that stores degree-wise carrier
+  maps, degree-`2` zero laws, or face equations;
+- reclassifying the finite witness as `ambient-boundary`;
+- jumping to `H1` zero, effective gluing, refinement / naturality, or full
+  sheaf cohomology;
+- report-only cleanup.
+
+### Result
+
+Cycle 48 proves that a surface-only constructor for the full explicit finite
+witness cannot be unconditional over the current G-06 input surface.  On a
+test surface where:
+
+```text
+semantic degree-0 carrier   ≃+ PUnit
+selected Cech degree-0 carrier ≃+ ZMod 2
+```
+
+the constructor would yield the degree-`0`
+`CarrierSpecificAdditiveComparisonData` contained in
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.  Its additive
+equivalence, composed with the two test equivalences, would produce:
+
+```text
+PUnit ≃+ ZMod 2
+```
+
+which forces `(0 : ZMod 2) = 1`, contradiction.
+
+This closes the remaining current-surface-only path for the whole finite
+witness.  It does not close the target: an allowed concrete selected residual
+coefficient / selected semantic-delta / presheaf-restriction source can still
+be supplied in a later cycle.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains
+  `discharge-required`.  Cycle 48 proves it cannot be generated
+  unconditionally from `CurrentG06InputSurface` alone on incompatible selected
+  degree-`0` carriers.
+- degree-`0` `CarrierSpecificAdditiveComparisonData`: remains a concrete
+  selected carrier-comparison premise.  It is proof-used as the extracted
+  source of the contradiction.
+- `CurrentG06InputSurface`: remains proof-used in the constructor input only.
+  The theorem does not add carrier maps, face equations, `H1` zero, effective
+  descent, comparison equivalence, refinement naturality, or full sheaf
+  cohomology equivalence to it.
+- `c0SourceEquiv` and `c0TargetEquiv`: are blocker-test hypotheses witnessing
+  incompatible selected degree-`0` carriers.  They are not target-completion
+  premises and do not discharge the finite witness.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface-only finite-witness constructor
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degree-0 CarrierSpecificAdditiveComparisonData
+  -> CarrierSpecificAdditiveComparisonData.toAddEquiv
+  -> semantic C0 ≃+ selected K.Cn 0
+
+semantic C0 ≃+ PUnit
+selected K.Cn 0 ≃+ ZMod 2
+  -> PUnit ≃+ ZMod 2
+  -> (0 : ZMod 2) = 1
+  -> contradiction
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle48AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  remains `discharge-required`.  Cycle 48 fixes the incompatible-carrier
+  blocker for any unconditional current-surface-only constructor of the full
+  finite witness.
+- certificate provenance: passed for checkpoint purposes.  No finite witness,
+  `H1` zero, effective gluing, refinement / naturality, global coherence, or
+  full sheaf cohomology equivalence is introduced as a certificate.
+  `c0SourceEquiv` and `c0TargetEquiv` are blocker-test hypotheses, not premise
+  discharge.
+- proof use: passed.  The proof applies `currentInputFiniteWitnessConstructor`
+  to `surface`, decomposes the produced witness, and uses the extracted
+  degree-`0` `c0Carrier.toAddEquiv` to build the impossible
+  `PUnit ≃+ ZMod 2`.
+- structure field escape: passed.  The cycle introduces no new structure,
+  class, or certificate field, and does not add carrier data or face equations
+  to `CurrentG06InputSurface`.
+- anti-weakening: passed.  The theorem is a blocker boundary, not target
+  completion, and it does not claim finite witness construction from the
+  current surface alone.
+- report / validation consistency: passed.  The report matches the Lean diff
+  and keeps G-06 at `target-proof-checkpoint`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to provide an allowed concrete selected
+residual coefficient / selected semantic-delta / presheaf-restriction source
+for `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or to make the
+GOAL boundary explicitly depend on that source rather than treating it as a
+current-surface-only theorem.
