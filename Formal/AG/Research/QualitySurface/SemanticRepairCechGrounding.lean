@@ -5434,6 +5434,90 @@ theorem currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_
       hcycle49.2.2.2.1,
       hcycle49.2.2.2.2⟩
 
+/--
+Cycle 52 lower-source constructor: carrier-specific comparison provenance
+constructs the explicit carrier data and direct selected differential laws
+needed by the Cycle 51 paired lower-source theorem.
+
+This theorem lowers the displayed carrier data and four direct `K.d` laws to
+the already audited concrete provenance source.  It still does not construct
+that provenance from `CurrentG06InputSurface` alone, and it introduces no `H1`
+zero, boundary membership, global coherence, effective gluing, refinement
+naturality, comparison equivalence, or full sheaf cohomology comparison.
+-/
+theorem currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        additive surface.coverBridge surface.K) :
+    let c0Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+        provenance
+    let c1Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+        provenance
+    let c2Equiv :=
+      SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+        provenance
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv
+        provenance.toSection2_zero provenance.fromSection2_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    Nonempty (SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive sectionWitness) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) := by
+  dsimp only
+  let c0Carrier :=
+    SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+      provenance
+  let c1Carrier :=
+    SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+      provenance
+  let c2Equiv :=
+    SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+      provenance
+  let direct :=
+    provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+  exact
+    currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources
+      (surface := surface)
+      c0Carrier c1Carrier c2Equiv
+      provenance.toSection2_zero provenance.fromSection2_zero
+      direct.d0_direct_to
+      direct.d0_direct_from
+      direct.d1_direct_to
+      direct.d1_direct_from
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge

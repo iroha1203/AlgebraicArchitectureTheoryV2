@@ -7341,3 +7341,159 @@ The next minimal obligation is to construct or explicitly boundary-register the
 displayed degree-wise carrier data and direct selected semantic-delta / `K.d`
 laws from allowed concrete selected residual coefficient / selected
 semantic-delta / presheaf-restriction sources.
+
+## Cycle 52 — carrier-specific provenance constructs the paired lower source
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources
+```
+
+The selector chose the narrow provenance-lowering theorem: keep
+`CurrentG06InputSurface` as the site/sheaf/presheaf surface, add the concrete
+`SemanticRepairCarrierSpecificComparisonProvenance` source, and prove that it
+constructs the explicit carrier data and direct selected `K.d` laws consumed by
+Cycle 51.
+
+Rejected alternatives were:
+
+- moving directly to the effective-gluing / `H1`-zero package;
+- claiming a `CurrentG06InputSurface`-only constructor despite the no-uniform
+  carrier/equivalence blockers;
+- proving only one side of the paired source;
+- adding refinement / naturality, full sheaf cohomology, or completion claims.
+
+### Result
+
+Cycle 52 proves that a concrete carrier-specific comparison provenance
+inhabitant is enough to construct the Cycle 51 paired lower source.  The Lean
+theorem extracts:
+
+```text
+c0Carrier := provenance.degreeZeroAdditiveComparisonData
+c1Carrier := provenance.degreeOneAdditiveComparisonData
+c2Equiv := provenance.c2SectionEquiv
+c2Equiv_zero := provenance.toSection2_zero
+c2Equiv_symm_zero := provenance.fromSection2_zero
+direct := provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+```
+
+and passes those extracted components into:
+
+```text
+currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources
+```
+
+The conclusion includes:
+
+- `Nonempty SelectedSectionFamilyCarrierModel`;
+- `Nonempty SemanticRepairCoverRelativeDirectDifferentialCompatibility`;
+- `Nonempty SemanticRepairCoverRelativeCochainRealization`;
+- presheaf restriction zero/add laws;
+- selected Cech differential formula;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- selected carrier geometry plus selected Cech face-law source.
+
+The cycle does not construct `SemanticRepairCarrierSpecificComparisonProvenance`
+from `CurrentG06InputSurface` alone.
+
+### Material Premise Ledger Delta
+
+- displayed degree-wise carrier data plus degree-`2` zero laws: discharged
+  relative to `SemanticRepairCarrierSpecificComparisonProvenance`.
+- direct selected semantic-delta / `K.d` laws: discharged relative to
+  `provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel`.
+- paired lower source:
+  `SelectedSectionFamilyCarrierModel + SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  is discharged relative to concrete carrier-specific provenance plus the
+  current surface laws.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: remains
+  `discharge-required` or must be explicitly boundary-registered below the
+  current G-06 surface.  Existing no-uniform-constructor blockers still prevent
+  treating it as available from bare cover membership, sheaf condition,
+  descent, or the general Cech complex API alone.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  This cycle does not identify it with full sheaf cohomology.
+- refinement / naturality remains outside the discharged theorem surface.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degreeZeroAdditiveComparisonData
+  -> degreeOneAdditiveComparisonData
+  -> c2SectionEquiv + zero laws
+  -> toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+
+extracted carrier data + extracted direct laws
+  -> currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> presheaf laws + selected Cech differential formula
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle52AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: the paired lower source
+  `SelectedSectionFamilyCarrierModel + SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  is discharged relative to the concrete
+  `SemanticRepairCarrierSpecificComparisonProvenance` source.  The theorem
+  extracts `c0Carrier`, `c1Carrier`, `c2Equiv`, the degree-`2` zero laws, and
+  direct `d0` / `d1` laws from the provenance and consumes them in the Cycle 51
+  constructor.  `SemanticRepairCarrierSpecificComparisonProvenance` itself
+  remains undischarged below the current G-06 surface.
+- anti-weakening: passed.  The theorem takes `surface` plus explicit
+  `provenance`; it does not weaken to a `CurrentG06InputSurface`-only
+  constructor.  It adds no `H1` zero, global coherence, effective gluing /
+  descent, comparison equivalence, refinement / naturality, or full sheaf
+  cohomology premise or conclusion.
+- proof use: passed.  The extracted carrier data and direct compatibility are
+  passed to
+  `currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources`
+  and are not merely recorded as inert arguments.
+- remaining obligation: construct
+  `SemanticRepairCarrierSpecificComparisonProvenance` from allowed concrete
+  selected residual coefficient / selected semantic-delta /
+  presheaf-restriction sources, or register it as the exact G-06 boundary if no
+  such construction is available.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is now to construct
+`SemanticRepairCarrierSpecificComparisonProvenance` from allowed concrete
+selected residual coefficient / selected semantic-delta / presheaf-restriction
+sources, or explicitly register it as the exact G-06 boundary if that
+construction is not available.
