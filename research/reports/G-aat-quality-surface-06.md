@@ -3132,3 +3132,153 @@ proof obligation is now lower and sharper: construct
 residual coefficient / concrete carrier geometry plus actual presheaf
 restriction and selected Cech face laws, or fix that source as an explicit
 target-boundary revision outside the loop.
+
+## Cycle 25 — carrier-specific provenance splits into carrier geometry and face laws
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairSelectedCarrierGeometry`
+  - `SemanticRepairSelectedCechFaceLawSource`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toSelectedCarrierGeometry`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toSelectedCechFaceLawSource`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.selectedCarrierGeometry_and_faceLaws_constructs_carrierSpecificComparisonProvenance`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedCarrierGeometry_and_faceLaws`
+
+### Result
+
+Cycle 25 splits the remaining monolithic
+`SemanticRepairCarrierSpecificComparisonProvenance` source into two lower
+sources:
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+    -> selected cover-relative H1 grounding package
+```
+
+The carrier-geometry source contains only:
+
+- degree-`0` and degree-`1` carrier-specific additive comparison data;
+- a degree-`2` carrier equivalence;
+- the two degree-`2` zero laws.
+
+The face-law source contains only the four selected Cech face-restriction
+compatibility equations relative to that fixed carrier geometry.
+
+Lean proves the source equivalence:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  <-> exists carrier geometry, selected Cech face laws for that geometry
+```
+
+and a downstream proof-use theorem showing that carrier geometry plus face
+laws reach the selected cover-relative `H1` grounding package by first
+constructing carrier-specific provenance.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged relative to
+  the lower selected carrier geometry plus selected Cech face-law source by
+  theorem.
+- `SemanticRepairSelectedCarrierGeometry`: remains `discharge-required`.  It is
+  not ambient boundary; it must come from selected semantic residual
+  coefficient / concrete cover-relative carrier geometry.
+- `SemanticRepairSelectedCechFaceLawSource`: remains `discharge-required`.  It
+  must come from actual presheaf restriction and selected Cech face laws for the
+  fixed carrier geometry.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is stored in either lower source.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+    -> SemanticRepairCoverRelativeFaceRestrictionRealization
+    -> SemanticRepairCoverRelativeSectionRealizationBridge
+    -> selected cover-relative H1 grounding package
+
+reverse audit:
+  SemanticRepairCarrierSpecificComparisonProvenance
+    -> SemanticRepairSelectedCarrierGeometry
+    + SemanticRepairSelectedCechFaceLawSource
+
+remaining lower source:
+  selected semantic residual coefficient / concrete cover-relative carrier
+  geometry
+    -> SemanticRepairSelectedCarrierGeometry
+
+  actual presheaf restriction / selected Cech face laws
+    -> SemanticRepairSelectedCechFaceLawSource
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle25AxiomAudit.lean` — passed.
+- `SemanticRepairCarrierSpecificComparisonProvenance.toSelectedCarrierGeometry`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.toSelectedCechFaceLawSource`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.selectedCarrierGeometry_and_faceLaws_constructs_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedCarrierGeometry_and_faceLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- hidden material premise: none found.
+- structure field escape: none found.
+- proof use: `geometry` and `faceLaws` are consumed to construct
+  `SemanticRepairCarrierSpecificComparisonProvenance`; the existing provenance
+  path then reaches the selected cover-relative `H1` grounding package.
+- unresolved provenance: `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource` remain lower
+  `discharge-required` premises.  The former still requires construction from
+  selected semantic residual coefficient / concrete cover-relative carrier
+  geometry; the latter still requires construction from actual presheaf
+  restriction / selected Cech face laws.
+- blocking findings: none.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 25 removes `SemanticRepairCarrierSpecificComparisonProvenance` as a
+monolithic unresolved source, but the two lower sources are still material.
+The next obligation is to construct `SemanticRepairSelectedCarrierGeometry`
+from selected semantic residual coefficient / concrete cover-relative carrier
+geometry, and to construct `SemanticRepairSelectedCechFaceLawSource` from
+actual presheaf restriction / selected Cech face laws for that carrier geometry.
