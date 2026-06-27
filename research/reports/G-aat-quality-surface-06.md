@@ -4708,3 +4708,136 @@ The direct semantic-delta / presheaf-restriction law source and concrete
 selected carrier geometry remain the central unresolved material premises.
 General refinement/naturality and the boundary between cover-relative Cech
 `H1` and full sheaf cohomology remain explicit non-completion boundaries.
+
+## Cycle 36 — selected carrier geometry and face laws feed effective gluing
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws`
+
+### Result
+
+Cycle 36 lowers the Cycle 35 `SemanticRepairCarrierSpecificComparisonProvenance`
+premise to the already separated lower pair:
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> Cycle 33 true-sheaf / cover-relative H1-zero effective-gluing package
+```
+
+The new theorem uses:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws
+  geometry faceLaws
+```
+
+and then applies the Cycle 35 carrier-specific provenance theorem.  It returns
+the same proof-used surface: cover-wise sheaf condition, AAT descent, unique
+effective global gluing, comparison package, global coherence / cover-relative
+`H1` zero equivalence, additive-zero / cover-relative-zero equivalence, and
+later-layer vanishing tokens.
+
+This does not discharge selected carrier geometry or selected Cech face laws.
+It makes the remaining material sources more explicit and prevents carrier
+identification alone from being counted as differential compatibility.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged relative to
+  `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`, using the existing
+  `of_selectedCarrierGeometry_and_faceLaws` constructor.
+- `SemanticRepairSelectedCarrierGeometry`: remains discharge-required.  It
+  contains degree-wise selected carrier identifications and degree-`2` zero
+  laws, and still needs a concrete selected residual coefficient /
+  cover-relative carrier source.
+- `SemanticRepairSelectedCechFaceLawSource`: remains discharge-required.  It
+  contains the selected Cech face-restriction differential equations and still
+  needs a genuine semantic-delta / presheaf-restriction source.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> toCochainRealization
+  -> toH1Comparison
+  -> Cycle 33 effective-gluing / cover-relative H1-zero package
+
+remaining lower split:
+  selected carrier geometry:
+    concrete selected residual coefficient / carrier source
+  selected Cech face laws:
+    concrete semantic-delta / presheaf-restriction law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle36AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report — clean.
+- local path / private machine identifier scan over changed Lean file and report
+  — clean.
+
+### T3 Audit
+
+- decision: approve for checkpoint.
+- result_type: proof-obligation-discharged / proof-checkpoint.
+- completion candidate: no.
+- major findings: none at theorem-addition scope.
+- anti-weakening: passed for checkpoint.  The theorem is explicitly relative
+  to `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource`; it does not claim those sources
+  follow from cover membership, sheaf condition, descent, or full sheaf
+  cohomology.
+- structure field escape: none newly introduced.  No `H1` zero, global
+  coherence, boundary membership, effective descent, refinement naturality, or
+  full sheaf cohomology conclusion is hidden in a new field.
+- proof use: passed.  The constructed provenance is consumed by the Cycle 35
+  theorem, which in turn consumes the resulting `toH1Comparison` in the
+  effective-gluing / cover-relative `H1` zero package.
+- remaining obligations: discharge selected carrier geometry and selected Cech
+  face laws from concrete lower sources; keep refinement/naturality and
+  cover-relative Cech `H1` vs full sheaf cohomology boundaries explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations are now the two separated lower sources:
+`SemanticRepairSelectedCarrierGeometry` and
+`SemanticRepairSelectedCechFaceLawSource`.  The former needs concrete selected
+carrier provenance; the latter needs concrete selected semantic-delta /
+presheaf-restriction laws.  General refinement/naturality and full sheaf
+cohomology comparison remain outside the unconditional claim boundary.
