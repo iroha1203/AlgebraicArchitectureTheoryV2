@@ -1632,6 +1632,106 @@ theorem grounded_package_of_cochain_realization
 
 end SemanticRepairCoverRelativeCochainRealization
 
+namespace SemanticRepairCoverRelativeCochainRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Cochain realization is strong enough to construct the carrier-specific
+comparison provenance once the selected cover-relative complex is fixed.
+
+This theorem uses the general Cech identity
+`CoverRelativeCechComplex.d_eq_alternatingFaceCombination` to turn direct
+`K.d` compatibility into the face-restriction equations required by
+`SemanticRepairCarrierSpecificComparisonProvenance`.  It does not construct the
+cochain realization itself from cover membership, sheaf condition, or descent;
+that source remains the material premise if no lower construction is supplied.
+-/
+def toCarrierSpecificComparisonProvenance
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive K) :
+    SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K where
+  toSection0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact fun primitive => realization.c0Equiv primitive
+  fromSection0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact fun primitive => realization.c0Equiv.symm primitive
+  from_to_section0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    intro primitive
+    exact realization.c0Equiv.left_inv primitive
+  to_from_section0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    intro primitive
+    exact realization.c0Equiv.right_inv primitive
+  toSection0_add := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    intro left right
+    exact realization.c0Equiv.map_add left right
+  toSection1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact fun cochain => realization.c1Equiv cochain
+  fromSection1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact fun cochain => realization.c1Equiv.symm cochain
+  from_to_section1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro cochain
+    exact realization.c1Equiv.left_inv cochain
+  to_from_section1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro cochain
+    exact realization.c1Equiv.right_inv cochain
+  toSection1_add := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro left right
+    exact realization.c1Equiv.map_add left right
+  toSection2 := realization.c2Equiv
+  fromSection2 := realization.c2Equiv.symm
+  from_to_section2 := realization.c2Equiv.left_inv
+  to_from_section2 := realization.c2Equiv.right_inv
+  toSection2_zero := realization.c2Equiv_zero
+  fromSection2_zero := realization.c2Equiv_symm_zero
+  d0_face_to := by
+    intro primitive
+    rw [← K.d_eq_alternatingFaceCombination 0]
+    exact realization.d0_to primitive
+  d0_face_from := by
+    intro primitive
+    rw [← K.d_eq_alternatingFaceCombination 0]
+    exact realization.d0_from primitive
+  d1_face_to := by
+    intro cochain
+    rw [← K.d_eq_alternatingFaceCombination 1]
+    exact realization.d1_to cochain
+  d1_face_from := by
+    intro cochain
+    rw [← K.d_eq_alternatingFaceCombination 1]
+    exact realization.d1_from cochain
+
+end SemanticRepairCoverRelativeCochainRealization
+
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
 
 variable {Atom : Type u}
@@ -1737,6 +1837,41 @@ theorem grounded_package_of_carrier_specific_comparison_provenance
   provenance.toFaceRestrictionRealization.grounded_package_of_face_restriction_realization
 
 end SemanticRepairCarrierSpecificComparisonProvenance
+
+namespace SemanticRepairCoverRelativeCochainRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Cycle 16 bridge theorem: a cochain realization supplies the previously
+separate carrier-specific provenance and therefore reaches the existing
+selected cover-relative grounding package.
+
+The theorem shrinks the remaining source obligation to construction of the
+cochain realization itself.  It is not a completion result: cover membership,
+`AATSheafCondition`, and `AATDescent` still do not generate this realization by
+themselves.
+-/
+theorem grounded_package_of_cochain_realization_via_carrier_specific_provenance
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        realization.toCarrierSpecificComparisonProvenance.toCochainRealization.toH1Comparison) :=
+  realization.toCarrierSpecificComparisonProvenance
+    |>.grounded_package_of_carrier_specific_comparison_provenance
+
+end SemanticRepairCoverRelativeCochainRealization
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 

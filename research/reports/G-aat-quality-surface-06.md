@@ -1951,3 +1951,130 @@ T3 audit next obligation:
   explicit `ambient-boundary` input.  Otherwise construct a concrete selected
   carrier-comparison source sufficient to inhabit
   `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`.
+
+## Cycle 16 — cochain realization to carrier-specific provenance bridge
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `SemanticRepairCoverRelativeCochainRealization.toCarrierSpecificComparisonProvenance`
+- `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization_via_carrier_specific_provenance`
+
+### Proof-Obligation Delta
+
+T1 selected the unresolved obligation:
+
+- construct a concrete `SemanticRepairCarrierSpecificComparisonProvenance
+  additive coverBridge K` inhabitant from existing target data, rather than
+  leaving it as an explicit certificate argument.
+
+Cycle 16 does not claim that current cover membership, `AATSheafCondition`,
+`AATDescent`, or bare additive carrier data generate that provenance.  Cycles
+12-15 already made that path fail-closed.  Instead, Cycle 16 proves a narrower
+bridge:
+
+- if a selected
+  `SemanticRepairCoverRelativeCochainRealization additive K` is supplied, then
+  it constructs the previously separate
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`;
+- the proof uses `CoverRelativeCechComplex.d_eq_alternatingFaceCombination` to
+  turn direct `K.d` compatibility into the selected face-restriction equations
+  required by carrier-specific provenance;
+- the resulting provenance then reaches the existing selected cover-relative
+  grounding package through the Cycle 11 path.
+
+This shrinks the remaining source obligation: G-06 no longer needs an
+independent carrier-specific provenance source if it has a concrete cochain
+realization.  The undischargeable source is now the cochain realization itself,
+unless a lower theorem constructs it from atom-supported site / cover /
+presheaf / sheaf data.
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: discharged relative to a supplied
+  selected cochain realization.
+- `selected cochain realization`: remains `discharge-required`; it still
+  contains the degree-`0`/`1` additive equivalences, degree-`2` carrier
+  equivalence, zero preservation, and `K.d` differential compatibility.
+- `cover membership`, `AATSheafCondition`, and `AATDescent`: still do not
+  generate the selected cochain realization by themselves.
+- `SemanticRepairAdditiveH1Class`, `SemanticRepairAdditiveH1Zero`, general
+  cover-relative `H1` zero, boundary membership, global coherence, effective
+  descent, comparison equivalence, refinement naturality, and full sheaf
+  cohomology equivalence remain forbidden as certificate fields.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new bridge does not add a new selected-source structure.
+- The new `toCarrierSpecificComparisonProvenance` constructor uses the fields
+  of `SemanticRepairCoverRelativeCochainRealization` as proof terms for every
+  carrier map, inverse law, additive law, zero law, and differential law in
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- The bridge does not store quotient equality, zero-class equality, global
+  semantic repair coherence, effective descent, refinement naturality, or full
+  sheaf cohomology comparison.
+- This is not a target completion result because the supplied cochain
+  realization is still an explicit material premise unless constructed from
+  lower atom-supported data.
+- T3 audit approved this as a `proof-checkpoint`: no hidden conclusion-side
+  premise was found in the two Cycle 16 declarations, but this is not
+  `proof-obligation-discharged` because the selected cochain realization
+  remains supplied structure data.
+
+### Dependency DAG Delta
+
+```text
+selected cochain realization
+  -> toCarrierSpecificComparisonProvenance
+  -> carrier-specific provenance
+  -> face-restriction realization
+  -> cochain realization
+  -> selected cover-relative H1 grounding package
+
+remaining source gap:
+  atom/site/cover/sheaf inputs
+    -/-> selected cochain realization
+```
+
+### Axiom Audit
+
+- `#print axioms
+  SemanticRepairCoverRelativeCochainRealization.toCarrierSpecificComparisonProvenance`
+  reported only `propext`, `Quot.sound`.
+- `#print axioms
+  SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization_via_carrier_specific_provenance`
+  reported only `propext`, `Classical.choice`, `Quot.sound`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` — passed.
+- `.tmp/G06Cycle16AxiomAudit.lean` — passed after rebuilding the target module.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed files — clean.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 16 does not run `$math-lean-review`.  It is not a completion candidate:
+the selected cochain realization source is still a material premise unless a
+later cycle constructs it from lower atom-supported site / cover / presheaf /
+sheaf data or a human-approved GOAL boundary revision moves it to explicit
+`ambient-boundary` input.
+
+T3 audit next obligation:
+
+- Construct `SemanticRepairCoverRelativeCochainRealization` from lower
+  atom-supported site / cover / presheaf / sheaf data, or obtain a
+  human-approved GOAL boundary revision making that realization explicit
+  `ambient-boundary` input.
