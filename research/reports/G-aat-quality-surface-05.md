@@ -1670,3 +1670,106 @@ Next obligation:
 
 - run final four-lane `$math-lean-review` against the final-review packet and
   only then decide whether G-05 can move to `target-theorem-proved`.
+
+## Final review after Cycle 17 — accepted
+
+Integrated verdict: `No major findings`
+
+`target-theorem-proved`: yes
+
+Reviewer lanes:
+
+- mathematics review A: `No major findings`
+- mathematics review B: `No major findings`
+- Lean review A: `No major findings`
+- Lean review B / ledger sync: `No major findings`
+
+Accepted target theorem package:
+
+- main Lean declaration:
+  `SemanticRepairTrueSheafH1.trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`
+- claim boundary:
+  selected finite/small true-sheaf boundary-relation cover surface with explicit
+  additive coefficient laws, selected-cover sheaf-condition certificate from
+  global AAT true-sheaf evidence, boundary-relation exactness / semantic
+  faithfulness certificate, and abelian-descent effective-descent evidence.
+- central statement exposed by the package:
+  `GlobalSemanticRepairCoherent <->
+    SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data`, together with both
+  directions and `SemanticRepairAdditiveH1Zero <->
+    CechB1 residual`.
+
+Final material-premise discharge:
+
+- sheaf condition:
+  `coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`
+  generates the selected cover-wise certificate from cover-topology membership
+  and global `AATSheafCondition`.
+- semantic faithfulness / exactness:
+  `coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData` generates
+  the exactness certificate from residual support, without a universal
+  `C1 -> C0` primitive selector.
+- effective descent:
+  `coverEnvelope_effectiveDescentCertificate_of_abelianDescentData` supplies
+  later-layer vanishings definitionally from the abelian-descent envelope.
+- additive `H1 = Z1 / B1`:
+  `SemanticRepairAdditiveCechH1Data`,
+  `SemanticRepairAdditiveH1Zero`, and
+  `semanticRepairAdditiveH1Zero_iff_boundary` supply the quotient object and
+  zero-class detector by additive difference modulo `B1`.
+- global gluing equivalence:
+  `globalRepairCoherent_iff_additiveH1Zero` and
+  `coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero`
+  connect the additive zero class and global semantic repair coherence.
+
+Anti-weakening audit:
+
+- the final target object is the additive quotient predicate
+  `SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data`.
+- the rejected Cycle 14 `CechH1BoundaryZeroClass` detector is not used as the
+  target object.
+- the final package remains inside the GOAL boundary: selected finite/small
+  true-sheaf cover surface, not arbitrary sites, runtime extraction
+  completeness, repair synthesis, or global minimality.
+
+Structure-field escape audit:
+
+- no final structure field stores `GlobalSemanticRepairCoherent`,
+  `SemanticRepairH1Zero`, `SemanticRepairAdditiveH1Zero`, residual boundary
+  primitive, exactness conclusion, effective-descent conclusion, or a
+  conclusion-equivalent fact.
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData` stores only coefficient
+  algebra and `delta0` compatibility laws.
+- the true-sheaf certificate stores only selected-cover topology membership and
+  global AAT sheaf-condition evidence.
+
+Axiom audit:
+
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveCechH1Data`:
+  `[propext]`
+- `coverEnvelope_boundaryRelationAdditive_globalRepairCoherent_iff_additiveH1Zero`:
+  `[propext, Quot.sound]`
+- `trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`:
+  `[propext, Quot.sound]`
+- `semanticRepairAdditiveH1Zero_iff_boundary`:
+  `[propext, Quot.sound]`
+- `globalRepairCoherent_iff_additiveH1Zero`:
+  `[propext, Quot.sound]`
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed files and scratch audit file
+- local/private path scan over changed files and scratch audit file
+
+Report / tracking sync:
+
+- `research/reports/G-aat-quality-surface-05.md`: final review pass recorded.
+- `docs/aat/proof_obligations.md`: G-05 status updated to
+  `target-theorem-proved`.
+- tracking Issue `#2631`: final target-cycle result synchronized.
