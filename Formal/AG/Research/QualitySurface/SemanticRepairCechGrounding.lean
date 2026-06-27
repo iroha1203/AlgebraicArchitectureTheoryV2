@@ -4606,6 +4606,105 @@ theorem currentG06InputSurface_selectedCarrierGeometry_and_faceLawSource_require
       hsurface.2.2.2.2⟩
 
 /--
+Cycle 46 finite-witness construction theorem: for the current G-06 input
+surface, an explicit finite lower witness constructs the selected carrier
+geometry and selected Cech face-law source required by Cycle 44/45.
+
+The current surface is proof-used for the presheaf zero/add laws and selected
+Cech differential formula.  The explicit finite witness is proof-used by
+decomposing it into the degree-wise carrier data, degree-`2` zero laws, and
+four face-restriction equations, then constructing the carrier model,
+face-restriction compatibility, selected carrier geometry, and selected Cech
+face-law source in sequence.  This theorem does not claim that
+`CurrentG06InputSurface` alone produces that finite witness.
+-/
+theorem currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  rcases lower with
+    ⟨c0Carrier, c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  let model :
+      SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K :=
+    SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)
+      c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+  let sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        additive surface.coverBridge surface.K :=
+    SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      model
+  let compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness :=
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+      (additive := additive) (sectionWitness := sectionWitness)
+      d0_face_to d0_face_from d1_face_to d1_face_from
+  let geometry :
+      SemanticRepairSelectedCarrierGeometry
+        additive surface.coverBridge surface.K :=
+    SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+      model
+  let faceLaws :
+      SemanticRepairSelectedCechFaceLawSource additive geometry :=
+    SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+      model compatibility
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      ⟨geometry, faceLaws⟩⟩
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
