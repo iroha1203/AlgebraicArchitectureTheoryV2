@@ -1688,3 +1688,123 @@ G-06 remains `target-proof-checkpoint`.
 Cycle 13 fixes the boundary checkpoint: selected carrier-comparison evidence is
 not discharged by the current target inputs.  Completion now requires either a
 new concrete provenance constructor or an explicit GOAL boundary revision.
+
+## Cycle 14 — current-input provenance blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_selected_carrier_source`
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Fix the stronger API-level blocker that
+  `SemanticRepairCarrierSpecificComparisonProvenance` cannot be discharged from
+  the current G-06 input surface alone: selected cover, cover bridge,
+  `AATSheafCondition`, `AATDescent`, bare additive carrier structure, and a
+  general `CoverRelativeCechComplex`.
+
+Fixed blocker:
+
+- `CurrentG06InputSurface` names the concrete current APIs available before a
+  selected carrier-comparison source is added: semantic cover bridge, general
+  cover-relative Cech complex, selected cover membership,
+  `AATSheafCondition`, and `AATDescent`.
+- The new blocker theorem states that any constructor using only this surface
+  to provide lower carrier comparison data uniformly for arbitrary additive
+  selected semantic and cover-relative section carriers is impossible.
+- Such a uniform lower-data constructor contradicts
+  `no_uniform_carrier_specific_additive_comparison_from_bare_groups`.
+- Therefore the current API surface cannot be treated as a uniform hidden
+  generator for carrier-specific semantic/AAT cochain comparison provenance.
+
+Remaining:
+
+- No concrete inhabitant of
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`
+  has been constructed from target inputs.
+- G-06 remains incomplete until either:
+  1. a concrete selected carrier-comparison source is added and used to
+     construct the provenance, or
+  2. the GOAL boundary is revised outside the loop to classify selected
+     carrier-comparison evidence as explicit `ambient-boundary` input.
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: still unresolved under the current
+  GOAL ledger.
+- `current G-06 input surface`: now theorem-visible as insufficient for uniform
+  arbitrary carrier-specific comparison discharge.
+- `selected carrier-comparison source`: still proposed boundary input, not
+  discharged evidence.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The theorem adds no new structure or certificate field.
+- It does not store `SemanticRepairAdditiveH1Class`,
+  `SemanticRepairAdditiveH1Zero`, boundary membership, global semantic repair
+  coherence, effective descent, comparison equivalence, cover refinement
+  naturality, or full sheaf cohomology equivalence.
+- It prevents the weakened reading that the current G-06 API surface can
+  silently generate the carrier maps, inverse laws, additive preservation, and
+  face-restriction compatibility required by the provenance object.
+- T3 audit approved this as `blocker-fixed` and confirmed no structure-field
+  escape for conclusion-side content.
+
+### Dependency DAG Delta
+
+```text
+CurrentG06InputSurface
+  -> claimed uniform carrier comparison constructor
+  -> CarrierSpecificAdditiveComparisonData for arbitrary carriers
+  -> no_uniform_carrier_specific_additive_comparison_from_bare_groups
+  -> current G-06 inputs alone cannot uniformly discharge provenance
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle14AxiomAudit.lean` was run for
+`SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_selected_carrier_source`.
+The audit reported only standard `[propext, Classical.choice, Quot.sound]`
+dependencies.  No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe`
+dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake env lean .tmp/G06Cycle14AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean/report files — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean/report files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 14 fixes a stronger blocker: current G-06 inputs alone cannot be read as
+a uniform provenance constructor for arbitrary selected carriers.  Completion
+still requires a concrete selected carrier-comparison source or an explicit
+GOAL boundary revision.
+
+T3 audit next obligation:
+
+- Construct a concrete selected carrier-comparison source sufficient to inhabit
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`,
+  or revise the GOAL boundary outside the loop to make that selected
+  carrier-comparison source explicit `ambient-boundary` input.

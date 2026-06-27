@@ -1096,6 +1096,62 @@ theorem carrierSpecificComparisonProvenance_requires_explicit_selected_carrier_c
       no_uniform_carrier_specific_additive_comparison_from_bare_groups⟩
 
 /--
+Current G-06 input surface before adding any selected carrier-comparison
+source.
+
+The fields intentionally name the APIs that are available from the site/sheaf
+side: semantic cover-to-cover-relative bridge, the general Cech complex,
+selected cover membership, `AATSheafCondition`, and `AATDescent`.  They do not
+contain degree-wise carrier maps, inverse laws, additive preservation, or
+face-restriction compatibility.
+-/
+structure CurrentG06InputSurface where
+  coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S
+  K : AAT.AG.Cohomology.CoverRelativeCechComplex
+    (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob
+  presheaf : AAT.AG.Site.AATPresheaf S
+  coverBase : S.category
+  selectedCover : Sieve coverBase
+  selectedCover_mem : selectedCover ∈ S.topology coverBase
+  sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf
+  descent : AAT.AG.Site.AATDescent S presheaf selectedCover
+
+/--
+Cycle 14 blocker theorem: the current G-06 input surface cannot discharge
+carrier-specific provenance without a selected carrier-comparison source.
+
+If a constructor using only this current input surface could produce the lower
+carrier-specific comparison data for arbitrary selected semantic and
+cover-relative section carriers, then it would be a uniform constructor for
+`CarrierSpecificAdditiveComparisonData` over all additive groups.  This
+contradicts `no_uniform_carrier_specific_additive_comparison_from_bare_groups`.
+
+Thus cover membership, the semantic cover bridge, `AATSheafCondition`,
+`AATDescent`, bare additive coefficient laws, and the general
+`CoverRelativeCechComplex` API do not by themselves give a uniform discharge of
+the concrete carrier-specific provenance premise.  G-06 still needs either a
+concrete selected carrier-comparison source or an explicit GOAL boundary
+revision.
+-/
+theorem no_constructor_from_current_g06_inputs_without_selected_carrier_source
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (currentInputConstructor :
+      (C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob) ->
+        CarrierSpecificAdditiveComparisonData C D) :
+    False := by
+  let uniformCarrierComparison :
+      (C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+        CarrierSpecificAdditiveComparisonData C D :=
+    fun C D _ _ => currentInputConstructor C D surface
+  exact
+    no_uniform_carrier_specific_additive_comparison_from_bare_groups.false
+      uniformCarrierComparison
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/
