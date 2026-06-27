@@ -1773,7 +1773,7 @@ Report / tracking sync:
 - `docs/aat/proof_obligations.md`: G-05 status updated to
   `target-theorem-proved`.
 - tracking Issue `#2631`: final target-cycle result synchronized.
-- PR `#2634`: latest pushed head `50113f8f`; CI passed:
+- PR `#2634`: CI passed for the final theorem / review-sync branch:
   - `lake build`
   - `archsig cargo test`
   - `fieldsig cargo test`
