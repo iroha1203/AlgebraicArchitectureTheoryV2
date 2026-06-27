@@ -5518,6 +5518,136 @@ theorem currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pa
       direct.d1_direct_to
       direct.d1_direct_from
 
+/--
+Cycle 53 source-relative constructor: a selected cochain realization constructs
+carrier-specific comparison provenance and immediately proof-uses that
+provenance in the Cycle 52 paired lower-source theorem.
+
+This is not a `CurrentG06InputSurface`-only discharge.  The realization remains
+the explicit selected carrier / semantic-delta / presheaf-restriction source;
+the theorem records that once this source is supplied, the provenance gap left
+by Cycle 52 is closed and the resulting provenance is consumed by the existing
+paired lower-source path.  No `H1` zero, boundary membership, global coherence,
+effective gluing, refinement naturality, comparison equivalence, or full sheaf
+cohomology comparison is introduced.
+-/
+theorem currentG06InputSurface_selectedCochainRealization_constructs_carrierSpecificComparisonProvenance_and_pairedLowerSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (realization : SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    let provenance :=
+      realization.toCarrierSpecificComparisonProvenance
+        (coverBridge := surface.coverBridge)
+    let c0Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+        provenance
+    let c1Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+        provenance
+    let c2Equiv :=
+      SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+        provenance
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv
+        provenance.toSection2_zero provenance.fromSection2_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) /\
+      Nonempty (SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive sectionWitness) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) := by
+  dsimp only
+  let provenance :=
+    realization.toCarrierSpecificComparisonProvenance
+      (coverBridge := surface.coverBridge)
+  have hpaired :
+      let c0Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+          provenance
+      let c1Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+          provenance
+      let c2Equiv :=
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+          provenance
+      let model :=
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)
+          c0Carrier c1Carrier c2Equiv
+          provenance.toSection2_zero provenance.fromSection2_zero
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      Nonempty (SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K) /\
+        Nonempty
+          (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive sectionWitness) /\
+        Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+        (∀ {source target : S.category} (f : source ⟶ target),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+            SemanticRepairSelectedCechFaceLawSource additive geometry) :=
+    currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources
+      (surface := surface) provenance
+  exact
+    ⟨⟨provenance⟩,
+      hpaired.1,
+      hpaired.2.1,
+      hpaired.2.2.1,
+      hpaired.2.2.2.1,
+      hpaired.2.2.2.2.1,
+      hpaired.2.2.2.2.2.1,
+      hpaired.2.2.2.2.2.2.1,
+      hpaired.2.2.2.2.2.2.2⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
