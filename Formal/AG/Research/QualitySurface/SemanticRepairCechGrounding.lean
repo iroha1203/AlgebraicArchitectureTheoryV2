@@ -310,6 +310,77 @@ def coverRelativeH1_to_semanticRepairAdditiveH1Class
             (comparison.fromCoverRelativeCocycle left).2
             (comparison.fromCoverRelativeCocycle right).2).2 hgeneral))
 
+/--
+The two selected comparison maps are inverse on the semantic additive quotient.
+
+This is a quotient-level proof, not a structure field: it follows from the
+cochain inverse law `fromC1_toC1`.
+-/
+theorem coverRelative_to_semanticRepairAdditiveH1Class_left_inverse
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Function.LeftInverse
+      comparison.coverRelativeH1_to_semanticRepairAdditiveH1Class
+      comparison.semanticRepairAdditiveH1Class_to_coverRelativeH1 := by
+  intro semanticClass
+  refine Quotient.inductionOn semanticClass ?_
+  intro cocycle
+  exact
+    semanticRepairAdditiveH1Class_eq_of_sameClass additive
+      (comparison.fromCoverRelativeCocycle
+        (comparison.toCoverRelativeCocycle cocycle)).2
+      cocycle.2
+      (by
+        letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        refine ⟨(0 : E.coefficient.C0), ?_⟩
+        calc
+          E.coefficient.delta0 (0 : E.coefficient.C0) = 0 := additive.delta0_zero
+          _ = comparison.fromC1 (comparison.toC1 cocycle.1) - cocycle.1 := by
+            rw [comparison.fromC1_toC1 cocycle.1]
+            simp)
+
+/--
+The selected comparison maps are inverse on the general cover-relative `H1`
+quotient.
+
+This proof uses only the cochain inverse law `toC1_fromC1` and the general
+Cech coboundary setoid's zero boundary.
+-/
+theorem semanticRepairAdditiveH1Class_to_coverRelative_right_inverse
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Function.RightInverse
+      comparison.coverRelativeH1_to_semanticRepairAdditiveH1Class
+      comparison.semanticRepairAdditiveH1Class_to_coverRelativeH1 := by
+  intro coverClass
+  refine Quotient.inductionOn coverClass ?_
+  intro cocycle
+  apply Quotient.sound
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  refine ⟨0, ?_⟩
+  change
+    comparison.toC1 (comparison.fromC1 cocycle.1) - cocycle.1 =
+      K.d 0 0
+  rw [comparison.toC1_fromC1 cocycle.1]
+  simp
+
+/--
+Selected equivalence between the G-05 semantic additive `H1` quotient and the
+general cover-relative Cech `H1` surface.
+
+The equivalence is constructed from cochain-level compatibility and quotient
+proofs; it is not supplied as a certificate field.
+-/
+def semanticRepairAdditiveH1_equiv_coverRelativeH1
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    SemanticRepairAdditiveH1Class additive ≃ K.CechCohomologySucc 0 where
+  toFun := comparison.semanticRepairAdditiveH1Class_to_coverRelativeH1
+  invFun := comparison.coverRelativeH1_to_semanticRepairAdditiveH1Class
+  left_inv :=
+    comparison.coverRelative_to_semanticRepairAdditiveH1Class_left_inverse
+  right_inv :=
+    comparison.semanticRepairAdditiveH1Class_to_coverRelative_right_inverse
+
 /-- The selected residual zero predicate in the general cover-relative `H1`. -/
 def CoverRelativeResidualH1Zero
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) : Prop :=
@@ -357,6 +428,8 @@ structure SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
     SemanticRepairAdditiveH1Class additive -> K.CechCohomologySucc 0
   fromCoverRelativeH1 :
     K.CechCohomologySucc 0 -> SemanticRepairAdditiveH1Class additive
+  h1Equiv :
+    SemanticRepairAdditiveH1Class additive ≃ K.CechCohomologySucc 0
   sameClass_iff_coverRelative :
     forall {left right : E.coefficient.C1}
       (hleft : CechZ1 E left) (hright : CechZ1 E right),
@@ -376,6 +449,8 @@ def semanticRepairAdditiveH1_coverRelativeH1_comparison_packageData
     comparison.semanticRepairAdditiveH1Class_to_coverRelativeH1
   fromCoverRelativeH1 :=
     comparison.coverRelativeH1_to_semanticRepairAdditiveH1Class
+  h1Equiv :=
+    comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1
   sameClass_iff_coverRelative := by
     intro left right hleft hright
     exact comparison.semantic_sameClass_iff_coverRelative_sameClass hleft hright
