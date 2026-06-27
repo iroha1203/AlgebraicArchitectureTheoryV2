@@ -1282,3 +1282,150 @@ lower data alone.  The next minimum obligation is to design and prove the
 carrier-specific comparison provenance needed for the section-family witness,
 or to return a GOAL boundary revision proposal explaining why that provenance
 must be accepted as ambient selected comparison input.
+
+## Cycle 11 — carrier-specific comparison provenance schema
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.c0SectionEquiv`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.c1SectionEquiv`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toSectionFamilyWitness`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toFaceRestrictionCompatibility`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toFaceRestrictionRealization`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toCochainRealization`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_carrier_specific_comparison_provenance`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_requires_maps_and_faceLaws`
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Define non-conclusion-equivalent carrier-specific semantic/AAT cochain
+  comparison provenance and use it to construct
+  `SemanticRepairCoverRelativeSectionFamilyWitness` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+
+Fixed in this cycle:
+
+- Added a lower carrier-specific provenance schema with explicit `to/from`
+  maps, inverse laws, additive preservation for degrees `0` and `1`,
+  degree-`2` zero preservation, and the selected
+  `faceRestrictionTerm` / `alternatingFaceCombination` differential laws.
+- Proved that this provenance constructs the degree-wise additive/plain
+  equivalences required by `SemanticRepairCoverRelativeSectionFamilyWitness`.
+- Proved that this provenance constructs
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- Proved that the constructed witnesses feed the existing
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`,
+  `SemanticRepairCoverRelativeCochainRealization`, and selected
+  cover-relative `H^1` grounding package.
+
+Remaining:
+
+- This cycle does not construct an inhabitant of
+  `SemanticRepairCarrierSpecificComparisonProvenance` for the target semantic
+  repair coefficient surface.
+- Therefore the carrier-specific comparison is now theorem-used and
+  certificate-shaped, but the concrete certificate is still a material premise.
+- The next minimum obligation is either:
+  1. construct a concrete provenance inhabitant from the selected semantic
+     repair / AAT cover data, or
+  2. explicitly classify this provenance as an `ambient-boundary` selected
+     comparison input and revise the target boundary accordingly.
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: `discharge-required` remains open
+  until an inhabitant is constructed, but the required finite certificate shape
+  is now fixed in Lean.
+- `section-family type equivalence`: now theorem-derived from
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `face-restriction compatibility`: now theorem-derived from
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `H1 quotient comparison`, `H1 zero equivalence`, and selected grounding
+  package: downstream theorem consequences once provenance is supplied.
+- `full sheaf cohomology equivalence` and general cover refinement
+  naturality: unchanged `out-of-scope` / explicit-comparison boundaries.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new provenance does not store `SemanticRepairAdditiveH1Class`,
+  `SemanticRepairAdditiveH1Zero`, boundary membership, quotient equivalence,
+  global semantic repair coherence, effective descent, cover refinement
+  naturality, or full sheaf cohomology equivalence.
+- It stores only carrier maps, inverse laws, additive preservation, zero
+  preservation, and selected face-restriction differential equations.
+- The `H1` grounding package is obtained only by theorem path:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> toSectionFamilyWitness
+  -> toFaceRestrictionCompatibility
+  -> toFaceRestrictionRealization
+  -> toCochainRealization
+  -> grounded_package_of_carrier_specific_comparison_provenance
+```
+
+This is progress over Cycle 10's blocker because the necessary carrier-specific
+input is no longer an unstructured appeal to equivalence fields.  It is not yet
+target completion because the concrete provenance inhabitant has not been
+constructed.
+
+### Dependency DAG Delta
+
+```text
+bare lower data
+  -> no_uniform_additive_carrier_equivalence_from_bare_lower_data
+  -> cannot generate arbitrary degree-wise additive equivalences
+
+carrier-specific maps + inverse laws + additive laws + face equations
+  -> c0SectionEquiv / c1SectionEquiv / c2SectionEquiv
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> selected cover-relative H1 comparison package
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle11AxiomAudit.lean` was run for the new carrier
+provenance declarations.  The audit reported only standard
+`[propext, Quot.sound]` dependencies for the finite witness constructors and
+`[propext, Classical.choice, Quot.sound]` for the downstream grounding-package
+theorem.  No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe`
+dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake env lean .tmp/G06Cycle11AxiomAudit.lean` — passed.
+
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean/report files — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean/report files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 11 fixes the shape and proof-use path of the carrier-specific comparison
+certificate, but does not yet provide the concrete certificate inhabitant needed
+to close the discharge-required premise.

@@ -486,6 +486,104 @@ structure SemanticRepairCoverRelativeFaceRestrictionCompatibility
             (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
 
 /--
+Carrier-specific lower comparison provenance for identifying the semantic
+coefficient carriers with the selected cover-relative Cech section families.
+
+This is intentionally below `SemanticRepairCoverRelativeSectionFamilyWitness`:
+it stores maps, inverse laws, additive preservation for degrees `0` and `1`,
+degree-`2` zero preservation, and the selected face-restriction differential
+equations.  It does not store an `H1` quotient equivalence, zero-class result,
+boundary membership, global semantic repair coherence, effective descent,
+refinement naturality, or full sheaf cohomology comparison.
+-/
+structure SemanticRepairCarrierSpecificComparisonProvenance
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  toSection0 : E.coefficient.C0 -> K.Cn 0
+  fromSection0 : K.Cn 0 -> E.coefficient.C0
+  from_to_section0 :
+    forall primitive : E.coefficient.C0,
+      fromSection0 (toSection0 primitive) = primitive
+  to_from_section0 :
+    forall primitive : K.Cn 0,
+      toSection0 (fromSection0 primitive) = primitive
+  toSection0_add :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    forall left right : E.coefficient.C0,
+      toSection0 (left + right) = toSection0 left + toSection0 right
+  toSection1 : E.coefficient.C1 -> K.Cn 1
+  fromSection1 : K.Cn 1 -> E.coefficient.C1
+  from_to_section1 :
+    forall cochain : E.coefficient.C1,
+      fromSection1 (toSection1 cochain) = cochain
+  to_from_section1 :
+    forall cochain : K.Cn 1,
+      toSection1 (fromSection1 cochain) = cochain
+  toSection1_add :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall left right : E.coefficient.C1,
+      toSection1 (left + right) = toSection1 left + toSection1 right
+  toSection2 : E.coefficient.C2 -> K.Cn 2
+  fromSection2 : K.Cn 2 -> E.coefficient.C2
+  from_to_section2 :
+    forall obstruction : E.coefficient.C2,
+      fromSection2 (toSection2 obstruction) = obstruction
+  to_from_section2 :
+    forall obstruction : K.Cn 2,
+      toSection2 (fromSection2 obstruction) = obstruction
+  toSection2_zero :
+    letI := K.cochainAddCommGroup 2
+    toSection2 E.coefficient.zero2 = 0
+  fromSection2_zero :
+    letI := K.cochainAddCommGroup 2
+    fromSection2 0 = E.coefficient.zero2
+  d0_face_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.alternatingFaceCombination 0
+          (fun σ i => K.faceRestrictionTerm 0 i (toSection0 primitive) σ) =
+        toSection1 (E.coefficient.delta0 primitive)
+  d0_face_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (fromSection0 primitive) =
+        fromSection1
+          (K.alternatingFaceCombination 0
+            (fun σ i => K.faceRestrictionTerm 0 i primitive σ))
+  d1_face_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.alternatingFaceCombination 1
+          (fun σ i => K.faceRestrictionTerm 1 i (toSection1 cochain) σ) =
+        toSection2 (E.coefficient.delta1 cochain)
+  d1_face_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (fromSection1 cochain) =
+        fromSection2
+          (K.alternatingFaceCombination 1
+            (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
+
+/--
 Lower-level section realization provenance using the selected face-restriction
 presentation of the general cover-relative Cech differential.
 
@@ -830,6 +928,166 @@ def toSectionRealizationBridge
     exact realization.d1_face_from cochain
 
 end SemanticRepairCoverRelativeFaceRestrictionRealization
+
+namespace SemanticRepairCarrierSpecificComparisonProvenance
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+The degree-`0` carrier maps in carrier-specific provenance construct the
+additive equivalence required by the section-family witness.
+-/
+def c0SectionEquiv
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0 := by
+  letI := additive.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  exact
+    { toFun := provenance.toSection0
+      invFun := provenance.fromSection0
+      left_inv := provenance.from_to_section0
+      right_inv := provenance.to_from_section0
+      map_add' := provenance.toSection0_add }
+
+/--
+The degree-`1` carrier maps in carrier-specific provenance construct the
+additive equivalence required by the section-family witness.
+-/
+def c1SectionEquiv
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1 := by
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact
+    { toFun := provenance.toSection1
+      invFun := provenance.fromSection1
+      left_inv := provenance.from_to_section1
+      right_inv := provenance.to_from_section1
+      map_add' := provenance.toSection1_add }
+
+/--
+The degree-`2` carrier maps in carrier-specific provenance construct the
+plain equivalence used for obstruction values.
+-/
+def c2SectionEquiv
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    E.coefficient.C2 ≃ K.Cn 2 where
+  toFun := provenance.toSection2
+  invFun := provenance.fromSection2
+  left_inv := provenance.from_to_section2
+  right_inv := provenance.to_from_section2
+
+/--
+Carrier-specific provenance discharges the finite section-family witness
+without storing that witness as a field.
+-/
+def toSectionFamilyWitness
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K where
+  c0SectionEquiv := provenance.c0SectionEquiv
+  c1SectionEquiv := provenance.c1SectionEquiv
+  c2SectionEquiv := provenance.c2SectionEquiv
+  c2SectionEquiv_zero := provenance.toSection2_zero
+  c2SectionEquiv_symm_zero := provenance.fromSection2_zero
+
+/--
+Carrier-specific provenance discharges selected face-restriction compatibility
+relative to the constructed section-family witness.
+-/
+def toFaceRestrictionCompatibility
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      additive provenance.toSectionFamilyWitness where
+  d0_face_to := by
+    intro primitive
+    simpa [toSectionFamilyWitness, c0SectionEquiv, c1SectionEquiv] using
+      provenance.d0_face_to primitive
+  d0_face_from := by
+    intro primitive
+    simpa [toSectionFamilyWitness, c0SectionEquiv, c1SectionEquiv] using
+      provenance.d0_face_from primitive
+  d1_face_to := by
+    intro cochain
+    simpa [toSectionFamilyWitness, c1SectionEquiv, c2SectionEquiv] using
+      provenance.d1_face_to cochain
+  d1_face_from := by
+    intro cochain
+    simpa [toSectionFamilyWitness, c1SectionEquiv, c2SectionEquiv] using
+      provenance.d1_face_from cochain
+
+/--
+Carrier-specific provenance constructs the existing face-restriction
+realization layer, so the new lower data is proof-used by the downstream
+comparison package.
+-/
+def toFaceRestrictionRealization
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K :=
+  SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+    provenance.toSectionFamilyWitness provenance.toFaceRestrictionCompatibility
+
+/--
+Carrier-specific provenance supplies exactly the separated finite witness and
+face-restriction compatibility required by Cycle 9's boundary theorem.
+-/
+theorem constructs_sectionFamilyWitness_and_faceRestrictionCompatibility
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Exists fun sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive sectionWitness :=
+  ⟨provenance.toSectionFamilyWitness, provenance.toFaceRestrictionCompatibility⟩
+
+/--
+Audit theorem: carrier-specific provenance exposes only carrier maps, inverse
+laws, additive preservation, zero preservation, and selected face-restriction
+differential equations.  The downstream `H1` package is constructed by theorem,
+not stored in the provenance object.
+-/
+theorem carrierSpecificComparisonProvenance_requires_maps_and_faceLaws
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    (Nonempty (E.coefficient.C0 -> K.Cn 0) /\
+      Nonempty (K.Cn 0 -> E.coefficient.C0) /\
+      Nonempty (E.coefficient.C1 -> K.Cn 1) /\
+      Nonempty (K.Cn 1 -> E.coefficient.C1) /\
+      Nonempty (E.coefficient.C2 -> K.Cn 2) /\
+      Nonempty (K.Cn 2 -> E.coefficient.C2)) /\
+      Exists fun sectionWitness :
+        SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K =>
+          SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            additive sectionWitness := by
+  exact
+    ⟨⟨⟨provenance.toSection0⟩,
+      ⟨provenance.fromSection0⟩,
+      ⟨provenance.toSection1⟩,
+      ⟨provenance.fromSection1⟩,
+      ⟨provenance.toSection2⟩,
+      ⟨provenance.fromSection2⟩⟩,
+      provenance.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility⟩
+
+end SemanticRepairCarrierSpecificComparisonProvenance
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
 
@@ -1232,6 +1490,45 @@ theorem grounded_package_of_face_restriction_realization
   realization.toCochainRealization.grounded_package_of_cochain_realization
 
 end SemanticRepairCoverRelativeFaceRestrictionRealization
+
+namespace SemanticRepairCarrierSpecificComparisonProvenance
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Carrier-specific provenance reaches the cochain-realization layer through the
+existing face-restriction realization path.
+-/
+def toCochainRealization
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairCoverRelativeCochainRealization additive K :=
+  provenance.toFaceRestrictionRealization.toCochainRealization
+
+/--
+Carrier-specific provenance supplies the selected cover-relative grounding
+package by constructing the finite witness, face-restriction realization, and
+cochain realization in sequence.
+-/
+theorem grounded_package_of_carrier_specific_comparison_provenance
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        provenance.toCochainRealization.toH1Comparison) :=
+  provenance.toFaceRestrictionRealization.grounded_package_of_face_restriction_realization
+
+end SemanticRepairCarrierSpecificComparisonProvenance
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 
