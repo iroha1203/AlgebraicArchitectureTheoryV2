@@ -5942,3 +5942,174 @@ for `CurrentG06InputSurface.surface.coverBridge` and `CurrentG06InputSurface.sur
 from concrete selected residual coefficient / selected semantic-delta /
 presheaf-restriction source, or to record that this source is not derivable
 inside the current G-06 input vocabulary.
+
+## Cycle 44 — current surface lower source as selected carrier geometry plus face laws
+
+- decision: approve
+- result_type: blocker-sharpened
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_cochainRealization_iff_selectedCarrierGeometry_and_faceLawSource`
+
+### T1 Selection
+
+The selector chose to specialize the Cycle 42 / Cycle 43 lower-data boundary
+one step further to the existing separated lower source:
+
+```text
+selected carrier geometry
++ selected Cech face-law source
+```
+
+The accepted obligation was not to build this lower source from
+`CurrentG06InputSurface`.  Instead, Cycle 44 fixes that for the same
+`surface.coverBridge` and `surface.K`, a selected cochain realization is
+equivalent to the existing lower pair
+`SemanticRepairSelectedCarrierGeometry` plus
+`SemanticRepairSelectedCechFaceLawSource`.
+
+Rejected alternatives were:
+
+- claiming that cover membership, `AATSheafCondition`, descent, or presheaf
+  restriction laws construct the selected carrier geometry or selected face
+  laws;
+- adding a new certificate wrapper for the lower source;
+- moving to refinement / naturality or full sheaf cohomology before the lower
+  selected carrier / face-law source is discharged;
+- treating Cycle 43's explicit lower-data boundary as final completion.
+
+### Result
+
+Cycle 44 proves:
+
+```text
+Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K)
+  <->
+Exists geometry :
+  SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K,
+  SemanticRepairSelectedCechFaceLawSource additive geometry
+```
+
+and keeps the no-uniform blockers visible:
+
+```text
+no uniform CarrierSpecificAdditiveComparisonData constructor from bare groups
+no uniform additive equivalence constructor from bare groups
+```
+
+The proof uses the existing carrier-specific provenance equivalence:
+
+```text
+carrier-specific provenance
+  <->
+selected carrier geometry + selected Cech face laws
+```
+
+Forward, a cochain realization is converted to carrier-specific provenance and
+then to the selected lower pair.  Backward, the selected lower pair constructs
+carrier-specific provenance, which constructs the cochain realization.
+
+This is narrower than a completion claim.  The selected carrier geometry
+stores the degree-wise carrier comparison data and degree-`2` zero laws; the
+selected Cech face-law source stores the four selected face-restriction
+equations.  Both remain material lower sources.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeCochainRealization`: remains
+  `discharge-required`, now equivalent at the current surface to selected
+  carrier geometry plus selected Cech face laws.
+- `SemanticRepairSelectedCarrierGeometry`: remains `discharge-required`.
+  It contains the carrier comparison data and degree-`2` zero laws; Cycle 44
+  does not derive it from current cover/sheaf/descent input.
+- `SemanticRepairSelectedCechFaceLawSource`: remains `discharge-required`.
+  It contains the four selected face-restriction equations; Cycle 44 does not
+  derive them from current presheaf restriction laws alone.
+- `CurrentG06InputSurface`: proof-used only through `surface.coverBridge` and
+  `surface.K` in the specialized equivalence.  Cycle 44 does not directly
+  consume `surface.presheaf`, `surface.selectedCover_mem`,
+  `surface.sheafCondition`, or `surface.descent`.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex; no theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+- No global semantic repair coherence, `H1` zero, boundary membership,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is hidden in a structure field or certificate
+  field.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface.surface.coverBridge + CurrentG06InputSurface.surface.K
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> toCarrierSpecificComparisonProvenance
+  -> carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws
+  -> selected carrier geometry + selected Cech face laws
+
+selected carrier geometry + selected Cech face laws
+  -> carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> toCochainRealization
+  -> SemanticRepairCoverRelativeCochainRealization
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle44AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_cochainRealization_iff_selectedCarrierGeometry_and_faceLawSource`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path scan over changed Lean file and report — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-sharpened.
+- completion candidate: no.
+- major findings: none for checkpoint approval.
+- anti-weakening: passed.  The theorem does not claim construction of selected
+  carrier geometry or selected face laws from current site/sheaf/descent data,
+  and it does not move to refinement naturality or full sheaf cohomology.
+- structure field escape: passed.  No new structure or certificate field is
+  introduced.  The theorem reuses existing lower-source structures and marks
+  them as the remaining material boundary.
+- proof use: passed.  The theorem uses
+  `carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws`
+  in both directions, via `realization.toCarrierSpecificComparisonProvenance`
+  and `provenance.toCochainRealization`.
+- remaining obligations: construct `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource` for the current selected surface
+  from concrete selected residual coefficient / selected semantic-delta /
+  presheaf-restriction source, or record that this source is not derivable
+  inside the current G-06 input vocabulary.  Refinement / naturality and full
+  sheaf cohomology comparison remain outside the unconditional claim boundary.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct the selected carrier geometry and
+selected Cech face-law source for `surface.coverBridge` and `surface.K` from a
+concrete selected residual coefficient / selected semantic-delta /
+presheaf-restriction source, or to fix a sharper non-derivability boundary.

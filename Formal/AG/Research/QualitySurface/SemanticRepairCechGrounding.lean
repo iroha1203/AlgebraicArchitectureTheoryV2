@@ -4326,6 +4326,52 @@ theorem currentG06InputSurface_reduces_cochainRealization_to_explicitLowerData
       hsurface.2.2.2.2⟩
 
 /--
+Cycle 44 checkpoint theorem: for the current G-06 input surface, the selected
+cochain-realization source is equivalent to the existing separated lower
+source of selected carrier geometry plus selected Cech face laws.
+
+This theorem does not construct either lower source from
+`CurrentG06InputSurface`.  It specializes the provenance equivalence to
+`surface.coverBridge` and `surface.K`, and keeps the no-uniform
+carrier/equivalence blockers visible so the lower source remains
+`discharge-required`.
+-/
+theorem currentG06InputSurface_cochainRealization_iff_selectedCarrierGeometry_and_faceLawSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) <->
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  refine ⟨?_, ?_, ?_⟩
+  · constructor
+    · intro hrealization
+      rcases hrealization with ⟨realization⟩
+      exact
+        (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)).1
+          ⟨realization.toCarrierSpecificComparisonProvenance⟩
+    · intro hlower
+      rcases
+        (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)).2
+          hlower with
+        ⟨provenance⟩
+      exact ⟨provenance.toCochainRealization⟩
+  · exact no_uniform_carrier_specific_additive_comparison_from_bare_groups
+  · exact
+      SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
