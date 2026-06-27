@@ -5451,3 +5451,152 @@ source, or to record a sharper blocker showing why that generation cannot
 come from the current G-06 input surface.  General refinement/naturality and
 full sheaf cohomology comparison remain outside the unconditional claim
 boundary.
+
+## Cycle 41 — carrier-specific provenance constructed from explicit lower data
+
+- decision: approve
+- result_type: proof-obligation-discharged for the provenance node only
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.degreewiseCarrierData_and_explicitFaceRestrictionEquations_constructs_carrierSpecificComparisonProvenance`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+
+### T1 Selection
+
+The selector chose the constructive reverse direction to Cycle 40:
+build `SemanticRepairCarrierSpecificComparisonProvenance` from the same
+lower data that Cycle 40 extracted from it.
+
+The selected obligation is intentionally narrow.  It does not try to derive
+finite carrier comparisons or face laws from bare cover membership,
+`AATSheafCondition`, `AATDescent`, presheaf restriction laws, or full sheaf
+cohomology.  It only proves that once the degree-wise carrier data, degree-`2`
+zero laws, and four selected face-restriction equations are supplied, the
+formerly opaque provenance node is constructible and equivalent to that
+explicit lower surface.
+
+### Result
+
+Cycle 41 proves the constructive and bidirectional audit:
+
+```text
+degree-0 finite additive carrier witness data
+  + degree-1 finite additive carrier witness data
+  + degree-2 zero-preserving equivalence
+  + d0_face_to / d0_face_from / d1_face_to / d1_face_from
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+```
+
+and:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  <-> explicit degree-wise carrier data
+      + degree-2 zero-preserving equivalence
+      + four selected face-restriction equations
+```
+
+The new constructor proof-uses all four selected face equations in the
+`d0_face_to`, `d0_face_from`, `d1_face_to`, and `d1_face_from` fields of
+`SemanticRepairCarrierSpecificComparisonProvenance`.  The equivalence theorem
+also extracts the same explicit lower data from any supplied provenance
+inhabitant, closing the Cycle 40 reverse direction.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged relative to
+  explicit finite degree-wise carrier data, degree-`2` zero laws, and the four
+  selected face-restriction equations.
+- finite carrier witness data: remains `discharge-required` as lower data.
+  Cycle 41 makes it visible and proof-used; it does not construct it from the
+  current site/sheaf/descent surface.
+- four explicit selected face-restriction equations: remain
+  `discharge-required` as lower data.  Cycle 41 consumes them directly and
+  proves they are exactly sufficient for the provenance node.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the existing Cycle 33 / Cycle 38 path.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex; no theorem in this cycle identifies it with full sheaf cohomology.
+- No global semantic repair coherence, `H1` zero, boundary membership,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is hidden in a new structure field or
+  certificate field.
+
+### Dependency DAG
+
+```text
+finite carrier witness data
+  + degree-2 zero-preserving equivalence
+  + four explicit selected face-restriction equations
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> Cycle 40 extraction path
+  -> Cycle 39 explicit lower-source theorem
+  -> Cycle 38 / Cycle 37 / Cycle 33 effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle41AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCarrierSpecificComparisonProvenance.of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.degreewiseCarrierData_and_explicitFaceRestrictionEquations_constructs_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path scan over changed Lean file and report — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged for the provenance node only.
+- completion candidate: no.
+- major findings: none for checkpoint approval.
+- anti-weakening: passed.  The new declarations do not claim that bare cover
+  membership, sheaf condition, descent, presheaf restriction, refinement /
+  naturality, or full sheaf cohomology generate the lower carrier data or face
+  equations.
+- structure field escape: passed.  `CarrierSpecificAdditiveComparisonData`
+  contains carrier maps, inverse laws, and forward additivity only.  The
+  `SemanticRepairCarrierSpecificComparisonProvenance` face equations are
+  exposed by the new equivalence rather than hidden as a completed source.
+- proof use: passed.  The four selected face equations are consumed directly
+  in the constructor fields `d0_face_to`, `d0_face_from`, `d1_face_to`, and
+  `d1_face_from`; the equivalence theorem extracts and reconstructs the same
+  explicit lower data.
+- remaining obligations: finite carrier witness data and the four selected
+  face-restriction equations still need construction from concrete selected
+  residual coefficient / selected semantic-delta / presheaf-restriction
+  sources, or a sharper blocker must be fixed.  Refinement / naturality and
+  full sheaf cohomology comparison remain outside the unconditional claim
+  boundary.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct the now-explicit lower finite
+carrier witness data and selected face equations from concrete selected
+residual coefficient / selected semantic-delta / presheaf-restriction source,
+or to record a sharper blocker showing why the current G-06 input surface
+cannot provide that source.  General refinement/naturality and full sheaf
+cohomology comparison remain outside the unconditional claim boundary.
