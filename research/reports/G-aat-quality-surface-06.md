@@ -8254,3 +8254,132 @@ The next minimal obligation is now sharpened to constructing either
 lower selected residual coefficient / selected semantic-delta /
 presheaf-restriction sources, or making the corresponding GOAL boundary
 revision explicit.
+
+## Cycle 58 — no current-surface constructor for the Cycle 57 lower pair
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Prove the GOAL-boundary blocker for the Cycle 57 lower pair:
+CurrentG06InputSurface alone cannot construct
+Exists model, SemanticRepairCoverRelativeDirectDifferentialCompatibility ...
+under the same PUnit / ZMod 2 test-surface assumptions used for the Cycle 56
+direct-lower-bundle blocker.
+```
+
+The selector chose the exact lower pair left by Cycle 57.  A positive
+construction from `CurrentG06InputSurface` is not available, and construction
+via `SemanticRepairCoverRelativeCochainRealization` or
+`SemanticRepairCarrierSpecificComparisonProvenance` would be circular because
+those sources already contain the selected carrier / semantic-delta data.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 58 proves a current-surface-only no-constructor theorem for the exact
+lower pair isolated by Cycle 57:
+
+```text
+Exists model : SelectedSectionFamilyCarrierModel ...,
+  SemanticRepairCoverRelativeDirectDifferentialCompatibility ...
+```
+
+The proof is intentionally indirect and proof-uses the previous cycle:
+
+```text
+surface-only lower-pair constructor
+  -> Cycle 57 iff
+  -> surface-only DegreewiseCarrierDataAndDirectDifferentialLaws constructor
+  -> Cycle 56 PUnit / ZMod 2 blocker
+  -> contradiction
+```
+
+Thus the exact lower pair remains `discharge-required`.  The theorem does not
+construct carrier data or direct laws, and does not reclassify them as ambient
+site/sheaf/presheaf boundary.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: still `discharge-required`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: still
+  `discharge-required`.
+- `CurrentG06InputSurface` cannot be used as a surface-only source for that
+  lower pair under the explicit finite `PUnit` / `ZMod 2` incompatibility
+  witness.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective gluing, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced.
+
+### Dependency DAG
+
+```text
+surface-only constructor:
+  CurrentG06InputSurface
+    -> Exists model, DirectDifferentialCompatibility model
+  + degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility
+    -> CurrentG06InputSurface
+       -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  + no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws
+    -> False
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle58AxiomAudit.lean` — passed and removed after audit.
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- major findings / veto: none.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- proof use: passed.  The theorem assumes a current-surface lower-pair
+  constructor, uses the Cycle 57 iff `.2` direction to convert it into a
+  `DegreewiseCarrierDataAndDirectDifferentialLaws` constructor, and then passes
+  that constructor to the Cycle 56 current-surface blocker.
+- structure field escape: none found.  The lower pair remains explicit in the
+  constructor hypothesis and is not reclassified as ambient boundary or a
+  certificate field.
+- remaining material data:
+  `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` remain
+  `discharge-required`.
+- next obligation: construct that lower pair from genuinely lower selected
+  residual coefficient / selected semantic-delta / presheaf-restriction
+  sources, or make the corresponding GOAL boundary revision explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation remains to construct
+`SelectedSectionFamilyCarrierModel` and
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` from genuinely
+lower selected residual coefficient / selected semantic-delta /
+presheaf-restriction sources, or make the corresponding GOAL boundary revision
+explicit.

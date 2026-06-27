@@ -6159,6 +6159,56 @@ theorem currentG06InputSurface_reduces_directLowerBundle_to_selectedCarrierModel
       hsurface.2.2.2.2⟩
 
 /--
+Cycle 58 blocker theorem: a surface-only constructor for the Cycle 57 lower
+pair cannot be unconditional over the current G-06 input surface.
+
+The proof uses the Cycle 57 equivalence to turn any constructor of
+`SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility` from
+`CurrentG06InputSurface` into a constructor of the transparent Cycle 56 direct
+lower bundle.  It then applies the Cycle 56 `PUnit` / `ZMod 2` finite
+incompatibility blocker.  Thus the exact Cycle 57 lower pair remains
+`discharge-required`; it is not reclassified as ambient site/sheaf/presheaf
+data.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputLowerPairConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model)) :
+    False := by
+  let currentInputDirectBundleConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        DegreewiseCarrierDataAndDirectDifferentialLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) :=
+    fun surface =>
+      (degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)).2
+        (currentInputLowerPairConstructor surface)
+  exact
+    no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputDirectBundleConstructor
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and
