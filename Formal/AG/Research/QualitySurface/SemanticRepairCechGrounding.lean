@@ -3467,6 +3467,44 @@ theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferen
   grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
     model direct.toFaceRestrictionCompatibility
 
+/--
+Cycle 31 bridge theorem: selected cochain realization discharges the direct
+selected differential-compatibility node for the carrier model extracted from
+the same realization.
+
+The source is the existing cochain-realization layer: degree-wise selected
+carrier equivalences plus semantic `delta0` / `delta1` compatibility with the
+chosen cover-relative Cech differential.  The theorem constructs the
+carrier-only model, the direct `K.d` compatibility for the model-built section
+witness, and then proof-uses both witnesses in the existing selected
+cover-relative grounding package path.  It introduces no new certificate
+structure and stores no `H1` zero, boundary membership, global coherence,
+effective descent, refinement naturality, or full sheaf cohomology comparison.
+-/
+theorem selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive K) :
+    Exists fun model : SelectedSectionFamilyCarrierModel additive coverBridge K =>
+      Exists fun direct :
+        SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) =>
+          Nonempty
+            (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+              (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+                (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                  model)
+                direct.toFaceRestrictionCompatibility).toH1Comparison) := by
+  let provenance := realization.toCarrierSpecificComparisonProvenance
+  let bridge := provenance.toSectionRealizationBridge
+  let model := bridge.toSelectedSectionFamilyCarrierModel
+  let direct := bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+  exact
+    ⟨model, direct,
+      grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+        model direct⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
