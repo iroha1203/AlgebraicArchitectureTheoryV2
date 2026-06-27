@@ -5154,3 +5154,160 @@ concrete selected residual coefficient / cover-relative carrier source; the
 latter needs a concrete selected semantic-delta / presheaf-restriction
 face-law source.  General refinement/naturality and full sheaf cohomology
 comparison remain outside the unconditional claim boundary.
+
+## Cycle 39 — explicit face-restriction equations feed effective gluing
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`
+  - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_explicit_face_restriction_equations`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+
+### T1 Selection
+
+The selector chose the `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
+provenance gap.  Cycle 38 lowered the carrier model to explicit finite carrier
+witness data, leaving the compatibility object as the largest opaque premise
+in the effective-gluing bridge.  The selected next step was to expose that
+object as exactly its four selected face-restriction equations.
+
+### Result
+
+Cycle 39 lowers `SemanticRepairCoverRelativeFaceRestrictionCompatibility` to
+the four explicit selected face-restriction equations:
+
+```text
+d0_face_to
+d0_face_from
+d1_face_to
+d1_face_from
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCechFaceLawSource
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> CoverRelative H1 comparison
+  -> Cycle 33 effective-gluing / cover-relative H1-zero package
+```
+
+The new effective-gluing theorem now routes:
+
+```text
+finite carrier witness data
+  + four explicit selected face-restriction equations
+  -> constructed SelectedSectionFamilyCarrierModel
+  -> constructed SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> Cycle 38 effective-gluing / cover-relative H1-zero package
+```
+
+The theorem continues to return the theorem-level surface from Cycle 33:
+cover-wise sheaf condition, AAT descent, unique global gluing, cover-relative
+comparison package, global coherence / cover-relative `H1` zero equivalence,
+additive-zero / cover-relative-zero equivalence, and later-layer vanishing
+tokens.
+
+This does not construct the four selected face equations from lower semantic
+delta / presheaf restriction data.  It removes the compatibility structure as
+a top-level opaque premise and leaves the exact equations as the remaining
+source.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged
+  relative to the four explicit selected face-restriction equations by
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`.
+- explicit face-restriction equations: remain discharge-required.  They are
+  the selected semantic-delta / presheaf-restriction source that still needs a
+  concrete lower construction.
+- finite carrier witness data: remains discharge-required.  It is the concrete
+  selected residual coefficient / cover-relative section-family carrier source
+  that still needs construction.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+finite carrier witness data
+  -> constructed SelectedSectionFamilyCarrierModel
+  -> constructed section-family witness
+
+four explicit selected face-restriction equations
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCechFaceLawSource
+
+finite carrier witness data
+  + four explicit selected face-restriction equations
+  -> Cycle 38 effective-gluing / cover-relative H1-zero package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle39AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_explicit_face_restriction_equations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path / private machine identifier scan over changed Lean file and
+  report — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: target-proof-checkpoint.
+- completion candidate: no.
+- major findings: none.
+- anti-weakening: passed.  The theorem is explicitly relative to finite carrier
+  witness data and four selected face-restriction equations.  It does not claim
+  these sources follow from cover membership, sheaf condition, descent, or full
+  sheaf cohomology.
+- structure field escape: passed.  No new structure, class, or certificate
+  field is introduced.  The existing compatibility structure is exposed as
+  exactly four equations.
+- certificate provenance: partially improved.
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` is discharged
+  relative to the four explicit equations; the equations themselves and finite
+  carrier witness data remain unresolved lower sources.
+- proof use: passed.  The four equations are consumed to construct
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, which is consumed
+  by the Cycle 38 effective-gluing theorem.
+- remaining obligations: construct finite degree-wise carrier witness data and
+  the four explicit face-restriction equations from concrete lower sources;
+  keep refinement/naturality and cover-relative Cech `H1` vs full sheaf
+  cohomology boundaries explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations after this cycle are the finite degree-wise
+carrier witness data and the four explicit selected face-restriction equations.
+The first needs a concrete selected residual coefficient / cover-relative
+carrier source; the second needs a concrete selected semantic-delta /
+presheaf-restriction face-law source.  General refinement/naturality and full
+sheaf cohomology comparison remain outside the unconditional claim boundary.
