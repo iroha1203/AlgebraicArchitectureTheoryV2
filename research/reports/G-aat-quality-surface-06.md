@@ -8527,3 +8527,142 @@ source for `SelectedSectionFamilyCarrierModel` from genuinely lower selected
 residual coefficient / selected semantic-delta / presheaf-restriction sources,
 or make the boundary revision explicit.  Direct differential compatibility
 remains the following model-relative obligation.
+
+## Cycle 60 — explicit carrier-source surface-only blocker
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Construct the explicit degree-wise carrier source for
+SelectedSectionFamilyCarrierModel: degree-0 and degree-1
+CarrierSpecificAdditiveComparisonData, degree-2 equivalence, and the two
+degree-2 zero laws, from genuinely lower selected residual coefficient /
+selected semantic-delta / presheaf-restriction sources.
+```
+
+The selector classified this as a carrier-source provenance gap.  A positive
+discharge would require lower selected residual / semantic-delta / restriction
+data that actually constructs the degree-wise carrier source.  The current
+surface did not provide that lower source, so the cycle fixed the exact
+source-level obstruction rather than wrapping the same data in a new
+certificate.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_c2ZeroEquivalence`
+
+### Result
+
+Cycle 60 proves that a surface-only constructor for the exact explicit carrier
+source exposed in Cycle 59 is impossible under the same finite incompatibility
+witness:
+
+```text
+CurrentG06InputSurface
+  -> Exists c0Carrier :
+       CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0),
+     Exists c1Carrier :
+       CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1),
+     Exists c2Equiv : E.coefficient.C2 ≃ K.Cn 2,
+       c2Equiv zero2 = 0
+       /\ c2Equiv.symm 0 = zero2
+```
+
+Together with `E.coefficient.C0 ≃+ PUnit` and `K.Cn 0 ≃+ ZMod 2`, such a
+constructor extracts `c0Carrier.toAddEquiv`, produces `PUnit ≃+ ZMod 2`, and
+forces `0 = 1`.
+
+This fixes the precise Cycle 60 blocker.  It does not construct the explicit
+carrier source, and therefore does not discharge `SelectedSectionFamilyCarrierModel`.
+
+### Material Premise Ledger Delta
+
+- Explicit degree-wise carrier source for `SelectedSectionFamilyCarrierModel`:
+  remains `discharge-required`.
+- `CurrentG06InputSurface` alone cannot construct that exact source under the
+  finite `PUnit` / `ZMod 2` witness.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required`, now with
+  the exact lower source obstruction fixed separately from the model wrapper.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: unchanged and
+  still `discharge-required`.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced.
+
+### Dependency DAG
+
+```text
+surface-only explicit carrier-source constructor
+  -> c0Carrier : CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)
+  -> c0Carrier.toAddEquiv : E.coefficient.C0 ≃+ K.Cn 0
+  + E.coefficient.C0 ≃+ PUnit
+  + K.Cn 0 ≃+ ZMod 2
+  -> PUnit ≃+ ZMod 2
+  -> False
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle60AxiomAudit.lean` — passed and removed after audit.
+- `no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed report file finds only report audit entries
+  for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- major findings / veto: none.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found.
+- proof use: passed.  The theorem applies the constructor hypothesis to the
+  current surface, extracts `c0Carrier`, uses `c0Carrier.toAddEquiv`, composes
+  it with the finite `PUnit` and `ZMod 2` equivalences, and derives `0 = 1`.
+  The `c1` and `c2` source components are not used because the degree-`0`
+  component alone already contradicts the finite witness.
+- certificate provenance: `CurrentG06InputSurface` alone is now audited as
+  insufficient provenance for the exact explicit carrier source; no lower
+  selected residual / semantic-delta / presheaf-restriction constructor is
+  provided.
+- structure field escape: no new structure or certificate field is introduced;
+  the theorem does not move the carrier source into ambient boundary and does
+  not hide exactness, descent, coherence, comparison, `H1` zero, or full sheaf
+  cohomology content in fields.
+- blocking findings: no veto.  This is a legitimate source-level blocker, not
+  a proof-obligation discharge.
+- next obligation: construct the explicit degree-wise carrier source from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction sources, or make the required GOAL boundary revision
+  explicit; only then proceed to the model-relative direct differential
+  compatibility obligation.
+- completion candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation remains positive provenance: construct the explicit
+degree-wise carrier source from genuinely lower selected residual coefficient /
+selected semantic-delta / presheaf-restriction sources, or make the boundary
+revision explicit.  Only after that can the model-relative direct differential
+compatibility obligation be discharged.
