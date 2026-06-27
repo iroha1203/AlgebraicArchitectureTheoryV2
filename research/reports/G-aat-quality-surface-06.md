@@ -2295,3 +2295,125 @@ Minimum next step:
   `SemanticRepairCoverRelativeCochainRealization`, or explicitly revise the
   G-06 GOAL boundary outside the loop to classify the selected cochain
   realization evidence as `ambient-boundary` input.
+
+## Cycle 19 — lower finite witness constructs cochain realization
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.of_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility`
+
+### Result
+
+Cycle 19 discharges the immediate selected cochain-realization premise relative
+to lower finite witness data.  Instead of taking
+`SemanticRepairCoverRelativeCochainRealization additive K` as the first
+unexplained input to the selected cover-relative `H1` grounding package, Lean
+now proves that it is constructible from:
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K`
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility additive sectionWitness`
+
+The proof path is:
+
+```text
+section-family witness
+  + selected face-restriction equations
+    -> SemanticRepairCoverRelativeFaceRestrictionRealization
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> selected cover-relative H1 grounding package
+```
+
+This is a real proof-use improvement over Cycle 18: the cochain realization is
+no longer merely supplied at the `H1` package step.
+
+### Material Premise Ledger Delta
+
+- `selected cochain realization`: discharged relative to lower finite witness
+  data by theorem.
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: remains
+  `discharge-required`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains
+  `discharge-required`.
+- `selected cochain realization as ambient-boundary`: still not adopted; no
+  GOAL-boundary revision is used.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new constructor consumes only degree-wise carrier equivalences, degree-2
+  zero laws, and selected face-restriction differential equations.
+- It does not take or store `SemanticRepairAdditiveH1Zero`, global semantic
+  repair coherence, boundary membership, effective descent, refinement
+  naturality, or full sheaf cohomology comparison.
+- The lower witness still contains substantial carrier-comparison data, so
+  this is not target completion.  The next proof obligation is the provenance
+  of that lower witness from atom-supported semantic cover / coefficient data.
+- T3 audit approved this cycle as `proof-obligation-discharged`; no weakening,
+  ambient-boundary reclassification, unused material premise, or
+  structure-field escape was found in the new declarations.
+
+### Dependency DAG
+
+```text
+remaining lower inputs:
+  selected semantic residual coefficient / cover-relative section-family model
+    -> SemanticRepairCoverRelativeSectionFamilyWitness
+  selected presheaf restriction / face restriction laws
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+new Cycle 19 theorem path:
+  SemanticRepairCoverRelativeSectionFamilyWitness
+    + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle19AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.of_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- local path / private machine identifier scan over changed files — clean.
+
+### Target Status
+
+G-06 returns from `target-blocked` to `target-proof-checkpoint`.
+
+The selected cochain realization source has been pushed down one layer and is
+now theorem-constructed from explicit lower finite witnesses.  The target is
+still not `target-theorem-proved`, because construction of
+`SemanticRepairCoverRelativeSectionFamilyWitness` and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` from the
+atom-supported semantic cover / coefficient surface remains open.
+
+Minimum next obligations:
+
+- Construct `SemanticRepairCoverRelativeSectionFamilyWitness` from the selected
+  semantic residual coefficient surface and cover-relative section-family
+  model, or prove a precise boundary theorem for the finite carrier-equivalence
+  source.
+- Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
+  actual presheaf restriction / selected face-restriction laws.
