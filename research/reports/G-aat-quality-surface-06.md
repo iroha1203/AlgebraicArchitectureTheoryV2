@@ -302,3 +302,118 @@ audit provenance for `SemanticRepairCoverRelativeH1Comparison` from actual
 semantic repair cover / residual coefficient / AAT cover-relative complex data,
 without moving differential compatibility or comparison adequacy into
 conclusion-equivalent fields.
+
+## Cycle 2 — quotient-level H1 equivalence checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeH1Comparison.coverRelative_to_semanticRepairAdditiveH1Class_left_inverse`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Class_to_coverRelative_right_inverse`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1`
+  - `SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.h1Equiv`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_packageData`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The selected map from `SemanticRepairAdditiveH1Class additive` to
+  `K.CechCohomologySucc 0` and the selected map back are inverse on the semantic
+  additive quotient.  The proof uses the cochain inverse law `fromC1_toC1` and
+  the semantic zero coboundary witness.
+- The selected maps are inverse on the general cover-relative Cech quotient. The
+  proof uses `toC1_fromC1` and the general Cech coboundary setoid's zero
+  boundary.
+- The comparison package now carries
+  `SemanticRepairAdditiveH1Class additive ≃ K.CechCohomologySucc 0`, constructed
+  by `semanticRepairAdditiveH1_equiv_coverRelativeH1` from the quotient inverse
+  proofs.  The equivalence is not supplied as an external theorem argument.
+
+Remaining:
+
+- `SemanticRepairCoverRelativeH1Comparison` itself remains visible comparison
+  input.  Its degree `0`/`1`/`2` maps, inverse laws, subtraction laws, zero laws,
+  and `d0`/`d1` compatibility are not yet constructed from concrete
+  `SemanticRepairCover`, residual coefficient, and AAT cover-relative complex
+  data.
+- General cover refinement / naturality remains outside this checkpoint and is
+  still represented by `CoverRefinementNaturalityComparison`.
+- Full sheaf cohomology comparison remains outside this checkpoint and is still
+  represented by `CoverRelativeCechH1FullSheafCohomologyComparison`.
+
+### Material Premise Ledger Delta
+
+- `quotient-level inverse laws`: discharged by
+  `coverRelative_to_semanticRepairAdditiveH1Class_left_inverse` and
+  `semanticRepairAdditiveH1Class_to_coverRelative_right_inverse`.
+- `selected H1 equivalence`: discharged by
+  `semanticRepairAdditiveH1_equiv_coverRelativeH1`, limited to the selected
+  cover-relative Cech `H1` surface.
+- `comparison-map provenance`: discharge-required.  The next minimum obligation
+  is to construct or narrowly audit the `SemanticRepairCoverRelativeH1Comparison`
+  maps and compatibility from selected site / cover / residual coefficient data,
+  without moving compatibility into a new certificate field.
+- `cover refinement / naturality boundary`: out-of-scope for this checkpoint.
+- `Cech-vs-full-sheaf-cohomology boundary`: out-of-scope for this checkpoint.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- No new `h1Equiv` structure-field escape is introduced: the exported package
+  fills `h1Equiv` from theorem-level quotient inverse proofs.
+- The proof terms use the cochain inverse laws.  This is real
+  equivalence-strengthening, but it does not discharge the upstream provenance of
+  those cochain maps and laws.
+- This checkpoint does not claim full sheaf cohomology equivalence, arbitrary
+  site cohomology, refinement functoriality, global semantic repair coherence,
+  or repair synthesis.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeH1Comparison
+  -> semanticRepairAdditiveH1Class_to_coverRelativeH1
+  -> coverRelativeH1_to_semanticRepairAdditiveH1Class
+  -> coverRelative_to_semanticRepairAdditiveH1Class_left_inverse
+  -> semanticRepairAdditiveH1Class_to_coverRelative_right_inverse
+  -> semanticRepairAdditiveH1_equiv_coverRelativeH1
+  -> SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.h1Equiv
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle2AxiomAudit.lean` was run for
+`semanticRepairAdditiveH1_coverRelativeH1_comparison_packageData`,
+`semanticRepairAdditiveH1_coverRelativeH1_comparison_package`, and
+`trueSheafH1_grounded_in_coverRelativeCechH1_package`.  The audit reported only
+standard `[propext, Quot.sound]` dependencies.  No `sorryAx`, non-consulted repo
+axiom, `admit`, or `unsafe` dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake env lean .tmp/G06Cycle2AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed report / Lean files:
+  `rg -n "\b(axiom|admit|sorry|unsafe)\b|by\s+trivial|by\s+simp\s*$" ...`
+  — no changed Lean placeholder hits; report prose contains audit words only.
+- hidden / bidirectional Unicode scan over changed report / Lean files:
+  `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" ...`
+  — clean.
+
+### Target Status
+
+This cycle is a proof checkpoint, not target completion.
+
+`target-theorem-proved` is not claimed.  The remaining blocker is still
+comparison provenance for `SemanticRepairCoverRelativeH1Comparison`: the selected
+cover-relative Cech `H1` equivalence is now theorem-level once the comparison
+data is supplied, but the comparison data is not yet generated from the concrete
+semantic repair cover / residual coefficient / AAT cover-relative complex.
