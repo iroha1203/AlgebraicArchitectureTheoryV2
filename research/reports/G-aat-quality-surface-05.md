@@ -1451,3 +1451,101 @@ Next obligation:
   exactness / effective-descent / true-sheaf condition surface, and state the
   target `[residual] = 0 <-> GlobalSemanticRepairCoherent` bridge using the
   additive quotient class rather than the old current-boundary detector.
+
+## Cycle 16 — additive `H1` zero / global coherence bridge
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: no
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
+- declarations:
+  - `SemanticRepairSheafH1.semanticRepairH1Zero_iff_additiveH1Zero`
+  - `SemanticRepairSheafH1.globalRepairCoherent_of_additiveH1_zero`
+  - `SemanticRepairSheafH1.additiveH1Zero_of_globalRepairCoherent`
+  - `SemanticRepairSheafH1.globalRepairCoherent_iff_additiveH1Zero`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1GluingBridge_package`
+
+Proof-obligation delta:
+
+- connected the target-strength additive `Z1 / B1` zero class from Cycle 15 to
+  the existing sheaf `H1` zero predicate.
+- proved that additive `H1` zero implies global semantic repair coherence under
+  the existing exactness discharge and later-layer vanishing evidence.
+- proved that global semantic repair coherence forces the selected residual to
+  vanish in the additive `Z1 / B1` quotient.
+- packaged the bridge as
+  `GlobalSemanticRepairCoherent (toFiniteTower E) <->
+    SemanticRepairAdditiveH1Zero additive` under the same explicit evidence.
+
+Premise delta:
+
+- discharged in this cycle:
+  - additive zero class is equivalent to the existing sheaf `H1` zero predicate.
+  - additive zero class is sufficient for global coherence through the existing
+    exactness discharge.
+  - global coherence is sufficient for additive zero by forcing first-layer
+    obstruction vanishing and then sheaf `H1` zero.
+- remaining:
+  - instantiate the bridge in `SemanticRepairTrueSheafH1.lean` against the
+    concrete cover / abelian true-sheaf package.
+  - provide `SemanticRepairAdditiveCechH1Data`, exactness discharge, and
+    later-layer vanishing evidence from existing construction theorems rather
+    than leaving them as final theorem arguments.
+  - final four-lane `$math-lean-review`.
+
+Certificate provenance:
+
+- the additive bridge reduces both zero predicates to the visible
+  `CechB1 residual` boundary predicate.
+- the proof uses the additive quotient theorem
+  `semanticRepairAdditiveH1Zero_iff_boundary`, not the rejected
+  current-boundary zero-class detector as the target object.
+- the global-coherence direction uses the existing
+  `globalRepairCoherent_of_sheafH1_zero` theorem with explicit later-layer
+  evidence.
+- the reverse direction uses
+  `globalRepairCoherent_forces_obstructionTowerVanishes`,
+  `layeredAdequacy_of_sheafH1Discharge`, and
+  `h1Vanishes_iff_sheafH1Zero_of_exactEnvelope`.
+
+Proof-use audit:
+
+- `semanticRepairH1Zero_iff_additiveH1Zero` proof-uses the two already audited
+  boundary equivalences:
+  `sheafH1Zero_iff_h1Boundary` and
+  `semanticRepairAdditiveH1Zero_iff_boundary`.
+- `globalRepairCoherent_iff_additiveH1Zero` proof-uses the existing exactness /
+  layered-adequacy route and keeps all later-layer evidence visible as theorem
+  inputs.
+
+Structure-field escape audit:
+
+- no new structure fields were added in this cycle.
+- no `GlobalSemanticRepairCoherent`, `SemanticRepairH1Zero`, additive zero,
+  residual primitive, exactness conclusion, effective-descent conclusion, or
+  conclusion-equivalent fact was stored as a field.
+- `htorsor`, `hhigher`, and `hstack` remain explicit bridge inputs; they are
+  acceptable for this generic bridge but still material premises for final
+  theorem completion unless supplied by the concrete abelian descent package.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed file and scratch audit file
+- local/private path scan over changed file and scratch audit file
+- independent T3 audit: approve for Cycle 16, `completion_candidate: no`.
+
+Next obligation:
+
+- connect the Cycle 16 bridge to the concrete cover / abelian descent package in
+  `SemanticRepairTrueSheafH1.lean`, supplying the additive data and later-layer
+  vanishings from existing construction theorems so that `htorsor`, `hhigher`,
+  and `hstack` are not external final theorem premises.

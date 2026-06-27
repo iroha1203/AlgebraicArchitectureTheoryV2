@@ -618,6 +618,109 @@ theorem finiteTower_h1Shadow_of_sheafH1
     semanticRepairFiniteShadow_sound (toFiniteTower E)
       ((h1Vanishes_iff_sheafH1Zero_of_exactEnvelope E).2 hzero)
 
+/--
+The additive `Z1 / B1` zero class matches the existing sheaf `H1` zero predicate.
+
+Both sides are reduced to the same visible boundary predicate; no boundary
+detector or global repair predicate is used as a field.
+-/
+theorem semanticRepairH1Zero_iff_additiveH1Zero
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairH1Zero E <-> SemanticRepairAdditiveH1Zero additive := by
+  exact
+    (sheafH1Zero_iff_h1Boundary E).trans
+      (semanticRepairAdditiveH1Zero_iff_boundary additive).symm
+
+/--
+Additive zero `H1` class plus later-layer vanishings gives global semantic repair
+coherence through the existing exactness discharge.
+-/
+theorem globalRepairCoherent_of_additiveH1_zero
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (hzero : SemanticRepairAdditiveH1Zero additive)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) := by
+  exact
+    globalRepairCoherent_of_sheafH1_zero E discharge
+      ((semanticRepairH1Zero_iff_additiveH1Zero additive).2 hzero)
+      htorsor hhigher hstack
+
+/--
+Global semantic repair coherence forces the selected residual to vanish in the
+additive `Z1 / B1` quotient.
+-/
+theorem additiveH1Zero_of_globalRepairCoherent
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) ->
+      SemanticRepairAdditiveH1Zero additive := by
+  intro hglobal
+  have hold : SemanticRepairH1Zero E := by
+    have htower :
+        ObstructionTowerVanishes (toFiniteTower E) :=
+      globalRepairCoherent_forces_obstructionTowerVanishes
+        (toFiniteTower E)
+        (layeredAdequacy_of_sheafH1Discharge discharge)
+        hglobal
+    exact (h1Vanishes_iff_sheafH1Zero_of_exactEnvelope E).1 htower.1
+  exact (semanticRepairH1Zero_iff_additiveH1Zero additive).1 hold
+
+/--
+Target-adjacent bridge: under the existing discharge and later-layer effective
+descent evidence, global semantic repair coherence is equivalent to vanishing
+of the selected residual's additive Cech `H1 = Z1 / B1` class.
+-/
+theorem globalRepairCoherent_iff_additiveH1Zero
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) <->
+      SemanticRepairAdditiveH1Zero additive := by
+  constructor
+  · exact additiveH1Zero_of_globalRepairCoherent E additive discharge
+  · intro hzero
+    exact
+      globalRepairCoherent_of_additiveH1_zero E additive discharge hzero
+        htorsor hhigher hstack
+
+/-- Cycle 16 package: additive Cech `H1` zero is the global gluing obstruction. -/
+theorem semanticRepairAdditiveH1GluingBridge_package
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    (SemanticRepairH1Zero E <-> SemanticRepairAdditiveH1Zero additive) /\
+      (SemanticRepairAdditiveH1Zero additive ->
+        GlobalSemanticRepairCoherent (toFiniteTower E)) /\
+      (GlobalSemanticRepairCoherent (toFiniteTower E) ->
+        SemanticRepairAdditiveH1Zero additive) /\
+      (GlobalSemanticRepairCoherent (toFiniteTower E) <->
+        SemanticRepairAdditiveH1Zero additive) := by
+  exact
+    ⟨semanticRepairH1Zero_iff_additiveH1Zero additive,
+      (fun hzero =>
+        globalRepairCoherent_of_additiveH1_zero E additive discharge hzero
+          htorsor hhigher hstack),
+      additiveH1Zero_of_globalRepairCoherent E additive discharge,
+      globalRepairCoherent_iff_additiveH1Zero E additive discharge
+        htorsor hhigher hstack⟩
+
 /-- The first-layer sheaf `H1` exactness envelope theorem package. -/
 theorem semanticRepairSheafH1ExactnessEnvelope_package
     {Atom : Type u}
