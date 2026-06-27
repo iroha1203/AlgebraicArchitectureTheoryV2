@@ -5648,6 +5648,146 @@ theorem currentG06InputSurface_selectedCochainRealization_constructs_carrierSpec
       hpaired.2.2.2.2.2.2.1,
       hpaired.2.2.2.2.2.2.2⟩
 
+/--
+Cycle 54 lower-source constructor: explicit finite lower data constructs the
+selected cochain realization and immediately proof-uses that constructed
+realization through the Cycle 53 provenance path.
+
+This theorem lowers the selected cochain-realization source to the transparent
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` predicate.  The
+explicit carrier equivalences, degree-`2` zero laws, and selected
+face-restriction equations remain material lower data; they are not generated
+from `CurrentG06InputSurface` alone and are not reclassified as ambient
+boundary.  No `H1` zero, boundary membership, global coherence, effective
+gluing, refinement naturality, comparison equivalence, or full sheaf
+cohomology comparison is introduced.
+-/
+theorem currentG06InputSurface_explicitFiniteWitness_constructs_selectedCochainRealization_and_carrierSpecificProvenance
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (let realization :=
+        Classical.choice
+          ((cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)).2 lower)
+       let provenance :=
+        realization.toCarrierSpecificComparisonProvenance
+          (coverBridge := surface.coverBridge)
+       let c0Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+          provenance
+       let c1Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+          provenance
+       let c2Equiv :=
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+          provenance
+       let model :=
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)
+          c0Carrier c1Carrier c2Equiv
+          provenance.toSection2_zero provenance.fromSection2_zero
+       let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+       Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K) /\
+        Nonempty (SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K) /\
+        Nonempty
+          (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive sectionWitness) /\
+        Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+        (∀ {source target : S.category} (f : source ⟶ target),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+            SemanticRepairSelectedCechFaceLawSource additive geometry)) := by
+  let hrealization :
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) :=
+    (cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)).2 lower
+  let realization :=
+    Classical.choice hrealization
+  have hcycle53 :
+      let provenance :=
+        realization.toCarrierSpecificComparisonProvenance
+          (coverBridge := surface.coverBridge)
+      let c0Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+          provenance
+      let c1Carrier :=
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+          provenance
+      let c2Equiv :=
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+          provenance
+      let model :=
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)
+          c0Carrier c1Carrier c2Equiv
+          provenance.toSection2_zero provenance.fromSection2_zero
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K) /\
+        Nonempty (SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K) /\
+        Nonempty
+          (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive sectionWitness) /\
+        Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+        (∀ {source target : S.category} (f : source ⟶ target),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+            SemanticRepairSelectedCechFaceLawSource additive geometry) :=
+    currentG06InputSurface_selectedCochainRealization_constructs_carrierSpecificComparisonProvenance_and_pairedLowerSource
+      (surface := surface) realization
+  exact ⟨hrealization, hcycle53⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
