@@ -2505,6 +2505,59 @@ theorem grounded_package_of_carrier_specific_comparison_provenance
         provenance.toCochainRealization.toH1Comparison) :=
   provenance.toFaceRestrictionRealization.grounded_package_of_face_restriction_realization
 
+/--
+Carrier-specific provenance constructs the richer section-realization bridge by
+first forming the face-restriction realization and then deriving direct `K.d`
+compatibility from the general Cech face formula.
+
+This is still lower selected comparison provenance: it contains carrier maps,
+inverse/additivity laws, degree-`2` zero laws, and selected differential laws,
+but no `H1` zero, boundary membership, global coherence, effective descent,
+refinement naturality, or full sheaf cohomology comparison.
+-/
+def toSectionRealizationBridge
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K :=
+  provenance.toFaceRestrictionRealization.toSectionRealizationBridge
+
+/--
+Carrier-specific provenance is a concrete source for the richer
+section-realization bridge used in Cycle 23.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_sectionRealizationBridge
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeSectionRealizationBridge
+        additive coverBridge K) :=
+  ⟨provenance.toSectionRealizationBridge⟩
+
+/--
+The richer section-realization bridge and the lower carrier-specific
+provenance determine each other as selected comparison sources.
+
+The forward direction extracts carrier-specific provenance through the
+cochain-realization layer.  The backward direction constructs the bridge from
+carrier maps and selected face-restriction laws.  This theorem moves the
+remaining bridge source down to explicit lower selected carrier / differential
+provenance; it does not classify that provenance as ambient boundary.
+-/
+theorem sectionRealizationBridge_iff_carrierSpecificComparisonProvenance :
+    Nonempty
+        (SemanticRepairCoverRelativeSectionRealizationBridge
+          additive coverBridge K) <->
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive coverBridge K) := by
+  constructor
+  · intro hbridge
+    rcases hbridge with ⟨bridge⟩
+    exact ⟨bridge.toCochainRealization.toCarrierSpecificComparisonProvenance⟩
+  · intro hprovenance
+    rcases hprovenance with ⟨provenance⟩
+    exact provenance.carrierSpecificComparisonProvenance_constructs_sectionRealizationBridge
+
 end SemanticRepairCarrierSpecificComparisonProvenance
 
 namespace SemanticRepairCoverRelativeCochainRealization
@@ -2708,6 +2761,43 @@ theorem grounded_package_of_section_realization_bridge_via_selectedCarrierModel_
     bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
 
 end SemanticRepairCoverRelativeSectionRealizationBridge
+
+namespace SemanticRepairCarrierSpecificComparisonProvenance
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Carrier-specific provenance reaches the selected cover-relative grounding
+package through the richer bridge and the Cycle 23 lower-DAG proof-use theorem.
+
+This is a proof-use theorem: the constructed bridge is consumed by the existing
+`SectionRealizationBridge -> SelectedSectionFamilyCarrierModel +
+DirectDifferentialCompatibility -> H1 package` path.  The result is still
+relative to the lower carrier-specific provenance source.
+-/
+theorem grounded_package_of_carrier_specific_comparison_provenance_via_sectionRealizationBridge
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (SemanticRepairCoverRelativeCochainRealization.of_sectionFamilyWitness_and_faceRestrictionCompatibility
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            provenance.toSectionRealizationBridge.toSelectedSectionFamilyCarrierModel)
+          provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel.toFaceRestrictionCompatibility).toH1Comparison) :=
+  provenance.toSectionRealizationBridge
+    |>.grounded_package_of_section_realization_bridge_via_selectedCarrierModel_and_directDifferentialCompatibility
+
+end SemanticRepairCarrierSpecificComparisonProvenance
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 

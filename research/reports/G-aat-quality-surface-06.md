@@ -2979,3 +2979,156 @@ Minimum next obligations:
 - Separately, construct `SelectedSectionFamilyCarrierModel` and
   `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from their lower
   selected sources if no richer bridge is available.
+
+## Cycle 24 — carrier-specific provenance constructs the section-realization bridge
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.toSectionRealizationBridge`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_sectionRealizationBridge`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.sectionRealizationBridge_iff_carrierSpecificComparisonProvenance`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_carrier_specific_comparison_provenance_via_sectionRealizationBridge`
+
+### Result
+
+Cycle 24 constructs the richer
+`SemanticRepairCoverRelativeSectionRealizationBridge` from the lower selected
+`SemanticRepairCarrierSpecificComparisonProvenance` source.
+
+The construction path is:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> SemanticRepairCoverRelativeSectionRealizationBridge
+```
+
+The second step uses the existing theorem-level conversion from selected
+face-restriction equations to direct `K.d` compatibility through
+`CoverRelativeCechComplex.d_eq_alternatingFaceCombination`.
+
+Lean also proves the selected source equivalence:
+
+```text
+SemanticRepairCoverRelativeSectionRealizationBridge
+  <-> SemanticRepairCarrierSpecificComparisonProvenance
+```
+
+The forward direction extracts carrier-specific provenance through the
+cochain-realization layer; the reverse direction constructs the richer bridge
+from carrier maps, inverse/additivity laws, degree-`2` zero laws, and selected
+face-restriction differential equations.
+
+Finally, the lower provenance is proof-used through the Cycle 23 lower-DAG
+package:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+     + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> selected cover-relative H1 grounding package
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeSectionRealizationBridge`: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance` by theorem.
+- `SelectedSectionFamilyCarrierModel`: supplied by the constructed bridge in
+  the downstream proof-use path; its lower selected carrier source remains the
+  carrier maps and additive laws contained in
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: supplied by the
+  constructed bridge in the downstream proof-use path; its lower selected law
+  source remains the face-restriction equations contained in
+  `SemanticRepairCarrierSpecificComparisonProvenance`, converted through the
+  general Cech face formula.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: remains
+  `discharge-required` as the lower selected carrier / differential provenance.
+  It is not reclassified as ambient boundary and does not store `H1` zero,
+  boundary membership, global coherence, effective descent, refinement
+  naturality, or full sheaf cohomology comparison.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> SemanticRepairCoverRelativeSectionRealizationBridge
+
+SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> selected cover-relative H1 grounding package
+
+reverse audit:
+  SemanticRepairCoverRelativeSectionRealizationBridge
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+
+remaining lower source:
+  selected semantic residual coefficient / concrete carrier geometry
+  + actual presheaf restriction / selected Cech face laws
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle24AxiomAudit.lean` — passed.
+- `SemanticRepairCarrierSpecificComparisonProvenance.toSectionRealizationBridge`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_sectionRealizationBridge`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.sectionRealizationBridge_iff_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_carrier_specific_comparison_provenance_via_sectionRealizationBridge`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- hidden material premise: none found.
+- structure field escape: none found.
+- proof use: the lower provenance argument is used to construct
+  `SemanticRepairCoverRelativeSectionRealizationBridge`, and the constructed
+  bridge is consumed by the Cycle 23 selected carrier / direct differential
+  grounding package theorem.
+- unresolved provenance: `SemanticRepairCarrierSpecificComparisonProvenance`
+  remains a lower `discharge-required` premise.  It still requires construction
+  from selected semantic residual coefficient / concrete carrier geometry plus
+  actual presheaf restriction and selected Cech face laws.
+- blocking findings: none.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 24 removes the richer bridge as the current top-level unresolved source
+by constructing it from lower carrier-specific provenance.  The remaining
+proof obligation is now lower and sharper: construct
+`SemanticRepairCarrierSpecificComparisonProvenance` from selected semantic
+residual coefficient / concrete carrier geometry plus actual presheaf
+restriction and selected Cech face laws, or fix that source as an explicit
+target-boundary revision outside the loop.
