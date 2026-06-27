@@ -16,6 +16,11 @@
 - AAT は比喩ではなく、Atom を基礎単位としてアーキテクチャを本物の代数幾何の対象にする。
   そのため、特定のプログラミング言語、フレームワーク、ADL、実装形態に依存せず、
   言語を越えた architectural fact を同じ数学的基盤で扱える。
+- AAT は本気で代数幾何を行う。Atom を土台に、site、Grothendieck topology、sheaf、
+  ringed topos、scheme、Čech cohomology、derived / stacky structure などの本物の
+  代数幾何概念へ接続していく。Lean 形式化でも、AAT 専用の仮置き wrapper や
+  名前だけの analogue に留めず、定義、comparison map、同値、boundary theorem を通じて
+  既存の数学的構造へ接続する方向を優先する。
 - AAT の強みは、アーキテクチャを geometry として扱い、局所性、貼り合わせ、obstruction、
   変形、高次構造、repair 可能性を site / sheaf / law algebra / cohomology の同じ土台で
   分析できる点にある。既存の設計パターンも、経験則ではなく local model、幾何構造、
@@ -62,6 +67,10 @@
   一括して扱う。
 - ウィトゲンシュタイン的責務境界を守る。選ばれた vocabulary、policy、evidence contract から
   語れることだけを語る。語れない領域は、失敗や残タスクではなく沈黙として扱う。
+- AAT / Lean theorem の説明・レビューでは、定理が語る選択済み vocabulary、仮定、対象だけを
+  肯定形で述べる。ユーザーや対象 artifact が明示していない限り、
+  「この定理は実コードベース全体を対象としません」のような外側の否定 claim を付け足さない。
+  外側は補足 caveat ではなく沈黙で扱う。
 
 ## 作業規律
 

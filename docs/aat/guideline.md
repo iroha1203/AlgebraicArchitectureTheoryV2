@@ -2,6 +2,19 @@
 
 この文書は `Formal/AG`、`Formal/Arch`、`docs/aat` を編集するときの作業方針をまとめる。
 
+## Claim discipline
+
+- 語らないことは語らない。語るべきことは強く精密に語る。
+- AAT / Lean の定理・定義・レビュー説明では、選択された atom vocabulary、law、cover、
+  coefficient、仮定、証明済み theorem package の範囲を肯定形で述べる。
+- 禁止: 「実コードベースは対象としない」「この定理はコード全体の品質を判定しない」のように、
+  AAT の外側を定型 caveat として主張に付け足すこと。外側は失敗・残タスク・補足説明ではなく沈黙で扱う。
+- OK: 「選択された atom vocabulary と finite cover の範囲で XXX を証明する」
+  「Lean で証明済みの sheaf condition と明示された comparison map に相対化して YYY が成り立つ」のように、
+  claim scope を正面から限定して述べること。
+- anti-weakening / overclaim 防止のための negative list は、通常の説明文に再掲しない。
+  実際に境界を越えた claim を止めるときだけ、監査理由として最小限に使う。
+
 ## 位置づけ
 
 - 現行 AAT は代数幾何的アーキテクチャ論である。Atom は primitive architectural fact
@@ -10,6 +23,12 @@
   architecture geometry を構成し、AAT site、sheaf、ringed AAT topos、law algebra、
   obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、
   derived / stacky geometry として読む。
+- AAT は代数幾何の比喩ではない。Atom を土台に、site、Grothendieck topology、sheaf、
+  ringed topos、scheme、Čech cohomology、derived / stacky structure などの本物の
+  代数幾何概念へ接続していく理論として扱う。
+- Lean 形式化でも、AAT 専用の仮置き wrapper や名前だけの analogue で満足しない。
+  有限・小さい対象から始めても、定義、comparison map、同値、boundary theorem を通じて、
+  可能な限り既存の数学的構造と接続する方向へ育てる。
 - Atom / law / obstruction / flatness / signature は代数幾何版の基礎データや局所
   presentation である。外部設計パターン語彙へ潰して説明しない。
 - 実コードベース抽出器、ArchMap observation、tooling validation は、AAT 入力を提示・検査する
