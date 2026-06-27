@@ -4843,6 +4843,55 @@ theorem currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sou
       hsurface.2.2.2.2⟩
 
 /--
+Cycle 48 blocker theorem: a surface-only constructor for the whole explicit
+finite witness cannot be unconditional over the current G-06 input surface.
+
+The explicit finite witness contains degree-`0` carrier-specific comparison
+data.  Therefore, on any test surface whose semantic degree-`0` carrier is
+additively equivalent to `PUnit` while the selected cover-relative degree-`0`
+carrier is additively equivalent to `ZMod 2`, such a constructor would produce
+an additive equivalence `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+This is a blocker for the current-surface-only route to
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`; it does not
+construct the finite witness, and it does not reclassify the witness as
+ambient boundary.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputFiniteWitnessConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  rcases currentInputFiniteWitnessConstructor surface with
+    ⟨c0Carrier, _c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
