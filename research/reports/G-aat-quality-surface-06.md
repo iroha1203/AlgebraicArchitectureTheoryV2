@@ -2191,3 +2191,107 @@ T3 audit next obligation:
 - Construct `SemanticRepairCoverRelativeCochainRealization` from lower
   atom-supported site / cover / presheaf / sheaf / cover-relative Cech data, or
   obtain an explicit human-approved GOAL boundary revision.
+
+## Cycle 18 — target-blocked checkpoint
+
+- decision: approve
+- result_type: target-blocked
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- No new Lean declaration in this cycle.
+- This is a fail-closed blocked checkpoint over the already merged Cycle 16 and
+  Cycle 17 evidence.
+
+### Blocked Audit
+
+T1 selector found no new actionable proof obligation inside the current GOAL
+boundary.  The same material premise has now recurred across the latest target
+cycles:
+
+- Cycle 15: `SemanticRepairCarrierSpecificComparisonProvenance additive
+  coverBridge K` still needed either a concrete selected carrier-comparison
+  source or a human-approved GOAL boundary revision.
+- Cycle 16: carrier-specific provenance was reduced to the source of a supplied
+  `SemanticRepairCoverRelativeCochainRealization additive K`.
+- Cycle 17: the current G-06 input surface was proved insufficient to generate
+  the arbitrary selected degree-wise additive equivalences required by that
+  cochain realization.
+- Cycle 18: the selector found that all meaningful next obligations still
+  require either a lower construction of the selected cochain realization from
+  atom-supported site / cover / presheaf / sheaf / cover-relative Cech data, or
+  an explicit human-approved GOAL boundary revision.
+
+### Material Premise Ledger Delta
+
+- `selected cochain realization`: remains `discharge-required`.
+- `carrier-specific comparison provenance`: discharged only relative to a
+  supplied selected cochain realization.
+- `current G-06 input surface only`: already ruled out as a source for
+  arbitrary selected cochain realization degree equivalences.
+- `selected cochain realization as ambient-boundary`: not adopted by the loop;
+  this requires explicit GOAL-boundary revision outside the loop.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- No theorem argument, structure field, certificate field, or class membership
+  is reclassified as discharge in this cycle.
+- The loop does not weaken the GOAL by treating selected cochain realization as
+  ambient-boundary input without human approval.
+- The existing downstream proof-use path remains valid only conditional on a
+  supplied selected cochain realization.
+- T3 audit approved this as `target-blocked`: no weakening,
+  structure-field escape, or hidden conclusion-side premise was found.  The
+  selected cochain realization source remains unresolved.
+
+### Dependency DAG
+
+```text
+required external/lower input:
+  lower atom-supported site / cover / presheaf / sheaf / cover-relative Cech data
+    -> selected cochain realization
+    -> carrier-specific provenance
+    -> selected cover-relative H1 grounding package
+
+current proven blocker:
+  current G-06 input surface only
+    -/-> arbitrary selected cochain realization degree equivalences
+```
+
+### Axiom Audit
+
+- No new Lean declaration was added in Cycle 18.
+- Relevant prior audits remain:
+  - Cycle 16 bridge declarations reported only standard axioms.
+  - Cycle 17 blocker declarations reported only standard axioms.
+
+### Validation
+
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed report file — clean.
+- local path / private machine identifier scan over changed report file —
+  clean.
+- Lean build was not rerun for this report-only cycle; prior Cycle 16 / Cycle
+  17 Lean declarations and CI remain the referenced build evidence.
+
+### Target Status
+
+G-06 is `target-blocked`, not `target-theorem-proved`.
+
+The target theorem is not refuted: the comparison surface and selected
+cover-relative H1 grounding package remain available under supplied selected
+cochain realization.  The blocker is premise provenance: under the current
+GOAL boundary, selected cochain realization has not been constructed from lower
+atom-supported data, and the current site/sheaf/descent input surface alone has
+already been ruled out as a source.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
+Minimum next step:
+
+- Provide a concrete lower construction theorem for
+  `SemanticRepairCoverRelativeCochainRealization`, or explicitly revise the
+  G-06 GOAL boundary outside the loop to classify the selected cochain
+  realization evidence as `ambient-boundary` input.
