@@ -1192,6 +1192,112 @@ structure SemanticRepairSelectedCechFaceLawSource
           (K.alternatingFaceCombination 1
             (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
 
+namespace SemanticRepairSelectedCarrierGeometry
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Construct selected carrier geometry from the concrete carrier-only section
+family model.
+
+This is the Cycle 26 lower-construction theorem for the carrier-geometry node:
+the selected geometry used by Cycle 25 is generated from the already separated
+finite carrier source.  The source is still carrier comparison data, not bare
+cover membership, and it stores no face laws, `H1` zero, global coherence,
+effective descent, refinement naturality, or full sheaf cohomology comparison.
+-/
+def of_selectedSectionFamilyCarrierModel
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    SemanticRepairSelectedCarrierGeometry additive coverBridge K where
+  c0Carrier := model.c0Carrier
+  c1Carrier := model.c1Carrier
+  c2Equiv := model.c2Equiv
+  c2Equiv_zero := model.c2Equiv_zero
+  c2Equiv_symm_zero := model.c2Equiv_symm_zero
+
+/--
+Every selected carrier geometry exposes the concrete carrier-only model from
+which it can be reconstructed.
+
+This keeps the carrier comparison provenance visible instead of allowing
+`SemanticRepairSelectedCarrierGeometry` to become an opaque certificate.
+-/
+def toSelectedSectionFamilyCarrierModel
+    (geometry : SemanticRepairSelectedCarrierGeometry additive coverBridge K) :
+    SelectedSectionFamilyCarrierModel additive coverBridge K where
+  c0Carrier := geometry.c0Carrier
+  c1Carrier := geometry.c1Carrier
+  c2Equiv := geometry.c2Equiv
+  c2Equiv_zero := geometry.c2Equiv_zero
+  c2Equiv_symm_zero := geometry.c2Equiv_symm_zero
+
+/--
+The selected carrier geometry node is equivalent to the concrete carrier-only
+section-family model.
+
+The equivalence is carrier-only.  It does not discharge the remaining selected
+Cech face laws, and it does not introduce any target conclusion as a structure
+field.
+-/
+theorem selectedCarrierGeometry_iff_selectedSectionFamilyCarrierModel :
+    Nonempty
+        (SemanticRepairSelectedCarrierGeometry additive coverBridge K) <->
+      Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) := by
+  constructor
+  · intro hgeometry
+    rcases hgeometry with ⟨geometry⟩
+    exact ⟨geometry.toSelectedSectionFamilyCarrierModel⟩
+  · intro hmodel
+    rcases hmodel with ⟨model⟩
+    exact ⟨of_selectedSectionFamilyCarrierModel model⟩
+
+/--
+The concrete carrier-only model constructs the selected carrier geometry used
+by the carrier-specific comparison provenance path.
+-/
+theorem selectedSectionFamilyCarrierModel_constructs_selectedCarrierGeometry
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    Nonempty
+      (SemanticRepairSelectedCarrierGeometry additive coverBridge K) :=
+  ⟨of_selectedSectionFamilyCarrierModel model⟩
+
+/--
+Boundary audit for selected carrier geometry: supplying the geometry is exactly
+supplying the explicit carrier comparison source already isolated by
+`SelectedSectionFamilyCarrierModel`.
+-/
+theorem requires_explicit_selected_carrier_source
+    (geometry : SemanticRepairSelectedCarrierGeometry additive coverBridge K) :
+    (Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)) /\
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+          (letI := K.cochainAddCommGroup 2
+           c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) :=
+  geometry.toSelectedSectionFamilyCarrierModel.requires_explicit_selected_carrier_source
+
+end SemanticRepairSelectedCarrierGeometry
+
 /--
 Lower-level section realization provenance using the selected face-restriction
 presentation of the general cover-relative Cech differential.
@@ -2787,6 +2893,35 @@ theorem grounded_package_of_selectedCarrierGeometry_and_faceLaws
           geometry faceLaws).toCochainRealization.toH1Comparison) :=
   (of_selectedCarrierGeometry_and_faceLaws
     geometry faceLaws).grounded_package_of_carrier_specific_comparison_provenance
+
+/--
+Concrete carrier-only model data reaches the selected cover-relative grounding
+package once the separate selected Cech face-law source is supplied for the
+constructed carrier geometry.
+
+This is the proof-use theorem for Cycle 26.  The model is consumed to construct
+`SemanticRepairSelectedCarrierGeometry`; the face laws are then consumed by the
+Cycle 25 carrier-specific provenance constructor.  The result remains relative
+to the selected face-law premise and does not claim bare cover/sheaf/descent
+data generates those laws.
+-/
+theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_selectedCechFaceLaws
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (faceLaws :
+      SemanticRepairSelectedCechFaceLawSource
+        additive
+        (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+          model)) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_selectedCarrierGeometry_and_faceLaws
+          (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+            model)
+          faceLaws).toCochainRealization.toH1Comparison) :=
+  grounded_package_of_selectedCarrierGeometry_and_faceLaws
+    (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+      model)
+    faceLaws
 
 /--
 Carrier-specific provenance constructs the richer section-realization bridge by
