@@ -6209,6 +6209,144 @@ theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_
       currentInputDirectBundleConstructor
 
 /--
+Cycle 59 carrier-model boundary: the current site/sheaf/presheaf surface
+reaches presheaf zero/add laws and the selected Cech differential identity,
+but a selected carrier model is still exactly degree-wise carrier comparison
+data plus degree-`2` zero-preserving equivalence data.
+
+This theorem focuses the Cycle 58 lower-pair blocker on its carrier-model
+component.  It proof-uses the current-surface presheaf law theorem and the
+carrier-model iff theorem; it does not introduce direct differential
+compatibility, `H1` zero, boundary membership, global coherence, effective
+gluing, refinement naturality, comparison equivalence, or full sheaf
+cohomology comparison.
+-/
+theorem currentG06InputSurface_reduces_selectedCarrierModel_to_degreewiseCarrierData_and_c2ZeroEquivalence
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      (Nonempty
+          (SelectedSectionFamilyCarrierModel
+            additive surface.coverBridge surface.K) <->
+        Exists fun _ :
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          CarrierSpecificAdditiveComparisonData E.coefficient.C0
+            (surface.K.Cn 0) =>
+        Exists fun _ :
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          CarrierSpecificAdditiveComparisonData E.coefficient.C1
+            (surface.K.Cn 1) =>
+        Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+          (letI := surface.K.cochainAddCommGroup 2
+           c2Equiv E.coefficient.zero2 = 0) /\
+            (letI := surface.K.cochainAddCommGroup 2
+             c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K),
+      hsurface.2.2.2.1,
+      hsurface.2.2.2.2⟩
+
+/--
+Cycle 59 blocker theorem: a surface-only constructor for the carrier-model
+component of the Cycle 57 lower pair cannot be unconditional over the current
+G-06 input surface.
+
+The carrier model already contains degree-`0` carrier-specific additive
+comparison data.  Therefore, on any test surface whose semantic degree-`0`
+carrier is additively equivalent to `PUnit` while the selected cover-relative
+degree-`0` carrier is additively equivalent to `ZMod 2`, such a constructor
+would produce an additive equivalence `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+This is a carrier-only blocker.  It does not mention direct differential laws
+and does not reclassify selected carrier comparison data as ambient
+site/sheaf/presheaf boundary.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierModel
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputCarrierModelConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        SelectedSectionFamilyCarrierModel
+          additive surface.coverBridge surface.K) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let model :
+      SelectedSectionFamilyCarrierModel
+        additive surface.coverBridge surface.K :=
+    currentInputCarrierModelConstructor surface
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    model.c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and
