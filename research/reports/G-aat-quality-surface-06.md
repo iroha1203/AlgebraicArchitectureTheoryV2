@@ -1808,3 +1808,146 @@ T3 audit next obligation:
   `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`,
   or revise the GOAL boundary outside the loop to make that selected
   carrier-comparison source explicit `ambient-boundary` input.
+
+## Cycle 15 — boundary decision checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- No new Lean declaration in this cycle.
+- This is an out-of-loop GOAL boundary decision request, not a proof
+  construction.
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Record a fail-closed boundary decision for G-06: current Lean evidence does
+  not contain a concrete selected carrier-comparison source sufficient to
+  construct
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`.
+- Do not add a new selected-source structure and call the premise discharged.
+
+Fixed checkpoint:
+
+- Cycles 11-14 have now separated the downstream proof-use path from the
+  unresolved upstream source:
+  1. if `SemanticRepairCarrierSpecificComparisonProvenance` is supplied, Lean
+     constructs the section-family witness, face-restriction compatibility,
+     cochain realization, and selected cover-relative `H1` grounding package;
+  2. any concrete provenance exposes degree-`0` and degree-`1`
+     `CarrierSpecificAdditiveComparisonData`;
+  3. no uniform constructor builds that lower data from bare additive groups;
+  4. current G-06 input APIs alone cannot be treated as a uniform hidden
+     provenance constructor.
+- No existing concrete G-05/G-06 theorem has been found that supplies the
+  required degree-`0`/`1`/`2` carrier maps, inverse laws, additive preservation,
+  degree-`2` zero preservation, and selected face-restriction differential
+  laws.
+
+Boundary decision request:
+
+- If the intended mathematical boundary is that the comparison between the
+  G-05 semantic coefficient carriers and the selected AAT cover-relative Cech
+  section-family carriers is part of the selected input geometry, then the
+  GOAL card should be revised outside this loop to classify that selected
+  carrier-comparison evidence as explicit `ambient-boundary` input.
+- If that revision is not accepted, the next proof obligation remains a
+  concrete construction theorem for
+  `SemanticRepairCarrierSpecificComparisonProvenance` from existing target
+  data.  Current evidence does not provide such a theorem.
+
+### Proposed Boundary Text
+
+Suggested GOAL-boundary wording for human review, not applied here:
+
+```text
+selected carrier-comparison evidence between the G-05 semantic coefficient
+carriers and the selected AAT cover-relative Cech section-family carriers is an
+explicit ambient-boundary input when it contains only degree-0/1/2 carrier
+maps, inverse laws, additive preservation for degrees 0 and 1, degree-2 zero
+preservation, and selected face-restriction differential compatibility.
+
+It must not contain SemanticRepairAdditiveH1Class, SemanticRepairAdditiveH1Zero,
+boundary membership, global semantic repair coherence, effective descent,
+cover-refinement naturality, comparison equivalence, full sheaf cohomology
+comparison, or any theorem conclusion equivalent to the target H1 grounding.
+```
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: remains unresolved as
+  `discharge-required` under the current GOAL ledger.
+- `selected carrier-comparison evidence`: boundary revision requested.  It is
+  not reclassified by this cycle.
+- `SemanticRepairAdditiveH1Class`, `SemanticRepairAdditiveH1Zero`, general
+  cover-relative `H1` zero, boundary membership, global coherence, effective
+  descent, comparison equivalence, refinement naturality, and full sheaf
+  cohomology equivalence remain forbidden as certificate fields.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- No new certificate or structure field was added.
+- The cycle explicitly rejects counting a newly supplied selected-source
+  structure as discharge unless the GOAL boundary is revised outside the loop.
+- The proof-use path from an accepted provenance remains theorem-level and
+  audited by Cycle 11, but the provenance source itself remains unresolved.
+- T3 audit approved this as a report-only `proof-checkpoint` and confirmed
+  that no new structure-field escape or certificate-field hiding was added.
+
+### Dependency DAG Delta
+
+```text
+accepted selected carrier-comparison source
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> section-family witness
+  -> face-restriction compatibility
+  -> cochain realization
+  -> selected cover-relative H1 grounding package
+
+current state:
+  selected carrier-comparison source is not constructed
+  -> G-06 remains target-proof-checkpoint
+```
+
+### Axiom Audit
+
+- No new Lean declaration was added in Cycle 15.
+- The relevant prior audits remain:
+  - Cycle 11: provenance-to-grounding declarations depended only on standard
+    axioms.
+  - Cycle 12: lower carrier-comparison blocker depended only on standard
+    axioms.
+  - Cycle 13: explicit selected source boundary theorem depended only on
+    standard axioms.
+  - Cycle 14: current-input blocker depended only on standard axioms.
+
+### Validation
+
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed report file — clean.
+- local path / private machine identifier scan over changed report file —
+  clean.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 15 does not complete the theorem and does not run `$math-lean-review`.
+It records that the remaining carrier-specific comparison provenance requires
+either a concrete construction theorem or an explicit human-approved GOAL
+boundary revision.
+
+T3 audit next obligation:
+
+- Record the out-of-loop G-06 GOAL boundary decision.  If the boundary revision
+  is accepted, update the GOAL so selected carrier-comparison evidence is
+  explicit `ambient-boundary` input.  Otherwise construct a concrete selected
+  carrier-comparison source sufficient to inhabit
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`.
