@@ -1,6 +1,6 @@
 ---
 name: math-lean-review
-description: 数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/lemma/definition、または定理・命題テキストを入力に、その数学的主張と Lean 実装を論文査読する数学者レベルで厳格レビューする。Use when the user says "$math-lean-review", "数学とLEANのレビュー", "この定理をLean実装込みで査読して", "GOALS.mdの命題をLean上で厳しく見て", "大定理モードの証明完了を査読して", or asks for parallel subagent review of theorem/proposition claims against Lean proofs.
+description: 数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/lemma/definition、または定理・命題テキストを入力に、その数学的主張と Lean 実装を、仮定放電・certificate provenance・anti-weakening まで含めて論文査読する数学者レベルで厳格レビューする。Use when the user says "$math-lean-review", "数学とLEANのレビュー", "この定理をLean実装込みで査読して", "GOALS.mdの命題をLean上で厳しく見て", "大定理モードの証明完了を査読して", or asks for parallel subagent review of theorem/proposition claims against Lean proofs.
 ---
 
 # Math Lean Review
@@ -16,6 +16,8 @@ description: 数学本文、research/GOALS.md、docs/note、PRD、Lean theorem/l
 - Findings first で書く。証明として不完全、主張過大、仮定依存、未放電、`axiom` / `sorry` / `admit` / `unsafe` / `by trivial` 風の薄い証明、台帳 drift を優先して出す。
 - 対象 theorem だけを眺めて完了扱いにしない。定義、補題、instance、import 元、依存 theorem、example、index / proof obligation / GOAL claim まで、主張の成立に必要な境界を読む。
 - Lean が通ることは十分条件ではない。仮定が主張を丸ごと含んでいる、`Prop` が弱すぎる、 witness が選択済みすぎる、非空性や decidability や finite universe を hidden assumption にしている、`True` wrapper / marker theorem になっている場合は finding とする。
+- explicit certificate はそれだけでは放電ではない。certificate / class membership / structure field / theorem argument が material premise を透明に保持しているだけなら、未放電 premise として扱う。必ずその certificate 自体を生成する theorem / construction / finite witness / instance chain を追う。
+- theorem statement に現れる premise が proof term で実質的に使われているかを確認する。未使用の `sheafCondition`、`faithfulness`、`exactness`、`descent` などは、主張補強ではなく ledger/package への添付にすぎない可能性が高い。
 - 大定理モードでは、「大定理名の theorem が存在する」「main theorem が build する」「候補カードが proved と言っている」だけでは完了にしない。本文 / GOAL が要求する強さ、主要仮定の放電、依存補題の健全性、台帳の rigor label が揃って初めて証明完了候補とする。
 - 数学本文と Lean のどちらも勝手に編集しない。ユーザーが明示的に修正を依頼した場合だけ実装作業へ移る。
 - `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md` は保護対象。レビュー目的で読んでよいが、明示的な本文編集依頼なしに変更しない。
@@ -65,6 +67,9 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 3. 仮定放電を theorem family 単位で追う。
    - 大定理の各主要仮定が、GOAL の前提として許されたものか、別 theorem / construction / instance で放電済みか、未放電の仮定として残っているかを分類する。
    - 結論相当の lawfulness、certificate、compatibility、gluing、nonempty witness、repair witness、transport data を仮定に入れている場合は、証明ではなく assumption package として扱う。
+   - `discharge-required` な premise は、明示引数に出ているだけでは放電済みにしない。certificate を受け取る theorem ではなく、その certificate を対象境界から構成する theorem / finite witness / concrete construction を探す。見つからなければ `undischarged` とする。
+   - theorem argument、typeclass、structure field、certificate field、opaque class membership に material premise が移されていないか確認する。特に sheaf condition、semantic faithfulness、exactness、effectivity、descent、global coherence、obstruction vanishing、representation adequacy、finite-shadow adequacy は通常 `discharge-required` として扱う。
+   - proof term / `#print` / declaration body で主要 premise が実際に使われているかを見る。未使用 premise が main theorem の外観だけを強くしている場合は finding とする。
 
 4. 依存補題と台帳を照合する。
    - main theorem だけでなく、主張を支える spine theorem、bridge theorem、finite example、witness construction、candidate card、`lean_theorem_index.md`、`proof_obligations.md` を読む。
@@ -94,11 +99,39 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 - 主張一致: 本文 theorem / GOAL claim が Lean theorem statement と同じ強さか。Lean が片方向、弱い predicate、選択済み witness、有限例、特殊ケースだけになっていないか。
 - 仮定過多: theorem の仮定に結論相当の情報、ready-made certificate、lawfulness、nonempty witness、decidable equality、finite support、compatibility が埋め込まれていないか。
 - 未放電: proof obligation、index、TODO、placeholder、`axiom`、`sorry`、abstract parameter、opaque witness が本質的な穴を隠していないか。
+- certificate provenance: certificate が主張の入力境界から Lean theorem / construction / finite witness で作られているか。単に explicit argument として渡されているだけなら放電ではない。
+- unused premise: theorem statement の material premise が proof body で使われているか。未使用 premise は、同値や構成を支える条件ではなく、近傍 package の飾りになっている可能性がある。
 - 定義の薄さ: predicate が `True`、structure field が実質 marker、theorem が definitional unfolding だけ、example が実 witness ではなく wrapper になっていないか。
+- structure-field escape: quotient relation、exactness、descent、effectivity、compatibility、naturality、comparison、global coherence の主要部分が structure field として供給されていないか。供給 field から accessor theorem を出しているだけなら、構成証明ではなく conditional surface と判定する。
 - 依存補題: 対象 theorem は clean でも、依存補題が未証明、過大仮定、特殊化、または本文 claim と違う universe / coefficient / topology / site / category を使っていないか。
 - 反例可能性: 本文主張に必要な separatedness、base change、descent、cover stability、functoriality、cohomology coefficient、stack quotient、finite/infinite distinctionが抜けていないか。
 - 台帳整合: `lean_theorem_index.md`、`proof_obligations.md`、GOAL card、candidate card、report が Lean 実体と同じ rigor label を持つか。
 - 範囲外の切り分け: AAT の theorem claim が要求していない ArchMap 抽出完全性、source coverage、tooling evidence completeness、外部実証 completeness を、証明未達の finding と混同していないか。
+
+## Material Premise Discharge Audit
+
+大定理 / target theorem の最終 gate では、次を独立した必須監査にする。
+
+1. **Premise ledger extraction**
+   - GOAL card の `target premise discharge policy`、`target material premise ledger`、completion criteria、report の final packet から material premise を列挙する。
+   - 各 premise を `ambient-boundary`、`direction-hypothesis`、`discharge-required`、`conclusion-equivalent-risk` に分類する。
+
+2. **Certificate provenance**
+   - `discharge-required` premise ごとに、対応 certificate / class membership / instance / structure field の生成元を探す。
+   - 生成元が theorem argument、opaque field、hand-supplied compatibility、selected comparison data に止まる場合は未放電とする。
+   - 放電済みと呼べるのは、対象境界の入力 data から certificate を作る theorem、有限 witness、構成、または既に査読済みの predecessor theorem が確認できる場合だけである。
+
+3. **Proof-use check**
+   - main theorem の proof term、`#print`、補題呼び出しを見て、material premise が主結論の証明に使われているか確認する。
+   - premise が package の別成分として出力されるだけ、または `_premise` として未使用なら、主張の放電ではなく添付証拠として finding にする。
+
+4. **Field-content audit**
+   - structure / certificate の field 名だけで安心しない。field の型が `H1Zero`、boundary membership、global coherence、effectivity token、vanishing、comparison equivalence、exactness implication、descent conclusion、semantic closure などを直接保持していないか読む。
+   - 結論の一部を field が供給している場合は、field が透明でも hidden premise と同等に扱う。
+
+5. **Fail condition**
+   - `discharge-required` premise が theorem argument / certificate field / structure field に残る場合、`No major findings` は禁止する。
+   - その theorem は `target-theorem-proved` ではなく、`target-proof-checkpoint`、conditional theorem、support surface、または boundary-narrowed theorem として報告する。
 
 ## Multi-Agent Review
 
@@ -120,11 +153,12 @@ multi-agent tool が使えない環境、または live tool contract が subage
 
 3. **Lean 査読 A**
    - 候補 Lean declaration、statement、定義、型、universe、instance、仮定リスト、proof term、依存補題、`#print axioms`、placeholder scan、focused build を一通り追う。
-   - Lean statement が数学 claim を弱めていないか、仮定に結論を逃がしていないか、未放電 obligation がないかを独立に判定する。
+   - Lean statement が数学 claim を弱めていないか、仮定・certificate・structure field に結論を逃がしていないか、未放電 obligation がないかを独立に判定する。
+   - material premise の certificate provenance、proof-use、field-content を追い、explicit certificate を放電済みと即断しない。
 
 4. **Lean 査読 B**
    - Lean 査読 A と同じ declaration 群と依存補題を、別の独立査読として再検査する。
-   - A の補助ではなく、同じ合格基準で statement 弱化、仮定過多、薄い証明、axiom 依存、台帳 / proof obligation drift を探す。
+   - A の補助ではなく、同じ合格基準で statement 弱化、仮定過多、thin certificate、unused premise、structure-field escape、axiom 依存、台帳 / proof obligation drift を探す。
 
 親 Codex は 4 本の結果を統合するとき、数学 A/B の不一致、Lean A/B の不一致、数学査読と Lean 査読の claim mapping 不一致を finding 候補として扱う。片方だけが見つけた懸念も、根拠があれば落とさない。
 
@@ -140,10 +174,12 @@ Reviewer lane: <数学査読 A | 数学査読 B | Lean 査読 A | Lean 査読 B>
 Report in Japanese:
 1. Findings, ordered by severity, with file/line/theorem references when available.
 2. Evidence checked.
-3. Commands or Lean queries that should be run for this lane.
-4. Coverage limits.
+3. Material premise discharge audit: which premises are ambient, direction hypotheses, discharged, or still certificate/field assumptions.
+4. Certificate provenance / proof-use concerns, especially unused premises and structure-field escape.
+5. Commands or Lean queries that should be run for this lane.
+6. Coverage limits.
 
-Do not edit files. Do not implement fixes. The parent must not pass expected findings or a provisional verdict to you. If you are assigned A or B, act as an independent reviewer, not as a helper for the other reviewer. Do not issue the final integrated verdict. Do not assume that a passing Lean file proves the prose claim. Stay anchored in the assigned lane, but report any obvious proof-breaking issue you directly see.
+Do not edit files. Do not implement fixes. The parent must not pass expected findings or a provisional verdict to you. If you are assigned A or B, act as an independent reviewer, not as a helper for the other reviewer. Do not issue the final integrated verdict. Do not assume that a passing Lean file or an explicit certificate proves the prose claim. Stay anchored in the assigned lane, but report any obvious proof-breaking issue you directly see.
 ```
 
 ## 親 Codex の統合判定
@@ -154,14 +190,16 @@ sub-agent の結果をそのまま貼らず、親 Codex が重複、矛盾、過
 2. Findings: 重大度順。各 finding は数学 claim、Lean declaration、根拠、影響、必要な修正方針を含める。
 3. Claim mapping: 本文 / GOAL claim と Lean declaration の対応表。
 4. Material premise audit: 結論相当の条件、ready-made witness、certificate、lawfulness、compatibility を仮定に逃がしていないか。
-5. Premise discharge status: 各主要仮定が本文 theorem の前提として正当か、別 theorem / construction で放電済みか、未放電か。
-6. Anti-weakening verdict: Lean statement が本文 claim を弱めていないか。弱い場合は、どの方向・量化・対象・係数・site・universe・witness で弱いかを明記する。
-7. Undischarged obligations: proof obligation、TODO、axiom、sorry、opaque witness、未確認依存補題の一覧。
-8. Axiom / dependency audit: `#print axioms`、placeholder scan、依存補題確認の結果。対象 declaration ごとに実施 / 未実施を明記する。
-9. 査読別まとめ: 数学査読 A/B と Lean 査読 A/B の結論、不一致、重複 finding、片方だけが見つけた懸念。
-10. 実行した検証: コマンドと結果。
-11. Coverage / residual risk: 読んだ範囲、未確認範囲、subagent 使用可否、未実行検証。
+5. Certificate provenance audit: material premise ごとに、certificate / field / class membership の生成 theorem、finite witness、construction、または未放電 status を明記する。
+6. Proof-use / field-content audit: main theorem の proof term で premise が使われているか、structure field が結論成分を供給していないかを明記する。
+7. Premise discharge status: 各主要仮定が本文 theorem の前提として正当か、別 theorem / construction で放電済みか、未放電か。
+8. Anti-weakening verdict: Lean statement が本文 claim を弱めていないか。弱い場合は、どの方向・量化・対象・係数・site・universe・witness で弱いかを明記する。
+9. Undischarged obligations: proof obligation、TODO、axiom、sorry、opaque witness、未確認依存補題の一覧。
+10. Axiom / dependency audit: `#print axioms`、placeholder scan、依存補題確認の結果。対象 declaration ごとに実施 / 未実施を明記する。
+11. 査読別まとめ: 数学査読 A/B と Lean 査読 A/B の結論、不一致、重複 finding、片方だけが見つけた懸念。
+12. 実行した検証: コマンドと結果。
+13. Coverage / residual risk: 読んだ範囲、未確認範囲、subagent 使用可否、未実行検証。
 
-`No major findings` は rare pass として扱う。数学的 claim の中心に触れる未確認、弱化、未放電、台帳不一致が少しでも残るなら使わない。
+`No major findings` は rare pass として扱う。数学的 claim の中心に触れる未確認、弱化、未放電、台帳不一致が少しでも残るなら使わない。explicit certificate があるだけで provenance / proof-use / field-content audit が閉じていない場合も使わない。
 
 重大な穴がある場合は、婉曲にしない。Lean 実装が数学本文の theorem を証明していないなら、そのまま「この Lean theorem は当該命題の形式化・証明としては不足」と書く。ただし、対象 claim が要求していない ArchMap 抽出完全性や tooling completeness を理由に不合格へしない。
