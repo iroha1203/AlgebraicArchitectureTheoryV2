@@ -223,6 +223,252 @@ theorem sheafH1Zero_iff_h1Boundary
   · exact h1Boundary_of_sheafH1Zero E
   · exact sheafH1Zero_of_h1Boundary E
 
+/-! ## Additive Cech `Z1 / B1` quotient surface -/
+
+/--
+Additive data needed to read the first sheaf layer as a target-strength Cech
+`Z1 / B1` quotient.
+
+This is intentionally separate from the existing explicit `cohomologous`
+relation in `SemanticRepairSheafH1Envelope`: it does not store a zero-class
+predicate, a residual primitive, global coherence, or semantic exactness.
+-/
+structure SemanticRepairAdditiveCechH1Data
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom) where
+  [c0AddCommGroup : AddCommGroup E.coefficient.C0]
+  [c1AddCommGroup : AddCommGroup E.coefficient.C1]
+  zero1_eq_zero :
+    E.coefficient.zero1 = 0
+  delta0_zero :
+    E.coefficient.delta0 0 = 0
+  delta0_add :
+    forall left right,
+      E.coefficient.delta0 (left + right) =
+        E.coefficient.delta0 left + E.coefficient.delta0 right
+  delta0_neg :
+    forall primitive,
+      E.coefficient.delta0 (-primitive) =
+        -E.coefficient.delta0 primitive
+
+/--
+The target-strength additive same-class relation: two cocycles are identified
+when their difference is a Cech boundary.
+-/
+def SemanticRepairAdditiveH1SameClass
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (left right : E.coefficient.C1) : Prop :=
+  letI := additive.c1AddCommGroup
+  CechB1 E (left - right)
+
+/-- Cocycles in the additive Cech `Z1 / B1` surface. -/
+def SemanticRepairAdditiveH1Cocycle
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (_additive : SemanticRepairAdditiveCechH1Data E) : Type x :=
+  {cochain : E.coefficient.C1 // CechZ1 E cochain}
+
+theorem semanticRepairAdditiveH1SameClass_refl
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (cochain : E.coefficient.C1) :
+    SemanticRepairAdditiveH1SameClass additive cochain cochain := by
+  letI := additive.c0AddCommGroup
+  letI := additive.c1AddCommGroup
+  refine ⟨0, ?_⟩
+  simpa [SemanticRepairAdditiveH1SameClass] using additive.delta0_zero
+
+theorem semanticRepairAdditiveH1SameClass_symm
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {left right : E.coefficient.C1} :
+    SemanticRepairAdditiveH1SameClass additive left right ->
+      SemanticRepairAdditiveH1SameClass additive right left := by
+  letI := additive.c0AddCommGroup
+  letI := additive.c1AddCommGroup
+  intro hsame
+  rcases hsame with ⟨primitive, hprimitive⟩
+  refine ⟨-primitive, ?_⟩
+  calc
+    E.coefficient.delta0 (-primitive) =
+        -E.coefficient.delta0 primitive := additive.delta0_neg primitive
+    _ = right - left := by
+      rw [hprimitive]
+      abel
+
+theorem semanticRepairAdditiveH1SameClass_trans
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {left middle right : E.coefficient.C1} :
+    SemanticRepairAdditiveH1SameClass additive left middle ->
+      SemanticRepairAdditiveH1SameClass additive middle right ->
+        SemanticRepairAdditiveH1SameClass additive left right := by
+  letI := additive.c0AddCommGroup
+  letI := additive.c1AddCommGroup
+  intro hleftMiddle hmiddleRight
+  rcases hleftMiddle with ⟨leftPrimitive, hleftPrimitive⟩
+  rcases hmiddleRight with ⟨rightPrimitive, hrightPrimitive⟩
+  refine ⟨leftPrimitive + rightPrimitive, ?_⟩
+  calc
+    E.coefficient.delta0 (leftPrimitive + rightPrimitive) =
+        E.coefficient.delta0 leftPrimitive +
+          E.coefficient.delta0 rightPrimitive :=
+      additive.delta0_add leftPrimitive rightPrimitive
+    _ = left - right := by
+      rw [hleftPrimitive, hrightPrimitive]
+      abel
+
+/-- Setoid quotient by the additive Cech coboundary relation. -/
+def semanticRepairAdditiveH1CocycleSetoid
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    Setoid (SemanticRepairAdditiveH1Cocycle additive) where
+  r left right :=
+    SemanticRepairAdditiveH1SameClass additive left.1 right.1
+  iseqv := by
+    constructor
+    · intro cocycle
+      exact semanticRepairAdditiveH1SameClass_refl additive cocycle.1
+    · intro left right hsame
+      exact semanticRepairAdditiveH1SameClass_symm additive hsame
+    · intro left middle right hleftMiddle hmiddleRight
+      exact
+        semanticRepairAdditiveH1SameClass_trans additive
+          hleftMiddle hmiddleRight
+
+/-- Target-strength additive first sheaf `H1 = Z1 / B1` class object. -/
+abbrev SemanticRepairAdditiveH1Class
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) : Type x :=
+  Quotient (semanticRepairAdditiveH1CocycleSetoid additive)
+
+/-- Build an additive sheaf `H1` class from a visible cocycle. -/
+def semanticRepairAdditiveH1Class_mk
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (cochain : E.coefficient.C1)
+    (hclosed : CechZ1 E cochain) :
+    SemanticRepairAdditiveH1Class additive :=
+  Quotient.mk (semanticRepairAdditiveH1CocycleSetoid additive)
+    ⟨cochain, hclosed⟩
+
+/-- Same additive Cech class relation gives equal quotient classes. -/
+theorem semanticRepairAdditiveH1Class_eq_of_sameClass
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {left right : E.coefficient.C1}
+    (hleft : CechZ1 E left)
+    (hright : CechZ1 E right)
+    (hsame : SemanticRepairAdditiveH1SameClass additive left right) :
+    semanticRepairAdditiveH1Class_mk additive left hleft =
+      semanticRepairAdditiveH1Class_mk additive right hright := by
+  exact Quotient.sound hsame
+
+/-- The selected residual as an additive Cech `H1` class. -/
+def semanticRepairAdditiveResidualClass
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairAdditiveH1Class additive :=
+  semanticRepairAdditiveH1Class_mk additive
+    E.coefficient.residual E.coefficient.residual_cocycle
+
+/-- The additive zero Cech `H1` class. -/
+def semanticRepairAdditiveZeroClass
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairAdditiveH1Class additive :=
+  semanticRepairAdditiveH1Class_mk additive
+    E.coefficient.zero1 E.coefficient.zero1_cocycle
+
+/-- The selected residual has zero additive Cech `H1` class. -/
+def SemanticRepairAdditiveH1Zero
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) : Prop :=
+  semanticRepairAdditiveResidualClass additive =
+    semanticRepairAdditiveZeroClass additive
+
+/--
+Quotient class equality is exactly the additive same-class relation between the
+selected residual cocycle and the zero cocycle.
+-/
+theorem semanticRepairAdditiveH1Zero_iff_sameClass_zero
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairAdditiveH1Zero additive <->
+      SemanticRepairAdditiveH1SameClass additive
+        E.coefficient.residual E.coefficient.zero1 := by
+  constructor
+  · intro hzero
+    exact Quotient.exact hzero
+  · intro hsame
+    exact
+      semanticRepairAdditiveH1Class_eq_of_sameClass additive
+        E.coefficient.residual_cocycle E.coefficient.zero1_cocycle hsame
+
+/--
+The additive Cech `H1` class of the selected residual vanishes exactly when the
+residual is a visible Cech boundary.
+-/
+theorem semanticRepairAdditiveH1Zero_iff_boundary
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairAdditiveH1Zero additive <->
+      CechB1 E E.coefficient.residual := by
+  letI := additive.c1AddCommGroup
+  constructor
+  · intro hzero
+    have hzero1 : E.coefficient.zero1 = 0 := additive.zero1_eq_zero
+    rcases
+      (semanticRepairAdditiveH1Zero_iff_sameClass_zero additive).1 hzero
+        with ⟨primitive, hprimitive⟩
+    exact
+      ⟨primitive,
+        by
+          simpa [SemanticRepairAdditiveH1SameClass, hzero1] using hprimitive⟩
+  · intro hboundary
+    have hzero1 : E.coefficient.zero1 = 0 := additive.zero1_eq_zero
+    rcases hboundary with ⟨primitive, hprimitive⟩
+    apply (semanticRepairAdditiveH1Zero_iff_sameClass_zero additive).2
+    exact
+      ⟨primitive,
+        by
+          simpa [SemanticRepairAdditiveH1SameClass, hzero1] using hprimitive⟩
+
+/-- Cycle 15 package: additive `Z1 / B1` quotient provenance for the residual. -/
+theorem semanticRepairAdditiveH1Quotient_package
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    (forall left right : E.coefficient.C1,
+      SemanticRepairAdditiveH1SameClass additive left right <->
+        (letI := additive.c1AddCommGroup
+         CechB1 E (left - right))) /\
+      (SemanticRepairAdditiveH1Zero additive <->
+        SemanticRepairAdditiveH1SameClass additive
+          E.coefficient.residual E.coefficient.zero1) /\
+      (SemanticRepairAdditiveH1Zero additive <->
+        CechB1 E E.coefficient.residual) := by
+  exact
+    ⟨by
+      intro left right
+      rfl,
+    semanticRepairAdditiveH1Zero_iff_sameClass_zero additive,
+    semanticRepairAdditiveH1Zero_iff_boundary additive⟩
+
 /-! ## Comparison with the finite obstruction tower -/
 
 /-- Forget the sheaf envelope down to the finite obstruction tower. -/
@@ -371,6 +617,109 @@ theorem finiteTower_h1Shadow_of_sheafH1
   exact
     semanticRepairFiniteShadow_sound (toFiniteTower E)
       ((h1Vanishes_iff_sheafH1Zero_of_exactEnvelope E).2 hzero)
+
+/--
+The additive `Z1 / B1` zero class matches the existing sheaf `H1` zero predicate.
+
+Both sides are reduced to the same visible boundary predicate; no boundary
+detector or global repair predicate is used as a field.
+-/
+theorem semanticRepairH1Zero_iff_additiveH1Zero
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E) :
+    SemanticRepairH1Zero E <-> SemanticRepairAdditiveH1Zero additive := by
+  exact
+    (sheafH1Zero_iff_h1Boundary E).trans
+      (semanticRepairAdditiveH1Zero_iff_boundary additive).symm
+
+/--
+Additive zero `H1` class plus later-layer vanishings gives global semantic repair
+coherence through the existing exactness discharge.
+-/
+theorem globalRepairCoherent_of_additiveH1_zero
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (hzero : SemanticRepairAdditiveH1Zero additive)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) := by
+  exact
+    globalRepairCoherent_of_sheafH1_zero E discharge
+      ((semanticRepairH1Zero_iff_additiveH1Zero additive).2 hzero)
+      htorsor hhigher hstack
+
+/--
+Global semantic repair coherence forces the selected residual to vanish in the
+additive `Z1 / B1` quotient.
+-/
+theorem additiveH1Zero_of_globalRepairCoherent
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) ->
+      SemanticRepairAdditiveH1Zero additive := by
+  intro hglobal
+  have hold : SemanticRepairH1Zero E := by
+    have htower :
+        ObstructionTowerVanishes (toFiniteTower E) :=
+      globalRepairCoherent_forces_obstructionTowerVanishes
+        (toFiniteTower E)
+        (layeredAdequacy_of_sheafH1Discharge discharge)
+        hglobal
+    exact (h1Vanishes_iff_sheafH1Zero_of_exactEnvelope E).1 htower.1
+  exact (semanticRepairH1Zero_iff_additiveH1Zero additive).1 hold
+
+/--
+Target-adjacent bridge: under the existing discharge and later-layer effective
+descent evidence, global semantic repair coherence is equivalent to vanishing
+of the selected residual's additive Cech `H1 = Z1 / B1` class.
+-/
+theorem globalRepairCoherent_iff_additiveH1Zero
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    GlobalSemanticRepairCoherent (toFiniteTower E) <->
+      SemanticRepairAdditiveH1Zero additive := by
+  constructor
+  · exact additiveH1Zero_of_globalRepairCoherent E additive discharge
+  · intro hzero
+    exact
+      globalRepairCoherent_of_additiveH1_zero E additive discharge hzero
+        htorsor hhigher hstack
+
+/-- Cycle 16 package: additive Cech `H1` zero is the global gluing obstruction. -/
+theorem semanticRepairAdditiveH1GluingBridge_package
+    {Atom : Type u}
+    (E : SemanticRepairSheafH1Envelope.{u, v, w, x, y} Atom)
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    (discharge : SemanticRepairSheafH1ExactnessDischarge E)
+    (htorsor : NonabelianTorsorTrivial (toFiniteTower E))
+    (hhigher : HigherCoherenceVanishes (toFiniteTower E))
+    (hstack : StackEffectivelyVanishes (toFiniteTower E)) :
+    (SemanticRepairH1Zero E <-> SemanticRepairAdditiveH1Zero additive) /\
+      (SemanticRepairAdditiveH1Zero additive ->
+        GlobalSemanticRepairCoherent (toFiniteTower E)) /\
+      (GlobalSemanticRepairCoherent (toFiniteTower E) ->
+        SemanticRepairAdditiveH1Zero additive) /\
+      (GlobalSemanticRepairCoherent (toFiniteTower E) <->
+        SemanticRepairAdditiveH1Zero additive) := by
+  exact
+    ⟨semanticRepairH1Zero_iff_additiveH1Zero additive,
+      (fun hzero =>
+        globalRepairCoherent_of_additiveH1_zero E additive discharge hzero
+          htorsor hhigher hstack),
+      additiveH1Zero_of_globalRepairCoherent E additive discharge,
+      globalRepairCoherent_iff_additiveH1Zero E additive discharge
+        htorsor hhigher hstack⟩
 
 /-- The first-layer sheaf `H1` exactness envelope theorem package. -/
 theorem semanticRepairSheafH1ExactnessEnvelope_package
