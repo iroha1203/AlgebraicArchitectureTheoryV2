@@ -4813,7 +4813,8 @@ remaining lower split:
 ### T3 Audit
 
 - decision: approve for checkpoint.
-- result_type: proof-obligation-discharged / proof-checkpoint.
+- result_type: proof-obligation-discharged.
+- target status: target-proof-checkpoint.
 - completion candidate: no.
 - major findings: none at theorem-addition scope.
 - anti-weakening: passed for checkpoint.  The theorem is explicitly relative
@@ -4841,3 +4842,151 @@ The next minimal obligations are now the two separated lower sources:
 carrier provenance; the latter needs concrete selected semantic-delta /
 presheaf-restriction laws.  General refinement/naturality and full sheaf
 cohomology comparison remain outside the unconditional claim boundary.
+
+## Cycle 37 — carrier model and face-restriction laws feed effective gluing
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+
+### Result
+
+Cycle 37 lowers the Cycle 36 top-level selected carrier-geometry and selected
+face-law premises to the already separated lower sources:
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairSelectedCarrierGeometry
+
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCechFaceLawSource
+
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> Cycle 33 true-sheaf / cover-relative H1-zero effective-gluing package
+```
+
+The new theorem uses:
+
+```text
+SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel model
+SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+  model compatibility
+```
+
+and then applies the Cycle 36 theorem.  The effective-gluing package still
+returns theorem-level sheaf condition for the cover, AAT descent, unique global
+gluing, cover-relative comparison package, global coherence / cover-relative
+`H1` zero equivalence, additive-zero / cover-relative-zero equivalence, and
+later-layer vanishing tokens.
+
+This does not construct the carrier model or the face-restriction
+compatibility from bare site/sheaf/descent input.  It only removes
+`SemanticRepairSelectedCarrierGeometry` and
+`SemanticRepairSelectedCechFaceLawSource` as top-level opaque premises of the
+effective-gluing theorem.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCarrierGeometry`: discharged relative to
+  `SelectedSectionFamilyCarrierModel` by
+  `SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel`.
+- `SemanticRepairSelectedCechFaceLawSource`: discharged relative to
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` by
+  `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`.
+- `SelectedSectionFamilyCarrierModel`: remains discharge-required.  It is the
+  concrete carrier-only comparison source and is not generated in this cycle.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains
+  discharge-required.  It is the actual selected presheaf face-restriction law
+  source and is not generated in this cycle.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  -> SemanticRepairSelectedCarrierGeometry
+
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCechFaceLawSource
+
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCarrierGeometry
+     + SemanticRepairSelectedCechFaceLawSource
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> toCochainRealization
+  -> toH1Comparison
+  -> Cycle 33 effective-gluing / cover-relative H1-zero package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle37AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path / private machine identifier scan over changed Lean file and
+  report — clean.
+
+### T3 Audit
+
+- decision: approve for checkpoint.
+- result_type: proof-obligation-discharged / proof-checkpoint.
+- completion candidate: no.
+- major findings: none at theorem-addition scope.
+- anti-weakening: passed for checkpoint.  The theorem is explicitly relative to
+  `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`; it does not claim
+  those sources follow from cover membership, sheaf condition, descent, or full
+  sheaf cohomology.
+- structure field escape: none newly introduced.  No `H1` zero, global
+  coherence, boundary membership, effective descent, refinement naturality, or
+  full sheaf cohomology conclusion is hidden in a new field.
+- proof use: passed.  The constructed geometry and face laws are consumed by
+  the Cycle 36 theorem, which consumes the resulting comparison in the
+  effective-gluing / cover-relative `H1` zero package.
+- remaining obligations: discharge `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from concrete lower
+  sources; keep refinement/naturality and cover-relative Cech `H1` vs full
+  sheaf cohomology boundaries explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations after this cycle are
+`SelectedSectionFamilyCarrierModel` and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility`.  The first needs a
+concrete selected carrier source; the second needs a concrete selected
+semantic-delta / presheaf-restriction face-law source.  General
+refinement/naturality and full sheaf cohomology comparison remain outside the
+unconditional claim boundary.
