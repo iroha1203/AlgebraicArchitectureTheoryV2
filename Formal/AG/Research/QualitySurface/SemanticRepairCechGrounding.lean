@@ -1855,6 +1855,148 @@ def toCochainRealization
   d1_to := bridge.d1_section_to
   d1_from := bridge.d1_section_from
 
+/--
+Extract the finite section-family witness contained in a richer selected
+section-realization bridge.
+
+This projection exposes only carrier equivalences and degree-`2` zero laws. It
+does not expose the direct differential laws, `H1` conclusions, descent,
+global coherence, refinement naturality, or full sheaf cohomology comparison.
+-/
+def toSectionFamilyWitness
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K where
+  c0SectionEquiv := bridge.c0SectionEquiv
+  c1SectionEquiv := bridge.c1SectionEquiv
+  c2SectionEquiv := bridge.c2SectionEquiv
+  c2SectionEquiv_zero := bridge.c2SectionEquiv_zero
+  c2SectionEquiv_symm_zero := bridge.c2SectionEquiv_symm_zero
+
+/--
+Extract the carrier-only selected section-family model from a richer selected
+section-realization bridge.
+-/
+def toSelectedSectionFamilyCarrierModel
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K) :
+    SelectedSectionFamilyCarrierModel additive coverBridge K :=
+  bridge.toSectionFamilyWitness.toSelectedSectionFamilyCarrierModel
+
+/--
+Extract the direct differential laws relative to the bridge's own
+section-family witness.
+-/
+def toDirectDifferentialCompatibility
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K) :
+    SemanticRepairCoverRelativeDirectDifferentialCompatibility
+      additive bridge.toSectionFamilyWitness where
+  d0_direct_to := by
+    intro primitive
+    exact bridge.d0_section_to primitive
+  d0_direct_from := by
+    intro primitive
+    exact bridge.d0_section_from primitive
+  d1_direct_to := by
+    intro cochain
+    exact bridge.d1_section_to cochain
+  d1_direct_from := by
+    intro cochain
+    exact bridge.d1_section_from cochain
+
+/--
+Extract direct differential laws relative to the section witness reconstructed
+from the extracted carrier-only model.
+
+This connects the older richer bridge to the Cycle 20/22 lower DAG:
+`SelectedSectionFamilyCarrierModel` constructs the section witness, and the
+bridge supplies the direct selected differential laws for that witness.
+-/
+def toDirectDifferentialCompatibilityForSelectedCarrierModel
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K) :
+    SemanticRepairCoverRelativeDirectDifferentialCompatibility
+      additive
+        (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          bridge.toSelectedSectionFamilyCarrierModel) where
+  d0_direct_to := by
+    intro primitive
+    simpa [toSelectedSectionFamilyCarrierModel, toSectionFamilyWitness,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        bridge.d0_section_to primitive
+  d0_direct_from := by
+    intro primitive
+    simpa [toSelectedSectionFamilyCarrierModel, toSectionFamilyWitness,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        bridge.d0_section_from primitive
+  d1_direct_to := by
+    intro cochain
+    simpa [toSelectedSectionFamilyCarrierModel, toSectionFamilyWitness,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        bridge.d1_section_to cochain
+  d1_direct_from := by
+    intro cochain
+    simpa [toSelectedSectionFamilyCarrierModel, toSectionFamilyWitness,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        bridge.d1_section_from cochain
+
+/--
+Construct the richer section-realization bridge from the separated lower
+section-family witness and direct selected differential laws.
+-/
+def of_sectionFamilyWitness_and_directDifferentialCompatibility
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive sectionWitness) :
+    SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K where
+  c0SectionEquiv := sectionWitness.c0SectionEquiv
+  c1SectionEquiv := sectionWitness.c1SectionEquiv
+  c2SectionEquiv := sectionWitness.c2SectionEquiv
+  c2SectionEquiv_zero := sectionWitness.c2SectionEquiv_zero
+  c2SectionEquiv_symm_zero := sectionWitness.c2SectionEquiv_symm_zero
+  d0_section_to := direct.d0_direct_to
+  d0_section_from := direct.d0_direct_from
+  d1_section_to := direct.d1_direct_to
+  d1_section_from := direct.d1_direct_from
+
+/--
+The richer section-realization bridge is exactly the separated finite
+section-family witness plus direct selected differential laws.
+
+This theorem exposes the older bridge as a source for the current lower proof
+DAG without treating it as a completed target premise.
+-/
+theorem sectionRealizationBridge_iff_sectionFamilyWitness_and_directDifferentialCompatibility :
+    Nonempty
+        (SemanticRepairCoverRelativeSectionRealizationBridge
+          additive coverBridge K) <->
+      Exists fun sectionWitness :
+        SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive sectionWitness := by
+  constructor
+  · intro hbridge
+    rcases hbridge with ⟨bridge⟩
+    exact ⟨bridge.toSectionFamilyWitness, bridge.toDirectDifferentialCompatibility⟩
+  · intro hwitness
+    rcases hwitness with ⟨sectionWitness, direct⟩
+    exact
+      ⟨of_sectionFamilyWitness_and_directDifferentialCompatibility
+        sectionWitness direct⟩
+
 end SemanticRepairCoverRelativeSectionRealizationBridge
 
 namespace SemanticRepairCoverRelativeH1Comparison
@@ -2528,6 +2670,44 @@ theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferen
     model direct.toFaceRestrictionCompatibility
 
 end SemanticRepairCoverRelativeCochainRealization
+
+namespace SemanticRepairCoverRelativeSectionRealizationBridge
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+The richer section-realization bridge reaches the selected cover-relative
+grounding package through the current lower DAG:
+
+`SectionRealizationBridge -> SelectedSectionFamilyCarrierModel`
+and
+`SectionRealizationBridge -> DirectDifferentialCompatibility`, followed by the
+Cycle 22 theorem that consumes carrier model plus direct differential laws.
+-/
+theorem grounded_package_of_section_realization_bridge_via_selectedCarrierModel_and_directDifferentialCompatibility
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge
+      additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (SemanticRepairCoverRelativeCochainRealization.of_sectionFamilyWitness_and_faceRestrictionCompatibility
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            bridge.toSelectedSectionFamilyCarrierModel)
+          bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel.toFaceRestrictionCompatibility).toH1Comparison) :=
+  SemanticRepairCoverRelativeCochainRealization.grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+    bridge.toSelectedSectionFamilyCarrierModel
+    bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+
+end SemanticRepairCoverRelativeSectionRealizationBridge
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 

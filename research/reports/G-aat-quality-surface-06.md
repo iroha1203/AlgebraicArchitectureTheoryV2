@@ -2833,3 +2833,149 @@ Minimum next obligations:
 - Construct `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from
   actual presheaf restriction / selected Cech differential laws for the
   constructed section witness.
+
+## Cycle 23 — section-realization bridge factors through the lower DAG
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.toSectionFamilyWitness`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.toSelectedSectionFamilyCarrierModel`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.toDirectDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.of_sectionFamilyWitness_and_directDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.sectionRealizationBridge_iff_sectionFamilyWitness_and_directDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.grounded_package_of_section_realization_bridge_via_selectedCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 23 factors the older richer
+`SemanticRepairCoverRelativeSectionRealizationBridge` through the current
+Cycle 20-22 lower proof DAG.
+
+Lean now proves that a section-realization bridge exposes:
+
+- the finite `SemanticRepairCoverRelativeSectionFamilyWitness`;
+- the carrier-only `SelectedSectionFamilyCarrierModel`;
+- direct selected differential laws relative to the bridge witness;
+- direct selected differential laws relative to the section witness reconstructed
+  from the extracted carrier-only model.
+
+Lean also proves the reverse constructor from a section-family witness plus
+direct differential laws, and an equivalence:
+
+```text
+SemanticRepairCoverRelativeSectionRealizationBridge
+  <-> section-family witness + direct selected differential compatibility
+```
+
+The new downstream theorem uses the current lower path:
+
+```text
+SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> selected cover-relative H1 grounding package
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeSectionRealizationBridge`: discharged as a source
+  for the current lower DAG by theorem, relative to its explicit selected
+  bridge data.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required` if no
+  richer `SectionRealizationBridge` or lower selected carrier geometry is
+  supplied.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  `discharge-required` if no richer `SectionRealizationBridge` or actual
+  presheaf / selected Cech differential law source is supplied.
+- The richer bridge is not reclassified as ambient boundary and is not target
+  completion evidence by itself.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+
+SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> selected cover-relative H1 grounding package
+
+remaining lower source:
+  selected semantic residual coefficient / concrete carrier geometry
+  + actual presheaf restriction / selected Cech differential laws
+    -> SemanticRepairCoverRelativeSectionRealizationBridge
+       or separately into the lower carrier/differential sources
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle23AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeSectionRealizationBridge.toSectionFamilyWitness`,
+  `toSelectedSectionFamilyCarrierModel`,
+  `toDirectDifferentialCompatibility`,
+  `of_sectionFamilyWitness_and_directDifferentialCompatibility`, and
+  `sectionRealizationBridge_iff_sectionFamilyWitness_and_directDifferentialCompatibility`
+  depend on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `SemanticRepairCoverRelativeSectionRealizationBridge.grounded_package_of_section_realization_bridge_via_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean file — clean.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- hidden material premise: none found.
+- structure field escape: none found.
+- proof use: `bridge.toSelectedSectionFamilyCarrierModel` and
+  `bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel` are
+  consumed by the downstream selected carrier / direct differential package
+  theorem.
+- unresolved provenance: the richer `SemanticRepairCoverRelativeSectionRealizationBridge`
+  itself remains an explicit material source, not completion evidence.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 23 connects a richer selected bridge to the lower proof DAG, but it still
+does not construct that richer bridge from atom-supported semantic residual
+coefficient geometry and actual presheaf restriction laws.
+
+Minimum next obligations:
+
+- Construct `SemanticRepairCoverRelativeSectionRealizationBridge` from selected
+  semantic residual coefficient / concrete carrier geometry plus actual
+  presheaf restriction / selected Cech differential laws, or keep the remaining
+  lower sources explicit.
+- Separately, construct `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from their lower
+  selected sources if no richer bridge is available.
