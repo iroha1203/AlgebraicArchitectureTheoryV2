@@ -5311,3 +5311,143 @@ The first needs a concrete selected residual coefficient / cover-relative
 carrier source; the second needs a concrete selected semantic-delta /
 presheaf-restriction face-law source.  General refinement/naturality and full
 sheaf cohomology comparison remain outside the unconditional claim boundary.
+
+## Cycle 40 — carrier-specific provenance routes through explicit face equations
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_explicitFaceRestrictionEquations`
+
+### T1 Selection
+
+The selector chose the bridge from the existing
+`SemanticRepairCarrierSpecificComparisonProvenance` source to the Cycle 39
+explicit finite carrier / selected face-equation path.
+
+This is not a completion candidate.  The selected provenance object still
+contains material comparison data.  The cycle is useful because it proves that
+the latest explicit lower-source path is not disconnected from the older
+carrier-specific provenance path: the provenance is consumed by extracting its
+degree-wise carrier data, degree-`2` zero laws, and four selected
+face-restriction equations, then feeding those extracted components into the
+Cycle 39 theorem.
+
+### Result
+
+Cycle 40 routes:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degree-0 CarrierSpecificAdditiveComparisonData
+  -> degree-1 CarrierSpecificAdditiveComparisonData
+  -> degree-2 zero-preserving equivalence
+  -> four explicit selected face-restriction equations
+  -> Cycle 39 effective-gluing / cover-relative H1-zero package
+```
+
+The theorem's proof term proof-uses the extracted carrier data and extracted
+face equations by passing them to
+`trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_explicitFaceRestrictionEquations`.
+
+This cycle deliberately does not claim that
+`SemanticRepairCarrierSpecificComparisonProvenance` is generated from bare
+cover membership, `AATSheafCondition`, `AATDescent`, presheaf restriction laws,
+or full sheaf cohomology.  It is an extraction / DAG-alignment checkpoint, not
+a discharge from the current G-06 input surface.
+
+### Material Premise Ledger Delta
+
+- finite carrier witness data: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance` by extracting degree-`0`
+  and degree-`1` additive carrier comparison data plus the degree-`2`
+  zero-preserving equivalence.
+- four explicit selected face-restriction equations: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance` by extracting its
+  `d0_face_to`, `d0_face_from`, `d1_face_to`, and `d1_face_from` fields and
+  proof-using them in the Cycle 39 theorem.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: remains
+  discharge-required.  Its generation from concrete selected residual
+  coefficient / selected semantic-delta / presheaf-restriction data is still
+  unresolved.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degreewise carrier data
+  -> degree-2 zero laws
+  -> four explicit selected face-restriction equations
+  -> Cycle 39 theorem
+  -> Cycle 38 / Cycle 37 / Cycle 33 effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle40AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: target-proof-checkpoint.
+- completion candidate: no.
+- major findings: none for checkpoint approval.
+- anti-weakening: passed as checkpoint.  The theorem is explicitly relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance` and does not claim that
+  this provenance is generated from cover membership, `AATSheafCondition`,
+  `AATDescent`, presheaf restriction laws, or full sheaf cohomology.
+- structure field escape: passed as checkpoint.  No new structure or
+  certificate field is introduced.  The existing provenance fields remain
+  visible material premises and are not counted as full discharge.
+- certificate provenance: unresolved for completion.
+  `SemanticRepairCarrierSpecificComparisonProvenance` remains the material
+  source; this cycle only extracts its finite carrier data and four selected
+  face equations.
+- proof use: passed.  The theorem passes
+  `degreeZeroAdditiveComparisonData`, `degreeOneAdditiveComparisonData`,
+  `c2SectionEquiv`, `toSection2_zero`, `fromSection2_zero`, and all four
+  `provenance.d*_face_*` equations into the Cycle 39 theorem.
+- blocking findings: none for checkpoint approval.  The blocker for completion
+  is still the lack of a constructor for
+  `SemanticRepairCarrierSpecificComparisonProvenance` from concrete selected
+  residual coefficient / selected semantic-delta / presheaf-restriction source.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is now to lower
+`SemanticRepairCarrierSpecificComparisonProvenance` itself to a concrete
+selected residual coefficient / selected semantic-delta / presheaf-restriction
+source, or to record a sharper blocker showing why that generation cannot
+come from the current G-06 input surface.  General refinement/naturality and
+full sheaf cohomology comparison remain outside the unconditional claim
+boundary.
