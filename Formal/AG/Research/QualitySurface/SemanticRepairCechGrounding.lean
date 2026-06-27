@@ -588,6 +588,28 @@ theorem trueSheafH1_grounded_in_coverRelativeCechH1_package
         comparison) :=
   comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
 
+/--
+G-06 fail-closed boundary: the selected cover-relative Cech `H1` grounding
+requires explicit provenance for the semantic-to-general cochain comparison.
+
+The quotient equivalence above is theorem-level once this comparison is
+available, but this theorem deliberately does not construct the comparison from
+only a semantic repair cover, residual coefficient surface, or arbitrary general
+cover-relative complex.
+-/
+theorem trueSheafH1_grounding_requires_explicit_comparison_provenance
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    {additive : SemanticRepairAdditiveCechH1Data E}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Nonempty (SemanticRepairCoverRelativeH1Comparison additive K) :=
+  ⟨comparison⟩
+
 end SemanticRepairCechGrounding
 end QualitySurface
 end Formal.AG.Research

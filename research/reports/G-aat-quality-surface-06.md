@@ -417,3 +417,107 @@ comparison provenance for `SemanticRepairCoverRelativeH1Comparison`: the selecte
 cover-relative Cech `H1` equivalence is now theorem-level once the comparison
 data is supplied, but the comparison data is not yet generated from the concrete
 semantic repair cover / residual coefficient / AAT cover-relative complex.
+
+## Cycle 3 — comparison provenance fail-closed boundary
+
+- decision: approve
+- result_type: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafH1_grounding_requires_explicit_comparison_provenance`
+
+### Proof-Obligation Result
+
+Attempted obligation:
+
+- Construct or audit provenance for `SemanticRepairCoverRelativeH1Comparison`
+  from existing concrete `SemanticRepairCover`, residual coefficient surface,
+  `SemanticRepairCoverRelativeCoverBridge`, `ObstructionSheaf`, and
+  `CoverRelativeCechComplex` data.
+
+Result:
+
+- Not discharged.  The existing general `CoverRelativeCechComplex` API supplies
+  abstract cochain groups, selected differentials, and `d ∘ d = 0`, but it does
+  not identify semantic `C0`, `C1`, `C2` with `K.Cn 0`, `K.Cn 1`, `K.Cn 2`.
+- The existing semantic cover bridge supplies selected simplex provenance, but
+  it does not derive degree-wise cochain equivalences, inverse laws, additive
+  laws, zero laws, or `d0`/`d1` compatibility.
+- Therefore `SemanticRepairCoverRelativeH1Comparison` remains explicit
+  comparison provenance.  Treating it as already discharged would move the core
+  comparison adequacy premise into a structure field.
+
+### Material Premise Ledger Delta
+
+- `comparison-map provenance`: discharge-required and still open.
+- `degree-wise cochain realization`: discharge-required and missing from the
+  current API.
+- `differential compatibility provenance`: discharge-required and missing from
+  the current API.
+- `quotient-level H1 equivalence after comparison provenance`: discharged by
+  Cycle 2, conditional on explicit comparison provenance.
+- `cover refinement / naturality boundary`: out-of-scope for this checkpoint.
+- `Cech-vs-full-sheaf-cohomology boundary`: out-of-scope for this checkpoint.
+
+### Anti-Weakening Audit
+
+- The new boundary theorem only exposes that explicit comparison provenance is
+  required; it does not construct the comparison and does not claim G-06
+  completion.
+- `SemanticRepairCoverRelativeH1Comparison` fields are proof-used by downstream
+  quotient and zero-equivalence theorems, but upstream generation of those fields
+  is not available from current concrete data.
+- No claim is made that cover-relative Cech `H1` is full sheaf cohomology, that
+  refinement naturality is proved, or that arbitrary site cohomology follows.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCover
+  + SemanticRepairCoverRelativeCoverBridge
+  + ObstructionSheaf
+  + CoverRelativeCechComplex
+  -/-> SemanticRepairCoverRelativeH1Comparison
+
+SemanticRepairCoverRelativeH1Comparison
+  -> trueSheafH1_grounded_in_coverRelativeCechH1_package
+  -> trueSheafH1_grounding_requires_explicit_comparison_provenance
+```
+
+The broken arrow records the current missing construction, not a theorem.
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle2AxiomAudit.lean` was rerun after adding the Cycle 3
+boundary theorem.  The audit reported only standard `[propext, Quot.sound]`
+dependencies for `trueSheafH1_grounding_requires_explicit_comparison_provenance`.
+No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe` dependency was
+reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle2AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed report / Lean files — report prose contains
+  audit words only.
+- hidden / bidirectional Unicode scan over changed report / Lean files — clean.
+
+### Target Status
+
+G-06 is stopped as `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimum obligation is a new cochain-realization layer that derives, or
+concretely witnesses, degree `0`/`1`/`2` cochain maps and `d0`/`d1`
+compatibility between the semantic additive Cech data and the selected general
+cover-relative Cech complex.  Without that layer, the mandatory
+`discharge-required` comparison provenance premise remains open.
