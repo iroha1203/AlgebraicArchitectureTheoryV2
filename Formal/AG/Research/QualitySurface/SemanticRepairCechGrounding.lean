@@ -4127,6 +4127,131 @@ theorem cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDiffe
         model direct⟩
 
 /--
+Transparent lower-data predicate for Cycle 42.
+
+This is only an abbreviation for the explicit finite carrier witness data,
+degree-`2` zero laws, and the four selected face-restriction equations.  It is
+not a certificate structure and it stores no `H1` zero, boundary membership,
+global coherence, effective descent, refinement naturality, or full sheaf
+cohomology comparison.
+-/
+abbrev DegreewiseCarrierDataAndExplicitFaceRestrictionEquations : Prop :=
+      Exists fun c0Carrier :
+        letI := additive.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0) =>
+      Exists fun c1Carrier :
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1) =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+        (let model :=
+          SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := coverBridge) (K := K)
+            c0Carrier c1Carrier c2Equiv
+            c2Equiv_zero c2Equiv_symm_zero
+         let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          forall primitive : E.coefficient.C0,
+            K.alternatingFaceCombination 0
+                (fun σ i =>
+                  K.faceRestrictionTerm 0 i
+                    (sectionWitness.c0SectionEquiv primitive) σ) =
+              sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          forall primitive : K.Cn 0,
+            E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+              sectionWitness.c1SectionEquiv.symm
+                (K.alternatingFaceCombination 0
+                  (fun σ i => K.faceRestrictionTerm 0 i primitive σ))) /\
+         (letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          forall cochain : E.coefficient.C1,
+            K.alternatingFaceCombination 1
+                (fun σ i =>
+                  K.faceRestrictionTerm 1 i
+                    (sectionWitness.c1SectionEquiv cochain) σ) =
+              sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+         (letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          forall cochain : K.Cn 1,
+            E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+              sectionWitness.c2SectionEquiv.symm
+                (K.alternatingFaceCombination 1
+                  (fun σ i => K.faceRestrictionTerm 1 i cochain σ))))
+
+/--
+The cochain-realization source is equivalent to the explicit lower data exposed
+in Cycle 41.
+
+Forward, a cochain realization is first converted to carrier-specific
+provenance and then unfolded to finite carrier data plus the four selected
+face-restriction equations.  Backward, the explicit lower data constructs
+carrier-specific provenance, which constructs a cochain realization.  This
+theorem does not generate the lower data from bare cover membership, sheaf
+condition, descent, or full sheaf cohomology.
+-/
+theorem cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) <->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) := by
+  constructor
+  · intro hrealization
+    rcases hrealization with ⟨realization⟩
+    exact
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)).1
+        ⟨realization.toCarrierSpecificComparisonProvenance⟩
+  · intro hlower
+    rcases
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)).2
+        hlower with
+      ⟨provenance⟩
+    exact ⟨provenance.toCochainRealization⟩
+
+/--
+A cochain realization constructs carrier-specific provenance through the
+explicit lower data exposed in Cycle 41.
+
+The result keeps both pieces visible: the extracted lower data and the
+provenance reconstructed from it.  The lower data remains the material source;
+this theorem is not a bare site/sheaf/descent discharge.
+-/
+theorem constructs_carrierSpecificComparisonProvenance_via_explicitLowerData
+    (realization : SemanticRepairCoverRelativeCochainRealization additive K) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) /\
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive coverBridge K) := by
+  have hlower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) :=
+    (cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K)).1
+      ⟨realization⟩
+  exact
+    ⟨hlower,
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)).2
+        hlower⟩
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
