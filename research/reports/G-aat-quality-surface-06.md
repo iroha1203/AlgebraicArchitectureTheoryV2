@@ -2552,3 +2552,145 @@ Minimum next obligations:
 - Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
   actual presheaf restriction / selected face-restriction laws for the
   constructed section witness.
+
+## Cycle 21 — selected carrier source boundary and provenance bridge
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SelectedSectionFamilyCarrierModel.requires_degreewise_carrier_data_and_c2_zero_equivalence`
+  - `SelectedSectionFamilyCarrierModel.requires_explicit_selected_carrier_source`
+  - `SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance`
+  - `SelectedSectionFamilyCarrierModel.carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel`
+
+### Result
+
+Cycle 21 fixes the selected carrier-model source boundary directly on
+`SelectedSectionFamilyCarrierModel`.
+
+The new audit theorem proves that any selected carrier model necessarily
+exposes:
+
+- degree-0 `CarrierSpecificAdditiveComparisonData`
+  between `E.coefficient.C0` and `K.Cn 0`;
+- degree-1 `CarrierSpecificAdditiveComparisonData`
+  between `E.coefficient.C1` and `K.Cn 1`;
+- a degree-2 carrier equivalence between `E.coefficient.C2` and `K.Cn 2`
+  with the two zero preservation laws.
+
+The explicit-source theorem pairs that extraction with the existing
+`no_uniform_carrier_specific_additive_comparison_from_bare_groups` obstruction.
+Thus the current G-06 proof cannot discharge `SelectedSectionFamilyCarrierModel`
+from cover membership, `AATSheafCondition`, `AATDescent`, or bare additive group
+structure alone.
+
+The bridge theorem
+`SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance`
+also connects the previously audited richer
+`SemanticRepairCarrierSpecificComparisonProvenance` layer to the Cycle 20
+carrier-only model.  It uses only carrier maps, inverse/additivity laws, the
+degree-2 equivalence, and zero laws; it discards the richer face-restriction
+equations rather than hiding them in the carrier model.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: not discharged from bare
+  site/sheaf/descent input; its finite carrier-comparison source is now exposed
+  by theorem as the exact remaining selected carrier premise.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: constructs
+  `SelectedSectionFamilyCarrierModel`, but remains a richer selected
+  provenance source rather than a lower atom-supported construction.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains
+  `discharge-required`.
+- `SemanticRepairAdditiveH1Zero`, general cover-relative `H1` zero, boundary
+  membership, global coherence, effective descent, refinement naturality, and
+  full sheaf cohomology comparison are not stored in the new carrier-source
+  theorem or bridge.
+- T3 audit approved the cycle as `blocker-fixed`, not
+  `proof-obligation-discharged`, because the selected carrier source is still
+  an explicit provenance argument rather than a construction from lower
+  atom-supported target geometry.
+
+### Dependency DAG
+
+```text
+current G-06 site/sheaf/descent input only
+  -/-> uniform selected carrier model source
+
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+
+remaining face law source:
+  selected presheaf restriction / face restriction laws
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+current downstream path:
+  SelectedSectionFamilyCarrierModel
+    -> SemanticRepairCoverRelativeSectionFamilyWitness
+    + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle21AxiomAudit.lean` — passed.
+- `SelectedSectionFamilyCarrierModel.requires_degreewise_carrier_data_and_c2_zero_equivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SelectedSectionFamilyCarrierModel.requires_explicit_selected_carrier_source`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SelectedSectionFamilyCarrierModel.carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel`
+  depends on standard axioms `[propext, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- local path / private machine identifier scan over changed files — clean.
+
+### T3 Audit
+
+- decision: approve
+- result_type: blocker-fixed
+- hidden material premise: none found.
+- structure field escape: none found.
+- proof use: `SelectedSectionFamilyCarrierModel` fields are used by the
+  extraction theorem; `no_uniform_carrier_specific_additive_comparison_from_bare_groups`
+  is used by the explicit-source theorem; carrier-specific provenance fields are
+  used by the bridge constructor.
+- blocking finding: Cycle 21 does not discharge the carrier source from lower
+  target geometry.  It fixes the boundary and connects richer explicit
+  provenance to the carrier-only model.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 21 makes the selected carrier-source premise explicit and connects it to
+the older carrier-specific provenance layer, but it still does not construct
+the selected carrier source from atom-supported semantic residual coefficient /
+concrete cover-relative section-family carrier geometry.
+
+Minimum next obligations:
+
+- Construct `SelectedSectionFamilyCarrierModel` from selected semantic
+  residual coefficient / concrete cover-relative section-family carrier
+  geometry, or get an explicit GOAL-boundary revision outside the loop.
+- Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
+  actual presheaf restriction / selected face-restriction laws for the
+  constructed section witness.

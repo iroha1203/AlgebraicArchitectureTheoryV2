@@ -616,6 +616,69 @@ def c1SectionEquiv
   letI := K.cochainAddCommGroup 1
   exact model.c1Carrier.toAddEquiv
 
+/--
+Audit theorem for the selected carrier model source.
+
+Any selected section-family carrier model necessarily exposes exactly the
+degree-`0` and degree-`1` carrier-specific additive comparison data, plus the
+degree-`2` carrier equivalence and zero laws.  It does not expose
+face-restriction compatibility, quotient comparison, zero `H1`, boundary
+membership, global coherence, descent, refinement naturality, or full sheaf
+cohomology comparison.
+-/
+theorem requires_degreewise_carrier_data_and_c2_zero_equivalence
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)) /\
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+          (letI := K.cochainAddCommGroup 2
+           c2Equiv.symm 0 = E.coefficient.zero2) := by
+  exact
+    ⟨⟨model.c0Carrier⟩,
+      ⟨model.c1Carrier⟩,
+      ⟨model.c2Equiv, model.c2Equiv_zero, model.c2Equiv_symm_zero⟩⟩
+
+/--
+Selected section-family carrier models require an explicit carrier-comparison
+source.
+
+The first component extracts the finite carrier source from any concrete model.
+The second component records the uniform-constructor obstruction for the
+degree-wise additive carrier data.  Thus the current G-06 proof cannot count a
+selected carrier model as discharged merely from cover membership,
+`AATSheafCondition`, `AATDescent`, or bare additive group structure; it still
+needs a concrete selected carrier source or an explicit GOAL-boundary revision.
+-/
+theorem requires_explicit_selected_carrier_source
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    (Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)) /\
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+          (letI := K.cochainAddCommGroup 2
+           c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) := by
+  exact
+    ⟨model.requires_degreewise_carrier_data_and_c2_zero_equivalence,
+      no_uniform_carrier_specific_additive_comparison_from_bare_groups⟩
+
 end SelectedSectionFamilyCarrierModel
 
 namespace SemanticRepairCoverRelativeSectionFamilyWitness
@@ -1546,6 +1609,50 @@ theorem carrierSpecificComparisonProvenance_requires_maps_and_faceLaws
       provenance.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility⟩
 
 end SemanticRepairCarrierSpecificComparisonProvenance
+
+namespace SelectedSectionFamilyCarrierModel
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Richer carrier-specific provenance constructs the carrier-only model introduced
+in Cycle 20.  This bridge reuses only the carrier maps, inverse/additivity laws,
+and degree-`2` zero laws; it deliberately discards the face-restriction
+equations carried by the richer provenance.
+-/
+def of_carrierSpecificComparisonProvenance
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SelectedSectionFamilyCarrierModel additive coverBridge K where
+  c0Carrier := provenance.degreeZeroAdditiveComparisonData
+  c1Carrier := provenance.degreeOneAdditiveComparisonData
+  c2Equiv := provenance.c2SectionEquiv
+  c2Equiv_zero := provenance.toSection2_zero
+  c2Equiv_symm_zero := provenance.fromSection2_zero
+
+/--
+Carrier-specific provenance is a concrete source for the Cycle 20 carrier-only
+model.  This is not a discharge from bare site/sheaf/descent input; it connects
+the previously audited richer provenance layer to the separated lower carrier
+model now used by the G-06 proof DAG.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) :=
+  ⟨of_carrierSpecificComparisonProvenance provenance⟩
+
+end SelectedSectionFamilyCarrierModel
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
 
