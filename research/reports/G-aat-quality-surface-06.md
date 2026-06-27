@@ -826,3 +826,114 @@ The next minimum obligation is to decide whether
 certificate under the target boundary, or whether its section equivalence and
 differential compatibility fields must be generated from still lower semantic
 cover / coefficient / presheaf data.
+
+## Cycle 7 — face-restriction differential provenance checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.toSectionRealizationBridge`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.toCochainRealization`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.grounded_package_of_face_restriction_realization`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- Direct `K.d` compatibility is no longer the lowest visible provenance layer
+  for the selected semantic/general cochain bridge.
+- `toSectionRealizationBridge` derives `d0` / `d1` compatibility from
+  `CoverRelativeCechComplex.d_eq_alternatingFaceCombination` and the selected
+  `faceRestrictionTerm` / `alternatingFaceCombination` presentation of the
+  general Cech differential.
+- `toCochainRealization` and
+  `grounded_package_of_face_restriction_realization` preserve the downstream
+  proof-use path:
+  face-restriction provenance -> section-realization bridge -> cochain
+  realization -> H1 comparison -> selected cover-relative grounding package.
+
+Remaining:
+
+- The degree `0` / `1` / `2` section-family equivalences are still selected
+  comparison provenance.  They are explicit in
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`, not generated from
+  bare semantic cover or presheaf data.
+- The face-restriction equations are still supplied as selected concrete
+  compatibility data.  This is lower than direct `K.d` compatibility, but not a
+  theorem generated from only cover membership and sheaf restriction laws.
+- Cover refinement / naturality and full sheaf cohomology comparison remain
+  boundaryized outside this checkpoint.
+
+### Material Premise Ledger Delta
+
+- `Cech differential compatibility`: partially discharged from direct `K.d`
+  fields to selected face-restriction / alternating-combination provenance.
+- `section-family equivalence provenance`: still discharge-required upstream.
+- `cochain realization from face-restriction provenance`: discharged by
+  `SemanticRepairCoverRelativeFaceRestrictionRealization.toCochainRealization`.
+- `selected cover-relative H1 grounding from face-restriction provenance`:
+  discharged by
+  `SemanticRepairCoverRelativeFaceRestrictionRealization.grounded_package_of_face_restriction_realization`.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- `SemanticRepairCoverRelativeFaceRestrictionRealization` stores no `H1` zero,
+  global semantic repair coherence, effective descent, exactness conclusion,
+  cover refinement / naturality, or full sheaf cohomology comparison.
+- The new proof term uses the general Cech theorem
+  `CoverRelativeCechComplex.d_eq_alternatingFaceCombination`; the direct bridge
+  `d0` / `d1` fields are derived rather than copied from same-shape fields.
+- Because section-family equivalence and face-restriction compatibility remain
+  selected comparison data, this cycle is not target completion.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeCoverBridge
+  + SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> CoverRelativeCechComplex.d_eq_alternatingFaceCombination
+  -> SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> toH1Comparison
+  -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle7AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeFaceRestrictionRealization.toSectionRealizationBridge`,
+`SemanticRepairCoverRelativeFaceRestrictionRealization.toCochainRealization`, and
+`SemanticRepairCoverRelativeFaceRestrictionRealization.grounded_package_of_face_restriction_realization`.
+The audit reported only standard `[propext, Quot.sound]` /
+`[propext, Classical.choice, Quot.sound]` dependencies.  No `sorryAx`,
+non-consulted repo axiom, `admit`, or `unsafe` dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle7AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed report / Lean files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+The next minimum obligation is to decide whether the selected degree
+`0` / `1` / `2` section-family equivalences can be generated from lower
+semantic cover / residual coefficient / presheaf data, or whether the G-06
+target boundary must explicitly accept those equivalences as concrete finite
+comparison witnesses while keeping completion blocked on final review.
