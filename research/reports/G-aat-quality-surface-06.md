@@ -7950,3 +7950,162 @@ comparison data, degree-`2` zero laws, and direct selected semantic-delta /
 `K.d` compatibility laws from concrete selected residual coefficient /
 selected semantic-delta / presheaf-restriction sources, or preserve the exact
 boundary if that construction is not available.
+
+## Cycle 56 — direct lower-bundle boundary for current G-06 surface
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Preserve the exact boundary that CurrentG06InputSurface and presheaf
+zero/add laws do not generate the Cycle 55 direct lower bundle.
+```
+
+The selector rejected a positive construction from the current vocabulary:
+there is no concrete selected residual coefficient / selected semantic-delta /
+presheaf-restriction source that constructs the displayed carrier comparison
+data, degree-`2` zero laws, and four direct selected semantic-delta / `K.d`
+laws.  Using `SemanticRepairCoverRelativeCochainRealization` or
+`SemanticRepairCarrierSpecificComparisonProvenance` would be circular, since
+those already contain the selected carrier and differential compatibility
+source.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndDirectDifferentialLaws`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness`
+
+### Result
+
+Cycle 56 names the Cycle 55 direct lower source as a transparent `Prop`:
+
+```text
+DegreewiseCarrierDataAndDirectDifferentialLaws
+```
+
+It contains only:
+
+- displayed degree-`0` carrier comparison data;
+- displayed degree-`1` carrier comparison data;
+- a degree-`2` carrier equivalence and two zero laws;
+- four direct selected semantic-delta / cover-relative `K.d` compatibility
+  laws.
+
+The cycle then proves a blocker theorem:
+
+```text
+no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws
+```
+
+If `CurrentG06InputSurface` alone could construct this direct lower bundle on
+every current surface, then its degree-`0` carrier comparison component would
+construct an additive equivalence between `PUnit` and `ZMod 2` on a test
+surface whose semantic and selected Cech degree-`0` carriers are identified
+with those groups.  This forces `0 = 1`, contradicting `ZMod 2`.
+
+The named-source constructor
+`degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness`
+proof-uses the transparent direct lower bundle by passing its displayed
+components to the Cycle 55 theorem.  This keeps the lower source visible; it
+does not construct that source from `CurrentG06InputSurface`.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: introduced as transparent
+  `discharge-required` lower data, not as an ambient boundary or certificate
+  field.
+- Current site/sheaf/presheaf surface facts, including presheaf restriction
+  zero/add laws and the selected Cech identity
+  `K.d = alternatingFaceCombination`, are fixed as stopping before this direct
+  lower bundle.
+- The current-surface-only route to the Cycle 55 direct lower bundle is
+  blocked by theorem, relative to the explicit `PUnit` / `ZMod 2` finite
+  witness.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective gluing, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  + presheaf zero/add laws
+  + K.d = alternatingFaceCombination
+  -> current_g06_presheaf_laws_stop_before_selected_differential_source
+  -> stop-before direct lower source boundary
+
+surface-only constructor for DegreewiseCarrierDataAndDirectDifferentialLaws
+  + E.C0 ≃+ PUnit
+  + K.Cn 0 ≃+ ZMod 2
+  -> CarrierSpecificAdditiveComparisonData E.C0 (K.Cn 0)
+  -> PUnit ≃+ ZMod 2
+  -> contradiction
+
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle56AxiomAudit.lean` — passed and removed after audit.
+- `DegreewiseCarrierDataAndDirectDifferentialLaws` depends on standard axioms
+  `[propext, Quot.sound]`.
+- `no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness`
+  depends on standard axioms `[propext, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files reports audit prose hits
+  for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- completion candidate: no.
+- major findings / veto: none.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- scope note: the no-constructor theorem is relative to the explicit
+  `PUnit` / `ZMod 2` finite incompatibility assumptions.  It is not an
+  absolute classification of every possible current surface.
+- proof use: passed.  The blocker theorem extracts only the degree-`0`
+  carrier comparison from a hypothetical surface-only constructor and derives
+  the finite contradiction.  The named-source constructor destructures the
+  transparent direct lower bundle and forwards its components into Cycle 55.
+- structure field escape: none found.  `DegreewiseCarrierDataAndDirectDifferentialLaws`
+  is a transparent `Prop` abbrev, not a certificate structure, and contains no
+  `H1` zero, gluing, global coherence, effective descent, refinement /
+  naturality, comparison equivalence, or full sheaf cohomology field.
+- remaining material data: the direct lower bundle itself remains
+  `discharge-required`.
+- next obligation: construct `DegreewiseCarrierDataAndDirectDifferentialLaws`
+  from genuinely lower concrete selected residual coefficient / selected
+  semantic-delta / presheaf-restriction sources, or make the corresponding
+  GOAL boundary revision explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation remains construction of
+`DegreewiseCarrierDataAndDirectDifferentialLaws` from genuinely lower concrete
+selected residual coefficient / selected semantic-delta / presheaf-restriction
+sources, or an explicit GOAL boundary revision if that source is unavailable.

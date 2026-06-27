@@ -4250,6 +4250,64 @@ abbrev DegreewiseCarrierDataAndExplicitFaceRestrictionEquations : Prop :=
                   (fun σ i => K.faceRestrictionTerm 1 i cochain σ))))
 
 /--
+Transparent lower-data predicate for the Cycle 55 direct-differential source.
+
+This is only an abbreviation for the displayed carrier witness data,
+degree-`2` zero laws, and the four direct selected semantic-delta /
+cover-relative `K.d` compatibility laws.  It is not a certificate structure and
+it stores no `H1` zero, boundary membership, global coherence, effective
+descent, refinement naturality, or full sheaf cohomology comparison.
+-/
+abbrev DegreewiseCarrierDataAndDirectDifferentialLaws : Prop :=
+      Exists fun c0Carrier :
+        letI := additive.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0) =>
+      Exists fun c1Carrier :
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1) =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+        (let model :=
+          SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := coverBridge) (K := K)
+            c0Carrier c1Carrier c2Equiv
+            c2Equiv_zero c2Equiv_symm_zero
+         let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          forall primitive : E.coefficient.C0,
+            K.d 0 (sectionWitness.c0SectionEquiv primitive) =
+              sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          forall primitive : K.Cn 0,
+            E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+              sectionWitness.c1SectionEquiv.symm (K.d 0 primitive)) /\
+         (letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          forall cochain : E.coefficient.C1,
+            K.d 1 (sectionWitness.c1SectionEquiv cochain) =
+              sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+         (letI := additive.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          forall cochain : K.Cn 1,
+            E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+              sectionWitness.c2SectionEquiv.symm (K.d 1 cochain)))
+
+/--
 The cochain-realization source is equivalent to the explicit lower data exposed
 in Cycle 41.
 
@@ -4881,6 +4939,57 @@ theorem no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData
     ⟨c0Carrier, _c1Carrier, _c2Equiv,
       _c2Equiv_zero, _c2Equiv_symm_zero,
       _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
+Cycle 56 blocker theorem: a surface-only constructor for the Cycle 55 direct
+lower bundle cannot be unconditional over the current G-06 input surface.
+
+The direct lower bundle still contains degree-`0` carrier-specific comparison
+data before it contains any selected semantic-delta / `K.d` laws.  Therefore,
+on any test surface whose semantic degree-`0` carrier is additively equivalent
+to `PUnit` while the selected cover-relative degree-`0` carrier is additively
+equivalent to `ZMod 2`, such a constructor would produce an additive
+equivalence `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+This is the Cycle 55 residual-boundary theorem: presheaf zero/add laws,
+selected cover membership, `AATSheafCondition`, `AATDescent`, and the general
+`K.d = alternating face combination` identity still do not generate the
+displayed carrier comparison data, degree-`2` zero laws, or the four direct
+selected differential laws from `CurrentG06InputSurface` alone.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_directDifferentialLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputDirectLawConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        DegreewiseCarrierDataAndDirectDifferentialLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  rcases currentInputDirectLawConstructor surface with
+    ⟨c0Carrier, _c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_direct_to, _d0_direct_from, _d1_direct_to, _d1_direct_from⟩
   let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
     c0Carrier.toAddEquiv
   let e : PUnit ≃+ ZMod 2 :=
@@ -5890,6 +5999,32 @@ theorem degreewiseCarrierData_and_directDifferentialLaws_constructs_explicitFini
   · intro cochain
     rw [← K.d_eq_alternatingFaceCombination 1]
     exact d1_direct_from cochain
+
+/--
+Cycle 56 named-source constructor: the transparent Cycle 55 direct lower bundle
+constructs the explicit finite witness.
+
+This theorem only names and proof-uses the already displayed lower data.  It
+does not construct that lower bundle from `CurrentG06InputSurface` alone and it
+does not introduce any `H1` zero, boundary membership, global coherence,
+effective gluing, refinement naturality, comparison equivalence, or full sheaf
+cohomology comparison.
+-/
+theorem degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness
+    (direct :
+      DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K) := by
+  rcases direct with
+    ⟨c0Carrier, c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_direct_to, d0_direct_from, d1_direct_to, d1_direct_from⟩
+  exact
+    degreewiseCarrierData_and_directDifferentialLaws_constructs_explicitFiniteWitness
+      (additive := additive) (coverBridge := coverBridge) (K := K)
+      c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+      d0_direct_to d0_direct_from d1_direct_to d1_direct_from
 
 /--
 Cycle 55 current-surface path: displayed carrier data and direct selected
