@@ -7497,3 +7497,151 @@ The next minimal obligation is now to construct
 selected residual coefficient / selected semantic-delta / presheaf-restriction
 sources, or explicitly register it as the exact G-06 boundary if that
 construction is not available.
+
+## Cycle 53 — selected cochain realization constructs provenance and feeds Cycle 52
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_constructs_carrierSpecificComparisonProvenance_and_pairedLowerSource
+```
+
+The selector chose a source-relative discharge of the Cycle 52 provenance gap:
+given `CurrentG06InputSurface` plus an explicit
+`SemanticRepairCoverRelativeCochainRealization`, construct
+`SemanticRepairCarrierSpecificComparisonProvenance` and immediately proof-use
+that provenance through the Cycle 52 paired lower-source theorem.
+
+Rejected alternatives were:
+
+- claiming a `CurrentG06InputSurface`-only constructor, which conflicts with
+  the existing no-uniform / Cycle 48 blockers;
+- jumping to `H1` zero, effective gluing, refinement / naturality, or full
+  sheaf cohomology while the selected cochain-realization source remains
+  material;
+- report-only boundary registration, because the selected cochain-realization
+  source already constructs the provenance by theorem.
+
+### Result
+
+Cycle 53 proves that an explicit selected cochain realization constructs
+carrier-specific comparison provenance and that the constructed provenance is
+consumed by the Cycle 52 paired lower-source theorem.
+
+The Lean proof constructs:
+
+```text
+provenance := realization.toCarrierSpecificComparisonProvenance
+```
+
+then calls:
+
+```text
+currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources
+```
+
+with that constructed provenance.  The conclusion includes:
+
+- `Nonempty SemanticRepairCarrierSpecificComparisonProvenance`;
+- `Nonempty SelectedSectionFamilyCarrierModel`;
+- `Nonempty SemanticRepairCoverRelativeDirectDifferentialCompatibility`;
+- `Nonempty SemanticRepairCoverRelativeCochainRealization`;
+- presheaf restriction zero/add laws;
+- selected Cech differential formula;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- selected carrier geometry plus selected Cech face-law source.
+
+The theorem does not construct the selected cochain realization from
+`CurrentG06InputSurface` alone.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged relative to
+  the explicit `SemanticRepairCoverRelativeCochainRealization` source.
+- selected carrier / semantic-delta / presheaf-restriction source:
+  remains `discharge-required` below the current G-06 surface unless supplied
+  by an allowed concrete selected coefficient / selected semantic-delta /
+  presheaf-restriction construction.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add laws and the
+  selected Cech differential formula through the Cycle 52 path.  It still does
+  not generate arbitrary selected cochain realization or carrier comparison
+  data by itself.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  This cycle does not identify it with full sheaf cohomology.
+- refinement / naturality remains outside the discharged theorem surface.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  -> toCarrierSpecificComparisonProvenance
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+
+constructed SemanticRepairCarrierSpecificComparisonProvenance
+  -> currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> presheaf laws + selected Cech differential formula
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle53AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_constructs_carrierSpecificComparisonProvenance_and_pairedLowerSource`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `SemanticRepairCarrierSpecificComparisonProvenance` is
+  discharged relative to explicit `SemanticRepairCoverRelativeCochainRealization`.
+  Construction of the cochain realization source from allowed selected residual
+  coefficient / selected semantic-delta / presheaf-restriction data remains
+  unresolved.
+- anti-weakening: passed.  The theorem is source-relative and explicitly takes
+  `realization : SemanticRepairCoverRelativeCochainRealization additive surface.K`;
+  it does not claim that `CurrentG06InputSurface` alone constructs this source.
+- proof use: passed.  The proof constructs
+  `provenance := realization.toCarrierSpecificComparisonProvenance` and passes
+  that exact constructed provenance to
+  `currentG06InputSurface_carrierSpecificComparisonProvenance_constructs_pairedLowerSource_and_groundingSources`.
+- structure field escape: passed.  The theorem introduces no `H1` zero, global
+  coherence, effective gluing / descent, comparison equivalence, refinement /
+  naturality, or full sheaf cohomology claim as an argument, conclusion, or new
+  structure field.  The remaining selected cochain-realization source is still
+  material, so the cycle is not a completion candidate.
+- remaining obligation: construct
+  `SemanticRepairCoverRelativeCochainRealization` from allowed lower selected
+  data, or preserve the exact boundary if no lower construction exists.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct the explicit
+`SemanticRepairCoverRelativeCochainRealization` source from allowed selected
+residual coefficient / selected semantic-delta / presheaf-restriction data, or
+to preserve the exact boundary if no lower construction is available.
