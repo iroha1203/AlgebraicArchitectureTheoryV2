@@ -2417,3 +2417,138 @@ Minimum next obligations:
   source.
 - Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
   actual presheaf restriction / selected face-restriction laws.
+
+## Cycle 20 — carrier-only model constructs section-family witness
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SelectedSectionFamilyCarrierModel`
+  - `SelectedSectionFamilyCarrierModel.c0SectionEquiv`
+  - `SelectedSectionFamilyCarrierModel.c1SectionEquiv`
+  - `SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel`
+  - `SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel`
+  - `SemanticRepairCoverRelativeSectionFamilyWitness.sectionFamilyWitness_iff_selectedSectionFamilyCarrierModel`
+  - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+
+### Result
+
+Cycle 20 pushes the `SemanticRepairCoverRelativeSectionFamilyWitness` premise
+down to a lower carrier-only model.  Lean now proves that a selected
+section-family witness is constructible from:
+
+- degree-0 `CarrierSpecificAdditiveComparisonData`
+  between `E.coefficient.C0` and `K.Cn 0`
+- degree-1 `CarrierSpecificAdditiveComparisonData`
+  between `E.coefficient.C1` and `K.Cn 1`
+- a degree-2 carrier equivalence between `E.coefficient.C2` and `K.Cn 2`
+- the two degree-2 zero preservation laws
+
+The proof-use path is:
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> selected cover-relative H1 grounding package
+```
+
+This does not claim that bare cover membership, sheaf condition, descent, or
+presheaf laws generate arbitrary degree-wise carrier equivalences.  Earlier
+blocker theorems still rule out that uniform shortcut.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: discharged relative to
+  `SelectedSectionFamilyCarrierModel` by theorem.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains
+  `discharge-required`.
+- `selected section-family witness as ambient-boundary`: not adopted; no
+  GOAL-boundary revision is used.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- `SelectedSectionFamilyCarrierModel` stores only carrier-level finite data:
+  degree-0/1 carrier maps with inverse/additivity laws, a degree-2 equivalence,
+  and degree-2 zero/symm-zero laws.
+- It does not store `SemanticRepairAdditiveH1Zero`, boundary membership,
+  global semantic repair coherence, effective descent, refinement naturality,
+  full sheaf cohomology comparison, or face-restriction compatibility.
+- `sectionFamilyWitness_iff_selectedSectionFamilyCarrierModel` shows the new
+  model is equivalent in strength to the previous witness after unpacking
+  additive equivalences.  This is a provenance refinement, not target
+  completion from atom-supported site / coefficient data.
+- T3 audit approved this cycle as `proof-obligation-discharged`; no target
+  weakening, ambient-boundary reclassification, unused material premise, or
+  structure-field escape was found.
+
+### Dependency DAG
+
+```text
+remaining lower carrier source:
+  selected semantic residual coefficient / concrete section-family carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+
+remaining face law source:
+  selected presheaf restriction / face restriction laws
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+new Cycle 20 theorem path:
+  SelectedSectionFamilyCarrierModel
+    -> SemanticRepairCoverRelativeSectionFamilyWitness
+    + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle20AxiomAudit.lean` — passed.
+- `SelectedSectionFamilyCarrierModel.c0SectionEquiv`,
+  `SelectedSectionFamilyCarrierModel.c1SectionEquiv`,
+  `SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel`,
+  `SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel`,
+  and
+  `SemanticRepairCoverRelativeSectionFamilyWitness.sectionFamilyWitness_iff_selectedSectionFamilyCarrierModel`
+  depend on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed files — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The section-family witness premise has been pushed down to a carrier-only
+finite model, but `SelectedSectionFamilyCarrierModel` itself and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` remain open
+`discharge-required` premises.
+
+Minimum next obligations:
+
+- Construct `SelectedSectionFamilyCarrierModel` from selected semantic
+  residual coefficient / concrete cover-relative section-family carrier
+  geometry, or prove a precise boundary theorem for the finite carrier
+  equivalence source.
+- Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
+  actual presheaf restriction / selected face-restriction laws for the
+  constructed section witness.
