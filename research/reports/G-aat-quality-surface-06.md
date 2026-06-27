@@ -521,3 +521,106 @@ concretely witnesses, degree `0`/`1`/`2` cochain maps and `d0`/`d1`
 compatibility between the semantic additive Cech data and the selected general
 cover-relative Cech complex.  Without that layer, the mandatory
 `discharge-required` comparison provenance premise remains open.
+
+## Cycle 4 — cochain-realization layer checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization`
+  - `SemanticRepairCoverRelativeCochainRealization.toH1Comparison`
+  - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The previous explicit `SemanticRepairCoverRelativeH1Comparison` premise is
+  factored through a lower-level cochain-realization layer.
+- `toH1Comparison` constructs the selected semantic/general `H1` comparison from
+  degree `0`/`1`/`2` realization data.
+- The degree-one inverse and subtraction laws in the resulting comparison are
+  derived from `AddEquiv` data, not supplied as independent `H1` comparison
+  facts.
+- `grounded_package_of_cochain_realization` connects the realization layer to
+  the existing quotient-level H1 grounding package.
+
+Remaining:
+
+- `SemanticRepairCoverRelativeCochainRealization` itself is still explicit
+  provenance.  It is not yet constructed from a concrete `SemanticRepairCover`,
+  `SemanticRepairCoverRelativeCoverBridge`, `ObstructionSheaf`, and selected
+  `CoverRelativeCechComplex`.
+- Degree `0`/`1`/`2` cochain realization, degree-two zero preservation, and
+  `d0`/`d1` compatibility remain the new minimum discharge-required premise.
+- General cover refinement / naturality and full sheaf cohomology comparison
+  remain outside this checkpoint.
+
+### Material Premise Ledger Delta
+
+- `comparison-map provenance`: partially reduced.  It now factors through
+  `SemanticRepairCoverRelativeCochainRealization`.
+- `degree-wise cochain realization`: discharge-required and still open upstream.
+- `differential compatibility provenance`: discharge-required and still open
+  upstream, now localized to `d0_to`, `d0_from`, `d1_to`, and `d1_from` in the
+  realization layer.
+- `quotient-level H1 equivalence after cochain realization`: discharged by
+  `grounded_package_of_cochain_realization` together with Cycle 2 theorems.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The realization structure does not store `H1` zero, global semantic repair
+  coherence, full sheaf cohomology comparison, refinement naturality, exactness
+  conclusion, or effective descent conclusion.
+- The new structure fields are low-degree cochain equivalences, degree-two zero
+  preservation, and differential compatibility.  This is still proof-relevant
+  comparison provenance, so the cycle remains a checkpoint rather than
+  completion.
+- `toH1Comparison` proof-uses every realization field needed by
+  `SemanticRepairCoverRelativeH1Comparison`.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  -> toH1Comparison
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> semanticRepairAdditiveH1_equiv_coverRelativeH1
+  -> grounded_package_of_cochain_realization
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle4AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeCochainRealization.toH1Comparison` and
+`SemanticRepairCoverRelativeCochainRealization.grounded_package_of_cochain_realization`.
+The audit reported only standard `[propext, Classical.choice, Quot.sound]`
+dependencies.  No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe`
+dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle4AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed report / Lean files — clean.
+
+### Target Status
+
+This cycle reduces proof distance but does not complete G-06.
+
+The next minimum obligation is to construct
+`SemanticRepairCoverRelativeCochainRealization` from the selected semantic
+repair cover / cover bridge / residual coefficient / cover-relative Cech complex
+data, or to prove a sharper API-level blocker if that construction cannot be
+made inside the current `CoverRelativeCechComplex` surface.
