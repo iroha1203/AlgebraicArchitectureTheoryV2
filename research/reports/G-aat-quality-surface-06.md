@@ -5600,3 +5600,167 @@ residual coefficient / selected semantic-delta / presheaf-restriction source,
 or to record a sharper blocker showing why the current G-06 input surface
 cannot provide that source.  General refinement/naturality and full sheaf
 cohomology comparison remain outside the unconditional claim boundary.
+
+## Cycle 42 — cochain realization exposes explicit lower data
+
+- decision: approve
+- result_type: proof-obligation-discharged relative to cochain realization
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  - `SemanticRepairCoverRelativeCochainRealization.constructs_carrierSpecificComparisonProvenance_via_explicitLowerData`
+
+### T1 Selection
+
+The selector chose to connect the Cycle 41 explicit lower data to the existing
+`SemanticRepairCoverRelativeCochainRealization` source.  This directly lowers
+the current remaining blocker by one step: the explicit finite carrier witness
+data and four selected face-restriction equations are now equivalent to a
+cochain-realization source, but that source itself remains material input.
+
+Rejected alternatives were:
+
+- constructing carrier equivalences from bare cover membership,
+  `AATSheafCondition`, or `AATDescent`, which contradicts the existing blocker
+  theorems;
+- spending the cycle on full sheaf cohomology comparison or refinement /
+  naturality, which are boundary obligations but not the shortest current
+  proof-distance reduction;
+- report-only boundary wording without Lean theorem progress.
+
+### Result
+
+Cycle 42 proves:
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  <-> finite degree-wise carrier data
+      + degree-2 zero-preserving equivalence
+      + four selected face-restriction equations
+```
+
+The forward direction converts the cochain realization to
+`SemanticRepairCarrierSpecificComparisonProvenance` and then unfolds the
+Cycle 41 equivalence to expose the explicit carrier data and face equations.
+The backward direction constructs carrier-specific provenance from the
+explicit lower data and then constructs a cochain realization from that
+provenance.
+
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` is a transparent
+`abbrev` for the explicit `Exists`-surface.  It is not a structure or
+certificate field, and it stores no `H1` zero, boundary membership, global
+coherence, effective descent, refinement naturality, or full sheaf cohomology
+comparison.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeCochainRealization`: discharged relative to the
+  explicit finite carrier data and four selected face-restriction equations,
+  and conversely shown to expose exactly that lower source.
+- finite carrier witness data: remains `discharge-required` below cochain
+  realization.  Cycle 42 makes it equivalent to the cochain-realization source
+  but does not construct it from bare site / cover / sheaf / descent data.
+- four explicit selected face-restriction equations: remain
+  `discharge-required` below cochain realization.  They are exposed by the
+  equivalence and proof-used through the Cycle 41 provenance path.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the existing Cycle 33 / Cycle 38 path.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex; no theorem in this cycle identifies it with full sheaf cohomology.
+- No global semantic repair coherence, `H1` zero, boundary membership,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is hidden in a new structure field or
+  certificate field.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> Cycle 41 explicit lower data
+
+Cycle 41 explicit lower data
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeCochainRealization
+```
+
+and downstream:
+
+```text
+cochain realization
+  <-> explicit lower data
+  -> carrier-specific provenance
+  -> Cycle 40 / Cycle 39 / Cycle 38 / Cycle 37 / Cycle 33 effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle42AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.constructs_carrierSpecificComparisonProvenance_via_explicitLowerData`
+  depends on standard axioms `[propext, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path scan over changed Lean file and report — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged relative to cochain realization.
+- completion candidate: no.
+- major findings: none for checkpoint approval.
+- anti-weakening: passed.  The new declarations do not claim that bare cover
+  membership, sheaf condition, descent, presheaf restriction, full sheaf
+  cohomology, or refinement naturality generate the lower data.
+- structure field escape: passed.  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  is a transparent `Prop` abbreviation over `Exists` data, not a structure or
+  certificate field.  It contains carrier data, degree-`2` zero laws, and four
+  selected face equations, but no `H1` zero, boundary membership, global
+  coherence, effective descent, refinement naturality, or full sheaf
+  cohomology equivalence.
+- proof use: passed.  The forward direction uses
+  `realization.toCarrierSpecificComparisonProvenance` and the Cycle 41
+  equivalence.  The backward direction constructs
+  `SemanticRepairCarrierSpecificComparisonProvenance` from the explicit lower
+  data and then returns to `provenance.toCochainRealization`.
+- remaining obligations: construct `SemanticRepairCoverRelativeCochainRealization`
+  from concrete selected residual coefficient / selected semantic-delta /
+  presheaf-restriction source, or fix a sharper blocker showing that the
+  current G-06 input surface cannot supply the required carrier equivalences
+  and differential compatibility.  Refinement / naturality and full sheaf
+  cohomology comparison remain outside the unconditional claim boundary.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is now sharper: construct
+`SemanticRepairCoverRelativeCochainRealization` from concrete selected
+residual coefficient / selected semantic-delta / presheaf-restriction source,
+or fix a blocker theorem showing why the current G-06 input surface cannot
+provide the required carrier equivalences and differential compatibility.
+General refinement/naturality and full sheaf cohomology comparison remain
+outside the unconditional claim boundary.
