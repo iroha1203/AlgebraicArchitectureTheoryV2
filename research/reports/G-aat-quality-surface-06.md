@@ -4154,3 +4154,147 @@ presheaf-restriction / additive coefficient data.  Broader G-06 obligations
 remain: cover/topology membership, sheaf/descent/effective gluing, zero
 predicate equivalence, refinement/naturality boundary, and the explicit boundary
 between cover-relative Cech `H1` and full sheaf cohomology.
+
+## Cycle 32 — cochain realization lowered to carrier model plus direct laws
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 32 lowers the Cycle 31 cochain-realization source to the two already
+separated lower sources:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+```
+
+The backward direction proof-uses both sources:
+
+```text
+model
+  -> SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+
+direct
+  -> direct.toFaceRestrictionCompatibility
+
+model + direct.toFaceRestrictionCompatibility
+  -> of_sectionFamilyWitness_and_faceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+```
+
+The forward direction exposes the same lower sources from any existing cochain
+realization through the current provenance path:
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  -> toCarrierSpecificComparisonProvenance
+  -> toSectionRealizationBridge
+  -> toSelectedSectionFamilyCarrierModel
+  -> toDirectDifferentialCompatibilityForSelectedCarrierModel
+```
+
+This is not a claim that atom-generated site/sheaf/descent data constructs the
+carrier model or the direct laws.  It removes `SemanticRepairCoverRelativeCochainRealization`
+as an unexplained first source by making its immediate lower-source shape
+explicit.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeCochainRealization`: discharged relative to
+  `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- `SelectedSectionFamilyCarrierModel`: remains discharge-required.  It still
+  needs concrete selected semantic residual coefficient / cover-relative carrier
+  provenance.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  discharge-required.  It still needs a genuine selected semantic-delta /
+  presheaf-restriction comparison source for the four direct `K.d` equations.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is stored or newly assumed by Cycle 32.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> section-family witness
+
+SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> face-restriction compatibility
+
+section-family witness + face-restriction compatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> selected cover-relative H1 grounding package
+
+remaining lower sources:
+  selected semantic residual carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+
+  selected semantic-delta / presheaf-restriction comparison
+    -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle32AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeCochainRealization.cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+- `git diff --check` — passed before report update.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- blocking findings: none.
+- certificate provenance: cochain realization is constructed through the
+  existing section-witness and face-restriction path.  The forward direction
+  exposes lower sources through
+  `realization -> toCarrierSpecificComparisonProvenance ->
+  toSectionRealizationBridge -> model + direct`.
+- proof use: `model` is used to build the section-family witness, `direct` is
+  used through `direct.toFaceRestrictionCompatibility`, and the backward
+  direction consumes both to build `SemanticRepairCoverRelativeCochainRealization`.
+- structure field escape: none found.  No new structure, class, or certificate
+  field is introduced.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations are to construct
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` from a genuine
+selected semantic-delta / presheaf-restriction comparison source, and separately
+to keep lowering `SelectedSectionFamilyCarrierModel` to concrete selected
+semantic residual coefficient / cover-relative carrier geometry.  Broader G-06
+obligations remain: cover/topology membership, sheaf/descent/effective gluing,
+zero predicate equivalence, refinement/naturality boundary, and the explicit
+boundary between cover-relative Cech `H1` and full sheaf cohomology.

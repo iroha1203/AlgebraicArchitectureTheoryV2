@@ -3412,6 +3412,63 @@ theorem grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibilit
     sectionWitness compatibility).grounded_package_of_cochain_realization
 
 /--
+Cycle 32 lower-construction theorem: carrier-only selected section-family data
+plus direct selected differential compatibility construct the cochain
+realization source required by the G-06 cover-relative `H1` grounding path.
+
+This theorem lowers the Cycle 31 source one step: it does not take an existing
+`SemanticRepairCoverRelativeCochainRealization` as input.  The carrier model
+builds the selected section-family witness, and the direct `K.d` compatibility
+is normalized to face-restriction compatibility through the existing
+`K.d_eq_alternatingFaceCombination` path.  It still remains relative to the two
+lower material sources and does not claim that bare site/sheaf/descent data
+constructs them.
+-/
+def of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    SemanticRepairCoverRelativeCochainRealization additive K :=
+  of_sectionFamilyWitness_and_faceRestrictionCompatibility
+    (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      model)
+    direct.toFaceRestrictionCompatibility
+
+/--
+The cochain-realization premise is supplied by exactly the separated lower
+carrier model plus direct selected differential compatibility.
+
+The forward direction exposes those lower sources through existing provenance
+projections; the backward direction constructs the cochain realization by the
+Cycle 32 constructor.  No `H1` zero, boundary membership, global coherence,
+effective descent, refinement naturality, or full sheaf cohomology comparison is
+introduced as a field or hidden certificate.
+-/
+theorem cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) <->
+      Exists fun model : SelectedSectionFamilyCarrierModel additive coverBridge K =>
+        SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) := by
+  constructor
+  · intro hrealization
+    rcases hrealization with ⟨realization⟩
+    let provenance := realization.toCarrierSpecificComparisonProvenance
+    let bridge := provenance.toSectionRealizationBridge
+    exact
+      ⟨bridge.toSelectedSectionFamilyCarrierModel,
+        bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel⟩
+  · intro hsource
+    rcases hsource with ⟨model, direct⟩
+    exact
+      ⟨of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+        model direct⟩
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
