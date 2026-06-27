@@ -1352,3 +1352,102 @@ Next obligation:
   for the G-05 theorem, or record a blocker / GOAL redesign if the present
   `C0/C1/C2` surface cannot support subtraction and full additive quotient
   semantics without strengthening the boundary.
+
+## Cycle 15 — additive Cech `Z1 / B1` quotient support surface
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: no
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
+- declarations:
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveCechH1Data`
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveH1SameClass`
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveH1Cocycle`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1CocycleSetoid`
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveH1Class`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveResidualClass`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveZeroClass`
+  - `SemanticRepairSheafH1.SemanticRepairAdditiveH1Zero`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1Zero_iff_sameClass_zero`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1Zero_iff_boundary`
+  - `SemanticRepairSheafH1.semanticRepairAdditiveH1Quotient_package`
+
+Proof-obligation delta:
+
+- added a target-strength additive Cech `Z1 / B1` support surface separate from
+  the existing `SemanticRepairSheafH1Envelope.cohomologous` field.
+- defined the additive same-class relation by `left - right ∈ B1`, rather than
+  by the rejected current boundary detector.
+- constructed the additive cocycle quotient class object.
+- proved that equality of the selected residual class with the zero class is
+  equivalent to the selected residual being a visible `CechB1` boundary.
+
+Premise delta:
+
+- discharged in this cycle:
+  - additive same-class provenance for `Z1 / B1`.
+  - quotient setoid construction from additive group laws and `delta0`
+    zero/add/neg compatibility.
+  - additive residual zero-class iff `CechB1 residual`.
+- remaining:
+  - connect `SemanticRepairAdditiveH1Zero` to the existing discharged true-sheaf
+    gluing / global-coherence theorem package.
+  - final four-lane `$math-lean-review`.
+  - final packet must list `zero1_eq_zero` as additive coefficient
+    compatibility.
+
+Certificate provenance:
+
+- discharged:
+  - `SemanticRepairAdditiveH1SameClass additive left right` unfolds to
+    `CechB1 E (left - right)`.
+  - setoid `refl`, `symm`, and `trans` use `delta0_zero`, `delta0_neg`,
+    `delta0_add`, and additive-group arithmetic.
+  - `semanticRepairAdditiveH1Zero_iff_boundary` uses quotient exactness plus
+    `zero1_eq_zero`, not a residual primitive or a `SemanticRepairH1Zero`
+    field.
+- unresolved:
+  - additive data provenance from a concrete coefficient sheaf remains a later
+    support obligation if final review demands it.
+  - the additive quotient surface is not yet connected to
+    `GlobalSemanticRepairCoherent`.
+
+Proof-use audit:
+
+- `semanticRepairAdditiveH1CocycleSetoid` proof-uses the additive same-class
+  reflexivity / symmetry / transitivity theorems.
+- `semanticRepairAdditiveH1Zero_iff_boundary` proof-uses `Quotient.exact`,
+  `Quotient.sound`, and the additive zero normalization `zero1_eq_zero` to
+  convert residual-minus-zero into residual boundary membership.
+
+Structure-field escape audit:
+
+- new fields are limited to additive group structure, zero normalization, and
+  `delta0` compatibility laws.
+- no `SemanticRepairH1Zero`, `GlobalSemanticRepairCoherent`, residual primitive,
+  exactness conclusion, effective descent conclusion, or current boundary
+  detector is stored in the additive data.
+- `zero1_eq_zero` is tracked as a normalization law and a mild hidden-premise
+  risk, not as a conclusion-equivalent premise.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairSheafH1.lean`
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed file and scratch audit file
+- local/private path scan over changed file and scratch audit file
+- independent T3 audit: approve for Cycle 15, `completion_candidate: no`.
+
+Next obligation:
+
+- connect additive `SemanticRepairAdditiveH1Zero` to the already discharged
+  exactness / effective-descent / true-sheaf condition surface, and state the
+  target `[residual] = 0 <-> GlobalSemanticRepairCoherent` bridge using the
+  additive quotient class rather than the old current-boundary detector.
