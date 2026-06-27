@@ -826,6 +826,176 @@ structure SemanticRepairCoverRelativeFaceRestrictionCompatibility
             (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
 
 /--
+Direct selected differential compatibility relative to a fixed section-family
+witness.
+
+This is a deliberately separated law source: it talks only about the selected
+cover-relative Cech differential `K.d`, not about `H1`, zero classes, global
+coherence, effective descent, refinement naturality, or full sheaf cohomology.
+The bridge below turns these direct laws into face-restriction laws by using
+the general Cech identity `K.d_eq_alternatingFaceCombination`.
+-/
+structure SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K) where
+  d0_direct_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.d 0 (sectionWitness.c0SectionEquiv primitive) =
+        sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)
+  d0_direct_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+        sectionWitness.c1SectionEquiv.symm (K.d 0 primitive)
+  d1_direct_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.d 1 (sectionWitness.c1SectionEquiv cochain) =
+        sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)
+  d1_direct_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+        sectionWitness.c2SectionEquiv.symm (K.d 1 cochain)
+
+namespace SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+variable {sectionWitness :
+  SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K}
+
+/--
+Direct selected differential laws construct the face-restriction compatibility
+needed by the G-06 grounding path.
+
+The proof does not assume the face equations separately: it rewrites `K.d`
+through `K.d_eq_alternatingFaceCombination`, so the compatibility is explicitly
+read through the selected presheaf face-restriction presentation.
+-/
+def toFaceRestrictionCompatibility
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive sectionWitness) :
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      additive sectionWitness where
+  d0_face_to := by
+    intro primitive
+    rw [← K.d_eq_alternatingFaceCombination 0]
+    exact direct.d0_direct_to primitive
+  d0_face_from := by
+    intro primitive
+    rw [← K.d_eq_alternatingFaceCombination 0]
+    exact direct.d0_direct_from primitive
+  d1_face_to := by
+    intro cochain
+    rw [← K.d_eq_alternatingFaceCombination 1]
+    exact direct.d1_direct_to cochain
+  d1_face_from := by
+    intro cochain
+    rw [← K.d_eq_alternatingFaceCombination 1]
+    exact direct.d1_direct_from cochain
+
+end SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+namespace SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+variable {sectionWitness :
+  SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K}
+
+/--
+Face-restriction compatibility also yields the direct selected differential
+laws, again by the same general Cech identity.
+-/
+def toDirectDifferentialCompatibility
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    SemanticRepairCoverRelativeDirectDifferentialCompatibility
+      additive sectionWitness where
+  d0_direct_to := by
+    intro primitive
+    rw [K.d_eq_alternatingFaceCombination 0]
+    exact compatibility.d0_face_to primitive
+  d0_direct_from := by
+    intro primitive
+    rw [K.d_eq_alternatingFaceCombination 0]
+    exact compatibility.d0_face_from primitive
+  d1_direct_to := by
+    intro cochain
+    rw [K.d_eq_alternatingFaceCombination 1]
+    exact compatibility.d1_face_to cochain
+  d1_direct_from := by
+    intro cochain
+    rw [K.d_eq_alternatingFaceCombination 1]
+    exact compatibility.d1_face_from cochain
+
+/--
+The selected face-restriction equations are equivalent to direct differential
+compatibility once the cover-relative Cech complex fixes
+`d = alternating face combination`.
+
+This equivalence is a source-normalization theorem only.  It does not turn the
+direct laws into an ambient boundary and it does not store `H1` conclusions.
+-/
+theorem faceRestrictionCompatibility_iff_directDifferentialCompatibility :
+    Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive sectionWitness) <->
+      Nonempty
+        (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive sectionWitness) := by
+  constructor
+  · intro hcompatibility
+    rcases hcompatibility with ⟨compatibility⟩
+    exact ⟨compatibility.toDirectDifferentialCompatibility⟩
+  · intro hdirect
+    rcases hdirect with ⟨direct⟩
+    exact ⟨direct.toFaceRestrictionCompatibility⟩
+
+end SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+/--
 Carrier-specific lower comparison provenance for identifying the semantic
 coefficient carriers with the selected cover-relative Cech section families.
 
@@ -2328,6 +2498,34 @@ theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictio
     (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
       model)
     compatibility
+
+/--
+Carrier-only model data reaches the selected cover-relative grounding package
+from direct selected differential laws by first normalizing those laws to the
+selected presheaf face-restriction presentation.
+
+The proof-use path is explicit:
+carrier model constructs the section-family witness; direct `K.d` compatibility
+is converted to face-restriction compatibility using
+`K.d_eq_alternatingFaceCombination`; those two lower witnesses construct the
+cochain realization and hence the selected cover-relative `H1` grounding
+package.
+-/
+theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)
+          direct.toFaceRestrictionCompatibility).toH1Comparison) :=
+  grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+    model direct.toFaceRestrictionCompatibility
 
 end SemanticRepairCoverRelativeCochainRealization
 
