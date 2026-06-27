@@ -376,6 +376,65 @@ def toH1Comparison
   d1_to := realization.d1_to
   d1_from := realization.d1_from
 
+/--
+Boundary audit theorem: any supplied cochain realization exposes the exact
+degree-wise carrier equivalences, zero laws, and differential compatibility
+that remain to be generated from lower atom-supported data.
+
+This keeps `SemanticRepairCoverRelativeCochainRealization` from being treated as
+an opaque discharge of the G-06 comparison premise.  It is still a material
+premise unless these fields are constructed by a lower theorem.
+-/
+theorem cochainRealization_requires_degreeEquivalences_and_differentials
+    (realization : SemanticRepairCoverRelativeCochainRealization additive K) :
+    (Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         E.coefficient.C0 ≃+ K.Cn 0) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         E.coefficient.C1 ≃+ K.Cn 1) /\
+      Nonempty (E.coefficient.C2 ≃ K.Cn 2) /\
+      (letI := K.cochainAddCommGroup 2
+       realization.c2Equiv E.coefficient.zero2 = 0) /\
+      (letI := K.cochainAddCommGroup 2
+       realization.c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      ((letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        forall primitive : E.coefficient.C0,
+          K.d 0 (realization.c0Equiv primitive) =
+            realization.c1Equiv (E.coefficient.delta0 primitive)) /\
+       (letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        forall primitive : K.Cn 0,
+          E.coefficient.delta0 (realization.c0Equiv.symm primitive) =
+            realization.c1Equiv.symm (K.d 0 primitive)) /\
+       (letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        forall cochain : E.coefficient.C1,
+          K.d 1 (realization.c1Equiv cochain) =
+            realization.c2Equiv (E.coefficient.delta1 cochain)) /\
+       (letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        forall cochain : K.Cn 1,
+          E.coefficient.delta1 (realization.c1Equiv.symm cochain) =
+            realization.c2Equiv.symm (K.d 1 cochain))) := by
+  exact
+    ⟨⟨⟨realization.c0Equiv⟩,
+      ⟨realization.c1Equiv⟩,
+      ⟨realization.c2Equiv⟩,
+      realization.c2Equiv_zero,
+      realization.c2Equiv_symm_zero⟩,
+      realization.d0_to,
+      realization.d0_from,
+      realization.d1_to,
+      realization.d1_from⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 /--
@@ -1150,6 +1209,41 @@ theorem no_constructor_from_current_g06_inputs_without_selected_carrier_source
   exact
     no_uniform_carrier_specific_additive_comparison_from_bare_groups.false
       uniformCarrierComparison
+
+/--
+Cycle 17 blocker theorem: the current G-06 input surface cannot discharge the
+selected cochain realization source by manufacturing the degree-wise additive
+equivalences it requires.
+
+If the current site/sheaf/descent input surface could produce the degree-zero
+or degree-one equivalence data needed by
+`SemanticRepairCoverRelativeCochainRealization` for arbitrary selected semantic
+and cover-relative section carriers, then it would give an additive equivalence
+between every pair of additive groups.  This contradicts
+`no_uniform_additive_carrier_equivalence_from_bare_lower_data`.
+
+Thus Cycle 16's remaining source gap cannot be closed by cover membership,
+`AATSheafCondition`, `AATDescent`, bare additive coefficient laws, or the
+general `CoverRelativeCechComplex` API alone.  G-06 still needs a concrete
+lower construction of the selected cochain realization or an explicit
+GOAL-boundary revision outside the loop.
+-/
+theorem no_constructor_from_current_g06_inputs_without_cochain_realization_source
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (currentInputDegreeEquivConstructor :
+      (C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob) ->
+        C ≃+ D) :
+    False := by
+  let uniformDegreeEquiv :
+      (C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] -> C ≃+ D :=
+    fun C D _ _ => currentInputDegreeEquivConstructor C D surface
+  exact
+    (SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data).false
+        uniformDegreeEquiv
 
 /--
 The degree-`0` carrier maps in carrier-specific provenance construct the
