@@ -5141,6 +5141,119 @@ theorem selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCo
       grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
         model direct⟩
 
+/--
+Cycle 50 lower-source constructor: selected carrier model data plus direct
+selected semantic-delta / Cech-differential compatibility constructs the
+selected cochain-realization source itself.
+
+This is the source-discharge path left open by Cycle 49.  The theorem does not
+take `SemanticRepairCoverRelativeCochainRealization` as an argument.  Instead,
+the carrier model supplies the selected degree-wise section-family carriers,
+and the direct differential source supplies the semantic `delta0` / `delta1`
+compatibility with the chosen cover-relative Cech differential.  The constructed
+realization is then proof-used by the Cycle 49 finite-witness path and by the
+existing direct-differential grounding theorem.
+-/
+theorem currentG06InputSurface_selectedCarrierModel_and_directDifferentialCompatibility_constructs_selectedCochainRealization_and_groundingSources
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (model : SelectedSectionFamilyCarrierModel
+      additive surface.coverBridge surface.K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      (Exists fun realizedModel :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          Exists fun realizedDirect :
+            SemanticRepairCoverRelativeDirectDifferentialCompatibility
+              additive
+                (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                  realizedModel) =>
+            Nonempty
+              (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+                (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+                  (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                    realizedModel)
+                  realizedDirect.toFaceRestrictionCompatibility).toH1Comparison)) := by
+  let realization :=
+    of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K) model direct
+  have hcycle49 :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+            SemanticRepairSelectedCechFaceLawSource additive geometry) :=
+    currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource
+      (surface := surface) realization
+  have hdirect :
+      Exists fun realizedModel :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          Exists fun realizedDirect :
+            SemanticRepairCoverRelativeDirectDifferentialCompatibility
+              additive
+                (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                  realizedModel) =>
+            Nonempty
+              (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+                (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+                  (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                    realizedModel)
+                  realizedDirect.toFaceRestrictionCompatibility).toH1Comparison) :=
+    selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K) realization
+  exact
+    ⟨⟨realization⟩,
+      hcycle49.1,
+      hcycle49.2.1,
+      hcycle49.2.2.1,
+      hcycle49.2.2.2.1,
+      hcycle49.2.2.2.2,
+      hdirect⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
