@@ -848,6 +848,161 @@ theorem coverEnvelope_boundaryExactAbelian_package
         data.toAbelianDescentData,
       rfl, rfl, rfl⟩
 
+/--
+Abelian cover data whose `H1` class relation is boundary-generated, without a
+primitive selector for every cocycle.
+
+The only distinguished primitive is a zero-boundary witness.  The cohomology
+relation generated below says that two cochains are either definitionally equal
+or are both explicit boundaries.  Thus a cochain cohomologous to zero carries
+its own boundary witness through the relation, rather than through a global
+`C1 -> C0` exactness selector.
+-/
+structure SemanticRepairCoverH1BoundaryRelationAbelianData
+    (Atom : Type u) where
+  site : SemanticRepairSite.{u, v} Atom
+  cover : SemanticRepairCover.{u, v, w} site
+  cech :
+    SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z} site cover
+  primitiveSemanticallyClosed : cech.C0 -> Prop
+  finiteShadow : cech.C1 -> Bool
+  finiteShadow_boundary_zero :
+    forall primitive, finiteShadow (cech.delta0 primitive) = false
+  zeroPrimitive : cech.C0
+  zeroPrimitive_boundary : cech.delta0 zeroPrimitive = cech.zero1
+  residualSupport : cech.C1 -> Prop
+  residual_has_support : residualSupport cech.residual
+  boundary_residualSupport_semanticallyClosed :
+    forall primitive,
+      residualSupport (cech.delta0 primitive) ->
+        primitiveSemanticallyClosed primitive
+
+/--
+Generate abelian descent data from the boundary-generated relation.
+
+Unlike `SemanticRepairCoverH1BoundaryExactAbelianData`, this construction does
+not assume a primitive for every cocycle.  The exactness field required by the
+ordinary envelope is obtained by unpacking the boundary witness carried by
+`cohomologous cochain zero1`.
+-/
+def SemanticRepairCoverH1BoundaryRelationAbelianData.toAbelianDescentData
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom) :
+    SemanticRepairCoverH1AbelianDescentData.{u, v, w, x, y, z} Atom where
+  site := data.site
+  cover := data.cover
+  cech := data.cech
+  primitiveSemanticallyClosed := data.primitiveSemanticallyClosed
+  finiteShadow := data.finiteShadow
+  finiteShadow_boundary_zero := data.finiteShadow_boundary_zero
+  cohomologous := fun left right =>
+    left = right \/
+      (exists primitive, data.cech.delta0 primitive = left) /\
+        (exists primitive, data.cech.delta0 primitive = right)
+  cohomologous_refl := by
+    intro cochain
+    exact Or.inl rfl
+  cohomologous_symm := by
+    intro left right hsame
+    rcases hsame with hEq | hBoundary
+    · exact Or.inl hEq.symm
+    · exact Or.inr ⟨hBoundary.2, hBoundary.1⟩
+  cohomologous_trans := by
+    intro left middle right hleftMiddle hmiddleRight
+    rcases hleftMiddle with hEqLeft | hBoundaryLeft
+    · subst middle
+      exact hmiddleRight
+    · rcases hmiddleRight with hEqRight | hBoundaryRight
+      · subst right
+        exact Or.inr hBoundaryLeft
+      · exact Or.inr ⟨hBoundaryLeft.1, hBoundaryRight.2⟩
+  boundary_cohomologous_zero := by
+    intro primitive
+    exact
+      Or.inr
+        ⟨⟨primitive, rfl⟩,
+          ⟨data.zeroPrimitive, data.zeroPrimitive_boundary⟩⟩
+  exact_boundary_of_cohomologous_zero := by
+    intro cochain _hcocycle hsameZero
+    rcases hsameZero with hEqZero | hBoundary
+    · exact ⟨data.zeroPrimitive, by simpa [hEqZero] using data.zeroPrimitive_boundary⟩
+    · exact hBoundary.1
+
+/--
+Semantic faithfulness certificate generated from residual support rather than a
+universal boundary selector.
+
+The field `residualSupport` records semantic support on cochains.  If a
+primitive has boundary equal to the selected residual, residual support
+transports to that boundary and yields semantic closure of the primitive.
+-/
+theorem coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom) :
+    SemanticRepairCoverH1ExactnessCertificate
+      data.toAbelianDescentData.toEnvelopeData := by
+  constructor
+  intro primitive hboundary
+  apply data.boundary_residualSupport_semanticallyClosed
+  exact hboundary.symm ▸ data.residual_has_support
+
+/--
+The boundary-generated abelian relation supplies the true-sheaf `H1` gluing
+equivalence without using `boundaryPrimitive : C1 -> C0`.
+-/
+theorem coverEnvelope_globalRepairCoherent_iff_sheafH1Zero_boundaryRelationAbelian
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom) :
+    GlobalSemanticRepairCoherent
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) <->
+      SemanticRepairH1Zero
+        (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData) :=
+  coverEnvelope_globalRepairCoherent_iff_sheafH1Zero_abelianDescent
+    data.toAbelianDescentData
+    (coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData data)
+
+/--
+Cycle 12 package: exactness / faithfulness provenance through a
+boundary-generated relation and residual semantic support.
+
+This remains a checkpoint because selected AAT sheaf-condition provenance is
+handled separately, but it removes the final-review blocker caused by a
+primitive selector for every cocycle.
+-/
+theorem coverEnvelope_boundaryRelationAbelian_package
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom) :
+    (GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) <->
+        SemanticRepairH1Zero
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      SemanticRepairCoverH1ExactnessCertificate
+        data.toAbelianDescentData.toEnvelopeData /\
+      SemanticRepairCoverH1EffectiveDescentCertificate
+        data.toAbelianDescentData.toEnvelopeData /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) := by
+  exact
+    ⟨coverEnvelope_globalRepairCoherent_iff_sheafH1Zero_boundaryRelationAbelian
+        data,
+      coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData data,
+      coverEnvelope_effectiveDescentCertificate_of_abelianDescentData
+        data.toAbelianDescentData,
+      rfl, rfl, rfl⟩
+
 /-! ## Explicit AAT sheaf-condition discharge surface -/
 
 /--
@@ -1702,6 +1857,106 @@ theorem trueSheafH1SemanticRepairGluing_trueSheafBoundaryExactAbelian_package
   exact
     trueSheafH1SemanticRepairGluing_boundaryExactAbelian_package
       data selected
+
+/--
+Named true-sheaf `H1` semantic repair-gluing equivalence for the
+boundary-generated abelian relation surface.
+
+This variant avoids the Cycle 10 `boundaryPrimitive : C1 -> C0` selector.  The
+exactness needed for zero-class transport is obtained by unpacking the boundary
+witness carried by the cohomology relation itself.
+-/
+theorem trueSheafH1_semanticRepairGluing_iff_boundaryRelationAbelian
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom) :
+    GlobalSemanticRepairCoherent
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) <->
+      SemanticRepairH1Zero
+        (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData) :=
+  coverEnvelope_globalRepairCoherent_iff_sheafH1Zero_boundaryRelationAbelian
+    data
+
+/--
+Target-adjacent theorem package for boundary-generated abelian cover data.
+
+This remains a checkpoint: it removes the universal boundary selector from the
+exactness provenance, but still takes selected cover-wise AAT sheaf-condition
+evidence explicitly.
+-/
+theorem trueSheafH1SemanticRepairGluing_boundaryRelationAbelian_package
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAbelianData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {F : AAT.AG.Site.AATPresheaf S}
+    {base : S.category}
+    {cover : Sieve base}
+    (sheafCondition :
+      SemanticRepairCoverH1SheafConditionCertificate
+        data.toAbelianDescentData.toEnvelopeData S F cover) :
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      CechZ1 (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)
+        (toSheafH1Envelope
+          data.toAbelianDescentData.toEnvelopeData).coefficient.residual /\
+      (forall primitive :
+        (toSheafH1Envelope
+          data.toAbelianDescentData.toEnvelopeData).coefficient.C0,
+        CechZ1 (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)
+          ((toSheafH1Envelope
+            data.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+              primitive)) /\
+      (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) <->
+          SemanticRepairH1Zero
+            (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      (SemanticRepairH1Nonzero
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData) ->
+        Not
+          (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)))) /\
+      (SemanticRepairH1Zero
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData) <->
+        CechB1 (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)
+          (toSheafH1Envelope
+            data.toAbelianDescentData.toEnvelopeData).coefficient.residual) /\
+      (SemanticRepairH1Zero
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData) ->
+        GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData))) /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)) := by
+  let exactness :=
+    coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData data
+  exact
+    ⟨coverEnvelope_sheafConditionFor_of_certificate sheafCondition,
+      coverEnvelope_descent_of_sheafConditionCertificate sheafCondition,
+      sheafCondition.envelope_residual_cocycle,
+      sheafCondition.envelope_boundary_cocycle,
+      trueSheafH1_semanticRepairGluing_iff_boundaryRelationAbelian data,
+      no_globalRepairCoherent_of_nonzero_sheafH1
+        (toSheafH1Envelope data.toAbelianDescentData.toEnvelopeData)
+        (coverEnvelope_sheafH1ExactnessDischarge_of_certificate
+          exactness),
+      coverEnvelope_sheafH1Zero_iff_h1Boundary_of_certificate
+        data.toAbelianDescentData.toEnvelopeData exactness,
+      coverEnvelope_globalRepairCoherent_of_sheafH1Zero_abelianDescent
+        data.toAbelianDescentData exactness,
+      rfl, rfl, rfl⟩
 
 end SemanticRepairTrueSheafH1
 end QualitySurface

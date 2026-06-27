@@ -1023,3 +1023,93 @@ Next obligation:
   construction whose exactness / sheaf-condition provenance is derived from
   cover / site / coefficient-sheaf data without assuming a primitive for every
   cocycle or a global sheaf condition as a direct certificate field.
+
+## Cycle 12 — boundary-generated relation exactness provenance
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: no
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- declarations:
+  - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAbelianData`
+  - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationAbelianData.toAbelianDescentData`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_globalRepairCoherent_iff_sheafH1Zero_boundaryRelationAbelian`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelationAbelian_package`
+  - `SemanticRepairTrueSheafH1.trueSheafH1_semanticRepairGluing_iff_boundaryRelationAbelian`
+  - `SemanticRepairTrueSheafH1.trueSheafH1SemanticRepairGluing_boundaryRelationAbelian_package`
+
+Proof-obligation delta:
+
+- added a boundary-generated abelian `H1` relation surface that avoids the
+  rejected `boundaryPrimitive : C1 -> C0` selector.
+- generated `SemanticRepairCoverH1AbelianDescentData` by defining the class
+  relation as equality or both sides being explicit boundaries.
+- proved exactness by unpacking the boundary witness carried by
+  `cohomologous cochain zero1`, rather than by using a primitive selector for
+  every cocycle.
+- generated `SemanticRepairCoverH1ExactnessCertificate` from residual support
+  and support-to-semantic-closure evidence.
+
+Premise delta:
+
+- discharged in this cycle:
+  - removed the conclusion-equivalent universal boundary selector from the
+    exactness provenance path.
+  - generated exactness / semantic faithfulness certificate for the
+    boundary-generated relation surface.
+  - proof-used the generated exactness certificate in the `H1` / global
+    coherence equivalence and nonzero obstruction direction.
+- remaining:
+  - cover-wise `SemanticRepairCoverH1SheafConditionCertificate` remains an
+    explicit theorem argument in the Cycle 12 target-adjacent package.
+  - final review must still decide whether the boundary-generated relation is
+    the intended true-sheaf quotient surface or an ad hoc narrowed relation.
+  - final four-lane `$math-lean-review` has not been rerun after Cycle 12.
+
+Certificate provenance:
+
+- discharged:
+  - `SemanticRepairCoverH1ExactnessCertificate
+    data.toAbelianDescentData.toEnvelopeData` via
+    `coverEnvelope_exactnessCertificate_of_boundaryRelationAbelianData`.
+  - effective descent via the Cycle 9 abelian conversion.
+- unresolved:
+  - `SemanticRepairCoverH1SheafConditionCertificate`.
+  - final anti-weakening approval for the boundary-generated relation boundary.
+
+Proof-use audit:
+
+- `trueSheafH1SemanticRepairGluing_boundaryRelationAbelian_package` uses the
+  generated exactness certificate in the main equivalence, nonzero detector,
+  `H1Zero <-> B1`, and zero-`H1` to global-coherence components.
+
+Structure-field escape audit:
+
+- Cycle 12 does not store a global primitive selector, `SemanticRepairH1Zero`,
+  `CechB1 residual`, or global coherence as a field.
+- remaining risk: `cohomologous` is intentionally boundary-generated, so final
+  review must accept this as the target quotient relation rather than a
+  narrowed replacement for the intended coefficient sheaf relation.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairTrueSheafH1`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed public files and scratch audit file
+- local/private path scan over changed public files and scratch audit file
+- independent T3 audit: approve for the selected Cycle 12 obligation; no final
+  completion verdict issued.
+
+Next obligation:
+
+- discharge selected cover-wise sheaf-condition provenance for the
+  boundary-generated relation surface, or run a focused selector to decide
+  whether relation-to-target-quotient provenance should be fixed first.
