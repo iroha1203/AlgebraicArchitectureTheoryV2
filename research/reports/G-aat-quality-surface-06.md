@@ -7168,3 +7168,176 @@ The next minimal obligation is to construct or explicitly boundary-register the
 selected carrier model and direct differential compatibility from allowed
 concrete selected residual coefficient / selected semantic-delta /
 presheaf-restriction sources.
+
+## Cycle 51 — explicit carrier data plus direct laws construct the paired lower source
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources`
+
+### T1 Selection
+
+The selector chose the paired lower-source provenance gap left by Cycle 50:
+
+```text
+CurrentG06InputSurface
++ degree-wise carrier data and degree-2 zero laws
++ four direct selected semantic-delta / K.d laws
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+The accepted obligation was to construct both lower sources consumed by the
+Cycle 50 cochain-realization path, rather than handle only one side or
+reclassify the paired source as ambient boundary.
+
+Rejected alternatives were:
+
+- jumping to `H1` zero, effective gluing, refinement / naturality, global
+  coherence, comparison equivalence, or full sheaf cohomology;
+- another current-surface-only constructor attempt;
+- treating `SelectedSectionFamilyCarrierModel` or
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` as discharged
+  merely because they are explicit theorem arguments.
+
+### Result
+
+Cycle 51 proves that the paired lower source is constructed from displayed
+finite carrier and direct differential data:
+
+```text
+c0Carrier : CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)
+c1Carrier : CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1)
+c2Equiv : E.coefficient.C2 ~= surface.K.Cn 2
+c2Equiv_zero / c2Equiv_symm_zero
+d0_direct_to / d0_direct_from / d1_direct_to / d1_direct_from
+```
+
+The theorem constructs:
+
+```text
+SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence ...
+SemanticRepairCoverRelativeDirectDifferentialCompatibility.mk ...
+of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility ...
+```
+
+and proof-uses the constructed cochain realization through:
+
+```text
+currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource
+```
+
+This discharges the paired lower source relative to explicit carrier data and
+direct `K.d` laws.  The cycle does not construct those displayed carrier
+comparisons or direct equations from `CurrentG06InputSurface` alone.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: discharged relative to explicit
+  degree-wise carrier data plus degree-`2` zero laws.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: discharged
+  relative to the four displayed direct selected semantic-delta / `K.d` laws.
+- `SemanticRepairCoverRelativeCochainRealization`: remains discharged relative
+  to those lower explicit sources through Cycle 50 / Cycle 51 construction.
+- degree-wise carrier data and direct selected differential equations: remain
+  `discharge-required` below the current G-06 surface unless supplied by an
+  allowed concrete selected residual coefficient / selected semantic-delta /
+  presheaf-restriction source.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add and selected Cech
+  differential formula through the constructed realization and Cycle 49 path.
+  It still does not generate the displayed carrier data or direct equations by
+  itself.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+
+### Dependency DAG
+
+```text
+explicit degree-wise carrier data + degree-2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+
+four direct selected semantic-delta / K.d laws
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility
+  -> of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+
+constructed SemanticRepairCoverRelativeCochainRealization
+  -> currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource
+  -> presheaf laws + selected Cech differential formula
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle51AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_degreewiseCarrierData_and_directDifferentialLaws_constructs_pairedLowerSource_and_groundingSources`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `SelectedSectionFamilyCarrierModel` is discharged relative to
+  explicit degree-wise carrier data and degree-`2` zero laws.
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` is discharged
+  relative to the four direct selected semantic-delta / `K.d` laws.
+  `SemanticRepairCoverRelativeCochainRealization` remains discharged through
+  the constructed paired lower source and Cycle 50 path.
+- certificate provenance: passed for this cycle.  The paired lower source is
+  constructed by Lean from explicit lower data, not accepted as an opaque
+  certificate.  Provenance of `c0Carrier`, `c1Carrier`, `c2Equiv` / zero laws,
+  and direct `d0` / `d1` laws below the current G-06 surface remains
+  unresolved.
+- proof use: passed.  `c0Carrier`, `c1Carrier`, `c2Equiv`,
+  `c2Equiv_zero`, and `c2Equiv_symm_zero` construct the model.  The four
+  direct laws construct direct compatibility.  The model and direct
+  compatibility construct the realization, which is consumed by the Cycle 49
+  theorem.
+- structure field escape: passed.  The cycle introduces no new structure,
+  class, or certificate field and does not add `H1` zero, effective gluing /
+  descent, refinement / naturality, global coherence, comparison equivalence,
+  or full sheaf cohomology equivalence.
+- anti-weakening: passed.  The theorem lowers the paired source to explicit
+  displayed data while keeping those data as remaining material premises.
+- report / validation consistency: passed.  The report matches the Lean diff
+  and keeps G-06 at `target-proof-checkpoint`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct or explicitly boundary-register the
+displayed degree-wise carrier data and direct selected semantic-delta / `K.d`
+laws from allowed concrete selected residual coefficient / selected
+semantic-delta / presheaf-restriction sources.
