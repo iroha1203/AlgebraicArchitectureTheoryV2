@@ -4705,6 +4705,144 @@ theorem currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierG
       ⟨geometry, faceLaws⟩⟩
 
 /--
+Cycle 47 blocker theorem: the explicit finite witness required after Cycle 46
+is not a surface-only product.
+
+Given the current G-06 input surface and an explicit finite lower witness, the
+theorem proof-uses both sides and returns the concrete lower sources that the
+witness contains: degree-wise carrier data, degree-`2` zero laws, and the four
+selected face-restriction equations.  The current surface contributes only the
+presheaf restriction laws and selected Cech differential formula, together with
+the existing no-uniform constructor boundaries.  This theorem deliberately does
+not construct the finite witness from `CurrentG06InputSurface`, and it does not
+identify cover-relative `H1` with full sheaf cohomology.
+-/
+theorem currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      (Exists fun c0Carrier :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0) =>
+      Exists fun c1Carrier :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1) =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+        let model :=
+          SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Carrier c1Carrier c2Equiv
+            c2Equiv_zero c2Equiv_symm_zero
+        let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+        (letI := additive.c0AddCommGroup
+         letI := additive.c1AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         letI := surface.K.cochainAddCommGroup 1
+         forall primitive : E.coefficient.C0,
+           surface.K.alternatingFaceCombination 0
+               (fun σ i =>
+                 surface.K.faceRestrictionTerm 0 i
+                   (sectionWitness.c0SectionEquiv primitive) σ) =
+             sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+        (letI := additive.c0AddCommGroup
+         letI := additive.c1AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         letI := surface.K.cochainAddCommGroup 1
+         forall primitive : surface.K.Cn 0,
+           E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+             sectionWitness.c1SectionEquiv.symm
+               (surface.K.alternatingFaceCombination 0
+                 (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ))) /\
+        (letI := additive.c1AddCommGroup
+         letI := surface.K.cochainAddCommGroup 1
+         forall cochain : E.coefficient.C1,
+           surface.K.alternatingFaceCombination 1
+               (fun σ i =>
+                 surface.K.faceRestrictionTerm 1 i
+                   (sectionWitness.c1SectionEquiv cochain) σ) =
+             sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+        (letI := additive.c1AddCommGroup
+         letI := surface.K.cochainAddCommGroup 1
+         forall cochain : surface.K.Cn 1,
+           E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+             sectionWitness.c2SectionEquiv.symm
+               (surface.K.alternatingFaceCombination 1
+                 (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ)))) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  rcases lower with
+    ⟨c0Carrier, c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      ⟨c0Carrier, c1Carrier, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩,
+      hsurface.2.2.2.1,
+      hsurface.2.2.2.2⟩
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.

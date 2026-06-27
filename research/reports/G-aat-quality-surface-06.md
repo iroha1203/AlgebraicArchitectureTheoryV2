@@ -6487,3 +6487,186 @@ The next minimal obligation is to construct
 selected semantic-delta / presheaf-restriction source.  If that construction is
 not derivable inside the current vocabulary, the next cycle should fix the
 non-derivability boundary explicitly.
+
+## Cycle 47 — explicit finite witness lower-source ledger
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources`
+
+### T1 Selection
+
+The selector chose the next source-boundary obligation left after Cycle 46:
+
+```text
+CurrentG06InputSurface
++ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> presheaf laws
+  -> selected Cech differential formula
+  -> extracted degree-wise carrier data
+  -> extracted degree-2 zero laws
+  -> extracted four selected face-restriction equations
+  -> current-surface-only no-uniform constructor boundaries
+```
+
+The accepted obligation was not to construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+`CurrentG06InputSurface`.  It was to make the required concrete lower sources
+visible in theorem conclusions, while keeping the current-surface-only
+generation boundary explicit.
+
+Rejected alternatives were:
+
+- claiming that `CurrentG06InputSurface`, cover membership,
+  `AATSheafCondition`, `AATDescent`, or presheaf laws alone generate the
+  finite lower witness;
+- jumping from the explicit finite witness boundary to `H1` zero, effective
+  gluing, refinement / naturality, or full sheaf cohomology;
+- moving the required carrier data or face equations into a new structure,
+  class, or certificate field;
+- report-only cleanup without shrinking the proof distance.
+
+### Result
+
+Cycle 47 proves that the finite witness used in Cycle 46 decomposes into the
+following concrete lower sources:
+
+```text
+degree-0 CarrierSpecificAdditiveComparisonData
+degree-1 CarrierSpecificAdditiveComparisonData
+degree-2 carrier equivalence
+degree-2 zero law
+degree-2 inverse-zero law
+four selected face-restriction equations
+```
+
+At the same time, the theorem proof-uses
+`current_g06_presheaf_laws_stop_before_selected_differential_source` to expose:
+
+```text
+presheaf restriction map_zero
+presheaf restriction map_add
+selected Cech differential = alternating face combination
+IsEmpty uniform CarrierSpecificAdditiveComparisonData constructor
+IsEmpty uniform additive equivalence constructor
+```
+
+This fixes the Cycle 47 boundary: the explicit finite witness is now a visible
+lower-source ledger, not an opaque argument, but it remains a material premise
+unless supplied by a concrete selected residual coefficient / selected
+semantic-delta / presheaf-restriction source.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains
+  `discharge-required` below the current G-06 surface.  Cycle 47 decomposes it
+  into explicit finite lower sources and proves the current-surface-only
+  no-uniform constructor boundary alongside that decomposition.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add and selected Cech
+  differential formula only.  It still does not generate carrier comparisons,
+  degree-2 zero laws, or the four selected face equations.
+- `CarrierSpecificAdditiveComparisonData` for degrees 0 and 1:
+  `discharge-required` as concrete selected carrier comparison evidence.
+- degree-2 equivalence and its two zero laws: `discharge-required` as concrete
+  coefficient-to-selected-cochain evidence.
+- four selected face-restriction equations: `discharge-required` as concrete
+  selected semantic-delta / Cech face compatibility evidence.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+- No global semantic repair coherence, `H1` zero, boundary membership,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is hidden in a structure field or certificate
+  field.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> current_g06_presheaf_laws_stop_before_selected_differential_source
+  -> presheaf map_zero + presheaf map_add
+  -> surface.K.d_eq_alternatingFaceCombination
+  -> no uniform carrier-specific comparison constructor
+  -> no uniform additive equivalence constructor
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degree-0 carrier data
+  -> degree-1 carrier data
+  -> degree-2 equivalence
+  -> degree-2 zero law + inverse-zero law
+  -> four selected face-restriction equations
+
+current surface + explicit finite witness
+  -> currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle47AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+- placeholder scan over changed Lean and report files reports audit prose hits
+  for `axiom` / `admit` / `unsafe`; these are report audit entries, not Lean
+  placeholders.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  remains `discharge-required`.  Cycle 47 makes that material premise visible
+  as finite lower-source content and fixes the current surface's reach at
+  presheaf zero/add, selected Cech differential formula, and no-uniform
+  constructor boundaries.
+- certificate provenance: passed for checkpoint purposes.  The lower witness
+  remains an explicit `Prop` abbreviation over finite `Exists` data; no `H1`
+  zero, effective gluing, refinement / naturality, global coherence, or full
+  sheaf cohomology equivalence is moved into it.
+- proof use: passed.  `surface` is used through
+  `current_g06_presheaf_laws_stop_before_selected_differential_source`, and
+  `lower` is decomposed by `rcases` with all components returned in the
+  theorem conclusion.
+- structure field escape: passed.  The cycle introduces no new structure,
+  class, or certificate field, and does not add lower carrier maps or face
+  compatibility to `CurrentG06InputSurface`.
+- anti-weakening: passed.  The theorem does not claim surface-only finite
+  witness construction, `H1` zero, effective descent, refinement / naturality,
+  global coherence, or full sheaf cohomology comparison.
+- report / validation consistency: passed.  The report matches the Lean diff
+  and keeps G-06 at `target-proof-checkpoint`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is still to construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` itself from
+`CurrentG06InputSurface` or an allowed concrete selected residual coefficient /
+selected semantic-delta / presheaf-restriction source.  If that construction is
+not derivable inside the current vocabulary, the loop should keep the
+non-derivability boundary explicit rather than treating this checkpoint as
+completion.
