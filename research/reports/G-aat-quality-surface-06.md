@@ -4443,3 +4443,135 @@ carrier model to concrete selected semantic residual coefficient /
 cover-relative carrier geometry.  Broader G-06 obligations also remain:
 cover/topology membership, refinement/naturality boundary hardening, and the
 explicit boundary between cover-relative Cech `H1` and full sheaf cohomology.
+
+## Cycle 34 — comparison premise lowered through selected carrier/direct data
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 34 lowers the explicit `SemanticRepairCoverRelativeH1Comparison` argument
+of the Cycle 33 effective-gluing theorem to the existing lower selected
+sources:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> Cycle 33 true-sheaf / cover-relative H1-zero effective-gluing package
+```
+
+The new theorem calls Cycle 33 with the constructed comparison
+
+```text
+(SemanticRepairCoverRelativeCochainRealization.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+  model direct).toH1Comparison
+```
+
+and returns the same cover-wise sheaf condition, AAT descent, unique effective
+global gluing, comparison package, global coherence / cover-relative `H1` zero
+equivalence, additive-zero / cover-relative-zero equivalence, and later-layer
+vanishing tokens.
+
+This removes the top-level comparison object from the theorem argument list.
+It does not discharge the lower `SelectedSectionFamilyCarrierModel` or direct
+selected differential-law sources.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeH1Comparison`: discharged relative to
+  `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`, using the
+  Cycle 32 cochain-realization constructor and `toH1Comparison`.
+- `SelectedSectionFamilyCarrierModel`: remains discharge-required.  It still
+  needs concrete selected semantic residual coefficient / cover-relative
+  carrier provenance.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  discharge-required.  It still needs a genuine selected semantic-delta /
+  presheaf-restriction comparison source for the four direct `K.d` equations.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No new structure, class, certificate field, full sheaf cohomology comparison,
+  refinement naturality theorem, arbitrary-site claim, runtime extraction claim,
+  ArchMap correctness claim, or repair synthesis claim is introduced.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+
+SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+section-family witness + face-restriction compatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCoverRelativeH1Comparison
+
+SemanticRepairCoverRelativeH1Comparison
+  -> Cycle 33 effective-gluing / cover-relative H1-zero package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle34AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report update.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean file — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged / checkpoint, not completion.
+- major findings: none.
+- anti-weakening: passed.  The theorem is explicitly relative to lower selected
+  data and does not claim G-06 completion, full sheaf cohomology comparison,
+  refinement naturality, arbitrary-site descent, or general extraction
+  correctness.
+- structure field escape: passed.  No new structure, class, or certificate
+  field is introduced.
+- certificate provenance: passed for this cycle.  The top-level comparison is
+  constructed from the selected carrier model plus direct differential
+  compatibility through the Cycle 32 cochain-realization constructor.  The
+  carrier model and direct laws remain explicit lower provenance obligations.
+- proof use: passed.  The proof invokes the Cycle 33 theorem with the constructed
+  `toH1Comparison`, so the constructed comparison is consumed by the effective
+  gluing / cover-relative `H1` zero package.
+- remaining obligations: carrier model, direct differential compatibility,
+  true-sheaf condition certificate, gluing data, cover bridge, and selected
+  cover-relative complex remain supplied inputs.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations remain the lower provenance sources:
+construct `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from a
+genuine selected semantic-delta / presheaf-restriction comparison source, and
+construct or justify `SelectedSectionFamilyCarrierModel` from concrete selected
+semantic residual coefficient / cover-relative carrier geometry.  General
+refinement/naturality and the boundary between cover-relative Cech `H1` and
+full sheaf cohomology also remain explicit non-completion boundaries.
