@@ -4298,3 +4298,148 @@ semantic residual coefficient / cover-relative carrier geometry.  Broader G-06
 obligations remain: cover/topology membership, sheaf/descent/effective gluing,
 zero predicate equivalence, refinement/naturality boundary, and the explicit
 boundary between cover-relative Cech `H1` and full sheaf cohomology.
+
+## Cycle 33 — true-sheaf additive gluing connected to cover-relative H1 zero
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package`
+
+### Result
+
+Cycle 33 adds a proof-use theorem that connects three previously separated
+surfaces:
+
+```text
+AATSheafCondition + selected cover membership + AATGluingData
+  -> AATSheafConditionFor + AATDescent + unique effective global gluing
+
+true-sheaf boundary-relation additive package
+  -> GlobalSemanticRepairCoherent <-> SemanticRepairAdditiveH1Zero
+  -> effective later-layer vanishing tokens
+
+SemanticRepairCoverRelativeH1Comparison
+  -> SemanticRepairAdditiveH1Zero <-> selected cover-relative H1 zero
+  -> semantic additive H1 / cover-relative H1 comparison package
+```
+
+The new theorem composes these as:
+
+```text
+GlobalSemanticRepairCoherent
+  <-> SemanticRepairAdditiveH1Zero
+  <-> comparison.CoverRelativeResidualH1Zero
+```
+
+It also proof-uses `aatSheafCondition_coverMembership_descent_effectiveGluing`
+to produce the cover-wise sheaf condition, AAT descent, and the unique global
+section realizing the supplied gluing datum.  This closes a composition gap
+between G-05's true-sheaf additive gluing theorem and G-06's selected
+cover-relative Cech `H1` zero predicate.
+
+### Material Premise Ledger Delta
+
+- `GlobalSemanticRepairCoherent <-> selected cover-relative H1 zero`:
+  discharged relative to the explicit `SemanticRepairCoverRelativeH1Comparison`
+  source.
+- `AATSheafCondition`, selected cover membership, and gluing datum: proof-used
+  through `aatSheafCondition_coverMembership_descent_effectiveGluing`, producing
+  `AATSheafConditionFor`, `AATDescent`, and an effective unique global gluing
+  section.
+- `SemanticRepairAdditiveH1Zero <-> selected cover-relative H1 zero`:
+  proof-used through
+  `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`.
+- `SemanticRepairCoverRelativeH1Comparison`: remains discharge-required.  Cycle
+  33 does not construct the cochain comparison or its lower
+  `SelectedSectionFamilyCarrierModel` / direct differential compatibility
+  sources.
+- No full sheaf cohomology comparison, cover-refinement naturality theorem,
+  ArchMap correctness, repair synthesis, arbitrary-site claim, or runtime
+  extraction claim is introduced.
+
+### Dependency DAG
+
+```text
+certificate.sheafCondition + certificate.cover_mem + gluingData
+  -> aatSheafCondition_coverMembership_descent_effectiveGluing
+  -> AATSheafConditionFor + AATDescent + effective unique global gluing
+
+trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package
+  -> GlobalSemanticRepairCoherent <-> SemanticRepairAdditiveH1Zero
+  -> later-layer effective vanishing tokens
+
+SemanticRepairCoverRelativeH1Comparison
+  -> semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+  -> SemanticRepairAdditiveH1Zero <-> CoverRelativeResidualH1Zero
+
+combined:
+  GlobalSemanticRepairCoherent <-> CoverRelativeResidualH1Zero
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle33AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package`
+  depends on standard axioms `[propext, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after report update.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean after report update.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean after report update.
+
+### T3 Audit
+
+- decision: approve scoped.
+- result_type: proof-obligation-discharged / proof-checkpoint, not completion.
+- major findings: none.
+- anti-weakening: passed.  The theorem is scoped to an explicit
+  `SemanticRepairCoverRelativeH1Comparison` premise and does not claim full
+  sheaf cohomology comparison, refinement naturality, arbitrary-site
+  completion, or G-06 completion.
+- structure field escape: none found.  The comparison and true-sheaf
+  certificate are explicit inputs, not newly introduced structure fields.
+- certificate provenance: scoped.  `certificate.sheafCondition` and
+  `certificate.cover_mem` are proof-used for descent / effective gluing.
+  Cochain comparison provenance is not constructed in Cycle 33 and remains
+  discharge-required.
+- proof use: passed.  The proof consumes
+  `aatSheafCondition_coverMembership_descent_effectiveGluing`,
+  `trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package`,
+  and
+  `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 33 is a proof-use checkpoint.  It does not construct
+`SemanticRepairCoverRelativeH1Comparison`, `SemanticRepairCoverRelativeCochainRealization`,
+`SelectedSectionFamilyCarrierModel`, or
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` from atom-supported
+lower data.  The next minimal obligations remain to construct the direct
+differential compatibility from a genuine selected semantic-delta /
+presheaf-restriction comparison source and to keep lowering the selected
+carrier model to concrete selected semantic residual coefficient /
+cover-relative carrier geometry.  Broader G-06 obligations also remain:
+cover/topology membership, refinement/naturality boundary hardening, and the
+explicit boundary between cover-relative Cech `H1` and full sheaf cohomology.
