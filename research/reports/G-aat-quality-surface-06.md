@@ -6300,3 +6300,190 @@ finite witness / concrete selected residual coefficient source.  If that
 construction is impossible inside the current vocabulary, the next cycle
 should fix the non-derivability boundary explicitly rather than treating this
 checkpoint as completion.
+
+## Cycle 46 — explicit finite witness constructs the selected lower pair
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource`
+
+### T1 Selection
+
+The selector chose the narrow finite-witness provenance step left open by
+Cycle 45:
+
+```text
+CurrentG06InputSurface
++ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+The accepted obligation was not to construct the explicit finite witness from
+`CurrentG06InputSurface` alone.  The theorem uses the current surface for the
+available presheaf zero/add laws and selected Cech differential formula, and
+uses the explicit finite witness to construct the selected lower pair.
+
+Rejected alternatives were:
+
+- claiming that `CurrentG06InputSurface`, `AATSheafCondition`, `AATDescent`,
+  cover membership, or presheaf laws alone generate selected carrier
+  equivalences and selected face laws;
+- jumping to `H1` zero, effective gluing, refinement / naturality, or full
+  sheaf cohomology completion while the finite witness generation remains
+  open;
+- returning an opaque `Nonempty` through the cochain-realization equivalence
+  without decomposing the finite witness;
+- report-only cleanup.
+
+### Result
+
+Cycle 46 proves that an explicit finite witness constructs the selected lower
+pair required by Cycle 44/45:
+
+```text
+Exists geometry :
+  SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K,
+  SemanticRepairSelectedCechFaceLawSource additive geometry
+```
+
+The proof decomposes
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` into:
+
+```text
+degree-0 CarrierSpecificAdditiveComparisonData
+degree-1 CarrierSpecificAdditiveComparisonData
+degree-2 carrier equivalence
+degree-2 zero law
+degree-2 inverse-zero law
+four selected face-restriction equations
+```
+
+and then constructs:
+
+```text
+SelectedSectionFamilyCarrierModel
+SemanticRepairCoverRelativeSectionFamilyWitness
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+SemanticRepairSelectedCarrierGeometry
+SemanticRepairSelectedCechFaceLawSource
+```
+
+The theorem also proof-uses
+`current_g06_presheaf_laws_stop_before_selected_differential_source` to expose:
+
+```text
+presheaf restriction map_zero
+presheaf restriction map_add
+selected Cech differential = alternating face combination
+```
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains
+  `discharge-required` below the current G-06 surface, but it is now a
+  constructive finite witness for the selected carrier geometry and selected
+  Cech face-law source.  It is an explicit `Prop` abbreviation over `Exists`
+  data, not a certificate structure.
+- `SemanticRepairSelectedCarrierGeometry`: discharged relative to the explicit
+  finite witness in this cycle.
+- `SemanticRepairSelectedCechFaceLawSource`: discharged relative to the
+  explicit finite witness in this cycle.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add and the selected
+  Cech differential formula only.  It still does not generate the finite
+  witness by itself.
+- `SemanticRepairCoverRelativeCochainRealization`: remains tied to the
+  explicit finite witness boundary through earlier equivalence theorems.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+- No global semantic repair coherence, `H1` zero, boundary membership,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is hidden in a structure field or certificate
+  field.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> current_g06_presheaf_laws_stop_before_selected_differential_source
+  -> presheaf map_zero + presheaf map_add
+  -> surface.K.d_eq_alternatingFaceCombination
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degree-0 carrier data
+  -> degree-1 carrier data
+  -> degree-2 zero-preserving equivalence
+  -> four selected face-restriction equations
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCarrierGeometry
+  -> SemanticRepairSelectedCechFaceLawSource
+
+current surface + explicit finite witness
+  -> currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle46AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files will report this audit
+  text for `axiom` / `admit` / `unsafe`; these are report audit entries, not
+  Lean placeholders.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: the provenance gap from explicit finite witness to
+  `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource` is discharged.  The finite witness
+  itself is not yet constructed from `CurrentG06InputSurface`.
+- certificate provenance: passed for this cycle.  The explicit finite witness
+  is a `Prop` abbreviation over `Exists` data and is decomposed in the proof;
+  no new certificate structure is introduced.
+- proof use: passed.  `surface` is used through
+  `current_g06_presheaf_laws_stop_before_selected_differential_source`, and
+  `lower` is decomposed and consumed by the carrier-model and face-law
+  constructors.
+- structure field escape: passed.  The theorem introduces no new structure or
+  class field and does not hide `H1` zero, global coherence, boundary
+  membership, effective descent, comparison equivalence, refinement
+  naturality, or full sheaf cohomology equivalence.
+- anti-weakening: passed.  The theorem is finite-witness-relative and does not
+  claim construction from `CurrentG06InputSurface` alone.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` itself from
+`CurrentG06InputSurface` or an allowed concrete selected residual coefficient /
+selected semantic-delta / presheaf-restriction source.  If that construction is
+not derivable inside the current vocabulary, the next cycle should fix the
+non-derivability boundary explicitly.
