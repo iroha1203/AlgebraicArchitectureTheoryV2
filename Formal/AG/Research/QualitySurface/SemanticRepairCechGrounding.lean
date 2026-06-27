@@ -1094,6 +1094,105 @@ structure SemanticRepairCarrierSpecificComparisonProvenance
             (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
 
 /--
+Lower selected carrier geometry for the semantic residual coefficient surface.
+
+This is below `SemanticRepairCarrierSpecificComparisonProvenance`: it contains
+only the degree-wise carrier identifications and the degree-`2` zero laws.  It
+does not contain selected differential equations, quotient comparison, zero
+`H1`, boundary membership, global semantic repair coherence, effective
+descent, refinement naturality, or full sheaf cohomology comparison.
+-/
+structure SemanticRepairSelectedCarrierGeometry
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  c0Carrier :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)
+  c1Carrier :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)
+  c2Equiv : E.coefficient.C2 ≃ K.Cn 2
+  c2Equiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv E.coefficient.zero2 = 0
+  c2Equiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv.symm 0 = E.coefficient.zero2
+
+/--
+Selected Cech face laws for a fixed lower carrier geometry.
+
+These laws are the actual presheaf / selected Cech face-compatibility part of
+the lower source.  They are separated from carrier geometry so G-06 cannot
+count carrier identification alone as differential compatibility.  The
+structure still stores no `H1` zero, global coherence, descent conclusion,
+refinement naturality, or full sheaf cohomology comparison.
+-/
+structure SemanticRepairSelectedCechFaceLawSource
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K) where
+  d0_face_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.alternatingFaceCombination 0
+          (fun σ i =>
+            K.faceRestrictionTerm 0 i
+              (geometry.c0Carrier.toCarrier primitive) σ) =
+        geometry.c1Carrier.toCarrier (E.coefficient.delta0 primitive)
+  d0_face_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (geometry.c0Carrier.fromCarrier primitive) =
+        geometry.c1Carrier.fromCarrier
+          (K.alternatingFaceCombination 0
+            (fun σ i => K.faceRestrictionTerm 0 i primitive σ))
+  d1_face_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.alternatingFaceCombination 1
+          (fun σ i =>
+            K.faceRestrictionTerm 1 i
+              (geometry.c1Carrier.toCarrier cochain) σ) =
+        geometry.c2Equiv (E.coefficient.delta1 cochain)
+  d1_face_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (geometry.c1Carrier.fromCarrier cochain) =
+        geometry.c2Equiv.symm
+          (K.alternatingFaceCombination 1
+            (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
+
+/--
 Lower-level section realization provenance using the selected face-restriction
 presentation of the general cover-relative Cech differential.
 
@@ -1452,6 +1551,169 @@ variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
   (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Extract the lower selected carrier geometry contained in carrier-specific
+provenance.
+-/
+def toSelectedCarrierGeometry
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairSelectedCarrierGeometry additive coverBridge K where
+  c0Carrier := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact
+      { toCarrier := provenance.toSection0
+        fromCarrier := provenance.fromSection0
+        from_to := provenance.from_to_section0
+        to_from := provenance.to_from_section0
+        toCarrier_add := provenance.toSection0_add }
+  c1Carrier := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact
+      { toCarrier := provenance.toSection1
+        fromCarrier := provenance.fromSection1
+        from_to := provenance.from_to_section1
+        to_from := provenance.to_from_section1
+        toCarrier_add := provenance.toSection1_add }
+  c2Equiv :=
+    { toFun := provenance.toSection2
+      invFun := provenance.fromSection2
+      left_inv := provenance.from_to_section2
+      right_inv := provenance.to_from_section2 }
+  c2Equiv_zero := provenance.toSection2_zero
+  c2Equiv_symm_zero := provenance.fromSection2_zero
+
+/--
+Extract the selected Cech face laws contained in carrier-specific provenance,
+relative to the extracted carrier geometry.
+-/
+def toSelectedCechFaceLawSource
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    SemanticRepairSelectedCechFaceLawSource
+      additive provenance.toSelectedCarrierGeometry where
+  d0_face_to := by
+    intro primitive
+    simpa [toSelectedCarrierGeometry] using provenance.d0_face_to primitive
+  d0_face_from := by
+    intro primitive
+    simpa [toSelectedCarrierGeometry] using provenance.d0_face_from primitive
+  d1_face_to := by
+    intro cochain
+    simpa [toSelectedCarrierGeometry] using provenance.d1_face_to cochain
+  d1_face_from := by
+    intro cochain
+    simpa [toSelectedCarrierGeometry] using provenance.d1_face_from cochain
+
+/--
+Lower selected carrier geometry plus selected Cech face laws construct
+carrier-specific comparison provenance.
+
+This is the Cycle 25 lower-construction theorem.  It separates the carrier
+geometry source from the actual face-restriction laws and then reconstructs the
+previous monolithic provenance object.  The lower inputs still contain material
+carrier and differential data, so this theorem does not reclassify them as
+ambient boundary and does not store any target conclusion.
+-/
+def of_selectedCarrierGeometry_and_faceLaws
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K)
+    (faceLaws :
+      SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K where
+  toSection0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact geometry.c0Carrier.toCarrier
+  fromSection0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact geometry.c0Carrier.fromCarrier
+  from_to_section0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact geometry.c0Carrier.from_to
+  to_from_section0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact geometry.c0Carrier.to_from
+  toSection0_add := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact geometry.c0Carrier.toCarrier_add
+  toSection1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact geometry.c1Carrier.toCarrier
+  fromSection1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact geometry.c1Carrier.fromCarrier
+  from_to_section1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact geometry.c1Carrier.from_to
+  to_from_section1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact geometry.c1Carrier.to_from
+  toSection1_add := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact geometry.c1Carrier.toCarrier_add
+  toSection2 := geometry.c2Equiv
+  fromSection2 := geometry.c2Equiv.symm
+  from_to_section2 := geometry.c2Equiv.left_inv
+  to_from_section2 := geometry.c2Equiv.right_inv
+  toSection2_zero := geometry.c2Equiv_zero
+  fromSection2_zero := geometry.c2Equiv_symm_zero
+  d0_face_to := faceLaws.d0_face_to
+  d0_face_from := faceLaws.d0_face_from
+  d1_face_to := faceLaws.d1_face_to
+  d1_face_from := faceLaws.d1_face_from
+
+/--
+Lower selected carrier geometry and selected Cech face laws are a concrete
+source for carrier-specific comparison provenance.
+-/
+theorem selectedCarrierGeometry_and_faceLaws_constructs_carrierSpecificComparisonProvenance
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K)
+    (faceLaws :
+      SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    Nonempty
+      (SemanticRepairCarrierSpecificComparisonProvenance
+        additive coverBridge K) :=
+  ⟨of_selectedCarrierGeometry_and_faceLaws geometry faceLaws⟩
+
+/--
+Carrier-specific provenance is equivalent to supplying lower selected carrier
+geometry plus selected Cech face laws.
+
+The forward direction exposes the exact lower material sources; the backward
+direction constructs provenance from those sources.  This prevents G-06 from
+treating `SemanticRepairCarrierSpecificComparisonProvenance` as an opaque
+certificate while keeping the remaining lower obligations explicit.
+-/
+theorem carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws :
+    Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive coverBridge K) <->
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive coverBridge K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry := by
+  constructor
+  · intro hprovenance
+    rcases hprovenance with ⟨provenance⟩
+    exact
+      ⟨provenance.toSelectedCarrierGeometry,
+        provenance.toSelectedCechFaceLawSource⟩
+  · intro hlower
+    rcases hlower with ⟨geometry, faceLaws⟩
+    exact ⟨of_selectedCarrierGeometry_and_faceLaws geometry faceLaws⟩
 
 /--
 The degree-`0` part of carrier-specific provenance exposes the lower additive
@@ -2504,6 +2766,27 @@ theorem grounded_package_of_carrier_specific_comparison_provenance
       (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
         provenance.toCochainRealization.toH1Comparison) :=
   provenance.toFaceRestrictionRealization.grounded_package_of_face_restriction_realization
+
+/--
+Lower selected carrier geometry plus selected Cech face laws reach the selected
+cover-relative grounding package by first constructing carrier-specific
+provenance and then using the existing proof-use path.
+
+This theorem is still relative to the lower carrier geometry and face-law
+sources; it does not claim those sources are generated by bare
+site/sheaf/descent input.
+-/
+theorem grounded_package_of_selectedCarrierGeometry_and_faceLaws
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K)
+    (faceLaws :
+      SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_selectedCarrierGeometry_and_faceLaws
+          geometry faceLaws).toCochainRealization.toH1Comparison) :=
+  (of_selectedCarrierGeometry_and_faceLaws
+    geometry faceLaws).grounded_package_of_carrier_specific_comparison_provenance
 
 /--
 Carrier-specific provenance constructs the richer section-realization bridge by
