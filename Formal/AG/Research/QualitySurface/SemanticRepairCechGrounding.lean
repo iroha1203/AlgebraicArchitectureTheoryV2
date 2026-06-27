@@ -13,7 +13,7 @@ or effective descent conclusions.
 
 noncomputable section
 
-universe u v w x y z r
+universe u v w x y z r a b
 
 namespace Formal.AG.Research
 namespace QualitySurface
@@ -131,6 +131,68 @@ theorem coverNerve_typedComponent_adequacy
     exact ⟨(i, j, k), triple, rfl, rfl, rfl, rfl⟩
 
 /-! ## Coefficient, restriction, and additive Cech comparison data -/
+
+/--
+Carrier-specific additive comparison data for a single cochain degree.
+
+This is the degree-wise lower-data shape used by
+`SemanticRepairCarrierSpecificComparisonProvenance`: maps in both directions,
+inverse laws, and additivity of the forward map.  It stores no quotient,
+zero-class, boundary, descent, global coherence, refinement, or full sheaf
+cohomology conclusion.
+-/
+structure CarrierSpecificAdditiveComparisonData
+    (C : Type a) (D : Type b) [AddCommGroup C] [AddCommGroup D] where
+  toCarrier : C -> D
+  fromCarrier : D -> C
+  from_to : forall c : C, fromCarrier (toCarrier c) = c
+  to_from : forall d : D, toCarrier (fromCarrier d) = d
+  toCarrier_add :
+    forall left right : C,
+      toCarrier (left + right) = toCarrier left + toCarrier right
+
+namespace CarrierSpecificAdditiveComparisonData
+
+variable {C : Type a} {D : Type b} [AddCommGroup C] [AddCommGroup D]
+
+/--
+Degree-wise carrier comparison data is exactly strong enough to construct the
+additive equivalence needed by a section-family witness.
+-/
+def toAddEquiv (data : CarrierSpecificAdditiveComparisonData C D) : C ≃+ D where
+  toFun := data.toCarrier
+  invFun := data.fromCarrier
+  left_inv := data.from_to
+  right_inv := data.to_from
+  map_add' := data.toCarrier_add
+
+end CarrierSpecificAdditiveComparisonData
+
+/--
+Cycle 12 blocker theorem: degree-wise carrier comparison data cannot be
+constructed uniformly from bare additive carrier structure.
+
+A uniform constructor for the lower carrier-comparison fields would produce an
+additive equivalence between every pair of additive groups.  Applying it to
+`PUnit` and `ZMod 2` again forces `0 = 1`.  Thus a concrete
+`SemanticRepairCarrierSpecificComparisonProvenance` inhabitant must come from
+selected carrier-specific comparison evidence, not from cover membership,
+sheaf condition, descent, or bare additive structure alone.
+-/
+theorem no_uniform_carrier_specific_additive_comparison_from_bare_groups :
+    IsEmpty
+      ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+        CarrierSpecificAdditiveComparisonData C D) := by
+  refine ⟨?_⟩
+  intro h
+  let data : CarrierSpecificAdditiveComparisonData PUnit (ZMod 2) :=
+    h PUnit (ZMod 2)
+  let e : PUnit ≃+ ZMod 2 := data.toAddEquiv
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
 Cochain-level comparison between the semantic repair additive Cech data and a
@@ -942,6 +1004,65 @@ variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
   (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+The degree-`0` part of carrier-specific provenance exposes the lower additive
+comparison data that any concrete constructor must provide.
+-/
+def degreeZeroAdditiveComparisonData
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0) := by
+  letI := additive.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  exact
+    { toCarrier := provenance.toSection0
+      fromCarrier := provenance.fromSection0
+      from_to := provenance.from_to_section0
+      to_from := provenance.to_from_section0
+      toCarrier_add := provenance.toSection0_add }
+
+/--
+The degree-`1` part of carrier-specific provenance exposes the lower additive
+comparison data that any concrete constructor must provide.
+-/
+def degreeOneAdditiveComparisonData
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1) := by
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact
+    { toCarrier := provenance.toSection1
+      fromCarrier := provenance.fromSection1
+      from_to := provenance.from_to_section1
+      to_from := provenance.to_from_section1
+      toCarrier_add := provenance.toSection1_add }
+
+/--
+Boundary audit theorem: a concrete carrier-specific provenance inhabitant
+necessarily contains degree-wise lower additive comparison data.  Consequently
+the target cannot discharge this premise from cover membership, sheaf
+condition, or descent alone.
+-/
+theorem carrierSpecificComparisonProvenance_requires_degreewise_additive_data
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)) := by
+  exact
+    ⟨⟨provenance.degreeZeroAdditiveComparisonData⟩,
+      ⟨provenance.degreeOneAdditiveComparisonData⟩⟩
 
 /--
 The degree-`0` carrier maps in carrier-specific provenance construct the
