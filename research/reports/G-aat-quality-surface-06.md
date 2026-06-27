@@ -4575,3 +4575,136 @@ construct or justify `SelectedSectionFamilyCarrierModel` from concrete selected
 semantic residual coefficient / cover-relative carrier geometry.  General
 refinement/naturality and the boundary between cover-relative Cech `H1` and
 full sheaf cohomology also remain explicit non-completion boundaries.
+
+## Cycle 35 — carrier-specific provenance feeds the effective-gluing package
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance`
+
+### Result
+
+Cycle 35 lowers the Cycle 34 `SelectedSectionFamilyCarrierModel +
+SemanticRepairCoverRelativeDirectDifferentialCompatibility` pair to the already
+separated selected carrier-specific comparison provenance source:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> Cycle 33 true-sheaf / cover-relative H1-zero effective-gluing package
+```
+
+The new theorem calls Cycle 33 with:
+
+```text
+provenance.toCochainRealization.toH1Comparison
+```
+
+and returns the same cover-wise sheaf condition, AAT descent, unique effective
+global gluing, comparison package, global coherence / cover-relative `H1` zero
+equivalence, additive-zero / cover-relative-zero equivalence, and later-layer
+vanishing tokens.
+
+This removes the separate `model` and `direct` theorem arguments from the
+effective-gluing bridge.  It does not construct
+`SemanticRepairCarrierSpecificComparisonProvenance` from current site/sheaf
+input.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel + direct differential compatibility`:
+  discharged relative to `SemanticRepairCarrierSpecificComparisonProvenance`,
+  using `provenance.toCochainRealization.toH1Comparison`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: remains
+  discharge-required.  It stores selected carrier maps, inverse/additivity
+  laws, degree-`2` zero laws, and selected face-restriction differential
+  equations.  It is not generated from cover membership, sheaf condition, or
+  descent in this cycle.
+- `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource`: remain the next lower split
+  sources by the existing
+  `carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws`
+  theorem.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> toFaceRestrictionRealization
+  -> toCochainRealization
+  -> toH1Comparison
+  -> Cycle 33 effective-gluing / cover-relative H1-zero package
+
+remaining lower split:
+  SemanticRepairSelectedCarrierGeometry
+    + SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle35AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report update.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean file — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged / proof-checkpoint.
+- completion candidate: no.
+- major findings: none.
+- anti-weakening: passed for checkpoint.  The theorem remains explicitly
+  relative to `SemanticRepairCarrierSpecificComparisonProvenance` and makes no
+  completion claim.
+- structure field escape: none newly introduced.  No `H1` zero, global
+  coherence, boundary membership, effective descent, refinement naturality, or
+  full sheaf cohomology conclusion is hidden in a new field.
+- certificate provenance: partial and relative only.  The constructed
+  `provenance.toCochainRealization.toH1Comparison` is consumed by the proof,
+  but `SemanticRepairCarrierSpecificComparisonProvenance` itself remains
+  undischarged.
+- proof use: passed.  The proof directly invokes the Cycle 33 package with
+  `provenance.toCochainRealization.toH1Comparison`.
+- remaining obligations: construct or further discharge
+  `SemanticRepairCarrierSpecificComparisonProvenance` from lower/current
+  site-sheaf-cover data; discharge selected carrier geometry and selected Cech
+  face-law sources; close direct semantic-delta / presheaf-restriction law
+  source and concrete selected carrier geometry; keep refinement/naturality and
+  cover-relative Cech `H1` vs full sheaf cohomology boundaries explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to discharge or further split
+`SemanticRepairCarrierSpecificComparisonProvenance`.  The existing lower split
+is `SemanticRepairSelectedCarrierGeometry + SemanticRepairSelectedCechFaceLawSource`.
+The direct semantic-delta / presheaf-restriction law source and concrete
+selected carrier geometry remain the central unresolved material premises.
+General refinement/naturality and the boundary between cover-relative Cech
+`H1` and full sheaf cohomology remain explicit non-completion boundaries.
