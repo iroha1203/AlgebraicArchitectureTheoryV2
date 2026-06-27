@@ -1051,3 +1051,122 @@ The next minimum obligation is to either construct
 cover / residual coefficient / AAT presheaf data, or record a target-boundary
 revision proposal explaining why these two finite witnesses must be accepted as
 ambient selected comparison input rather than discharge-required premises.
+
+## Cycle 9 — finite witness discharge boundary audit
+
+- decision: approve
+- result_type: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_requires_degreeEquivalences`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionCompatibility_requires_equations`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionRealization_requires_finiteWitnessBoundary`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- Any supplied `SemanticRepairCoverRelativeSectionFamilyWitness` now exposes,
+  as theorem output, the exact degree-wise finite comparison data required by
+  G-06:
+  - additive equivalence `E.coefficient.C0 ≃+ K.Cn 0`,
+  - additive equivalence `E.coefficient.C1 ≃+ K.Cn 1`,
+  - equivalence `E.coefficient.C2 ≃ K.Cn 2`,
+  - degree-2 zero preservation in both directions.
+- Any supplied `SemanticRepairCoverRelativeFaceRestrictionCompatibility` now
+  exposes, as theorem output, the four selected face-restriction equations for
+  `d0`/`d1` in both semantic-to-general and general-to-semantic directions.
+- Any supplied `SemanticRepairCoverRelativeFaceRestrictionRealization` now has
+  a one-way audit theorem showing it necessarily contains both the finite
+  degree-wise witness boundary and the face-restriction compatibility boundary.
+
+Remaining:
+
+- These theorems do not construct the finite witness from lower semantic cover,
+  residual coefficient, or AAT presheaf data.
+- The remaining material premise is therefore not hidden, but it is also not
+  discharged.
+- G-06 remains blocked as a completion candidate unless a later cycle either:
+  1. constructs these finite witnesses from lower AAT site/presheaf data, or
+  2. explicitly revises the target boundary so the witnesses are ambient
+     selected comparison input rather than discharge-required premises.
+
+### Material Premise Ledger Delta
+
+- `section-family type equivalence`: `discharge-required`; now exposed by
+  `sectionFamilyWitness_requires_degreeEquivalences`.
+- `face-restriction equation compatibility`: `discharge-required`; now exposed
+  by `faceRestrictionCompatibility_requires_equations`.
+- `realization provenance`: `discharge-required`; now audited by
+  `faceRestrictionRealization_requires_finiteWitnessBoundary`.
+- `cover membership`, `sheaf condition`, `descent datum`, and
+  `effective gluing` remain separate proof-use surfaces; they do not generate
+  arbitrary degree-wise type equivalences by themselves.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new theorems are one-way boundary audits, not completion theorems.
+- They do not introduce `SemanticRepairAdditiveH1Zero`, boundary membership,
+  global semantic repair coherence, effective descent, exactness conclusion,
+  cover refinement / naturality, or full sheaf cohomology comparison as a
+  structure field or certificate field.
+- They explicitly prevent the stronger claim that a bare cover/sheaf condition
+  already generates the finite section-family equivalences.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> toSectionFamilyWitness
+  -> sectionFamilyWitness_requires_degreeEquivalences
+  -> finite degree-wise witness boundary
+
+SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> toFaceRestrictionCompatibility
+  -> faceRestrictionCompatibility_requires_equations
+  -> selected face-restriction equation boundary
+
+faceRestrictionRealization_requires_finiteWitnessBoundary
+  -> exact remaining discharge-required premise boundary
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle9AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_requires_degreeEquivalences`,
+`SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionCompatibility_requires_equations`,
+and
+`SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionRealization_requires_finiteWitnessBoundary`.
+The audit reported only standard `[propext, Quot.sound]` dependencies.  No
+`sorryAx`, non-consulted repo axiom, `admit`, or `unsafe` dependency was
+reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle9AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean/report files — clean.
+- local path / private machine identifier scan over changed Lean/report files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+This cycle records the target-boundary checkpoint requested by the Cycle 8 next
+obligation: the finite witness requirements are now theorem-visible and cannot
+be silently treated as consequences of cover membership or sheaf descent alone.
+The next minimum obligation is a design decision plus proof attempt: either
+construct the finite witnesses from lower semantic/AAT presheaf data, or revise
+G-06's target boundary so those witnesses are explicitly ambient selected
+comparison input rather than discharge-required completion premises.
