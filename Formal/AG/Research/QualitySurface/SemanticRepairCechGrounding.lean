@@ -545,6 +545,162 @@ structure SemanticRepairCoverRelativeSectionFamilyWitness
     c2SectionEquiv.symm 0 = E.coefficient.zero2
 
 /--
+Carrier-only lower model for the selected semantic section-family comparison.
+
+This is below `SemanticRepairCoverRelativeSectionFamilyWitness`: it stores the
+degree `0` and `1` additive carrier identifications, the degree `2` plain
+carrier identification, and the two degree-`2` zero laws.  It stores no
+differential compatibility, `H1` equivalence, zero-class result, boundary
+membership, global coherence, effective descent, refinement naturality, or full
+sheaf cohomology comparison.
+-/
+structure SelectedSectionFamilyCarrierModel
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  c0Carrier :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)
+  c1Carrier :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)
+  c2Equiv : E.coefficient.C2 ≃ K.Cn 2
+  c2Equiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv E.coefficient.zero2 = 0
+  c2Equiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv.symm 0 = E.coefficient.zero2
+
+namespace SelectedSectionFamilyCarrierModel
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/-- Degree-zero carrier data yields the additive equivalence used by the witness. -/
+def c0SectionEquiv
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0 := by
+  letI := additive.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  exact model.c0Carrier.toAddEquiv
+
+/-- Degree-one carrier data yields the additive equivalence used by the witness. -/
+def c1SectionEquiv
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1 := by
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact model.c1Carrier.toAddEquiv
+
+end SelectedSectionFamilyCarrierModel
+
+namespace SemanticRepairCoverRelativeSectionFamilyWitness
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Construct the selected section-family witness from carrier-only finite model
+data.  This discharges the section-family witness relative to its lower carrier
+source without adding differential, `H1`, zero-class, global-coherence, descent,
+refinement, or full-sheaf-cohomology fields.
+-/
+def of_selectedSectionFamilyCarrierModel
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K where
+  c0SectionEquiv := model.c0SectionEquiv
+  c1SectionEquiv := model.c1SectionEquiv
+  c2SectionEquiv := model.c2Equiv
+  c2SectionEquiv_zero := model.c2Equiv_zero
+  c2SectionEquiv_symm_zero := model.c2Equiv_symm_zero
+
+/--
+Any section-family witness exposes exactly the carrier-only model required to
+reconstruct it.  The model is intentionally carrier-level only: face laws remain
+the separate `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
+obligation.
+-/
+def toSelectedSectionFamilyCarrierModel
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K) :
+    SelectedSectionFamilyCarrierModel additive coverBridge K where
+  c0Carrier := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact
+      { toCarrier := sectionWitness.c0SectionEquiv
+        fromCarrier := sectionWitness.c0SectionEquiv.symm
+        from_to := sectionWitness.c0SectionEquiv.left_inv
+        to_from := sectionWitness.c0SectionEquiv.right_inv
+        toCarrier_add := sectionWitness.c0SectionEquiv.map_add }
+  c1Carrier := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact
+      { toCarrier := sectionWitness.c1SectionEquiv
+        fromCarrier := sectionWitness.c1SectionEquiv.symm
+        from_to := sectionWitness.c1SectionEquiv.left_inv
+        to_from := sectionWitness.c1SectionEquiv.right_inv
+        toCarrier_add := sectionWitness.c1SectionEquiv.map_add }
+  c2Equiv := sectionWitness.c2SectionEquiv
+  c2Equiv_zero := sectionWitness.c2SectionEquiv_zero
+  c2Equiv_symm_zero := sectionWitness.c2SectionEquiv_symm_zero
+
+/--
+The selected section-family witness is equivalent to the lower carrier-only
+model.  This theorem pushes the remaining provenance obligation down to finite
+carrier identifications and zero laws, without folding in face-restriction
+compatibility or any `H1` conclusion.
+-/
+theorem sectionFamilyWitness_iff_selectedSectionFamilyCarrierModel :
+    Nonempty
+        (SemanticRepairCoverRelativeSectionFamilyWitness
+          additive coverBridge K) <->
+      Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) := by
+  constructor
+  · intro hwitness
+    rcases hwitness with ⟨sectionWitness⟩
+    exact ⟨sectionWitness.toSelectedSectionFamilyCarrierModel⟩
+  · intro hmodel
+    rcases hmodel with ⟨model⟩
+    exact ⟨of_selectedSectionFamilyCarrierModel model⟩
+
+end SemanticRepairCoverRelativeSectionFamilyWitness
+
+/--
 Concrete finite witness that semantic differentials agree with the selected
 face-restriction presentation of the general Cech differential under a fixed
 section-family witness.
@@ -2037,6 +2193,34 @@ theorem grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibilit
           sectionWitness compatibility).toH1Comparison) :=
   (of_sectionFamilyWitness_and_faceRestrictionCompatibility
     sectionWitness compatibility).grounded_package_of_cochain_realization
+
+/--
+Carrier-only section-family model data reaches the selected cover-relative
+grounding package once the separate face-restriction compatibility premise is
+proved for the constructed section-family witness.
+
+This wires the Cycle 20 lower carrier model into the Cycle 19 path:
+carrier model -> section-family witness -> cochain realization -> selected
+cover-relative `H1` grounding package.  Face-restriction compatibility remains
+visible as its own discharge-required premise.
+-/
+theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)
+          compatibility).toH1Comparison) :=
+  grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility
+    (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      model)
+    compatibility
 
 end SemanticRepairCoverRelativeCochainRealization
 
