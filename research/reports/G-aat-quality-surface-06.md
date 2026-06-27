@@ -1429,3 +1429,133 @@ G-06 remains `target-proof-checkpoint`.
 Cycle 11 fixes the shape and proof-use path of the carrier-specific comparison
 certificate, but does not yet provide the concrete certificate inhabitant needed
 to close the discharge-required premise.
+
+## Cycle 12 — bare degree-wise carrier-comparison blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `CarrierSpecificAdditiveComparisonData`
+  - `CarrierSpecificAdditiveComparisonData.toAddEquiv`
+  - `no_uniform_carrier_specific_additive_comparison_from_bare_groups`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_requires_degreewise_additive_data`
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Construct a concrete inhabitant of
+  `SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K`
+  from selected semantic repair / AAT cover data, so that the selected
+  cover-relative `H^1` grounding package no longer depends on a hand-supplied
+  carrier-comparison certificate.
+
+Fixed blocker:
+
+- Any concrete `SemanticRepairCarrierSpecificComparisonProvenance` inhabitant
+  necessarily contains degree-wise lower additive comparison data for degrees
+  `0` and `1`.
+- `CarrierSpecificAdditiveComparisonData` is exactly the lower shape of this
+  requirement: forward/backward carrier maps, inverse laws, and additive
+  preservation.
+- Such data constructs an additive equivalence.
+- Lean proves no uniform constructor can produce that lower comparison data
+  from bare additive carrier structure alone:
+
+```text
+no_uniform_carrier_specific_additive_comparison_from_bare_groups
+```
+
+The proof again applies a hypothetical uniform constructor to `PUnit` and
+`ZMod 2`, obtaining an additive equivalence that would force `0 = 1`.
+
+Remaining:
+
+- Cycle 12 does not construct the concrete provenance inhabitant.
+- It proves the selected constructor route cannot be "cover membership +
+  sheaf condition + descent + bare additive carriers" alone.
+- The remaining proof route must provide actual selected carrier-specific
+  comparison evidence from the target boundary, or the target boundary must be
+  revised so that this evidence is explicitly `ambient-boundary` selected
+  comparison input rather than a `discharge-required` premise.
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: remains open.  Cycle 12 fixes a
+  blocker showing it cannot be discharged from bare carrier/additive data.
+- `degree-wise additive carrier comparison data`: now theorem-visible as a
+  necessary lower premise of carrier-specific provenance.
+- `cover membership`, `AATSheafCondition`, `AATDescent`, and effective gluing:
+  still proof-use surfaces for site/sheaf grounding, but not sufficient to
+  create arbitrary additive carrier comparisons.
+- `full sheaf cohomology equivalence` and general cover refinement naturality:
+  unchanged `out-of-scope` / explicit-comparison boundaries.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new `CarrierSpecificAdditiveComparisonData` stores only carrier maps,
+  inverse laws, and additive preservation.
+- It stores no `SemanticRepairAdditiveH1Class`,
+  `SemanticRepairAdditiveH1Zero`, boundary membership, quotient equivalence,
+  global semantic repair coherence, effective descent, cover refinement
+  naturality, or full sheaf cohomology equivalence.
+- The blocker prevents a weakened completion claim in which the concrete
+  provenance inhabitant is treated as if it followed from generic cover/sheaf
+  evidence.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degreeZeroAdditiveComparisonData / degreeOneAdditiveComparisonData
+  -> CarrierSpecificAdditiveComparisonData
+  -> CarrierSpecificAdditiveComparisonData.toAddEquiv
+  -> no_uniform_carrier_specific_additive_comparison_from_bare_groups
+  -> bare carrier/additive data alone cannot discharge the concrete provenance
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle12AxiomAudit.lean` was run for the new declarations.
+The audit reported:
+
+- `CarrierSpecificAdditiveComparisonData.toAddEquiv` depends on no axioms.
+- `no_uniform_carrier_specific_additive_comparison_from_bare_groups` depends
+  only on standard `[propext, Classical.choice, Quot.sound]`.
+- The provenance extraction declarations depend only on standard
+  `[propext, Quot.sound]`.
+
+No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe` dependency was
+reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake env lean .tmp/G06Cycle12AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean file — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 12 fixes the next blocker: the concrete carrier-specific provenance
+cannot be generated from bare additive/cover/sheaf/descent data.  The next
+minimum obligation is to either provide a selected carrier-comparison source
+inside the target boundary or record a GOAL boundary revision proposal making
+that selected comparison an explicit `ambient-boundary` input.
