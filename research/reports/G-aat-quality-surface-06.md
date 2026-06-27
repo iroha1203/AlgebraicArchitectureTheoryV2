@@ -4990,3 +4990,167 @@ concrete selected carrier source; the second needs a concrete selected
 semantic-delta / presheaf-restriction face-law source.  General
 refinement/naturality and full sheaf cohomology comparison remain outside the
 unconditional claim boundary.
+
+## Cycle 38 — finite carrier witnesses feed effective gluing
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence`
+  - `SelectedSectionFamilyCarrierModel.degreewise_carrier_data_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`
+  - `SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence`
+  - `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_faceRestrictionCompatibility`
+
+### T1 Selection
+
+The selector chose the `SelectedSectionFamilyCarrierModel` provenance gap as
+the next obligation.  The reason was that Cycle 37 still accepted the carrier
+model as an opaque top-level premise, while
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` is relative to the
+section-family witness built from that model.  Discharging the carrier-model
+provenance first makes the remaining face-law source precise.
+
+### Result
+
+Cycle 38 lowers `SelectedSectionFamilyCarrierModel` to explicit finite carrier
+witness data:
+
+```text
+CarrierSpecificAdditiveComparisonData C0 (K.Cn 0)
+  + CarrierSpecificAdditiveComparisonData C1 (K.Cn 1)
+  + zero-preserving equivalence C2 ~= K.Cn 2
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  -> SemanticRepairSelectedCarrierGeometry
+```
+
+The new effective-gluing theorem then uses the constructed model together with
+the still-explicit face-restriction compatibility:
+
+```text
+finite carrier witness
+  -> constructed SelectedSectionFamilyCarrierModel
+
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  for the constructed section-family witness
+  -> SemanticRepairSelectedCechFaceLawSource
+
+constructed model + face-restriction compatibility
+  -> Cycle 37 effective-gluing / cover-relative H1-zero package
+```
+
+The theorem continues to return the theorem-level surface from Cycle 33:
+cover-wise sheaf condition, AAT descent, unique global gluing, cover-relative
+comparison package, global coherence / cover-relative `H1` zero equivalence,
+additive-zero / cover-relative-zero equivalence, and later-layer vanishing
+tokens.
+
+This does not construct the degree-wise carrier comparisons or the
+face-restriction compatibility from bare site/sheaf/descent input.  It makes
+the finite carrier witness the exact remaining lower source instead of leaving
+`SelectedSectionFamilyCarrierModel` as a top-level opaque premise.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: discharged relative to explicit finite
+  carrier witness data:
+  degree-`0` additive carrier comparison, degree-`1` additive carrier
+  comparison, degree-`2` carrier equivalence, and the two degree-`2` zero laws.
+- finite carrier witness data: remains discharge-required.  It is now the
+  concrete selected residual coefficient / cover-relative section-family
+  carrier source that must be supplied or constructed.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains
+  discharge-required.  It is still the selected semantic-delta /
+  presheaf-restriction face-law source, now relative to the section-family
+  witness constructed from the finite carrier witness.
+- `AATSheafCondition`, selected cover membership, and supplied gluing datum
+  continue to be proof-used through the Cycle 33 path.
+- No global coherence, `H1` zero, boundary membership, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is moved into a new field or certificate.
+
+### Dependency DAG
+
+```text
+finite carrier witness data
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  -> SemanticRepairSelectedCarrierGeometry
+
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairSelectedCechFaceLawSource
+
+finite carrier witness data
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> constructed SelectedSectionFamilyCarrierModel
+  -> Cycle 37 effective-gluing / cover-relative H1-zero package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle38AxiomAudit.lean` — passed and removed after audit.
+- `SelectedSectionFamilyCarrierModel.degreewise_carrier_data_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and report —
+  clean.
+- local path / private machine identifier scan over changed Lean file and
+  report — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: target-proof-checkpoint.
+- completion candidate: no.
+- major findings: none.
+- anti-weakening: passed.  The theorem is explicitly relative to finite carrier
+  witness data and face-restriction compatibility.  It does not claim these
+  sources follow from cover membership, sheaf condition, descent, or full sheaf
+  cohomology.
+- structure field escape: passed.  No new structure, class, or certificate
+  field is introduced.  The finite carrier witness contains only carrier
+  comparison and zero-preservation data.
+- certificate provenance: partially improved.  The carrier model provenance is
+  discharged relative to explicit finite carrier witness data; the finite
+  carrier witness itself and face-restriction compatibility remain unresolved.
+- proof use: passed.  The finite carrier witness is consumed to construct
+  `SelectedSectionFamilyCarrierModel`, which is consumed by the Cycle 37
+  effective-gluing theorem.
+- remaining obligations: construct the finite degree-wise carrier witness data
+  and `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from concrete
+  lower sources; keep refinement/naturality and cover-relative Cech `H1` vs
+  full sheaf cohomology boundaries explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligations after this cycle are the finite degree-wise
+carrier witness data and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility`.  The former needs a
+concrete selected residual coefficient / cover-relative carrier source; the
+latter needs a concrete selected semantic-delta / presheaf-restriction
+face-law source.  General refinement/naturality and full sheaf cohomology
+comparison remain outside the unconditional claim boundary.
