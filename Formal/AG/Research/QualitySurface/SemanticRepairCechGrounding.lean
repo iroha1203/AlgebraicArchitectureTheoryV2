@@ -187,6 +187,135 @@ structure SemanticRepairCoverRelativeH1Comparison
     forall cochain : K.Cn 1,
       E.coefficient.delta1 (fromC1 cochain) = fromC2 (K.d 1 cochain)
 
+/--
+Degree-wise cochain realization of the semantic additive Cech data inside a
+selected general cover-relative Cech complex.
+
+This is lower-level provenance than the `H1` comparison package: it records
+cochain equivalences and differential compatibility only.  It does not store an
+`H1` equivalence, zero-class equality, global semantic repair coherence, full
+sheaf cohomology comparison, or effective descent conclusion.
+-/
+structure SemanticRepairCoverRelativeCochainRealization
+    {Atom : Type u}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Equiv :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0
+  c1Equiv :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1
+  c2Equiv : E.coefficient.C2 ≃ K.Cn 2
+  c2Equiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv E.coefficient.zero2 = 0
+  c2Equiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2Equiv.symm 0 = E.coefficient.zero2
+  d0_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.d 0 (c0Equiv primitive) = c1Equiv (E.coefficient.delta0 primitive)
+  d0_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (c0Equiv.symm primitive) =
+        c1Equiv.symm (K.d 0 primitive)
+  d1_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.d 1 (c1Equiv cochain) = c2Equiv (E.coefficient.delta1 cochain)
+  d1_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (c1Equiv.symm cochain) =
+        c2Equiv.symm (K.d 1 cochain)
+
+namespace SemanticRepairCoverRelativeCochainRealization
+
+variable {Atom : Type u}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Construct the selected semantic/general `H1` comparison from degree-wise
+cochain realization data.
+
+The inverse and subtraction laws in the resulting comparison are derived from
+the additive equivalence on degree one; they are not supplied as independent
+`H1` comparison facts.
+-/
+def toH1Comparison
+    (realization : SemanticRepairCoverRelativeCochainRealization additive K) :
+    SemanticRepairCoverRelativeH1Comparison additive K where
+  toC0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact fun primitive => realization.c0Equiv primitive
+  fromC0 := by
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact fun primitive => realization.c0Equiv.symm primitive
+  toC1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact fun cochain => realization.c1Equiv cochain
+  fromC1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact fun cochain => realization.c1Equiv.symm cochain
+  toC2 := realization.c2Equiv
+  fromC2 := realization.c2Equiv.symm
+  fromC1_toC1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro cochain
+    exact realization.c1Equiv.left_inv cochain
+  toC1_fromC1 := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro cochain
+    exact realization.c1Equiv.right_inv cochain
+  toC1_sub := by
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    intro left right
+    exact AddEquiv.map_sub realization.c1Equiv left right
+  fromC1_sub := by
+    letI := K.cochainAddCommGroup 1
+    letI := additive.c1AddCommGroup
+    intro left right
+    exact AddEquiv.map_sub realization.c1Equiv.symm left right
+  toC2_zero := realization.c2Equiv_zero
+  fromC2_zero := realization.c2Equiv_symm_zero
+  d0_to := realization.d0_to
+  d0_from := realization.d0_from
+  d1_to := realization.d1_to
+  d1_from := realization.d1_from
+
+end SemanticRepairCoverRelativeCochainRealization
+
 namespace SemanticRepairCoverRelativeH1Comparison
 
 variable {Atom : Type u}
@@ -464,6 +593,30 @@ theorem semanticRepairAdditiveH1_coverRelativeH1_comparison_package
   ⟨comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_packageData⟩
 
 end SemanticRepairCoverRelativeH1Comparison
+
+namespace SemanticRepairCoverRelativeCochainRealization
+
+variable {Atom : Type u}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+The selected cover-relative grounding package follows from cochain realization
+data plus the existing quotient-level comparison theorem.
+-/
+theorem grounded_package_of_cochain_realization
+    (realization : SemanticRepairCoverRelativeCochainRealization additive K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        realization.toH1Comparison) :=
+  realization.toH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+
+end SemanticRepairCoverRelativeCochainRealization
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 
