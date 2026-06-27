@@ -1965,6 +1965,79 @@ theorem grounded_package_of_cochain_realization_via_carrier_specific_provenance
   realization.toCarrierSpecificComparisonProvenance
     |>.grounded_package_of_carrier_specific_comparison_provenance
 
+/--
+Cycle 19 lower-construction theorem: separated finite section-family witness
+data plus selected face-restriction differential equations construct the
+cochain-realization premise required by the G-06 cover-relative `H1`
+grounding path.
+
+This theorem does not construct the section-family witness from bare cover
+membership or sheaf descent.  It fixes the exact lower witness shape that must
+be supplied or proved next, and then derives direct `K.d` compatibility through
+the existing face-restriction realization bridge.
+-/
+def of_sectionFamilyWitness_and_faceRestrictionCompatibility
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    SemanticRepairCoverRelativeCochainRealization additive K :=
+  (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+      sectionWitness compatibility).toCochainRealization
+
+/--
+The remaining cochain-realization premise is equivalent to supplying the lower
+finite section-family witness together with the four selected face-restriction
+equations.
+
+The forward direction exposes the lower witness through the constructed
+carrier-specific provenance path; the backward direction builds the
+cochain-realization layer by theorem.  No `H1` equivalence, zero-class result,
+global coherence, effective descent, refinement naturality, or full sheaf
+cohomology comparison is stored in the lower witness.
+-/
+theorem cochainRealization_iff_sectionFamilyWitness_and_faceRestrictionCompatibility :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) <->
+      Exists fun sectionWitness :
+        SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K =>
+          SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            additive sectionWitness := by
+  constructor
+  · intro hrealization
+    rcases hrealization with ⟨realization⟩
+    exact
+      realization.toCarrierSpecificComparisonProvenance
+        |>.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility
+  · intro hwitness
+    rcases hwitness with ⟨sectionWitness, compatibility⟩
+    exact
+      ⟨of_sectionFamilyWitness_and_faceRestrictionCompatibility
+        sectionWitness compatibility⟩
+
+/--
+Lower finite witness data reaches the selected cover-relative grounding package
+by first constructing `SemanticRepairCoverRelativeCochainRealization` and then
+using the existing quotient-level comparison theorem.
+
+This keeps the proof-use path explicit:
+section-family witness and face equations are consumed to build cochain
+realization; cochain realization is consumed to build the `H1` comparison
+package.
+-/
+theorem grounded_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+          sectionWitness compatibility).toH1Comparison) :=
+  (of_sectionFamilyWitness_and_faceRestrictionCompatibility
+    sectionWitness compatibility).grounded_package_of_cochain_realization
+
 end SemanticRepairCoverRelativeCochainRealization
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
