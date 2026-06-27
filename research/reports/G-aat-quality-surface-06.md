@@ -2694,3 +2694,142 @@ Minimum next obligations:
 - Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
   actual presheaf restriction / selected face-restriction laws for the
   constructed section witness.
+
+## Cycle 22 — direct differential laws normalize to selected face-restriction laws
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeDirectDifferentialCompatibility.toFaceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.toDirectDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_directDifferentialCompatibility`
+  - `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 22 separates the remaining face-restriction compatibility premise from a
+direct selected `K.d` differential compatibility source.
+
+The new direct law source stores only the four degree-0/1 differential
+compatibility equations relative to a fixed section-family witness.  It stores
+no `H1` zero predicate, boundary membership, global coherence, effective
+descent, refinement naturality, or full sheaf cohomology comparison.
+
+Lean now proves both directions:
+
+- direct selected differential compatibility
+  -> selected face-restriction compatibility, by rewriting
+  `K.d` with `K.d_eq_alternatingFaceCombination`;
+- selected face-restriction compatibility
+  -> direct selected differential compatibility, by the same Cech identity.
+
+The downstream package theorem shows proof-use:
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    -> SemanticRepairCoverRelativeCochainRealization
+    -> selected cover-relative H1 grounding package
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged
+  relative to `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  by theorem.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  `discharge-required`; it is the newly exposed selected differential law
+  source and is not constructed from bare site/sheaf/descent input in this
+  cycle.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required` from
+  selected semantic residual coefficient / concrete cover-relative
+  section-family carrier geometry.
+- cover-relative `H1` zero, boundary membership, global semantic repair
+  coherence, effective descent, refinement naturality, and full sheaf
+  cohomology equivalence remain outside the new direct law source.
+
+### Dependency DAG
+
+```text
+remaining carrier source:
+  selected semantic residual coefficient / carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+
+remaining differential source:
+  selected presheaf restriction / direct Cech differential compatibility
+    -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+
+current downstream path:
+  SelectedSectionFamilyCarrierModel
+    -> SemanticRepairCoverRelativeSectionFamilyWitness
+    + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+      -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle22AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility.toFaceRestrictionCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility.toDirectDifferentialCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCoverRelativeCochainRealization.grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean file — clean.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- hidden material premise: none found.
+- structure field escape: none found.
+- proof use: `direct.toFaceRestrictionCompatibility` is consumed by the
+  downstream package theorem; the carrier model constructs the section-family
+  witness used by that path.
+- unresolved provenance: `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  remains an explicit selected law source, and `SelectedSectionFamilyCarrierModel`
+  remains an explicit selected carrier source.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 22 normalizes the face-restriction compatibility premise to a direct
+selected differential law source and proves that the downstream grounding
+package consumes it.  It still does not construct the direct differential laws
+from actual lower presheaf restriction data, nor does it construct the selected
+carrier model from lower carrier geometry.
+
+Minimum next obligations:
+
+- Construct `SelectedSectionFamilyCarrierModel` from selected semantic
+  residual coefficient / concrete cover-relative section-family carrier
+  geometry, or get an explicit GOAL-boundary revision outside the loop.
+- Construct `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from
+  actual presheaf restriction / selected Cech differential laws for the
+  constructed section witness.
