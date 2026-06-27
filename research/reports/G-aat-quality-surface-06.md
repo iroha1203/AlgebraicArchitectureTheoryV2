@@ -3745,3 +3745,141 @@ Cech differential compatibility is available.  The next obligation is to lower
 presheaf restriction / selected Cech differential laws, or lower
 `SelectedSectionFamilyCarrierModel` further to concrete selected semantic
 residual coefficient / cover-relative carrier data.
+
+## Cycle 29 — direct differential law source blocker fixed
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeDirectDifferentialCompatibility.requires_explicit_selected_differential_law_source`
+
+### Result
+
+Cycle 29 fixes the Cycle 28 frontier as an explicit blocker rather than
+repackaging the direct differential laws as a new discharge.
+
+Lean now proves that any inhabitant of
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` necessarily
+contains the four selected `K.d` equations:
+
+```text
+d0_direct_to
+d0_direct_from
+d1_direct_to
+d1_direct_from
+```
+
+The same theorem also records that the face-restriction presentation obtained
+through `K.d_eq_alternatingFaceCombination` is equivalent to the direct
+presentation.  Therefore the Cycle 28 normalization path is proof-useful for
+downstream selected face laws, but it is not a lower discharge of the direct
+differential premise.
+
+The remaining direct-differential obligation is now sharply stated:
+
+```text
+genuine selected semantic-delta / presheaf restriction source
+  -> the four selected K.d compatibility equations
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+```
+
+Absent that lower constructor, direct differential compatibility must remain
+an explicit target-boundary premise.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  discharge-required.  Cycle 29 exposes the exact four `K.d` equations that a
+  lower source must construct.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: still equivalent
+  to direct compatibility by `K.d_eq_alternatingFaceCombination`; this is a
+  normalization theorem, not a lower-source theorem.
+- `SelectedSectionFamilyCarrierModel`: unchanged; it remains a concrete
+  carrier-only lower source.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is stored or newly assumed by Cycle 29.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> exposes four selected K.d equations
+  -> constructs face-restriction compatibility
+  <-> face-restriction compatibility by d_eq_alternatingFaceCombination
+
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+    -> SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+    -> selected cover-relative H1 grounding package
+
+remaining lower sources:
+  genuine selected semantic-delta / presheaf restriction source
+    -> four selected K.d equations
+    -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+  selected semantic residual coefficient / concrete cover-relative
+  section-family carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle29AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility.requires_explicit_selected_differential_law_source`
+  depends on standard axioms `[propext, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+- `git diff --check` — passed after report update.
+
+### T3 Audit
+
+- decision: approve
+- result_type: blocker-fixed
+- hidden material premise: none added.  The theorem explicitly says no lower
+  construction of direct differential compatibility has been supplied.
+- structure field escape: none added.  No new structure or certificate field is
+  introduced; the existing direct compatibility fields remain the visible
+  material source.
+- certificate provenance: the provenance shape of
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` is exposed as
+  the four selected `K.d` equations plus the normalization path to
+  face-restriction compatibility.
+- proof use: the theorem consumes the direct witness by projecting all four
+  direct fields and using `direct.toFaceRestrictionCompatibility`.
+- unresolved provenance: no theorem constructs the four selected `K.d`
+  equations from lower semantic residual, presheaf restriction, sheaf, descent,
+  or cover data.
+- blocking findings: none.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 29 deliberately does not introduce a new structure containing the same
+four direct equations.  The next obligation is to construct those four selected
+`K.d` equations from a genuine selected semantic-delta / presheaf restriction
+source, or to lower `SelectedSectionFamilyCarrierModel` further to concrete
+selected semantic residual coefficient / cover-relative carrier data.

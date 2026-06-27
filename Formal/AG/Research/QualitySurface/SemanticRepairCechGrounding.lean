@@ -995,6 +995,81 @@ theorem faceRestrictionCompatibility_iff_directDifferentialCompatibility :
 
 end SemanticRepairCoverRelativeFaceRestrictionCompatibility
 
+namespace SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+variable {sectionWitness :
+  SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K}
+
+/--
+Cycle 29 blocker theorem: direct selected differential compatibility remains
+an explicit selected differential-law source.
+
+The theorem exposes the four `K.d` equations contained in any direct
+compatibility witness and records that the face-restriction presentation is
+equivalent to the direct presentation by `K.d_eq_alternatingFaceCombination`.
+Thus Cycle 28's normalization cannot be counted as a lower discharge of the
+direct laws; the next discharge must construct these equations from genuinely
+lower selected semantic-delta / presheaf restriction data, or keep this premise
+as an explicit boundary.
+-/
+theorem requires_explicit_selected_differential_law_source
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive sectionWitness) :
+    ((letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      letI := K.cochainAddCommGroup 1
+      forall primitive : E.coefficient.C0,
+        K.d 0 (sectionWitness.c0SectionEquiv primitive) =
+          sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+      (letI := additive.c0AddCommGroup
+       letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 0
+       letI := K.cochainAddCommGroup 1
+       forall primitive : K.Cn 0,
+        E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+          sectionWitness.c1SectionEquiv.symm (K.d 0 primitive)) /\
+      (letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 1
+       forall cochain : E.coefficient.C1,
+        K.d 1 (sectionWitness.c1SectionEquiv cochain) =
+          sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+      (letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 1
+       forall cochain : K.Cn 1,
+        E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+          sectionWitness.c2SectionEquiv.symm (K.d 1 cochain))) /\
+      Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive sectionWitness) /\
+      (Nonempty
+          (SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            additive sectionWitness) <->
+        Nonempty
+          (SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive sectionWitness)) := by
+  exact
+    ⟨⟨direct.d0_direct_to,
+      direct.d0_direct_from,
+      direct.d1_direct_to,
+      direct.d1_direct_from⟩,
+      ⟨direct.toFaceRestrictionCompatibility⟩,
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility.faceRestrictionCompatibility_iff_directDifferentialCompatibility⟩
+
+end SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
 /--
 Carrier-specific lower comparison provenance for identifying the semantic
 coefficient carriers with the selected cover-relative Cech section families.
