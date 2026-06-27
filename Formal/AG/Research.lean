@@ -111,6 +111,7 @@ import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTriple
 import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1
 import Formal.AG.Research.QualitySurface.SemanticRepairSheafH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairTrueSheafH1
+import Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTorsor
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2

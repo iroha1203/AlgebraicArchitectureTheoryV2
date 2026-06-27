@@ -102,3 +102,203 @@ Before creating the GOAL, the following focused checks passed:
 
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
+
+## Cycle 1 — cover-relative Cech `H1` comparison discharge
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `atomGeneratedCoverage_generates_AATGrothendieckTopology`
+  - `selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology`
+  - `SemanticRepairCoverRelativeCoverBridge`
+  - `SemanticRepairCover.toCoverRelativeCechCover`
+  - `coverNerve_typedComponent_adequacy`
+  - `SemanticRepairCoverRelativeH1Comparison`
+  - `SemanticRepairCoverRelativeH1Comparison.semantic_sameClass_iff_coverRelative_sameClass`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Class_to_coverRelativeH1`
+  - `SemanticRepairCoverRelativeH1Comparison.coverRelativeH1_to_semanticRepairAdditiveH1Class`
+  - `SemanticRepairCoverRelativeH1Comparison.CoverRelativeResidualH1Zero`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`
+  - `SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage`
+  - `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package`
+  - `semanticResidualCoefficient_presheafRestriction_zero`
+  - `semanticResidualCoefficient_presheafRestriction_add`
+  - `aatSheafCondition_coverMembership_descent_effectiveGluing`
+  - `CoverRelativeCechH1FullSheafCohomologyComparison`
+  - `coverRelativeCechH1_requires_explicit_fullSheafCohomologyComparison`
+  - `CoverRefinementNaturalityComparison`
+  - `coverRefinementNaturality_requires_explicit_comparison`
+  - `trueSheafH1_grounded_in_coverRelativeCechH1_package`
+- `Formal/AG/Research.lean`
+  - imports `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The G-05 semantic additive same-class relation
+  `SemanticRepairAdditiveH1SameClass additive left right` is connected to the
+  general cover-relative Cech relation `(K.CechCoboundarySetoidSucc 0).r ...`
+  by unfolding witnesses on both sides.
+- The forward direction uses the semantic boundary witness, `toC0`, `toC1`,
+  `toC1_sub`, and `d0_to` to produce a general Cech coboundary witness.
+- The reverse direction uses the general Cech primitive witness, `fromC0`,
+  `fromC1`, `fromC1_sub`, `toC1_fromC1`, and `d0_from` to recover a semantic
+  boundary witness.
+- `SemanticRepairAdditiveH1Zero` is equivalent to the selected general
+  cover-relative residual zero predicate via `Quotient.sound`,
+  `Quotient.exact`, and the same-class comparison theorem.  The zero
+  equivalence is not stored as a certificate field.
+- The G-05 cover-nerve `True` edge / face predicates now have theorem-level
+  typed-component adequacy: every edge is a sigma-coded pairwise-overlap
+  component and every face is a sigma-coded triple-overlap component with its
+  typed boundary edges.
+- The atom-generated admissible coverage bridge to
+  `AATGrothendieckTopology` and `AATSite.topology` is exposed by named
+  theorems.
+- The residual coefficient surface is connected to AAT presheaf restriction
+  laws for zero and addition through `ObstructionSheaf.map_zero` and
+  `ObstructionSheaf.map_add`.
+- `AATSheafCondition`, selected cover membership, cover-wise descent, and
+  effective global gluing are connected by proof-use in
+  `aatSheafCondition_coverMembership_descent_effectiveGluing`.
+
+Remaining:
+
+- `SemanticRepairCoverRelativeH1Comparison` is still visible comparison input.
+  It contains cochain-level maps and differential compatibility, but the cycle
+  does not construct those maps automatically from a concrete `AATSite`,
+  `SemanticRepairCover`, `ObstructionSheaf`, and cover-relative complex.
+- General full sheaf cohomology comparison is not proved.  The Lean boundary is
+  `CoverRelativeCechH1FullSheafCohomologyComparison`, and the theorem only says
+  such a comparison must be supplied explicitly.
+- General cover refinement / naturality is not proved.  The Lean boundary is
+  `CoverRefinementNaturalityComparison`, and the theorem only says such
+  naturality requires explicit comparison data.
+- This cycle does not upgrade the G-05 global semantic repair coherence theorem
+  to unconditional full sheaf cohomology, arbitrary-site cohomology, or
+  refinement functoriality.
+
+### Material Premise Ledger
+
+- `site / atom vocabulary / selected cover / coefficient carrier / source
+  trace`: ambient-boundary.
+- `atom-generated coverage membership`: discharged for admissible families by
+  `atomGeneratedCoverage_generates_AATGrothendieckTopology`.
+- `Grothendieck topology membership`: discharged for selected AAT sites by
+  `selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology` and the
+  generated-cover theorem above.
+- `cover membership`: direction-hypothesis in
+  `aatSheafCondition_coverMembership_descent_effectiveGluing`; it is used to
+  obtain the cover-wise sheaf condition and descent.
+- `presheaf restriction law`: discharged for the general residual coefficient
+  target by `semanticResidualCoefficient_presheafRestriction_zero` and
+  `semanticResidualCoefficient_presheafRestriction_add`.
+- `additive coefficient compatibility`: visible input in
+  `SemanticRepairAdditiveCechH1Data` and `SemanticRepairCoverRelativeH1Comparison`;
+  not hidden as H1 zero or global coherence.
+- `AATSheafCondition`, `AATDescent`, `descent datum effectivity`: discharged
+  conditionally from `AATSheafCondition` plus cover membership by
+  `aatSheafCondition_coverMembership_descent_effectiveGluing`.
+- `delta1 ∘ delta0 = 0`, `residual cocycle`, `cocycle comparison`,
+  `coboundary comparison`, `quotient comparison`, `zero predicate equivalence`:
+  discharged for the selected comparison by
+  `SemanticRepairCoverRelativeH1Comparison.semantic_sameClass_iff_coverRelative_sameClass`
+  and
+  `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`.
+- `cover refinement / naturality boundary`: out-of-scope for completion in this
+  cycle; represented by `CoverRefinementNaturalityComparison`.
+- `Cech-vs-full-sheaf-cohomology boundary`: out-of-scope for completion in this
+  cycle; represented by
+  `CoverRelativeCechH1FullSheafCohomologyComparison`.
+- `cover nerve component adequacy`: discharged by
+  `coverNerve_typedComponent_adequacy`.
+- `semantic faithfulness / exactness proof-use`: inherited from G-05 support
+  theorems and not re-proved as a new completion claim in this cycle.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- `SemanticRepairCoverRelativeH1Comparison` does not store quotient equality,
+  zero `H1`, global semantic repair coherence, full sheaf cohomology
+  equivalence, or effective descent.  It stores cochain maps and differential
+  compatibility only.
+- `SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage` is constructed
+  from the same-class comparison and zero-equivalence theorems.  It does not
+  take the zero equivalence or quotient comparison as an independent premise.
+- The final package returns `Nonempty` comparison-package evidence, not a
+  theorem that cover-relative Cech `H1` is full sheaf cohomology.
+- No target conclusion is moved into a structure field in this cycle.  The
+  remaining comparison-provenance fields are listed as remaining obligations,
+  not hidden completion evidence.
+
+### Dependency DAG
+
+```text
+AATCoverageFamily
+  -> AATGrothendieckTopology.generate_mem
+  -> atomGeneratedCoverage_generates_AATGrothendieckTopology
+
+AATSite.topology
+  -> selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology
+
+SemanticRepairCover
+  -> toCoverNerve
+  -> coverNerve_typedComponent_adequacy
+
+SemanticRepairAdditiveCechH1Data
+  + CoverRelativeCechComplex
+  + SemanticRepairCoverRelativeH1Comparison
+  -> semantic_sameClass_iff_coverRelative_sameClass
+  -> semanticRepairAdditiveH1Class_to_coverRelativeH1
+  -> coverRelativeH1_to_semanticRepairAdditiveH1Class
+  -> semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
+  -> trueSheafH1_grounded_in_coverRelativeCechH1_package
+
+ObstructionSheaf
+  -> semanticResidualCoefficient_presheafRestriction_zero/add
+
+AATSheafCondition + cover membership + AATGluingData
+  -> aatSheafCondition_coverMembership_descent_effectiveGluing
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06AxiomAudit.lean` was run for all reported declarations.
+The audit reported only standard `[propext, Quot.sound]` dependencies for
+quotient / topology declarations, or no axioms for the typed component and
+refinement-boundary declarations.  No `sorryAx`, non-consulted repo axiom,
+`admit`, or `unsafe` dependency was reported for the G-06 cycle declarations.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06AxiomAudit.lean` — passed after rebuilding the new
+  import.
+- placeholder scan over changed report / Lean files:
+  `rg -n "\b(axiom|admit|sorry|unsafe)\b|by\s+trivial|by\s+simp\s*$" ...`
+  — no changed Lean placeholder hits; the word "axiom" appears only in this
+  report's audit prose.
+- hidden / bidirectional Unicode scan over changed report / Lean files:
+  `rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" ...`
+  — clean.
+
+### Target Status
+
+This cycle is a proof-obligation discharge, not target completion.
+
+`target-theorem-proved` is not claimed because comparison-map provenance,
+general refinement / naturality, and any full sheaf cohomology comparison remain
+outside the discharged surface.  The next proof obligation is to construct or
+audit provenance for `SemanticRepairCoverRelativeH1Comparison` from actual
+semantic repair cover / residual coefficient / AAT cover-relative complex data,
+without moving differential compatibility or comparison adequacy into
+conclusion-equivalent fields.
