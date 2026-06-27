@@ -1,4 +1,4 @@
 interface:
   display_name: "Target Theorem Loop"
-  short_description: "GOALS.mdの大定理証明を進める"
-  default_prompt: "Use $target-theorem-loop <goal-id> and require $math-lean-review before any target-theorem-proved verdict."
+  short_description: "GOALS.mdの大定理証明を仮定放電込みで進める"
+  default_prompt: "Use $target-theorem-loop <goal-id> and require premise discharge, certificate provenance, and $math-lean-review before any target-theorem-proved verdict."

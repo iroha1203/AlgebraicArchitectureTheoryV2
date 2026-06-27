@@ -13,9 +13,9 @@ T0 で `research mode: target-theorem` の GOAL card を検査するときだけ
 - `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、証拠段階。
 - `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
 - `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
-- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、T3 audit、report / tracking Issue 同期、final review packet、4 並列査読すべての veto なし、final `$math-lean-review` を含む完了条件。
+- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、certificate provenance audit、proof-use audit、structure-field escape audit、T3 audit、report / tracking Issue 同期、final review packet、4 並列査読すべての veto なし、final `$math-lean-review` を含む完了条件。
 - `target premise discharge policy`: target theorem の実質的前提を target boundary として残すのか、completion までに theorem / finite witness / concrete certificate で discharge するのか。
-- `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required`)、必要 discharge artifact、結論相当 premise ではない理由。
+- `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、必要 discharge artifact、certificate provenance requirement、proof-use requirement、結論相当 premise ではない理由。
 - `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque membership に移して成功扱いしない規則。
 - `target failure policy`: `target-refuted` / `target-blocked` / GOAL 改訂提案の扱い。
 
@@ -31,6 +31,8 @@ T0 で `research mode: target-theorem` の GOAL card を検査するときだけ
 - target theorem の結論に必要な実質的前提があるのに、target boundary として残すのか completion までに discharge するのかが不明。
 - target material premise ledger または anti-weakening rule がなく、completion 時に premise を監査できない。
 - material premise ledger が faithfulness、exactness、coverage、sheaf condition、effectivity、triviality、representation adequacy などを `ambient-boundary` として残しているのに、結論相当 premise ではない理由がない。
+- `discharge-required` premise の certificate provenance requirement がなく、explicit certificate / structure field / theorem argument を放電済みと誤読できる。
+- completion criteria が proof-use audit と structure-field escape audit を含まず、未使用 premise や field への結論逃がしを検出できない。
 - target theorem が GOAL の research aim や rival delta と切り離され、ただの定理一覧項目になっている。
 
 欠陥を見つけたら GOAL 本文は編集せず、tracking Issue コメントまたは別 Issue に改訂案を残す。

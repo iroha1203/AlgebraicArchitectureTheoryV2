@@ -32,6 +32,16 @@ Premise delta:
 - discharged: <premise list or none>
 - remaining: <premise list or none>
 
+Certificate provenance:
+- discharged: <certificate / witness / construction provenance or none>
+- unresolved: <explicit certificate / field / membership still assumed or none>
+
+Proof-use audit:
+- <main theorem premise use / unused premise finding>
+
+Structure-field escape audit:
+- <field-content finding or none>
+
 Blocking findings:
 - <finding or none>
 
@@ -57,6 +67,20 @@ premise_delta:
     - <premise>
   remaining:
     - <premise>
+certificate_provenance:
+  discharged:
+    - <certificate provenance>
+  unresolved:
+    - <unresolved certificate / field / membership>
+proof_use_audit:
+  used_material_premises:
+    - <premise>
+  unused_material_premises:
+    - <premise>
+structure_field_escape_audit:
+  status: <none-found | concern-found | cannot-determine>
+  concerns:
+    - <field-content concern>
 blocking_findings:
   - <finding>
 next_obligation: <short>
@@ -126,6 +150,9 @@ Final review packet:
 - proof artifacts: <present | missing>
 - proof obligation summary: <present | missing>
 - material premise discharge: <present | missing>
+- certificate provenance audit: <present | missing>
+- proof-use audit: <present | missing>
+- structure-field escape audit: <present | missing>
 - axiom audit: <present | missing>
 - placeholder scan: <present | missing>
 - dependency DAG: <present | missing>
@@ -143,6 +170,15 @@ Material premises:
 
 Premise discharge audit:
 - <premise>: <discharged | not-discharged | target-boundary | cannot-determine> via <evidence>
+
+Certificate provenance audit:
+- <certificate / field / membership>: <constructed | hand-supplied | predecessor-theorem | cannot-determine> via <evidence>
+
+Proof-use audit:
+- <main theorem declaration>: <uses material premise | unused premise found | cannot-determine>
+
+Structure-field escape audit:
+- <structure / certificate>: <no conclusion-side field | conclusion-side field found | cannot-determine>
 
 Referee-level proof audit:
 - statement precision: <pass | fail | cannot-determine>
@@ -175,6 +211,9 @@ final_review_packet_status: <complete | incomplete>
 reviewer_vetoes:
   - <reviewer / finding>
 material_premise_ledger_audit: <pass | fail | cannot-determine>
+certificate_provenance_audit: <pass | fail | cannot-determine>
+proof_use_audit: <pass | fail | cannot-determine>
+structure_field_escape_audit: <pass | fail | cannot-determine>
 hidden_conclusion_premise_audit: <none-found | hidden-premise-found | cannot-determine>
 axiom_audit_status: <pass | fail | cannot-determine>
 placeholder_scan_status: <pass | fail | cannot-determine>
