@@ -1113,3 +1113,242 @@ Next obligation:
 - discharge selected cover-wise sheaf-condition provenance for the
   boundary-generated relation surface, or run a focused selector to decide
   whether relation-to-target-quotient provenance should be fixed first.
+
+## Cycle 13 — true-sheaf sheaf-condition provenance for boundary relation
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: no
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- declarations:
+  - `SemanticRepairTrueSheafH1.SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`
+  - `SemanticRepairTrueSheafH1.trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAbelian_package`
+
+Proof-obligation delta:
+
+- removed the caller-supplied selected cover-wise
+  `SemanticRepairCoverH1SheafConditionCertificate` argument from the Cycle 12
+  target-adjacent package surface.
+- generated the selected cover-wise certificate from global
+  `AATSheafCondition S F` and `cover ∈ S.topology base`.
+- proof-used the generated certificate by feeding it into
+  `trueSheafH1SemanticRepairGluing_boundaryRelationAbelian_package`.
+
+Premise delta:
+
+- discharged in this cycle:
+  - selected cover-wise sheaf-condition certificate provenance for the Cycle 12
+    boundary-generated relation surface.
+  - selected AAT descent / residual cocycle / boundary cocycle proof-use
+    through the generated certificate.
+- remaining:
+  - final anti-weakening review must still decide whether the Cycle 12
+    boundary-generated relation is acceptable as the intended G-05 `H1`
+    quotient relation.
+  - final four-lane `$math-lean-review` has not been rerun after Cycle 13.
+
+Certificate provenance:
+
+- discharged:
+  - `SemanticRepairCoverH1SheafConditionCertificate
+    data.toAbelianDescentData.toEnvelopeData S F cover` via
+    `coverEnvelope_sheafConditionCertificate_of_boundaryRelationTrueSheafCondition`.
+- unresolved:
+  - relation-to-target-quotient provenance for the boundary-generated
+    cohomology relation.
+
+Proof-use audit:
+
+- `trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAbelian_package`
+  constructs `selected` using the Cycle 13 theorem and passes it into the Cycle
+  12 boundary-relation package.
+
+Structure-field escape audit:
+
+- no selected `AATSheafConditionFor`, `AATDescent`, residual cocycle,
+  boundary-cocycle, `SemanticRepairH1Zero`, `CechB1 residual`, or global
+  coherence field is introduced by the Cycle 13 certificate.
+- remaining final-completion risk is the boundary-generated quotient relation
+  itself, not the sheaf-condition certificate provenance.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairTrueSheafH1`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed public files and scratch audit file
+- local/private path scan over changed public files and scratch audit file
+- independent T3 audit: approve for the selected Cycle 13 obligation; no final
+  completion verdict issued.
+
+Next obligation:
+
+- run a focused anti-weakening selector/review on whether
+  `SemanticRepairCoverH1BoundaryRelationAbelianData.toAbelianDescentData.cohomologous`
+  is an acceptable G-05 `H1` quotient relation, or whether a further
+  quotient-relation provenance theorem is required.
+
+## Cycle 14 — boundary-generated quotient relation provenance
+
+decision: approve
+result type: proof-obligation-discharged
+completion candidate: yes
+
+Lean artifacts:
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- declarations:
+  - `SemanticRepairTrueSheafH1.CechH1BoundarySameClass`
+  - `SemanticRepairTrueSheafH1.CechH1BoundaryZeroClass`
+  - `SemanticRepairTrueSheafH1.CechH1BoundaryNonzeroClass`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelation_sameClass_iff_boundarySameClass`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelation_sheafH1Zero_iff_boundaryZeroClass`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelation_sheafH1Nonzero_iff_boundaryNonzeroClass`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelation_boundaryZeroClass_iff_cocycle_and_boundary`
+  - `SemanticRepairTrueSheafH1.coverEnvelope_boundaryRelationQuotientProvenance_package`
+
+Proof-obligation delta:
+
+- fixed the relation-to-current-boundary-generated-quotient provenance selected
+  after the Cycle 13 anti-weakening review.
+- made the current relation boundary explicit as `CechH1BoundarySameClass`,
+  `CechH1BoundaryZeroClass`, and `CechH1BoundaryNonzeroClass`.
+- proved that the Cycle 12 `H1SameClass`, `SemanticRepairH1Zero`, and
+  `SemanticRepairH1Nonzero` predicates align with these canonical
+  boundary-generated predicates.
+- proved that current zero class is equivalent to residual cocycle plus
+  explicit `CechB1` boundary membership.
+
+Premise delta:
+
+- discharged in this cycle:
+  - current-boundary-generated same-class / zero-class / nonzero-class
+    provenance for the Cycle 12 surface.
+  - proof that `SemanticRepairH1Zero` is exactly the current boundary-generated
+    zero-class detector for the selected residual.
+  - proof that zero class extracts `CechB1 residual` from the relation, rather
+    than accepting a residual primitive as a theorem argument.
+- remaining:
+  - final four-lane `$math-lean-review` must decide whether the current
+    boundary-generated quotient surface is strong enough for the G-05 claim
+    boundary.
+  - the current surface still does not claim a full additive `H1` quotient with
+    subtraction on cochains.
+
+Certificate provenance:
+
+- discharged:
+  - `H1SameClass` relation provenance via
+    `coverEnvelope_boundaryRelation_sameClass_iff_boundarySameClass`.
+  - zero / nonzero detector provenance via
+    `coverEnvelope_boundaryRelation_sheafH1Zero_iff_boundaryZeroClass` and
+    `coverEnvelope_boundaryRelation_sheafH1Nonzero_iff_boundaryNonzeroClass`.
+  - boundary-zero provenance via
+    `coverEnvelope_boundaryRelation_boundaryZeroClass_iff_cocycle_and_boundary`.
+- unresolved:
+  - no local unresolved premise is recorded by T3 for Cycle 14.
+  - final completion remains unresolved until four-lane `$math-lean-review`.
+
+Proof-use audit:
+
+- the same-class theorem is definitional (`rfl`) because the Cycle 12 relation
+  and Cycle 14 canonical predicate use the same generation rule.
+- the zero / nonzero theorems proof-use the same-class theorem to transport
+  existing `SemanticRepairH1Zero` / `SemanticRepairH1Nonzero` into the canonical
+  boundary-generated predicates.
+- the zero-class theorem extracts `CechB1 residual` from the relation or from
+  equality with `zero1` using only `zeroPrimitive` for `zero1`.
+
+Structure-field escape audit:
+
+- Cycle 14 introduces no `GlobalSemanticRepairCoherent`,
+  `SemanticRepairH1Zero`, residual-boundary witness, universal primitive
+  selector, or exactness field / argument.
+- `zeroPrimitive` is used only to witness that `zero1` is a boundary, not as a
+  primitive selector for arbitrary residuals or cocycles.
+- the old Cycle 10 blocker is not reintroduced.
+
+Validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed public files and scratch audit file
+- local/private path scan over changed public files and scratch audit file
+- independent T3 audit: approve for the selected Cycle 14 obligation;
+  `completion_candidate: yes`; no final completion verdict issued.
+
+Next obligation:
+
+- fix a final review packet and run the required four-lane `$math-lean-review`.
+  The GOAL remains `target-proof-checkpoint` until all four lanes return
+  `No major findings`.
+
+## Final review after Cycle 14 — rejected
+
+Integrated verdict: `Reject / proof insufficient`
+
+`target-theorem-proved`: no
+
+Reviewer lanes:
+
+- mathematics review A: `Reject / proof insufficient`
+- mathematics review B: `Reject / proof insufficient`
+- Lean review A: `No major findings`
+- Lean review B: `No major findings`
+
+Findings:
+
+- mathematics A/B both found that the current Lean surface still does not prove
+  the target-strength `[r_A] ∈ H^1(U, R_A) = Z^1/B^1` quotient claim from
+  `research/GOALS.md`.
+- Cycle 14 honestly discharges current-boundary-generated relation provenance,
+  but `CechH1BoundarySameClass` is still a zero-class detector:
+  `left = right \/ CechB1 left /\ CechB1 right`.
+- the final review packet explicitly does not claim a full additive quotient
+  with subtraction on cochains, so the mathematical target claim is still
+  weaker than the GOAL requires.
+- Lean A/B found no major issue for the narrower current-boundary theorem:
+  the Cycle 12-14 path does not reintroduce the old universal
+  `boundaryPrimitive : C1 -> C0`, does not move `GlobalSemanticRepairCoherent`
+  or `SemanticRepairH1Zero` into a new field, and has clean focused Lean /
+  axiom / placeholder validation.
+
+Material premise status after review:
+
+- discharged for the current-boundary theorem:
+  - selected cover-wise sheaf-condition certificate provenance.
+  - semantic faithfulness / exactness provenance for the boundary-relation
+    surface.
+  - effective descent provenance for the abelian true-sheaf boundary.
+  - current-boundary same-class / zero-class / nonzero-class provenance.
+- undischarged for target completion:
+  - target-strength Cech `H1` class / quotient construction matching
+    `Z^1/B^1`, rather than only the current boundary-generated zero-class
+    detector.
+
+Validation available to reviewers:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairTrueSheafH1.lean`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/g05_cycle9_axioms.lean`
+- `git diff --check`
+- placeholder scan over direct target/support Lean files
+- hidden Unicode scan over changed public files and scratch audit file
+- local/private path scan over changed public files and scratch audit file
+
+Next obligation:
+
+- either construct / bridge a target-strength Cech `Z^1/B^1` quotient surface
+  for the G-05 theorem, or record a blocker / GOAL redesign if the present
+  `C0/C1/C2` surface cannot support subtraction and full additive quotient
+  semantics without strengthening the boundary.
