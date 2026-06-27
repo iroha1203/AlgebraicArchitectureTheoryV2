@@ -763,6 +763,33 @@ theorem trueSheafH1_grounding_requires_explicit_comparison_provenance
     Nonempty (SemanticRepairCoverRelativeH1Comparison additive K) :=
   ⟨comparison⟩
 
+/--
+G-06 cochain-level fail-closed boundary: simplex-level cover provenance alone is
+not the same as degree-wise cochain realization provenance.
+
+The semantic cover bridge records how charts, overlaps, and triple-overlaps land
+in a selected cover-relative Cech cover.  To ground the semantic additive `H1`
+surface in the general cover-relative Cech complex, one must also supply or
+construct equivalences between the semantic `C0/C1/C2` carriers and the selected
+section-family cochains, together with zero and differential compatibility.
+-/
+theorem trueSheafH1_grounding_requires_explicit_cochain_realization_provenance
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    {additive : SemanticRepairAdditiveCechH1Data E}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive K) :
+    Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) :=
+  ⟨realization⟩
+
 end SemanticRepairCechGrounding
 end QualitySurface
 end Formal.AG.Research

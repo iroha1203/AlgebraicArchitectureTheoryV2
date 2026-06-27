@@ -624,3 +624,99 @@ The next minimum obligation is to construct
 repair cover / cover bridge / residual coefficient / cover-relative Cech complex
 data, or to prove a sharper API-level blocker if that construction cannot be
 made inside the current `CoverRelativeCechComplex` surface.
+
+## Cycle 5 — cochain-realization API blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `trueSheafH1_grounding_requires_explicit_cochain_realization_provenance`
+
+### Proof-Obligation Result
+
+Attempted obligation:
+
+- Construct `SemanticRepairCoverRelativeCochainRealization` from the current
+  `SemanticRepairCoverRelativeCoverBridge`, selected semantic cover, residual
+  coefficient surface, `ObstructionSheaf`, and arbitrary selected
+  `CoverRelativeCechComplex`.
+
+Result:
+
+- Not discharged from current data.  The existing cover bridge gives
+  chart/overlap/triple-overlap simplex provenance only.
+- The current `CoverRelativeCechComplex` cochains are section-family types
+  `CoverRelativeCechCochain cover Ob n`, with a selected arbitrary differential
+  satisfying `d ∘ d = 0`.
+- No current API field identifies semantic `C0`, `C1`, `C2` with these section
+  families, nor relates semantic `delta0` / `delta1` to `K.d 0` / `K.d 1`.
+- Therefore cover-level provenance is strictly weaker than cochain-realization
+  provenance.  Treating it as sufficient would hide comparison adequacy.
+
+### Material Premise Ledger Delta
+
+- `cover / simplex provenance`: discharged by earlier cover bridge and typed
+  nerve adequacy theorems.
+- `degree-wise cochain realization`: discharge-required and still open.
+- `differential compatibility provenance`: discharge-required and still open.
+- `cochain-realization API blocker`: fixed by
+  `trueSheafH1_grounding_requires_explicit_cochain_realization_provenance`.
+
+### Anti-Weakening Audit
+
+- The new theorem does not construct `SemanticRepairCoverRelativeCochainRealization`
+  and does not claim target completion.
+- It keeps the distinction between input cover geometry and proof-relevant
+  cochain realization explicit.
+- It does not move `H1` zero, global coherence, full sheaf cohomology
+  comparison, refinement naturality, exactness conclusion, or effective descent
+  into a structure field.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeCoverBridge
+  -> SemanticRepairCover.toCoverRelativeCechCover
+  -/-> SemanticRepairCoverRelativeCochainRealization
+
+SemanticRepairCoverRelativeCochainRealization
+  -> toH1Comparison
+  -> selected cover-relative H1 grounding package
+```
+
+The broken arrow records the current API-level blocker: simplex provenance does
+not provide section-family equivalences or differential compatibility.
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle5AxiomAudit.lean` was run for
+`trueSheafH1_grounding_requires_explicit_cochain_realization_provenance`.  The
+audit reported only standard `[propext, Quot.sound]` dependencies.  No
+`sorryAx`, non-consulted repo axiom, `admit`, or `unsafe` dependency was
+reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle5AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed report / Lean files — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+The next minimum obligation is either to add a strictly richer bridge that
+supplies section-family equivalences and `d0`/`d1` compatibility from selected
+data, or to revise the G-06 target boundary outside this loop.  The current
+target cannot be completed from cover bridge data alone.
