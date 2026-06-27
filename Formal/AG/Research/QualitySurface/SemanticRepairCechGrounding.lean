@@ -1065,6 +1065,37 @@ theorem carrierSpecificComparisonProvenance_requires_degreewise_additive_data
       ⟨provenance.degreeOneAdditiveComparisonData⟩⟩
 
 /--
+G-06 boundary checkpoint: carrier-specific comparison provenance requires an
+explicit selected carrier-comparison source.
+
+The first component exposes the degree-wise selected comparison data contained
+in any concrete provenance inhabitant.  The second component records that no
+uniform constructor can produce that lower comparison data from bare additive
+carrier structure.  Therefore G-06 cannot claim completion by deriving
+`SemanticRepairCarrierSpecificComparisonProvenance` from cover membership,
+sheaf condition, descent, or bare additive carrier data alone; absent a
+concrete constructor, this selected comparison source must be treated as an
+explicit target-boundary input rather than a discharged premise.
+-/
+theorem carrierSpecificComparisonProvenance_requires_explicit_selected_carrier_comparison_source
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    (Nonempty
+        (letI := additive.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (letI := additive.c1AddCommGroup
+         letI := K.cochainAddCommGroup 1
+         CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1))) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) := by
+  exact
+    ⟨provenance.carrierSpecificComparisonProvenance_requires_degreewise_additive_data,
+      no_uniform_carrier_specific_additive_comparison_from_bare_groups⟩
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/

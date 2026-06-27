@@ -1559,3 +1559,132 @@ cannot be generated from bare additive/cover/sheaf/descent data.  The next
 minimum obligation is to either provide a selected carrier-comparison source
 inside the target boundary or record a GOAL boundary revision proposal making
 that selected comparison an explicit `ambient-boundary` input.
+
+## Cycle 13 — selected carrier-comparison boundary checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_requires_explicit_selected_carrier_comparison_source`
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Record the G-06 boundary checkpoint that
+  `SemanticRepairCarrierSpecificComparisonProvenance` is not dischargeable from
+  the current target inputs and must be explicit selected `ambient-boundary`
+  comparison evidence unless a concrete source is added.
+
+Fixed checkpoint:
+
+- The new theorem combines the two Cycle 12 facts into a single boundary
+  statement:
+  1. any concrete `SemanticRepairCarrierSpecificComparisonProvenance`
+     inhabitant exposes degree-`0` and degree-`1`
+     `CarrierSpecificAdditiveComparisonData`;
+  2. no uniform constructor can produce such lower comparison data from bare
+     additive carrier structure.
+- This makes the remaining target-boundary status theorem-visible:
+  `SemanticRepairCarrierSpecificComparisonProvenance` cannot be silently
+  claimed from cover membership, sheaf condition, descent, or bare additive
+  carrier data alone.
+
+Remaining:
+
+- This cycle intentionally does not claim that the selected comparison source
+  is discharged.
+- G-06 remains incomplete until either:
+  1. a concrete selected carrier-comparison source is added inside the target
+     boundary and used to construct
+     `SemanticRepairCarrierSpecificComparisonProvenance`, or
+  2. the GOAL card is revised outside this loop so that selected
+     carrier-comparison evidence is explicitly an `ambient-boundary` input.
+
+### Boundary Revision Proposal
+
+Proposed GOAL boundary revision, not applied in this cycle:
+
+- Reclassify `carrier-specific semantic/AAT cochain comparison provenance`
+  from `discharge-required` to `ambient-boundary` only when it is explicitly
+  supplied as selected comparison evidence between the G-05 semantic coefficient
+  carriers and the selected AAT cover-relative Cech section-family carriers.
+- The supplied evidence must be limited to carrier maps, inverse laws, additive
+  preservation, degree-`2` zero preservation, and selected face-restriction
+  differential compatibility.
+- It must not store `SemanticRepairAdditiveH1Class`,
+  `SemanticRepairAdditiveH1Zero`, boundary membership, global semantic repair
+  coherence, effective descent, cover refinement naturality, comparison
+  equivalence, or full sheaf cohomology equivalence.
+- If this revision is not accepted, the next proof obligation remains a
+  concrete construction theorem for
+  `SemanticRepairCarrierSpecificComparisonProvenance` from a new selected
+  carrier-comparison source.
+
+### Material Premise Ledger Delta
+
+- `carrier-specific comparison provenance`: remains unresolved under the
+  current GOAL ledger.  It is not discharged by this cycle.
+- `selected carrier-comparison source`: proposed as an explicit
+  `ambient-boundary` input, not as a theorem-generated conclusion.
+- `cover membership`, `AATSheafCondition`, `AATDescent`, and effective gluing:
+  still valid proof-use surfaces for site/sheaf grounding, but not provenance
+  generators for arbitrary carrier equivalences.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new theorem does not add any structure field and does not move H1 zero,
+  boundary membership, global coherence, effective descent, refinement
+  naturality, comparison equivalence, or full sheaf cohomology equivalence into
+  a certificate.
+- It prevents the weakened reading that selected comparison evidence has been
+  discharged from generic site/sheaf/descent premises.
+- The theorem is a checkpoint and boundary proposal, not a completion theorem.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> carrierSpecificComparisonProvenance_requires_degreewise_additive_data
+  -> degree-wise CarrierSpecificAdditiveComparisonData
+  -> no_uniform_carrier_specific_additive_comparison_from_bare_groups
+  -> explicit selected carrier-comparison source is required
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle13AxiomAudit.lean` was run for
+`SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_requires_explicit_selected_carrier_comparison_source`.
+The audit reported only standard `[propext, Classical.choice, Quot.sound]`
+dependencies.  No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe`
+dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake env lean .tmp/G06Cycle13AxiomAudit.lean` — passed.
+
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed Lean/report files — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed Lean/report files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 13 fixes the boundary checkpoint: selected carrier-comparison evidence is
+not discharged by the current target inputs.  Completion now requires either a
+new concrete provenance constructor or an explicit GOAL boundary revision.
