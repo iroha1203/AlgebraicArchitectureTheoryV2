@@ -8109,3 +8109,148 @@ The next minimal obligation remains construction of
 `DegreewiseCarrierDataAndDirectDifferentialLaws` from genuinely lower concrete
 selected residual coefficient / selected semantic-delta / presheaf-restriction
 sources, or an explicit GOAL boundary revision if that source is unavailable.
+
+## Cycle 57 — direct lower bundle as carrier model plus direct law source
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Make the G-06 boundary decision explicit: treat
+DegreewiseCarrierDataAndDirectDifferentialLaws as remaining discharge-required
+lower source data unless a genuinely non-circular selected residual
+coefficient / selected semantic-delta / presheaf-restriction construction is
+introduced outside the current surface vocabulary.
+```
+
+The selector rejected a positive construction from
+`CurrentG06InputSurface`, from `SemanticRepairCoverRelativeCochainRealization`,
+or from `SemanticRepairCarrierSpecificComparisonProvenance`.  The first route
+is blocked by Cycle 56's `PUnit` / `ZMod 2` finite witness.  The latter two
+routes are circular because they already contain the selected carrier and
+direct differential source.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_reduces_directLowerBundle_to_selectedCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+Cycle 57 proves that the transparent direct lower bundle introduced in Cycle 56
+is equivalent to the already separated lower pair:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+```
+
+The first theorem has both directions:
+
+- from `DegreewiseCarrierDataAndDirectDifferentialLaws`, destructure the
+  displayed carrier comparison data, degree-`2` zero laws, and four direct
+  `K.d` laws, then build the carrier model and direct compatibility witness;
+- from a carrier model and direct compatibility witness, reconstruct the
+  transparent direct lower bundle.
+
+The second theorem specializes this equivalence to the current G-06 surface and
+keeps the current-surface facts visible:
+
+- presheaf restriction preserves zero;
+- presheaf restriction preserves addition;
+- the selected Cech differential is the alternating face combination;
+- the direct lower bundle is exactly carrier model plus direct law source;
+- no uniform carrier comparison or additive equivalence constructor exists.
+
+This does not construct the lower pair from `CurrentG06InputSurface`; it makes
+the remaining source boundary exact and non-opaque.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: remains
+  `discharge-required`.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required`; it is the
+  carrier comparison / degree-`2` zero part of the direct lower bundle.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  `discharge-required`; it is the four direct selected semantic-delta / `K.d`
+  laws for the model-built section-family witness.
+- `CurrentG06InputSurface` plus presheaf zero/add and
+  `K.d = alternatingFaceCombination` is fixed as stopping before these lower
+  sources.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective gluing, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced.
+
+### Dependency DAG
+
+```text
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  <-> SelectedSectionFamilyCarrierModel
+      + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+CurrentG06InputSurface
+  -> presheaf zero/add laws
+  -> K.d = alternatingFaceCombination
+  -> currentG06InputSurface_reduces_directLowerBundle_to_selectedCarrierModel_and_directDifferentialCompatibility
+  -> direct lower bundle remains exactly carrier model + direct law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle57AxiomAudit.lean` — passed and removed after audit.
+- `degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `currentG06InputSurface_reduces_directLowerBundle_to_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- major findings / veto: none.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- proof use: passed.  The equivalence theorem destructures and reconstructs
+  the transparent direct lower bundle; the current-surface theorem proof-uses
+  `current_g06_presheaf_laws_stop_before_selected_differential_source` and the
+  Cycle 57 equivalence while keeping the no-uniform blockers visible.
+- structure field escape: none found.  The theorem does not introduce a new
+  structure or certificate; `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` remain visible
+  lower sources.
+- remaining material data:
+  `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` remain
+  `discharge-required`.
+- next obligation: construct that lower pair from genuinely lower selected
+  residual coefficient / selected semantic-delta / presheaf-restriction
+  sources, or make the corresponding GOAL boundary revision explicit.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is now sharpened to constructing either
+`SelectedSectionFamilyCarrierModel` and
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` from genuinely
+lower selected residual coefficient / selected semantic-delta /
+presheaf-restriction sources, or making the corresponding GOAL boundary
+revision explicit.

@@ -6027,6 +6027,138 @@ theorem degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFinite
       d0_direct_to d0_direct_from d1_direct_to d1_direct_from
 
 /--
+Cycle 57 boundary equivalence: the transparent direct lower bundle is exactly
+the already separated carrier-only model plus direct selected differential-law
+source.
+
+This theorem does not discharge either side from `CurrentG06InputSurface`.
+Instead, it prevents the direct bundle from being treated as a new ambient
+boundary or opaque certificate: unfolding it exposes precisely a
+`SelectedSectionFamilyCarrierModel` and a
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` witness for the
+section-family witness built from that same model.  No `H1` zero, boundary
+membership, global coherence, effective gluing, refinement naturality,
+comparison equivalence, or full sheaf cohomology comparison is introduced.
+-/
+theorem degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility :
+    DegreewiseCarrierDataAndDirectDifferentialLaws
+      (additive := additive) (coverBridge := coverBridge) (K := K) <->
+      Exists fun model : SelectedSectionFamilyCarrierModel additive coverBridge K =>
+        SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) := by
+  constructor
+  · intro direct
+    rcases direct with
+      ⟨c0Carrier, c1Carrier, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        d0_direct_to, d0_direct_from, d1_direct_to, d1_direct_from⟩
+    let model :
+        SelectedSectionFamilyCarrierModel additive coverBridge K :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := coverBridge) (K := K)
+        c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+    let sectionWitness :
+        SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    let directWitness :
+        SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive sectionWitness :=
+      { d0_direct_to := d0_direct_to
+        d0_direct_from := d0_direct_from
+        d1_direct_to := d1_direct_to
+        d1_direct_from := d1_direct_from }
+    exact ⟨model, directWitness⟩
+  · intro hsource
+    rcases hsource with ⟨model, direct⟩
+    exact
+      ⟨model.c0Carrier, model.c1Carrier, model.c2Equiv,
+        model.c2Equiv_zero, model.c2Equiv_symm_zero,
+        direct.d0_direct_to, direct.d0_direct_from,
+        direct.d1_direct_to, direct.d1_direct_from⟩
+
+/--
+Cycle 57 current-surface boundary: the current site/sheaf/presheaf surface can
+reach the general presheaf restriction laws and selected Cech differential
+identity, but the direct lower bundle remains exactly the separated carrier
+model plus direct selected differential-law source.
+
+The result proof-uses the existing current-surface presheaf law theorem and
+the Cycle 57 boundary equivalence.  It keeps the no-uniform carrier/equivalence
+blockers visible and does not construct the direct lower source from
+`CurrentG06InputSurface`.
+-/
+theorem currentG06InputSurface_reduces_directLowerBundle_to_selectedCarrierModel_and_directDifferentialCompatibility
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      (DegreewiseCarrierDataAndDirectDifferentialLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) <->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K),
+      hsurface.2.2.2.1,
+      hsurface.2.2.2.2⟩
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and
