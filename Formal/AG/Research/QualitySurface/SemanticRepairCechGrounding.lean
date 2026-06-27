@@ -385,6 +385,107 @@ structure SemanticRepairCoverRelativeSectionRealizationBridge
         c2SectionEquiv.symm (K.d 1 cochain)
 
 /--
+Concrete finite witness identifying the semantic coefficient carriers with the
+selected section-family cochains of a cover-relative Cech complex.
+
+This is the irreducible type-level comparison data still required by G-06: the
+semantic `C0/C1/C2` carriers are arbitrary finite/small coefficient carriers,
+whereas `K.Cn n` is a presheaf section family over selected `n`-simplices.  No
+`H1` zero predicate, boundary membership, global coherence, exactness,
+effective descent, refinement naturality, or full sheaf cohomology comparison is
+stored here.
+-/
+structure SemanticRepairCoverRelativeSectionFamilyWitness
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  c0SectionEquiv :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0
+  c1SectionEquiv :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1
+  c2SectionEquiv : E.coefficient.C2 ≃ K.Cn 2
+  c2SectionEquiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv E.coefficient.zero2 = 0
+  c2SectionEquiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv.symm 0 = E.coefficient.zero2
+
+/--
+Concrete finite witness that semantic differentials agree with the selected
+face-restriction presentation of the general Cech differential under a fixed
+section-family witness.
+
+This witness is lower than direct `K.d` compatibility: direct differential
+compatibility is derived using
+`CoverRelativeCechComplex.d_eq_alternatingFaceCombination`.
+-/
+structure SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K) where
+  d0_face_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.alternatingFaceCombination 0
+          (fun σ i =>
+            K.faceRestrictionTerm 0 i
+              (sectionWitness.c0SectionEquiv primitive) σ) =
+        sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)
+  d0_face_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+        sectionWitness.c1SectionEquiv.symm
+          (K.alternatingFaceCombination 0
+            (fun σ i => K.faceRestrictionTerm 0 i primitive σ))
+  d1_face_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.alternatingFaceCombination 1
+          (fun σ i =>
+            K.faceRestrictionTerm 1 i
+              (sectionWitness.c1SectionEquiv cochain) σ) =
+        sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)
+  d1_face_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+        sectionWitness.c2SectionEquiv.symm
+          (K.alternatingFaceCombination 1
+            (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
+
+/--
 Lower-level section realization provenance using the selected face-restriction
 presentation of the general cover-relative Cech differential.
 
@@ -469,6 +570,88 @@ variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
   (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Construct face-restriction realization from the separated finite section-family
+and face-restriction compatibility witnesses.
+-/
+def of_sectionFamilyWitness
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K where
+  c0SectionEquiv := sectionWitness.c0SectionEquiv
+  c1SectionEquiv := sectionWitness.c1SectionEquiv
+  c2SectionEquiv := sectionWitness.c2SectionEquiv
+  c2SectionEquiv_zero := sectionWitness.c2SectionEquiv_zero
+  c2SectionEquiv_symm_zero := sectionWitness.c2SectionEquiv_symm_zero
+  d0_face_to := compatibility.d0_face_to
+  d0_face_from := compatibility.d0_face_from
+  d1_face_to := compatibility.d1_face_to
+  d1_face_from := compatibility.d1_face_from
+
+/--
+Any face-restriction realization exposes an explicit section-family witness.
+
+This is a boundary theorem: G-06 cannot treat realization as generated from
+semantic cover data unless this witness is itself constructed or accepted as a
+concrete finite comparison witness.
+-/
+def toSectionFamilyWitness
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K where
+  c0SectionEquiv := realization.c0SectionEquiv
+  c1SectionEquiv := realization.c1SectionEquiv
+  c2SectionEquiv := realization.c2SectionEquiv
+  c2SectionEquiv_zero := realization.c2SectionEquiv_zero
+  c2SectionEquiv_symm_zero := realization.c2SectionEquiv_symm_zero
+
+/--
+Any face-restriction realization exposes explicit face-restriction
+compatibility relative to its section-family witness.
+
+This keeps the remaining comparison adequacy premise visible instead of hiding
+it inside the larger realization structure.
+-/
+def toFaceRestrictionCompatibility
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      additive realization.toSectionFamilyWitness where
+  d0_face_to := realization.d0_face_to
+  d0_face_from := realization.d0_face_from
+  d1_face_to := realization.d1_face_to
+  d1_face_from := realization.d1_face_from
+
+/--
+G-06 boundary theorem: face-restriction realization is equivalent to supplying
+both a finite section-family witness and compatibility with the selected
+face-restriction differential presentation.
+
+The forward direction extracts the remaining material witnesses.  The backward
+direction constructs the realization from them.  This does not discharge those
+witnesses from bare cover data; it makes their exact status explicit.
+-/
+theorem faceRestrictionRealization_iff_sectionFamilyWitness_and_compatibility :
+    Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionRealization
+          additive coverBridge K) <->
+      Exists fun sectionWitness :
+        SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K =>
+          SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            additive sectionWitness := by
+  constructor
+  · intro hrealization
+    rcases hrealization with ⟨realization⟩
+    exact
+      ⟨realization.toSectionFamilyWitness,
+        realization.toFaceRestrictionCompatibility⟩
+  · intro hwitness
+    rcases hwitness with ⟨sectionWitness, compatibility⟩
+    exact ⟨of_sectionFamilyWitness sectionWitness compatibility⟩
 
 /--
 Construct the section-realization bridge from face-restriction provenance.

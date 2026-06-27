@@ -937,3 +937,117 @@ The next minimum obligation is to decide whether the selected degree
 semantic cover / residual coefficient / presheaf data, or whether the G-06
 target boundary must explicitly accept those equivalences as concrete finite
 comparison witnesses while keeping completion blocked on final review.
+
+## Cycle 8 — finite section-family witness boundary
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeSectionFamilyWitness`
+  - `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.toSectionFamilyWitness`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.toFaceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionRealization_iff_sectionFamilyWitness_and_compatibility`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The selected face-restriction realization is no longer one opaque comparison
+  structure.  It is theorem-level equivalent to:
+  1. a finite section-family witness identifying semantic `C0/C1/C2` with
+     selected `K.Cn 0/1/2`, and
+  2. face-restriction compatibility relative to that witness.
+- `of_sectionFamilyWitness` constructs
+  `SemanticRepairCoverRelativeFaceRestrictionRealization` from those two
+  separated finite witnesses.
+- `toSectionFamilyWitness` and `toFaceRestrictionCompatibility` extract the
+  remaining material witnesses from any supplied face-restriction realization.
+- `faceRestrictionRealization_iff_sectionFamilyWitness_and_compatibility`
+  fixes the exact remaining premise boundary as a Lean theorem.
+
+Remaining:
+
+- The finite section-family witness is still not generated from only semantic
+  cover / residual coefficient / presheaf data.
+- Face-restriction compatibility is still not generated from only cover
+  membership and presheaf restriction laws.
+- Therefore this cycle does not discharge the selector's full construction
+  obligation and is not target completion.
+
+### Material Premise Ledger Delta
+
+- `section-family equivalence provenance`: narrowed to
+  `SemanticRepairCoverRelativeSectionFamilyWitness`.
+- `face-restriction compatibility provenance`: narrowed to
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- `face-restriction realization`: equivalent to the two separated witnesses by
+  `faceRestrictionRealization_iff_sectionFamilyWitness_and_compatibility`.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness` stores only degree
+  `0` / `1` additive section equivalences, degree `2` equivalence, and degree
+  `2` zero preservation.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility` stores only the
+  selected face-restriction compatibility equations relative to a fixed
+  section-family witness.
+- Neither structure stores `H1` zero, boundary membership, global semantic
+  repair coherence, effective descent, exactness conclusion, cover refinement /
+  naturality, or full sheaf cohomology comparison.
+- Since these witnesses are still supplied rather than generated from lower
+  data, this cycle remains a checkpoint.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeSectionFamilyWitness
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  <-> SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> toH1Comparison
+  -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle8AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness`,
+`SemanticRepairCoverRelativeFaceRestrictionRealization.toSectionFamilyWitness`,
+`SemanticRepairCoverRelativeFaceRestrictionRealization.toFaceRestrictionCompatibility`, and
+`SemanticRepairCoverRelativeFaceRestrictionRealization.faceRestrictionRealization_iff_sectionFamilyWitness_and_compatibility`.
+The audit reported only standard `[propext, Quot.sound]` dependencies.  No
+`sorryAx`, non-consulted repo axiom, `admit`, or `unsafe` dependency was
+reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle8AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed report / Lean files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+The next minimum obligation is to either construct
+`SemanticRepairCoverRelativeSectionFamilyWitness` and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` from lower semantic
+cover / residual coefficient / AAT presheaf data, or record a target-boundary
+revision proposal explaining why these two finite witnesses must be accepted as
+ambient selected comparison input rather than discharge-required premises.
