@@ -23,6 +23,7 @@ open CategoryTheory
 open Opposite
 open SemanticRepairSheafH1
 open SemanticRepairTrueSheafH1
+open SemanticRepairObstructionTower
 
 /-! ## Atom-generated coverage and selected AAT topology -/
 
@@ -3761,6 +3762,109 @@ theorem trueSheafH1_grounded_in_coverRelativeCechH1_package
       (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
         comparison) :=
   comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+
+/--
+Boundary-relation additive true-sheaf gluing reaches the selected
+cover-relative Cech `H1` zero predicate once the explicit cochain comparison is
+available.
+
+This is a proof-use theorem, not a new certificate.  The selected AAT sheaf
+condition and cover membership are consumed by
+`aatSheafCondition_coverMembership_descent_effectiveGluing` to produce descent
+and an effective global gluing section for the supplied local data.  The
+G-05 true-sheaf additive package is then composed with the G-06
+cover-relative zero equivalence.  The cover-relative comparison remains an
+explicit premise; no full sheaf cohomology comparison or refinement naturality
+claim is introduced.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
+    {Atom : Type u}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    {coverRel : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex coverRel Ob}
+    (comparison :
+      SemanticRepairCoverRelativeH1Comparison
+        data.toAdditiveCechH1Data K) :
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      (∃! globalSection : F.obj (op base),
+        AAT.AG.Site.AATGlobalSectionRealizes
+          gluingData globalSection) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          comparison) /\
+      (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope
+                data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+          comparison.CoverRelativeResidualH1Zero) /\
+      (comparison.CoverRelativeResidualH1Zero ->
+        GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData))) /\
+      (GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) ->
+        comparison.CoverRelativeResidualH1Zero) /\
+      (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+        comparison.CoverRelativeResidualH1Zero) /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) := by
+  rcases
+    aatSheafCondition_coverMembership_descent_effectiveGluing
+      certificate.sheafCondition cover certificate.cover_mem gluingData with
+    ⟨hSheafFor, hDescent, hEffectiveGluing⟩
+  rcases
+    trueSheafH1SemanticRepairGluing_trueSheafBoundaryRelationAdditive_package
+      data S F cover certificate with
+    ⟨_, _, _, _, hGlobalAdditive, _, _, _, hTorsor, hHigher, hStack⟩
+  have hAdditiveCover :
+      SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+        comparison.CoverRelativeResidualH1Zero :=
+    comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
+  have hGlobalCover :
+      GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+        comparison.CoverRelativeResidualH1Zero :=
+    hGlobalAdditive.trans hAdditiveCover
+  exact
+    ⟨hSheafFor,
+      hDescent,
+      hEffectiveGluing,
+      comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package,
+      hGlobalCover,
+      hGlobalCover.2,
+      hGlobalCover.1,
+      hAdditiveCover,
+      hTorsor,
+      hHigher,
+      hStack⟩
 
 /--
 G-06 fail-closed boundary: the selected cover-relative Cech `H1` grounding
