@@ -1384,6 +1384,54 @@ theorem selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_const
   ⟨of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
       model compatibility⟩
 
+/--
+Construct the selected Cech face-law source from direct selected differential
+laws.
+
+The direct laws speak in terms of the selected cover-relative Cech differential
+`K.d`.  The construction normalizes them to the selected presheaf
+face-restriction presentation using `K.d_eq_alternatingFaceCombination` through
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility.toFaceRestrictionCompatibility`,
+then uses the Cycle 27 constructor.  This keeps the remaining lower premise at
+the level of selected differential compatibility, not an already supplied
+face-law source.
+-/
+def of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    SemanticRepairSelectedCechFaceLawSource
+      additive
+      (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+        model) :=
+  of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+    model direct.toFaceRestrictionCompatibility
+
+/--
+Carrier-only model data plus direct selected differential laws construct the
+selected Cech face-law source for the model-built carrier geometry.
+
+The selected face laws are therefore no longer an independent material premise
+once direct selected differential compatibility has been supplied or proved.
+-/
+theorem selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_constructs_selectedCechFaceLawSource
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty
+      (SemanticRepairSelectedCechFaceLawSource
+        additive
+        (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+          model)) :=
+  ⟨of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+      model direct⟩
+
 end SemanticRepairSelectedCechFaceLawSource
 
 /--
@@ -3042,6 +3090,38 @@ theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictio
     model
     (SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
       model compatibility)
+
+/--
+Carrier-only model data plus direct selected differential laws reach the
+selected cover-relative grounding package through the selected carrier-geometry
+/ selected Cech face-law-source path.
+
+This is the Cycle 28 proof-use theorem.  The direct laws are first normalized
+to the selected presheaf face-restriction presentation, producing the selected
+Cech face-law source for the model-built carrier geometry; that source is then
+consumed by `of_selectedCarrierGeometry_and_faceLaws`.  The theorem remains
+relative to direct selected differential compatibility and does not claim that
+bare cover membership, sheaf condition, descent, or full sheaf cohomology
+produces those direct laws.
+-/
+theorem grounded_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedCechFaceLaws
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        (of_selectedCarrierGeometry_and_faceLaws
+          (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+            model)
+          (SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+            model direct)).toCochainRealization.toH1Comparison) :=
+  grounded_package_of_selectedSectionFamilyCarrierModel_and_selectedCechFaceLaws
+    model
+    (SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+      model direct)
 
 /--
 Carrier-specific provenance constructs the richer section-realization bridge by
