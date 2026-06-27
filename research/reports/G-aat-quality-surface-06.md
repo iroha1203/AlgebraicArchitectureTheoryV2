@@ -6834,3 +6834,167 @@ residual coefficient / selected semantic-delta / presheaf-restriction source
 for `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or to make the
 GOAL boundary explicitly depend on that source rather than treating it as a
 current-surface-only theorem.
+
+## Cycle 49 — selected cochain realization supplies the finite witness
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource`
+
+### T1 Selection
+
+The selector chose the allowed source-relative path left open by Cycle 48:
+
+```text
+CurrentG06InputSurface
++ selected cochain realization source
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry
+  -> selected Cech face-law source
+```
+
+The accepted obligation was not to retry a current-surface-only construction.
+It was to prove that the existing selected cochain-realization source is
+strong enough to construct the explicit finite witness, and then route that
+witness through the Cycle 46 selected lower-pair theorem.
+
+Rejected alternatives were:
+
+- another `CurrentG06InputSurface`-only constructor attempt;
+- adding a new certificate or structure field that stores the finite witness;
+- reclassifying the selected cochain-realization source as `ambient-boundary`;
+- jumping to `H1` zero, effective descent / gluing, refinement / naturality,
+  or full sheaf cohomology;
+- report-only cleanup.
+
+### Result
+
+Cycle 49 proves the following source-relative constructor:
+
+```text
+CurrentG06InputSurface
++ SemanticRepairCoverRelativeCochainRealization additive surface.K
+  -> presheaf restriction map_zero
+  -> presheaf restriction map_add
+  -> selected Cech differential = alternating face combination
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry
+```
+
+The selected source is decomposed through:
+
+```text
+cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+```
+
+and the resulting finite witness is then proof-used by:
+
+```text
+currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources
+currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource
+```
+
+This discharges `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+relative to an allowed selected cochain-realization / semantic-delta source.
+It does not construct that selected source from `CurrentG06InputSurface` alone.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: discharged
+  relative to `SemanticRepairCoverRelativeCochainRealization additive
+  surface.K` in this cycle.
+- `SemanticRepairCoverRelativeCochainRealization`: remains
+  `discharge-required` below the current G-06 surface unless supplied by an
+  allowed concrete selected residual coefficient / selected semantic-delta /
+  presheaf-restriction source.  It is not reclassified as ambient boundary.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add and selected Cech
+  differential formula via the Cycle 47 / Cycle 46 path.  It still does not
+  generate carrier equivalences or face equations by itself.
+- selected carrier geometry and selected Cech face-law source: discharged
+  relative to the selected cochain-realization source through the explicit
+  finite witness.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeCochainRealization additive surface.K
+  -> cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+
+CurrentG06InputSurface + DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources
+  -> presheaf laws + selected Cech differential formula + explicit lower source content
+
+CurrentG06InputSurface + DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource
+  -> selected carrier geometry + selected Cech face-law source
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle49AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  is discharged relative to
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K`.
+  `SemanticRepairCoverRelativeCochainRealization` remains a material source
+  below the current G-06 surface.
+- certificate provenance: passed for checkpoint purposes.  The selected
+  cochain-realization source is decomposed through
+  `cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`;
+  no new certificate structure is introduced.
+- proof use: passed.  The extracted `lower` witness is proof-used by both
+  `currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources`
+  and
+  `currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource`.
+- structure field escape: passed.  The cycle does not add `H1` zero,
+  effective gluing / descent, refinement / naturality, global coherence,
+  comparison equivalence, or full sheaf cohomology equivalence to a field.
+- anti-weakening: passed.  The theorem keeps `realization` as an explicit
+  source argument and does not claim current-surface-only finite witness
+  construction.
+- report / validation consistency: passed.  The report matches the Lean diff
+  and keeps G-06 at `target-proof-checkpoint`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct the selected
+`SemanticRepairCoverRelativeCochainRealization` source itself from an allowed
+concrete selected residual coefficient / selected semantic-delta /
+presheaf-restriction source, or to make that source boundary explicit in the
+target proof packet.
