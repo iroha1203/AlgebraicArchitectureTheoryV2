@@ -3883,3 +3883,141 @@ four direct equations.  The next obligation is to construct those four selected
 `K.d` equations from a genuine selected semantic-delta / presheaf restriction
 source, or to lower `SelectedSectionFamilyCarrierModel` further to concrete
 selected semantic residual coefficient / cover-relative carrier data.
+
+## Cycle 30 — presheaf laws stop before selected differential source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source`
+
+### Result
+
+Cycle 30 fixes the precise boundary below Cycle 29.
+
+Lean now proves that the current G-06 site/sheaf/presheaf input surface reaches
+the following genuine mathematical facts:
+
+```text
+presheaf restrictions preserve zero
+presheaf restrictions preserve addition
+selected Cech differential K.d is the alternating selected face-restriction sum
+```
+
+The same theorem records that these facts still stop before the selected
+semantic-delta comparison source needed for direct differential compatibility.
+In particular, the current surface does not identify arbitrary semantic
+coefficient carriers with selected Cech section-family carriers:
+
+```text
+IsEmpty ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+  CarrierSpecificAdditiveComparisonData C D)
+
+IsEmpty ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+  C ≃+ D)
+```
+
+Therefore the four direct `K.d` equations from Cycle 29 cannot be generated
+from presheaf zero/add laws plus `K.d_eq_alternatingFaceCombination` alone.  A
+genuine selected semantic-delta / presheaf restriction comparison source is
+still needed, or the premise must remain explicit boundary data.
+
+### Material Premise Ledger Delta
+
+- `presheaf restriction law`: proof-used and exposed through the new theorem
+  as zero/add preservation of `Ob.carrier.toPresheaf.map`.
+- `selected Cech differential formula`: proof-used and exposed through
+  `surface.K.d_eq_alternatingFaceCombination`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  discharge-required.  Cycle 30 proves the available presheaf/differential
+  laws stop before constructing its four selected `K.d` equations.
+- `selected semantic-delta comparison source`: newly sharpened remaining
+  obligation.  It must connect semantic `delta0` / `delta1` to selected
+  presheaf face restrictions and `K.d`.
+- `SelectedSectionFamilyCarrierModel`: unchanged; it remains a concrete
+  carrier-only lower source.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is stored or newly assumed by Cycle 30.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> presheaf restriction zero/add laws
+  -> K.d_eq_alternatingFaceCombination
+  -/-> arbitrary selected carrier comparison
+  -/-> selected semantic-delta comparison
+  -/-> four direct K.d equations
+
+remaining lower sources:
+  selected semantic-delta / presheaf restriction comparison source
+    -> four selected K.d equations
+    -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+  selected semantic residual coefficient / concrete cover-relative
+  section-family carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle30AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+- `git diff --check` — passed after report update.
+
+### T3 Audit
+
+- decision: approve
+- result_type: blocker-fixed
+- discharged premises: none.  The theorem records available presheaf and
+  differential-formula facts, but does not construct direct differential
+  compatibility.
+- hidden material premise: none added.
+- structure field escape: none added.  No new structure or certificate field is
+  introduced; the theorem does not hide direct `K.d` equations, `H1`
+  conclusions, descent, coherence, or comparison equivalence in a field.
+- certificate provenance: the theorem records the available presheaf zero/add
+  laws and `surface.K.d_eq_alternatingFaceCombination`, and reuses the existing
+  no-uniform comparison/equivalence blockers.
+- proof use: the proof uses `Ob.map_zero`, `Ob.map_add`,
+  `surface.K.d_eq_alternatingFaceCombination`, and the existing no-uniform
+  comparison/equivalence blockers.  It does not use or construct a
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` witness.
+- unresolved provenance: no theorem constructs the selected semantic-delta /
+  presheaf-restriction comparison, and no theorem constructs direct
+  differential compatibility from the current G-06 surface.
+- blocking findings: none.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next obligation is to construct a selected semantic-delta / presheaf
+restriction comparison source that yields the four selected `K.d` equations, or
+to lower `SelectedSectionFamilyCarrierModel` further to concrete selected
+semantic residual coefficient / cover-relative carrier data.

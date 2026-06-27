@@ -2214,6 +2214,58 @@ theorem no_constructor_from_current_g06_inputs_without_cochain_realization_sourc
         uniformDegreeEquiv
 
 /--
+Cycle 30 blocker theorem: the current site/sheaf/presheaf surface reaches only
+the general presheaf restriction laws and the selected Cech differential
+formula.
+
+These facts are real mathematical structure: restrictions preserve zero and
+addition, and `K.d` is the alternating combination of selected face
+restrictions.  They still stop before the selected semantic-delta comparison
+needed for
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility`: they do not
+identify arbitrary semantic coefficient carriers with the selected Cech
+section families, and hence cannot by themselves construct the four direct
+`K.d` equations exposed in Cycle 29.
+-/
+theorem current_g06_presheaf_laws_stop_before_selected_differential_source
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  exact
+    ⟨(by
+        intro source target f
+        exact Ob.map_zero f),
+      (by
+        intro source target f x y
+        exact Ob.map_add f x y),
+      (by
+        intro n c
+        exact surface.K.d_eq_alternatingFaceCombination n c),
+      no_uniform_carrier_specific_additive_comparison_from_bare_groups,
+      SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data⟩
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/
