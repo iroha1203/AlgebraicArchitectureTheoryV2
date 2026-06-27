@@ -3434,3 +3434,154 @@ proving the reverse extraction.  The next obligation is to construct
 selected Cech face laws for the constructed geometry, or to lower
 `SelectedSectionFamilyCarrierModel` further to concrete selected semantic
 residual coefficient / cover-relative carrier data.
+
+## Cycle 27 — selected Cech face laws from face-restriction compatibility
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+  - `SemanticRepairSelectedCechFaceLawSource.selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_selectedCechFaceLawSource`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_selectedCechFaceLaws`
+
+### Result
+
+Cycle 27 discharges the `SemanticRepairSelectedCechFaceLawSource` node relative
+to the already separated actual face-restriction compatibility witness
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+
+Lean now proves:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      (for the section-family witness constructed from the same model)
+    -> SemanticRepairSelectedCechFaceLawSource
+        (for the selected carrier geometry constructed from the model)
+```
+
+and the downstream proof-use path:
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> constructed SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    -> constructed SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+    -> selected cover-relative H1 grounding package
+```
+
+The selected face-law source is constructed field-by-field from the four actual
+face-restriction equations.  This prevents the Cycle 25 face-law source from
+remaining an opaque hand-supplied certificate.  The lower compatibility witness
+itself remains material: this cycle does not claim that bare cover membership,
+`AATSheafCondition`, `AATDescent`, or full sheaf cohomology generates the
+selected face laws.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCechFaceLawSource`: discharged relative to
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` by Lean theorem.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: remains a lower
+  selected face-restriction law source.  It must still be generated from actual
+  presheaf restriction / selected Cech face laws, or normalized from direct
+  differential laws by the existing Cycle 22 theorem.
+- `SelectedSectionFamilyCarrierModel`: remains a concrete carrier-only lower
+  source, not an ambient-boundary fact.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology equivalence is stored in the new selected face-law
+  construction.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairSelectedCarrierGeometry
+
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness
+  + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+    -> SemanticRepairSelectedCechFaceLawSource
+
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+    -> SemanticRepairCarrierSpecificComparisonProvenance
+    -> SemanticRepairCoverRelativeFaceRestrictionRealization
+    -> SemanticRepairCoverRelativeSectionRealizationBridge
+    -> selected cover-relative H1 grounding package
+
+remaining lower sources:
+  selected semantic residual coefficient / concrete cover-relative
+  section-family carrier geometry
+    -> SelectedSectionFamilyCarrierModel
+
+  actual presheaf restriction / selected Cech face laws
+    -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle27AxiomAudit.lean` — passed and removed after audit.
+- `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairSelectedCechFaceLawSource.selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_selectedCechFaceLawSource`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.grounded_package_of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_selectedCechFaceLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- placeholder scan over changed Lean file — clean.
+- placeholder scan over changed Lean and report files — report hits are audit
+  text for `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path / private machine identifier scan over changed Lean and report
+  files — clean.
+- `git diff --check` — passed after report update.
+
+### T3 Audit
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- hidden material premise: none found.
+- structure field escape: none found.  No new field stores `H1` zero, boundary
+  membership, global coherence, effective descent, comparison equivalence,
+  refinement naturality, or full sheaf cohomology.
+- certificate provenance: the selected face-law source is not passed as an
+  independent certificate; its four fields are built from
+  `compatibility.d0_face_to`, `compatibility.d0_face_from`,
+  `compatibility.d1_face_to`, and `compatibility.d1_face_from`.
+- proof use: the downstream theorem feeds the constructed face-law source into
+  `SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws`
+  and then into the selected cover-relative grounding package path.
+- unresolved provenance: `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` remain lower
+  material sources.
+- blocking findings: none.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 27 removes `SemanticRepairSelectedCechFaceLawSource` as an opaque
+unresolved source by constructing it from actual face-restriction
+compatibility.  The next obligation is to lower
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` further to direct
+presheaf restriction / selected Cech face laws, or lower
+`SelectedSectionFamilyCarrierModel` further to concrete selected semantic
+residual coefficient / cover-relative carrier data.
