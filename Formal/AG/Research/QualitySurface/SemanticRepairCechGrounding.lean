@@ -773,6 +773,29 @@ theorem faceRestrictionRealization_requires_finiteWitnessBoundary
         realization.toFaceRestrictionCompatibility⟩⟩
 
 /--
+Cycle 10 blocker theorem: a section-family witness cannot be generated
+uniformly from bare carrier types and additive structures alone.
+
+Indeed, such a generator would supply an additive equivalence between every
+pair of additive carriers.  Applying it to the one-point additive group and
+`ZMod 2` forces `0 = 1`.  Therefore a G-06 construction of
+`SemanticRepairCoverRelativeSectionFamilyWitness` needs carrier-specific
+comparison data tying the semantic coefficient carriers to the selected Cech
+section families; cover membership or sheaf descent alone cannot manufacture
+these degree-wise equivalences.
+-/
+theorem no_uniform_additive_carrier_equivalence_from_bare_lower_data :
+    IsEmpty ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] -> C ≃+ D) := by
+  refine ⟨?_⟩
+  intro h
+  let e : PUnit ≃+ ZMod 2 := h PUnit (ZMod 2)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Construct the section-realization bridge from face-restriction provenance.
 
 The proof uses `CoverRelativeCechComplex.d_eq_alternatingFaceCombination` to

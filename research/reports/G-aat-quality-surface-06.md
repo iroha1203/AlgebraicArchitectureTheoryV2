@@ -1170,3 +1170,115 @@ The next minimum obligation is a design decision plus proof attempt: either
 construct the finite witnesses from lower semantic/AAT presheaf data, or revise
 G-06's target boundary so those witnesses are explicitly ambient selected
 comparison input rather than discharge-required completion premises.
+
+## Cycle 10 — bare lower-data uniform witness blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data`
+
+### Proof-Obligation Delta
+
+Selector obligation:
+
+- Construct `SemanticRepairCoverRelativeSectionFamilyWitness` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from lower semantic
+  cover / residual coefficient / AAT presheaf data, without taking the
+  degree-wise equivalences or four face-restriction equations as supplied
+  structure fields.
+
+Fixed blocker:
+
+- The cycle proves that a section-family witness cannot be generated uniformly
+  from bare carrier types and additive structures alone.
+- A uniform generator for the degree-wise additive equivalence would give an
+  additive equivalence between every pair of additive carriers.
+- Applying such a generator to `PUnit` and `ZMod 2` forces `0 = 1`, a
+  contradiction.
+- Therefore any valid G-06 construction of
+  `SemanticRepairCoverRelativeSectionFamilyWitness` must use carrier-specific
+  comparison data tying the semantic coefficient carriers to the selected Cech
+  section families.  Cover membership, sheaf condition, and descent evidence
+  alone do not manufacture these type/additive equivalences.
+
+Remaining:
+
+- This does not construct the finite witness.
+- It rules out the too-strong construction route "bare lower data only".
+- The next discharge route must either:
+  1. add carrier-specific semantic/AAT presheaf comparison data and construct
+     the witness from that data while proving it is not conclusion-equivalent,
+     or
+  2. record a target-boundary revision proposal that these carrier-specific
+     comparisons are ambient selected comparison input, not discharge-required
+     completion premises.
+
+### Material Premise Ledger Delta
+
+- `section-family type equivalence`: remains `discharge-required`, but Cycle
+  10 proves it cannot be generated from bare additive carrier structure alone.
+- `carrier-specific comparison data`: now identified as a necessary missing
+  input for any witness construction theorem.
+- `cover membership`, `sheaf condition`, and `descent datum`: still
+  proof-use surfaces for gluing, but not sufficient to create arbitrary
+  carrier equivalences.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The new theorem is a negative blocker theorem, not a completion theorem.
+- It introduces no `H1` zero, boundary membership, global semantic repair
+  coherence, effective descent, exactness conclusion, cover refinement /
+  naturality, comparison equivalence, or full sheaf cohomology equivalence as a
+  structure field.
+- It prevents the weakened reading that a generic lower-data construction can
+  exist without explicit carrier-specific comparison provenance.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeSectionFamilyWitness
+  -> requires E.coefficient.C0 ≃+ K.Cn 0
+  -> no_uniform_additive_carrier_equivalence_from_bare_lower_data
+  -> bare lower data alone cannot construct the witness
+  -> next route must add non-conclusion-equivalent carrier comparison data
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle10AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data`.
+The audit reported only standard `[propext, Classical.choice, Quot.sound]`
+dependencies.  No `sorryAx`, non-consulted repo axiom, `admit`, or `unsafe`
+dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake env lean .tmp/G06Cycle10AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean/report files — clean.
+- local path / private machine identifier scan over changed Lean/report files
+  — clean.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+The current blocker is now theorem-fixed: the witness cannot come from bare
+lower data alone.  The next minimum obligation is to design and prove the
+carrier-specific comparison provenance needed for the section-family witness,
+or to return a GOAL boundary revision proposal explaining why that provenance
+must be accepted as ambient selected comparison input.
