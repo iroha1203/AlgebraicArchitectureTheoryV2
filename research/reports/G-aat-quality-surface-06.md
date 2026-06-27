@@ -6998,3 +6998,173 @@ The next minimal obligation is to construct the selected
 concrete selected residual coefficient / selected semantic-delta /
 presheaf-restriction source, or to make that source boundary explicit in the
 target proof packet.
+
+## Cycle 50 — selected carrier model plus direct differential source constructs cochain realization
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierModel_and_directDifferentialCompatibility_constructs_selectedCochainRealization_and_groundingSources`
+
+### T1 Selection
+
+The selector chose the source-construction obligation left open by Cycle 49:
+
+```text
+CurrentG06InputSurface
++ SelectedSectionFamilyCarrierModel
++ SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+  -> direct-differential grounding package path
+```
+
+The accepted obligation was not another `CurrentG06InputSurface`-only
+constructor attempt.  It was to remove the top-level selected
+`SemanticRepairCoverRelativeCochainRealization` argument by constructing it from
+the next explicit lower selected carrier / semantic-delta source.
+
+Rejected alternatives were:
+
+- reclassifying `SemanticRepairCoverRelativeCochainRealization` as ambient
+  boundary;
+- repeating a current-surface-only finite-witness construction path already
+  blocked by Cycle 48;
+- jumping to `H1` zero, effective gluing, refinement / naturality, global
+  semantic repair coherence, comparison equivalence, or full sheaf cohomology;
+- report-only cleanup.
+
+### Result
+
+Cycle 50 proves that the selected cochain-realization source is constructed
+from two explicit lower sources:
+
+```text
+SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K
+SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  additive
+  (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel model)
+```
+
+The theorem constructs:
+
+```text
+of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility model direct
+  : SemanticRepairCoverRelativeCochainRealization additive surface.K
+```
+
+and proof-uses that constructed realization through:
+
+```text
+currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource
+selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility
+```
+
+Thus the previous top-level `SemanticRepairCoverRelativeCochainRealization`
+premise is discharged relative to the lower selected carrier model and direct
+semantic-delta / Cech-differential compatibility source.  The cycle does not
+construct those lower sources from `CurrentG06InputSurface` alone.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeCochainRealization`: discharged relative to
+  `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required` below the
+  current G-06 surface unless supplied by an allowed concrete selected residual
+  coefficient / selected section-family source.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains
+  `discharge-required` below the current G-06 surface unless supplied by an
+  allowed selected semantic-delta / presheaf-restriction source.
+- `CurrentG06InputSurface`: proof-used for presheaf zero/add and selected Cech
+  differential formula through the constructed realization and Cycle 49 path.
+  It still does not generate carrier equivalences or direct semantic-delta
+  compatibility by itself.
+- cover-relative Cech `H1` remains bounded to the selected cover-relative
+  complex.  No theorem in this cycle identifies it with full sheaf cohomology.
+- refinement / naturality remains outside the currently discharged theorem
+  surface.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility
+  -> of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+
+constructed SemanticRepairCoverRelativeCochainRealization
+  -> currentG06InputSurface_selectedCochainRealization_constructs_degreewiseCarrierData_and_selectedCarrierGeometry_and_faceLawSource
+  -> presheaf laws + selected Cech differential formula
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected carrier geometry + selected Cech face-law source
+
+constructed SemanticRepairCoverRelativeCochainRealization
+  -> selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility
+  -> selected carrier model + direct differential grounding package path
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle50AxiomAudit.lean` — passed and removed after audit.
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierModel_and_directDifferentialCompatibility_constructs_selectedCochainRealization_and_groundingSources`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- completion candidate: no.
+- major findings / veto: none.
+- premise delta: `SemanticRepairCoverRelativeCochainRealization additive
+  surface.K` is constructed relative to explicit
+  `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- certificate provenance: passed for this cycle.  The cochain realization is
+  constructed by
+  `of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`;
+  the direct grounding path is proof-used through
+  `selectedSemanticDeltaPresheafRestriction_constructs_directDifferentialCompatibility`.
+  The selected carrier model and direct compatibility remain unresolved lower
+  provenance.
+- proof use: passed.  The proof uses `surface`, `model`, `direct`, the
+  constructed `realization`, Cycle 49 finite-witness path, and the direct
+  differential grounding theorem.
+- structure field escape: passed.  The cycle introduces no new structure,
+  class, or certificate field, and does not add `H1` zero, effective gluing /
+  descent, refinement / naturality, global coherence, comparison equivalence,
+  or full sheaf cohomology equivalence.
+- anti-weakening: passed.  The theorem removes the top-level `realization`
+  premise but keeps the lower selected carrier model and direct differential
+  compatibility explicit as material sources.
+- report / validation consistency: passed.  The report matches the Lean diff
+  and keeps G-06 at `target-proof-checkpoint`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The next minimal obligation is to construct or explicitly boundary-register the
+selected carrier model and direct differential compatibility from allowed
+concrete selected residual coefficient / selected semantic-delta /
+presheaf-restriction sources.
