@@ -4252,6 +4252,80 @@ theorem constructs_carrierSpecificComparisonProvenance_via_explicitLowerData
         hlower⟩
 
 /--
+Cycle 43 checkpoint theorem: the current G-06 site/sheaf/presheaf surface
+reaches the general restriction and selected Cech differential laws, and the
+remaining selected cochain-realization premise is exactly the explicit lower
+carrier data plus four face-restriction equations exposed in Cycle 42.
+
+This theorem intentionally does not construct that lower data from
+`CurrentG06InputSurface`.  It proof-uses the available current-surface laws and
+then records the precise remaining equivalence, while keeping the no-uniform
+carrier/equivalence blockers visible.
+-/
+theorem currentG06InputSurface_reduces_cochainRealization_to_explicitLowerData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      (Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) <->
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K),
+      hsurface.2.2.2.1,
+      hsurface.2.2.2.2⟩
+
+/--
 Carrier-only section-family model data reaches the selected cover-relative
 grounding package once the separate face-restriction compatibility premise is
 proved for the constructed section-family witness.
