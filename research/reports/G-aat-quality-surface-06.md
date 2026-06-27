@@ -2078,3 +2078,116 @@ T3 audit next obligation:
   atom-supported site / cover / presheaf / sheaf data, or obtain a
   human-approved GOAL boundary revision making that realization explicit
   `ambient-boundary` input.
+
+## Cycle 17 — cochain realization source boundary
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `SemanticRepairCoverRelativeCochainRealization.cochainRealization_requires_degreeEquivalences_and_differentials`
+- `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_cochain_realization_source`
+
+### Proof-Obligation Delta
+
+T1 selected the unresolved obligation:
+
+- construct `SemanticRepairCoverRelativeCochainRealization additive K` from
+  lower atom-supported site / cover / presheaf / sheaf / cover-relative Cech
+  complex data.
+
+Cycle 17 does not claim such a construction.  Instead it fixes the current
+blocker more sharply:
+
+- any supplied cochain realization exposes degree-`0` and degree-`1` additive
+  equivalences, a degree-`2` carrier equivalence, zero preservation, and four
+  `K.d` differential compatibility laws;
+- if the current G-06 input surface could manufacture the required degree-wise
+  additive equivalences for arbitrary selected semantic and cover-relative
+  carriers, it would yield an additive equivalence between every pair of
+  additive groups;
+- this contradicts the existing
+  `no_uniform_additive_carrier_equivalence_from_bare_lower_data` theorem.
+
+Thus cover membership, `AATSheafCondition`, `AATDescent`, bare additive
+coefficient laws, and the general `CoverRelativeCechComplex` API do not by
+themselves discharge the selected cochain realization source.
+
+### Material Premise Ledger Delta
+
+- `selected cochain realization`: remains `discharge-required`.
+- `degree-wise cochain carrier equivalences`: explicitly exposed as required
+  lower data by
+  `cochainRealization_requires_degreeEquivalences_and_differentials`.
+- `current G-06 input surface only`: blocked as a source for arbitrary
+  selected cochain realization degree equivalences by
+  `no_constructor_from_current_g06_inputs_without_cochain_realization_source`.
+- `carrier-specific comparison provenance`: remains discharged only relative
+  to a supplied selected cochain realization via Cycle 16.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- No new selected-source structure or certificate field was added.
+- The new audit theorem reads fields out of an existing cochain realization; it
+  does not count those fields as discharged.
+- The new blocker theorem rejects the weak path that current
+  site/sheaf/descent inputs alone can generate the needed arbitrary
+  degree-wise equivalences.
+- This remains a checkpoint because a concrete lower construction of the
+  selected cochain realization is still absent.
+- T3 audit approved this as `blocker-fixed`: no structure-field escape or
+  hidden conclusion-side certificate was added, but the cycle does not
+  discharge the cochain-realization construction obligation.
+
+### Dependency DAG Delta
+
+```text
+current G-06 inputs
+  = cover bridge + K + selected cover membership
+    + AATSheafCondition + AATDescent
+  -/-> arbitrary selected cochain realization degree equivalences
+
+selected cochain realization
+  -> carrier-specific provenance
+  -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+- `#print axioms
+  SemanticRepairCoverRelativeCochainRealization.cochainRealization_requires_degreeEquivalences_and_differentials`
+  reported only `propext`, `Quot.sound`.
+- `#print axioms
+  SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_current_g06_inputs_without_cochain_realization_source`
+  reported only `propext`, `Classical.choice`, `Quot.sound`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean` — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` — passed.
+- `.tmp/G06Cycle17AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- placeholder scan over changed Lean file — clean.
+- local path / private machine identifier scan over changed files — clean.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+Cycle 17 does not run `$math-lean-review`.  It is not a completion candidate:
+the current G-06 site/sheaf/descent input surface alone cannot discharge the
+selected cochain realization source, and no lower construction theorem has yet
+been supplied.
+
+T3 audit next obligation:
+
+- Construct `SemanticRepairCoverRelativeCochainRealization` from lower
+  atom-supported site / cover / presheaf / sheaf / cover-relative Cech data, or
+  obtain an explicit human-approved GOAL boundary revision.
