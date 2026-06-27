@@ -384,6 +384,128 @@ structure SemanticRepairCoverRelativeSectionRealizationBridge
       E.coefficient.delta1 (c1SectionEquiv.symm cochain) =
         c2SectionEquiv.symm (K.d 1 cochain)
 
+/--
+Lower-level section realization provenance using the selected face-restriction
+presentation of the general cover-relative Cech differential.
+
+This data still contains the selected degree `0`, `1`, and `2` section-family
+equivalences.  Unlike `SemanticRepairCoverRelativeSectionRealizationBridge`, it
+does not directly store compatibility with `K.d`; it stores compatibility with
+the explicit `faceRestrictionTerm` / `alternatingFaceCombination` presentation
+from the general Cech complex, from which `K.d` compatibility is derived.
+-/
+structure SemanticRepairCoverRelativeFaceRestrictionRealization
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  c0SectionEquiv :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0
+  c1SectionEquiv :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1
+  c2SectionEquiv : E.coefficient.C2 ≃ K.Cn 2
+  c2SectionEquiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv E.coefficient.zero2 = 0
+  c2SectionEquiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv.symm 0 = E.coefficient.zero2
+  d0_face_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.alternatingFaceCombination 0
+          (fun σ i => K.faceRestrictionTerm 0 i (c0SectionEquiv primitive) σ) =
+        c1SectionEquiv (E.coefficient.delta0 primitive)
+  d0_face_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (c0SectionEquiv.symm primitive) =
+        c1SectionEquiv.symm
+          (K.alternatingFaceCombination 0
+            (fun σ i => K.faceRestrictionTerm 0 i primitive σ))
+  d1_face_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.alternatingFaceCombination 1
+          (fun σ i => K.faceRestrictionTerm 1 i (c1SectionEquiv cochain) σ) =
+        c2SectionEquiv (E.coefficient.delta1 cochain)
+  d1_face_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (c1SectionEquiv.symm cochain) =
+        c2SectionEquiv.symm
+          (K.alternatingFaceCombination 1
+            (fun σ i => K.faceRestrictionTerm 1 i cochain σ))
+
+namespace SemanticRepairCoverRelativeFaceRestrictionRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Construct the section-realization bridge from face-restriction provenance.
+
+The proof uses `CoverRelativeCechComplex.d_eq_alternatingFaceCombination` to
+derive direct `K.d` compatibility from the selected face-restriction
+presentation, rather than taking `d0` / `d1` compatibility as an independent
+bridge field.
+-/
+def toSectionRealizationBridge
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K where
+  c0SectionEquiv := realization.c0SectionEquiv
+  c1SectionEquiv := realization.c1SectionEquiv
+  c2SectionEquiv := realization.c2SectionEquiv
+  c2SectionEquiv_zero := realization.c2SectionEquiv_zero
+  c2SectionEquiv_symm_zero := realization.c2SectionEquiv_symm_zero
+  d0_section_to := by
+    intro primitive
+    rw [K.d_eq_alternatingFaceCombination 0]
+    exact realization.d0_face_to primitive
+  d0_section_from := by
+    intro primitive
+    rw [K.d_eq_alternatingFaceCombination 0]
+    exact realization.d0_face_from primitive
+  d1_section_to := by
+    intro cochain
+    rw [K.d_eq_alternatingFaceCombination 1]
+    exact realization.d1_face_to cochain
+  d1_section_from := by
+    intro cochain
+    rw [K.d_eq_alternatingFaceCombination 1]
+    exact realization.d1_face_from cochain
+
+end SemanticRepairCoverRelativeFaceRestrictionRealization
+
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
 
 variable {Atom : Type u}
@@ -746,6 +868,45 @@ theorem grounded_package_of_section_realization_bridge
   bridge.toCochainRealization.grounded_package_of_cochain_realization
 
 end SemanticRepairCoverRelativeSectionRealizationBridge
+
+namespace SemanticRepairCoverRelativeFaceRestrictionRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Face-restriction provenance constructs the cochain-realization layer through
+the derived section-realization bridge.
+-/
+def toCochainRealization
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairCoverRelativeCochainRealization additive K :=
+  realization.toSectionRealizationBridge.toCochainRealization
+
+/--
+Face-restriction provenance supplies the selected cover-relative grounding
+package by first deriving `K.d` compatibility from the general Cech
+face-restriction differential and then constructing the cochain realization.
+-/
+theorem grounded_package_of_face_restriction_realization
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        realization.toCochainRealization.toH1Comparison) :=
+  realization.toCochainRealization.grounded_package_of_cochain_realization
+
+end SemanticRepairCoverRelativeFaceRestrictionRealization
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 
