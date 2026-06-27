@@ -720,3 +720,109 @@ The next minimum obligation is either to add a strictly richer bridge that
 supplies section-family equivalences and `d0`/`d1` compatibility from selected
 data, or to revise the G-06 target boundary outside this loop.  The current
 target cannot be completed from cover bridge data alone.
+
+## Cycle 6 — section-realization bridge checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.toCochainRealization`
+  - `SemanticRepairCoverRelativeSectionRealizationBridge.grounded_package_of_section_realization_bridge`
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 5 broken arrow is narrowed: a richer selected bridge, explicitly tied
+  to `SemanticRepairCoverRelativeCoverBridge`, now carries the missing
+  section-family equivalences and differential compatibility.
+- `toCochainRealization` constructs
+  `SemanticRepairCoverRelativeCochainRealization` from that richer bridge.
+- `grounded_package_of_section_realization_bridge` provides the proof-use path:
+  richer bridge → cochain realization → H1 comparison → selected cover-relative
+  grounding package.
+
+Remaining:
+
+- The richer bridge itself is still explicit selected comparison provenance.
+  It is not derived from bare cover simplex provenance.
+- Section-family equivalence provenance and `d0`/`d1` compatibility provenance
+  remain discharge-required upstream unless this richer bridge is accepted as
+  the target boundary's concrete certificate.
+- General cover refinement / naturality and full sheaf cohomology comparison
+  remain outside this checkpoint.
+
+### Material Premise Ledger Delta
+
+- `cover / simplex provenance`: discharged by earlier cover bridge and typed
+  nerve adequacy theorems.
+- `section-family equivalence provenance`: explicit in
+  `SemanticRepairCoverRelativeSectionRealizationBridge`; not hidden in an `H1`
+  conclusion.
+- `differential compatibility provenance`: explicit in
+  `SemanticRepairCoverRelativeSectionRealizationBridge`; still proof-relevant
+  comparison data.
+- `cochain realization from richer bridge`: discharged by
+  `SemanticRepairCoverRelativeSectionRealizationBridge.toCochainRealization`.
+
+### Certificate Provenance / Anti-Weakening Audit
+
+- The richer bridge fields are limited to degree `0`/`1` section-family
+  `AddEquiv`s, degree `2` equivalence, degree-two zero preservation, and
+  `d0`/`d1` compatibility.
+- The bridge does not store `H1` zero, global semantic repair coherence,
+  effective descent, exactness conclusion, cover refinement / naturality, or
+  full sheaf cohomology comparison.
+- Because the richer bridge still supplies material comparison adequacy data,
+  this cycle is not target completion.
+
+### Dependency DAG Delta
+
+```text
+SemanticRepairCoverRelativeCoverBridge
+  + SemanticRepairCoverRelativeSectionRealizationBridge
+  -> toCochainRealization
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> toH1Comparison
+  -> selected cover-relative H1 grounding package
+```
+
+### Axiom Audit
+
+`lake env lean .tmp/G06Cycle6AxiomAudit.lean` was run for
+`SemanticRepairCoverRelativeSectionRealizationBridge.toCochainRealization` and
+`SemanticRepairCoverRelativeSectionRealizationBridge.grounded_package_of_section_realization_bridge`.
+The audit reported only standard `[propext, Quot.sound]` /
+`[propext, Classical.choice, Quot.sound]` dependencies.  No `sorryAx`,
+non-consulted repo axiom, `admit`, or `unsafe` dependency was reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle6AxiomAudit.lean` — passed.
+- `git diff --check` — passed.
+- hidden / bidirectional Unicode scan over changed report / Lean files — clean.
+- local path / private machine identifier scan over changed report / Lean files
+  — clean.
+- placeholder scan over changed report / Lean files — report prose contains
+  audit words only.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`.
+
+The next minimum obligation is to decide whether
+`SemanticRepairCoverRelativeSectionRealizationBridge` is an acceptable concrete
+certificate under the target boundary, or whether its section equivalence and
+differential compatibility fields must be generated from still lower semantic
+cover / coefficient / presheaf data.

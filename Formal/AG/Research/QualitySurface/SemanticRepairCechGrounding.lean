@@ -316,6 +316,107 @@ def toH1Comparison
 
 end SemanticRepairCoverRelativeCochainRealization
 
+/--
+Richer selected bridge from a semantic repair cover to the general
+cover-relative Cech complex.
+
+Unlike `SemanticRepairCoverRelativeCoverBridge`, this bridge includes
+section-family realization of the semantic coefficient carriers in degrees
+`0`, `1`, and `2`, plus the selected differential compatibility needed to read
+the semantic additive surface as the chosen cover-relative Cech complex.  It
+does not store any `H1` zero predicate, global coherence, full sheaf cohomology
+comparison, refinement naturality, exactness conclusion, or effective descent
+conclusion.
+-/
+structure SemanticRepairCoverRelativeSectionRealizationBridge
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (additive : SemanticRepairAdditiveCechH1Data E)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob) where
+  c0SectionEquiv :
+    letI := additive.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    E.coefficient.C0 ≃+ K.Cn 0
+  c1SectionEquiv :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1
+  c2SectionEquiv : E.coefficient.C2 ≃ K.Cn 2
+  c2SectionEquiv_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv E.coefficient.zero2 = 0
+  c2SectionEquiv_symm_zero :
+    letI := K.cochainAddCommGroup 2
+    c2SectionEquiv.symm 0 = E.coefficient.zero2
+  d0_section_to :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      K.d 0 (c0SectionEquiv primitive) =
+        c1SectionEquiv (E.coefficient.delta0 primitive)
+  d0_section_from :
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    forall primitive : K.Cn 0,
+      E.coefficient.delta0 (c0SectionEquiv.symm primitive) =
+        c1SectionEquiv.symm (K.d 0 primitive)
+  d1_section_to :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      K.d 1 (c1SectionEquiv cochain) =
+        c2SectionEquiv (E.coefficient.delta1 cochain)
+  d1_section_from :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    forall cochain : K.Cn 1,
+      E.coefficient.delta1 (c1SectionEquiv.symm cochain) =
+        c2SectionEquiv.symm (K.d 1 cochain)
+
+namespace SemanticRepairCoverRelativeSectionRealizationBridge
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Construct the cochain-realization layer from a richer selected bridge that
+includes section-family equivalences and differential compatibility.
+-/
+def toCochainRealization
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge additive coverBridge K) :
+    SemanticRepairCoverRelativeCochainRealization additive K where
+  c0Equiv := bridge.c0SectionEquiv
+  c1Equiv := bridge.c1SectionEquiv
+  c2Equiv := bridge.c2SectionEquiv
+  c2Equiv_zero := bridge.c2SectionEquiv_zero
+  c2Equiv_symm_zero := bridge.c2SectionEquiv_symm_zero
+  d0_to := bridge.d0_section_to
+  d0_from := bridge.d0_section_from
+  d1_to := bridge.d1_section_to
+  d1_from := bridge.d1_section_from
+
+end SemanticRepairCoverRelativeSectionRealizationBridge
+
 namespace SemanticRepairCoverRelativeH1Comparison
 
 variable {Atom : Type u}
@@ -617,6 +718,34 @@ theorem grounded_package_of_cochain_realization
   realization.toH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
 
 end SemanticRepairCoverRelativeCochainRealization
+
+namespace SemanticRepairCoverRelativeSectionRealizationBridge
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+A richer selected bridge supplies the whole selected cover-relative grounding
+package by first constructing the cochain-realization layer.
+-/
+theorem grounded_package_of_section_realization_bridge
+    (bridge : SemanticRepairCoverRelativeSectionRealizationBridge
+      additive coverBridge K) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        bridge.toCochainRealization.toH1Comparison) :=
+  bridge.toCochainRealization.grounded_package_of_cochain_realization
+
+end SemanticRepairCoverRelativeSectionRealizationBridge
 
 /-! ## Presheaf restriction, sheaf condition, descent, and claim boundaries -/
 
