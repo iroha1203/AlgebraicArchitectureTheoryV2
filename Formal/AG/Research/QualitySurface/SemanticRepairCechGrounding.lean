@@ -2428,6 +2428,93 @@ def toFaceRestrictionCompatibility
   d1_face_from := realization.d1_face_from
 
 /--
+Face-restriction realization exposes the selected carrier geometry determined
+by its section-family witness.
+
+This is still lower selected presheaf / face-restriction provenance: the
+realization contains the degree-wise section-family identifications and zero
+laws, not `H1` zero, global coherence, effective gluing, refinement/naturality,
+or full sheaf cohomology content.
+-/
+def toSelectedCarrierGeometry
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairSelectedCarrierGeometry additive coverBridge K :=
+  SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+    realization.toSectionFamilyWitness.toSelectedSectionFamilyCarrierModel
+
+/--
+Face-restriction realization constructs the selected Cech face-law source for
+the selected carrier geometry it induces.
+
+The construction normalizes the realization fields through the same carrier
+model as `toSelectedCarrierGeometry`.  It does not generate those fields from
+bare cover membership, sheaf condition, descent, effective gluing, or full
+sheaf cohomology.
+-/
+def toSelectedCechFaceLawSource
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    SemanticRepairSelectedCechFaceLawSource
+      additive realization.toSelectedCarrierGeometry where
+  d0_face_to := by
+    intro primitive
+    simpa [
+      toSelectedCarrierGeometry,
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        realization.d0_face_to primitive
+  d0_face_from := by
+    intro primitive
+    simpa [
+      toSelectedCarrierGeometry,
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        realization.d0_face_from primitive
+  d1_face_to := by
+    intro cochain
+    simpa [
+      toSelectedCarrierGeometry,
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        realization.d1_face_to cochain
+  d1_face_from := by
+    intro cochain
+    simpa [
+      toSelectedCarrierGeometry,
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel,
+      SemanticRepairCoverRelativeSectionFamilyWitness.toSelectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        realization.d1_face_from cochain
+
+/--
+Selected presheaf / face-restriction realization constructs the selected
+carrier geometry and selected Cech face-law source used by Cycle 81.
+
+This theorem lowers the selected face-law source one step to the existing
+face-restriction realization surface.  The realization itself remains explicit
+material lower data; no target conclusion is stored or produced by a structure
+field.
+-/
+theorem selectedPresheafRestrictionRealization_constructs_selectedCarrierGeometry_and_faceLawSource
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization additive coverBridge K) :
+    Exists fun geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry :=
+  ⟨realization.toSelectedCarrierGeometry,
+    realization.toSelectedCechFaceLawSource⟩
+
+/--
 G-06 boundary theorem: face-restriction realization is equivalent to supplying
 both a finite section-family witness and compatibility with the selected
 face-restriction differential presentation.
@@ -10751,6 +10838,49 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
     trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_explicitSelectedDifferentialLaws_via_degreewiseAdditiveEquiv
       data S F cover certificate gluingData coverBridge K geometry
       laws.1 laws.2.1 laws.2.2.1 laws.2.2.2
+
+/--
+Cycle 82 selected presheaf / face-restriction realization version of the
+Cycle 81 package.
+
+The theorem constructs the selected carrier geometry and selected Cech
+face-law source from `SemanticRepairCoverRelativeFaceRestrictionRealization`,
+then immediately proof-uses the constructed face-law source through the Cycle
+81 theorem.  The realization remains explicit lower presheaf / face-restriction
+material data; no claim is made that bare site, cover membership, sheaf
+condition, descent, effective gluing, or full sheaf cohomology constructs it.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_faceRestrictionRealization_via_selectedFaceLaws
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        data.toAdditiveCechH1Data coverBridge K) :
+    SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+      data S F cover gluingData coverBridge K
+        realization.toSelectedCarrierGeometry := by
+  exact
+    trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws_via_explicitSelectedDifferentialLaws
+      data S F cover certificate gluingData coverBridge K
+      realization.toSelectedCarrierGeometry
+      realization.toSelectedCechFaceLawSource
 
 /--
 Cycle 78 explicit selected face-restriction version of the Cycle 76 route.
