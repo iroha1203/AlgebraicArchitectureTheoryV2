@@ -12105,7 +12105,11 @@ face-restriction realization
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825246004>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825253891>.
+- PR #2724 merged at merge commit
+  `2c308ce5116c95693e3e036e9876c4c500d5a528`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
