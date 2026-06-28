@@ -12674,3 +12674,186 @@ Cycle 85 removes `sectionWitness` and `compatibility` as immediate top-level
 premises in the Cycle 84 route.  The selected carrier model, four face
 equations, cover membership, `AATSheafCondition`, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 86 — carrier-specific provenance route for Cycle 85 lower data
+
+### T1 Selection
+
+The selector chose to lower the Cycle 85 selected carrier model plus the four
+explicit selected face-restriction equations to a single visible
+`SemanticRepairCarrierSpecificComparisonProvenance` source.
+
+The theorem keeps selected-cover membership, `AATSheafCondition`, the supplied
+gluing datum, and the carrier-specific provenance itself visible.  It does not
+claim that bare site data, cover membership, sheaf condition, descent,
+effective gluing, refinement/naturality, or full sheaf cohomology constructs
+that provenance.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_carrierSpecificComparisonProvenance`
+
+Statement shape:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degree-0 carrier comparison
+  -> degree-1 carrier comparison
+  -> degree-2 equivalence and zero laws
+  -> SelectedSectionFamilyCarrierModel
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> four selected face-restriction equations
+SelectedSectionFamilyCarrierModel
+  + four selected face equations
+  -> Cycle 85 true-sheaf route
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 85 route
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 86 discharges the immediate Cycle 85 top-level `SelectedSectionFamilyCarrierModel`
+and four explicit selected face equations relative to
+`SemanticRepairCarrierSpecificComparisonProvenance`.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: discharged as an immediate Cycle 85
+  premise relative to `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Four explicit selected face-restriction equations: discharged as immediate
+  Cycle 85 premises relative to `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: `discharge-required`;
+  still material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The carrier-specific provenance is proof-used to construct the selected
+  carrier model through degree-wise carrier comparison data and degree-`2`
+  zero laws.
+- The carrier-specific provenance is proof-used to supply the four selected
+  face equations.
+- The constructed selected carrier model and face equations are immediately
+  consumed by the Cycle 85 theorem.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> degree-wise carrier data + degree-2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> four selected face equations
+SelectedSectionFamilyCarrierModel
+  + four selected face equations
+  -> Cycle 85 package
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 85 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle86AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before T3 audit.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+- local path scan over changed Lean file, audit file, and report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 85 package conclusion is
+  preserved while the selected carrier model and four face equations are
+  replaced by lower carrier-specific provenance.
+- Proof-use: passed.  The provenance constructs the selected carrier model and
+  the four selected face equations; both are passed directly into the Cycle 85
+  theorem.
+- Structure-field escape: passed for this bounded cycle.
+  `SemanticRepairCarrierSpecificComparisonProvenance` stores carrier maps,
+  inverse laws, additive preservation, degree-`2` zero laws, and selected face
+  equations.  It does not store `H1` zero, global coherence, effective
+  descent, refinement/naturality, or full sheaf cohomology equivalence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: Cycle 85 `SelectedSectionFamilyCarrierModel` and four
+  explicit selected face equations are no longer top-level premises in this
+  route.
+- certificate provenance: the selected carrier model and four face equations
+  are expanded from `SemanticRepairCarrierSpecificComparisonProvenance`.
+- unresolved provenance: `SemanticRepairCarrierSpecificComparisonProvenance`
+  itself, `hcover`, `hSheaf`, and `gluingData`.
+- proof use: passed.  The constructed lower data is consumed by the Cycle 85
+  theorem.
+- structure field escape: no conclusion-side escape found in the new
+  declaration.
+- blocking findings: none for approving Cycle 86 as a bounded discharge.
+- next obligation: construct or boundary-mark
+  `SemanticRepairCarrierSpecificComparisonProvenance`; separately continue the
+  `hcover`, `AATSheafCondition`, and `gluingData` construction / boundary audit.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825437231>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 86 removes the Cycle 85 selected carrier model and four face equations
+as immediate top-level premises by routing through
+`SemanticRepairCarrierSpecificComparisonProvenance`.  That provenance, cover
+membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
+sheaf cohomology boundary remain material.
