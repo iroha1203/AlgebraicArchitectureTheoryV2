@@ -15110,3 +15110,150 @@ Cycle 98 lowers carrier-specific provenance to transparent degreewise carrier
 data plus four explicit selected face-restriction equations.  That transparent
 lower data, cover membership, `AATSheafCondition`, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 99 - Current-Surface Boundary for Cycle 98 Output
+
+### Cycle Result
+
+- result: `proof-boundary-fixed`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: explicitly boundary-mark the remaining Cycle 98
+  transparent lower-data source by proving that the Cycle 98 selected model /
+  explicit compatibility output cannot be generated from
+  `CurrentG06InputSurface` alone.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_cycle98_selectedModel_and_explicitFaceCompatibility`
+  proves that any `CurrentG06InputSurface`-only constructor for the Cycle 98
+  selected carrier model plus explicit face-restriction compatibility output
+  would imply a selected carrier model.  Under the finite test boundary where
+  semantic degree `0` is additively equivalent to `PUnit` and selected Cech
+  degree `0` is additively equivalent to `ZMod 2`, that model forces
+  `0 = 1`.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: not discharged;
+  boundary-marked.  It remains a `discharge-required` lower source if G-06 is
+  to be completed without revising the target boundary.
+- `CurrentG06InputSurface`: proved insufficient by the Cycle 99 theorem for
+  constructing the Cycle 98 output unconditionally.
+- `cover membership`: still material as `hcover` in downstream routes.
+- `AATSheafCondition`: still material as `hSheaf` in downstream routes.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The current-surface-only route to the Cycle 98 selected model /
+  compatibility output is refuted by a Lean theorem.
+- The theorem proof-uses the alleged constructor by extracting the produced
+  selected carrier model and then applying the finite `PUnit` versus `ZMod 2`
+  obstruction.
+- No `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology content is introduced as a
+  new structure field.
+
+### Unfinished Obligations
+
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  genuinely lower admissible presheaf / restriction / selected cover face data,
+  or revise the G-06 target boundary so this transparent lower-data source is
+  explicitly out of scope.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface-only constructor for Cycle 98 output
+  -> selected carrier model
+  -> degree-0 CarrierSpecificAdditiveComparisonData
+  -> additive equivalence semantic C0 ~= selected Cech C0
+finite boundary: semantic C0 ~= PUnit and selected Cech C0 ~= ZMod 2
+  -> PUnit ~=+ ZMod 2
+  -> 0 = 1 in ZMod 2
+  -> False
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle99AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_cycle98_selectedModel_and_explicitFaceCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle99AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: boundary theorem, not completion.  It refutes a
+  current-surface-only constructor for the Cycle 98 output.
+- Proof-use: passed.  The alleged constructor is consumed to obtain a selected
+  carrier model, and that model is used to derive the finite contradiction.
+- Structure-field escape: passed.  The theorem does not hide lower data; it
+  shows the lower data cannot be omitted.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `blocker-fixed`.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- boundary claim: passed.  The theorem correctly proves that a
+  `CurrentG06InputSurface`-only constructor for the Cycle 98 output collapses
+  on the finite `PUnit` versus `ZMod 2` boundary.
+- proof-use: passed.  The alleged constructor is used to obtain a selected
+  carrier model; the degree-`0` carrier comparison from that model then
+  produces the contradiction.
+- hidden material premise: none found.  The finite boundary equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2` are explicit
+  assumptions.
+- structure field escape: passed.  `SelectedSectionFamilyCarrierModel.c0Carrier`
+  is the lower carrier data being ruled out as surface-generated, not a hidden
+  completion field.
+- claim boundary: passed.  The theorem denies a current-surface-only route; it
+  does not construct lower data or assert full sheaf cohomology equivalence.
+- blocking findings: none for approving Cycle 99 as a boundary theorem.
+- next obligation: either construct the Cycle 98 output from a genuine lower
+  selected residual / semantic-delta / presheaf-restriction source, or keep the
+  transparent lower data as an explicit tracking-ledger premise.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826270915>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 99 proves that the Cycle 98 selected carrier model plus explicit
+face-restriction compatibility output is not generated from
+`CurrentG06InputSurface` alone.  The transparent lower-data source remains a
+real boundary unless a genuinely lower admissible construction is added.
