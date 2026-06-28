@@ -2515,6 +2515,28 @@ theorem selectedPresheafRestrictionRealization_constructs_selectedCarrierGeometr
     realization.toSelectedCechFaceLawSource⟩
 
 /--
+Separated section-family and face-restriction compatibility witnesses construct
+the same selected carrier geometry and selected Cech face-law source through the
+face-restriction realization layer.
+
+This theorem removes the bundled realization as the immediate source, but it
+does not discharge the lower section-family equivalences or face equations from
+bare site, cover membership, sheaf condition, descent, effective gluing, or
+full sheaf cohomology data.
+-/
+theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedCarrierGeometry_and_faceLawSource
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    Exists fun geometry :
+      SemanticRepairSelectedCarrierGeometry additive coverBridge K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry :=
+  selectedPresheafRestrictionRealization_constructs_selectedCarrierGeometry_and_faceLawSource
+    (of_sectionFamilyWitness sectionWitness compatibility)
+
+/--
 G-06 boundary theorem: face-restriction realization is equivalent to supplying
 both a finite section-family witness and compatibility with the selected
 face-restriction differential presentation.
@@ -10881,6 +10903,57 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       data S F cover certificate gluingData coverBridge K
       realization.toSelectedCarrierGeometry
       realization.toSelectedCechFaceLawSource
+
+/--
+Cycle 83 separated lower-witness version of the Cycle 82 package.
+
+The theorem constructs `SemanticRepairCoverRelativeFaceRestrictionRealization`
+from an explicit section-family witness and an explicit face-restriction
+compatibility witness, then immediately proof-uses that constructed
+realization through the Cycle 82 package route.  The lower witnesses remain
+visible material data; no claim is made that they follow from bare site, cover
+membership, sheaf condition, descent, effective gluing, refinement/naturality,
+or full sheaf cohomology.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility_via_faceRestrictionRealization
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        data.toAdditiveCechH1Data coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        data.toAdditiveCechH1Data sectionWitness) :
+    SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+      data S F cover gluingData coverBridge K
+        (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+          sectionWitness compatibility).toSelectedCarrierGeometry := by
+  let realization :=
+    SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+      (additive := data.toAdditiveCechH1Data)
+      (coverBridge := coverBridge)
+      (K := K)
+      sectionWitness compatibility
+  exact
+    trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_faceRestrictionRealization_via_selectedFaceLaws
+      data S F cover certificate gluingData coverBridge K realization
 
 /--
 Cycle 78 explicit selected face-restriction version of the Cycle 76 route.
