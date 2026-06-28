@@ -15247,7 +15247,11 @@ finite boundary: semantic C0 ~= PUnit and selected Cech C0 ~= ZMod 2
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826270915>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826280837>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2758>,
+  merged at 2026-06-28T13:43:06Z,
+  merge commit `7c8154294d30a87b119a1c39bc9e926e75fed6b2`.
 
 ### Target Status
 
