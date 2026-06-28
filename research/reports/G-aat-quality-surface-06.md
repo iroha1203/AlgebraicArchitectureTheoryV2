@@ -13818,3 +13818,206 @@ Cycle 91 lowers the Cycle 90 selected `K.d` law arguments to selected
 face-restriction equations.  Those face equations, the degreewise equivalence
 sources, cover membership, `AATSheafCondition`, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 92 — selected carrier geometry and selected face-law source for face equations
+
+### T1 Selection
+
+The selector chose to lower the Cycle 91 four displayed selected
+face-restriction equations to the already separated lower source consisting of
+`SemanticRepairSelectedCarrierGeometry` and
+`SemanticRepairSelectedCechFaceLawSource`.
+
+This targets the nearest unresolved face-equation source in the latest
+`hcover` / `AATSheafCondition` route.  The selected carrier geometry and
+selected face-law source remain visible material lower sources; the cycle does
+not claim that `CurrentG06InputSurface`, cover membership,
+`AATSheafCondition`, descent, effective gluing, refinement/naturality, or full
+sheaf cohomology constructs them.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedCarrierGeometry_and_faceLaws`
+
+Statement shape:
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  -> c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+SemanticRepairSelectedCechFaceLawSource
+  -> four selected face-restriction equations
+geometry + faceLaws
+  -> Cycle 91 explicit-face-equation route
+Cycle 91 route
+  -> face-restriction compatibility
+  -> direct compatibility
+  -> Cycle 89 degreewise-equivalence route
+  -> carrier-specific provenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 92 removes the four Cycle 91 selected face-restriction equation
+arguments as immediate theorem arguments in the latest `hcover` /
+`AATSheafCondition` route, relative to selected carrier geometry and selected
+Cech face-law source.  Those two lower sources remain `discharge-required`
+material sources.
+
+### Material Premise Ledger Delta
+
+- Four displayed selected face-restriction equations: discharged as immediate
+  Cycle 91 theorem arguments, relative to
+  `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource`.
+- Degree-`0` and degree-`1` additive equivalences: discharged as immediate
+  theorem arguments in this route, relative to the carrier fields of
+  `SemanticRepairSelectedCarrierGeometry`.
+- Degree-`2` zero-preserving equivalence source: discharged as an immediate
+  theorem argument in this route, relative to the `c2Equiv` and zero-law fields
+  of `SemanticRepairSelectedCarrierGeometry`.
+- `SemanticRepairSelectedCarrierGeometry`: `discharge-required`; still
+  material and not constructed by this cycle.
+- `SemanticRepairSelectedCechFaceLawSource`: `discharge-required`; still
+  material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The degreewise equivalence and c2 zero-law arguments are read from selected
+  carrier geometry and immediately proof-used by the Cycle 91 theorem.
+- The four selected face equations are read from selected Cech face-law source,
+  normalized to the section witness induced by the geometry, and immediately
+  proof-used by the Cycle 91 theorem.
+- No `SemanticRepairCarrierSpecificComparisonProvenance` premise is
+  reintroduced as the top-level source of this latest route.
+- No new conclusion-side certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `SemanticRepairSelectedCarrierGeometry`.
+- Construct or boundary-mark `SemanticRepairSelectedCechFaceLawSource`.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  -> c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+SemanticRepairSelectedCechFaceLawSource
+  -> four selected face-restriction equations
+c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+  + four selected face-restriction equations
+  -> Cycle 91 explicit-face-equation route
+Cycle 91 route
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+Cycle 89 route
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + four selected face equations
+  -> cover-relative Cech H1 comparison
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 89 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle92AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedCarrierGeometry_and_faceLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake env lean .tmp/G06Cycle92AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 91
+  package conclusion is preserved while Cycle 91 direct face-equation arguments
+  are replaced by selected carrier geometry and selected face-law source.
+- Proof-use: passed.  `geometry` supplies the degreewise
+  equivalence and c2 zero-law data; `faceLaws` supplies the four face
+  equations; all are passed directly into the Cycle 91 theorem.
+- Structure-field escape: bounded checkpoint only.  `geometry` and `faceLaws`
+  are explicit lower structures and remain unresolved material sources.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: the Cycle 91 four selected face-restriction equation arguments
+  are no longer immediate theorem arguments; the degreewise equivalences and
+  degree-`2` zero laws are obtained from selected carrier geometry.
+- certificate provenance: `geometry` is bounded to carrier data and c2 zero
+  laws; `faceLaws` is bounded to the four selected face-restriction equations
+  for that geometry.
+- unresolved provenance: construction of `geometry` and `faceLaws` from
+  accepted target-boundary input remains unresolved and visible.
+- proof use: passed.  `geometry` builds `c0Equiv`, `c1Equiv`, supplies
+  `c2Equiv`, and supplies the two zero laws; `faceLaws` supplies the four
+  normalized equation proof terms passed directly to Cycle 91.
+- structure field escape: bounded checkpoint only.  No opaque
+  `SemanticRepairCarrierSpecificComparisonProvenance` top-level premise is
+  reintroduced; `geometry` and `faceLaws` remain explicit lower structure
+  sources.
+- blocking findings: none for approving Cycle 92 as a bounded discharge.
+- next obligation: construct or further lower the visible
+  `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource` sources from an accepted
+  target-boundary source.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825887674>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 92 lowers the Cycle 91 selected face-equation arguments to selected
+carrier geometry and selected Cech face-law source.  Those lower sources, cover
+membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
+sheaf cohomology boundary remain material.
