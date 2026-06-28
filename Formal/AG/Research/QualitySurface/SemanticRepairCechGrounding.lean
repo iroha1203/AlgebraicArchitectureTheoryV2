@@ -11013,6 +11013,132 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       sectionWitness compatibility
 
 /--
+Cycle 85 explicit lower-witness version of the Cycle 84 package.
+
+The theorem constructs the section-family witness from a selected carrier model
+and constructs face-restriction compatibility from the four displayed selected
+face equations.  The constructed witnesses are immediately proof-used by the
+Cycle 84 route.  This removes the `sectionWitness` and `compatibility`
+arguments as immediate top-level premises, while keeping the lower selected
+carrier model, the four face equations, cover membership, AAT sheaf condition,
+and gluing datum visible.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (hcover : cover ∈ S.topology base)
+    (hSheaf : AAT.AG.Site.AATSheafCondition S F)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (model :
+      SelectedSectionFamilyCarrierModel
+        data.toAdditiveCechH1Data coverBridge K)
+    (d0_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c0AddCommGroup
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      letI := K.cochainAddCommGroup 1
+      forall primitive :
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.C0,
+        K.alternatingFaceCombination 0
+            (fun σ i =>
+              K.faceRestrictionTerm 0 i
+                (sectionWitness.c0SectionEquiv primitive) σ) =
+          sectionWitness.c1SectionEquiv
+            ((toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+                primitive))
+    (d0_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c0AddCommGroup
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      letI := K.cochainAddCommGroup 1
+      forall primitive : K.Cn 0,
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+            (sectionWitness.c0SectionEquiv.symm primitive) =
+          sectionWitness.c1SectionEquiv.symm
+            (K.alternatingFaceCombination 0
+              (fun σ i => K.faceRestrictionTerm 0 i primitive σ)))
+    (d1_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      forall cochain :
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.C1,
+        K.alternatingFaceCombination 1
+            (fun σ i =>
+              K.faceRestrictionTerm 1 i
+                (sectionWitness.c1SectionEquiv cochain) σ) =
+          sectionWitness.c2SectionEquiv
+            ((toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta1
+                cochain))
+    (d1_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      forall cochain : K.Cn 1,
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta1
+            (sectionWitness.c1SectionEquiv.symm cochain) =
+          sectionWitness.c2SectionEquiv.symm
+            (K.alternatingFaceCombination 1
+              (fun σ i => K.faceRestrictionTerm 1 i cochain σ))) :
+    SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+      data S F cover gluingData coverBridge K
+        (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)
+          (SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+            (additive := data.toAdditiveCechH1Data)
+            (sectionWitness :=
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model)
+            d0_face_to d0_face_from d1_face_to d1_face_from)).toSelectedCarrierGeometry := by
+  let sectionWitness :=
+    SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      (additive := data.toAdditiveCechH1Data)
+      (coverBridge := coverBridge)
+      (K := K)
+      model
+  let compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        data.toAdditiveCechH1Data sectionWitness :=
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+      (additive := data.toAdditiveCechH1Data)
+      (sectionWitness := sectionWitness)
+      d0_face_to d0_face_from d1_face_to d1_face_from
+  exact
+    trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_sectionFamilyWitness_and_faceRestrictionCompatibility
+      data S F cover hcover hSheaf gluingData coverBridge K
+      sectionWitness compatibility
+
+/--
 Cycle 78 explicit selected face-restriction version of the Cycle 76 route.
 
 The theorem constructs
