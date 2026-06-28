@@ -6428,6 +6428,60 @@ theorem degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_
         direct.d1_direct_to, direct.d1_direct_from⟩
 
 /--
+Cycle 73 lower-bundle constructor: the transparent direct lower bundle
+constructs carrier-specific provenance, a selected carrier model, direct
+differential compatibility, and the selected Cech face-law source.
+
+This theorem removes `SemanticRepairCarrierSpecificComparisonProvenance` as an
+opaque source relative to the already displayed lower bundle.  It still does
+not construct that bundle from `CurrentG06InputSurface` alone, and it does not
+introduce any `H1` zero, global coherence, descent, effectivity, refinement, or
+full sheaf cohomology conclusion.
+-/
+theorem degreewiseCarrierDataAndDirectDifferentialLaws_constructs_carrierSpecificComparisonProvenance_and_directCompatibility
+    (directLower :
+      DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive coverBridge K) /\
+      Exists fun model : SelectedSectionFamilyCarrierModel additive coverBridge K =>
+        Exists fun _ :
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model) =>
+          Nonempty
+            (SemanticRepairSelectedCechFaceLawSource
+              additive
+              (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+                model)) := by
+  have explicitLower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) :=
+    degreewiseCarrierDataAndDirectDifferentialLaws_constructs_explicitFiniteWitness
+      (additive := additive) (coverBridge := coverBridge) (K := K)
+      directLower
+  have hprovenance :
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive coverBridge K) :=
+    (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K)).2
+      explicitLower
+  rcases
+    (degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility
+      (additive := additive) (coverBridge := coverBridge) (K := K)).1
+      directLower with
+    ⟨model, direct⟩
+  exact
+    ⟨hprovenance,
+      ⟨model, direct,
+        SemanticRepairSelectedCechFaceLawSource.selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_constructs_selectedCechFaceLawSource
+          (additive := additive) (coverBridge := coverBridge) (K := K)
+          model direct⟩⟩
+
+/--
 Cycle 57 current-surface boundary: the current site/sheaf/presheaf surface can
 reach the general presheaf restriction laws and selected Cech differential
 identity, but the direct lower bundle remains exactly the separated carrier
@@ -8755,6 +8809,127 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       direct.d0_direct_from
       direct.d1_direct_to
       direct.d1_direct_from
+
+/--
+Cycle 73 direct-lower-bundle version of the true-sheaf / cover-relative `H1`
+zero effective-gluing package.
+
+This theorem removes `SemanticRepairCarrierSpecificComparisonProvenance` from
+the theorem interface below Cycle 72.  The provenance is constructed from the
+transparent `DegreewiseCarrierDataAndDirectDifferentialLaws` lower bundle, and
+the constructed provenance is immediately proof-used through the Cycle 72
+carrier-provenance package theorem.
+
+The direct lower bundle itself remains material selected carrier /
+semantic-delta data.  This theorem does not claim that `CurrentG06InputSurface`,
+cover membership, sheaf condition, descent, or full sheaf cohomology constructs
+that lower bundle.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_directLowerBundle_via_carrierSpecificComparisonProvenance
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (directLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K)) :
+    Exists fun provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        data.toAdditiveCechH1Data coverBridge K =>
+    let c0Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+        provenance
+    let c1Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+        provenance
+    let c2Equiv :=
+      SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+        provenance
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K)
+        c0Carrier c1Carrier c2Equiv
+        provenance.toSection2_zero provenance.fromSection2_zero
+    let direct :=
+      provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+    let compatibility :=
+      direct.toFaceRestrictionCompatibility
+    let geometry :=
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+        model
+    let faceLaws :=
+      SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+        model compatibility
+    let reconstructedProvenance :=
+      SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws
+        geometry faceLaws
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      (∃! globalSection : F.obj (op base),
+        AAT.AG.Site.AATGlobalSectionRealizes
+          gluingData globalSection) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          reconstructedProvenance.toCochainRealization.toH1Comparison) /\
+      (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope
+                data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+          reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      (reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero ->
+        GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData))) /\
+      (GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) ->
+        reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+        reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) := by
+  have hsource :=
+    SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndDirectDifferentialLaws_constructs_carrierSpecificComparisonProvenance_and_directCompatibility
+      (additive := data.toAdditiveCechH1Data)
+      (coverBridge := coverBridge)
+      (K := K)
+      directLower
+  rcases hsource.1 with ⟨provenance⟩
+  exact
+    ⟨provenance,
+      trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_directDifferentialCompatibility
+        data S F cover certificate gluingData coverBridge K provenance⟩
 
 /--
 Cycle 40 lower-source version using the concrete carrier-specific provenance
