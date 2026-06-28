@@ -3159,6 +3159,81 @@ def c2SectionEquiv
   right_inv := provenance.to_from_section2
 
 /--
+Cycle 70 source-discharge theorem: carrier-specific comparison provenance
+constructs the ordinary degree-wise additive-equivalence source exposed in
+Cycle 68.
+
+The input provenance is the already audited concrete lower selected carrier /
+semantic-delta / presheaf-restriction source: it contains carrier maps,
+inverse laws, additive preservation, degree-`2` zero laws, and selected face
+laws.  This theorem does not add a new certificate wrapper and does not store
+`H1` zero, boundary membership, global coherence, effective descent,
+comparison equivalence, refinement naturality, or full sheaf cohomology
+comparison.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    Exists fun _ :
+      letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ K.Cn 0 =>
+    Exists fun _ :
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      (letI := K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv.symm 0 = E.coefficient.zero2) := by
+  exact
+    ⟨provenance.c0SectionEquiv,
+      provenance.c1SectionEquiv,
+      provenance.c2SectionEquiv,
+      provenance.toSection2_zero,
+      provenance.fromSection2_zero⟩
+
+/--
+Cycle 70 proof-use theorem: the ordinary additive-equivalence source
+constructed from carrier-specific provenance is consumed by the Cycle 66
+selected-carrier-model constructor.
+
+This closes the source-use gap left by Cycle 68 at the carrier-specific
+provenance boundary.  It remains honest about the boundary: the theorem does
+not construct carrier-specific provenance from `CurrentG06InputSurface` alone,
+and it does not hide any `H1` or descent conclusion in a structure field.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_additiveSource_and_selectedCarrierModel
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    (Exists fun _ :
+      letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ K.Cn 0 =>
+    Exists fun _ :
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      (letI := K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) := by
+  have hsource :=
+    carrierSpecificComparisonProvenance_constructs_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+      (additive := additive) (coverBridge := coverBridge) (K := K)
+      provenance
+  rcases hsource with
+    ⟨c0Equiv, c1Equiv, c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
+  exact
+    ⟨⟨c0Equiv, c1Equiv, c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩,
+      SelectedSectionFamilyCarrierModel.degreewise_additive_equiv_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel
+        (additive := additive) (coverBridge := coverBridge) (K := K)
+        c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero⟩
+
+/--
 Carrier-specific provenance discharges the finite section-family witness
 without storing that witness as a field.
 -/
