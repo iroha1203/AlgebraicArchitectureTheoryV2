@@ -12861,3 +12861,173 @@ as immediate top-level premises by routing through
 `SemanticRepairCarrierSpecificComparisonProvenance`.  That provenance, cover
 membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
 sheaf cohomology boundary remain material.
+
+## Cycle 87 — direct lower bundle route for carrier-specific provenance
+
+### T1 Selection
+
+The selector chose to lower the Cycle 86 explicit
+`SemanticRepairCarrierSpecificComparisonProvenance` premise to the transparent
+`DegreewiseCarrierDataAndDirectDifferentialLaws` lower bundle, while preserving
+the latest `hcover` / `AATSheafCondition` true-sheaf route.
+
+The theorem keeps the direct lower bundle, selected-cover membership,
+`AATSheafCondition`, and the supplied gluing datum visible.  It does not claim
+that `CurrentG06InputSurface`, cover membership, sheaf condition, descent,
+effective gluing, refinement/naturality, or full sheaf cohomology constructs
+that direct lower bundle.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_directLowerBundle`
+
+Statement shape:
+
+```text
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> Cycle 86 carrier-specific provenance route
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 86 route
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 87 discharges the immediate Cycle 86
+`SemanticRepairCarrierSpecificComparisonProvenance` premise relative to the
+transparent direct lower bundle.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged as an
+  immediate Cycle 86 premise relative to
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`.
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: `discharge-required`;
+  still material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The direct lower bundle is proof-used to construct carrier-specific
+  comparison provenance through
+  `degreewiseCarrierDataAndDirectDifferentialLaws_constructs_carrierSpecificComparisonProvenance_and_directCompatibility`.
+- The constructed provenance is immediately consumed by the Cycle 86 theorem.
+- The latest cover-membership / `AATSheafCondition` route is preserved.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + four selected face equations
+  -> Cycle 86 package
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 86 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle87AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_directLowerBundle`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed during T3 audit.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+- local path scan over changed Lean file, audit file, and report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 86 package conclusion is
+  preserved while explicit carrier-specific provenance is replaced by the
+  transparent direct lower bundle.
+- Proof-use: passed.  The direct lower bundle constructs provenance, and the
+  constructed provenance is passed directly into the Cycle 86 theorem.
+- Structure-field escape: passed for this bounded cycle.
+  `DegreewiseCarrierDataAndDirectDifferentialLaws` remains visible material
+  carrier / direct differential data; it does not store `H1` zero, global
+  coherence, effective descent, refinement/naturality, or full sheaf
+  cohomology equivalence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: Cycle 86 `SemanticRepairCarrierSpecificComparisonProvenance`
+  is no longer a top-level premise in this route.
+- certificate provenance: carrier-specific provenance is constructed from the
+  direct lower bundle.
+- unresolved provenance: `DegreewiseCarrierDataAndDirectDifferentialLaws`
+  itself, `hcover`, `hSheaf`, and `gluingData`.
+- proof use: passed.  The constructed provenance is consumed by the Cycle 86
+  theorem.
+- structure field escape: no conclusion-side escape found in the new
+  declaration.
+- blocking findings: none for approving Cycle 87 as a bounded discharge.
+- next obligation: construct or boundary-mark
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`; separately continue the
+  `hcover`, `AATSheafCondition`, and `gluingData` construction / boundary audit.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825480158>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 87 removes `SemanticRepairCarrierSpecificComparisonProvenance` as an
+immediate top-level premise by routing through the direct lower bundle.  That
+direct lower bundle, cover membership, `AATSheafCondition`, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
