@@ -14399,8 +14399,11 @@ cover membership + AATSheafCondition
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826010251>.
-- PR / CI sync: pending.
-- PR: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826029262>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2748>,
+  merged at 2026-06-28T12:02:57Z,
+  merge commit `cef8671a512cff0de0f94f06d94fa72d36e3bf4a`.
 
 ### Target Status
 
