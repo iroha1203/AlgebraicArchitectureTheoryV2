@@ -11342,8 +11342,13 @@ SelectedSectionFamilyCarrierModel
 ### Tracking Issue Refs
 
 - Tracking Issue: #2636.
-- Cycle result sync: pending.
-- PR / CI sync: pending.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825005102>.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825017505>.
+- PR #2716 merged at merge commit
+  `2a742a906170df7a08ab28f3fa10486af6a3531d`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
