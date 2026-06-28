@@ -8808,3 +8808,155 @@ degree-wise carrier source from genuinely lower selected residual coefficient /
 selected semantic-delta / presheaf-restriction sources, or record an explicit
 GOAL boundary revision.  This is now the repeated unresolved blocker after
 Cycles 60 and 61.
+
+## Cycle 62 — repeated carrier-source blocker checkpoint
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Record the repeated carrier-source provenance blocker as a target
+proof-checkpoint / boundary action.
+```
+
+The selector found no existing genuinely lower positive construction theorem
+for the explicit degree-wise carrier source.  Existing constructors below the
+current frontier all require displayed carrier data as inputs, while Cycles 60
+and 61 prove that neither `CurrentG06InputSurface` nor the renamed
+`SemanticRepairSelectedCarrierGeometry` node supplies that source.
+
+### Lean Evidence Cited
+
+No new Lean declaration is introduced in Cycle 62.  The checkpoint relies on
+the already merged Lean evidence:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_c2ZeroEquivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.selectedCarrierGeometry_iff_degreewiseCarrierData_and_c2ZeroEquivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry`
+
+### Result
+
+Cycle 62 records the repeated blocker:
+
+```text
+CurrentG06InputSurface
+  -/-> explicit degree-wise carrier source
+
+SemanticRepairSelectedCarrierGeometry
+  <-> explicit degree-wise carrier source
+
+CurrentG06InputSurface
+  -/-> SemanticRepairSelectedCarrierGeometry
+```
+
+Therefore the current G-06 surface cannot honestly proceed by treating
+`SelectedSectionFamilyCarrierModel`, its explicit carrier source, or
+`SemanticRepairSelectedCarrierGeometry` as discharged lower data.  Doing so
+would violate the anti-weakening rule by moving selected carrier comparison
+data into an ambient boundary, theorem argument, or structure field.
+
+This is not a refutation of G-06.  It is a proof checkpoint showing that the
+current proof architecture needs one of the following before continuing:
+
+- a genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction construction of the explicit carrier source; or
+- an explicit GOAL boundary revision outside the proof loop.
+
+### Material Premise Ledger Delta
+
+- Explicit degree-wise carrier source:
+  `discharge-required`, unresolved.
+- `SelectedSectionFamilyCarrierModel`:
+  `discharge-required`, unresolved because it is equivalent to that source.
+- `SemanticRepairSelectedCarrierGeometry`:
+  not lower provenance; equivalent to that same source.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`:
+  `discharge-required`, downstream of the missing carrier model.
+- `CurrentG06InputSurface`:
+  insufficient provenance for the carrier source under the finite
+  `PUnit` / `ZMod 2` witness.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> presheaf zero/add laws
+  -> K.d = alternatingFaceCombination
+  -> no-uniform carrier/additive-equivalence blockers
+
+SelectedSectionFamilyCarrierModel
+  <-> explicit degree-wise carrier source
+
+SemanticRepairSelectedCarrierGeometry
+  <-> SelectedSectionFamilyCarrierModel
+  <-> explicit degree-wise carrier source
+
+explicit degree-wise carrier source
+  --missing positive provenance-->
+  genuinely lower selected residual / semantic-delta / presheaf-restriction data
+
+missing carrier source
+  -> missing SelectedSectionFamilyCarrierModel
+  -> missing model-relative DirectDifferentialCompatibility path
+```
+
+### Axiom Audit
+
+Cycle 62 adds no Lean declaration.  The cited declarations were audited in
+Cycles 60 and 61:
+
+- `no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `selectedCarrierGeometry_iff_degreewiseCarrierData_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No cited declaration depends on `sorryAx`, non-consulted `axiom`, `admit`,
+  or `unsafe`.
+
+### Validation
+
+- No new Lean declaration was added in this cycle.
+- Current `origin/main` already contains the cited declarations from PRs
+  #2698 and #2699, both merged with CI passing.
+- `git diff --check` over the Cycle 62 report-only diff — passed.
+- hidden / bidirectional Unicode scan over the report-only diff — clean.
+- local path scan over the report-only diff — clean.
+- placeholder scan over the report found only existing report audit text for
+  `axiom` / `admit` / `unsafe`; no Lean placeholder was introduced.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: `target-proof-checkpoint`.
+- major findings / veto: none.
+- proof use: no new Lean proof-use claim is made in Cycle 62; the cited
+  blocker / boundary theorems support checkpoint status only, not target
+  completion.
+- certificate provenance: no new discharge.  The genuinely lower selected
+  residual coefficient / selected semantic-delta / presheaf-restriction
+  construction of the explicit carrier source remains unresolved.
+- structure field escape: passed.  The report does not move carrier source,
+  selected carrier geometry, `H1` zero, boundary membership, global coherence,
+  descent, naturality, comparison equivalence, or full sheaf cohomology
+  equivalence into ambient boundary or certificate fields.
+- blocking findings: no veto for approving this as a proof-checkpoint.
+- next obligation: either construct the explicit degree-wise carrier source
+  from genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data, or propose an explicit GOAL boundary revision
+  outside the proof loop.
+- completion candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The loop should not continue to re-select the same positive carrier-source
+obligation unless a new lower source is introduced.  The next meaningful action
+is either to add such a lower source theorem or to propose an explicit GOAL
+boundary revision; both are outside the current proof evidence.
