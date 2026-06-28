@@ -9899,3 +9899,137 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 68 normalizes the remaining carrier source to ordinary additive
 equivalence data but does not construct that data from lower selected residual
 / semantic-delta / presheaf-restriction laws.
+
+## Cycle 69 — cochain-realization additive-source blocker
+
+### T1 Selection
+
+The selector repeated the immediate discharge-required source obligation:
+
+```text
+Construct the ordinary degree-wise additive-equivalence source for
+SelectedSectionFamilyCarrierModel from genuine lower selected residual /
+semantic-delta / presheaf-restriction data, or record an explicit blocker for
+that route.
+```
+
+No current lower API constructs the ordinary equivalences from the selected
+residual / semantic-delta / presheaf-restriction surface.  Cycle 69 therefore
+fixes one concrete false route: treating a selected cochain realization as a
+surface-only lower source for those ordinary equivalences.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.cochainRealization_requires_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCochainRealization_additiveSource`
+
+Statement shape:
+
+```text
+Nonempty SemanticRepairCoverRelativeCochainRealization
+  -> ordinary degree-wise additive equivalences + C2 zero laws
+
+CurrentG06InputSurface -> Nonempty SemanticRepairCoverRelativeCochainRealization
+  -> CurrentG06InputSurface -> ordinary additive-equivalence source
+  -> contradiction by the Cycle 67 finite PUnit/ZMod 2 blocker
+```
+
+### Result
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a positive construction of the ordinary additive-equivalence
+source.  It proves that the cochain-realization layer cannot be used as a
+surface-only provenance shortcut for that source.
+
+### Material Premise Ledger Delta
+
+- Supplied selected cochain realization: now proven to expose the ordinary
+  degree-`0` / degree-`1` additive equivalences and degree-`2`
+  zero-preserving equivalence.
+- `CurrentG06InputSurface -> selected cochain realization`: blocked as a
+  route for manufacturing the ordinary additive-equivalence source.
+- Ordinary degree-wise additive equivalences in degrees `0` and `1`: still
+  `discharge-required`.
+- Degree-`2` zero-preserving equivalence: still `discharge-required`.
+- Lower selected residual / semantic-delta / presheaf-restriction provenance:
+  unresolved.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+Nonempty selected cochain realization
+  -> selected carrier model + direct differential compatibility
+  -> selected carrier model
+  -> ordinary degree-wise additive equivalences + C2 zero laws
+
+CurrentG06InputSurface -> Nonempty selected cochain realization
+  -> CurrentG06InputSurface -> ordinary additive-equivalence source
+  -/-> Cycle 67 finite PUnit/ZMod 2 blocker
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle69AxiomAudit.lean` — passed and removed after audit.
+- `cochainRealization_requires_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `no_constructor_from_currentG06InputSurface_without_selectedCochainRealization_additiveSource`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean before
+  report edit.
+- local path scan over changed Lean file — clean before report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found.
+- premise delta: the surface-only
+  `CurrentG06InputSurface -> selected cochain realization` route is refuted as
+  a source for the ordinary additive-equivalence package.
+- certificate provenance: supplied cochain realization is shown to expose the
+  ordinary additive-equivalence source; construction of that source from lower
+  selected residual / semantic-delta / presheaf-restriction data remains
+  unresolved.
+- proof use: passed.  The blocker uses the cochain-realization necessity
+  theorem, the Cycle 68 selected-carrier equivalence, and the Cycle 67
+  no-constructor theorem.
+- structure field escape: passed.  No new structure or certificate field hides
+  `H1` zero, boundary membership, global coherence, descent, comparison
+  equivalence, refinement naturality, or full sheaf cohomology.
+- blocking findings: none for accepting this cycle as blocker-fixed.
+- next obligation: construct the ordinary additive-equivalence source from
+  genuinely lower selected residual / semantic-delta / presheaf-restriction
+  data, or fix a sharper blocker for that richer lower route.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 69 blocks the cochain-realization shortcut to the ordinary additive
+source but does not construct that source from lower selected residual /
+semantic-delta / presheaf-restriction laws.

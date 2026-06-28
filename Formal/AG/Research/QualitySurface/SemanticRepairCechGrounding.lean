@@ -4359,6 +4359,48 @@ theorem cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDiffe
         model direct⟩
 
 /--
+Cycle 69 source-necessity theorem: every selected cochain realization requires
+the ordinary degree-wise additive-equivalence source exposed in Cycle 68.
+
+This theorem does not construct the equivalences from selected residual,
+semantic-delta, presheaf-restriction, cover membership, sheaf condition, or
+descent data.  It proves the converse audit direction needed by the target
+ledger: the cochain-realization premise cannot hide the degree-`0` / degree-`1`
+additive equivalences or the degree-`2` zero-preserving equivalence inside an
+opaque realization witness.
+-/
+theorem cochainRealization_requires_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+    (hrealization :
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive K)) :
+    Exists fun _ :
+      letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ K.Cn 0 =>
+    Exists fun _ :
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      (letI := K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv.symm 0 = E.coefficient.zero2) := by
+  have hlower :
+      Exists fun model : SelectedSectionFamilyCarrierModel additive coverBridge K =>
+        SemanticRepairCoverRelativeDirectDifferentialCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) :=
+    (cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+      (additive := additive) (coverBridge := coverBridge) (K := K)).1
+      hrealization
+  rcases hlower with ⟨model, _direct⟩
+  exact
+    (SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_additive_equiv_and_c2_zero_equivalence
+      (additive := additive) (coverBridge := coverBridge) (K := K)).1
+      ⟨model⟩
+
+/--
 Transparent lower-data predicate for Cycle 42.
 
 This is only an abbreviation for the explicit finite carrier witness data,
@@ -6943,6 +6985,66 @@ theorem no_constructor_from_currentG06InputSurface_without_selectedCochainRealiz
     no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
       (surface := surface) c0SourceEquiv c0TargetEquiv
       currentInputLowerPairConstructor
+
+/--
+Cycle 69 blocker theorem: a surface-only selected cochain-realization
+constructor would manufacture the ordinary additive-equivalence source exposed
+in Cycle 68.
+
+This is the Cycle 65 obstruction replayed through the transparent ordinary
+source.  The proof uses
+`cochainRealization_requires_degreewiseAdditiveEquiv_and_c2ZeroEquivalence` to
+turn any alleged `CurrentG06InputSurface -> cochain realization` constructor
+into an alleged `CurrentG06InputSurface -> ordinary additive-equivalence
+source` constructor, then applies the Cycle 67 blocker.  Thus the
+cochain-realization layer cannot be treated as genuine lower residual /
+semantic-delta / presheaf-restriction provenance for the missing ordinary
+equivalences.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCochainRealization_additiveSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputCochainRealizationConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Nonempty
+          (SemanticRepairCoverRelativeCochainRealization
+            additive surface.K)) :
+    False := by
+  let currentInputAdditiveEquivSourceConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun _ :
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          E.coefficient.C0 ≃+ surface.K.Cn 0 =>
+        Exists fun _ :
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+        Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+          (letI := surface.K.cochainAddCommGroup 2
+           c2Equiv E.coefficient.zero2 = 0) /\
+            (letI := surface.K.cochainAddCommGroup 2
+             c2Equiv.symm 0 = E.coefficient.zero2) :=
+    fun surface =>
+      cochainRealization_requires_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        (currentInputCochainRealizationConstructor surface)
+  exact
+    no_constructor_from_currentG06InputSurface_without_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputAdditiveEquivSourceConstructor
 
 /--
 Cycle 55 current-surface path: displayed carrier data and direct selected
