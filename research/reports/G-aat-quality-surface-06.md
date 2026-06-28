@@ -14011,7 +14011,11 @@ Cycle 89 package
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825887674>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825907057>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2744>,
+  merged at 2026-06-28T11:11:18Z,
+  merge commit `57d59ffa9322093adca03fba5b57c34aadcb5fe6`.
 
 ### Target Status
 
