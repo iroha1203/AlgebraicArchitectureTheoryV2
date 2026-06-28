@@ -6551,6 +6551,55 @@ theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierGeomet
       currentInputLowerPairConstructor
 
 /--
+Cycle 65 blocker theorem: a surface-only constructor for the selected
+cover-relative cochain realization cannot be unconditional over the current
+G-06 input surface.
+
+The cochain realization is not lower provenance by itself.  The existing
+equivalence exposes it as the same carrier-model plus direct selected
+differential-compatibility pair blocked in Cycle 57.  Thus accepting a
+surface-only cochain-realization constructor would hide the carrier-source gap
+inside the realization layer.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCochainRealization
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputCochainRealizationConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Nonempty
+          (SemanticRepairCoverRelativeCochainRealization
+            additive surface.K)) :
+    False := by
+  let currentInputLowerPairConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model) :=
+    fun surface =>
+      (cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)).1
+        (currentInputCochainRealizationConstructor surface)
+  exact
+    no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputLowerPairConstructor
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and

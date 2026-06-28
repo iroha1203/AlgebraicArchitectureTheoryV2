@@ -9284,3 +9284,167 @@ not discharge the remaining positive carrier-source obligation.  The next
 positive obligation is still the explicit degree-wise carrier source from
 genuinely lower selected residual coefficient / selected semantic-delta /
 presheaf-restriction data.
+
+## Cycle 65 — selected cochain-realization surface blocker
+
+### T1 Selection
+
+Two selector results were considered fail-closed.
+
+- The positive proof obligation remains construction of the explicit
+  degree-wise carrier source for `SelectedSectionFamilyCarrierModel` from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data.  No such lower source was found in the current
+  input surface.
+- The non-redundant theorem that can be fixed now is the remaining false route:
+  a surface-only constructor for
+  `SemanticRepairCoverRelativeCochainRealization`.
+
+Selected obligation for this cycle:
+
+```text
+CurrentG06InputSurface
+  -/-> Nonempty SemanticRepairCoverRelativeCochainRealization
+```
+
+because any such constructor would imply the already blocked lower pair:
+
+```text
+SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility.
+```
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCochainRealization`
+
+Statement shape:
+
+```text
+CurrentG06InputSurface
+  -> (C0 semantic carrier ≃+ PUnit)
+  -> (selected Cech C0 carrier ≃+ ZMod 2)
+  -> ((surface : CurrentG06InputSurface)
+        -> Nonempty
+             (SemanticRepairCoverRelativeCochainRealization
+               additive surface.K))
+  -> False
+```
+
+The proof uses:
+
+- `cochainRealization_iff_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a positive construction and not G-06 completion.  It fixes the
+false proof route:
+
+```text
+CurrentG06InputSurface
+  -/-> SemanticRepairCoverRelativeCochainRealization
+```
+
+because that route would imply:
+
+```text
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility.
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeCochainRealization`: `discharge-required` if
+  used as current-surface provenance; now blocked as a surface-only consequence
+  of `CurrentG06InputSurface`.
+- `SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility`:
+  unchanged; already blocked as a surface-only consequence of
+  `CurrentG06InputSurface`.
+- `SelectedSectionFamilyCarrierModel`: unchanged; still `discharge-required`.
+- Explicit degree-wise carrier source: unchanged; still `discharge-required`.
+- The positive next obligation is still to construct that carrier source from
+  lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data, or to propose an explicit GOAL boundary revision
+  outside the proof loop.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeCochainRealization
+  -> SelectedSectionFamilyCarrierModel
+  -> DirectDifferentialCompatibility
+
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility
+
+therefore
+
+CurrentG06InputSurface
+  -/-> SemanticRepairCoverRelativeCochainRealization
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle65AxiomAudit.lean` — passed and removed after audit.
+- `no_constructor_from_currentG06InputSurface_without_selectedCochainRealization`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after the final report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean after the final report edit.
+- local path scan over changed Lean and report files — clean after the final
+  report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found.
+- proof use: passed.  The theorem proof-uses
+  `currentInputCochainRealizationConstructor`, converts it through the
+  cochain-realization equivalence into a lower-pair constructor, then invokes
+  the existing lower-pair blocker with `c0SourceEquiv` and `c0TargetEquiv`.
+- certificate provenance: no positive provenance is discharged.  The selected
+  cochain-realization escape route is ruled out as current-surface provenance.
+- structure field escape: passed.  No new structure or certificate field is
+  introduced, and no `H1` zero, boundary membership, global coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology content is moved into a field.
+- blocking findings: none.
+- next obligation: construct the explicit degree-wise carrier source from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data, or propose an explicit GOAL boundary revision
+  outside the proof loop.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 65 closes the selected cochain-realization surface-only escape route but
+does not discharge the remaining positive carrier-source obligation.
