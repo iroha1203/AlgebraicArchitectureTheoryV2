@@ -5198,6 +5198,30 @@ theorem selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDa
         faceLaws.d1_face_from cochain
 
 /--
+Cycle 103 lower-source constructor: a concrete face-restriction realization
+constructs the transparent explicit lower data required by Cycle 102.
+
+The realization is first read as selected carrier geometry plus selected Cech
+face laws, and those two lower sources are then proof-used by
+`selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+This theorem does not construct the realization from bare cover membership,
+sheaf condition, descent, effective gluing, refinement/naturality, or full
+sheaf cohomology.
+-/
+theorem faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        additive coverBridge K) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K) :=
+  selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (additive := additive)
+    (coverBridge := coverBridge)
+    (K := K)
+    realization.toSelectedCarrierGeometry
+    realization.toSelectedCechFaceLawSource
+
+/--
 Transparent lower-data predicate for the Cycle 55 direct-differential source.
 
 This is only an abbreviation for the displayed carrier witness data,
@@ -11984,6 +12008,139 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
     ⟨directLower,
       trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_directLowerBundle
         data S F cover hcover hSheaf gluingData coverBridge K directLower⟩
+
+/--
+Cycle 103 face-restriction-realization version routed through the Cycle 102
+explicit-lower-data theorem.
+
+The theorem constructs the transparent explicit lower data from the supplied
+face-restriction realization and immediately passes that constructed lower
+data to the Cycle 102 package route.  Thus the new route reduces the immediate
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` premise to the
+allowed concrete face-restriction realization source, while keeping the
+realization, cover membership, AAT sheaf condition, and gluing datum visible.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_faceRestrictionRealization_through_explicitLowerData
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (hcover : cover ∈ S.topology base)
+    (hSheaf : AAT.AG.Site.AATSheafCondition S F)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        data.toAdditiveCechH1Data coverBridge K) :
+    Exists fun _explicitLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K) =>
+    Exists fun _directLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K) =>
+    Exists fun provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        data.toAdditiveCechH1Data coverBridge K =>
+    let c0Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+        provenance
+    let c1Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+        provenance
+    let c2Equiv :=
+      SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+        provenance
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K)
+        c0Carrier c1Carrier c2Equiv
+        provenance.toSection2_zero provenance.fromSection2_zero
+    SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+      data S F cover gluingData coverBridge K
+        (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)
+          (SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+            (additive := data.toAdditiveCechH1Data)
+            (sectionWitness :=
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model)
+            (by
+              intro primitive
+              simpa [c0Carrier, c1Carrier, c2Equiv, model,
+                SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+                SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+                SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+                SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+                CarrierSpecificAdditiveComparisonData.toAddEquiv,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                  provenance.d0_face_to primitive)
+            (by
+              intro primitive
+              simpa [c0Carrier, c1Carrier, c2Equiv, model,
+                SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+                SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+                SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+                SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+                CarrierSpecificAdditiveComparisonData.toAddEquiv,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                  provenance.d0_face_from primitive)
+            (by
+              intro cochain
+              simpa [c0Carrier, c1Carrier, c2Equiv, model,
+                SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+                SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+                SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+                CarrierSpecificAdditiveComparisonData.toAddEquiv,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                  provenance.d1_face_to cochain)
+            (by
+              intro cochain
+              simpa [c0Carrier, c1Carrier, c2Equiv, model,
+                SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+                SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+                SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+                CarrierSpecificAdditiveComparisonData.toAddEquiv,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+                SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                  provenance.d1_face_from cochain))).toSelectedCarrierGeometry := by
+  let explicitLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K) :=
+    SemanticRepairCoverRelativeCochainRealization.faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := data.toAdditiveCechH1Data)
+      (coverBridge := coverBridge)
+      (K := K)
+      realization
+  exact
+    ⟨explicitLower,
+      trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_explicitLowerData
+        data S F cover hcover hSheaf gluingData coverBridge K explicitLower⟩
 
 /--
 Cycle 88 selected carrier-model / direct-compatibility version of the Cycle 87

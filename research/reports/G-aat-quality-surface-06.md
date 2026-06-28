@@ -15727,3 +15727,158 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 102 closes the immediate package-provenance gap relative to explicit
 lower data.  The transparent explicit lower data source and top-level
 cover/sheaf/gluing inputs remain the next material obligations.
+
+## Cycle 103 - Face-Restriction Realization to Explicit Lower Data
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: construct
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from the allowed
+  concrete lower presheaf / face-restriction source
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`, then immediately
+  feed that constructed explicit lower data into the Cycle 102 package route.
+
+### T1 Selector Input
+
+- proof obligation: construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  from `SemanticRepairCoverRelativeFaceRestrictionRealization`, and add a
+  proof-use wrapper through the Cycle 102 theorem.
+- expected result type: `proof-obligation-discharged`.
+- completion candidate: no.
+- selection reason: this is the shortest direct reduction of the Cycle 102
+  remaining gap; it turns the explicit-lower premise into a sharper allowed
+  lower presheaf / face-restriction realization premise.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeCochainRealization.faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  reads a face-restriction realization as selected carrier geometry plus
+  selected Cech face laws, then proof-uses
+  `selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_faceRestrictionRealization_through_explicitLowerData`
+  constructs the explicit lower data from the supplied realization and
+  immediately passes it to the Cycle 102 `...via_explicitLowerData` route.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: discharged
+  relative to the concrete
+  `SemanticRepairCoverRelativeFaceRestrictionRealization` source.
+- `SemanticRepairCoverRelativeFaceRestrictionRealization`: still
+  `discharge-required` / explicit lower source.  Cycle 103 does not construct
+  it from bare site, cover membership, sheaf condition, descent, or full sheaf
+  cohomology.
+- `cover membership`: still material as explicit `hcover`.
+- `AATSheafCondition`: still material as explicit `hSheaf`.
+- `gluingData`: still material and consumed by the effective-gluing route.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- The explicit lower data source is now constructed from the concrete
+  face-restriction realization lower surface.
+- The constructed explicit lower data is immediately proof-used by the Cycle
+  102 package route, instead of being recorded as an unused witness.
+- No new certificate structure or package field is introduced.
+
+### Unfinished Obligations
+
+- Construct `SemanticRepairCoverRelativeFaceRestrictionRealization` from an
+  allowed concrete lower selected residual / semantic-delta /
+  presheaf-restriction source, or keep it as an explicit tracking-ledger
+  premise.
+- Construct or boundary-mark the top-level `hcover`, `AATSheafCondition`, and
+  `gluingData` inputs.
+- Completion still requires final `$math-lean-review`; this cycle is not a
+  completion candidate.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> selected carrier geometry
+  -> selected Cech face-law source
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 102 explicit-lower package route
+  -> SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle103AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_faceRestrictionRealization_through_explicitLowerData`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle103AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: premise-discharge theorem relative to concrete
+  face-restriction realization, not completion.
+- Proof-use: passed.  The realization constructs explicit lower data, and the
+  constructed explicit lower data is consumed by the Cycle 102 route.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced; the realization remains a visible lower source.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence or unconditional refinement/naturality theorem is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- completion_candidate: no.
+- blocking findings: none.
+- premise delta: the immediate premise is reduced from
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` to
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`.  The realization
+  remains a visible material lower source and is not generated from cover
+  membership, `AATSheafCondition`, or gluing data.
+- proof-use: passed.  The lower theorem extracts
+  `realization.toSelectedCarrierGeometry` and
+  `realization.toSelectedCechFaceLawSource` and feeds them to the explicit
+  lower data constructor.  The wrapper then constructs `explicitLower` and
+  immediately passes it to the Cycle 102 route.
+- structure-field escape: passed.  The realization stores carrier equivalence,
+  degree-2 zero law, and explicit face-restriction equations only; it does not
+  store `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology equivalence.
+- claim boundary: passed.  No G-06 completion claim is introduced.
+- next obligation: construct `SemanticRepairCoverRelativeFaceRestrictionRealization`
+  from a further allowed concrete lower source, or explicitly maintain that
+  source as a material tracking-ledger premise.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826502305>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 103 reduces the explicit-lower-data premise to the concrete
+face-restriction realization lower source.  The realization source itself and
+top-level cover/sheaf/gluing inputs remain material obligations.
