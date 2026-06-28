@@ -10033,3 +10033,145 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 69 blocks the cochain-realization shortcut to the ordinary additive
 source but does not construct that source from lower selected residual /
 semantic-delta / presheaf-restriction laws.
+
+## Cycle 70 — carrier-provenance additive-equivalence source discharge
+
+### T1 Selection
+
+The selector repeated the ordinary additive-equivalence source obligation:
+
+```text
+Construct the ordinary degree-wise additive-equivalence source for
+SelectedSectionFamilyCarrierModel from genuinely lower selected residual
+coefficient / selected semantic-delta / presheaf-restriction data.
+```
+
+Cycle 70 discharges that source relative to the existing audited concrete
+lower boundary `SemanticRepairCarrierSpecificComparisonProvenance`.  This
+provenance already exposes selected carrier maps, inverse laws, degree-`0` /
+degree-`1` additive preservation, degree-`2` zero laws, and selected face laws.
+It is not `CurrentG06InputSurface`, not a selected cochain-realization shortcut,
+and not a new conclusion-bearing structure field.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_additiveSource_and_selectedCarrierModel`
+
+Statement shape:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> ordinary degree-0 additive equivalence
+   + ordinary degree-1 additive equivalence
+   + degree-2 equivalence
+   + degree-2 zero laws
+
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> ordinary additive-equivalence source
+   + Nonempty SelectedSectionFamilyCarrierModel
+```
+
+The second theorem proof-uses the first source through
+`SelectedSectionFamilyCarrierModel.degreewise_additive_equiv_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This does not claim `CurrentG06InputSurface` alone constructs
+`SemanticRepairCarrierSpecificComparisonProvenance`.  It discharges the
+ordinary additive-equivalence source at the already audited concrete selected
+carrier / semantic-delta / presheaf-restriction provenance boundary.
+
+### Material Premise Ledger Delta
+
+- Ordinary degree-wise additive equivalences in degrees `0` and `1`:
+  discharged relative to `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Degree-`2` zero-preserving equivalence: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Selected carrier model construction: proof-used through the Cycle 66
+  ordinary-source constructor.
+- `CurrentG06InputSurface -> SemanticRepairCarrierSpecificComparisonProvenance`:
+  not claimed.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> c0 additive equivalence
+  -> c1 additive equivalence
+  -> c2 equivalence + zero laws
+  -> ordinary additive-equivalence source
+  -> SelectedSectionFamilyCarrierModel
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle70AxiomAudit.lean` — passed and removed after audit.
+- `carrierSpecificComparisonProvenance_constructs_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `carrierSpecificComparisonProvenance_constructs_additiveSource_and_selectedCarrierModel`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean before
+  report edit.
+- local path scan over changed Lean file — clean before report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found.
+- premise delta: the ordinary degree-wise additive-equivalence source for
+  `SelectedSectionFamilyCarrierModel` is discharged relative to existing
+  `SemanticRepairCarrierSpecificComparisonProvenance`, and proof-used through
+  the selected carrier model constructor.
+- certificate provenance: `SemanticRepairCarrierSpecificComparisonProvenance`
+  exposes concrete carrier maps, inverse laws, degree-`0` / degree-`1`
+  additive preservation, degree-`2` zero laws, and selected face laws; it does
+  not store `H1` zero, boundary membership, global coherence, descent /
+  effectivity, comparison equivalence, refinement naturality, or full sheaf
+  cohomology equivalence.
+- proof use: passed.  The proof uses `provenance.c0SectionEquiv`,
+  `provenance.c1SectionEquiv`, `provenance.c2SectionEquiv`,
+  `provenance.toSection2_zero`, `provenance.fromSection2_zero`, and the Cycle
+  66 selected-carrier-model constructor.
+- structure field escape: passed.  The provenance is treated as the concrete
+  lower boundary, not as a conclusion-side `H1` / descent / comparison field.
+- blocking findings: none.
+- next obligation: continue with the next G-06 material premise outside this
+  ordinary carrier-source discharge; revisit construction below
+  `SemanticRepairCarrierSpecificComparisonProvenance` only if a later selector
+  requires pushing below this audited provenance boundary.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 70 discharges the ordinary additive-equivalence source at the
+carrier-specific provenance boundary, but the broader site / sheaf / Cech `H1`
+target package still has remaining material premises.
