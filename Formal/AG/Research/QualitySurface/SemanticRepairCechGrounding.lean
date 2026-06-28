@@ -3506,6 +3506,82 @@ theorem currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData
   exact ⟨hFor, hDescent, hDescent gluingData⟩
 
 /--
+Cycle 108 constructor theorem: a current G-06 gluing datum is generated from
+exactly a local section family plus its overlap agreement.
+
+This is the allowed direction-hypothesis boundary for `gluingData`.  It does
+not synthesize local sections from the site/sheaf surface, and it does not add
+any global section, `H1` zero, global coherence, comparison equivalence,
+refinement naturality, or full sheaf cohomology content.
+-/
+def currentG06InputSurface_constructs_gluingData_from_localSections_and_overlapAgreement
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (localSections :
+      AAT.AG.Site.AATLocalSectionFamily S surface.presheaf surface.selectedCover)
+    (overlapAgreement :
+      AAT.AG.Site.AATOverlapAgreement localSections) :
+    AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover :=
+  { localSections := localSections
+    overlapAgreement := overlapAgreement }
+
+/--
+Cycle 108 boundary theorem: existence of a current G-06 gluing datum is exactly
+existence of a compatible local section family.
+
+The theorem pins `gluingData` as a local-compatible-family input.  It is not
+an effective global gluing witness and it carries no target conclusion.
+-/
+theorem currentG06InputSurface_gluingData_iff_localSections_with_overlapAgreement
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    Nonempty
+        (AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover) <->
+      Exists fun localSections :
+        AAT.AG.Site.AATLocalSectionFamily S surface.presheaf surface.selectedCover =>
+        AAT.AG.Site.AATOverlapAgreement localSections := by
+  constructor
+  · intro h
+    rcases h with ⟨gluingData⟩
+    exact ⟨gluingData.localSections, gluingData.overlapAgreement⟩
+  · intro h
+    rcases h with ⟨localSections, overlapAgreement⟩
+    exact
+      ⟨currentG06InputSurface_constructs_gluingData_from_localSections_and_overlapAgreement
+        (surface := surface) localSections overlapAgreement⟩
+
+/--
+Cycle 108 proof-use theorem: a supplied current G-06 gluing datum exposes its
+local cocycle boundary and is then consumed by the sheaf-condition descent
+route.
+
+This combines the local-compatible-family boundary with Cycle 107's
+cover-membership / sheaf-condition proof-use.  It still does not construct the
+local family itself from `CurrentG06InputSurface`.
+-/
+theorem currentG06InputSurface_gluingData_cocycle_and_effectiveGluing_boundary
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover) :
+    AAT.AG.Site.AATOverlapAgreement gluingData.localSections /\
+      AAT.AG.Site.AATCocycleCondition gluingData.localSections /\
+      AAT.AG.Site.AATSheafConditionFor S surface.presheaf surface.selectedCover /\
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover /\
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection := by
+  have hdescent :=
+    currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData
+      (surface := surface) gluingData
+  exact
+    ⟨gluingData.overlapAgreement,
+      AAT.AG.Site.AATGluingData.cocycle gluingData,
+      hdescent.1, hdescent.2.1, hdescent.2.2⟩
+
+/--
 Cycle 14 blocker theorem: the current G-06 input surface cannot discharge
 carrier-specific provenance without a selected carrier-comparison source.
 
