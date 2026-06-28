@@ -6322,6 +6322,59 @@ theorem currentG06InputSurface_explicitLowerData_final_boundary_packet
       hrequires.2.2.2.2.2⟩
 
 /--
+Cycle 110 blocker theorem: adding a supplied current G-06 gluing datum does not
+make the explicit finite lower witness a surface-generated object.
+
+The gluing datum is the compatible local-family input consumed by descent; it
+does not provide degree-wise carrier comparison data between the semantic
+coefficient surface and the selected cover-relative Cech carriers.  If a
+constructor could manufacture
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from the current
+surface plus any supplied gluing datum, then on the same `PUnit` / `ZMod 2`
+test carriers used by the surface-only blocker it would again produce an
+additive equivalence `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+Thus the remaining lower witness cannot be discharged by moving it through
+`gluingData`; it remains a transparent material input.
+-/
+theorem no_constructor_from_currentG06InputSurface_and_gluingData_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputGluingDataFiniteWitnessConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover ->
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  rcases currentInputGluingDataFiniteWitnessConstructor surface gluingData with
+    ⟨c0Carrier, _c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cycle 56 blocker theorem: a surface-only constructor for the Cycle 55 direct
 lower bundle cannot be unconditional over the current G-06 input surface.
 

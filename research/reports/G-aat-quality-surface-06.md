@@ -16780,7 +16780,10 @@ CurrentG06InputSurface
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826809910>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826824326>;
+  PR #2776 merged at `ad88b07c9248483bbca7ecfdabeb98483a03cd2b`
+  with all checks passing.
 
 ### Target Status
 
@@ -16789,3 +16792,140 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 109 fixes the remaining explicit lower source as a fail-closed finite
 comparison witness.  Since this witness is still not generated from the
 atom-supported current surface, final `$math-lean-review` remains premature.
+
+## Cycle 110 - GluingData Escape-Path Blocker
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: close the possible escape path in which supplied
+  `gluingData` plus `CurrentG06InputSurface` might be mistaken for a generator
+  of `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+### T1 Selector Input
+
+- proof obligation: prove that `CurrentG06InputSurface` and supplied
+  `gluingData` alone cannot construct
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- expected result type: `proof-checkpoint`.
+- completion candidate: no.
+- selection reason: Cycle 109 fixed the explicit lower source as the remaining
+  discharge-required witness.  Cycle 108 fixed `gluingData` as local compatible
+  family input, so the next anti-weakening risk was moving lower-source
+  provenance through that local-family input.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_and_gluingData_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  shows that any constructor from `CurrentG06InputSurface` plus supplied
+  `AATGluingData` to the explicit finite lower witness contradicts the
+  `PUnit` / `ZMod 2` test carriers.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains
+  `discharge-required`.  It contains degree-wise carrier comparison data,
+  degree-`2` zero laws, and four selected face-restriction equations.
+- `AATGluingData`: remains a compatible local section family plus overlap
+  agreement.  It is proof-used for descent/effective gluing, but it does not
+  generate semantic coefficient carrier comparisons.
+- `CurrentG06InputSurface`: remains the accepted site/sheaf surface containing
+  cover bridge, cover membership, sheaf condition, descent, and the general
+  cover-relative Cech complex; it still does not contain lower carrier maps.
+
+### Completed Obligations
+
+- The `gluingData` escape path is closed by a Lean blocker theorem.
+- The proof reuses the same no-uniform carrier comparison obstruction as the
+  surface-only blocker: a generated `c0Carrier` would give
+  `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+- No lower-source conclusion is moved into `gluingData`, `CurrentG06InputSurface`,
+  or a certificate field.
+
+### Unfinished Obligations
+
+- The explicit lower witness still is not discharged from accepted lower-source
+  provenance.  Positive completion still requires concrete selected residual /
+  semantic-delta / presheaf-restriction source theorems constructing:
+  `E.coefficient.C0 ≃+ K.Cn 0`, `E.coefficient.C1 ≃+ K.Cn 1`,
+  `E.coefficient.C2 ≃ K.Cn 2` with zero laws, and the four selected
+  face-restriction compatibility equations.
+- Final `$math-lean-review` is not run; this cycle is not a completion
+  candidate and G-06 is not `target-theorem-proved`.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface + supplied AATGluingData
+  + alleged lower-witness constructor
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> c0Carrier : E.coefficient.C0 ≃+ surface.K.Cn 0
+  -> PUnit ≃+ ZMod 2
+  -> contradiction
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle110AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_and_gluingData_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle110AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, report, and audit
+  file — clean.
+- local path scan over changed Lean file, report, and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed escape-path blocker, not G-06 completion.
+- Proof-use: passed.  The theorem consumes a hypothetical constructor and a
+  supplied `gluingData`, extracts the generated degree-`0` carrier comparison,
+  and derives contradiction.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced.
+- Claim boundary: passed.  The theorem refutes only the current-surface plus
+  `gluingData` constructor route; it does not refute G-06 itself.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- proof-use audit: passed.  The theorem consumes the hypothetical constructor
+  and supplied `gluingData`, extracts the generated degree-`0` carrier
+  comparison, and derives the `PUnit` / `ZMod 2` contradiction.
+- structure-field escape audit: passed.  No new structure or certificate field
+  is introduced, and `gluingData` remains local section data plus overlap
+  agreement.
+- blocking findings: none for this checkpoint.  The theorem is a uniform
+  constructor blocker under the displayed test-carrier hypotheses, not a full
+  non-construction classification for every fixed surface/gluing datum.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826850402>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 110 closes the `gluingData` escape path.  The next minimal obligation is
+still a positive selected lower-source construction theorem, not another
+renaming of the existing explicit finite witness.
