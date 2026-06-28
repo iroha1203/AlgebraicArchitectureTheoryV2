@@ -16189,3 +16189,137 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 105 discharges the top-level cover-membership and sheaf-condition
 arguments relative to `CurrentG06InputSurface`.  The explicit lower data and
 gluing data remain material obligations.
+
+## Cycle 106 - Current Surface Descent Proof-Use for Gluing Data
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: use `CurrentG06InputSurface.descent` on the supplied
+  `gluingData` to expose effective gluing, while keeping `gluingData` as an
+  explicit required local-family input.
+
+### T1 Selector Input
+
+- proof obligation: prove a small descent proof-use theorem:
+  `surface.descent gluingData` produces the unique global section realizing
+  the supplied gluing datum.
+- expected result type: `proof-obligation-discharged`.
+- completion candidate: no.
+- selection reason: Cycle 105 uses current-surface cover membership and sheaf
+  condition but deliberately leaves the descent field unused; Cycle 106 makes
+  that descent proof-use explicit without constructing `gluingData`.
+
+### Lean Declarations
+
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_descent_effectiveGluing_of_gluingData`
+  returns `surface.descent` and `surface.descent gluingData`, exposing the
+  effective global section for the supplied local gluing datum.
+
+### Material Premise Ledger
+
+- `gluingData`: still `discharge-required` / explicit local-family input.
+  Cycle 106 proof-uses descent on `gluingData`; it does not construct the
+  gluing datum from the current surface.
+- `CurrentG06InputSurface.descent`: proof-used to produce the effective global
+  gluing section for the supplied `gluingData`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still
+  `discharge-required`; not touched by this cycle.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- Descent is no longer merely a stored current-surface field for this boundary;
+  it is proof-used on the supplied `gluingData`.
+- The theorem returns the effective gluing uniqueness statement directly.
+- No new certificate structure or package field is introduced.
+
+### Unfinished Obligations
+
+- Construct or further lower `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  from a genuinely lower selected residual / semantic-delta /
+  presheaf-restriction source, or keep the existing blocker/boundary ledger.
+- Construct or boundary-mark `gluingData` as local compatible family data.
+- Completion still requires final `$math-lean-review`; this cycle is not a
+  completion candidate.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> descent
+gluingData
+  -> surface.descent gluingData
+  -> exists unique global section realizing gluingData
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle106AxiomAudit.lean` — passed.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_descent_effectiveGluing_of_gluingData`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle106AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: descent proof-use on supplied gluing data, not gluing
+  data construction and not completion.
+- Proof-use: passed.  The theorem returns
+  `surface.descent gluingData` as the effective gluing witness.
+- Structure-field escape: passed.  `gluingData` remains an explicit theorem
+  argument and is not hidden in a certificate or moved into a structure field.
+- Claim boundary: passed.  The theorem concludes only descent plus unique
+  global realization for the supplied `gluingData`; it does not assert `H1`
+  zero, global semantic coherence, full sheaf cohomology comparison, cover
+  refinement, or naturality.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- completion_candidate: no.
+- blocking findings: none.
+- proof-use: passed.  The proof term is exactly
+  `⟨surface.descent, surface.descent gluingData⟩`.
+- anti-weakening: passed.  `gluingData` is not constructed, synthesized, hidden
+  in a certificate, or moved into a structure field; it remains an explicit
+  theorem argument.
+- residual obligations: `gluingData` construction or explicit boundary marking
+  remains; `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` remains
+  undischarged; this theorem still relies on `CurrentG06InputSurface.descent`
+  as supplied surface input; final `$math-lean-review` is still required before
+  any completion claim.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826666708>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 106 proof-uses descent for the supplied gluing datum.  It does not
+construct the gluing datum itself, and it does not discharge the explicit
+lower-data source.

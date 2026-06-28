@@ -3459,6 +3459,27 @@ structure CurrentG06InputSurface where
   descent : AAT.AG.Site.AATDescent S presheaf selectedCover
 
 /--
+Cycle 106 descent proof-use theorem: the current G-06 input surface turns any
+supplied gluing datum into an effective global section by applying its descent
+field.
+
+This theorem does not construct the gluing datum.  It records that
+`gluingData` remains the required local compatible family input, while
+`surface.descent` is the proof actually producing effective gluing for that
+input.
+-/
+theorem currentG06InputSurface_descent_effectiveGluing_of_gluingData
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover) :
+    AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover /\
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection :=
+  ⟨surface.descent, surface.descent gluingData⟩
+
+/--
 Cycle 14 blocker theorem: the current G-06 input surface cannot discharge
 carrier-specific provenance without a selected carrier-comparison source.
 
