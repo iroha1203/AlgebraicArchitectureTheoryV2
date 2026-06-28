@@ -16479,3 +16479,154 @@ Cycle 107 discharges the stored-descent-field dependency by deriving descent
 and effective gluing from cover membership plus sheaf condition.  It does not
 construct the supplied gluing datum, and it does not discharge the explicit
 lower-data source.
+
+## Cycle 108 - Gluing Data Local-Family Boundary
+
+### Cycle Result
+
+- result: `blocker-fixed`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: boundary-mark `gluingData` as a direction-hypothesis
+  compatible local-family input under the current AAT descent API.
+
+### T1 Selector Input
+
+- proof obligation: record that `AATGluingData` is transparent local section
+  data plus overlap agreement, and that descent consumes such data rather than
+  constructing it from `CurrentG06InputSurface`, cover membership, or sheaf
+  condition alone.
+- expected result type: `blocker-fixed`.
+- completion candidate: no.
+- selection reason: Cycle 107 already derives descent/effective gluing from
+  cover membership plus sheaf condition for a supplied gluing datum.  The next
+  gap is the role of that supplied datum.
+
+### Lean Declarations
+
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_constructs_gluingData_from_localSections_and_overlapAgreement`
+  constructs `AATGluingData` from a local section family plus overlap
+  agreement.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_gluingData_iff_localSections_with_overlapAgreement`
+  proves that existence of current G-06 gluing data is equivalent to existence
+  of a compatible local section family.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_gluingData_cocycle_and_effectiveGluing_boundary`
+  exposes the gluing datum's overlap/cocycle boundary and then proof-uses the
+  Cycle 107 sheaf-condition descent route.
+
+### Material Premise Ledger
+
+- `gluingData`: reclassified from ambiguous `discharge-required` to
+  `direction-hypothesis` for the current descent direction.  It is a
+  compatible local-family input: `localSections` plus `overlapAgreement`.
+- `AATCocycleCondition`: discharged for supplied `gluingData` by
+  `AATGluingData.cocycle`, which is definitionally its overlap agreement.
+- `effective gluing`: proof-used through Cycle 107's sheaf-condition route.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still an
+  explicit transparent finite comparison witness; not touched by this cycle.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- The role of `gluingData` is now fixed by Lean: it carries local sections and
+  overlap agreement, not a global section or target conclusion.
+- Supplied `gluingData` exposes both overlap agreement and cocycle condition,
+  and is then consumed by sheaf-condition descent to produce effective gluing.
+- No new certificate structure or class membership is introduced.
+
+### Unfinished Obligations
+
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from a
+  genuinely lower selected residual / semantic-delta / presheaf-restriction
+  source, or keep it as an explicit tracking-ledger premise.
+- Final `$math-lean-review` is not run; this cycle is not a completion
+  candidate and G-06 is not `target-theorem-proved`.
+
+### Dependency DAG
+
+```text
+localSections + overlapAgreement
+  -> AATGluingData
+  -> AATGluingData.cocycle
+  -> AATCocycleCondition
+
+CurrentG06InputSurface
+  -> selectedCover_mem + sheafCondition
+  -> Cycle 107 sheaf-condition descent route
+gluingData
+  -> effective gluing for supplied compatible local family
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle108AxiomAudit.lean` — passed.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_constructs_gluingData_from_localSections_and_overlapAgreement`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_gluingData_iff_localSections_with_overlapAgreement`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_gluingData_cocycle_and_effectiveGluing_boundary`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle108AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: boundary theorem for the local compatible-family
+  antecedent, not G-06 completion.
+- Proof-use: passed.  The theorem uses `gluingData.overlapAgreement`,
+  `AATGluingData.cocycle gluingData`, and Cycle 107's
+  `currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData`.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced.  `AATGluingData` itself stores only `localSections` and
+  `overlapAgreement`.
+- Claim boundary: passed.  The theorem does not claim that local sections are
+  synthesized from the site/sheaf surface, and it does not assert `H1` zero,
+  global semantic coherence, full sheaf cohomology comparison, cover
+  refinement, or naturality.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `blocker-fixed`.
+- completion_candidate: no.
+- blocking findings: none.
+- proof-use: passed.  The audited theorem uses `gluingData.overlapAgreement`,
+  `AATGluingData.cocycle gluingData`, and the Cycle 107 sheaf-condition
+  descent route.
+- anti-weakening: passed.  `AATGluingData` is transparent local section data
+  plus overlap agreement; it is not a global section, `H1` zero, or completion
+  certificate.
+- next obligation: discharge or explicitly boundary-mark
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` lower-source
+  provenance.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826765876>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 108 fixes `gluingData` as a direction-hypothesis compatible local-family
+input.  It does not discharge the explicit lower-data source, and final
+`$math-lean-review` remains premature.
