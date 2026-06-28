@@ -12119,3 +12119,189 @@ Cycle 82 removes the selected Cech face-law source as a separate package
 premise relative to selected presheaf / face-restriction realization.  The
 realization, true-sheaf certificate, gluing data, refinement/naturality, and
 full sheaf cohomology boundary remain material.
+
+## Cycle 83 — separated face-restriction realization witnesses
+
+### T1 Selection
+
+The selector chose to lower
+`SemanticRepairCoverRelativeFaceRestrictionRealization` itself to its separated
+lower witnesses:
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
+
+This cycle does not claim that those lower witnesses follow from bare site,
+cover membership, `AATSheafCondition`, descent, effective gluing,
+refinement/naturality, or full sheaf cohomology.  It only removes the bundled
+face-restriction realization as the immediate top-level package premise.
+
+### Lean Evidence
+
+- `SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedCarrierGeometry_and_faceLawSource`
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility_via_faceRestrictionRealization`
+
+Statement shape:
+
+```text
+section-family witness
+  + face-restriction compatibility
+  -> face-restriction realization
+  -> selected carrier geometry
+  + selected Cech face-law source
+  -> Cycle 82 face-restriction realization package
+  -> Cycle 81 face-law package
+  -> direct selected semantic-delta / K.d laws
+  -> Cycle 80 selected carrier geometry package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 83 discharges the bundled
+`SemanticRepairCoverRelativeFaceRestrictionRealization` as the immediate
+package premise relative to the separated lower witnesses.  The section-family
+equivalences, degree-`2` zero laws, and selected face-restriction equations
+remain material lower data.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeFaceRestrictionRealization`: discharged as a
+  bundled top-level premise relative to
+  `SemanticRepairCoverRelativeSectionFamilyWitness` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: `discharge-required`;
+  unresolved below explicit degree-wise section-family equivalences and
+  degree-`2` zero laws.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`:
+  `discharge-required`; unresolved below the four selected face-restriction
+  equations.
+- True-sheaf certificate and gluing data: inherited material inputs; proof-used
+  by the downstream package route but not constructed in this cycle.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The face-restriction realization bundle is no longer the immediate top-level
+  premise in the new package route.
+- The separated lower witnesses construct the realization, and the constructed
+  realization is consumed by the Cycle 82 theorem in the same proof term.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct the section-family witness from lower selected residual /
+  presheaf-restriction provenance, or keep it as explicit finite comparison
+  boundary material.
+- Construct the face-restriction compatibility witness from explicit selected
+  face equations / lower presheaf restriction provenance, or keep it as
+  explicit finite comparison boundary material.
+- Construct true-sheaf certificate and gluing data from the admissible site /
+  cover inputs, or keep them explicitly material.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+section-family witness
+  -> face-restriction realization
+face-restriction compatibility
+  -> face-restriction realization
+face-restriction realization
+  -> selected carrier geometry
+  + selected Cech face-law source
+selected Cech face-law source
+  -> Cycle 81 face-law package
+  -> direct selected semantic-delta / K.d laws
+  -> Cycle 80 selected carrier geometry package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle83AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedCarrierGeometry_and_faceLawSource`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility_via_faceRestrictionRealization`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 82 package conclusion is
+  preserved while the bundled realization source is replaced by separated
+  section-family and face-restriction compatibility witnesses.
+- Proof-use: passed.  The constructed realization is passed directly into the
+  Cycle 82 package theorem; Cycle 82 then constructs selected carrier geometry
+  and selected Cech face laws and routes them through the downstream package.
+- Structure-field escape: passed for this bounded cycle.  No new structure or
+  certificate field is introduced; the lower witnesses remain explicitly
+  material.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: bundled `SemanticRepairCoverRelativeFaceRestrictionRealization`
+  is discharged as the immediate package premise relative to
+  `SemanticRepairCoverRelativeSectionFamilyWitness` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- certificate provenance: unchanged; true-sheaf certificate remains material.
+- unresolved provenance: section-family equivalences, degree-`2` zero laws,
+  selected face-restriction equations, true-sheaf certificate, and gluing data.
+- proof use: passed.  The constructed realization is consumed by the Cycle 82
+  theorem.
+- structure field escape: none found in the new declarations.
+- blocking findings: none for approving Cycle 83 as a bounded discharge.
+- next obligation: discharge or further lower the explicit section-family
+  witness and face-restriction compatibility provenance from still lower data;
+  separately discharge or boundary-mark true-sheaf certificate and gluing data.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825293264>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 83 removes the bundled face-restriction realization as the immediate
+package premise relative to separated section-family and face-restriction
+compatibility witnesses.  Those lower witnesses, true-sheaf certificate,
+gluing data, refinement/naturality, and full sheaf cohomology boundary remain
+material.
