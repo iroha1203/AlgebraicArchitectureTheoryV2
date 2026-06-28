@@ -12492,3 +12492,181 @@ the selected section-family / face-restriction compatibility route.  Cover
 membership, `AATSheafCondition`, gluing data, lower finite comparison
 witnesses, refinement/naturality, and full sheaf cohomology boundary remain
 material.
+
+## Cycle 85 — selected carrier model and explicit face equations
+
+### T1 Selection
+
+The selector chose to lower the post-Cycle-84 `sectionWitness` and
+`compatibility` premises to:
+
+- a selected section-family carrier model
+- the four explicit selected face-restriction equations
+
+The theorem keeps selected-cover membership, `AATSheafCondition`, the supplied
+gluing datum, refinement/naturality, and full sheaf cohomology boundary visible.
+It does not claim that the selected carrier model or the four face equations
+follow from bare site/sheaf/descent input.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations`
+
+Statement shape:
+
+```text
+selected section-family carrier model
+  -> section-family witness
+four explicit selected face equations
+  -> face-restriction compatibility
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 true-sheaf certificate route
+section-family witness
+  + face-restriction compatibility
+  -> Cycle 84 package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 85 discharges the immediate `sectionWitness` and `compatibility`
+premises in the Cycle 84 route relative to explicit lower selected carrier and
+face-equation data.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: discharged as an
+  immediate premise relative to `SelectedSectionFamilyCarrierModel`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged as an
+  immediate premise relative to the four explicit selected face-restriction
+  equations.
+- `SelectedSectionFamilyCarrierModel`: `discharge-required`; still material.
+- Four explicit selected face-restriction equations: `discharge-required`;
+  still material.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The section-family witness is constructed by
+  `SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel`.
+- Face-restriction compatibility is constructed by
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`.
+- The constructed witnesses are immediately consumed by the Cycle 84 theorem.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `SelectedSectionFamilyCarrierModel`.
+- Construct or boundary-mark the four selected face-restriction equations.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+selected section-family carrier model
+  -> section-family witness
+four selected face equations
+  -> face-restriction compatibility
+section-family witness
+  + face-restriction compatibility
+  -> Cycle 84 package
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 84 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle85AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 84 package conclusion is
+  preserved while `sectionWitness` and `compatibility` are replaced by lower
+  explicit data.
+- Proof-use: passed.  The carrier model constructs `sectionWitness`; the four
+  face equations construct `compatibility`; both constructed witnesses are
+  passed directly into the Cycle 84 theorem.
+- Structure-field escape: passed for this bounded cycle.  `SelectedSectionFamilyCarrierModel`
+  stores carrier equivalences and degree-`2` zero laws, and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` stores the four
+  displayed face equations; neither stores `H1` zero, gluing, descent,
+  refinement/naturality, or full sheaf cohomology equivalence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: post-Cycle-84 `sectionWitness` and `compatibility` are no
+  longer top-level premises in this route.
+- certificate provenance: `sectionWitness` provenance is the selected carrier
+  model; `compatibility` provenance is the four explicit face equations; the
+  true-sheaf certificate remains constructed by the Cycle 84 route from
+  `hcover` and `hSheaf`.
+- unresolved provenance: construction of the selected carrier model, the four
+  face equations, `hcover`, `hSheaf`, and `gluingData`.
+- proof use: passed.  The constructed witnesses are consumed by the Cycle 84
+  theorem.
+- structure field escape: none found in the new declaration.
+- blocking findings: none for approving Cycle 85 as a bounded discharge.
+- next obligation: construct or lower the remaining selected carrier model
+  and/or the four explicit selected face-restriction equations from still-lower
+  GOAL-boundary data.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825384864>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 85 removes `sectionWitness` and `compatibility` as immediate top-level
+premises in the Cycle 84 route.  The selected carrier model, four face
+equations, cover membership, `AATSheafCondition`, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
