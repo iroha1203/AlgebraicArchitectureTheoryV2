@@ -10956,6 +10956,63 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       data S F cover certificate gluingData coverBridge K realization
 
 /--
+Cycle 84 selected-cover membership and AAT sheaf-condition version of the
+Cycle 83 package.
+
+The theorem constructs the true-sheaf certificate from the two pieces it
+actually stores: selected-cover membership and the ambient AAT sheaf condition.
+That constructed certificate is immediately proof-used by the Cycle 83 route,
+whose downstream package consumes `cover_mem` and `sheafCondition` through
+`aatSheafCondition_coverMembership_descent_effectiveGluing` to obtain
+cover-wise sheaf condition, descent, and effective gluing for the supplied
+gluing datum.
+
+This removes `SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate`
+as an opaque top-level premise, but it does not claim that bare site data
+constructs cover membership, the AAT sheaf condition, the gluing datum, the
+section-family witness, face-restriction compatibility, refinement/naturality,
+or full sheaf cohomology comparison.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_sectionFamilyWitness_and_faceRestrictionCompatibility
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (hcover : cover ∈ S.topology base)
+    (hSheaf : AAT.AG.Site.AATSheafCondition S F)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        data.toAdditiveCechH1Data coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        data.toAdditiveCechH1Data sectionWitness) :
+    SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+      data S F cover gluingData coverBridge K
+        (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+          sectionWitness compatibility).toSelectedCarrierGeometry := by
+  let certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover :=
+    { cover_mem := hcover
+      sheafCondition := hSheaf }
+  exact
+    trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_sectionFamilyWitness_and_faceRestrictionCompatibility_via_faceRestrictionRealization
+      data S F cover certificate gluingData coverBridge K
+      sectionWitness compatibility
+
+/--
 Cycle 78 explicit selected face-restriction version of the Cycle 76 route.
 
 The theorem constructs
