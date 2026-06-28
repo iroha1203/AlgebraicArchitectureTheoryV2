@@ -3480,6 +3480,32 @@ theorem currentG06InputSurface_descent_effectiveGluing_of_gluingData
   ⟨surface.descent, surface.descent gluingData⟩
 
 /--
+Cycle 107 proof-use theorem: the current G-06 input surface derives descent and
+effective gluing from its selected cover membership and `AATSheafCondition`,
+without reading the stored `descent` field.
+
+The gluing datum itself remains an explicit compatible local-family input.
+This theorem discharges the supplied-descent-field dependency only; it does not
+construct `gluingData`, lower carrier data, `H1` zero, global coherence,
+refinement naturality, or full sheaf cohomology comparison.
+-/
+theorem currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover) :
+    AAT.AG.Site.AATSheafConditionFor S surface.presheaf surface.selectedCover /\
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover /\
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection := by
+  let hFor :=
+    AAT.AG.Site.AATSheafCondition.cover surface.sheafCondition
+      surface.selectedCover surface.selectedCover_mem
+  let hDescent := AAT.AG.Site.AATSheafConditionFor.descent hFor
+  exact ⟨hFor, hDescent, hDescent gluingData⟩
+
+/--
 Cycle 14 blocker theorem: the current G-06 input surface cannot discharge
 carrier-specific provenance without a selected carrier-comparison source.
 
@@ -12450,6 +12476,66 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       data S surface.presheaf surface.selectedCover surface.selectedCover_mem
       surface.sheafCondition gluingData surface.coverBridge surface.K
       explicitLower
+
+/--
+Cycle 107 fail-closed boundary theorem for the two remaining current-surface
+inputs.
+
+The supplied `gluingData` is exposed as the compatible local-family direction
+input consumed by the sheaf-condition / cover-membership descent route.  The
+supplied `explicitLower` is exposed as the transparent finite comparison
+witness consumed by the reconstructed face-restriction route.  The theorem
+deliberately does not construct either input from `CurrentG06InputSurface`, and
+it does not store `H1` zero, global coherence, effective descent, refinement
+naturality, or full sheaf cohomology comparison in a structure field.
+-/
+theorem currentG06InputSurface_gluingData_and_explicitLower_boundary_sources
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (explicitLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K)) :
+    Nonempty
+        (AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover) /\
+      (AAT.AG.Site.AATSheafConditionFor S surface.presheaf surface.selectedCover /\
+        AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover /\
+        ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+          AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := data.toAdditiveCechH1Data)
+          (coverBridge := surface.coverBridge)
+          (K := surface.K)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionRealization
+          data.toAdditiveCechH1Data surface.coverBridge surface.K) := by
+  have hdescent :=
+    SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData
+      (surface := surface) gluingData
+  have hrealization :
+      Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionRealization
+          data.toAdditiveCechH1Data surface.coverBridge surface.K) :=
+    SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_faceRestrictionRealization
+      (additive := data.toAdditiveCechH1Data)
+      (coverBridge := surface.coverBridge)
+      (K := surface.K)
+      explicitLower
+  exact ⟨⟨gluingData⟩, hdescent, ⟨explicitLower⟩, hrealization⟩
 
 /--
 Cycle 88 selected carrier-model / direct-compatibility version of the Cycle 87

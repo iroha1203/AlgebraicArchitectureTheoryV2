@@ -16326,3 +16326,156 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 106 proof-uses descent for the supplied gluing datum.  It does not
 construct the gluing datum itself, and it does not discharge the explicit
 lower-data source.
+
+## Cycle 107 - Sheaf-Condition Route for Current-Surface Effective Gluing
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: derive descent and effective gluing from
+  `CurrentG06InputSurface.selectedCover_mem` plus
+  `CurrentG06InputSurface.sheafCondition`, without using the stored
+  `CurrentG06InputSurface.descent` field.
+
+### T1 Selector Input
+
+- proof obligation: close the supplied-descent-field dependency left by Cycle
+  106.
+- expected result type: `proof-obligation-discharged`.
+- completion candidate: no.
+- selection reason: Cycle 106 proof-used descent, but the proof read
+  `surface.descent` as a supplied field.  Cycle 107 routes the proof through
+  selected cover membership and `AATSheafCondition` instead.
+
+### Lean Declarations
+
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData`
+  derives `AATSheafConditionFor`, `AATDescent`, and the unique global gluing
+  section from `surface.sheafCondition` and `surface.selectedCover_mem`.
+- `currentG06InputSurface_gluingData_and_explicitLower_boundary_sources`
+  records the remaining explicit boundary sources: the supplied compatible
+  local family `gluingData` and the transparent finite comparison witness
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface.descent`: discharged for the current effective
+  gluing route.  The new theorem uses `AATSheafCondition.cover` and
+  `AATSheafConditionFor.descent`, not `surface.descent`.
+- `cover membership`: proof-used through `surface.selectedCover_mem`.
+- `AATSheafCondition`: proof-used through `surface.sheafCondition`.
+- `gluingData`: still an explicit direction-hypothesis / compatible local
+  family input.  Cycle 107 does not construct it.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still an
+  explicit transparent finite comparison witness.  Cycle 107 exposes it and
+  uses it to construct `Nonempty SemanticRepairCoverRelativeFaceRestrictionRealization`;
+  it does not construct this lower data from `CurrentG06InputSurface`.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- Effective gluing for a supplied gluing datum now follows from the selected
+  cover membership and sheaf condition fields of `CurrentG06InputSurface`.
+- The older stored `descent` field is no longer needed for the current
+  effective-gluing proof-use route.
+- The remaining `gluingData` and `explicitLower` inputs are explicitly marked
+  as boundary sources, not hidden in a certificate or structure field.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `gluingData` as local compatible family data.  In
+  the current AAT descent API, descent consumes such a datum; it does not
+  manufacture one from the site/sheaf surface alone.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from a
+  genuinely lower selected residual / semantic-delta / presheaf-restriction
+  source, or keep it as an explicit tracking-ledger premise.
+- Final `$math-lean-review` is not run; this cycle is not a completion
+  candidate and G-06 is not `target-theorem-proved`.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> selectedCover_mem
+  -> sheafCondition
+  -> AATSheafCondition.cover
+  -> AATSheafConditionFor.descent
+gluingData
+  -> hDescent gluingData
+  -> exists unique global section realizing gluingData
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_faceRestrictionRealization
+  -> Nonempty SemanticRepairCoverRelativeFaceRestrictionRealization
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle107AxiomAudit.lean` — passed.
+- `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_sheafCondition_effectiveGluing_of_gluingData`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `currentG06InputSurface_gluingData_and_explicitLower_boundary_sources`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle107AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: proof-use discharge for the stored-descent-field
+  dependency, not G-06 completion.
+- Proof-use: passed.  The theorem constructs `hFor` with
+  `AATSheafCondition.cover surface.sheafCondition surface.selectedCover
+  surface.selectedCover_mem`, then constructs `hDescent` with
+  `AATSheafConditionFor.descent hFor`.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced; the remaining `gluingData` and `explicitLower` are visible
+  theorem inputs.
+- Claim boundary: passed.  The theorem does not construct `gluingData`, does
+  not construct lower carrier data from `CurrentG06InputSurface`, and does not
+  assert `H1` zero, global semantic coherence, full sheaf cohomology
+  comparison, cover refinement, or naturality.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- completion_candidate: no.
+- blocking findings: none.
+- residual obligations: `gluingData` remains explicit local-family input;
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` remains explicit
+  finite comparison witness; final `$math-lean-review` remains required before
+  any completion claim.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826727215>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 107 discharges the stored-descent-field dependency by deriving descent
+and effective gluing from cover membership plus sheaf condition.  It does not
+construct the supplied gluing datum, and it does not discharge the explicit
+lower-data source.
