@@ -15402,7 +15402,11 @@ coarse residual = coarse zero
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826325341>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826334149>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2760>,
+  merged at 2026-06-28T14:04:26Z,
+  merge commit `7f03df9f73736cd7dd9207b7f64b6010382a0163`.
 
 ### Target Status
 
