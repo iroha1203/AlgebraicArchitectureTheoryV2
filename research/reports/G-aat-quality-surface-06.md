@@ -10734,3 +10734,146 @@ Cycle 74 removes `DegreewiseCarrierDataAndDirectDifferentialLaws` as a
 top-level premise relative to the explicit selected face-equation lower source.
 The explicit face-equation witness, true-sheaf certificate, and gluing data
 remain material and must not be hidden as ambient boundary.
+
+## Cycle 75 — selected face-law source to explicit face witness
+
+### T1 Selection
+
+The selector chose the nearest provenance gap left by Cycle 74: construct the
+explicit finite face-restriction witness from the separated lower source
+`SemanticRepairSelectedCarrierGeometry` plus
+`SemanticRepairSelectedCechFaceLawSource`, and proof-use the constructed
+witness through the Cycle 74 package route.
+
+This was selected over another `CurrentG06InputSurface` blocker because the
+surface-only route is already blocked by earlier `PUnit` / `ZMod 2` witness
+theorems.  Cycle 75 is a positive lower-source bridge: selected carrier
+geometry supplies carrier comparison data and degree-`2` zero laws; selected
+Cech face laws supply the four selected face-restriction equations.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws_via_explicitFaceRestrictionEquations`
+
+Statement shape:
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 74 explicit-face-equation package
+  -> Cycle 73 direct-lower-bundle package
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+The first theorem assembles the transparent explicit witness from the carrier
+geometry fields and the face-law fields.  The second theorem constructs that
+explicit witness and immediately passes it into the Cycle 74 package theorem.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because selected carrier geometry, selected
+Cech face laws, the true-sheaf certificate, and gluing data remain material
+inputs.  No construction from `CurrentG06InputSurface`, cover membership,
+sheaf condition, descent, refinement naturality, or full sheaf cohomology is
+claimed.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: discharged as a
+  top-level premise relative to selected carrier geometry plus selected Cech
+  face-law source.
+- Carrier comparison data and degree-`2` zero laws: supplied by
+  `SemanticRepairSelectedCarrierGeometry`.
+- Four selected face-restriction equations: supplied by
+  `SemanticRepairSelectedCechFaceLawSource`.
+- `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource`: remain material selected lower
+  sources; they are not reclassified as ambient site/sheaf/presheaf boundary.
+- True-sheaf certificate and gluing data: remain material theorem inputs for
+  inherited sheaf / descent / effective-gluing proof-use.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 74 explicit-face-equation package
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> Cycle 73 direct-lower-bundle package
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + DirectDifferentialCompatibility
+  -> selected Cech face-law source
+  -> Cycle 72 package
+  -> Cycle 71 package
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle75AxiomAudit.lean` — passed and removed after audit.
+- `selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws_via_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- local path scan over changed files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The theorem is explicitly relative to the
+  lower selected carrier geometry and selected Cech face-law source.
+- hidden material premise: no new conclusion-equivalent structure field escape
+  found.  The geometry and face-law structures contain carrier data and face
+  equations, not `H1` zero, global coherence, effective-gluing, refinement, or
+  full sheaf cohomology conclusions.
+- premise delta: the explicit finite face-equation witness is removed as a
+  top-level premise in the active package route relative to selected
+  geometry/face-law data.
+- certificate provenance: the constructed explicit witness is immediately
+  consumed by the Cycle 74 package theorem; provenance below selected carrier
+  geometry and selected Cech face laws remains unresolved.
+- proof use: passed.  The explicit witness is constructed from the two lower
+  selected sources and then passed into the Cycle 74 theorem.
+- structure field escape: passed for the new theorem; inherited certificate /
+  gluing inputs remain explicit and prevent completion status.
+- blocking findings: none.
+- next obligation: construct or boundary-ledger
+  `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource` from genuinely lower selected
+  residual / semantic-delta / presheaf-restriction / site data.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 75 removes the explicit finite face-equation witness as a top-level
+premise relative to selected carrier geometry and selected Cech face laws.  The
+selected geometry / face-law sources, true-sheaf certificate, and gluing data
+remain material and must not be hidden as ambient boundary.
