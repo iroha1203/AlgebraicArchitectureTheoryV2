@@ -12309,3 +12309,182 @@ package premise relative to separated section-family and face-restriction
 compatibility witnesses.  Those lower witnesses, true-sheaf certificate,
 gluing data, refinement/naturality, and full sheaf cohomology boundary remain
 material.
+
+## Cycle 84 — true-sheaf certificate provenance from cover membership
+
+### T1 Selection
+
+The selector chose to lower the opaque
+`SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate` premise in
+the Cycle 83 route to its two actual fields:
+
+- selected-cover membership `cover ∈ S.topology base`
+- ambient `AATSheafCondition S F`
+
+The theorem keeps the supplied gluing datum, section-family witness, and
+face-restriction compatibility visible.  It does not claim that bare site data
+constructs cover membership, the AAT sheaf condition, the gluing datum, the
+remaining finite comparison witnesses, refinement/naturality, or full sheaf
+cohomology comparison.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_sectionFamilyWitness_and_faceRestrictionCompatibility`
+
+Statement shape:
+
+```text
+cover membership
+  + AATSheafCondition
+  -> true-sheaf certificate
+  -> Cycle 83 section-family + face-restriction package
+  -> Cycle 82 face-restriction realization package
+  -> selected carrier geometry
+  + selected Cech face-law source
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 84 discharges the true-sheaf certificate object as an opaque top-level
+premise in this route.  The selected-cover membership, ambient AAT sheaf
+condition, supplied gluing datum, section-family witness, and face-restriction
+compatibility remain explicit material inputs.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate`:
+  discharged as an opaque top-level premise relative to `hcover : cover ∈
+  S.topology base` and `hSheaf : AATSheafCondition S F`.
+- `cover membership`: `discharge-required`; now visible directly as `hcover`.
+- `AATSheafCondition`: `discharge-required`; now visible directly as `hSheaf`.
+- `AATDescent` and effective gluing: proof-used downstream via
+  `aatSheafCondition_coverMembership_descent_effectiveGluing`.
+- `gluingData`: still material; the theorem is relative to a supplied
+  compatible local family.
+- Section-family witness and face-restriction compatibility: still material.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The true-sheaf certificate structure is constructed transparently from cover
+  membership and `AATSheafCondition`.
+- The constructed certificate is immediately consumed by the Cycle 83 theorem.
+- Downstream, `certificate.sheafCondition` and `certificate.cover_mem` are
+  consumed by `aatSheafCondition_coverMembership_descent_effectiveGluing`.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark the selected-cover membership `hcover`.
+- Construct or boundary-mark the ambient `AATSheafCondition S F`.
+- Construct or boundary-mark the supplied `gluingData`.
+- Further lower or boundary-mark the section-family witness and
+  face-restriction compatibility provenance.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+cover membership
+  -> true-sheaf certificate
+AATSheafCondition
+  -> true-sheaf certificate
+true-sheaf certificate
+  -> Cycle 83 package
+section-family witness
+  -> Cycle 83 package
+face-restriction compatibility
+  -> Cycle 83 package
+Cycle 83 package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle84AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_sectionFamilyWitness_and_faceRestrictionCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 83 package conclusion is
+  preserved while the true-sheaf certificate premise is replaced by explicit
+  cover membership and AAT sheaf-condition inputs.
+- Proof-use: passed.  `hcover` and `hSheaf` construct the certificate; the
+  certificate is passed into the Cycle 83 route, and downstream code consumes
+  its fields through `aatSheafCondition_coverMembership_descent_effectiveGluing`.
+- Structure-field escape: passed for this bounded cycle.  The certificate
+  structure has only `cover_mem` and `sheafCondition`; no extra opaque content
+  is introduced.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: the opaque true-sheaf certificate premise is discharged
+  relative to explicit selected-cover membership plus `AATSheafCondition`.
+- certificate provenance: discharged for this route by `{ cover_mem := hcover,
+  sheafCondition := hSheaf }`.
+- unresolved provenance: construction of `hcover`, construction of
+  `hSheaf`, construction of `gluingData`, section-family witness, and
+  face-restriction compatibility.
+- proof use: passed.  The constructed certificate is consumed by the Cycle 83
+  theorem and downstream sheaf/descent/effective-gluing theorem.
+- structure field escape: none found in the new declaration.
+- blocking findings: none for approving Cycle 84 as a bounded discharge.
+- next obligation: further lower or boundary-mark the remaining
+  section-family witness and face-restriction compatibility provenance;
+  separately decide whether `hcover`, `AATSheafCondition`, and `gluingData`
+  are final boundary inputs or need construction theorems.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825339398>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 84 removes the opaque true-sheaf certificate as a top-level premise in
+the selected section-family / face-restriction compatibility route.  Cover
+membership, `AATSheafCondition`, gluing data, lower finite comparison
+witnesses, refinement/naturality, and full sheaf cohomology boundary remain
+material.
