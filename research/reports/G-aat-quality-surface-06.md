@@ -10596,3 +10596,141 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 73 removes `SemanticRepairCarrierSpecificComparisonProvenance` as a
 top-level premise in the package route, but the transparent direct lower
 bundle remains a material selected residual / semantic-delta source.
+
+## Cycle 74 — explicit face equations to direct lower bundle
+
+### T1 Selection
+
+The selector chose the constructive lower-source bridge left by Cycle 73:
+construct `DegreewiseCarrierDataAndDirectDifferentialLaws` from the explicit
+finite carrier witness plus selected face-restriction equations.
+
+This avoids another `CurrentG06InputSurface`-only impossibility theorem.  The
+existing Cycle 56 and later blockers already show that the current
+site/sheaf/presheaf surface alone cannot construct the direct lower bundle.
+Cycle 74 instead proves the positive bridge from the lower explicit
+face-equation source by proof-using `K.d_eq_alternatingFaceCombination`.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreewiseCarrierDataAndDirectDifferentialLaws`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_explicitFaceRestrictionEquations_via_directLowerBundle`
+
+Statement shape:
+
+```text
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  + CoverRelativeCechComplex.d_eq_alternatingFaceCombination
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> Cycle 73 direct-lower-bundle package
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+The first theorem destructures the transparent explicit face-equation lower
+source and rewrites the four selected face equations through
+`K.d_eq_alternatingFaceCombination` to obtain the four direct selected `K.d`
+laws.  The second theorem constructs the direct lower bundle and immediately
+passes it into the Cycle 73 true-sheaf / cover-relative `H1` zero package
+route.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, the true-sheaf
+certificate, and gluing data remain material inputs.  The explicit
+face-equation source is not generated from `CurrentG06InputSurface`, atom
+coverage, sheaf condition, descent, or full sheaf cohomology in this cycle.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: discharged as a top-level
+  premise relative to `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- Four direct selected semantic-delta / `K.d` laws: constructed from the four
+  selected face-restriction equations using the general Cech differential
+  identity.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains a
+  material selected residual / face-restriction lower source; it is not
+  reclassified as ambient boundary.
+- True-sheaf certificate and gluing data: remain material theorem inputs for
+  inherited sheaf / descent / effective-gluing proof-use.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> K.d_eq_alternatingFaceCombination
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> Cycle 73 direct-lower-bundle package
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + DirectDifferentialCompatibility
+  -> selected Cech face-law source
+  -> Cycle 72 package
+  -> Cycle 71 package
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle74AxiomAudit.lean` — passed and removed after audit.
+- `degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreewiseCarrierDataAndDirectDifferentialLaws`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_explicitFaceRestrictionEquations_via_directLowerBundle`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after report edit.
+- placeholder scan over changed files — clean.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- local path scan over changed files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The theorem is explicitly relative to the
+  lower explicit face-equation source and does not claim a
+  `CurrentG06InputSurface`-only construction.
+- hidden material premise: no new conclusion-equivalent structure field escape
+  found.  The lower source is a transparent `Prop`, not an `H1` zero,
+  effective-gluing, or full sheaf cohomology certificate.
+- premise delta: the direct lower bundle is removed as a top-level premise in
+  the active package route relative to explicit face-restriction data.
+- certificate provenance: the constructed direct lower bundle is immediately
+  consumed by the Cycle 73 package theorem; provenance below the explicit
+  face-equation source remains unresolved.
+- proof use: passed.  `K.d_eq_alternatingFaceCombination` is used in the
+  constructor, and the constructed direct lower bundle is passed to the Cycle
+  73 theorem.
+- structure field escape: passed for the new theorem; inherited certificate /
+  gluing inputs remain explicit and prevent completion status.
+- blocking findings: none.
+- next obligation: construct or boundary-ledger
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuinely
+  lower selected residual / semantic-delta / presheaf-restriction / site data.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 74 removes `DegreewiseCarrierDataAndDirectDifferentialLaws` as a
+top-level premise relative to the explicit selected face-equation lower source.
+The explicit face-equation witness, true-sheaf certificate, and gluing data
+remain material and must not be hidden as ambient boundary.
