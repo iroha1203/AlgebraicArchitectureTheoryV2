@@ -14779,3 +14779,171 @@ explicit typed equations for the selected carrier model section witness.  The
 selected carrier model, those four equations, cover membership,
 `AATSheafCondition`, gluing data, refinement/naturality, and full sheaf
 cohomology boundary remain material.
+
+## Cycle 97 - Carrier-Specific Provenance for Explicit Face Equations
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: lower the Cycle 96 selected carrier model plus four
+  explicit face-restriction equations to the audited
+  `SemanticRepairCarrierSpecificComparisonProvenance` boundary.
+
+### Lean Declarations
+
+- `SelectedSectionFamilyCarrierModel.carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_explicitFaceRestrictionEquations`
+  proves that a `SemanticRepairCarrierSpecificComparisonProvenance` constructs:
+  - a selected carrier model via
+    `SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance`;
+  - a matching
+    `SemanticRepairCoverRelativeFaceRestrictionCompatibility` for the induced
+    section-family witness;
+  - that compatibility explicitly as
+    `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`
+    using the four provenance fields `d0_face_to`, `d0_face_from`,
+    `d1_face_to`, and `d1_face_from`.
+
+### Material Premise Ledger
+
+- `SelectedSectionFamilyCarrierModel`: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance`; still not discharged
+  from bare site/sheaf/descent inputs.
+- Four explicit face equations: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance`; the theorem exposes
+  their construction through
+  `of_explicit_face_restriction_equations`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`:
+  `discharge-required`; still material.  It contains carrier maps,
+  inverse/additivity laws, degree-`2` zero laws, and selected face-restriction
+  equations, but not `H1` zero, global semantic repair coherence, effective
+  descent, refinement/naturality, or full sheaf cohomology comparison.
+- `cover membership`: still material as `hcover` in downstream routes.
+- `AATSheafCondition`: still material as `hSheaf` in downstream routes.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The selected carrier model source can now be constructed from
+  carrier-specific comparison provenance.
+- The four face-restriction equations needed by Cycle 96 can now be extracted
+  from the same provenance and consumed by
+  `of_explicit_face_restriction_equations`.
+- The compatibility witness is not accepted opaquely; the theorem records it
+  as equal to the explicit-equation constructor applied to the four provenance
+  laws.
+- No `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology content is introduced as a
+  new structure field.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark
+  `SemanticRepairCarrierSpecificComparisonProvenance` from lower admissible
+  inputs.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance
+  -> SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+SemanticRepairCarrierSpecificComparisonProvenance.d0/d1 face laws
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+constructed model + constructed compatibility
+  -> Cycle 96 theorem
+Cycle 96 theorem
+  -> Cycle 95 theorem
+Cycle 95 theorem
+  -> Cycle 94 theorem
+cover membership + AATSheafCondition
+  -> Cycle 84 certificate route
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle97AxiomAudit.lean` — passed.
+- `SelectedSectionFamilyCarrierModel.carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle97AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed for the bounded claim.  Cycle 97 lowers the
+  Cycle 96 model and explicit-equation premises to
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Proof-use: passed.  The provenance fields are used to construct the selected
+  model and the explicit face-restriction compatibility object.
+- Structure-field escape: bounded checkpoint only.  The theorem does not treat
+  `SemanticRepairCarrierSpecificComparisonProvenance` as ambient; it remains a
+  visible material premise.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- bounded claim: passed.  The theorem constructs
+  `SelectedSectionFamilyCarrierModel` and a matching induced-section-witness
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- proof-use: passed.  The compatibility is recorded definitionally as
+  `of_explicit_face_restriction_equations` applied to the four provenance face
+  laws.
+- hidden material premise: none found for the bounded claim.
+- structure field escape: bounded checkpoint only.
+  `SemanticRepairCarrierSpecificComparisonProvenance` remains an explicit
+  material premise carrying carrier maps, inverse/additivity laws, degree-`2`
+  zero laws, and the four face equations.
+- claim boundary: passed.  No full sheaf cohomology equivalence, target
+  completion, or unconditional cover-relative Cech `H1` equivalence is
+  asserted.
+- blocking findings: none for approving Cycle 97 as a bounded discharge.
+- next obligation: construct or explicitly target-boundary-mark
+  `SemanticRepairCarrierSpecificComparisonProvenance` from lower admissible
+  inputs, or further lower it to degreewise carrier data plus explicit selected
+  face-restriction equations.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826172995>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 97 lowers the selected carrier model and four selected face-equation
+premises to the carrier-specific comparison provenance boundary.  That
+provenance, cover membership, `AATSheafCondition`, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
