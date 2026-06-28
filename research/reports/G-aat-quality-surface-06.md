@@ -8666,3 +8666,145 @@ degree-wise carrier source from genuinely lower selected residual coefficient /
 selected semantic-delta / presheaf-restriction sources, or make the boundary
 revision explicit.  Only after that can the model-relative direct differential
 compatibility obligation be discharged.
+
+## Cycle 61 — selected carrier geometry is not a lower-source escape
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Construct the exact explicit degree-wise carrier source for
+SelectedSectionFamilyCarrierModel from genuinely lower selected residual
+coefficient / selected semantic-delta / presheaf-restriction sources.
+```
+
+The selector repeated the positive provenance gap from Cycle 60.  The current
+Lean surface already contains `SemanticRepairSelectedCarrierGeometry`, which
+could be misread as such a lower source.  Cycle 61 therefore audits that node
+directly: it is not lower than the carrier source; it is definitionally the
+same carrier source in geometry form.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.selectedCarrierGeometry_iff_degreewiseCarrierData_and_c2ZeroEquivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry`
+
+### Result
+
+Cycle 61 proves:
+
+```text
+Nonempty SemanticRepairSelectedCarrierGeometry
+  <->
+degree-0 CarrierSpecificAdditiveComparisonData
++ degree-1 CarrierSpecificAdditiveComparisonData
++ degree-2 equivalence
++ two degree-2 zero laws
+```
+
+Thus `SemanticRepairSelectedCarrierGeometry` cannot be used as a renamed lower
+selected residual / semantic-delta / presheaf-restriction source.  It also
+proves that a surface-only constructor
+
+```text
+CurrentG06InputSurface -> SemanticRepairSelectedCarrierGeometry
+```
+
+is impossible under the same finite `PUnit` / `ZMod 2` witness: the geometry
+exposes a carrier-only model, whose degree-`0` carrier comparison gives
+`PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCarrierGeometry` is classified as carrier-source
+  equivalent, not a lower provenance discharge.
+- Explicit degree-wise carrier source remains `discharge-required`.
+- `CurrentG06InputSurface` alone cannot construct selected carrier geometry
+  under the finite `PUnit` / `ZMod 2` witness.
+- `SelectedSectionFamilyCarrierModel`: remains `discharge-required`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: unchanged and
+  still `discharge-required`.
+- No `H1` zero, boundary membership, global semantic repair coherence,
+  effective descent, refinement / naturality, comparison equivalence, or full
+  sheaf cohomology equivalence is introduced.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  <-> SelectedSectionFamilyCarrierModel
+  <-> explicit degree-wise carrier source
+
+surface-only selected-carrier-geometry constructor
+  -> geometry.toSelectedSectionFamilyCarrierModel
+  -> model.c0Carrier.toAddEquiv
+  + E.coefficient.C0 ≃+ PUnit
+  + K.Cn 0 ≃+ ZMod 2
+  -> PUnit ≃+ ZMod 2
+  -> False
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle61AxiomAudit.lean` — passed and removed after audit.
+- `selectedCarrierGeometry_iff_degreewiseCarrierData_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- No audited declaration depends on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean.
+- local path scan over changed Lean and report files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- major findings / veto: none.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- proof use: passed.  The no-constructor theorem proof-uses the geometry
+  constructor by applying it to the surface, extracting
+  `geometry.toSelectedSectionFamilyCarrierModel`, then using
+  `model.c0Carrier.toAddEquiv` to derive `PUnit ≃+ ZMod 2` and contradiction.
+  The `c1` and `c2` geometry components are unused because the degree-`0`
+  component already contradicts the finite witness; this is acceptable for a
+  blocker theorem, not a discharge theorem.
+- certificate provenance: the iff theorem composes the existing
+  geometry/model iff with the model/degree-wise-carrier-source iff, so
+  geometry cannot be treated as lower provenance.
+- unresolved provenance: no constructor is provided from genuinely lower
+  selected residual coefficient / selected semantic-delta /
+  presheaf-restriction sources.
+- structure field escape: no new structure or certificate field is introduced;
+  no `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, or full sheaf cohomology claim is hidden in a field.
+- blocking findings: no veto.  This is a legitimate blocker-fixed proof
+  checkpoint, not proof-obligation discharge and not target completion.
+- next obligation: construct the explicit degree-wise carrier source from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction sources, or record an explicit GOAL boundary revision.
+- completion candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+The same positive provenance obligation remains: construct the explicit
+degree-wise carrier source from genuinely lower selected residual coefficient /
+selected semantic-delta / presheaf-restriction sources, or record an explicit
+GOAL boundary revision.  This is now the repeated unresolved blocker after
+Cycles 60 and 61.
