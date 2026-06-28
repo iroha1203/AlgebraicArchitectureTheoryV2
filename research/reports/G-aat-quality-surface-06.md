@@ -12294,7 +12294,11 @@ selected Cech face-law source
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825293264>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825302465>.
+- PR #2726 merged at merge commit
+  `c1da989e9bde3416d1660f2a12604bad0fe78412`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
