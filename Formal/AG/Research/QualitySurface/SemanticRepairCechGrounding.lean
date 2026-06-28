@@ -6499,6 +6499,58 @@ theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierGeomet
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 63 blocker theorem: a surface-only constructor for selected carrier
+geometry together with direct selected differential compatibility cannot be
+unconditional over the current G-06 input surface.
+
+The proof projects the selected carrier geometry back to the carrier-only model
+and then applies the existing lower-pair blocker.  Thus adding direct
+differential compatibility beside the renamed selected carrier geometry does
+not discharge the missing carrier-source provenance from
+`CurrentG06InputSurface`.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry_and_directDifferentialCompatibility
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputGeometryAndDirectConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry
+            additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                geometry.toSelectedSectionFamilyCarrierModel)) :
+    False := by
+  let currentInputLowerPairConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model) :=
+    fun surface => by
+      rcases currentInputGeometryAndDirectConstructor surface with
+        ⟨geometry, direct⟩
+      exact ⟨geometry.toSelectedSectionFamilyCarrierModel, direct⟩
+  exact
+    no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputLowerPairConstructor
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and

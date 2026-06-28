@@ -8960,3 +8960,161 @@ The loop should not continue to re-select the same positive carrier-source
 obligation unless a new lower source is introduced.  The next meaningful action
 is either to add such a lower source theorem or to propose an explicit GOAL
 boundary revision; both are outside the current proof evidence.
+
+## Cycle 63 — selected geometry plus direct-differential blocker
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Add one Lean blocker theorem showing that CurrentG06InputSurface cannot
+construct SemanticRepairSelectedCarrierGeometry together with the corresponding
+direct selected differential compatibility source.
+```
+
+This is a non-redundant Lean blocker after Cycle 62: it closes the possible
+escape path of packaging the renamed selected carrier geometry with direct
+differential laws and treating that pair as enough lower provenance.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry_and_directDifferentialCompatibility`
+
+Statement shape:
+
+```text
+CurrentG06InputSurface
+  -> (C0 semantic carrier ≃+ PUnit)
+  -> (selected Cech C0 carrier ≃+ ZMod 2)
+  -> ((surface : CurrentG06InputSurface)
+        -> Exists geometry : SemanticRepairSelectedCarrierGeometry,
+             DirectDifferentialCompatibility
+               (SectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                 geometry.toSelectedSectionFamilyCarrierModel))
+  -> False
+```
+
+The proof projects
+`geometry.toSelectedSectionFamilyCarrierModel`, pairs it with the supplied
+direct differential compatibility, and applies the existing lower-pair blocker:
+
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility`
+
+Thus direct differential compatibility does not repair the missing selected
+carrier-source provenance when the carrier geometry itself is only a renamed
+selected carrier model.
+
+### Result
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a positive construction and not G-06 completion.  It only fixes the
+next false proof route:
+
+```text
+CurrentG06InputSurface
+  -/-> SemanticRepairSelectedCarrierGeometry
+          + DirectDifferentialCompatibility
+```
+
+because that route would imply the already-blocked
+
+```text
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility.
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCarrierGeometry + DirectDifferentialCompatibility`:
+  `discharge-required`, now blocked as a surface-only consequence of
+  `CurrentG06InputSurface`.
+- `SemanticRepairSelectedCarrierGeometry`: unchanged; not lower provenance
+  because it is equivalent to the explicit degree-wise carrier source.
+- `SelectedSectionFamilyCarrierModel`: unchanged; still `discharge-required`.
+- Explicit degree-wise carrier source: unchanged; still `discharge-required`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: unchanged as a
+  direct law source; adding it beside selected geometry does not discharge the
+  carrier-source gap.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  -> SelectedSectionFamilyCarrierModel
+
+SemanticRepairSelectedCarrierGeometry
+  + DirectDifferentialCompatibility
+  -> SelectedSectionFamilyCarrierModel
+       + DirectDifferentialCompatibility
+
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility
+
+therefore
+
+CurrentG06InputSurface
+  -/-> SemanticRepairSelectedCarrierGeometry
+          + DirectDifferentialCompatibility
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle63AxiomAudit.lean` — passed and removed after audit.
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report update; rerun after final diff
+  before PR.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean before report update; rerun after final diff before PR.
+- local path scan over changed Lean and report files — clean before report
+  update; rerun after final diff before PR.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- proof use: passed.  The theorem proof-uses the selected geometry by
+  projecting it to `SelectedSectionFamilyCarrierModel`, then proof-uses the
+  supplied direct compatibility through the existing lower-pair blocker.
+- certificate provenance: no new discharge.  The theorem confirms that
+  selected geometry plus direct differential compatibility is not lower
+  provenance from `CurrentG06InputSurface`.
+- structure field escape: passed.  No new structure or certificate field is
+  introduced, and no conclusion-side content is moved into a field.
+- blocking findings: no veto for approving this as a blocker-fixed proof
+  checkpoint.
+- next obligation: construct the explicit degree-wise carrier source from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data, or propose an explicit GOAL boundary revision
+  outside the proof loop.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 63 narrows the carrier-source blocker but does not discharge it.  The
+remaining positive obligation is still the explicit degree-wise carrier source
+from genuinely lower selected residual coefficient / selected semantic-delta /
+presheaf-restriction data.
