@@ -11397,7 +11397,7 @@ degree-0 additive equivalence
 
 ### Result
 
-- decision: pending T3 audit.
+- decision: approve.
 - result_type: proof-obligation-discharged.
 - target status: `target-proof-checkpoint`.
 - completion_candidate: no.
@@ -11529,3 +11529,191 @@ explicit lower carrier equivalence data.  The lower equivalences, degree-`2`
 zero laws, four explicit selected semantic-delta / `K.d` equations, true-sheaf
 certificate, gluing data, refinement/naturality, and full sheaf cohomology
 boundary remain material.
+
+## Cycle 80 — selected carrier geometry source for the Cycle 79 equivalence package
+
+### T1 Selection
+
+The selector chose to remove the degree-`0` / degree-`1` additive equivalences
+and degree-`2` zero laws as top-level premises of the active Cycle 79 route,
+relative to the lower selected carrier geometry source.
+
+This cycle does not claim that `CurrentG06InputSurface`, cover membership,
+sheaf condition, descent, or full sheaf cohomology constructs selected carrier
+geometry.  It only exposes that the Cycle 79 equivalence and zero-law inputs
+are supplied by `SemanticRepairSelectedCarrierGeometry` and are immediately
+proof-used by the Cycle 79 package theorem.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_explicitSelectedDifferentialLaws_via_degreewiseAdditiveEquiv`
+
+Reused declarations:
+
+- `CarrierSpecificAdditiveComparisonData.toAddEquiv`
+- `SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence`
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseAdditiveEquiv_and_explicitSelectedDifferentialLaws_via_selectedCarrierModel`
+
+Statement shape:
+
+```text
+SemanticRepairSelectedCarrierGeometry
+  -> degree-0 additive equivalence
+     + degree-1 additive equivalence
+     + degree-2 equivalence and zero laws
+  + four explicit selected semantic-delta / K.d equations
+  -> Cycle 79 degreewise-additive-equivalence package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: pending T3 audit.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 80 discharges the displayed degree-wise additive equivalences and
+degree-`2` zero laws as separate top-level package premises relative to
+`SemanticRepairSelectedCarrierGeometry`.  The selected carrier geometry itself,
+the four explicit selected semantic-delta / `K.d` equations, true-sheaf
+certificate, and gluing data remain material lower inputs.
+
+### Material Premise Ledger Delta
+
+- Degree-wise additive equivalences and degree-`2` zero laws: discharged as
+  separate top-level package premises relative to selected carrier geometry.
+- `SemanticRepairSelectedCarrierGeometry`: `discharge-required`; unresolved
+  below the selected carrier / residual / presheaf-restriction provenance
+  boundary.
+- Four explicit selected semantic-delta / `K.d` equations:
+  `discharge-required`; unresolved.
+- True-sheaf certificate and gluing data: inherited material inputs; untouched.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The ordinary degree-wise additive equivalences and degree-`2` zero laws are
+  no longer top-level inputs in this package route.
+- The extracted equivalences are immediately consumed by the Cycle 79 package
+  theorem, so this is proof-use rather than an extracted `Nonempty` witness.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct `SemanticRepairSelectedCarrierGeometry` from lower selected
+  carrier / residual / presheaf-restriction provenance, or keep it as explicit
+  target-boundary material data.
+- Construct the four explicit selected semantic-delta / `K.d` equations from
+  lower semantic-delta / presheaf-restriction data, or keep them as explicit
+  boundary data.
+- Keep true-sheaf certificate and gluing data proof-used, not hidden in a
+  structure field.
+- Leave refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+selected carrier geometry
+  -> degree-wise additive equivalences + degree-2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+  + explicit selected semantic-delta / K.d equations
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 76 selected model / direct-compatibility package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle80AxiomAudit.lean` — passed after `FormalAGResearch` build.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_explicitSelectedDifferentialLaws_via_degreewiseAdditiveEquiv`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file and audit file — clean.
+- report placeholder scan finds existing audit prose for `axiom` / `admit` /
+  `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean, report, and audit
+  file — clean.
+- local path scan over changed Lean, report, and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 79 conclusion is preserved
+  while the degree-wise equivalence premises are replaced by selected carrier
+  geometry.
+- Proof-use: passed.  The extracted carrier equivalences, degree-`2` zero
+  laws, four explicit selected `K.d` laws, true-sheaf certificate, and gluing
+  data are proof-used in the Cycle 80 route.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced, and selected carrier geometry remains explicit material lower
+  data rather than a completion certificate for `H1` zero, global coherence,
+  effective gluing, refinement/naturality, or full sheaf cohomology content.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The Cycle 79 downstream package conclusion
+  is preserved while the degree-wise equivalence and degree-`2` zero-law
+  premises are replaced by selected carrier geometry.
+- hidden material premise: none found.  Selected carrier geometry remains
+  explicit material lower data, and no `CurrentG06InputSurface`-only discharge
+  is claimed.
+- premise delta: degree-`0` / degree-`1` additive equivalences and degree-`2`
+  zero laws are discharged as separate top-level package premises relative to
+  `SemanticRepairSelectedCarrierGeometry`.
+- certificate provenance: `CarrierSpecificAdditiveComparisonData.toAddEquiv`
+  converts `geometry.c0Carrier` and `geometry.c1Carrier` into the Cycle 79
+  additive-equivalence inputs; `geometry.c2Equiv`, `geometry.c2Equiv_zero`,
+  and `geometry.c2Equiv_symm_zero` supply the degree-`2` inputs.
+- unresolved provenance: construction of `SemanticRepairSelectedCarrierGeometry`
+  itself, and construction of the four explicit selected differential laws.
+- proof use: passed.  The extracted carrier data, the four explicit `K.d`
+  laws, true-sheaf certificate, and gluing data are consumed by the theorem
+  route; no unused material premise was found for the Cycle 80 route.
+- structure field escape: none found.  `SemanticRepairSelectedCarrierGeometry`
+  remains explicit material lower data and is not treated as a completion
+  certificate.
+- blocking findings: none for approving Cycle 80 as a bounded discharge.
+- next obligation: construct `SemanticRepairSelectedCarrierGeometry` from lower
+  selected carrier / residual / presheaf-restriction provenance, or construct
+  the four explicit selected semantic-delta / `K.d` laws.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825124070>.
+- PR / CI sync: PR #2720 opened; all PR checks passed, including
+  `lake build`.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 80 removes the Cycle 79 degree-wise additive equivalence and degree-`2`
+zero-law inputs as top-level package premises relative to selected carrier
+geometry.  Selected carrier geometry, the four explicit selected
+semantic-delta / `K.d` equations, true-sheaf certificate, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
