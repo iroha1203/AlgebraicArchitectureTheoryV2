@@ -13035,3 +13035,189 @@ Cycle 87 removes `SemanticRepairCarrierSpecificComparisonProvenance` as an
 immediate top-level premise by routing through the direct lower bundle.  That
 direct lower bundle, cover membership, `AATSheafCondition`, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 88 — selected carrier model and direct compatibility route
+
+### T1 Selection
+
+The selector chose to lower the Cycle 87 transparent
+`DegreewiseCarrierDataAndDirectDifferentialLaws` premise to the already exposed
+pair:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+```
+
+The cycle must not reclassify the direct lower bundle as ambient boundary.  The
+selected carrier model and direct selected semantic-delta / cover-relative
+`K.d` compatibility remain visible material lower sources.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedCarrierModel_and_directDifferentialCompatibility`
+
+Statement shape:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> Cycle 87 direct-lower-bundle route
+Cycle 87 route
+  -> carrier-specific provenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 88 removes `DegreewiseCarrierDataAndDirectDifferentialLaws` as the
+immediate top-level premise in the latest `hcover` / `AATSheafCondition` route,
+relative to the selected carrier model and direct differential compatibility
+pair.
+
+### Material Premise Ledger Delta
+
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: discharged as an immediate
+  Cycle 87 premise relative to
+  `SelectedSectionFamilyCarrierModel +
+  SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- `SelectedSectionFamilyCarrierModel`: `discharge-required`; still material and
+  not constructed by this cycle.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`:
+  `discharge-required`; still material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The selected carrier model and direct differential compatibility are
+  proof-used to construct the direct lower bundle via
+  `SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndDirectDifferentialLaws_iff_selectedCarrierModel_and_directDifferentialCompatibility`.
+- The constructed direct lower bundle is immediately consumed by the Cycle 87
+  theorem.
+- The constructed carrier-specific provenance is then consumed by the existing
+  `hcover` / `AATSheafCondition` route.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `SelectedSectionFamilyCarrierModel`.
+- Construct or boundary-mark
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + four selected face equations
+  -> Cycle 86 / Cycle 87 package
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 87 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle88AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — pending final pre-PR run.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file, audit file, and
+  report — clean.
+- local path scan over changed Lean file, audit file, and report — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 87 package conclusion is
+  preserved while the direct lower bundle is replaced by the selected carrier
+  model and direct differential compatibility pair.
+- Proof-use: passed.  The model and direct compatibility construct
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`, and the constructed bundle
+  is passed directly into the Cycle 87 theorem.
+- Structure-field escape: passed for this bounded cycle.
+  `SelectedSectionFamilyCarrierModel` stores carrier comparison data and
+  degree-`2` zero laws; `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+  stores direct selected `K.d` equations.  Neither stores `H1` zero, boundary
+  membership, global coherence, effective gluing, refinement/naturality, or
+  full sheaf cohomology equivalence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: Cycle 87 `DegreewiseCarrierDataAndDirectDifferentialLaws` is
+  no longer a top-level premise in this route.
+- certificate provenance: direct lower provenance is constructed from the
+  selected carrier model and direct differential compatibility pair.
+- unresolved provenance: `SelectedSectionFamilyCarrierModel`,
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`, `hcover`,
+  `hSheaf`, and `gluingData`.
+- proof use: passed.  The constructed direct lower bundle is consumed by the
+  Cycle 87 theorem.
+- structure field escape: no conclusion-side escape found in the new
+  declaration.
+- blocking findings: none for approving Cycle 88 as a bounded discharge.
+- next obligation: construct or boundary-mark `SelectedSectionFamilyCarrierModel`
+  and `SemanticRepairCoverRelativeDirectDifferentialCompatibility`; separately
+  continue the `hcover`, `AATSheafCondition`, and `gluingData` construction /
+  boundary audit.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825530808>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 88 removes `DegreewiseCarrierDataAndDirectDifferentialLaws` as an
+immediate top-level premise by routing through the selected carrier model and
+direct differential compatibility pair.  That lower pair, cover membership,
+`AATSheafCondition`, gluing data, refinement/naturality, and full sheaf
+cohomology boundary remain material.
