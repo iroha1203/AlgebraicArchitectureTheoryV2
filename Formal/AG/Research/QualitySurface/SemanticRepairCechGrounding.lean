@@ -3843,6 +3843,80 @@ theorem carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarr
     Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) :=
   ⟨of_carrierSpecificComparisonProvenance provenance⟩
 
+/--
+Cycle 97 lower-source theorem: carrier-specific comparison provenance
+constructs both the selected carrier model and the matching selected
+face-restriction compatibility source through four explicit face equations.
+
+This discharges the Cycle 96 `SelectedSectionFamilyCarrierModel` plus explicit
+face-equation premises down to one audited provenance boundary.  The theorem
+does not construct that provenance from bare cover membership, sheaf condition,
+descent data, refinement/naturality, or full sheaf cohomology.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_explicitFaceRestrictionEquations
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance additive coverBridge K) :
+    let model :=
+      of_carrierSpecificComparisonProvenance
+        (additive := additive) (coverBridge := coverBridge) (K := K)
+        provenance
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) /\
+      Exists fun compatibility :
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive sectionWitness =>
+      compatibility =
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+          (additive := additive)
+          (sectionWitness := sectionWitness)
+          (by
+            intro primitive
+            simpa [of_carrierSpecificComparisonProvenance,
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+              SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+              SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+              CarrierSpecificAdditiveComparisonData.toAddEquiv,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                provenance.d0_face_to primitive)
+          (by
+            intro primitive
+            simpa [of_carrierSpecificComparisonProvenance,
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+              SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+              SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+              CarrierSpecificAdditiveComparisonData.toAddEquiv,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                provenance.d0_face_from primitive)
+          (by
+            intro cochain
+            simpa [of_carrierSpecificComparisonProvenance,
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+              SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+              CarrierSpecificAdditiveComparisonData.toAddEquiv,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                provenance.d1_face_to cochain)
+          (by
+            intro cochain
+            simpa [of_carrierSpecificComparisonProvenance,
+              SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+              SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+              CarrierSpecificAdditiveComparisonData.toAddEquiv,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+              SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+                provenance.d1_face_from cochain) := by
+  dsimp only
+  refine ⟨⟨of_carrierSpecificComparisonProvenance provenance⟩, ?_⟩
+  refine ⟨_, rfl⟩
+
 end SelectedSectionFamilyCarrierModel
 
 namespace SemanticRepairCoverRelativeSectionRealizationBridge
