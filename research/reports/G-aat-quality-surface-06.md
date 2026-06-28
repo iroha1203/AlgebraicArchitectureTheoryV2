@@ -16043,3 +16043,146 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 104 shows that the Cycle 103 realization boundary is no stronger than
 the transparent explicit lower data.  The explicit lower data itself and
 top-level cover/sheaf/gluing inputs remain material obligations.
+
+## Cycle 105 - Current Surface Cover Membership and Sheaf Condition Route
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: remove top-level `hcover` and `hSheaf` theorem
+  arguments by reading `selectedCover_mem` and `sheafCondition` directly from
+  `CurrentG06InputSurface`, while leaving `explicitLower` and `gluingData`
+  visible.
+
+### T1 Selector Input
+
+- proof obligation: add a current-surface wrapper that takes
+  `surface : CurrentG06InputSurface`, `gluingData`, and
+  `explicitLower`, then calls the Cycle 104 route using
+  `surface.selectedCover_mem` and `surface.sheafCondition`.
+- expected result type: `proof-obligation-discharged`.
+- completion candidate: no.
+- selection reason: the explicit lower-data source is already heavily
+  constructor/boundary tracked; the next smallest material input gap is the
+  top-level cover-membership / sheaf-condition route.
+
+### Lean Declarations
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_currentG06InputSurface_via_explicitLowerData`
+  reads `surface.selectedCover_mem` and `surface.sheafCondition` from
+  `CurrentG06InputSurface` and immediately proof-uses the Cycle 104
+  reconstructed-realization route.
+
+### Material Premise Ledger
+
+- `cover membership`: discharged relative to `CurrentG06InputSurface` by using
+  `surface.selectedCover_mem`.
+- `AATSheafCondition`: discharged relative to `CurrentG06InputSurface` by using
+  `surface.sheafCondition`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still
+  `discharge-required`; this cycle does not construct explicit lower data from
+  the current surface.
+- `gluingData`: still material and visible as an explicit theorem input.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- The cover membership and sheaf condition inputs are no longer top-level
+  arguments for the current-surface route; they are proof-used as fields of
+  `CurrentG06InputSurface`.
+- The constructed route immediately calls the Cycle 104 theorem.
+- No new certificate structure or package field is introduced.
+
+### Unfinished Obligations
+
+- Construct or further lower `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  from a genuinely lower selected residual / semantic-delta /
+  presheaf-restriction source, or keep the existing blocker/boundary ledger.
+- Construct or boundary-mark `gluingData`.
+- Completion still requires final `$math-lean-review`; this cycle is not a
+  completion candidate.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> selectedCover_mem
+  -> sheafCondition
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 104 reconstructed-realization route
+  -> Cycle 103 face-restriction-realization route
+  -> Cycle 102 explicit-lower package route
+  -> SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+gluingData
+  -> selected package conclusion / effective gluing surface
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle105AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_currentG06InputSurface_via_explicitLowerData`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle105AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: current-surface wrapper for cover membership and sheaf
+  condition, not completion.
+- Proof-use: passed.  The theorem passes `surface.selectedCover_mem` and
+  `surface.sheafCondition` directly to the Cycle 104 route.
+- Structure-field escape: passed.  `CurrentG06InputSurface` contains cover
+  membership and sheaf condition, but not explicit lower carrier data, face
+  laws, `H1` zero, full sheaf cohomology comparison, or refinement naturality.
+- Claim boundary: passed.  The theorem does not use `surface.descent` as a
+  shortcut, does not construct `gluingData`, and does not claim completion.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- completion_candidate: no.
+- blocking findings: none.
+- proof-use: passed.  The theorem removes top-level `hcover` / `hSheaf` and
+  uses `surface.selectedCover_mem` / `surface.sheafCondition` directly; the
+  downstream route consumes those hypotheses through the existing
+  `AATSheafCondition.cover` path.
+- anti-weakening: passed.  `explicitLower` remains a visible theorem input and
+  is passed through to the reconstructed-realization theorem; `gluingData`
+  remains visible in the theorem statement and conclusion surface.
+- residual obligations: `explicitLower` is still supplied, not constructed from
+  `CurrentG06InputSurface`; `gluingData` is still supplied; final completion
+  and `$math-lean-review` remain outside this cycle.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826622123>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 105 discharges the top-level cover-membership and sheaf-condition
+arguments relative to `CurrentG06InputSurface`.  The explicit lower data and
+gluing data remain material obligations.
