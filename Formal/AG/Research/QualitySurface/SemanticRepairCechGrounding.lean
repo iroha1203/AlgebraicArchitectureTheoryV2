@@ -6410,6 +6410,95 @@ theorem no_constructor_from_currentG06InputSurface_without_degreewiseCarrierData
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 61 boundary theorem: selected carrier geometry is not a further lower
+semantic/residual source below the explicit degree-wise carrier data.
+
+The existing `SemanticRepairSelectedCarrierGeometry` node is useful in the
+proof DAG, but it contains exactly the same carrier source needed for
+`SelectedSectionFamilyCarrierModel`: degree-`0` and degree-`1`
+carrier-specific additive comparison data, a degree-`2` equivalence, and the
+two degree-`2` zero laws.  Therefore it cannot discharge the Cycle 60
+provenance gap unless that exact source has already been constructed from
+genuinely lower selected residual / semantic-delta / presheaf-restriction data.
+-/
+theorem selectedCarrierGeometry_iff_degreewiseCarrierData_and_c2ZeroEquivalence
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    Nonempty
+        (SemanticRepairSelectedCarrierGeometry
+          additive surface.coverBridge surface.K) <->
+      Exists fun _ :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0
+          (surface.K.Cn 0) =>
+      Exists fun _ :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1
+          (surface.K.Cn 1) =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+        (letI := surface.K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+          (letI := surface.K.cochainAddCommGroup 2
+           c2Equiv.symm 0 = E.coefficient.zero2) := by
+  exact
+    (SemanticRepairSelectedCarrierGeometry.selectedCarrierGeometry_iff_selectedSectionFamilyCarrierModel
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)).trans
+      (SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K))
+
+/--
+Cycle 61 blocker theorem: a surface-only constructor for selected carrier
+geometry cannot be unconditional over the current G-06 input surface.
+
+This prevents using `SemanticRepairSelectedCarrierGeometry` as a renamed lower
+semantic/residual source.  Any such geometry exposes a carrier-only
+`SelectedSectionFamilyCarrierModel`, whose degree-`0` carrier comparison again
+produces an additive equivalence `PUnit ≃+ ZMod 2` under the finite test
+assumptions.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierGeometry
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputCarrierGeometryConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        SemanticRepairSelectedCarrierGeometry
+          additive surface.coverBridge surface.K) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let geometry :
+      SemanticRepairSelectedCarrierGeometry
+        additive surface.coverBridge surface.K :=
+    currentInputCarrierGeometryConstructor surface
+  let model :
+      SelectedSectionFamilyCarrierModel
+        additive surface.coverBridge surface.K :=
+    geometry.toSelectedSectionFamilyCarrierModel
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    model.c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cycle 55 current-surface path: displayed carrier data and direct selected
 differential laws construct the Cycle 54 explicit finite witness, then that
 witness is proof-used to construct the selected cochain realization and
