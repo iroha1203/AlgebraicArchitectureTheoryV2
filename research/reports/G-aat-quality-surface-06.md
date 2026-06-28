@@ -11184,3 +11184,171 @@ top-level package premise relative to four explicit selected differential
 equations.  The equations themselves, the selected carrier model, true-sheaf
 certificate, gluing data, refinement/naturality, and full sheaf cohomology
 boundary remain material.
+
+## Cycle 78 — post-Cycle-77 explicit-law interface blocker
+
+### T1 Selection
+
+The selector chose a blocker theorem, not another positive package theorem:
+fix the exact post-Cycle-77 remaining interface
+`CurrentG06InputSurface -/-> SelectedSectionFamilyCarrierModel + four explicit
+selected semantic-delta / K.d laws`.
+
+The selector explicitly vetoed using the face-equation package route as the
+main Cycle 78 result.  That route is harmless and now recorded as a
+supplementary theorem, but it is too close to existing Cycle 74-77 route
+composition to count as the next material discharge by itself.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_explicitSelectedDifferentialLaws`
+- supplementary route theorem:
+  `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations_via_directDifferentialCompatibility`
+
+Statement shape:
+
+```text
+CurrentG06InputSurface
+  + alleged constructor of
+      SelectedSectionFamilyCarrierModel
+      + four explicit selected semantic-delta / K.d equations
+  -> alleged constructor of
+      SelectedSectionFamilyCarrierModel
+      + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 58 finite PUnit / ZMod 2 blocker
+  -> False
+```
+
+The proof constructs direct selected differential compatibility from the four
+displayed equations using
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility.of_explicit_selected_differential_laws`,
+then proof-uses the existing Cycle 58 blocker.
+
+### Result
+
+- decision: approve (T3 audit).
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate.  It records that a uniform
+`CurrentG06InputSurface`-only constructor for the selected carrier model and
+four explicit selected semantic-delta / `K.d` equations would imply the Cycle
+58 lower pair and is refuted in the finite `PUnit` / `ZMod 2` blocker
+specialization.  The exact Cycle 77 lower interface remains
+`discharge-required`.
+
+### Material Premise Ledger Delta
+
+- `CurrentG06InputSurface`: `ambient-boundary`; now theorem-fixed as
+  insufficient for constructing the post-Cycle-77 lower interface.
+- `SelectedSectionFamilyCarrierModel`: `discharge-required`; unresolved.
+- Four explicit selected semantic-delta / `K.d` equations:
+  `discharge-required`; unresolved.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`:
+  already discharged as a separate top-level premise relative to the four
+  explicit equations by Cycle 77.
+- True-sheaf certificate and gluing data: inherited material inputs; untouched.
+- Lower selected residual / presheaf-restriction provenance:
+  `discharge-required`; unresolved.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- Fixed a theorem-level blocker for the exact post-Cycle-77 interface: a
+  uniform `CurrentG06InputSurface`-only constructor for the selected carrier
+  model and four explicit selected differential equations would imply the
+  Cycle 58 lower pair and is refuted in the finite `PUnit` / `ZMod 2` blocker
+  specialization.
+- Preserved Cycle 77's direct-compatibility discharge: explicit laws still
+  construct direct compatibility, and the blocker proof uses that constructor.
+- Added a supplementary face-restriction package route that proof-uses
+  `toDirectDifferentialCompatibility`; it is not counted as the main discharge.
+
+### Unfinished Obligations
+
+- Construct `SelectedSectionFamilyCarrierModel` from concrete selected
+  carrier / residual / section-family data, or keep it as an explicit boundary.
+- Construct the four explicit selected semantic-delta / `K.d` equations from
+  lower semantic-delta / presheaf-restriction data, or keep them as an explicit
+  boundary.
+- Keep true-sheaf certificate and gluing data proof-used, not hidden in a
+  structure field.
+- Leave refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+       + explicit selected semantic-delta / K.d equations
+       -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+       -> Cycle 76 selected model / direct-compatibility package
+       -> cover-relative Cech H1 comparison
+       -> cover-relative H1 zero / effective-gluing package
+```
+
+Supplementary route:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + explicit selected face-restriction equations
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 76 package route
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle78AxiomAudit.lean` — passed after using fully qualified names.
+- `no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_explicitSelectedDifferentialLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations_via_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed for the current Lean/report diff.
+- placeholder scan over changed Lean file and audit file — clean; scanning the
+  report also finds existing audit prose for `axiom` / `admit` / `unsafe`, not
+  Lean placeholders.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The main theorem is a blocker, not a positive
+  completion claim; it does not reclassify selected carrier data or explicit
+  differential laws as ambient site/sheaf data.
+- Proof-use: passed.  The four explicit laws are transformed into direct
+  compatibility and immediately consumed by the Cycle 58 blocker.
+- Structure-field escape: passed.  No H1 zero, global semantic repair
+  coherence, boundary membership, effective descent, or comparison equivalence
+  is hidden in a new field.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync: pending.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 78 fixes the exact post-Cycle-77 non-constructor boundary.  The selected
+carrier model and four explicit selected semantic-delta / `K.d` equations are
+still material `discharge-required` premises.
