@@ -15555,7 +15555,11 @@ SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826366480>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826376176>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2762>,
+  merged at 2026-06-28T14:20:12Z,
+  merge commit `1107632d8f571fd7c8636ccf6c24854b9429eed1`.
 
 ### Target Status
 
