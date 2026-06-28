@@ -6834,6 +6834,89 @@ theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_
       currentInputDirectBundleConstructor
 
 /--
+Cycle 78 blocker theorem: the post-Cycle-77 interface is still not generated
+by the current G-06 input surface alone.
+
+Cycle 77 reduced the opaque direct compatibility premise to a selected carrier
+model plus four explicit semantic-delta / cover-relative `K.d` equations.  This
+theorem fixes that exact remaining interface as a material boundary: any
+surface-only constructor for the model together with those four equations
+would construct the Cycle 58 lower pair, contradicting the finite
+`PUnit` / `ZMod 2` blocker.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_explicitSelectedDifferentialLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputExplicitLawConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          let sectionWitness :=
+            SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model
+          ((letI := additive.c0AddCommGroup
+            letI := additive.c1AddCommGroup
+            letI := surface.K.cochainAddCommGroup 0
+            letI := surface.K.cochainAddCommGroup 1
+            forall primitive : E.coefficient.C0,
+              surface.K.d 0 (sectionWitness.c0SectionEquiv primitive) =
+                sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+            (letI := additive.c0AddCommGroup
+             letI := additive.c1AddCommGroup
+             letI := surface.K.cochainAddCommGroup 0
+             letI := surface.K.cochainAddCommGroup 1
+             forall primitive : surface.K.Cn 0,
+              E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+                sectionWitness.c1SectionEquiv.symm (surface.K.d 0 primitive)) /\
+            (letI := additive.c1AddCommGroup
+             letI := surface.K.cochainAddCommGroup 1
+             forall cochain : E.coefficient.C1,
+              surface.K.d 1 (sectionWitness.c1SectionEquiv cochain) =
+                sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+            (letI := additive.c1AddCommGroup
+             letI := surface.K.cochainAddCommGroup 1
+             forall cochain : surface.K.Cn 1,
+              E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+                sectionWitness.c2SectionEquiv.symm (surface.K.d 1 cochain)))) :
+    False := by
+  let currentInputLowerPairConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model) :=
+    fun surface =>
+      let hsource := currentInputExplicitLawConstructor surface
+      Exists.elim hsource fun model laws =>
+        let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+        let direct :
+            SemanticRepairCoverRelativeDirectDifferentialCompatibility
+              additive sectionWitness :=
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility.of_explicit_selected_differential_laws
+            (additive := additive) (sectionWitness := sectionWitness)
+            laws.1 laws.2.1 laws.2.2.1 laws.2.2.2
+        ⟨model, direct⟩
+  exact
+    no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputLowerPairConstructor
+
+/--
 Cycle 59 carrier-model boundary: the current site/sheaf/presheaf surface
 reaches presheaf zero/add laws and the selected Cech differential identity,
 but a selected carrier model is still exactly degree-wise carrier comparison
@@ -9738,6 +9821,210 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       (additive := data.toAdditiveCechH1Data)
       (sectionWitness := sectionWitness)
       d0_direct_to d0_direct_from d1_direct_to d1_direct_from
+  exact
+    trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedFaceLaws_and_explicitFaceRestrictionEquations
+      data S F cover certificate gluingData coverBridge K model direct
+
+/--
+Cycle 78 explicit selected face-restriction version of the Cycle 76 route.
+
+The theorem constructs
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` from the four
+displayed selected face equations for the section witness induced by the
+carrier model, converts it to direct selected differential compatibility by
+`CoverRelativeCechComplex.d_eq_alternatingFaceCombination`, and immediately
+proof-uses the constructed compatibility through the Cycle 76 package route.
+Thus the remaining displayed source is lower than the Cycle 77 direct `K.d`
+equations: it is the selected presheaf face-restriction presentation itself.
+-/
+theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations_via_directDifferentialCompatibility
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate :
+      SemanticRepairCoverH1BoundaryRelationTrueSheafConditionCertificate
+        data.boundaryRelation S F cover)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (model :
+      SelectedSectionFamilyCarrierModel
+        data.toAdditiveCechH1Data coverBridge K)
+    (d0_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c0AddCommGroup
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      letI := K.cochainAddCommGroup 1
+      forall primitive :
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.C0,
+        K.alternatingFaceCombination 0
+            (fun σ i =>
+              K.faceRestrictionTerm 0 i
+                (sectionWitness.c0SectionEquiv primitive) σ) =
+          sectionWitness.c1SectionEquiv
+            ((toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+                primitive))
+    (d0_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c0AddCommGroup
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      letI := K.cochainAddCommGroup 1
+      forall primitive : K.Cn 0,
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta0
+            (sectionWitness.c0SectionEquiv.symm primitive) =
+          sectionWitness.c1SectionEquiv.symm
+            (K.alternatingFaceCombination 0
+              (fun σ i => K.faceRestrictionTerm 0 i primitive σ)))
+    (d1_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      forall cochain :
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.C1,
+        K.alternatingFaceCombination 1
+            (fun σ i =>
+              K.faceRestrictionTerm 1 i
+                (sectionWitness.c1SectionEquiv cochain) σ) =
+          sectionWitness.c2SectionEquiv
+            ((toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta1
+                cochain))
+    (d1_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+      letI := data.toAdditiveCechH1Data.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      forall cochain : K.Cn 1,
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient.delta1
+            (sectionWitness.c1SectionEquiv.symm cochain) =
+          sectionWitness.c2SectionEquiv.symm
+            (K.alternatingFaceCombination 1
+              (fun σ i => K.faceRestrictionTerm 1 i cochain σ))) :
+    Exists fun _geometry :
+      SemanticRepairSelectedCarrierGeometry
+        data.toAdditiveCechH1Data coverBridge K =>
+    Exists fun _faceLaws :
+      SemanticRepairSelectedCechFaceLawSource
+        data.toAdditiveCechH1Data
+          (SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+            model) =>
+    Exists fun _explicitLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K) =>
+    Exists fun _directLower :
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K) =>
+    Exists fun provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        data.toAdditiveCechH1Data coverBridge K =>
+    let c0Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+        provenance
+    let c1Carrier :=
+      SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+        provenance
+    let c2Equiv :=
+      SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+        provenance
+    let reconstructedModel :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := data.toAdditiveCechH1Data)
+        (coverBridge := coverBridge)
+        (K := K)
+        c0Carrier c1Carrier c2Equiv
+        provenance.toSection2_zero provenance.fromSection2_zero
+    let reconstructedDirect :=
+      provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+    let compatibility :=
+      reconstructedDirect.toFaceRestrictionCompatibility
+    let reconstructedGeometry :=
+      SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel
+        reconstructedModel
+    let reconstructedFaceLaws :=
+      SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility
+        reconstructedModel compatibility
+    let reconstructedProvenance :=
+      SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws
+        reconstructedGeometry reconstructedFaceLaws
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      (∃! globalSection : F.obj (op base),
+        AAT.AG.Site.AATGlobalSectionRealizes
+          gluingData globalSection) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          reconstructedProvenance.toCochainRealization.toH1Comparison) /\
+      (GlobalSemanticRepairCoherent
+            (toFiniteTower
+              (toSheafH1Envelope
+                data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) <->
+          reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      (reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero ->
+        GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData))) /\
+      (GlobalSemanticRepairCoherent
+          (toFiniteTower
+            (toSheafH1Envelope
+              data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) ->
+        reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+        reconstructedProvenance.toCochainRealization.toH1Comparison.CoverRelativeResidualH1Zero) /\
+      NonabelianTorsorTrivial
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      HigherCoherenceVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) /\
+      StackEffectivelyVanishes
+        (toFiniteTower
+          (toSheafH1Envelope
+            data.boundaryRelation.toAbelianDescentData.toEnvelopeData)) := by
+  let sectionWitness :=
+    SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      model
+  let compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        data.toAdditiveCechH1Data sectionWitness :=
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+      (additive := data.toAdditiveCechH1Data)
+      (sectionWitness := sectionWitness)
+      d0_face_to d0_face_from d1_face_to d1_face_from
+  let direct :
+      SemanticRepairCoverRelativeDirectDifferentialCompatibility
+        data.toAdditiveCechH1Data sectionWitness :=
+    compatibility.toDirectDifferentialCompatibility
   exact
     trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedFaceLaws_and_explicitFaceRestrictionEquations
       data S F cover certificate gluingData coverBridge K model direct
