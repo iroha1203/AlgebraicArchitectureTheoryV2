@@ -10312,3 +10312,144 @@ Cycle 71 closes the direct-to-face-law proof-use step into the true-sheaf /
 cover-relative `H1` zero effective-gluing package, but it does not discharge
 the four direct selected semantic-delta / Cech differential laws from lower
 `CurrentG06InputSurface` data.
+
+## Cycle 72 — carrier-provenance direct-law package discharge
+
+### T1 Selection
+
+The selector chose the nearest premise left by Cycle 71: remove the four direct
+selected `K.d` laws from the true-sheaf / cover-relative `H1` zero
+effective-gluing route by deriving the selected carrier model and direct
+differential compatibility from the already audited lower boundary
+`SemanticRepairCarrierSpecificComparisonProvenance`.
+
+The selected result is explicitly relative to
+`SemanticRepairCarrierSpecificComparisonProvenance`.  It does not claim
+`CurrentG06InputSurface` alone constructs the direct laws or the provenance.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_constructs_selectedCarrierModel_and_directDifferentialCompatibility`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_directDifferentialCompatibility`
+
+Statement shape:
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+
+SemanticRepairCarrierSpecificComparisonProvenance
+  + true-sheaf certificate / gluing data
+    -> carrier data + C2 zero laws
+    -> direct differential compatibility projected from provenance
+    -> Cycle 71 direct-differential theorem
+    -> selected face-law / reconstructed provenance route
+    -> cover-relative H1 zero / effective-gluing package
+```
+
+The proof uses
+`provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel`
+and passes the resulting four direct-law fields into the Cycle 71 theorem.  The
+Cycle 71 theorem then converts the direct laws to face-restriction compatibility
+and reaches the existing true-sheaf / cover-relative `H1` zero package.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because
+`SemanticRepairCarrierSpecificComparisonProvenance`, the true-sheaf
+certificate, and gluing data remain material inputs.
+
+### Material Premise Ledger Delta
+
+- Four direct selected `K.d` laws: discharged as top-level premises relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- Selected carrier model and direct differential compatibility: constructed
+  from the audited carrier-specific provenance boundary.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: remains a material lower
+  provenance source; it is not constructed from `CurrentG06InputSurface` or
+  lower atom / presheaf / semantic-delta data in this cycle.
+- True-sheaf certificate and gluing data: remain material theorem inputs for
+  inherited sheaf / descent / effective-gluing proof-use.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> toSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+  -> DirectDifferentialCompatibility
+  -> Cycle 71 direct-differential theorem
+  -> toFaceRestrictionCompatibility
+  -> selected Cech face-law source
+  -> reconstructed carrier provenance
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle72AxiomAudit.lean` — passed and removed after audit.
+- `carrierSpecificComparisonProvenance_constructs_selectedCarrierModel_and_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_carrierSpecificComparisonProvenance_via_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean before report edit.
+- local path scan over changed Lean file — clean before report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: no new conclusion-equivalent structure field escape
+  found.
+- premise delta: four direct selected `K.d` laws are no longer top-level
+  premises in the carrier-provenance route; they are projected from
+  `provenance.toSectionRealizationBridge` and consumed through the Cycle 71
+  direct-differential theorem.
+- certificate provenance: selected carrier model and direct differential
+  compatibility are constructed from audited carrier-specific provenance.
+  The provenance itself remains unresolved below this theorem.
+- proof use: passed.  The derived direct compatibility is proof-used by passing
+  its fields into the Cycle 71 package theorem, which converts to face
+  compatibility and reaches `H1` zero / effective gluing.
+- structure field escape: passed for the new theorem; inherited provenance
+  fields still prevent completion status.
+- blocking findings: none.
+- next obligation: construct or explicitly boundary-ledger
+  `SemanticRepairCarrierSpecificComparisonProvenance` from lower semantic-delta
+  / presheaf / selected face-law data.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 72 removes the four direct selected `K.d` laws as top-level premises in
+the carrier-provenance route, but it remains relative to
+`SemanticRepairCarrierSpecificComparisonProvenance` and inherited true-sheaf /
+gluing inputs.
