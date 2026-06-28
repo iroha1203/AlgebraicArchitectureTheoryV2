@@ -10175,3 +10175,140 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 70 discharges the ordinary additive-equivalence source at the
 carrier-specific provenance boundary, but the broader site / sheaf / Cech `H1`
 target package still has remaining material premises.
+
+## Cycle 71 — direct differential laws to face-law effective-gluing package
+
+### T1 Selection
+
+The selector chose the selected semantic-delta / presheaf-restriction face-law
+source that remains behind `SemanticRepairCarrierSpecificComparisonProvenance`.
+The selected obligation was to construct face-restriction compatibility /
+direct differential compatibility from non-conclusion-bearing lower data and
+proof-use it with the carrier source path to reach the cover-relative `H1`
+comparison / zero package.
+
+Cycle 71 discharges the selected face-restriction-compatibility node relative
+to finite carrier witness data and the four displayed direct selected `K.d`
+differential laws.  It does not construct those four direct laws from
+`CurrentG06InputSurface` alone.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_directDifferentialLaws`
+
+Statement shape:
+
+```text
+finite carrier witness data
+  + degree-2 zero laws
+  + four direct selected K.d differential laws
+  + true-sheaf certificate / gluing data
+    -> direct differential compatibility
+    -> face-restriction compatibility via toFaceRestrictionCompatibility
+    -> selected carrier geometry + selected Cech face-law source
+    -> carrier-specific comparison provenance
+    -> sheaf condition / descent / effective gluing
+    -> cover-relative H1 zero comparison package
+```
+
+The proof uses
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility.toFaceRestrictionCompatibility`,
+whose definition rewrites by `K.d_eq_alternatingFaceCombination`, and then feeds
+the constructed compatibility into
+`trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_faceRestrictionCompatibility`.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because finite carrier witnesses,
+degree-`2` zero laws, the four direct selected differential laws, the
+true-sheaf certificate, and gluing data remain material inputs.
+
+### Material Premise Ledger Delta
+
+- Selected face-restriction compatibility: discharged relative to finite
+  carrier witness data and the four direct selected `K.d` laws.
+- Selected Cech face-law source / reconstructed carrier provenance: constructed
+  in the theorem body from the model and direct-to-face compatibility.
+- Four direct selected semantic-delta / Cech differential laws: remain
+  `discharge-required`; they are not generated from `CurrentG06InputSurface`
+  alone in this cycle.
+- True-sheaf certificate and gluing data: remain material theorem inputs for the
+  inherited sheaf / descent / effective-gluing package.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+finite carrier witness data + C2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+four direct selected K.d laws
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> toFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> selected carrier geometry + selected Cech face-law source
+  -> carrier-specific comparison provenance
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle71AxiomAudit.lean` — passed and removed after audit.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_degreewiseCarrierData_and_directDifferentialLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean before report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: no new conclusion-equivalent structure field escape
+  found.
+- premise delta: selected face-restriction compatibility is no longer a
+  top-level premise; it is constructed from four direct `K.d` laws through
+  `toFaceRestrictionCompatibility`.
+- certificate provenance: selected face-law/provenance source is constructed
+  from the constructed model and direct-to-face compatibility.  Direct `K.d`
+  laws are still unresolved below this theorem.
+- proof use: passed.  The constructed direct compatibility is converted by the
+  Cech differential identity and consumed by the existing `H1` zero /
+  effective-gluing package theorem.
+- structure field escape: passed for the new theorem; inherited certificate
+  fields still prevent completion status.
+- blocking findings: none.
+- next obligation: construct or ledger-bound the four direct selected
+  differential laws from lower presheaf / semantic-delta source, or explicitly
+  keep them as the next `discharge-required` premise.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 71 closes the direct-to-face-law proof-use step into the true-sheaf /
+cover-relative `H1` zero effective-gluing package, but it does not discharge
+the four direct selected semantic-delta / Cech differential laws from lower
+`CurrentG06InputSurface` data.
