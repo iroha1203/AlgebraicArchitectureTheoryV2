@@ -8517,6 +8517,31 @@ theorem coverRelativeCechH1_requires_explicit_fullSheafCohomologyComparison
       (CoverRelativeCechH1FullSheafCohomologyComparison K FullSheafH1) :=
   ⟨comparison⟩
 
+/--
+Cycle 100 boundary theorem: a cover-relative Cech `H1` class cannot be sent
+to an arbitrary full-sheaf cohomology target without explicit target data.
+
+If the chosen full-sheaf `H1` target is empty while the selected
+cover-relative Cech `H1` surface is inhabited, then an alleged comparison would
+produce an element of an empty type.  Thus G-06's cover-relative theorem cannot
+be upgraded to a full sheaf cohomology equivalence by default.
+-/
+theorem coverRelativeCechH1_fullSheafComparison_not_unconditional_for_empty_target
+    {U : AAT.AG.AtomCarrier.{u}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    {FullSheafH1 : Type u}
+    [IsEmpty FullSheafH1]
+    (hcech : Nonempty (K.CechCohomologySucc 0))
+    (comparison :
+      CoverRelativeCechH1FullSheafCohomologyComparison K FullSheafH1) :
+    False := by
+  rcases hcech with ⟨h1Class⟩
+  exact (inferInstance : IsEmpty FullSheafH1).false
+    (comparison.toFullSheafH1 h1Class)
+
 /-- Extra data required for general cover-refinement naturality. -/
 structure CoverRefinementNaturalityComparison
     {Atom : Type u}
@@ -8538,6 +8563,31 @@ theorem coverRefinementNaturality_requires_explicit_comparison
     (comparison : CoverRefinementNaturalityComparison coarse fine) :
     Nonempty (CoverRefinementNaturalityComparison coarse fine) :=
   ⟨comparison⟩
+
+/--
+Cycle 100 boundary theorem: refinement naturality is not automatic when the
+coarse residual is zero but the fine residual is not zero.
+
+Any refinement comparison must preserve both residual and zero.  Therefore, if
+the coarse residual already equals zero, preservation would force the fine
+residual to equal fine zero.  A fine surface whose residual is genuinely
+nonzero blocks such an unconditional naturality comparison.
+-/
+theorem coverRefinementNaturality_not_unconditional_when_residual_zero_boundary_changes
+    {Atom : Type u}
+    {coarse fine : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+    (hcoarse : coarse.coefficient.residual = coarse.coefficient.zero1)
+    (hfine : fine.coefficient.residual ≠ fine.coefficient.zero1)
+    (comparison : CoverRefinementNaturalityComparison coarse fine) :
+    False := by
+  apply hfine
+  calc
+    fine.coefficient.residual =
+        comparison.pullbackC1 coarse.coefficient.residual := by
+          exact comparison.preservesResidual.symm
+    _ = comparison.pullbackC1 coarse.coefficient.zero1 := by
+          rw [hcoarse]
+    _ = fine.coefficient.zero1 := comparison.preservesZero
 
 /--
 Final G-06 Lean package surface.  It intentionally returns cover-relative Cech

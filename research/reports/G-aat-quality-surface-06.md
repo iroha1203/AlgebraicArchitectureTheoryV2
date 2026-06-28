@@ -15261,3 +15261,154 @@ Cycle 99 proves that the Cycle 98 selected carrier model plus explicit
 face-restriction compatibility output is not generated from
 `CurrentG06InputSurface` alone.  The transparent lower-data source remains a
 real boundary unless a genuinely lower admissible construction is added.
+
+## Cycle 100 - Full-Sheaf and Refinement Boundary Hardening
+
+### Cycle Result
+
+- result: `blocker-fixed`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: strengthen the G-06 claim boundary for cover-relative
+  Cech `H1` versus full sheaf cohomology and for general cover-refinement /
+  naturality, so these are not merely prose or comparison-argument restatements.
+
+### Lean Declarations
+
+- `coverRelativeCechH1_fullSheafComparison_not_unconditional_for_empty_target`
+  proves that if the selected cover-relative Cech `H1` surface is inhabited
+  and the alleged full-sheaf `H1` target is empty, then any full-sheaf
+  comparison produces a contradiction.  This blocks an unconditional upgrade
+  from cover-relative Cech `H1` to arbitrary full sheaf cohomology.
+- `coverRefinementNaturality_not_unconditional_when_residual_zero_boundary_changes`
+  proves that a refinement comparison preserving residual and zero cannot
+  exist when the coarse residual is zero but the fine residual is nonzero.
+  This blocks unconditional refinement naturality across incompatible residual
+  boundaries.
+
+### Material Premise Ledger
+
+- Full sheaf cohomology comparison: `out-of-scope` unless explicit comparison
+  data is supplied.  Cycle 100 proves this cannot be unconditional over an
+  arbitrary empty target once cover-relative Cech `H1` is inhabited.
+- Cover refinement / naturality: `out-of-scope` unless explicit refinement
+  comparison data is supplied.  Cycle 100 proves residual/zero preservation can
+  be obstructed by changing residual-zero boundary.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still material
+  from Cycle 98 / Cycle 99.
+- `cover membership`: still material as `hcover` in downstream routes.
+- `AATSheafCondition`: still material as `hSheaf` in downstream routes.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+
+### Completed Obligations
+
+- The cover-relative Cech `H1` / full sheaf cohomology boundary is now backed
+  by a negative Lean theorem, not only by report prose or a comparison
+  structure argument.
+- The cover refinement / naturality boundary is now backed by a negative Lean
+  theorem showing residual-zero incompatibility.
+- Neither theorem introduces global semantic repair coherence, `H1` zero,
+  boundary membership, effective descent, refinement naturality, or full sheaf
+  cohomology equivalence as a hidden structure field.
+
+### Unfinished Obligations
+
+- Construct the Cycle 98 output from a genuine lower selected residual /
+  semantic-delta / presheaf-restriction source, or keep that transparent lower
+  data as an explicit tracking-ledger premise.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Completion still requires final `$math-lean-review`; this cycle is not a
+  completion candidate.
+
+### Dependency DAG
+
+```text
+cover-relative Cech H1 inhabited
+  + empty full-sheaf H1 target
+  + alleged full-sheaf comparison
+  -> element of empty target
+  -> False
+
+coarse residual = coarse zero
+  + fine residual != fine zero
+  + alleged refinement comparison preserving residual and zero
+  -> fine residual = fine zero
+  -> False
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle100AxiomAudit.lean` — passed.
+- `coverRelativeCechH1_fullSheafComparison_not_unconditional_for_empty_target`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `coverRefinementNaturality_not_unconditional_when_residual_zero_boundary_changes`
+  does not depend on any axioms.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle100AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: boundary theorem package, not completion.  It blocks two
+  overclaims the GOAL explicitly forbids: unconditional full sheaf cohomology
+  comparison and unconditional refinement naturality.
+- Proof-use: passed.  The alleged comparison objects are consumed to derive
+  contradictions from explicit boundary assumptions.
+- Structure-field escape: passed.  The comparison structures are used as
+  alleged overclaim witnesses and are not treated as completion evidence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `blocker-fixed`.
+- completion_candidate: no.
+- blocking findings: none.
+- boundary claim: passed.  The two new declarations harden claim boundaries
+  rather than proving G-06 completion or full sheaf cohomology equivalence.
+- proof-use: passed.  The full-sheaf comparison consumes `toFullSheafH1` to
+  produce an element of an empty target, and the refinement comparison consumes
+  `preservesResidual` / `preservesZero` to contradict the fine residual boundary.
+- hidden material premise: none found.  The inhabited Cech `H1`, empty full
+  target, coarse-zero, and fine-nonzero assumptions are explicit boundary
+  assumptions.
+- structure-field escape: passed.  The comparison structures are used as
+  alleged overclaim witnesses, not as completion certificates.
+- remaining premises: `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  lower-source construction, `hcover`, `AATSheafCondition`, `gluingData`, and
+  final `$math-lean-review` remain unfinished.
+- next obligation: construct the Cycle 98 / 99 transparent lower data from a
+  genuine lower selected residual / semantic-delta / presheaf-restriction
+  source, or keep it as an explicit tracking-ledger premise.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826325341>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 100 hardens two required claim boundaries.  Full sheaf cohomology
+comparison and cover refinement / naturality remain outside the completed
+cover-relative Cech package unless explicit compatible comparison data is
+supplied.
