@@ -11035,3 +11035,152 @@ top-level package premises relative to a selected section-family carrier model
 and direct selected differential compatibility.  Those lower selected sources,
 the true-sheaf certificate, gluing data, refinement/naturality, and full sheaf
 cohomology boundary remain material.
+
+## Cycle 77 — explicit selected differential laws to direct compatibility route
+
+### T1 Selection
+
+The selector chose the nearest opaque material premise left by Cycle 76:
+lower `SemanticRepairCoverRelativeDirectDifferentialCompatibility` to the four
+explicit selected semantic-delta / cover-relative `K.d` equations for the
+section-family witness induced by a `SelectedSectionFamilyCarrierModel`, and
+then proof-use the constructed compatibility through the Cycle 76 package
+route.
+
+This does not discharge the selected carrier model.  It also does not claim
+that the four displayed equations follow from `CurrentG06InputSurface`, cover
+membership, sheaf condition, descent, or arbitrary site data.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeDirectDifferentialCompatibility.of_explicit_selected_differential_laws`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeDirectDifferentialCompatibility.explicit_selected_differential_laws_constructs_directDifferentialCompatibility`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeDirectDifferentialCompatibility.directDifferentialCompatibility_iff_explicit_selected_differential_laws`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_explicitSelectedDifferentialLaws_via_directDifferentialCompatibility`
+
+Statement shape:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + four explicit selected semantic-delta / K.d equations
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 76 selected model + direct-compatibility package
+  -> SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> Cycle 75 selected-geometry / selected-face-law package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+The constructor theorem makes the direct-compatibility source transparent.
+The package theorem constructs the direct compatibility and immediately passes
+it to the Cycle 76 theorem, rather than merely returning a standalone
+`Nonempty` witness.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because `SelectedSectionFamilyCarrierModel`,
+the four explicit selected differential equations, the true-sheaf certificate,
+and gluing data remain material inputs.  Cover refinement / naturality and
+full sheaf cohomology comparison remain explicitly out of the current theorem
+claim.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: discharged as
+  an opaque top-level premise relative to the four explicit selected
+  semantic-delta / `K.d` equations for the model-induced section witness.
+- Four explicit selected differential equations: remain material lower
+  selected semantic-delta / presheaf-restriction compatibility data.
+- `SelectedSectionFamilyCarrierModel`: remains a material lower selected
+  carrier source; it is not reclassified as ambient site/sheaf/presheaf
+  boundary.
+- True-sheaf certificate and gluing data: remain material theorem inputs for
+  inherited sheaf / descent / effective-gluing proof-use.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  + explicit selected semantic-delta / K.d equations
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 76 selected model / direct-compatibility route
+  -> SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> Cycle 75 selected-geometry / selected-face-law package
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle77AxiomAudit.lean` — passed.
+- `explicit_selected_differential_laws_constructs_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `directDifferentialCompatibility_iff_explicit_selected_differential_laws`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_explicitSelectedDifferentialLaws_via_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean.
+- local path scan over changed Lean file — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The theorem preserves the Cycle 76 package
+  conclusion and only replaces the opaque direct-compatibility premise by four
+  displayed selected differential laws.
+- hidden material premise: none found.  No new certificate or structure field
+  was introduced; the existing direct-compatibility structure contains only
+  the four selected `K.d` / semantic-delta equations.
+- premise delta: direct compatibility is removed as an opaque premise in this
+  package route relative to the four displayed selected differential laws.
+- certificate provenance: the constructed direct compatibility is immediately
+  consumed by the Cycle 76 package theorem; provenance below the four
+  equations remains unresolved.
+- proof use: passed.  The model constructs the section witness; the four
+  equations construct direct compatibility; the constructed direct
+  compatibility is immediately passed to the Cycle 76 route.
+- structure field escape: passed for the new theorem.  H1 zero, effective
+  gluing, comparison, refinement, and full sheaf cohomology are not hidden in
+  the new constructor.
+- blocking findings: none.
+- next obligation: construct or boundary-ledger the four explicit selected
+  semantic-delta / `K.d` equations and `SelectedSectionFamilyCarrierModel`
+  from genuinely lower selected residual / presheaf-restriction / site data.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 77 removes direct selected differential compatibility as an opaque
+top-level package premise relative to four explicit selected differential
+equations.  The equations themselves, the selected carrier model, true-sheaf
+certificate, gluing data, refinement/naturality, and full sheaf cohomology
+boundary remain material.
