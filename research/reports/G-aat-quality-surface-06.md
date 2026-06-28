@@ -15873,7 +15873,10 @@ SemanticRepairCoverRelativeFaceRestrictionRealization
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826502305>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826517579>;
+  PR #2766 merged at `b6c34425b9939b7505866bcf49ca6dfa6113f093`
+  with all checks passing.
 
 ### Target Status
 
