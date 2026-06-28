@@ -11902,7 +11902,11 @@ selected carrier geometry
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825200598>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825209393>.
+- PR #2722 merged at merge commit
+  `b750ef978b7107ad62ba5a3472a49faf676c3620`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
