@@ -11130,6 +11130,108 @@ abbrev SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
             data.boundaryRelation.toAbelianDescentData.toEnvelopeData))
 
 /--
+Cycle 101 proof-use theorem: the selected-carrier package conclusion exposes
+the sheaf condition, descent, and effective gluing assertions as usable
+proofs.
+
+This is not a new certificate field.  It destructs the transparent package
+surface and returns exactly the local-to-global statements produced by the
+previous true-sheaf route.
+-/
+theorem selectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion_extracts_sheaf_descent_effectiveGluing
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry
+        data.toAdditiveCechH1Data coverBridge K)
+    (package :
+      SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+        data S F cover gluingData coverBridge K geometry) :
+    AAT.AG.Site.AATSheafConditionFor S F cover /\
+      AAT.AG.Site.AATDescent S F cover /\
+      (∃! globalSection : F.obj (op base),
+        AAT.AG.Site.AATGlobalSectionRealizes
+          gluingData globalSection) := by
+  dsimp [SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion] at package
+  rcases package with
+    ⟨_geometry, _faceLaws, _explicitLower, _directLower, _provenance,
+      hSheafFor, hDescent, hEffectiveGluing, _rest⟩
+  exact ⟨hSheafFor, hDescent, hEffectiveGluing⟩
+
+/--
+Cycle 101 proof-use theorem: the same package conclusion exposes an actual
+cover-relative `H1` comparison, its package inhabitant, and the zero/coherence
+equivalences as usable proofs.
+
+The theorem destructs the transparent package surface instead of treating the
+comparison or zero equivalence as a hidden completion certificate.
+-/
+theorem selectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion_extracts_coverRelativeH1Zero_comparison
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    {U : AAT.AG.AtomCarrier.{r}}
+    {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A)
+    (F : AAT.AG.Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (gluingData : AAT.AG.Site.AATGluingData S F cover)
+    (coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob)
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry
+        data.toAdditiveCechH1Data coverBridge K)
+    (package :
+      SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion
+        data S F cover gluingData coverBridge K geometry) :
+    let tower :=
+      toFiniteTower
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData)
+    ∃ comparison :
+      SemanticRepairCoverRelativeH1Comparison data.toAdditiveCechH1Data K,
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{u, v, w, x, y, z, r}
+          comparison) /\
+        (GlobalSemanticRepairCoherent tower <->
+          comparison.CoverRelativeResidualH1Zero) /\
+        (comparison.CoverRelativeResidualH1Zero ->
+          GlobalSemanticRepairCoherent tower) /\
+        (GlobalSemanticRepairCoherent tower ->
+          comparison.CoverRelativeResidualH1Zero) /\
+        (SemanticRepairAdditiveH1Zero data.toAdditiveCechH1Data <->
+          comparison.CoverRelativeResidualH1Zero) := by
+  dsimp [SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion]
+    at package
+  rcases package with
+    ⟨_geometry, _faceLaws, _explicitLower, _directLower, _provenance,
+      _hSheafFor, _hDescent, _hEffectiveGluing, hPackage,
+      hCoherentIff, hZeroToCoherent, hCoherentToZero, hAdditiveZeroIff,
+      _hTorsor, _hHigher, _hStack⟩
+  exact
+    ⟨_, hPackage, hCoherentIff, hZeroToCoherent, hCoherentToZero,
+      hAdditiveZeroIff⟩
+
+/--
 Cycle 81 selected-face-law source version of the Cycle 80 explicit selected
 differential-law package.
 
