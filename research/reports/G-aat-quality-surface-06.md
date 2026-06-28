@@ -13419,3 +13419,192 @@ premise by routing through displayed degreewise equivalence sources.  Those
 equivalence sources, direct differential compatibility, cover membership,
 `AATSheafCondition`, gluing data, refinement/naturality, and full sheaf
 cohomology boundary remain material.
+
+## Cycle 90 — explicit selected differential laws for direct compatibility
+
+### T1 Selection
+
+The selector chose to lower the Cycle 89
+`SemanticRepairCoverRelativeDirectDifferentialCompatibility` structure premise
+to the four displayed selected semantic-delta / cover-relative `K.d` equations
+for the section witness induced by the constructed degreewise carrier model.
+
+This targets the immediate structure-field escape in the latest
+`hcover` / `AATSheafCondition` route.  The four equations must remain visible
+material lower sources; the cycle must not claim that `CurrentG06InputSurface`,
+cover membership, `AATSheafCondition`, descent, effective gluing,
+refinement/naturality, or full sheaf cohomology constructs them.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_degreewiseAdditiveEquiv_and_explicitSelectedDifferentialLaws`
+
+Statement shape:
+
+```text
+c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+  -> constructed SelectedSectionFamilyCarrierModel
+four displayed selected K.d equations
+  -> constructed SemanticRepairCoverRelativeDirectDifferentialCompatibility
+constructed model + constructed direct compatibility
+  -> Cycle 89 degreewise-equivalence route
+Cycle 89 route
+  -> selected carrier model
+  -> direct lower bundle
+  -> carrier-specific provenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 90 removes `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+as an immediate top-level premise in the latest `hcover` /
+`AATSheafCondition` route, relative to four explicit selected differential
+laws.  Those four laws remain `discharge-required` material sources.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: discharged as
+  an immediate Cycle 89 premise relative to the displayed `d0_direct_to`,
+  `d0_direct_from`, `d1_direct_to`, and `d1_direct_from` equations.
+- Four displayed selected semantic-delta / cover-relative `K.d` equations:
+  `discharge-required`; still material and not constructed by this cycle.
+- Degree-`0` and degree-`1` additive equivalences: `discharge-required`; still
+  material and not constructed by this cycle.
+- Degree-`2` zero-preserving equivalence source: `discharge-required`; still
+  material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The direct compatibility witness is constructed by
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility.of_explicit_selected_differential_laws`.
+- The constructed direct compatibility is immediately proof-used by the Cycle
+  89 route.
+- The four displayed equations are proof-used to build the direct
+  compatibility witness.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark the four displayed selected differential laws.
+- Construct or boundary-mark the displayed degreewise equivalence sources.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+four displayed selected K.d equations
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + four selected face equations
+  -> Cycle 86 / Cycle 87 / Cycle 88 / Cycle 89 package
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 89 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle90AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_degreewiseAdditiveEquiv_and_explicitSelectedDifferentialLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake env lean .tmp/G06Cycle90AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 89 package conclusion is
+  preserved while the direct compatibility top-level premise is replaced by
+  displayed selected differential laws.
+- Proof-use: passed.  The four laws construct `direct`; the constructed
+  `direct` is passed directly into the Cycle 89 theorem.
+- Structure-field escape: passed for this bounded cycle.  The direct
+  compatibility structure is no longer a theorem argument; it is reconstructed
+  internally from explicit laws.  The laws themselves remain unresolved
+  material premises.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: Cycle 89
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` is no longer a
+  top-level premise in this route.
+- certificate provenance: direct compatibility is constructed from the four
+  displayed laws by
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility.of_explicit_selected_differential_laws`.
+- unresolved provenance: the four differential laws, displayed degreewise
+  equivalence sources, `hcover`, `hSheaf`, and `gluingData`.
+- proof use: passed.  The four laws are used to construct `direct`; `direct` is
+  consumed by the Cycle 89 theorem.
+- structure field escape: no conclusion-side escape found in the new
+  declaration.
+- blocking findings: none for approving Cycle 90 as a bounded discharge.
+- next obligation: construct or further lower the remaining explicit material
+  sources, especially the four selected `K.d` laws or the degreewise
+  equivalence / zero-preservation sources, without claiming they follow from
+  `hcover` or `AATSheafCondition`.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825761122>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 90 removes `SemanticRepairCoverRelativeDirectDifferentialCompatibility`
+as an immediate top-level premise by routing through four displayed selected
+differential laws.  Those laws, the degreewise equivalence sources, cover
+membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
+sheaf cohomology boundary remain material.
