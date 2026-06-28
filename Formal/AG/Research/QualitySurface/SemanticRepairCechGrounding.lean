@@ -6756,6 +6756,56 @@ theorem grounded_package_of_section_realization_bridge_via_selectedCarrierModel_
     bridge.toSelectedSectionFamilyCarrierModel
     bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
 
+/--
+Cycle 64 blocker theorem: a surface-only constructor for the richer selected
+section-realization bridge cannot be unconditional over the current G-06 input
+surface.
+
+The bridge is a ready-made selected comparison source: it projects to the
+carrier-only model and to direct selected differential compatibility for that
+model.  Therefore any constructor of this bridge from `CurrentG06InputSurface`
+alone would construct the already-blocked lower pair.
+-/
+theorem no_constructor_from_currentG06InputSurface_without_sectionRealizationBridge
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputSectionBridgeConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        SemanticRepairCoverRelativeSectionRealizationBridge
+          additive surface.coverBridge surface.K) :
+    False := by
+  let currentInputLowerPairConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeDirectDifferentialCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model) :=
+    fun surface => by
+      let bridge :
+          SemanticRepairCoverRelativeSectionRealizationBridge
+            additive surface.coverBridge surface.K :=
+        currentInputSectionBridgeConstructor surface
+      exact
+        ⟨bridge.toSelectedSectionFamilyCarrierModel,
+          bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel⟩
+  exact
+    SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility
+      (surface := surface) c0SourceEquiv c0TargetEquiv
+      currentInputLowerPairConstructor
+
 end SemanticRepairCoverRelativeSectionRealizationBridge
 
 namespace SemanticRepairCarrierSpecificComparisonProvenance

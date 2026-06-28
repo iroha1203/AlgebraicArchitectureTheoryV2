@@ -9118,3 +9118,169 @@ Cycle 63 narrows the carrier-source blocker but does not discharge it.  The
 remaining positive obligation is still the explicit degree-wise carrier source
 from genuinely lower selected residual coefficient / selected semantic-delta /
 presheaf-restriction data.
+
+## Cycle 64 — section-realization bridge blocker
+
+### T1 Selection
+
+Selected obligation:
+
+```text
+Prove that CurrentG06InputSurface alone cannot construct the richer
+SemanticRepairCoverRelativeSectionRealizationBridge.
+```
+
+This closes a distinct richer-source escape path after Cycle 63.  The older
+section-realization bridge contains carrier equivalences, degree-`2` zero laws,
+and direct selected differential compatibility.  It projects to the already
+blocked lower pair:
+
+```text
+SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility.
+```
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeSectionRealizationBridge.no_constructor_from_currentG06InputSurface_without_sectionRealizationBridge`
+
+Statement shape:
+
+```text
+CurrentG06InputSurface
+  -> (C0 semantic carrier ≃+ PUnit)
+  -> (selected Cech C0 carrier ≃+ ZMod 2)
+  -> ((surface : CurrentG06InputSurface)
+        -> SemanticRepairCoverRelativeSectionRealizationBridge
+             additive surface.coverBridge surface.K)
+  -> False
+```
+
+The proof constructs a lower-pair constructor by taking any bridge and
+projecting:
+
+```text
+bridge.toSelectedSectionFamilyCarrierModel
+bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+```
+
+It then applies:
+
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_without_selectedCarrierModel_and_directDifferentialCompatibility`
+
+### Result
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a positive construction and not G-06 completion.  It fixes the
+false proof route:
+
+```text
+CurrentG06InputSurface
+  -/-> SemanticRepairCoverRelativeSectionRealizationBridge
+```
+
+because that route would imply:
+
+```text
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility.
+```
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairCoverRelativeSectionRealizationBridge`: `discharge-required`
+  if used as current-surface provenance; now blocked as a surface-only
+  consequence of `CurrentG06InputSurface`.
+- `SelectedSectionFamilyCarrierModel + DirectDifferentialCompatibility`:
+  unchanged; already blocked as a surface-only consequence of
+  `CurrentG06InputSurface`.
+- `SelectedSectionFamilyCarrierModel`: unchanged; still `discharge-required`.
+- Explicit degree-wise carrier source: unchanged; still `discharge-required`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: unchanged as a
+  direct law source; a bridge containing it does not discharge the carrier
+  source.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeSectionRealizationBridge
+  -> SelectedSectionFamilyCarrierModel
+  -> DirectDifferentialCompatibility
+
+CurrentG06InputSurface
+  -/-> SelectedSectionFamilyCarrierModel
+          + DirectDifferentialCompatibility
+
+therefore
+
+CurrentG06InputSurface
+  -/-> SemanticRepairCoverRelativeSectionRealizationBridge
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle64AxiomAudit.lean` — passed and removed after audit.
+- `no_constructor_from_currentG06InputSurface_without_sectionRealizationBridge`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report update and will be rerun after the
+  final report edit before PR.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean before this T3 edit and will be rerun after the final report edit
+  before PR.
+- local path scan over changed Lean and report files — clean before this T3
+  edit and will be rerun after the final report edit before PR.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: blocker-fixed.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found.
+- proof use: passed.  The theorem proof-uses
+  `currentInputSectionBridgeConstructor`, projects
+  `bridge.toSelectedSectionFamilyCarrierModel` and
+  `bridge.toDirectDifferentialCompatibilityForSelectedCarrierModel`, then
+  invokes the existing lower-pair blocker with `c0SourceEquiv` and
+  `c0TargetEquiv`.
+- certificate provenance: no positive provenance is discharged.  The bridge
+  escape route is ruled out as current-surface provenance.
+- structure field escape: passed.  No new structure or certificate field is
+  introduced, and no `H1` zero, boundary membership, global coherence,
+  effective descent, comparison equivalence, refinement naturality, or full
+  sheaf cohomology content is moved into a field.
+- blocking findings: none.
+- next obligation: construct the explicit degree-wise carrier source from
+  genuinely lower selected residual coefficient / selected semantic-delta /
+  presheaf-restriction data, or propose an explicit GOAL boundary revision
+  outside the proof loop.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 64 narrows the richer selected-comparison bridge escape route but does
+not discharge the remaining positive carrier-source obligation.  The next
+positive obligation is still the explicit degree-wise carrier source from
+genuinely lower selected residual coefficient / selected semantic-delta /
+presheaf-restriction data.
