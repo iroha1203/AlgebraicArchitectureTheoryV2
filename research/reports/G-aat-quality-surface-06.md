@@ -15714,7 +15714,11 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826421735>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826433016>.
+- PR: <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2764>,
+  merged at 2026-06-28T14:41:23Z,
+  merge commit `dcbe32f78033ce197febefc28e401e2ac353e06a`.
 
 ### Target Status
 
