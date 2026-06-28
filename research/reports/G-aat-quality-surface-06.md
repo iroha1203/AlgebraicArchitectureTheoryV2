@@ -14603,3 +14603,175 @@ Cycle 95 lowers the immediate section-family witness source to selected carrier
 model data.  That selected carrier model, face-restriction compatibility, cover
 membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
 sheaf cohomology boundary remain material.
+
+## Cycle 96 - Explicit Face-Restriction Equations Route
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: replace the immediate
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` theorem argument
+  in the selected carrier model route with a compatibility object constructed
+  from four explicit face-restriction equations for the induced section-family
+  witness.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`
+  is the constructor used for the compatibility proof source.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations_with_realizationBoundary`
+  proves the Cycle 95 finite-boundary route from:
+  - `SelectedSectionFamilyCarrierModel`;
+  - four displayed equations `d0_face_to`, `d0_face_from`, `d1_face_to`,
+    and `d1_face_from`;
+  - the still-visible cover membership, `AATSheafCondition`, gluing data,
+    cover bridge, and cover-relative Cech complex data.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged at the
+  immediate theorem-argument layer.  The Cycle 96 theorem constructs it from
+  `of_explicit_face_restriction_equations` and proof-uses it through the Cycle
+  95 route.
+- `d0_face_to`, `d0_face_from`, `d1_face_to`, `d1_face_from`:
+  `discharge-required`; still material.  Cycle 96 exposes them as typed
+  equations instead of hiding them inside a compatibility structure argument.
+- `SelectedSectionFamilyCarrierModel`: `discharge-required`; still material and
+  not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The immediate `SemanticRepairCoverRelativeFaceRestrictionCompatibility`
+  theorem argument has been replaced by four explicit face-restriction
+  equations.
+- The constructed compatibility object is immediately proof-used by the Cycle
+  95 finite-boundary theorem.
+- The statement keeps the constructed section witness and compatibility
+  relation tied to `SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+  model`.
+- No `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology content is introduced as a
+  new structure field.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark `SelectedSectionFamilyCarrierModel`.
+- Construct or boundary-mark the four explicit face-restriction equations from
+  lower admissible data.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  -> SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+constructed section-family witness
+  + d0_face_to + d0_face_from + d1_face_to + d1_face_from
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+constructed compatibility
+  -> Cycle 95 theorem
+Cycle 95 theorem
+  -> Cycle 94 theorem
+Cycle 94 theorem
+  -> constructed face-restriction realization
+  -> faceRestrictionRealization_requires_finiteWitnessBoundary
+  -> Cycle 93 theorem
+Cycle 93 theorem
+  -> selected carrier geometry + selected Cech face-law source
+  -> Cycle 92 theorem
+cover membership + AATSheafCondition
+  -> Cycle 84 certificate route
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle96AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_selectedSectionFamilyCarrierModel_and_explicitFaceRestrictionEquations_with_realizationBoundary`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle96AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream finite-boundary route is
+  preserved while the immediate compatibility theorem argument is replaced by
+  four explicit face-restriction equations.
+- Proof-use: passed.  The four equations construct `compatibility`; the
+  constructed compatibility is consumed by the Cycle 95 theorem.
+- Structure-field escape: bounded checkpoint only.  The four equations remain
+  theorem arguments and are not counted as target completion evidence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: the immediate
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` theorem argument
+  is no longer a top-level theorem argument; it is constructed from
+  `d0_face_to`, `d0_face_from`, `d1_face_to`, and `d1_face_from`.
+- certificate provenance: compatibility provenance for the selected section
+  witness is explicit through
+  `of_explicit_face_restriction_equations`.
+- unresolved provenance: construction of the selected carrier model, the four
+  face equations, `hcover`, `hSheaf`, `gluingData`,
+  refinement/naturality, and full sheaf cohomology comparison remains
+  unresolved and visible.
+- proof use: passed.  The four face equations are used to construct
+  `compatibility`, and `compatibility` is consumed by the Cycle 95 route.
+- structure field escape: none found for the bounded claim.
+- blocking findings: none for approving Cycle 96 as a bounded discharge.
+- next obligation: construct or explicitly target-boundary-mark the selected
+  carrier model and the four face-restriction equations from lower admissible
+  inputs.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826134078>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 96 lowers the immediate face-restriction compatibility source to four
+explicit typed equations for the selected carrier model section witness.  The
+selected carrier model, those four equations, cover membership,
+`AATSheafCondition`, gluing data, refinement/naturality, and full sheaf
+cohomology boundary remain material.
