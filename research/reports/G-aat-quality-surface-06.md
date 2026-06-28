@@ -10877,3 +10877,161 @@ Cycle 75 removes the explicit finite face-equation witness as a top-level
 premise relative to selected carrier geometry and selected Cech face laws.  The
 selected geometry / face-law sources, true-sheaf certificate, and gluing data
 remain material and must not be hidden as ambient boundary.
+
+## Cycle 76 — direct selected differential compatibility to selected face-law route
+
+### T1 Selection
+
+The selector chose the remaining selected face-law provenance gap left by
+Cycle 75: construct `SemanticRepairSelectedCechFaceLawSource` from genuinely
+lower selected data, namely a `SelectedSectionFamilyCarrierModel` plus direct
+selected semantic-delta / `K.d` compatibility for the section-family witness
+induced by that model, and then proof-use the constructed face-law source
+through the Cycle 75 explicit-face-equation package route.
+
+This was selected over another `CurrentG06InputSurface` blocker because the
+surface-only route is already known to be insufficient.  Cycle 76 therefore
+does not claim that arbitrary site / cover / sheaf data produces the selected
+model or direct selected differential compatibility; it only removes the bare
+selected face-law source as a top-level package premise relative to those
+lower selected inputs.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedFaceLaws_and_explicitFaceRestrictionEquations`
+- Existing constructor proof-used by the theorem:
+  `SemanticRepairSelectedCechFaceLawSource.of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`
+- Existing geometry constructor proof-used by the theorem:
+  `SemanticRepairSelectedCarrierGeometry.of_selectedSectionFamilyCarrierModel`
+
+Statement shape:
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> Cycle 75 selected-geometry / selected-face-law package
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> carrier-specific comparison provenance
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+The new theorem constructs the selected carrier geometry from the model,
+constructs selected Cech face laws from the same model and direct selected
+differential compatibility, and immediately passes both constructed lower
+sources to the Cycle 75 package theorem.  The resulting package still includes
+the sheaf-condition, descent, effective-gluing, comparison, cover-relative H1
+zero, torsor, higher-coherence, and stack-effectivity components inherited
+from the established route.
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a completion candidate because `SelectedSectionFamilyCarrierModel`,
+direct selected differential compatibility, the true-sheaf certificate, and
+gluing data remain material inputs.  Cover refinement / naturality and full
+sheaf cohomology comparison remain explicitly out of the current theorem
+claim.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCechFaceLawSource`: discharged as a top-level premise
+  relative to `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility`.
+- `SemanticRepairSelectedCarrierGeometry`: discharged as a top-level premise
+  relative to the same `SelectedSectionFamilyCarrierModel`.
+- `SelectedSectionFamilyCarrierModel`: remains a material lower selected
+  source; it is not reclassified as ambient site/sheaf/presheaf boundary.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: remains a
+  material lower selected compatibility source; it is not an H1-zero,
+  global-coherence, effective-gluing, refinement, or full sheaf cohomology
+  conclusion.
+- True-sheaf certificate and gluing data: remain material theorem inputs for
+  inherited sheaf / descent / effective-gluing proof-use.
+- Cover refinement / naturality and full sheaf cohomology comparison: not
+  introduced or claimed.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> SemanticRepairSelectedCarrierGeometry
+  + SemanticRepairSelectedCechFaceLawSource
+  -> Cycle 75 selected-geometry / selected-face-law package
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 74 explicit-face-equation package
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> Cycle 73 direct-lower-bundle package
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle76AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility_via_selectedFaceLaws_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed files — clean.
+- local path scan over changed files — clean.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The theorem is explicitly relative to
+  selected model plus direct selected differential compatibility, and does not
+  claim a `CurrentG06InputSurface`-only construction.
+- hidden material premise: none found.  No new conclusion-equivalent
+  certificate or structure field was introduced; inherited certificate /
+  gluing inputs remain explicit and block completion status.
+- premise delta: the selected face-law source and selected carrier geometry
+  are removed as top-level premises in this package route relative to selected
+  model plus direct selected differential compatibility.
+- certificate provenance: the constructed geometry and face-law source are
+  immediately consumed by the Cycle 75 package theorem; provenance below the
+  selected model and direct selected differential compatibility remains
+  unresolved.
+- proof use: passed.  The model constructs geometry; the model and direct
+  compatibility construct face laws; both are immediately passed to the Cycle
+  75 theorem.
+- structure field escape: passed for the new theorem.  The report keeps H1
+  zero, effective gluing, refinement / naturality, and full sheaf cohomology
+  boundaries explicit.
+- blocking findings: none.
+- next obligation: construct or boundary-ledger
+  `SelectedSectionFamilyCarrierModel` and
+  `SemanticRepairCoverRelativeDirectDifferentialCompatibility` from genuinely
+  lower selected residual / semantic-delta / presheaf-restriction / site data.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 76 removes selected carrier geometry and selected Cech face laws as
+top-level package premises relative to a selected section-family carrier model
+and direct selected differential compatibility.  Those lower selected sources,
+the true-sheaf certificate, gluing data, refinement/naturality, and full sheaf
+cohomology boundary remain material.
