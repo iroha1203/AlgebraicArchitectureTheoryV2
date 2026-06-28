@@ -16469,7 +16469,10 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826727215>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826746220>;
+  PR #2774 merged at `ee61c0eb83ac0b5f0ca9b1297d9cbd1d505fbb87`
+  with all checks passing.
 
 ### Target Status
 
@@ -16621,7 +16624,10 @@ gluingData
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826765876>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826782850>;
+  PR #2775 merged at `ab4718b7215edefe6791e626420afdd3db4c6272`
+  with all checks passing.
 
 ### Target Status
 
@@ -16630,3 +16636,156 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 108 fixes `gluingData` as a direction-hypothesis compatible local-family
 input.  It does not discharge the explicit lower-data source, and final
 `$math-lean-review` remains premature.
+
+## Cycle 109 - Explicit Lower-Source Final Boundary Packet
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: fix
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` as an explicit
+  finite comparison witness and remaining discharge-required premise.
+
+### T1 Selector Input
+
+- proof obligation: tie the explicit lower source to
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`,
+  `SemanticRepairSelectedCarrierGeometry`, and
+  `SemanticRepairSelectedCechFaceLawSource`, while exposing that the current
+  surface cannot construct it.
+- expected result type: `proof-checkpoint`.
+- completion candidate: no.
+- selection reason: prior cycles already proved lower-source equivalences and
+  no-uniform constructor blockers.  Treating this witness as discharged or
+  ambient would hide comparison adequacy and selected differential
+  compatibility.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitLowerData_final_boundary_packet`
+  records that explicit lower data:
+  - is present as `Nonempty DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+  - constructs `Nonempty SemanticRepairCoverRelativeFaceRestrictionRealization`;
+  - constructs selected carrier geometry plus selected Cech face laws;
+  - keeps the no-uniform carrier-comparison / additive-equivalence blockers
+    visible.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: remains
+  `discharge-required` and unresolved for completion.  It is a transparent
+  finite witness containing degree-wise carrier comparison data, degree-`2`
+  zero laws, and four selected face-restriction equations.
+- `SemanticRepairCoverRelativeFaceRestrictionRealization`: constructed from
+  the explicit lower witness and used as comparison-route support, but this is
+  not a generation theorem from the current site/sheaf surface.
+- `SemanticRepairSelectedCarrierGeometry` / `SemanticRepairSelectedCechFaceLawSource`:
+  constructed from the explicit lower witness and proof-used as separated
+  lower sources.
+- `CurrentG06InputSurface`, cover membership, sheaf condition, descent, and
+  `gluingData`: do not construct this explicit lower witness.
+- Full sheaf cohomology comparison and cover refinement / naturality remain
+  `out-of-scope` unless explicit compatible comparison data is supplied.
+
+### Completed Obligations
+
+- The remaining lower source is no longer ambiguous in the ledger: it is an
+  explicit finite comparison witness, not a hidden conclusion-bearing
+  certificate.
+- The witness is connected to the already-audited face-restriction realization
+  and selected carrier / face-law sources.
+- The no-uniform constructor blockers remain part of the theorem package.
+
+### Unfinished Obligations
+
+- The explicit lower witness is not discharged from atom-supported
+  `CurrentG06InputSurface` data.  G-06 therefore remains a checkpoint.
+- Final `$math-lean-review` is not run; this cycle is not a completion
+  candidate and G-06 is not `target-theorem-proved`.
+
+### Dependency DAG
+
+```text
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_faceRestrictionRealization
+  -> Nonempty SemanticRepairCoverRelativeFaceRestrictionRealization
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource
+  -> SemanticRepairSelectedCarrierGeometry + SemanticRepairSelectedCechFaceLawSource
+
+CurrentG06InputSurface
+  -> currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources
+  -> no-uniform carrier/equivalence blockers remain visible
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle109AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_explicitLowerData_final_boundary_packet`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle109AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed lower-source checkpoint, not G-06 completion.
+- Proof-use: passed.  The theorem uses the explicit lower witness to construct
+  face-restriction realization and selected carrier / face-law sources, then
+  keeps no-uniform constructor blockers visible.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced.  The finite witness remains a transparent `Prop`.
+- Claim boundary: passed.  The theorem does not claim that
+  `CurrentG06InputSurface`, cover membership, sheaf condition, descent,
+  `gluingData`, refinement naturality, or full sheaf cohomology constructs the
+  lower witness.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- proof-use audit: passed.  The theorem proof-uses
+  `degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_faceRestrictionRealization`,
+  `currentG06InputSurface_explicitFiniteWitness_constructs_selectedCarrierGeometry_and_faceLawSource`,
+  and
+  `currentG06InputSurface_explicitFiniteWitness_requires_concrete_lower_sources`.
+- structure-field escape audit: passed.  No new structure or certificate field
+  is introduced, and H1 zero, global coherence, effective descent, full sheaf
+  cohomology, and refinement naturality are not hidden in the conclusion.
+- blocking findings: completion remains blocked because the explicit lower
+  witness is still supplied as `lower`; there is no theorem constructing it
+  from `CurrentG06InputSurface`, cover membership, sheaf condition, descent, or
+  `gluingData`.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826809910>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 109 fixes the remaining explicit lower source as a fail-closed finite
+comparison witness.  Since this witness is still not generated from the
+atom-supported current surface, final `$math-lean-review` remains premature.
