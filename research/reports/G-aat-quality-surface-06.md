@@ -12477,7 +12477,11 @@ Cycle 83 package
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825339398>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825348395>.
+- PR #2728 merged at merge commit
+  `6cc994cf30254c5cfd2bafb8776a1ae06574a7b5`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
