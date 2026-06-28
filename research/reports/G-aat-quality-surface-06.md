@@ -16177,7 +16177,10 @@ gluingData
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826622123>.
-- PR / CI sync: pending.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826631347>;
+  PR #2770 merged at `c391745467a5c7513a83188940d3754331627995`
+  with all checks passing.
 
 ### Target Status
 
