@@ -9448,3 +9448,150 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 
 Cycle 65 closes the selected cochain-realization surface-only escape route but
 does not discharge the remaining positive carrier-source obligation.
+
+## Cycle 66 — additive-equivalence carrier source checkpoint
+
+### T1 Selection
+
+The selector chose the repeated positive obligation after Cycles 63-65:
+
+```text
+Construct SelectedSectionFamilyCarrierModel from genuinely lower selected
+residual coefficient / selected semantic-delta / presheaf-restriction data.
+```
+
+No theorem in the current input surface constructs the required carrier source
+from those lower data.  Cycle 66 therefore fixes the next honest narrowing:
+the custom `CarrierSpecificAdditiveComparisonData` wrapper is generated from
+ordinary degree-wise additive equivalences, and the constructed carrier model
+is proof-used downstream.  This is not a discharge of the additive
+equivalences themselves.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.CarrierSpecificAdditiveComparisonData.ofAddEquiv`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SelectedSectionFamilyCarrierModel.degreewise_additive_equiv_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewise_additive_equiv_and_directDifferentialCompatibility_constructs_selectedCochainRealization`
+
+Statement shape for the main constructor:
+
+```text
+(C0 semantic carrier ≃+ selected Cech C0 carrier)
+  -> (C1 semantic carrier ≃+ selected Cech C1 carrier)
+  -> (C2 semantic carrier ≃ selected Cech C2 carrier)
+  -> C2 zero-preservation laws
+  -> Nonempty SelectedSectionFamilyCarrierModel
+```
+
+Statement shape for the proof-use theorem:
+
+```text
+degree-wise additive equivalences
+  -> C2 zero-preservation laws
+  -> direct selected differential compatibility for the constructed model
+  -> Nonempty SelectedSectionFamilyCarrierModel
+       /\ Nonempty SemanticRepairCoverRelativeCochainRealization
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not G-06 completion and not a full material-premise discharge.  It
+lowers the carrier source from a custom comparison wrapper to ordinary
+degree-wise equivalence data, but those equivalences are still visible material
+premises.
+
+### Material Premise Ledger Delta
+
+- `CarrierSpecificAdditiveComparisonData`: no longer opaque for degree `0` and
+  degree `1`; it is constructed from ordinary additive equivalences.
+- `SelectedSectionFamilyCarrierModel`: partially lowered to
+  degree-wise additive equivalences plus degree-`2` zero-preserving
+  equivalence.  Still `discharge-required`.
+- Degree-wise additive equivalences and degree-`2` zero-preserving
+  equivalence: now the visible lower carrier-source premise.  Still
+  `discharge-required` below the current G-06 surface.
+- Direct selected differential compatibility: unchanged; still a visible
+  lower source when constructing selected cochain realization.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+ordinary degree-wise additive equivalences
+  -> CarrierSpecificAdditiveComparisonData
+  -> SelectedSectionFamilyCarrierModel
+
+SelectedSectionFamilyCarrierModel
+  + DirectDifferentialCompatibility
+  -> SemanticRepairCoverRelativeCochainRealization
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle66AxiomAudit.lean` — passed and removed after audit.
+- `CarrierSpecificAdditiveComparisonData.ofAddEquiv` depends on standard
+  axiom `[Quot.sound]`.
+- `degreewise_additive_equiv_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `degreewise_additive_equiv_and_directDifferentialCompatibility_constructs_selectedCochainRealization`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed after the final report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean and report files —
+  clean after the final report edit.
+- local path scan over changed Lean and report files — clean after the final
+  report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found; visible material premises remain.
+- premise delta: custom carrier wrapper lowered to ordinary degree-`0` /
+  degree-`1` additive equivalences plus degree-`2` zero-preserving equivalence.
+- certificate provenance: partially improved.  The custom comparison wrapper is
+  not opaque, but ordinary additive equivalences are not yet constructed from
+  `CurrentG06InputSurface` or selected residual / semantic-delta /
+  presheaf-restriction data.
+- proof use: passed.  The constructed model appears in the dependent type of
+  the direct compatibility input and is consumed by
+  `of_selectedSectionFamilyCarrierModel_and_directDifferentialCompatibility`.
+- structure field escape: passed.  No conclusion-side `H1`, gluing, descent,
+  comparison, refinement, or full sheaf cohomology content is moved into a
+  structure field.
+- blocking findings: not a veto, but not proof-obligation discharge.
+- next obligation: construct the degree-wise additive equivalences and
+  degree-`2` zero-preserving equivalence from genuinely lower selected
+  residual coefficient / selected semantic-delta / presheaf-restriction-style
+  data, then discharge model-relative direct differential compatibility.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 66 narrows the carrier-source provenance but does not discharge the
+visible additive-equivalence premises.
