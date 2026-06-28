@@ -857,6 +857,54 @@ theorem selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zer
       ⟨of_degreewise_carrier_data_and_c2_zero_equivalence
         c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero⟩
 
+/--
+Cycle 68 source-normalization theorem: the selected section-family carrier
+model is equivalent to the ordinary degree-wise additive-equivalence source
+exposed in Cycle 66.
+
+The forward direction extracts the actual additive equivalences and the
+degree-`2` zero-preserving equivalence from the model.  The backward direction
+is the Cycle 66 constructor.  This theorem makes the remaining carrier-source
+premise exact: it is not a custom record, a structure-field escape, or an
+opaque `Nonempty` witness, but precisely the displayed degree-wise
+equivalences and zero laws.
+
+It still does not construct those equivalences from selected residual,
+semantic-delta, presheaf-restriction, cover membership, sheaf condition, or
+descent data.
+-/
+theorem selectedSectionFamilyCarrierModel_iff_degreewise_additive_equiv_and_c2_zero_equivalence :
+    Nonempty (SelectedSectionFamilyCarrierModel additive coverBridge K) <->
+      Exists fun _ :
+        letI := additive.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        E.coefficient.C0 ≃+ K.Cn 0 =>
+      Exists fun _ :
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        E.coefficient.C1 ≃+ K.Cn 1 =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+        (letI := K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+          (letI := K.cochainAddCommGroup 2
+           c2Equiv.symm 0 = E.coefficient.zero2) := by
+  constructor
+  · intro hmodel
+    rcases hmodel with ⟨model⟩
+    exact
+      ⟨model.c0SectionEquiv,
+        model.c1SectionEquiv,
+        model.c2Equiv,
+        model.c2Equiv_zero,
+        model.c2Equiv_symm_zero⟩
+  · intro hsource
+    rcases hsource with
+      ⟨c0Equiv, c1Equiv, c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
+    exact
+      degreewise_additive_equiv_and_c2_zero_equivalence_constructs_selectedSectionFamilyCarrierModel
+        (additive := additive) (coverBridge := coverBridge) (K := K)
+        c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero
+
 end SelectedSectionFamilyCarrierModel
 
 namespace SemanticRepairCoverRelativeSectionFamilyWitness
@@ -6422,6 +6470,93 @@ theorem currentG06InputSurface_reduces_selectedCarrierModel_to_degreewiseCarrier
       hsurface.2.1,
       hsurface.2.2.1,
       SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K),
+      hsurface.2.2.2.1,
+      hsurface.2.2.2.2⟩
+
+/--
+Cycle 68 current-surface normalization: for the current G-06 site/sheaf/
+presheaf input surface, a selected carrier model is exactly the ordinary
+degree-wise additive-equivalence source from Cycle 66, plus the degree-`2`
+zero laws.
+
+This theorem proof-uses the current-surface presheaf zero/add laws and selected
+Cech differential formula, but it does not claim that those laws construct the
+displayed equivalences.  The no-uniform additive-equivalence blocker is kept
+visible, so the ordinary source remains `discharge-required` rather than
+ambient boundary.
+-/
+theorem currentG06InputSurface_reduces_selectedCarrierModel_to_degreewiseAdditiveEquiv_and_c2ZeroEquivalence
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (∀ {source target : S.category} (f : source ⟶ target),
+      letI := Ob.addCommGroup target
+      letI := Ob.addCommGroup source
+      Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) /\
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+      (Nonempty
+          (SelectedSectionFamilyCarrierModel
+            additive surface.coverBridge surface.K) <->
+        Exists fun _ :
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          E.coefficient.C0 ≃+ surface.K.Cn 0 =>
+        Exists fun _ :
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+        Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+          (letI := surface.K.cochainAddCommGroup 2
+           c2Equiv E.coefficient.zero2 = 0) /\
+            (letI := surface.K.cochainAddCommGroup 2
+             c2Equiv.symm 0 = E.coefficient.zero2)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hsurface :
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) /\
+        (∀ {source target : S.category} (f : source ⟶ target)
+            (x y : Ob.carrier.toPresheaf.obj (op target)),
+          letI := Ob.addCommGroup target
+          letI := Ob.addCommGroup source
+          Ob.carrier.toPresheaf.map f.op (x + y) =
+            Ob.carrier.toPresheaf.map f.op x +
+              Ob.carrier.toPresheaf.map f.op y) /\
+        (∀ (n : Nat) (c : surface.K.Cn n),
+          surface.K.d n c =
+            surface.K.alternatingFaceCombination n
+              (fun σ i => surface.K.faceRestrictionTerm n i c σ)) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            CarrierSpecificAdditiveComparisonData C D) /\
+        IsEmpty
+          ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+            C ≃+ D) :=
+    SemanticRepairCarrierSpecificComparisonProvenance.current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  exact
+    ⟨hsurface.1,
+      hsurface.2.1,
+      hsurface.2.2.1,
+      SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_additive_equiv_and_c2_zero_equivalence
         (additive := additive) (coverBridge := surface.coverBridge)
         (K := surface.K),
       hsurface.2.2.2.1,

@@ -9747,3 +9747,155 @@ G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
 Cycle 67 blocks the surface-only construction route for the ordinary
 additive-equivalence source but leaves the lower positive construction
 obligation open.
+
+## Cycle 68 — ordinary additive-equivalence source normalization
+
+### T1 Selection
+
+The selector repeated the immediate carrier-source provenance obligation:
+
+```text
+Construct or refute a genuine lower-source theorem for
+E.coefficient.C0 ≃+ K.Cn 0,
+E.coefficient.C1 ≃+ K.Cn 1,
+and the degree-2 zero-preserving equivalence
+E.coefficient.C2 ≃ K.Cn 2
+from selected residual / semantic-delta / presheaf-restriction data.
+```
+
+No current lower API constructs these equivalences from selected residual /
+semantic-delta / presheaf-restriction laws.  Cycle 68 therefore fixes the
+exact ordinary source boundary left by Cycles 66-67: the selected carrier model
+is equivalent to the displayed ordinary additive-equivalence source, and the
+current site/sheaf/presheaf surface reduces to that exact source without
+generating it.
+
+### Lean Evidence
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SelectedSectionFamilyCarrierModel.selectedSectionFamilyCarrierModel_iff_degreewise_additive_equiv_and_c2_zero_equivalence`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_reduces_selectedCarrierModel_to_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+
+Statement shape for the normalization theorem:
+
+```text
+Nonempty SelectedSectionFamilyCarrierModel
+  <->
+ordinary degree-0 additive equivalence
+  + ordinary degree-1 additive equivalence
+  + degree-2 equivalence
+  + degree-2 zero laws
+```
+
+Statement shape for the current-surface theorem:
+
+```text
+CurrentG06InputSurface
+  -> presheaf zero/add laws
+  -> selected Cech differential face formula
+  -> (SelectedSectionFamilyCarrierModel <-> ordinary equivalence source)
+  -> no-uniform carrier/equivalence blockers
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+This is not a positive discharge of the additive-equivalence source.  It makes
+the source exact and prevents treating `SelectedSectionFamilyCarrierModel` as
+a weaker or more opaque carrier-source package.
+
+### Material Premise Ledger Delta
+
+- `SelectedSectionFamilyCarrierModel`: now equivalent to the ordinary
+  degree-wise additive-equivalence source plus degree-`2` zero laws.
+- Ordinary degree-wise additive equivalences in degrees `0` and `1`: still
+  `discharge-required`.
+- Degree-`2` zero-preserving equivalence: still `discharge-required`.
+- `CurrentG06InputSurface`: reaches presheaf zero/add laws and the selected
+  Cech differential face formula, then stops at the ordinary equivalence
+  source.
+- Direct selected differential compatibility: unchanged; still model-relative
+  lower data after the carrier source.
+- No `H1` zero, boundary membership, global coherence, effective descent,
+  comparison equivalence, refinement naturality, or full sheaf cohomology
+  equivalence is introduced or hidden.
+
+### Dependency DAG
+
+```text
+SelectedSectionFamilyCarrierModel
+  <-> ordinary degree-wise additive equivalences + C2 zero laws
+
+CurrentG06InputSurface
+  -> presheaf zero/add laws
+  -> K.d = alternating face combination
+  -/-> ordinary degree-wise additive equivalences + C2 zero laws
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle68AxiomAudit.lean` — passed and removed after audit.
+- `selectedSectionFamilyCarrierModel_iff_degreewise_additive_equiv_and_c2_zero_equivalence`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `currentG06InputSurface_reduces_selectedCarrierModel_to_degreewiseAdditiveEquiv_and_c2ZeroEquivalence`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed before report edit.
+- placeholder scan over changed Lean file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file — clean before
+  report edit.
+- local path scan over changed Lean file — clean before report edit.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-checkpoint.
+- target status: `target-proof-checkpoint`.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed as checkpoint, not as T1 discharge.
+- hidden material premise: none found.
+- premise delta: no positive lower-source premise is discharged.  The selected
+  carrier model is no longer opaque; it is exactly equivalent to degree-`0` /
+  degree-`1` additive equivalences plus degree-`2` zero-preserving equivalence.
+- certificate provenance: wrapper opacity / structure-field provenance for
+  `SelectedSectionFamilyCarrierModel` is resolved by the iff theorem.
+  Construction or genuine refutation of the ordinary equivalences from selected
+  residual / semantic-delta / presheaf-restriction data remains unresolved.
+- proof use: passed.  The first theorem extracts model fields forward and uses
+  the Cycle 66 constructor backward.  The second theorem proof-uses
+  `current_g06_presheaf_laws_stop_before_selected_differential_source` and
+  inserts the new iff; it does not use `CurrentG06InputSurface` to manufacture
+  equivalences.
+- structure field escape: passed.  No new structure or certificate field hides
+  `H1` zero, boundary membership, global coherence, descent, comparison
+  equivalence, refinement naturality, or full sheaf cohomology.
+- blocking findings: not a blocker-fixed result.  It does not prove a new
+  impossibility theorem for selected residual / semantic-delta /
+  presheaf-restriction data, nor construct the lower source.
+- next obligation: either construct the ordinary degree-wise additive
+  equivalences and degree-`2` zero-preserving equivalence from genuine lower
+  selected residual / semantic-delta / presheaf-restriction data, or add a real
+  blocker/refutation theorem for that lower route.
+- completion_candidate: no.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 68 normalizes the remaining carrier source to ordinary additive
+equivalence data but does not construct that data from lower selected residual
+/ semantic-delta / presheaf-restriction laws.
