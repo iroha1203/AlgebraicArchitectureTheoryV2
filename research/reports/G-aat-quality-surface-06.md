@@ -11569,7 +11569,7 @@ SemanticRepairSelectedCarrierGeometry
 
 ### Result
 
-- decision: pending T3 audit.
+- decision: approve.
 - result_type: proof-obligation-discharged.
 - target status: `target-proof-checkpoint`.
 - completion_candidate: no.
@@ -11720,3 +11720,196 @@ zero-law inputs as top-level package premises relative to selected carrier
 geometry.  Selected carrier geometry, the four explicit selected
 semantic-delta / `K.d` equations, true-sheaf certificate, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 81 — selected face laws discharge the explicit selected `K.d` laws
+
+### T1 Selection
+
+The selector chose to construct the four explicit selected semantic-delta /
+cover-relative `K.d` equations from lower selected face-restriction laws, then
+immediately proof-use those equations through the Cycle 80 selected-carrier
+geometry route.
+
+This cycle does not claim that bare site data, cover membership, sheaf
+condition, descent, or full sheaf cohomology constructs the selected
+face-restriction source.  It only lowers the direct `K.d` presentation to the
+selected face-law source already present in the semantic repair surface.
+
+### Lean Evidence
+
+- `SemanticRepairSelectedCechFaceLawSource.toDirectDifferentialCompatibilityForSelectedCarrierGeometry`
+- `SemanticRepairSelectedCechFaceLawSource.selectedCarrierGeometry_and_faceLaws_constructs_directDifferentialCompatibility`
+- `SemanticRepairSelectedCechFaceLawSource.selectedCarrierGeometry_and_faceLaws_constructs_cycle80_explicitSelectedDifferentialLaws`
+- `SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion`
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws_via_explicitSelectedDifferentialLaws`
+
+Statement shape:
+
+```text
+selected carrier geometry
+  + selected face-restriction laws
+  -> direct selected semantic-delta / cover-relative K.d compatibility
+  -> four explicit selected K.d equations for the Cycle 80 model
+  -> Cycle 80 selected-carrier-geometry package theorem
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: pending T3 audit.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 81 discharges the four explicit selected semantic-delta /
+cover-relative `K.d` equations as separate top-level package premises relative
+to `SemanticRepairSelectedCechFaceLawSource`.  The selected face-law source
+itself remains material lower presheaf / face-restriction data.
+
+### Material Premise Ledger Delta
+
+- Four explicit selected semantic-delta / `K.d` equations: discharged as
+  separate top-level package premises relative to selected face-restriction
+  laws.
+- `SemanticRepairSelectedCechFaceLawSource`: `discharge-required`; unresolved
+  below selected presheaf / face-restriction provenance.
+- `SemanticRepairSelectedCarrierGeometry`: `discharge-required`; unresolved
+  below selected carrier / residual / presheaf-restriction provenance.
+- True-sheaf certificate and gluing data: inherited material inputs; proof-used
+  by the downstream package route but not constructed in this cycle.
+- Cover refinement / naturality: out-of-scope boundary unless a later theorem
+  fixes it.
+- Full sheaf cohomology comparison: out-of-scope boundary; no unconditional
+  identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The four direct selected `K.d` equations are no longer top-level inputs in
+  this package route.
+- The selected face-restriction laws are converted through
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility.toDirectDifferentialCompatibility`.
+- The constructed direct equations are consumed by the Cycle 80 theorem in the
+  same proof term.
+- No new certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct `SemanticRepairSelectedCechFaceLawSource` from lower selected
+  presheaf / face-restriction provenance, or keep it as explicit
+  target-boundary material data.
+- Construct `SemanticRepairSelectedCarrierGeometry` from lower selected
+  carrier / residual / presheaf-restriction provenance, or keep it as explicit
+  target-boundary material data.
+- Construct true-sheaf certificate and gluing data from the admissible site /
+  cover inputs, or keep them explicitly material.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+selected carrier geometry
+  + selected face-restriction laws
+  -> face-restriction compatibility
+  -> direct selected semantic-delta / K.d compatibility
+  -> four explicit selected K.d laws
+  -> Cycle 80 selected carrier geometry package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle81AxiomAudit.lean` — passed.
+- `SemanticRepairSelectedCechFaceLawSource.toDirectDifferentialCompatibilityForSelectedCarrierGeometry`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairSelectedCechFaceLawSource.selectedCarrierGeometry_and_faceLaws_constructs_directDifferentialCompatibility`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SemanticRepairSelectedCechFaceLawSource.selectedCarrierGeometry_and_faceLaws_constructs_cycle80_explicitSelectedDifferentialLaws`
+  depends on standard axioms `[propext, Quot.sound]`.
+- `SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_selectedCarrierGeometry_and_faceLaws_via_explicitSelectedDifferentialLaws`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declarations do not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — passed.
+- placeholder scan over changed Lean file and audit file — clean.
+- report placeholder scan finds existing and newly added audit prose for
+  `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 80 conclusion is named by
+  a transparent abbreviation and preserved by the new theorem.
+- Proof-use: passed.  The selected face laws are converted to direct
+  differential compatibility; the four equations are destructured as `laws.1`,
+  `laws.2.1`, `laws.2.2.1`, and `laws.2.2.2`, then passed to the Cycle 80
+  theorem.
+- Structure-field escape: passed.  No new structure or certificate field is
+  introduced.  `SelectedCarrierGeometryExplicitSelectedDifferentialPackageConclusion`
+  is a transparent `Prop` abbreviation, not an opaque certificate.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.  The Cycle 80 downstream package conclusion
+  is preserved while the four explicit selected differential-law premises are
+  replaced by selected face-restriction laws.
+- hidden material premise: none found.  `SemanticRepairSelectedCechFaceLawSource`
+  remains explicit lower material data, and no bare site / cover membership /
+  sheaf condition / descent construction is claimed.
+- premise delta: the four direct selected semantic-delta / cover-relative
+  `K.d` equations are discharged as separate top-level package premises
+  relative to `SemanticRepairSelectedCechFaceLawSource`.
+- certificate provenance: direct `K.d` law provenance is lowered one step to
+  selected face-restriction laws through `K.d_eq_alternatingFaceCombination`.
+- unresolved provenance: construction of selected face laws from bare site,
+  cover membership, sheaf condition, descent, or presheaf-restriction
+  provenance; construction of selected carrier geometry; construction of
+  true-sheaf certificate and gluing data.
+- proof use: passed.  `faceLaws` is converted to direct compatibility; the
+  resulting four equations are passed to the Cycle 80 package theorem.
+- structure field escape: none found.  `SemanticRepairSelectedCechFaceLawSource`
+  stores face equations only and does not store `H1` zero, global coherence,
+  effective gluing, refinement/naturality, or full sheaf cohomology content.
+- blocking findings: none for approving Cycle 81 as a bounded discharge.
+- next obligation: construct `SemanticRepairSelectedCechFaceLawSource` from
+  lower selected presheaf / face-restriction provenance, or record it as an
+  explicit target boundary; separately discharge or boundary-mark selected
+  carrier geometry, true-sheaf certificate, and gluing data.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825200598>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 81 removes the four explicit selected semantic-delta / `K.d` equations
+as top-level package premises relative to selected face-restriction laws.
+Selected face laws, selected carrier geometry, true-sheaf certificate, gluing
+data, refinement/naturality, and full sheaf cohomology boundary remain
+material.
