@@ -14951,3 +14951,158 @@ Cycle 97 lowers the selected carrier model and four selected face-equation
 premises to the carrier-specific comparison provenance boundary.  That
 provenance, cover membership, `AATSheafCondition`, gluing data,
 refinement/naturality, and full sheaf cohomology boundary remain material.
+
+## Cycle 98 - Transparent Lower Data for Carrier Provenance
+
+### Cycle Result
+
+- result: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: lower the Cycle 97
+  `SemanticRepairCarrierSpecificComparisonProvenance` premise to the
+  transparent `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  lower-data proposition.
+
+### Lean Declarations
+
+- `SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_carrierSpecificComparisonProvenance`
+  proves that a transparent
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` source constructs
+  a `SemanticRepairCarrierSpecificComparisonProvenance`, then proof-uses the
+  Cycle 97 theorem to produce:
+  - a selected carrier model;
+  - a matching selected section-family witness;
+  - a face-restriction compatibility object definitionally fixed as
+    `of_explicit_face_restriction_equations` applied to the constructed
+    provenance laws.
+
+### Material Premise Ledger
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: discharged at the
+  immediate premise layer relative to
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still material.  It is a transparent `Prop`
+  abbreviation, not a certificate structure.  It expands to degreewise carrier
+  comparison data, degree-`2` zero laws, and four selected face-restriction
+  equations.
+- `cover membership`: still material as `hcover` in downstream routes.
+- `AATSheafCondition`: still material as `hSheaf` in downstream routes.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The Cycle 97 carrier-specific provenance premise is no longer an opaque
+  immediate input for the selected model / compatibility construction.
+- The theorem constructs provenance from the transparent lower-data predicate
+  and immediately proof-uses the Cycle 97 theorem.
+- No `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology content is introduced as a
+  new structure field.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from lower
+  admissible presheaf/restriction data.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+  -> Cycle 97 theorem
+Cycle 97 theorem
+  -> constructed selected carrier model
+  -> constructed explicit face-restriction compatibility
+  -> Cycle 96 theorem
+Cycle 96 theorem
+  -> Cycle 95 theorem
+cover membership + AATSheafCondition
+  -> Cycle 84 certificate route
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle98AxiomAudit.lean` — passed.
+- `SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_carrierSpecificComparisonProvenance`
+  depends on standard axioms `[propext, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle98AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed for the bounded claim.  Cycle 98 lowers the
+  Cycle 97 provenance premise to transparent degreewise carrier data plus
+  explicit selected face-restriction equations.
+- Proof-use: passed.  The lower-data proposition constructs provenance, and
+  the constructed provenance is consumed by the Cycle 97 theorem.
+- Structure-field escape: bounded checkpoint only.  The lower data remains a
+  visible transparent `Prop` premise and is not reclassified as ambient.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-obligation-discharged`.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- bounded claim: passed.  The theorem constructs carrier-specific provenance
+  from `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` and proof-uses
+  the Cycle 97 theorem.
+- proof-use: passed.  The constructed provenance is consumed to obtain the
+  selected carrier model and explicit face-restriction compatibility.
+- hidden material premise: none found for the bounded claim.
+- structure field escape: bounded checkpoint only.
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` remains an
+  explicit transparent `Prop` premise and is not treated as ambient boundary.
+- claim boundary: passed.  No `H1` zero, boundary membership, global coherence,
+  effective descent, refinement/naturality, full sheaf cohomology equivalence,
+  or target completion is asserted.
+- blocking findings: none for approving Cycle 98 as a bounded discharge.
+- next obligation: construct
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from lower
+  admissible presheaf / restriction / selected cover face data, or explicitly
+  target-boundary-mark that transparent lower-data predicate.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4826225035>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 98 lowers carrier-specific provenance to transparent degreewise carrier
+data plus four explicit selected face-restriction equations.  That transparent
+lower data, cover membership, `AATSheafCondition`, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
