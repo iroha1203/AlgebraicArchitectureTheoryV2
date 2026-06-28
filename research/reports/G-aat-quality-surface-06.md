@@ -11512,8 +11512,13 @@ degree-wise additive equivalences + degree-2 zero laws
 ### Tracking Issue Refs
 
 - Tracking Issue: #2636.
-- Cycle result sync: pending.
-- PR / CI sync: pending.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825056596>.
+- PR / CI sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825081294>.
+- PR #2718 merged at merge commit
+  `2c04341a13ae87c57681179fa7f9d06c573358a0`; all PR checks passed,
+  including `lake build`.
 
 ### Target Status
 
