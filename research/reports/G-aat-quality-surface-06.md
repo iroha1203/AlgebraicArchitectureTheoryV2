@@ -14025,3 +14025,185 @@ Cycle 92 lowers the Cycle 91 selected face-equation arguments to selected
 carrier geometry and selected Cech face-law source.  Those lower sources, cover
 membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
 sheaf cohomology boundary remain material.
+
+## Cycle 93 — face-restriction realization source for selected geometry and face laws
+
+### T1 Selection
+
+The selector chose the nearest unresolved lower-source gap in the latest
+cover-membership / `AATSheafCondition` route: derive the selected carrier
+geometry and selected Cech face-law source from an explicit
+`SemanticRepairCoverRelativeFaceRestrictionRealization`, then immediately
+proof-use those derived sources through the Cycle 92 theorem.
+
+This cycle does not attempt to construct the face-restriction realization from
+`CurrentG06InputSurface`, cover membership, `AATSheafCondition`, descent,
+effective gluing, refinement/naturality, or full sheaf cohomology.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_faceRestrictionRealization`
+
+Statement shape:
+
+```text
+SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> toSelectedCarrierGeometry
+  -> toSelectedCechFaceLawSource
+selected geometry + selected face-law source
+  -> Cycle 92 selected-carrier / selected-face-law route
+Cycle 92 route
+  -> cover-membership / AATSheafCondition package
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 93 removes `SemanticRepairSelectedCarrierGeometry` and
+`SemanticRepairSelectedCechFaceLawSource` as immediate theorem arguments in the
+latest `hcover` / `AATSheafCondition` route, relative to an explicit
+`SemanticRepairCoverRelativeFaceRestrictionRealization`.  That realization
+remains a `discharge-required` material lower source.
+
+### Material Premise Ledger Delta
+
+- `SemanticRepairSelectedCarrierGeometry`: discharged as an immediate theorem
+  argument in this route, relative to
+  `realization.toSelectedCarrierGeometry`.
+- `SemanticRepairSelectedCechFaceLawSource`: discharged as an immediate theorem
+  argument in this route, relative to
+  `realization.toSelectedCechFaceLawSource`.
+- `SemanticRepairCoverRelativeFaceRestrictionRealization`:
+  `discharge-required`; still material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- `coverBridge` and `K`: remain selected cover-relative Cech boundary data.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The selected carrier geometry is read from the face-restriction realization
+  and immediately proof-used by the Cycle 92 theorem.
+- The selected Cech face-law source is read from the same realization and
+  immediately proof-used by the Cycle 92 theorem.
+- No `H1` zero, boundary membership, global coherence, effective gluing,
+  refinement/naturality, or full sheaf cohomology content is introduced as a
+  new structure field.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+SemanticRepairCoverRelativeFaceRestrictionRealization
+  -> toSelectedCarrierGeometry
+  -> toSelectedCechFaceLawSource
+selected carrier geometry + selected Cech face-law source
+  -> Cycle 92 theorem
+Cycle 92 theorem
+  -> Cycle 91 explicit-face-equation route
+Cycle 91 route
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+Cycle 89 route
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+cover membership + AATSheafCondition
+  -> Cycle 84 certificate route
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle93AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_faceRestrictionRealization`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake env lean .tmp/G06Cycle93AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 92 package conclusion is
+  preserved while immediate selected geometry and face-law arguments are
+  replaced by the face-restriction realization source.
+- Proof-use: passed.  `realization.toSelectedCarrierGeometry` and
+  `realization.toSelectedCechFaceLawSource` are passed directly into the Cycle
+  92 theorem.
+- Structure-field escape: bounded checkpoint only.  The realization remains an
+  explicit material lower source; it is not treated as completion evidence.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: the immediate selected carrier geometry and selected
+  face-law source arguments are no longer top-level theorem arguments; they
+  are derived from the explicit face-restriction realization.
+- certificate provenance: selected geometry and face laws are derived by
+  accessors from `SemanticRepairCoverRelativeFaceRestrictionRealization`.
+- unresolved provenance: construction of the face-restriction realization from
+  accepted target-boundary input remains unresolved and visible.
+- proof use: passed.  The realization is proof-used through its selected
+  geometry and selected face-law accessors; `hcover`, `hSheaf`, `gluingData`,
+  `coverBridge`, and `K` are passed through the Cycle 92 theorem.
+- structure field escape: bounded checkpoint only.  The realization stores
+  lower carrier / face-restriction data, not `H1` zero, global coherence,
+  effective gluing, refinement/naturality, or full sheaf cohomology content.
+- blocking findings: none for approving Cycle 93 as a bounded discharge.
+- next obligation: construct or boundary-mark
+  `SemanticRepairCoverRelativeFaceRestrictionRealization` from an accepted
+  target-boundary source.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825950117>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 93 lowers the immediate selected geometry and selected face-law sources
+to a face-restriction realization.  That realization, cover membership,
+`AATSheafCondition`, gluing data, refinement/naturality, and full sheaf
+cohomology boundary remain material.
