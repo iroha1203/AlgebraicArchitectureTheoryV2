@@ -13612,3 +13612,205 @@ as an immediate top-level premise by routing through four displayed selected
 differential laws.  Those laws, the degreewise equivalence sources, cover
 membership, `AATSheafCondition`, gluing data, refinement/naturality, and full
 sheaf cohomology boundary remain material.
+
+## Cycle 91 — explicit selected face-restriction equations for direct laws
+
+### T1 Selection
+
+The selector chose to lower the Cycle 90 explicit selected semantic-delta /
+cover-relative `K.d` laws to the four selected presheaf face-restriction
+equations for the section witness induced by the degreewise-equivalence
+carrier model.
+
+This targets the immediate source of the Cycle 90 `K.d` laws.  The four face
+equations remain visible material lower sources; the cycle does not claim that
+`CurrentG06InputSurface`, cover membership, `AATSheafCondition`, descent,
+effective gluing, refinement/naturality, or full sheaf cohomology constructs
+them.
+
+### Lean Evidence
+
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations`
+
+Statement shape:
+
+```text
+c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+  -> constructed SelectedSectionFamilyCarrierModel
+four displayed selected face-restriction equations
+  -> constructed SemanticRepairCoverRelativeFaceRestrictionCompatibility
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+constructed model + constructed direct compatibility
+  -> Cycle 89 degreewise-equivalence route
+Cycle 89 route
+  -> selected carrier model
+  -> direct lower bundle
+  -> carrier-specific provenance
+  -> cover-relative Cech H1 comparison
+  -> cover-relative H1 zero / effective-gluing package
+```
+
+### Result
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+
+Cycle 91 removes the four Cycle 90 selected `K.d` laws as immediate theorem
+arguments in the latest `hcover` / `AATSheafCondition` route, relative to the
+four explicit selected face-restriction equations.  Those four face equations
+remain `discharge-required` material sources.
+
+### Material Premise Ledger Delta
+
+- Four selected semantic-delta / cover-relative `K.d` laws: discharged as
+  immediate Cycle 90 theorem arguments, relative to the displayed
+  `d0_face_to`, `d0_face_from`, `d1_face_to`, and `d1_face_from` equations.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: constructed
+  internally from the four displayed face equations by
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`.
+- `SemanticRepairCoverRelativeDirectDifferentialCompatibility`: constructed
+  internally from the face-restriction compatibility by
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility.toDirectDifferentialCompatibility`.
+- Four displayed selected face-restriction equations: `discharge-required`;
+  still material and not constructed by this cycle.
+- Degree-`0` and degree-`1` additive equivalences: `discharge-required`; still
+  material and not constructed by this cycle.
+- Degree-`2` zero-preserving equivalence source: `discharge-required`; still
+  material and not constructed by this cycle.
+- `cover membership`: still material as `hcover`.
+- `AATSheafCondition`: still material as `hSheaf`.
+- `gluingData`: still material.
+- Cover refinement / naturality: remains outside completion until separately
+  proved or boundary-marked.
+- Full sheaf cohomology comparison: remains outside completion; no
+  unconditional identification with cover-relative Cech `H1` is claimed.
+
+### Completed Obligations
+
+- The face-restriction compatibility witness is constructed from the four
+  displayed selected face equations.
+- The constructed face-restriction compatibility is converted to direct
+  selected differential compatibility by the cover-relative Cech differential
+  law.
+- The constructed direct compatibility is immediately proof-used by the Cycle
+  89 route.
+- No new conclusion-side certificate or structure field is introduced.
+
+### Unfinished Obligations
+
+- Construct or boundary-mark the four displayed selected face-restriction
+  equations.
+- Construct or boundary-mark the displayed degreewise equivalence sources.
+- Construct or boundary-mark `hcover`, `AATSheafCondition`, and `gluingData`.
+- Keep refinement / naturality and full sheaf cohomology comparison outside
+  completion until separate theorems or boundary entries exist.
+
+### Dependency DAG
+
+```text
+c0Equiv + c1Equiv + c2Equiv + c2 zero laws
+  -> SelectedSectionFamilyCarrierModel
+four displayed selected face-restriction equations
+  -> SemanticRepairCoverRelativeFaceRestrictionCompatibility
+SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  -> SemanticRepairCoverRelativeDirectDifferentialCompatibility
+SelectedSectionFamilyCarrierModel
+  + SemanticRepairCoverRelativeDirectDifferentialCompatibility
+  -> Cycle 89 degreewise-equivalence route
+Cycle 89 route
+  -> DegreewiseCarrierDataAndDirectDifferentialLaws
+  -> SemanticRepairCarrierSpecificComparisonProvenance
+SemanticRepairCarrierSpecificComparisonProvenance
+  -> selected carrier model + four selected face equations
+  -> cover-relative Cech H1 comparison
+cover membership
+  + AATSheafCondition
+  -> Cycle 84 certificate route
+Cycle 89 package
+  -> cover-relative Cech H1 comparison
+```
+
+### Axiom Audit
+
+- `.tmp/G06Cycle91AxiomAudit.lean` — passed.
+- `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package_of_coverMembership_and_aatSheafCondition_via_degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations`
+  depends on standard axioms `[propext, Classical.choice, Quot.sound]`.
+- The audited declaration does not depend on `sorryAx`, non-consulted `axiom`,
+  `admit`, or `unsafe`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding` —
+  passed.
+- `lake env lean .tmp/G06Cycle91AxiomAudit.lean` — passed.
+- `lake build FormalAGResearch` — passed.
+- full `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean file and audit file — clean.
+- hidden / bidirectional Unicode scan over changed Lean file and audit file —
+  clean.
+- local path scan over changed Lean file and audit file — clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: passed.  The downstream Cycle 89 package conclusion is
+  preserved while Cycle 90 direct `K.d` law arguments are replaced by displayed
+  selected face-restriction equations.
+- Proof-use: passed.  The four face equations construct `compatibility`; the
+  constructed `compatibility` constructs `direct`; the constructed `direct` is
+  passed directly into the Cycle 89 theorem.
+- Structure-field escape: passed for this bounded cycle.  The face-restriction
+  and direct compatibility structures are constructed internally from explicit
+  equations.  The face equations themselves remain unresolved material
+  premises.
+- Claim boundary: passed.  No cover-relative Cech `H1` / full sheaf cohomology
+  equivalence is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: proof-obligation-discharged.
+- target status: `target-proof-checkpoint`.
+- completion_candidate: no.
+- build / axiom / placeholder status: passed.
+- statement not weakened: passed.
+- hidden material premise: none found for the bounded claim.
+- premise delta: the Cycle 90 selected `K.d` laws are no longer top-level
+  theorem arguments in this route.
+- certificate provenance: face-restriction compatibility is constructed from
+  four displayed face equations; direct compatibility is derived from it by
+  `toDirectDifferentialCompatibility`.
+- unresolved provenance: the four face equations, displayed degreewise
+  equivalence sources, `hcover`, `hSheaf`, and `gluingData`.
+- proof use: passed.  The four face equations are used to construct
+  `compatibility`; `compatibility` constructs `direct`; `direct` is consumed by
+  the Cycle 89 theorem.
+- structure field escape: no conclusion-side escape found in the new
+  declaration.
+- blocking findings: none for approving Cycle 91 as a bounded discharge.
+- next obligation: construct or further lower the remaining four selected
+  face-restriction equations from an acceptable concrete source, without
+  attributing them to `hcover`, `AATSheafCondition`, descent, gluing,
+  refinement/naturality, or full sheaf cohomology.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4825833023>.
+- PR / CI sync: pending.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 91 lowers the Cycle 90 selected `K.d` law arguments to selected
+face-restriction equations.  Those face equations, the degreewise equivalence
+sources, cover membership, `AATSheafCondition`, gluing data,
+refinement/naturality, and full sheaf cohomology boundary remain material.
