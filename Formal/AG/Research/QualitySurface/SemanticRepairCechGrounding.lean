@@ -5373,6 +5373,70 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_face
   exact ⟨provenance.toFaceRestrictionRealization⟩
 
 /--
+Cycle 112 accepted-lower-source constructor: the concrete carrier-only model
+plus explicit selected face-restriction compatibility construct the current
+face-restriction realization boundary and the transparent finite lower data.
+
+This theorem fixes the minimal lower source one step below
+`SemanticRepairCoverRelativeFaceRestrictionRealization`.  The accepted source
+is not a new certificate structure: it is the already audited
+`SelectedSectionFamilyCarrierModel` together with the already audited
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` for the section
+family induced by that model.  The proof then constructs the realization,
+extracts the transparent finite witness, and exposes the selected
+carrier-geometry / face-law pair.  It does not construct the carrier model or
+face compatibility from `CurrentG06InputSurface`, cover membership, sheaf
+condition, descent, `gluingData`, refinement/naturality, or full sheaf
+cohomology.
+-/
+theorem selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_faceRestrictionRealization_boundary_packet
+    (model : SelectedSectionFamilyCarrierModel additive coverBridge K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) :
+    Nonempty
+        (SemanticRepairCoverRelativeFaceRestrictionRealization
+          additive coverBridge K) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive coverBridge K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] -> C ≃+ D) := by
+  let sectionWitness :=
+    SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      model
+  let realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        additive coverBridge K :=
+    SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+      sectionWitness compatibility
+  have hlower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) :=
+    faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K)
+      realization
+  have hselected :
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive coverBridge K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry :=
+    SemanticRepairCoverRelativeFaceRestrictionRealization.selectedPresheafRestrictionRealization_constructs_selectedCarrierGeometry_and_faceLawSource
+      (additive := additive) (coverBridge := coverBridge) (K := K)
+      realization
+  exact
+    ⟨⟨realization⟩,
+      hlower,
+      hselected,
+      no_uniform_carrier_specific_additive_comparison_from_bare_groups,
+      SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data⟩
+
+/--
 Transparent lower-data predicate for the Cycle 55 direct-differential source.
 
 This is only an abbreviation for the displayed carrier witness data,
