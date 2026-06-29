@@ -24942,3 +24942,185 @@ human-approved GOAL-boundary revision if that lower provenance is outside the
 current target.
 
 `$math-lean-review` is not run because this is not a completion candidate.
+
+## Cycle 166 — conclusion-side semantic Cech explicit-lower no-go
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4834913288>
+- date: 2026-06-29 UTC
+
+### T1 Selector Result
+
+The selector again chose the central lower-provenance obligation: construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+semantic atom / law lower provenance, without taking `explicitLower`,
+`directLower`, `SemanticRepairCoverRelativeCochainRealization`,
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, or
+`SelectedSemanticCoefficientDirectRealizationLayer` as inputs.
+
+Cycle 166 does not discharge that obligation.  Existing Lean evidence still
+consumes visible lower sources such as carrier-specific provenance, selected
+carrier geometry, selected face laws, or face-restriction realization.  No
+canonical/free/universal/finite nonvacuous construction from semantic atom /
+law data was found in the current API.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_and_semanticCoverCechData_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+The theorem proves that even a constructor allowed to consume all of the
+following inputs cannot uniformly manufacture the explicit lower data:
+
+- atom-supported current boundary and selected-cover equality;
+- `SemanticRepairCoverCechDataWithZero`;
+- current gluing data;
+- cover-wise sheaf condition;
+- descent;
+- effective global gluing;
+- semantic additive `H1` zero.
+
+The proof uses the alleged constructor directly, then extracts the produced
+explicit lower data's degree-`0` carrier-specific additive comparison.  On the
+finite boundary where `E.coefficient.C0 ≃+ PUnit` and
+`surface.K.Cn 0 ≃+ ZMod 2`, that comparison forces `0 = 1`.
+
+This is a no-go theorem for the tested uniform constructor route.  It is not a
+positive construction of lower provenance, and it is not a complete internal
+classification of all possible semantic-data, descent, or canonical/free
+realization routes.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The combined conclusion-side plus semantic cover Cech data route is now
+  rejected as hidden provenance for
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- The theorem proof-uses every alleged constructor input: `surface`, `family`,
+  selected-cover equality, `semanticData`, `gluingData`, `hSheafFor`,
+  `hDescent`, `hEffective`, and `hSemanticH1Zero`.
+
+Remaining:
+
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  genuine semantic atom / law lower provenance.
+- Acceptable routes remain a canonical/free obstruction-sheaf realization, a
+  universal property, a finite nonvacuous witness with adequacy, or a reviewed
+  predecessor theorem.
+- If no such construction exists under the current target boundary, obtain an
+  explicit human-approved GOAL-boundary revision.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from semantic atom / law data.
+- `SemanticRepairCoverCechDataWithZero`: `blocked-as-extra-constructor-input`;
+  still not ambient lower provenance.
+- conclusion-side gluing / sheaf / descent / effective gluing / semantic `H1`
+  zero: `blocked-as-extra-constructor-input`; these inputs do not construct
+  degree-wise carrier identifications, degree-`2` zero laws, or the four
+  selected face-restriction equations.
+- `SemanticRepairCoverRelativeCochainRealization`,
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, and
+  `SelectedSemanticCoefficientDirectRealizationLayer`: `discharge-required`;
+  unchanged from Cycles 159-165.
+
+### Certificate Provenance
+
+- discharged: none as positive lower provenance.
+- fixed blocker: explicit lower data cannot be manufactured by combining
+  semantic cover Cech data with conclusion-side descent/effective-gluing inputs
+  over the atom-supported current boundary.
+- unresolved: no canonical/free/universal/finite-witness construction of the
+  degree-wise carrier identifications, degree-`2` zero laws, and selected
+  face-restriction equations has been supplied.
+
+### Proof-Use Audit
+
+- The alleged constructor is applied to every stated input:
+  `surface`, `family`, selected-cover equality, `semanticData`, `gluingData`,
+  `hSheafFor`, `hDescent`, `hEffective`, and `hSemanticH1Zero`.
+- The returned explicit lower witness is proof-used by extracting
+  `c0Carrier.toAddEquiv`.
+- The contradiction is derived only after composing that additive equivalence
+  with the visible finite boundary-test equivalences.
+
+### Structure-Field Escape Audit
+
+- status: concern-fixed-as-blocker.
+- No new structure field, certificate field, class membership, selected `K`, or
+  `ObstructionSheaf` was added.
+- Treating the combination of semantic cover Cech data and conclusion-side
+  descent/effective-gluing inputs as ambient lower provenance would hide exactly
+  the carrier identifications and face-restriction equations required by the
+  selected semantic coefficient realization gate.
+
+### Route-Integrity Audit
+
+- status: blocked.
+- The theorem is relative to the finite boundary-test premises
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`.
+- It should not be reported as an unconditional impossibility theorem for every
+  possible canonical/free/universal construction.
+- It does not weaken G-06 to a wrapper theorem and does not accept
+  conclusion-side data or semantic cover Cech data as ambient lower provenance.
+
+### Cheat-Route Audit
+
+- conclusion-side semantic Cech data as explicit-lower provenance: rejected for
+  the tested uniform constructor route.
+- target-fitting choice of `K`, `ObstructionSheaf`, carrier equivalence, or
+  differential law: none introduced.
+- vacuity or degeneracy: none introduced.
+- one-way theorem as equivalence: none introduced.
+- GOAL / report reinterpretation: none; G-06 remains governed by the selected
+  semantic coefficient realization gate.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 166 as `blocker-fixed`:
+
+- proof-use is valid because every alleged constructor input is passed to the
+  constructor;
+- the returned explicit lower data is used through its degree-`0` carrier
+  comparison;
+- finite boundary-test premises remain visible;
+- no hidden material premise, structure-field escape, or anti-weakening issue
+  was found;
+- the theorem must not be overclaimed as positive lower provenance or a complete
+  classification of all possible lower-construction routes.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- Axiom audit for the new declaration reported only expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `sorry`, `admit`,
+  `axiom`, `unsafe`, `TODO`, `FIXME`, and `placeholder`.
+- Hidden / bidirectional Unicode scan over changed Lean/report files was clean.
+- Absolute local path / private machine identifier scan over added diff lines was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains `target-blocked`, not `target-theorem-proved`.
+
+Cycle 166 closes a broader escape route, but it does not provide the positive
+lower-provenance theorem selected by T1.  The minimal next action remains
+constructing `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+genuine semantic atom / law lower provenance, or obtaining a human-approved
+GOAL-boundary revision if such provenance is outside the current target.
+
+`$math-lean-review` is not run because this is not a completion candidate.
