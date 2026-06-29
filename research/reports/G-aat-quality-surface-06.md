@@ -21662,6 +21662,135 @@ accepted atom-supported current boundary
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830979307>.
 
+## Cycle 144 - Atom-Supported Current Boundary Direct-Differential Source Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 144 blocks the transparent ordinary degree-wise equivalence plus direct
+selected differential source,
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, already over the
+atom-supported current boundary alone.  This is the no-conclusion-side
+counterpart to Cycle 125: adding only an atom-generated selected cover family
+and selected-cover equality to `CurrentG06InputSurface` is not enough to
+generate the ordinary degree-wise equivalences, degree-`2` zero laws, and four
+direct selected `K.d` equations.
+
+The new theorem proof-uses the hypothetical current-boundary direct-source
+constructor by passing it the current surface, atom-generated selected cover
+data, and selected-cover equality.  It consumes the returned source through
+`atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`
+to obtain `SemanticRepairCoverRelativeCochainRealization`, and then applies
+the Cycle 123 atom-supported current-boundary selected-realization no-go
+theorem.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndDirectDifferentialSource`
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`.
+- atom-generated selected cover `family` and selected-cover equality:
+  `ambient-boundary`.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: remains
+  `discharge-required`; Cycle 144 blocks generating it from the accepted
+  atom-supported current boundary alone.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`: remains
+  `discharge-required`; Cycle 121 turns the direct source into selected
+  cochain realization, so the source is strong enough to hit the Cycle 123
+  contradiction.
+- finite test-boundary equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`:
+  theorem-direction boundary inputs for the no-constructor contradiction, not
+  discharged provenance for the target package.
+- conclusion-side gluing/sheaf/descent/effective-gluing/semantic-`H1`-zero
+  inputs are not used in this theorem; their stronger conclusion-side escape
+  route is already blocked by Cycle 125.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+accepted atom-supported current boundary
+  + hypothetical AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+    -> SemanticRepairCoverRelativeCochainRealization
+       via atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization
+    -> Cycle 123 contradiction
+    -> False
+
+accepted atom-supported current boundary
+  -/-> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- target declaration axiom audit:
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndDirectDifferentialSource`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets
+  - clean.
+- placeholder scan over
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - clean for `axiom`, `admit`, `sorry`, `unsafe`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed no-constructor theorem, not completion.
+- Proof-use: passed.  The hypothetical direct-source constructor is called
+  with the current surface, atom-generated selected cover data, and
+  selected-cover equality; the returned source is consumed by Cycle 121 before
+  applying the existing Cycle 123 no-go theorem.
+- Certificate provenance: unresolved by design.  The theorem blocks this
+  transparent lower-source escape; it does not construct the ordinary
+  equivalences, zero laws, direct selected differential equations, or selected
+  cochain realization.
+- Structure-field escape: avoided.  No new structure/class/certificate field
+  is introduced.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- proof-use audit: passed.  The hypothetical direct-source constructor is
+  called with `surfaceInput`, `familyInput`, and selected-cover equality.  Its
+  returned `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` is
+  consumed through
+  `atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`
+  before applying the Cycle 123 no-constructor theorem.
+- structure-field escape audit: passed.  No new structure, class,
+  certificate field, or opaque wrapper is introduced; the transparent direct
+  lower source remains visible as material data and is blocked as
+  current-boundary provenance.
+- remaining obligation: construct the direct source / selected cochain
+  realization / degree-wise carrier maps / zero laws / direct differential
+  laws from genuine accepted atom-supported lower data, or record a sharper
+  obstruction if that construction is impossible.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4831118374>.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -21790,6 +21919,13 @@ accepted atom-supported current boundary
   is also blocked as a generator of the degree-`0` ordinary additive
   equivalence `E.coefficient.C0 ≃+ surface.K.Cn 0`, the first material
   component of the Cycle 121 direct lower source.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` is also blocked
+  already over the accepted atom-supported current boundary alone.  Any
+  alleged direct-source constructor is consumed by
+  `atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`
+  to produce `SemanticRepairCoverRelativeCochainRealization`, and then hits the
+  Cycle 123 contradiction by
+  `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndDirectDifferentialSource`.
 - atom-generated selected cover data plus a concrete selected cochain
   realization are now fixed as a positive source for the existence of the
   degree-`0` ordinary additive equivalence, via
@@ -21878,6 +22014,11 @@ finite lower witness inside the atom-supported lower-source boundary:
   a uniform construction from that same accepted boundary plus conclusion-side
   data; this keeps the ordinary equivalences, degree-`2` zero laws, and four
   direct selected `K.d` laws visible as material lower provenance;
+- after Cycle 144, the same transparent direct lower source is blocked already
+  from atom-supported current-boundary generation without conclusion-side
+  inputs.  Since Cycle 121 consumes that source to construct selected cochain
+  realization, any current-boundary direct-source constructor would contradict
+  the Cycle 123 no-go theorem;
 - after Cycle 126, the obstruction is visible already at the degree-`0`
   ordinary additive equivalence component
   `E.coefficient.C0 ≃+ surface.K.Cn 0`; this component still requires genuine
