@@ -22880,6 +22880,131 @@ therefore:
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832446246>
 
+## Cycle 154 - Explicit Finite Witness Reaches Grounded Comparison Package
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 154 adds the positive proof-use theorem requested by the post-Cycle153
+selector audit: transparent explicit finite lower data is not merely equivalent
+to selected cochain realization; it is consumed to construct a concrete
+`SemanticRepairCoverRelativeCochainRealization`, and that realization is then
+immediately proof-used to reach the cover-relative `H1` comparison package.
+
+The cycle also adds the atom-supported version: ordinary degree-wise
+equivalences, degree-`2` zero laws, atom-generated selected cover data, and
+the four displayed face-restriction equations reach the selected cochain
+realization and grounded comparison package.  This remains a checkpoint
+because those ordinary equivalences and face equations are not constructed
+from `CurrentG06InputSurface`, `gluingData`, descent/effective gluing,
+semantic `H1` zero, or a certificate.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedCochainRealization_and_groundedPackage`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage`
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required` as a lower source, but now proof-used as a finite
+  witness that constructs selected cochain realization and the cover-relative
+  comparison package.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  `discharge-required` as a source of ordinary degree-wise equivalences,
+  degree-`2` zero laws, atom-generated selected cover equality, and four
+  face equations; Cycle 154 proves it reaches grounded comparison.
+- `CurrentG06InputSurface`: `ambient-boundary`; not used as a generator of the
+  finite witness.
+- `gluingData`, descent/effective gluing, semantic additive `H1` zero:
+  not used as inputs to the new lower-witness constructors.
+- refinement/naturality and full sheaf cohomology equivalence: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Nonempty selected cochain realization
+  -> grounded cover-relative H1 comparison package
+
+AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+  -> AtomSupportedSelectedLowerSource
+  -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> selected cochain realization
+  -> grounded cover-relative H1 comparison package
+
+CurrentG06InputSurface
+  -/-> AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+  -/-> selected cochain realization
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over changed Lean/report targets
+  - clean.
+- placeholder scan over changed Lean/report targets
+  - Lean file clean for `sorry`, `admit`, `unsafe`, `axiom`, and `sorryAx`.
+    The report scan finds existing audit prose mentioning those words only.
+- target declaration axiom audit
+  - `#print axioms ...degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedCochainRealization_and_groundedPackage`
+  - `#print axioms ...atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage`
+  - result: both depend only on `propext`, `Classical.choice`, and
+    `Quot.sound`.
+
+### Anti-Weakening Audit
+
+- Statement strength: positive proof-use checkpoint relative to explicit
+  finite lower witness; not a completion theorem.
+- Proof-use: passed locally for the new declarations.  The proof constructs
+  the selected realization from the explicit lower witness and calls
+  `grounded_package_of_cochain_realization`.
+- Certificate provenance: passed for checkpoint.  No lower witness is hidden in
+  a structure field or certificate; it remains a theorem-visible premise.
+- Structure-field escape: none introduced.  No new structure, class,
+  certificate, or `CurrentG06InputSurface` field is added.
+- Claim boundary: cover-relative Cech `H1` only.  No full sheaf cohomology
+  equivalence, refinement/naturality theorem, arbitrary-site theorem, runtime
+  extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- major finding / veto: none.
+- proof-use audit: passed.  The first new theorem uses the explicit lower
+  witness to construct `Nonempty (SemanticRepairCoverRelativeCochainRealization
+  additive K)` and then calls `grounded_package_of_cochain_realization`.  The
+  second theorem uses Cycle 120 to obtain the atom-supported selected lower
+  source, transparent lower witness, and selected cochain realization, then
+  calls the same grounded-package constructor.
+- anti-weakening audit: passed for checkpoint.  Both declarations keep the
+  lower witness/source as visible premises and do not claim construction from
+  `CurrentG06InputSurface`.
+- certificate provenance audit: passed for checkpoint.  No new structure,
+  class, certificate field, or surface field is introduced.
+- report audit: passed after updating validation from pending to the observed
+  `lake build`, hygiene scan, and axiom-audit results.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832655228>
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -22925,6 +23050,14 @@ therefore:
   records: ordinary degree-wise additive equivalences, a degree-`2`
   zero-preserving equivalence, and four selected face-restriction equations are
   enough to construct the Cycle 119 source and selected cochain realization.
+- the explicit finite lower witness is now proof-used all the way to a
+  grounded cover-relative `H1` comparison package:
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` constructs a
+  selected cochain realization, and that realization constructs
+  `SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage`.
+- the atom-supported ordinary degree-wise equivalence plus face-restriction
+  source is likewise proof-used all the way to a grounded cover-relative `H1`
+  comparison package, while remaining a visible lower-source premise.
 - the accepted face-equation source is normalized to the direct selected Cech
   differential presentation: ordinary degree-wise additive equivalences, a
   degree-`2` zero-preserving equivalence, and four direct selected `K.d`
@@ -23184,6 +23317,11 @@ finite lower witness inside the atom-supported lower-source boundary:
   source, direct lower source, and all four single-direct-law packages are
   empty.  Thus G-06 needs a genuine lower-provenance source or explicit GOAL
   boundary revision before it can become a completion candidate;
+- after Cycle 154, the transparent finite witness and the atom-supported
+  degree-wise/face-law source are proof-used all the way to the grounded
+  cover-relative `H1` comparison package.  This discharges the proof-use gap
+  below selected cochain realization, but it does not construct the finite
+  witness from the accepted atom-supported current boundary;
 - after Cycle 127, a concrete selected cochain realization is confirmed as
   genuine lower provenance for the existence of the degree-`0` ordinary
   additive equivalence, but that realization itself is still not constructed

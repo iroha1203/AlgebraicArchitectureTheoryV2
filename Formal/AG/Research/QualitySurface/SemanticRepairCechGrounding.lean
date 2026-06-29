@@ -5756,6 +5756,39 @@ theorem cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestriction
     exact ⟨provenance.toCochainRealization⟩
 
 /--
+Cycle 154 explicit finite-witness proof-use theorem: the transparent
+degree-wise carrier data and four selected face-restriction equations construct
+the selected cochain realization and immediately consume it to reach the
+cover-relative `H1` comparison package.
+
+This is a positive finite-witness checkpoint, not a completion theorem.  The
+explicit lower data remains a visible material input; no global coherence,
+`H1` zero, boundary membership, descent/effective gluing, refinement
+naturality, or full sheaf cohomology comparison is stored in a structure field
+or used as a premise.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedCochainRealization_and_groundedPackage
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Exists fun realization :
+      SemanticRepairCoverRelativeCochainRealization additive K =>
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  have hrealization :
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) :=
+    (cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := coverBridge) (K := K)).2
+      lower
+  rcases hrealization with ⟨realization⟩
+  exact
+    ⟨realization, lower,
+      realization.grounded_package_of_cochain_realization⟩
+
+/--
 Cycle 118 selected-cochain realization checkpoint: a concrete cochain
 realization is exactly strong enough to discharge the external lower source
 identified in Cycle 117.
@@ -6097,6 +6130,44 @@ theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selected
       hcycle119.2.2.2.1,
       hcycle119.2.2.2.2.1,
       hcycle119.2.2.2.2.2.1⟩
+
+/--
+Cycle 154 atom-supported finite-witness proof-use theorem: the ordinary
+degree-wise equivalences, degree-`2` zero laws, atom-generated selected cover
+source, and four displayed face-restriction equations reach the selected
+cochain realization and the grounded cover-relative `H1` comparison package.
+
+The theorem proof-uses Cycle 120 to construct the transparent lower source and
+selected cochain realization, then proof-uses the realization's comparison
+package constructor.  It still does not construct the ordinary equivalences or
+face equations from `CurrentG06InputSurface`, `gluingData`, descent/effective
+gluing, semantic `H1` zero, or a certificate.
+-/
+theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface) :
+    AtomSupportedSelectedLowerSource (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization additive surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  have hcycle120 :=
+    atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization
+      (additive := additive) (surface := surface) source
+  rcases hcycle120.2.2.2.1 with ⟨realization⟩
+  exact
+    ⟨hcycle120.1,
+      hcycle120.2.2.1,
+      realization,
+      realization.grounded_package_of_cochain_realization⟩
 
 /--
 Cycle 121 transparent direct-differential source below the Cycle 120
