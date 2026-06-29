@@ -6475,6 +6475,77 @@ theorem atomSupportedSelectedCochainRealization_constructs_degreeTwoEquivAndZero
   exact ⟨c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
 
 /--
+Cycle 130 direct-law positive-source checkpoint: atom-generated selected cover
+data plus a concrete selected cochain realization proof-produce the first
+direct selected semantic-delta / cover-relative `K.d` compatibility law from
+the transparent Cycle 121 direct lower source.
+
+The theorem deliberately exposes the law as a displayed theorem conclusion,
+not as a certificate field or bare `Nonempty` structure.  It does not construct
+the selected cochain realization or any conclusion-side semantic repair fact
+from `CurrentG06InputSurface`, gluing/sheaf/descent/effective-gluing data,
+semantic `H1` zero, or a certificate field.
+-/
+theorem atomSupportedSelectedCochainRealization_constructs_d0DirectToLaw
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Exists fun c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0 =>
+    Exists fun c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+    Exists fun c2Equiv_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun c2Equiv_symm_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+      (let c0Carrier :=
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+       let c1Carrier :=
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+       let model :=
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K)
+          c0Carrier c1Carrier c2Equiv
+          c2Equiv_zero c2Equiv_symm_zero
+       let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+       letI := additive.c0AddCommGroup
+       letI := additive.c1AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       letI := surface.K.cochainAddCommGroup 1
+       forall primitive : E.coefficient.C0,
+        surface.K.d 0 (sectionWitness.c0SectionEquiv primitive) =
+          sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) := by
+  have hcycle122 :=
+    atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+      (additive := additive) (surface := surface) family hcover_eq realization
+  rcases hcycle122.1 with
+    ⟨_family, _hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_direct_to, _d0_direct_from, _d1_direct_to, _d1_direct_from⟩
+  exact
+    ⟨c0Equiv, c1Equiv, c2Equiv, c2Equiv_zero, c2Equiv_symm_zero,
+      d0_direct_to⟩
+
+/--
 Cycle 98 transparent-lower-data theorem: the displayed degreewise carrier data
 and explicit selected face-restriction equations construct the Cycle 97
 selected carrier model and matching compatibility source.
