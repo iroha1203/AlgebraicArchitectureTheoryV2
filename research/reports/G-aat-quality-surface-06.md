@@ -18172,6 +18172,147 @@ No-uniform carrier/equivalence blockers remain visible.
 - residual obligation: construct the selected cochain realization from
   accepted atom-supported data.
 
+## Cycle 119 - Atom-Supported Selected Lower-Source Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 119 adds the first positive atom-supported lower-source constructor
+boundary after Cycle 118.  The accepted lower source is a transparent
+proposition, not a certificate structure:
+
+- an atom-admissible `AATCoverageFamily` whose generated sieve is the selected
+  current cover;
+- the transparent finite lower witness
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+Lean declarations:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedSelectedLowerSource`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedLowerSource_constructs_selectedCochainRealization`
+
+The theorem proof-uses the atom-generated family to derive selected cover
+membership in `S.topology`, then proof-uses the transparent finite lower
+witness through the Cycle 118 discharge path to construct:
+
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`;
+- `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`;
+- `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`;
+- `SemanticRepairCarrierSpecificComparisonProvenance`.
+
+The no-uniform carrier/equivalence blockers remain in the theorem conclusion.
+
+### Discharged Obligation
+
+- Discharged the positive constructor from an explicitly atom-supported
+  selected lower source to selected cochain realization and all Cycle 118
+  lower-source presentations.
+- The atom-generated coverage part is proof-used: the generated sieve from the
+  supplied `AATCoverageFamily` is shown to be in the selected
+  `AATGrothendieckTopology` / `S.topology`.
+
+### Not Discharged
+
+- The transparent finite lower witness is still material input inside
+  `AtomSupportedSelectedLowerSource`.
+- The cycle does not construct degree-wise carrier comparisons, degree-`2`
+  zero laws, or the four selected face-restriction equations from
+  `CurrentG06InputSurface`, `gluingData`, descent/effective gluing, semantic
+  additive `H1` zero, class membership, or an opaque certificate.
+- Therefore this is not a G-06 completion theorem.
+
+### Material Premise Ledger
+
+- `AATCoverageFamily` generating the selected cover: `discharge-required` for
+  atom-generated cover membership in this checkpoint, discharged by theorem
+  proof-use of `atomGeneratedCoverage_generates_AATGrothendieckTopology`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still the transparent finite lower source and not
+  ambient boundary.
+- selected cochain realization, selected carrier model plus compatibility,
+  selected carrier geometry plus face laws, and carrier-specific provenance:
+  theorem-produced from the accepted lower source.
+
+### Dependency DAG
+
+```text
+AATCoverageFamily
+  -> atomGeneratedCoverage_generates_AATGrothendieckTopology
+  -> selected cover membership in S.topology
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  -> Cycle 118 equivalence
+  -> SemanticRepairCoverRelativeCochainRealization
+  -> selected carrier model + face compatibility
+  -> selected carrier geometry + face laws
+  -> carrier-specific comparison provenance
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle119AxiomAudit.lean` reported that the Cycle 119
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle119AxiomAudit.lean` - passed.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files -
+  clean.
+- local path scan over changed Lean and audit files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: positive constructor from an atom-supported selected
+  lower source to selected cochain realization, not a current-surface-only
+  constructor and not G-06 completion.
+- Proof-use: both conjuncts of the source are used.  The atom-admissible family
+  produces selected cover membership, and the transparent finite lower witness
+  produces the cochain realization and all equivalent lower-source
+  presentations.
+- Structure-field escape: avoided.  The new lower source is a transparent
+  `Prop` and no new structure/class/certificate field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, and refinement/naturality remains outside this theorem.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed for checkpoint.  The source is destructed into
+  `family`, selected-cover equality, and transparent finite lower data; the
+  family derives topology membership and the lower data derives the selected
+  cochain realization through Cycle 118.
+- certificate provenance audit: passed for checkpoint.  The atom-generated
+  cover part has transparent provenance through `AATCoverageFamily`; the
+  selected cochain realization and downstream presentations are produced from
+  the explicit finite lower witness.
+- structure-field escape audit: passed.  No new structure, class, or
+  certificate field is introduced; the material finite witness is explicit.
+- residual obligation: construct
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or an equivalent
+  selected carrier model plus face-restriction compatibility / selected cochain
+  realization, from accepted atom-supported G-06 boundary data without moving
+  the finite lower witness into structure fields, certificate fields,
+  `gluingData`, descent/effective gluing, or `H1`-zero assumptions.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -18210,6 +18351,9 @@ No-uniform carrier/equivalence blockers remain visible.
   equivalent presentations of the same missing source.
 - a concrete selected cochain realization is fixed as exactly strong enough to
   discharge that lower-source boundary and proof-produce all four presentations.
+- an atom-supported selected lower-source proposition is fixed as strong enough
+  to construct the selected cochain realization while proof-using
+  atom-generated cover membership.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -18219,7 +18363,7 @@ No-uniform carrier/equivalence blockers remain visible.
 ### Remaining Completion Blocker
 
 The remaining blocker is a positive provenance theorem for the accepted
-lower-source boundary:
+finite lower witness inside the atom-supported lower-source boundary:
 
 - construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or
   equivalently construct `SelectedSectionFamilyCarrierModel` plus
@@ -18228,6 +18372,9 @@ lower-source boundary:
 - equivalently after Cycle 118, construct
   `SemanticRepairCoverRelativeCochainRealization additive surface.K` from
   accepted atom-supported data;
+- after Cycle 119, the atom-generated selected-cover part is discharged, but
+  the transparent finite witness inside `AtomSupportedSelectedLowerSource`
+  still needs a lower construction;
 - without moving the carrier maps, degree-`2` zero laws, or four selected
   face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.
