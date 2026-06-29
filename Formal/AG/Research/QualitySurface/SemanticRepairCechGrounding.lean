@@ -11392,6 +11392,61 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_degreeTwoCar
     rw [← hx0, ← hx1]
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
+/--
+Cycle 148 atom-supported current-boundary degree-`2` zero-law package
+boundary theorem: adding only atom-generated selected-cover data and
+selected-cover equality to the current G-06 boundary still does not uniformly
+construct the degree-`2` carrier equivalence together with its two
+zero-preservation laws.
+
+The theorem proof-uses the alleged package constructor by passing it the
+current surface and atom-generated selected-cover data.  It extracts the
+carrier equivalence component and feeds that component to the Cycle 147
+degree-`2` carrier no-constructor theorem.  Thus bundling the zero laws with
+the carrier equivalence is not a way to hide or discharge the missing
+degree-`2` lower provenance.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_degreeTwoEquivAndZeroLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : surface.K.Cn 2 ≃ ZMod 2)
+    (atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+        (letI := surfaceInput.K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+        (letI := surfaceInput.K.cochainAddCommGroup 2
+         c2Equiv.symm 0 = E.coefficient.zero2)) :
+    False := by
+  let atomSupportedCurrentBoundaryDegreeTwoEquivConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      E.coefficient.C2 ≃ surfaceInput.K.Cn 2 :=
+    fun surfaceInput familyInput hcoverInput =>
+      Classical.choose
+        (atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor
+          surfaceInput familyInput hcoverInput)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_degreeTwoCarrierEquiv
+      (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+      atomSupportedCurrentBoundaryDegreeTwoEquivConstructor
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCarrierSpecificComparisonProvenance
