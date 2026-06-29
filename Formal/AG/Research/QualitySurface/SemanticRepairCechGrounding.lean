@@ -10123,6 +10123,70 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedCoch
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 164 atom-supported current-boundary explicit-lower theorem: adding only
+atom-generated selected-cover data and selected-cover equality to the current
+G-06 boundary still does not uniformly construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+The proof reduces any alleged explicit-lower constructor to the already blocked
+selected cochain-realization constructor by the exact equivalence
+`cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`.
+Thus the degree-wise carrier identifications, degree-`2` zero laws, and four
+selected face-restriction equations remain genuine lower provenance; they
+cannot be hidden as a current-boundary accessor.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryExplicitLowerConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) :
+    False := by
+  let atomSupportedCurrentBoundaryCochainRealizationConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      SemanticRepairCoverRelativeCochainRealization additive surface.K :=
+    fun surfaceInput familyInput hcoverInput => by
+      let explicitLower :
+          DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+            (additive := additive) (coverBridge := surfaceInput.coverBridge)
+            (K := surfaceInput.K) :=
+        atomSupportedCurrentBoundaryExplicitLowerConstructor
+          surfaceInput familyInput hcoverInput
+      exact
+        Classical.choice
+          ((cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+            (additive := additive) (coverBridge := surfaceInput.coverBridge)
+            (K := surfaceInput.K)).2 explicitLower)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedCochainRealization
+      (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryCochainRealizationConstructor
+
+/--
 Cycle 124 conclusion-side boundary theorem: adding a current gluing datum,
 cover-wise sheaf condition, descent, effective gluing, and semantic additive
 `H1` zero to the atom-supported current G-06 boundary still does not uniformly
