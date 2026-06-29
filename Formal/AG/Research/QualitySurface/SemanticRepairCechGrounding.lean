@@ -6371,6 +6371,144 @@ theorem atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selec
       hcycle120.2.2.2.2.2.2⟩
 
 /--
+Cycle 157 G-06 correction layer: selected semantic coefficient realization as
+an explicit atom-supported cover plus the transparent direct lower bundle.
+
+This is deliberately below completion strength.  It does not construct the
+degree-wise carrier identifications, degree-`2` zero laws, or direct selected
+`K.d` laws from `CurrentG06InputSurface`, `gluingData`, descent/effective gluing,
+semantic `H1` zero, or a certificate field.  Instead, it names the mathematical
+layer G-06 must genuinely construct: the semantic coefficient complex is
+realized by the selected cover-relative Cech complex on the accepted
+atom-generated cover.
+-/
+structure SelectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) where
+  family :
+    AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase
+  cover_eq : surface.selectedCover = Sieve.generate family.presieve
+  directLower :
+    DegreewiseCarrierDataAndDirectDifferentialLaws
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)
+
+/--
+Cycle 157 positive correction: the selected semantic coefficient realization
+layer is exactly strong enough to enter the existing atom-supported direct-source
+route.
+
+The proof only repackages the transparent direct lower bundle with the selected
+atom-generated cover source.  It preserves the no-constructor boundary: this
+theorem cannot be used to manufacture the layer from `CurrentG06InputSurface`
+alone.
+-/
+theorem selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (layer :
+      SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface) :
+    AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+      (additive := additive) surface := by
+  rcases layer.directLower with
+    ⟨c0Carrier, c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_direct_to, d0_direct_from, d1_direct_to, d1_direct_from⟩
+  refine
+    ⟨layer.family, layer.cover_eq,
+      (letI := additive.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       c0Carrier.toAddEquiv),
+      (letI := additive.c1AddCommGroup
+       letI := surface.K.cochainAddCommGroup 1
+       c1Carrier.toAddEquiv),
+      c2Equiv, c2Equiv_zero, c2Equiv_symm_zero, ?_, ?_, ?_, ?_⟩
+  · intro primitive
+    simpa [
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+        d0_direct_to primitive
+  · intro primitive
+    simpa [
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+        d0_direct_from primitive
+  · intro cochain
+    simpa [
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+        d1_direct_to cochain
+  · intro cochain
+    simpa [
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+        d1_direct_from cochain
+
+/--
+Cycle 157 positive correction: once the selected semantic coefficient
+realization layer is genuinely supplied, the existing G-06 machinery reaches the
+selected cochain realization, carrier-specific provenance, and grounded
+cover-relative `H1` comparison package.
+
+This theorem is a route theorem, not a completion theorem.  The realization layer
+remains visible material input, so the theorem does not weaken the Cycle 153-156
+no-constructor boundaries.
+-/
+theorem selectedSemanticCoefficientDirectRealizationLayer_constructs_groundedRoute
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (layer :
+      SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface) :
+    AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization additive surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  have source :
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface :=
+    selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource
+      (additive := additive) surface layer
+  have route :=
+    atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization
+      (additive := additive) (surface := surface) source
+  have grounded :=
+    atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage
+      (additive := additive) (surface := surface) route.1
+  exact
+    ⟨source,
+      route.2.2.2.2.1,
+      route.2.2.2.2.2.2.2,
+      grounded.2.2⟩
+
+/--
 Cycle 122 positive checkpoint: atom-generated selected cover data plus a
 concrete selected cochain realization construct the Cycle 121 direct
 differential source and immediately proof-use that source through the selected

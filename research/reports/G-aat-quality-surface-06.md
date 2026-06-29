@@ -23684,3 +23684,64 @@ finite lower witness inside the atom-supported lower-source boundary:
 
 Until that provenance theorem exists, the theorem package must not be reported
 as `target-theorem-proved`.
+
+## Cycle 157 — selected semantic coefficient realization correction layer
+
+- decision: approve
+- result_type: proof-obligation-normalized
+- completion candidate: no
+- tracking Issue: #2636 not updated in this branch-local correction pass
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SelectedSemanticCoefficientDirectRealizationLayer`
+  - `selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource`
+  - `selectedSemanticCoefficientDirectRealizationLayer_constructs_groundedRoute`
+
+### Proof-Obligation Delta
+
+Discharged / normalized:
+
+- The missing G-06 lower provenance is now named as a selected semantic
+  coefficient realization layer: an atom-supported selected cover source plus
+  the transparent `DegreewiseCarrierDataAndDirectDifferentialLaws` bundle.
+- Once that layer is supplied, the existing Cycle 121 route constructs
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- The existing G-06 machinery then reaches the selected cochain realization,
+  carrier-specific provenance, and grounded cover-relative `H1` comparison
+  package.
+
+Remaining:
+
+- This is not a construction of the layer from `CurrentG06InputSurface`,
+  `gluingData`, descent/effective gluing, semantic `H1` zero, or a certificate
+  field.
+- G-06 still needs genuine construction of the selected semantic coefficient
+  realization layer, preferably as a canonical/free obstruction-sheaf
+  realization over an atom-generated selected cover.
+- Full refinement naturality and full sheaf cohomology comparison remain outside
+  this cycle's discharge.
+
+### Material Premise Ledger
+
+- `site / atom vocabulary / selected cover`: ambient-boundary when it only fixes
+  the selected AAT geometry.
+- `selected semantic coefficient realization layer`: discharge-required.  It
+  must construct the degree-wise carrier identifications, degree-`2` zero laws,
+  and four direct selected `K.d` compatibility laws without hiding a G-06
+  conclusion.
+- `target selected semantic coefficient realization gate`: added to
+  `research/GOALS.md` so that future cycles must construct this layer as a
+  canonical/free obstruction-sheaf realization from semantic atom / law data over
+  an atom-generated selected cover, rather than by fitting an ad hoc `K`,
+  `ObstructionSheaf`, cover, or certificate field to the desired
+  `delta0`/`delta1` laws.
+- `selected cochain realization`, `carrier-specific provenance`, and grounded
+  cover-relative `H1` package`: derived from the layer by existing route theorems
+  in this cycle, not accepted as conclusion-side substitutes for the layer.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed locally.
