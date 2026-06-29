@@ -12920,6 +12920,44 @@ theorem selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirec
     exact ⟨⟨family, hcover_eq, directLower⟩⟩
 
 /--
+Cycle 170 positive-source theorem: the selected semantic coefficient
+realization layer constructs the transparent explicit lower data and the
+selected cochain realization.
+
+The proof first converts the layer to the atom-supported direct lower source
+using the Cycle 159 equivalence, then proof-uses the Cycle 121 construction
+that turns direct `K.d` laws into selected face-restriction equations.  This is
+not a current-boundary discharge: the layer itself remains visible material
+provenance and is not generated from conclusion-side gluing, descent,
+effective gluing, semantic `H1` zero, or a certificate field.
+-/
+theorem selectedSemanticCoefficientDirectRealizationLayer_constructs_explicitLowerData_and_selectedCochainRealization
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (layer :
+      SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface) :
+    AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  have hsource :
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface :=
+    (selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource
+      (additive := additive) surface).1 ⟨layer⟩
+  have hcycle121 :=
+    atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization
+      (additive := additive) (surface := surface) hsource
+  exact
+    ⟨hsource,
+      hcycle121.2.2.2.1,
+      hcycle121.2.2.2.2.1⟩
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
