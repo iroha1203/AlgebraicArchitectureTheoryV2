@@ -4298,6 +4298,37 @@ variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
 
+/--
+The degree-one part of a cover-relative `H1` comparison is an ordinary additive
+equivalence.
+
+This lemma exposes the additive carrier premise that is implicit in the
+cochain-level comparison fields, rather than treating the `H1` comparison as a
+weaker conclusion-side certificate.
+-/
+def c1AddEquiv
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    letI := additive.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    E.coefficient.C1 ≃+ K.Cn 1 := by
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  refine
+    { toFun := comparison.toC1
+      invFun := comparison.fromC1
+      left_inv := comparison.fromC1_toC1
+      right_inv := comparison.toC1_fromC1
+      map_add' := ?_ }
+  intro left right
+  have hzero : comparison.toC1 (0 : E.coefficient.C1) = (0 : K.Cn 1) := by
+    have h := comparison.toC1_sub (0 : E.coefficient.C1) 0
+    simpa using h
+  have hneg : comparison.toC1 (-right) = -comparison.toC1 right := by
+    have h := comparison.toC1_sub (0 : E.coefficient.C1) right
+    simpa [hzero] using h
+  have h := comparison.toC1_sub left (-right)
+  simpa [sub_eq_add_neg, hneg] using h
+
 /-- Semantic cocycles map to degree-one cocycles in the general Cech complex. -/
 def toCoverRelativeCocycle
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K)
@@ -10119,6 +10150,170 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
       (additive := additive) (surface := surface) family hcover_eq gluingData
       hSheafFor hDescent hEffective hSemanticH1Zero c0SourceEquiv
       c0TargetEquiv cochainRealizationConstructor
+
+/--
+Cycle 156 conclusion-side bare-comparison boundary theorem: the cochain-level
+cover-relative `H1` comparison itself cannot be supplied as a shortcut around
+the missing selected lower provenance.
+
+The proof uses the alleged comparison constructor on the current surface and
+conclusion-side data, extracts the degree-`1` ordinary additive equivalence
+from the comparison fields, and composes it with the finite `PUnit` /
+`ZMod 2` witness.  Hence a bare
+`SemanticRepairCoverRelativeH1Comparison` is not weaker completion evidence
+than the lower degree-wise carrier data it already contains.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1Comparison
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 1
+      surface.K.Cn 1 ≃+ ZMod 2)
+    (coverRelativeH1ComparisonConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeH1Comparison additive surfaceInput.K) :
+    False := by
+  letI := additive.c1AddCommGroup
+  letI := surface.K.cochainAddCommGroup 1
+  let comparison :
+      SemanticRepairCoverRelativeH1Comparison additive surface.K :=
+    coverRelativeH1ComparisonConstructor
+      surface family hcover_eq gluingData hSheafFor hDescent hEffective
+      hSemanticH1Zero
+  let eSemanticToCech : E.coefficient.C1 ≃+ surface.K.Cn 1 :=
+    comparison.c1AddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c1SourceEquiv.symm.trans (eSemanticToCech.trans c1TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
+Cycle 156 package boundary theorem: even a bare cover-relative `H1` comparison
+package, indexed only by an extracted comparison, cannot be generated from
+the atom-supported current boundary plus conclusion-side data.
+
+The package is proof-used by selecting its underlying comparison and then
+applying the bare-comparison boundary theorem above.  Thus wrapping the
+comparison theorem package around the cochain-level comparison does not hide
+the degree-`1` additive carrier equivalence it contains.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1ComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 1
+      surface.K.Cn 1 ≃+ ZMod 2)
+    (coverRelativeH1ComparisonPackageConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      Exists fun comparison :
+        SemanticRepairCoverRelativeH1Comparison additive surfaceInput.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            comparison)) :
+    False := by
+  let coverRelativeH1ComparisonConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeH1Comparison additive surfaceInput.K :=
+    fun surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticInput =>
+      Classical.choose
+        (coverRelativeH1ComparisonPackageConstructor surfaceInput familyInput
+          hcoverInput gluingInput hSheafInput hDescentInput hEffectiveInput
+          hSemanticInput)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1Comparison
+      (additive := additive) (surface := surface) family hcover_eq gluingData
+      hSheafFor hDescent hEffective hSemanticH1Zero c1SourceEquiv
+      c1TargetEquiv coverRelativeH1ComparisonConstructor
 
 /--
 Cycle 125 conclusion-side lower-source boundary theorem: the same
