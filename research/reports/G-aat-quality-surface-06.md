@@ -21280,6 +21280,135 @@ accepted current/conclusion-side boundary
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830614926>.
 
+## Cycle 141 - Degreewise Equivalence Face-Restriction Source Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 141 blocks the transparent ordinary degree-wise equivalence plus
+selected face-restriction source,
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`, as a conclusion-side
+escape over the accepted atom-supported current G-06 boundary.  This source is
+below the Cycle 119 selected lower source and above the Cycle 121 direct
+differential source: it contains the atom-generated selected cover family,
+ordinary degree-`0`/`1` additive equivalences, the degree-`2` equivalence and
+zero laws, and the four selected face-restriction equations.
+
+The new theorem proof-uses the hypothetical face-restriction-source constructor
+by passing it atom-generated selected cover data, selected-cover equality,
+gluing data, cover-wise sheaf condition, descent, effective gluing, and
+semantic additive `H1` zero.  It consumes the returned source through
+`atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization`
+to obtain `SemanticRepairCoverRelativeCochainRealization`, and then applies
+the Cycle 124 selected-realization no-go theorem.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndFaceRestrictionSource`
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`.
+- atom-generated selected cover `family` and selected-cover equality:
+  `ambient-boundary`.
+- conclusion-side `gluingData`, cover-wise `AATSheafConditionFor`,
+  `AATDescent`, effective gluing, and `SemanticRepairAdditiveH1Zero`:
+  theorem-direction inputs for the no-go boundary, not provenance for
+  ordinary degree-wise equivalences or selected face-restriction equations.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`: remains
+  `discharge-required`; Cycle 141 blocks generating it from the accepted
+  current/conclusion-side boundary.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`: remains
+  `discharge-required`; Cycle 120 turns the face-restriction source into
+  selected cochain realization, so the source is strong enough to hit the
+  Cycle 124 contradiction.
+- finite test-boundary equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`:
+  theorem-direction boundary inputs for the no-constructor contradiction, not
+  discharged provenance for the target package.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+accepted current/conclusion-side boundary
+  + hypothetical AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+    -> SemanticRepairCoverRelativeCochainRealization
+       via atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization
+    -> Cycle 124 contradiction
+    -> False
+
+accepted current/conclusion-side boundary
+  -/-> AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- target declaration axiom audit:
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndFaceRestrictionSource`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets
+  - clean.
+- placeholder scan over
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - clean for `axiom`, `admit`, `sorry`, `unsafe`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed no-constructor theorem, not completion.
+- Proof-use: passed.  The hypothetical face-restriction-source constructor is
+  called with every atom-supported and conclusion-side input, and the returned
+  source is consumed by Cycle 120 before applying the existing no-go theorem.
+- Certificate provenance: unresolved by design.  The theorem blocks this
+  transparent lower-source escape; it does not construct the ordinary
+  equivalences, zero laws, selected face-restriction equations, or selected
+  cochain realization.
+- Structure-field escape: avoided.  No new structure/class/certificate field
+  is introduced.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- proof-use audit: passed.  The hypothetical constructor is called with
+  `surface`, `family`, selected-cover equality, gluing data, sheaf condition,
+  descent, effective gluing, and semantic additive `H1` zero.  Its returned
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` is consumed through
+  `atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization`
+  before applying the Cycle 124 no-constructor theorem.
+- structure-field escape audit: passed.  No new structure, class,
+  certificate field, or opaque wrapper is introduced; the transparent
+  face-restriction lower source is blocked as conclusion-side provenance
+  rather than accepted as completion evidence.
+- remaining obligation: construct the face-restriction source / selected
+  cochain realization / carrier maps / zero laws / differential laws from
+  genuine accepted atom-supported lower data, or record a sharper obstruction
+  if that construction is impossible.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830731794>.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -21383,6 +21512,13 @@ accepted current/conclusion-side boundary
   produce `SemanticRepairCoverRelativeCochainRealization`, and then hits the
   Cycle 124 contradiction by
   `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_atomSupportedSelectedLowerSource`.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` is also blocked as a
+  conclusion-side escape over the accepted atom-supported current boundary.
+  Any alleged source constructor is consumed by
+  `atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization`
+  to produce `SemanticRepairCoverRelativeCochainRealization`, and then hits the
+  Cycle 124 contradiction by
+  `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndFaceRestrictionSource`.
 - the same accepted atom-supported current boundary plus conclusion-side data
   is also blocked as a generator of the degree-`0` ordinary additive
   equivalence `E.coefficient.C0 ≃+ surface.K.Cn 0`, the first material
@@ -21540,6 +21676,13 @@ finite lower witness inside the atom-supported lower-source boundary:
   also blocked from conclusion-side generation.  Since Cycle 119 consumes that
   proposition to construct selected cochain realization, any conclusion-side
   selected-lower-source constructor would contradict the Cycle 124 no-go
+  theorem;
+- after Cycle 141, the transparent ordinary degree-wise equivalence plus
+  selected face-restriction source
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` is also blocked from
+  conclusion-side generation.  Since Cycle 120 consumes that source to
+  construct selected cochain realization, any conclusion-side
+  face-restriction-source constructor would contradict the Cycle 124 no-go
   theorem;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or direct selected differential laws into
