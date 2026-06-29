@@ -19214,6 +19214,157 @@ CurrentG06InputSurface
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828992599
 
+## Cycle 126 - Conclusion-Side Data / Degree-Zero Additive-Equivalence No-Go Checkpoint
+
+### Target
+
+- declaration:
+  `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreeZeroAdditiveEquiv`
+- target status: `target-proof-checkpoint`.
+
+Cycle 126 sharpens the Cycle 125 boundary to the first material component of
+the direct lower source.  It proves that the accepted atom-supported current
+G-06 boundary, even with current gluing data, cover-wise sheaf condition,
+descent, effective gluing, and semantic additive `H1` zero, cannot uniformly
+construct the degree-`0` ordinary additive equivalence
+`E.coefficient.C0 ≃+ surface.K.Cn 0`.
+
+### Lean Result
+
+The new theorem is proved in Lean without `sorry`.  The hypothetical
+constructor is proof-used directly:
+
+1. pass `surface`, atom-generated `family`, selected-cover equality,
+   `gluingData`, `AATSheafConditionFor`, `AATDescent`, effective gluing, and
+   `SemanticRepairAdditiveH1Zero` to the alleged degree-`0` additive-equivalence
+   constructor;
+2. compose the produced `E.coefficient.C0 ≃+ surface.K.Cn 0` with the finite
+   direction-hypothesis equivalences `E.coefficient.C0 ≃+ PUnit` and
+   `surface.K.Cn 0 ≃+ ZMod 2`;
+3. derive `PUnit ≃+ ZMod 2` and hence the finite contradiction `0 = 1`.
+
+### Discharged / Fixed
+
+- The conclusion-side escape route is blocked already at the degree-`0`
+  additive-equivalence component of
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- This is a strictly lower boundary than Cycle 125: it does not require
+  constructing the whole direct source or a selected cochain realization before
+  reaching contradiction.
+- No degree-`0` additive equivalence, carrier map, selected cochain
+  realization, degree-`2` zero law, direct selected `K.d` law, descent,
+  effectivity, or `H1` zero conclusion was moved into a structure field,
+  certificate field, or class membership.
+
+### Not Discharged
+
+- This is a boundary/refutation checkpoint, not positive provenance for the
+  degree-`0` additive equivalence.
+- Positive construction of the ordinary degree-wise equivalences, degree-`2`
+  zero laws, and four direct selected `K.d` laws remains open.
+- The theorem does not identify cover-relative Cech `H1` with full sheaf
+  cohomology and does not prove refinement/naturality.
+
+### Material Premise Ledger
+
+- current G-06 input surface and atom-generated selected cover:
+  `ambient-boundary` for this no-go theorem.
+- gluing data, cover-wise sheaf condition, descent, effective gluing, and
+  semantic additive `H1` zero:
+  `direction-hypothesis`; each is passed to the hypothetical constructor and
+  shown insufficient as provenance for degree-`0` additive equivalence.
+- finite `PUnit` / `ZMod 2` comparison assumptions:
+  `direction-hypothesis` finite test boundary used only to refute a uniform
+  constructor.
+- degree-`0` ordinary additive equivalence
+  `E.coefficient.C0 ≃+ surface.K.Cn 0`:
+  `discharge-required`; Cycle 126 proves it cannot be generated uniformly from
+  the accepted atom-supported current boundary plus conclusion-side data.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  + AATCoverageFamily
+  + selected-cover equality
+  + gluingData
+  + AATSheafConditionFor
+  + AATDescent
+  + effective global gluing witness
+  + SemanticRepairAdditiveH1Zero
+  + hypothetical degree-0 additive-equivalence constructor
+      -> E.coefficient.C0 ≃+ surface.K.Cn 0
+      + E.coefficient.C0 ≃+ PUnit
+      + surface.K.Cn 0 ≃+ ZMod 2
+      -> PUnit ≃+ ZMod 2
+      -> contradiction (0 = 1)
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle126AxiomAudit.lean` reported that the Cycle 126
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake env lean .tmp/G06Cycle126AxiomAudit.lean` - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- hidden / bidirectional Unicode scan over changed Lean/report/audit files -
+  clean.
+- absolute local path scan over changed Lean/report/audit files - clean.
+- remaining validation before PR: T3 audit, tracking Issue sync, PR / CI sync.
+
+### Anti-Weakening Audit
+
+- Statement strength: lower-component boundary-refutation checkpoint, not G-06
+  completion.
+- Proof-use: the hypothetical degree-`0` additive-equivalence constructor is
+  called with atom-supported cover data and all conclusion-side inputs, and its
+  output is immediately used to derive the finite contradiction.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced, and the degree-`0` equivalence is not added to the current surface
+  or conclusion-side data.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative; no full
+  sheaf cohomology equivalence, refinement/naturality, arbitrary site, or
+  unbounded derived claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `blocker-fixed`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed.  The theorem calls the hypothetical degree-`0`
+  additive-equivalence constructor with `surface`, atom-generated `family`,
+  selected-cover equality, `gluingData`, `AATSheafConditionFor`, `AATDescent`,
+  the effective gluing witness, and `SemanticRepairAdditiveH1Zero`.
+- finite contradiction audit: passed.  The produced
+  `E.coefficient.C0 ≃+ surface.K.Cn 0` is immediately composed with the finite
+  `PUnit` / `ZMod 2` direction-hypothesis equivalences to derive contradiction.
+- structure-field / certificate escape: none found.  The degree-`0` equivalence
+  remains a visible hypothetical output and is not moved into
+  `CurrentG06InputSurface`, conclusion-side data, certificates, class
+  membership, or a new structure field.
+- residual obligation: Cycle 126 is a lower-component no-go, not positive
+  provenance.  G-06 still needs genuine construction of the degree-wise
+  equivalences, degree-`2` zero laws, and four direct selected `K.d` laws, or
+  an explicit GOAL-boundary revision.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829064864
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -19278,6 +19429,10 @@ CurrentG06InputSurface
   `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`; any such
   constructor would produce a selected cochain realization by the Cycle 121
   path and then hit the Cycle 124 contradiction.
+- the same accepted atom-supported current boundary plus conclusion-side data
+  is also blocked as a generator of the degree-`0` ordinary additive
+  equivalence `E.coefficient.C0 ≃+ surface.K.Cn 0`, the first material
+  component of the Cycle 121 direct lower source.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -19323,6 +19478,11 @@ finite lower witness inside the atom-supported lower-source boundary:
   a uniform construction from that same accepted boundary plus conclusion-side
   data; this keeps the ordinary equivalences, degree-`2` zero laws, and four
   direct selected `K.d` laws visible as material lower provenance;
+- after Cycle 126, the obstruction is visible already at the degree-`0`
+  ordinary additive equivalence component
+  `E.coefficient.C0 ≃+ surface.K.Cn 0`; this component still requires genuine
+  lower provenance and cannot be generated uniformly from conclusion-side
+  gluing/sheaf/descent/effective/H1-zero inputs;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or four direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
