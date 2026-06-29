@@ -10029,6 +10029,98 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 155 conclusion-side grounded-package boundary theorem: the grounded
+cover-relative `H1` comparison package cannot be used as a shortcut around the
+selected cochain-realization source.
+
+The theorem proof-uses the alleged grounded-package constructor by extracting
+its displayed selected cochain realization witness and then applies the Cycle
+124 selected-realization no-go theorem.  Thus a grounded comparison package is
+not weaker completion evidence than the selected cochain realization it is
+indexed by; it cannot be generated from conclusion-side gluing/sheaf/descent/
+effective-gluing/semantic-`H1`-zero inputs while bypassing the remaining lower
+provenance.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (groundedPackageConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization additive surfaceInput.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) :
+    False := by
+  let cochainRealizationConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeCochainRealization additive surfaceInput.K :=
+    fun surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticInput =>
+      Classical.choose
+        (groundedPackageConstructor surfaceInput familyInput hcoverInput
+          gluingInput hSheafInput hDescentInput hEffectiveInput hSemanticInput)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCochainRealization
+      (additive := additive) (surface := surface) family hcover_eq gluingData
+      hSheafFor hDescent hEffective hSemanticH1Zero c0SourceEquiv
+      c0TargetEquiv cochainRealizationConstructor
+
+/--
 Cycle 125 conclusion-side lower-source boundary theorem: the same
 atom-supported current G-06 boundary plus conclusion-side gluing/sheaf/descent/
 effective-gluing/semantic-`H1`-zero inputs also cannot uniformly construct the
