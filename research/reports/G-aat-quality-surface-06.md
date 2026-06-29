@@ -19059,6 +19059,161 @@ CurrentG06InputSurface
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828890437
 
+## Cycle 125 - Conclusion-Side Data / Direct-Lower-Source No-Go Checkpoint
+
+### Target
+
+- declaration:
+  `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndDirectDifferentialSource`
+- target status: `target-proof-checkpoint`.
+
+Cycle 125 lowers the Cycle 124 no-go boundary one step.  It proves that the
+same accepted atom-supported current G-06 boundary, even with current gluing
+data, cover-wise sheaf condition, descent, effective gluing, and semantic
+additive `H1` zero, cannot uniformly construct the transparent direct lower
+source
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+
+### Lean Result
+
+The new theorem is proved in Lean without `sorry`.  The hypothetical
+constructor is proof-used as follows:
+
+1. pass `surface`, atom-generated `family`, selected-cover equality,
+   `gluingData`, `AATSheafConditionFor`, `AATDescent`, effective gluing, and
+   `SemanticRepairAdditiveH1Zero` to the alleged direct-lower-source
+   constructor;
+2. feed the produced
+   `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` through
+   `atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`;
+3. extract the resulting selected cover-relative cochain realization with
+   `Classical.choice`;
+4. apply the Cycle 124 cochain-realization no-go theorem, which forces the
+   finite `PUnit` / `ZMod 2` contradiction.
+
+### Discharged
+
+- The conclusion-side escape route is now blocked not only for
+  `SemanticRepairCoverRelativeCochainRealization`, but also for the immediate
+  transparent lower source containing ordinary degree-wise additive
+  equivalences, the degree-`2` zero-preserving equivalence, and the four direct
+  selected `K.d` laws.
+- No cochain realization, carrier maps, degree-`2` zero laws, or direct
+  selected differential laws were added to `CurrentG06InputSurface`,
+  `gluingData`, descent, effective gluing, semantic `H1` zero, a certificate
+  field, or class membership.
+
+### Not Discharged
+
+- This is still a boundary/refutation checkpoint, not a positive construction
+  of the direct lower source.
+- The direct lower source and selected cochain realization still require
+  genuinely richer atom-supported lower provenance or an explicit GOAL-boundary
+  revision.
+- The theorem does not identify cover-relative Cech `H1` with full sheaf
+  cohomology and does not prove refinement/naturality.
+
+### Material Premise Ledger
+
+- current G-06 input surface and atom-generated selected cover:
+  `ambient-boundary` for this no-go theorem.
+- gluing data, cover-wise sheaf condition, descent, effective gluing, and
+  semantic additive `H1` zero:
+  `direction-hypothesis`; each is passed to the hypothetical constructor and
+  shown insufficient as provenance for the direct lower source.
+- finite `PUnit` / `ZMod 2` comparison assumptions:
+  `direction-hypothesis` finite test boundary used only to refute a uniform
+  constructor.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`:
+  `discharge-required`; Cycle 125 proves it cannot be generated uniformly from
+  the accepted atom-supported current boundary plus conclusion-side data.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  + AATCoverageFamily
+  + selected-cover equality
+  + gluingData
+  + AATSheafConditionFor
+  + AATDescent
+  + effective global gluing witness
+  + SemanticRepairAdditiveH1Zero
+  + hypothetical direct-lower-source constructor
+      -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+      -> Cycle 121 selected cochain-realization construction path
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> Cycle 124 no-go theorem
+      -> contradiction (PUnit/ZMod 2)
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle125AxiomAudit.lean` reported that the Cycle 125
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake env lean .tmp/G06Cycle125AxiomAudit.lean` - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- placeholder scan including this report finds existing and newly added audit
+  prose for `sorry` / `axiom` / `admit` / `unsafe`; no Lean placeholder was
+  found.
+- hidden / bidirectional Unicode scan over changed Lean/report/audit files -
+  clean.
+- absolute local path scan over changed Lean/report/audit files - clean.
+- remaining validation before PR: T3 audit, tracking Issue sync, PR / CI sync.
+
+### Anti-Weakening Audit
+
+- Statement strength: boundary-refutation checkpoint, not G-06 completion.
+- Proof-use: the hypothetical direct-lower-source constructor is called with
+  atom-supported cover data and all conclusion-side inputs, and its output is
+  consumed by the Cycle 121 construction path before the Cycle 124 contradiction
+  is applied.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced, and the direct lower source is not added to the current surface
+  or conclusion-side data.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative; no full
+  sheaf cohomology equivalence, refinement/naturality, arbitrary site, or
+  unbounded derived claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- major findings / veto: none.
+- audit basis: the reviewer confirmed that the theorem calls the hypothetical
+  direct-lower-source constructor with `surface`, atom-generated `family`,
+  selected-cover equality, `gluingData`, `AATSheafConditionFor`, `AATDescent`,
+  the effective gluing witness, and `SemanticRepairAdditiveH1Zero`.
+- proof-use: passed.  The constructed
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` is consumed by the
+  Cycle 121 construction path, a selected cochain realization is extracted, and
+  Cycle 124 supplies the final contradiction.
+- structure-field / certificate escape: none found.  The direct lower source
+  remains visible external provenance and is not moved into
+  `CurrentG06InputSurface`, conclusion-side data, certificates, class
+  membership, or a new structure field.
+- residual obligation: Cycle 125 is a derived no-go below Cycle 124, not
+  completion.  G-06 still needs positive lower provenance for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` or an explicit
+  GOAL-boundary revision.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828992599
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -19117,6 +19272,12 @@ CurrentG06InputSurface
   current G-06 boundary is not enough to construct the selected cochain
   realization uniformly; any such constructor would force the finite
   `PUnit` / `ZMod 2` contradiction.
+- conclusion-side gluing data, cover-wise sheaf condition, descent, effective
+  gluing, and semantic additive `H1` zero are also blocked as generators of the
+  immediate transparent direct lower source
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`; any such
+  constructor would produce a selected cochain realization by the Cycle 121
+  path and then hit the Cycle 124 contradiction.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -19157,6 +19318,11 @@ finite lower witness inside the atom-supported lower-source boundary:
   uniform construction from the accepted atom-supported current G-06 boundary
   plus conclusion-side gluing data, cover-wise sheaf condition, descent,
   effective gluing, and semantic additive `H1` zero;
+- after Cycle 125, the immediate transparent direct lower source
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` is also blocked as
+  a uniform construction from that same accepted boundary plus conclusion-side
+  data; this keeps the ordinary equivalences, degree-`2` zero laws, and four
+  direct selected `K.d` laws visible as material lower provenance;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or four direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
