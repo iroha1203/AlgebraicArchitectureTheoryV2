@@ -17417,6 +17417,177 @@ carrier-specific comparison provenance.  Completion requires a genuinely richer
 lower provenance source, or a GOAL-boundary revision that explicitly accepts
 such carrier comparison and face-law data as ambient selected input.
 
+## Cycle 114 - Exact Lower-Source Criterion Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- target status: `target-proof-checkpoint`.
+- completion candidate: no.
+- selected obligation: construct positive provenance for the accepted
+  lower-source boundary, or otherwise fix exactly what lower source remains
+  necessary after the Cycle 113 blocker.
+
+### T1 Selector Input
+
+- proof obligation: construct `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, equivalently
+  `SemanticRepairCoverRelativeFaceRestrictionRealization` /
+  `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`, from genuinely accepted
+  atom-supported lower provenance data.
+- expected result type: `proof-obligation-discharged`.
+- completion candidate: no.
+- selector warning: do not move carrier maps, degree-`2` zero laws, or the
+  four selected face-restriction equations into `CurrentG06InputSurface`,
+  `gluingData`, certificate fields, class membership, or an opaque new
+  boundary.
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_carrierSpecificComparisonProvenance_iff_selectedCarrierModel_and_faceRestrictionCompatibility`
+  - `SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCarrierModel_and_faceRestrictionCompatibility_iff_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+
+### Proof-Obligation Delta
+
+Fixed checkpoint:
+
+- For a `CurrentG06InputSurface`, `Nonempty
+  SemanticRepairCarrierSpecificComparisonProvenance` is equivalent to the
+  already isolated lower source consisting of `SelectedSectionFamilyCarrierModel`
+  plus matching `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- The selected carrier model plus compatibility is equivalent to the transparent
+  finite lower predicate
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- The proof uses the Cycle 112 lower-boundary packet and the existing
+  carrier-specific provenance / explicit finite lower-data criterion in both
+  directions.
+
+Not discharged:
+
+- The equivalent lower source is not constructed from accepted atom-supported
+  semantic residual / presheaf restriction / selected Cech face data.
+- `CurrentG06InputSurface` fields beyond `coverBridge` and `K` are not used to
+  generate lower data; this is acceptable only for a checkpoint, not for
+  completion.
+
+### Material Premise Ledger
+
+- `carrier-specific comparison provenance`: equivalent to explicit selected
+  carrier model plus selected face-restriction compatibility; still
+  discharge-required from lower atom-supported data.
+- `SelectedSectionFamilyCarrierModel`: equivalent to the degreewise carrier
+  data part of `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`; still
+  not generated from current site/sheaf data.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: equivalent to the
+  four explicit selected face-restriction equations after the selected carrier
+  model is fixed; still not generated from current site/sheaf data.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: exact remaining
+  transparent lower-source criterion; still open as positive atom-supported
+  provenance.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  + Nonempty SemanticRepairCarrierSpecificComparisonProvenance
+    <-> exists model : SelectedSectionFamilyCarrierModel,
+          SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            (of_selectedSectionFamilyCarrierModel model)
+    <-> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+
+Cycle 113:
+CurrentG06InputSurface + presheaf laws + selected Cech face identity
+  -/-> SemanticRepairCarrierSpecificComparisonProvenance
+
+Cycle 114:
+exact remaining source =
+  degreewise carrier maps / zero laws + four selected face equations
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle114AxiomAudit.lean` reported that both Cycle 114
+  declarations depend only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle114AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean and audit files — clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files —
+  clean.
+- local path scan over changed Lean, report, and audit files — clean.
+- Remaining validation is pending until tracking Issue sync and PR / CI sync
+  complete.
+
+### Anti-Weakening Audit
+
+- Statement strength: checkpoint theorem pair, not positive provenance and not
+  G-06 completion.
+- Proof-use: passed locally.  The forward and backward directions consume the
+  provenance/model/compatibility/explicit finite lower-data premises rather
+  than attaching them unused.
+- Structure-field escape: avoided.  No new structure, class, or certificate
+  field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, and refinement/naturality remains outside completion.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed.  `Nonempty
+  SemanticRepairCarrierSpecificComparisonProvenance` is used to extract the
+  selected carrier model and compatibility; model and compatibility are used
+  through the Cycle 112 boundary packet; explicit finite lower data reconstructs
+  provenance and then the first equivalence extracts the selected model and
+  compatibility.
+- structure-field escape audit: passed.  The theorem pair introduces no new
+  certificate or structure field.
+- caveat: this cycle does not generate the equivalent lower source from
+  accepted atom-supported data.
+- next obligation: prove positive provenance for
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, equivalently
+  `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, from accepted
+  atom-supported lower data without field escape.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828011699>.
+- PR / CI sync: PR #2782
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2782>;
+  pre-report-sync CI run
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28341380998>
+  passed all checks.  The final pushed report-sync head is checked again by
+  PR CI before merge, and the final run is recorded in the tracking Issue
+  post-merge sync.
+
+### Target Status
+
+G-06 remains `target-proof-checkpoint`, not `target-theorem-proved`.
+
+Cycle 114 fixes the exact remaining lower-source criterion.  Completion now
+requires a theorem constructing
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from accepted
+atom-supported lower data, or an explicit GOAL-boundary revision that admits
+that finite carrier/face-law source as ambient selected input.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -17443,23 +17614,28 @@ such carrier comparison and face-law data as ambient selected input.
 - the current surface plus presheaf restriction zero/add laws and selected Cech
   face identity is blocked as a generator of carrier-specific comparison
   provenance.
+- the equivalent lower-source criterion is fixed:
+  `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
+  current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, and this is
+  equivalent to `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
 
 ### Remaining Completion Blocker
 
 The remaining blocker is a positive provenance theorem for the accepted
 lower-source boundary:
 
-- construct `SelectedSectionFamilyCarrierModel` plus
-  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, or equivalently
-  construct the resulting `SemanticRepairCoverRelativeFaceRestrictionRealization`
-  / `SemanticRepairSelectedCarrierGeometry` plus
-  `SemanticRepairSelectedCechFaceLawSource`, from accepted atom-supported data;
+- construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or
+  equivalently construct `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, from accepted
+  atom-supported data;
 - without moving the carrier maps, degree-`2` zero laws, or four selected
   face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.
 - the current surface's presheaf restriction laws and selected Cech face
-  identity are insufficient by Cycle 113; a genuinely richer lower provenance
-  source or explicit GOAL-boundary revision is required.
+  identity are insufficient by Cycle 113, and Cycle 114 identifies the exact
+  transparent finite lower source still required; a genuinely richer lower
+  provenance source or explicit GOAL-boundary revision is required.
 
 Until that provenance theorem exists, the theorem package must not be reported
 as `target-theorem-proved`.

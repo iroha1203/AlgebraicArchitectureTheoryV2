@@ -5507,6 +5507,98 @@ theorem selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_const
       SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data⟩
 
 /--
+Cycle 114 exact lower-source criterion: for a current G-06 surface, the
+carrier-specific provenance node is equivalent to the already isolated selected
+carrier model plus its explicit face-restriction compatibility.
+
+This is not a new certificate and it is not a construction from
+`CurrentG06InputSurface` alone.  The forward direction exposes the model and
+face laws contained in a provenance witness; the backward direction proof-uses
+the Cycle 112 boundary packet and the transparent finite lower-data criterion
+to reconstruct provenance.  Thus the remaining positive-provenance obligation
+is exactly the selected carrier model together with the selected face laws.
+-/
+theorem currentG06InputSurface_carrierSpecificComparisonProvenance_iff_selectedCarrierModel_and_faceRestrictionCompatibility
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) <->
+      Exists fun model :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) := by
+  constructor
+  · intro hprovenance
+    rcases hprovenance with ⟨provenance⟩
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_carrierSpecificComparisonProvenance
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) provenance
+    have hlower :=
+      SelectedSectionFamilyCarrierModel.carrierSpecificComparisonProvenance_constructs_selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_via_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) provenance
+    dsimp only at hlower
+    rcases hlower with ⟨_, compatibility, _⟩
+    exact ⟨model, compatibility⟩
+  · intro hlower
+    rcases hlower with ⟨model, compatibility⟩
+    have hpacket :=
+      selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_faceRestrictionRealization_boundary_packet
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) model compatibility
+    exact
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)).2 hpacket.2.1
+
+/--
+Cycle 114 transparent lower-source criterion: the selected carrier model plus
+face-restriction compatibility is equivalent to the explicit finite lower data
+already audited in the carrier-specific provenance boundary.
+
+The theorem fixes the remaining source obligation without hiding it in
+`CurrentG06InputSurface`, `gluingData`, a class membership, or a certificate
+field.  To complete G-06, the left/right equivalent data still must be generated
+from an accepted atom-supported lower source.
+-/
+theorem currentG06InputSurface_selectedCarrierModel_and_faceRestrictionCompatibility_iff_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (Exists fun model :
+      SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)) <->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) := by
+  constructor
+  · intro hlower
+    rcases hlower with ⟨model, compatibility⟩
+    exact
+      (selectedSectionFamilyCarrierModel_and_faceRestrictionCompatibility_constructs_faceRestrictionRealization_boundary_packet
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) model compatibility).2.1
+  · intro hfinite
+    have hprovenance :
+        Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K) :=
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)).2 hfinite
+    exact
+      (currentG06InputSurface_carrierSpecificComparisonProvenance_iff_selectedCarrierModel_and_faceRestrictionCompatibility
+        (additive := additive) (surface := surface)).1 hprovenance
+
+/--
 Transparent lower-data predicate for the Cycle 55 direct-differential source.
 
 This is only an abbreviation for the displayed carrier witness data,
