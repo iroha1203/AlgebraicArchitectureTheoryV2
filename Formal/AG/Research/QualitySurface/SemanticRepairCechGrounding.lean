@@ -3704,6 +3704,76 @@ theorem current_g06_presheaf_laws_stop_before_selected_differential_source
       SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data⟩
 
 /--
+Cycle 113 blocker theorem: even after exposing the atom-supported current
+surface's presheaf restriction laws and selected Cech face identity, one cannot
+uniformly construct carrier-specific comparison provenance.
+
+The extra inputs are exactly the data already derivable from the current G-06
+surface: restriction preserves zero, restriction preserves addition, and
+`K.d` is the alternating selected face-restriction combination.  A constructor
+from those inputs to `SemanticRepairCarrierSpecificComparisonProvenance` would
+still produce a degree-`0` additive carrier comparison between the semantic
+coefficient carrier and the selected cover-relative Cech carrier.  On the
+finite test boundary `PUnit` versus `ZMod 2`, that would force `0 = 1`.
+
+Thus the remaining selected carrier model / face-law source is not discharged
+by merely adding presheaf restriction laws or the general selected Cech face
+identity to `CurrentG06InputSurface`; a genuine lower provenance source is
+still required.
+-/
+theorem no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_carrierSpecificComparisonProvenance
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputPresheafFaceConstructor :
+      (surface :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) ->
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) ->
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) ->
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  have hsurface :=
+    current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  rcases
+      currentInputPresheafFaceConstructor surface
+        hsurface.1 hsurface.2.1 hsurface.2.2.1 with
+    ⟨provenance⟩
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    provenance.degreeZeroAdditiveComparisonData.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/
