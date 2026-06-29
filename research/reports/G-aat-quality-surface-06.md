@@ -21538,6 +21538,130 @@ accepted atom-supported current boundary
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830861150>.
 
+## Cycle 143 - Atom-Supported Current Boundary Selected-Lower-Source Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 143 blocks the named `AtomSupportedSelectedLowerSource` proposition
+already over the atom-supported current boundary alone.  This is the
+no-conclusion-side counterpart to Cycle 140: adding only an atom-generated
+selected cover family and selected-cover equality to `CurrentG06InputSurface`
+is not enough to generate the selected lower-source proposition that
+existentially contains the transparent finite lower witness.
+
+The new theorem proof-uses the hypothetical current-boundary
+selected-lower-source constructor by passing it the current surface,
+atom-generated selected cover data, and selected-cover equality.  It consumes
+the returned source through
+`atomSupportedSelectedLowerSource_constructs_selectedCochainRealization` to
+obtain `SemanticRepairCoverRelativeCochainRealization`, and then applies the
+Cycle 123 atom-supported current-boundary selected-realization no-go theorem.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_atomSupportedSelectedLowerSource`
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`.
+- atom-generated selected cover `family` and selected-cover equality:
+  `ambient-boundary`.
+- `AtomSupportedSelectedLowerSource`: remains `discharge-required`; Cycle 143
+  blocks generating it from the accepted atom-supported current boundary alone.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`: remains
+  `discharge-required`; Cycle 119 turns the selected lower source into
+  selected cochain realization, so the source is strong enough to hit the
+  Cycle 123 contradiction.
+- finite test-boundary equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`:
+  theorem-direction boundary inputs for the no-constructor contradiction, not
+  discharged provenance for the target package.
+- conclusion-side gluing/sheaf/descent/effective-gluing/semantic-`H1`-zero
+  inputs are not used in this theorem; their stronger conclusion-side escape
+  route is already blocked by Cycle 140.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+accepted atom-supported current boundary
+  + hypothetical AtomSupportedSelectedLowerSource
+    -> SemanticRepairCoverRelativeCochainRealization
+       via atomSupportedSelectedLowerSource_constructs_selectedCochainRealization
+    -> Cycle 123 contradiction
+    -> False
+
+accepted atom-supported current boundary
+  -/-> AtomSupportedSelectedLowerSource
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- target declaration axiom audit:
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_without_atomSupportedSelectedLowerSource`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets
+  - clean.
+- placeholder scan over
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - clean for `axiom`, `admit`, `sorry`, `unsafe`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed no-constructor theorem, not completion.
+- Proof-use: passed.  The hypothetical selected-lower-source constructor is
+  called with the current surface, atom-generated selected cover data, and
+  selected-cover equality; the returned source is consumed by Cycle 119 before
+  applying the existing Cycle 123 no-go theorem.
+- Certificate provenance: unresolved by design.  The theorem blocks the
+  Prop-level lower-source escape; it does not construct
+  `AtomSupportedSelectedLowerSource` or selected cochain realization.
+- Structure-field escape: avoided.  No new structure/class/certificate field
+  is introduced.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- proof-use audit: passed.  The hypothetical selected-lower-source
+  constructor is called with `surfaceInput`, `familyInput`, and selected-cover
+  equality.  Its returned `AtomSupportedSelectedLowerSource` is consumed
+  through `atomSupportedSelectedLowerSource_constructs_selectedCochainRealization`
+  before applying the Cycle 123 no-constructor theorem.
+- structure-field escape audit: passed.  No new structure, class,
+  certificate field, or opaque wrapper is introduced; the Prop-level lower
+  source remains visible as material data and is blocked as current-boundary
+  provenance.
+- remaining obligation: construct `AtomSupportedSelectedLowerSource` /
+  selected cochain realization / finite lower witness from genuine accepted
+  atom-supported lower data, or record a sharper obstruction if that
+  construction is impossible.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830979307>.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -21641,6 +21765,13 @@ accepted atom-supported current boundary
   produce `SemanticRepairCoverRelativeCochainRealization`, and then hits the
   Cycle 124 contradiction by
   `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_atomSupportedSelectedLowerSource`.
+- the same `AtomSupportedSelectedLowerSource` is also blocked already over the
+  accepted atom-supported current boundary alone.  Any alleged
+  selected-lower-source constructor is consumed by
+  `atomSupportedSelectedLowerSource_constructs_selectedCochainRealization` to
+  produce `SemanticRepairCoverRelativeCochainRealization`, and then hits the
+  Cycle 123 contradiction by
+  `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_atomSupportedSelectedLowerSource`.
 - `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` is also blocked as a
   conclusion-side escape over the accepted atom-supported current boundary.
   Any alleged source constructor is consumed by
@@ -21812,6 +21943,12 @@ finite lower witness inside the atom-supported lower-source boundary:
   also blocked from conclusion-side generation.  Since Cycle 119 consumes that
   proposition to construct selected cochain realization, any conclusion-side
   selected-lower-source constructor would contradict the Cycle 124 no-go
+  theorem;
+- after Cycle 143, the same named `AtomSupportedSelectedLowerSource`
+  proposition is blocked already from atom-supported current-boundary
+  generation without conclusion-side inputs.  Since Cycle 119 consumes that
+  proposition to construct selected cochain realization, any current-boundary
+  selected-lower-source constructor would contradict the Cycle 123 no-go
   theorem;
 - after Cycle 141, the transparent ordinary degree-wise equivalence plus
   selected face-restriction source
