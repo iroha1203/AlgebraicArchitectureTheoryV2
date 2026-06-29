@@ -6438,6 +6438,43 @@ theorem atomSupportedSelectedCochainRealization_constructs_degreeOneAdditiveEqui
   exact ⟨c1Equiv⟩
 
 /--
+Cycle 129 degree-`2` positive-source checkpoint: atom-generated selected cover
+data plus a concrete selected cochain realization proof-produce the degree-`2`
+carrier equivalence together with both zero-preservation laws from the same
+transparent Cycle 121 direct lower source.
+
+The statement keeps the zero-law witness tied to the displayed equivalence by
+returning an `Exists` package, rather than hiding the laws inside a structure or
+claiming a source-independent `Nonempty`.  It still does not construct the
+realization, the degree-`2` equivalence, direct selected `K.d` laws, or any
+conclusion-side semantic repair fact from `CurrentG06InputSurface`,
+gluing/sheaf/descent/effective-gluing data, semantic `H1` zero, or a
+certificate field.
+-/
+theorem atomSupportedSelectedCochainRealization_constructs_degreeTwoEquivAndZeroLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      (letI := surface.K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       c2Equiv.symm 0 = E.coefficient.zero2) := by
+  have hcycle122 :=
+    atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+      (additive := additive) (surface := surface) family hcover_eq realization
+  rcases hcycle122.1 with
+    ⟨_family, _hcover_eq, _c0Equiv, _c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      _d0_direct_to, _d0_direct_from, _d1_direct_to, _d1_direct_from⟩
+  exact ⟨c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
+
+/--
 Cycle 98 transparent-lower-data theorem: the displayed degreewise carrier data
 and explicit selected face-restriction equations construct the Cycle 97
 selected carrier model and matching compatibility source.

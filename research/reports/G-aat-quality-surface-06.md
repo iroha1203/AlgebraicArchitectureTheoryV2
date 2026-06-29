@@ -19622,7 +19622,7 @@ semantic repair facts, or from a certificate field.
 - hidden / bidirectional Unicode scan over changed Lean and audit files -
   clean.
 - local path scan over changed Lean and audit files - clean.
-- remaining validation before PR: T3 audit, tracking Issue sync, PR / CI sync.
+- PR #2797 was merged after CI passed; all listed validations remained clean.
 
 ### Anti-Weakening Audit
 
@@ -19669,6 +19669,161 @@ semantic repair facts, or from a certificate field.
 
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829254358
+- Issue #2636 post-merge sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829284519
+
+## Cycle 129 - Selected-Cochain / Degree-Two Zero-Law Positive-Source Checkpoint
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 129 fixes the next material component of the same transparent direct
+lower-source boundary handled in Cycles 127 and 128.  The earlier two cycles
+showed that atom-generated selected cover data plus a concrete selected
+cochain realization proof-produce the degree-`0` and degree-`1` additive
+equivalences.  Cycle 129 proves that the same lower source also proof-produces
+the degree-`2` carrier equivalence together with both zero-preservation laws,
+with the laws tied to the same displayed equivalence witness.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_degreeTwoEquivAndZeroLaws`
+
+The theorem has the shape:
+
+```lean
+theorem atomSupportedSelectedCochainRealization_constructs_degreeTwoEquivAndZeroLaws
+    (surface : CurrentG06InputSurface)
+    (family : AATCoverageFamily ...)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      (letI := surface.K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       c2Equiv.symm 0 = E.coefficient.zero2)
+```
+
+The result is intentionally `Exists`-valued rather than a bare `Nonempty`:
+the two zero laws are part of the same witness package and cannot be detached
+from the extracted `c2Equiv`.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`; fixes the selected AAT site,
+  cover bridge, presheaf, and cover-relative Cech complex.
+- atom-generated `family` and `hcover_eq`: `ambient-boundary` for this
+  positive lower-source theorem; proof-used to build the transparent direct
+  source.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`:
+  `discharge-required` lower provenance for G-06 completion; Cycle 129
+  consumes it but does not construct it.
+- degree-`2` carrier equivalence and both zero laws:
+  `discharge-required`; now theorem-produced as an explicit `Exists` witness
+  package from the selected cochain realization boundary, but still not
+  generated from the accepted current/conclusion-side boundary.
+- four direct selected `K.d` laws: `discharge-required`; still open lower
+  provenance obligations.
+- degree-`0` ordinary additive equivalence: already positive-source fixed by
+  Cycle 127 relative to the same selected cochain realization boundary; still
+  not generated from the accepted current/conclusion-side boundary.
+- degree-`1` ordinary additive equivalence: already positive-source fixed by
+  Cycle 128 relative to the same selected cochain realization boundary; still
+  not generated from the accepted current/conclusion-side boundary.
+- conclusion-side `gluingData`, `AATSheafConditionFor`, `AATDescent`,
+  effective gluing, and `SemanticRepairAdditiveH1Zero`: not used as sources in
+  Cycle 129.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG
+
+```text
+atom-generated family + selected-cover equality
+  + concrete SemanticRepairCoverRelativeCochainRealization
+    -> atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+    -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+    -> Exists c2Equiv,
+         c2Equiv zero2 = 0
+         and c2Equiv.symm 0 = zero2
+```
+
+This is a positive source theorem for the degree-`2` zero-preserving carrier
+component of the transparent direct lower source.  It does not construct the
+selected cochain realization from `CurrentG06InputSurface`, from
+conclusion-side semantic repair facts, or from a certificate field.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake env lean .tmp/G06Cycle129AxiomAudit.lean` - passed.
+- target declaration axiom audit:
+  `propext`, `Classical.choice`, `Quot.sound`.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` - clean.
+- hidden / bidirectional Unicode scan over changed Lean, report, and audit
+  files - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- local path scan over changed Lean, report, and audit files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: positive lower-source checkpoint for the degree-`2`
+  equivalence and zero laws, not G-06 completion.
+- Proof-use: the proof calls the selected-cochain-realization-to-direct-source
+  theorem with `surface`, atom-generated `family`, selected-cover equality, and
+  the supplied concrete realization; the produced transparent source is then
+  destructed to expose `c2Equiv`, `c2Equiv_zero`, and
+  `c2Equiv_symm_zero`.
+- Zero-law provenance: the theorem returns `Exists fun c2Equiv => ...`, so
+  both zero laws remain tied to the same extracted equivalence witness.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced.  The degree-`2` equivalence and zero laws are not moved into
+  `CurrentG06InputSurface`, `gluingData`, sheaf/descent data, class membership,
+  or a new certificate.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- first-pass decision: reject for packet sync only; theorem-level audit passed.
+- finding: the report did not yet contain a Cycle 129 section or updated final
+  blocker at the time of audit.
+- corrective action: this Cycle 129 section and the final checkpoint packet now
+  record the theorem, validation, material premise ledger, and remaining
+  blocker state.
+- theorem-level decision: approve.
+- major Lean findings / veto: none.
+- proof-use audit: passed.  The proof uses `surface`, atom-generated `family`,
+  selected-cover equality, and concrete `realization` through
+  `atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource`,
+  then destructs the produced transparent direct source to extract `c2Equiv`
+  and both zero laws.
+- zero-law witness audit: passed.  The zero laws are tied to the same
+  `c2Equiv` witness by the theorem's `Exists` package.
+- structure-field / certificate escape: none found.  No new
+  structure/class/certificate field is introduced; no hidden `H1`, full sheaf
+  cohomology, refinement/naturality, runtime extraction, or repair synthesis
+  claim is added.
+- residual obligation: construct or discharge
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` itself
+  from allowed lower atom-supported selected cover/cochain data.  The four
+  direct differential laws also remain explicit open obligations.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829333045
 
 ## Final Checkpoint Packet - Current Stop State
 
@@ -19751,6 +19906,12 @@ semantic repair facts, or from a certificate field.
   `atomSupportedSelectedCochainRealization_constructs_degreeOneAdditiveEquiv`.
   This extends the positive selected-realization-relative lower-source
   boundary to both additive degrees `0` and `1`.
+- the same atom-generated selected cover data plus concrete selected cochain
+  realization are now fixed as a positive source for the degree-`2` carrier
+  equivalence together with both zero-preservation laws, via
+  `atomSupportedSelectedCochainRealization_constructs_degreeTwoEquivAndZeroLaws`.
+  The theorem returns the equivalence and zero laws as a single `Exists`
+  package, so the laws remain attached to the displayed witness.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -19810,6 +19971,11 @@ finite lower witness inside the atom-supported lower-source boundary:
   additive equivalence, but the realization itself, the degree-`2` zero laws,
   and the four direct selected differential laws still require lower
   provenance;
+- after Cycle 129, the same concrete selected cochain realization is confirmed
+  as genuine lower provenance for the degree-`2` carrier equivalence and both
+  zero laws, with the laws tied to the same `c2Equiv` witness.  The selected
+  cochain realization itself and the four direct selected differential laws
+  still require lower provenance;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or four direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
