@@ -6370,6 +6370,40 @@ theorem atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDir
       hcycle121.2.2.2.2.2.2.2⟩
 
 /--
+Cycle 127 degree-`0` positive-source checkpoint: atom-generated selected cover
+data plus a concrete selected cochain realization proof-produce the existence
+of the degree-`0` ordinary additive equivalence exposed by Cycle 126.
+
+This is deliberately only a lower-source theorem.  It does not construct the
+realization, the degree-`0` equivalence, or any other direct-lower-source
+component from `CurrentG06InputSurface`, conclusion-side gluing/sheaf/descent/
+effective-gluing data, semantic `H1` zero, or a certificate field.  The proof
+first constructs the transparent Cycle 121 direct source from the realization
+and then extracts its first material additive-equivalence component.
+-/
+theorem atomSupportedSelectedCochainRealization_constructs_degreeZeroAdditiveEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Nonempty
+      (letI := additive.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       E.coefficient.C0 ≃+ surface.K.Cn 0) := by
+  have hcycle122 :=
+    atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+      (additive := additive) (surface := surface) family hcover_eq realization
+  rcases hcycle122.1 with
+    ⟨_family, _hcover_eq, c0Equiv, _c1Equiv, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_direct_to, _d0_direct_from, _d1_direct_to, _d1_direct_from⟩
+  exact ⟨c0Equiv⟩
+
+/--
 Cycle 98 transparent-lower-data theorem: the displayed degreewise carrier data
 and explicit selected face-restriction equations construct the Cycle 97
 selected carrier model and matching compatibility source.
