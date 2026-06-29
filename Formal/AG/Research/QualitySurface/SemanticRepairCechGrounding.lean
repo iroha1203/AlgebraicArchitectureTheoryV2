@@ -11522,6 +11522,85 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_d0DirectToPa
       (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
       atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor
 
+/--
+Cycle 150 atom-supported current-boundary second direct-law package boundary
+theorem: adding only atom-generated selected-cover data and selected-cover
+equality to the current G-06 boundary still does not uniformly construct the
+second direct selected semantic-delta / cover-relative `K.d` law package.
+
+The package includes the ordinary degree-`0` and degree-`1` additive
+equivalences, the degree-`2` carrier equivalence with both zero laws, and the
+displayed `d0_from` compatibility law.  The proof calls the alleged package
+constructor, extracts the degree-`2` equivalence plus zero-law component, and
+feeds that component to the Cycle 148 no-constructor theorem.  Thus adding the
+second direct selected differential law to the package does not hide the
+already blocked degree-`2` lower provenance.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_d0DirectFromPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : surface.K.Cn 2 ≃ ZMod 2)
+    (atomSupportedCurrentBoundaryD0DirectFromPackageConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      Exists fun c0Equiv :
+        letI := additive.c0AddCommGroup
+        letI := surfaceInput.K.cochainAddCommGroup 0
+        E.coefficient.C0 ≃+ surfaceInput.K.Cn 0 =>
+      Exists fun c1Equiv :
+        letI := additive.c1AddCommGroup
+        letI := surfaceInput.K.cochainAddCommGroup 1
+        E.coefficient.C1 ≃+ surfaceInput.K.Cn 1 =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+      Exists fun _c2Equiv_zero :
+        letI := surfaceInput.K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun _c2Equiv_symm_zero :
+        letI := surfaceInput.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+      forall primitive : surfaceInput.K.Cn 0,
+        letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        letI := surfaceInput.K.cochainAddCommGroup 0
+        letI := surfaceInput.K.cochainAddCommGroup 1
+        E.coefficient.delta0 (c0Equiv.symm primitive) =
+          c1Equiv.symm (surfaceInput.K.d 0 primitive)) :
+    False := by
+  let atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+        (letI := surfaceInput.K.cochainAddCommGroup 2
+         c2Equiv E.coefficient.zero2 = 0) /\
+        (letI := surfaceInput.K.cochainAddCommGroup 2
+         c2Equiv.symm 0 = E.coefficient.zero2) :=
+    fun surfaceInput familyInput hcoverInput => by
+      rcases
+        atomSupportedCurrentBoundaryD0DirectFromPackageConstructor
+          surfaceInput familyInput hcoverInput with
+        ⟨_c0Equiv, _c1Equiv, c2Equiv, c2Equiv_zero,
+          c2Equiv_symm_zero, _d0_direct_from⟩
+      exact ⟨c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_degreeTwoEquivAndZeroLaws
+      (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+      atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCarrierSpecificComparisonProvenance
