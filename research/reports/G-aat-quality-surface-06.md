@@ -17875,7 +17875,160 @@ this would force PUnit ≃+ ZMod 2 and hence (0 : ZMod 2) = 1.
 - PR / CI sync: PR #2784
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2784>;
   CI run
-  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28342446679>
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28342522025>
+  passed all checks.
+
+## Cycle 117 - External Selected Lower-Source Boundary
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 117 records the exact external lower-source boundary reached by the
+current G-06 code.  It does not construct the lower source from atom coverage,
+site data, descent, effective gluing, or `H1` zero.  Instead it fixes that the
+same remaining material source can be read in four equivalent forms:
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`;
+- `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`;
+- `SemanticRepairCarrierSpecificComparisonProvenance`.
+
+Lean declaration:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_lowerSource_boundary_exactly_externalSelectedCarrierGeometryAndFaceLaws`
+
+The theorem also keeps the no-uniform carrier-comparison and additive
+equivalence blockers visible.
+
+### Discharged Obligation
+
+- Discharged the boundary-identification obligation for the final lower source:
+  the transparent finite data, selected carrier model plus compatibility,
+  selected carrier geometry plus face laws, and carrier-specific provenance are
+  fixed as equivalent presentations of the same external lower-source boundary.
+- This prevents reporting G-06 completion by choosing a more opaque name for
+  the same missing carrier maps and selected face equations.
+
+### Not Discharged
+
+- Positive construction of this lower source from accepted atom-supported data
+  remains open.
+- Existing AAT atom / vocabulary / coverage / observation structures in the
+  current code do not provide the required carrier equivalences
+  `E.coefficient.C0 ≃+ K.Cn 0`, `E.coefficient.C1 ≃+ K.Cn 1`,
+  `E.coefficient.C2 ≃ K.Cn 2`, the degree-`2` zero laws, or the four selected
+  face equations.
+- This theorem is a boundary checkpoint, not the G-06 completion theorem.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; exact transparent finite lower source.
+- `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`:
+  `discharge-required`; equivalent selected carrier/face-compatibility
+  presentation.
+- `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`:
+  `discharge-required`; equivalent selected geometry/face-law presentation.
+- `SemanticRepairCarrierSpecificComparisonProvenance`:
+  `discharge-required`; equivalent provenance presentation, not an opaque
+  certificate.
+- `CurrentG06InputSurface`, selected site topology, cover membership, sheaf
+  condition, descent, effective gluing, and semantic additive `H1` zero:
+  `ambient-boundary` or `direction-hypothesis`; not lower-source discharge.
+- full sheaf cohomology equivalence and refinement/naturality:
+  `out-of-scope` for this checkpoint.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  |- exact lower-source boundary theorem
+
+DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+  <-> SelectedSectionFamilyCarrierModel
+        + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+  <-> SemanticRepairSelectedCarrierGeometry
+        + SemanticRepairSelectedCechFaceLawSource
+  <-> SemanticRepairCarrierSpecificComparisonProvenance
+
+All four nodes still require external selected carrier maps,
+degree-2 zero laws, and four selected face equations.
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle117AxiomAudit.lean` reported that the Cycle 117
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle117AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean and audit files — clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files —
+  clean.
+- local path scan over changed Lean and audit files — clean.
+- Remaining validation is pending until T3 audit, tracking Issue sync, and PR /
+  CI sync complete.
+
+### Anti-Weakening Audit
+
+- Statement strength: boundary theorem for the exact external lower source, not
+  positive construction and not completion.
+- Proof-use: the theorem uses the Cycle 114 equivalence and the selected
+  geometry / face-law provenance equivalence in both directions.
+- Structure-field escape: avoided.  No new structure, class, or certificate
+  field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, and refinement/naturality remains outside this theorem.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed.  The theorem does not construct a lower witness
+  from `CurrentG06InputSurface`; it uses existing equivalences to bind explicit
+  finite lower data, selected carrier model plus face compatibility, selected
+  carrier geometry plus face laws, and carrier-specific provenance as the same
+  external lower-source boundary.
+- anti-weakening audit: passed.  The theorem is close to Cycle 114, but it adds
+  the selected geometry / selected face-law presentation and keeps the
+  no-uniform carrier blockers visible in the same checkpoint theorem.
+- structure-field escape audit: passed.  Existing structures are not treated as
+  opaque completion evidence; they are constrained by equivalence to explicit
+  finite lower data.
+- claim-boundary audit: passed.  The theorem does not identify cover-relative
+  Cech `H1` with full sheaf cohomology.
+- residual obligation: construct the external selected lower source from
+  accepted atom-supported data.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828193837>.
+- PR / CI sync: PR #2785
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2785>;
+  CI run
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28342887633>
   passed all checks.
 
 ## Final Checkpoint Packet - Current Stop State
@@ -17910,6 +18063,10 @@ this would force PUnit ≃+ ZMod 2 and hence (0 : ZMod 2) = 1.
 - conclusion-side gluing data, descent, effective gluing, and semantic
   additive `H1` zero are blocked as generators of the transparent finite lower
   witness.
+- the exact remaining lower source is fixed as an external selected boundary:
+  transparent finite data, selected carrier model plus face compatibility,
+  selected carrier geometry plus face laws, and carrier-specific provenance are
+  equivalent presentations of the same missing source.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -17933,8 +18090,9 @@ lower-source boundary:
   by Cycle 115 at the transparent finite-lower-witness level; Cycle 114
   identifies the exact finite lower source still required; Cycle 116 also
   blocks reusing conclusion-side descent/effective-gluing/H1-zero facts as a
-  substitute for that finite lower source.  A genuinely richer lower provenance
-  source or explicit GOAL-boundary revision is required.
+  substitute for that finite lower source; Cycle 117 fixes the lower source as
+  an external selected carrier/face-law boundary.  A genuinely richer lower
+  provenance source or explicit GOAL-boundary revision is required.
 
 Until that provenance theorem exists, the theorem package must not be reported
 as `target-theorem-proved`.

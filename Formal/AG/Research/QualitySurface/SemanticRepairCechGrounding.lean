@@ -5599,6 +5599,75 @@ theorem currentG06InputSurface_selectedCarrierModel_and_faceRestrictionCompatibi
         (additive := additive) (surface := surface)).1 hprovenance
 
 /--
+Cycle 117 external lower-source boundary: the remaining G-06 lower source is
+exactly the same whether it is presented as transparent finite lower data,
+selected carrier model plus face-restriction compatibility, selected carrier
+geometry plus selected Cech face laws, or carrier-specific comparison
+provenance.
+
+This theorem is a checkpoint boundary, not a construction from
+`CurrentG06InputSurface`.  It records that the current code has already reduced
+the remaining positive obligation to an external selected lower source:
+degree-wise carrier comparisons, degree-`2` zero laws, and the four selected
+face equations.  Atom visibility, coverage membership, selected site topology,
+descent, effective gluing, and semantic `H1` zero are not moved into this
+source; the no-uniform constructor blockers remain visible.
+-/
+theorem currentG06InputSurface_lowerSource_boundary_exactly_externalSelectedCarrierGeometryAndFaceLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) <->
+      Exists fun model :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model)) /\
+      ((Exists fun model :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model)) <->
+        Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      ((Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry) <->
+        Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hmodelFinite :=
+    currentG06InputSurface_selectedCarrierModel_and_faceRestrictionCompatibility_iff_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := additive) (surface := surface)
+  have hprovenanceModel :=
+    currentG06InputSurface_carrierSpecificComparisonProvenance_iff_selectedCarrierModel_and_faceRestrictionCompatibility
+      (additive := additive) (surface := surface)
+  have hprovenanceGeometry :=
+    SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_selectedCarrierGeometry_and_faceLaws
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)
+  refine ⟨hmodelFinite.symm, ?_, hprovenanceGeometry.symm, ?_, ?_⟩
+  · constructor
+    · intro hmodel
+      exact hprovenanceGeometry.1 (hprovenanceModel.2 hmodel)
+    · intro hgeometry
+      exact hprovenanceModel.1 (hprovenanceGeometry.2 hgeometry)
+  · exact no_uniform_carrier_specific_additive_comparison_from_bare_groups
+  · exact
+      SemanticRepairCoverRelativeFaceRestrictionRealization.no_uniform_additive_carrier_equivalence_from_bare_lower_data
+
+/--
 Transparent lower-data predicate for the Cycle 55 direct-differential source.
 
 This is only an abbreviation for the displayed carrier witness data,
