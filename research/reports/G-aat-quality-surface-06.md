@@ -20263,6 +20263,151 @@ certificate field.
 
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829629996
+- Issue #2636 post-merge sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829673086
+
+## Cycle 133 - Selected-Cochain / Final Direct Differential Law Checkpoint
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 133 fixes the final direct selected semantic-delta / cover-relative
+`K.d` compatibility law from the same atom-generated selected cover data plus
+concrete selected cochain realization boundary.  It extracts the `d1_from`
+direction as an explicit law over the same degree-wise witness package pattern
+used in Cycles 130-132.  This completes the selected-cochain-realization-
+relative exposure of all four direct laws, but the selected cochain
+realization itself remains a material lower-source premise.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_d1DirectFromLaw`
+
+The theorem has the shape:
+
+```lean
+theorem atomSupportedSelectedCochainRealization_constructs_d1DirectFromLaw
+    (surface : CurrentG06InputSurface)
+    (family : AATCoverageFamily ...)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Exists fun c0Equiv : E.coefficient.C0 ≃+ surface.K.Cn 0 =>
+    Exists fun c1Equiv : E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+    Exists fun c2Equiv_zero : c2Equiv zero2 = 0 =>
+    Exists fun c2Equiv_symm_zero : c2Equiv.symm 0 = zero2 =>
+      d1_from law for the induced section witness
+```
+
+The result exposes the `d1_from` law as the final proposition of an `Exists`
+witness package; it does not replace the law with a new certificate field.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`; fixes the selected AAT site,
+  cover bridge, presheaf, and cover-relative Cech complex.
+- atom-generated `family` and `hcover_eq`: `ambient-boundary` for this
+  positive lower-source theorem; proof-used to build the transparent direct
+  source.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`:
+  `discharge-required` lower provenance for G-06 completion; Cycle 133
+  consumes it but does not construct it.
+- final direct selected `K.d` law (`d1_from`): `discharge-required`; now
+  theorem-produced from the selected cochain realization boundary as an
+  explicit law attached to the extracted witness package, but still not
+  generated from the accepted current/conclusion-side boundary.
+- degree-`0` ordinary additive equivalence, degree-`1` ordinary additive
+  equivalence, degree-`2` carrier equivalence and zero laws, `d0_to`,
+  `d0_from`, and `d1_to`: all already positive-source fixed relative to the
+  same selected cochain realization boundary.
+- conclusion-side `gluingData`, `AATSheafConditionFor`, `AATDescent`,
+  effective gluing, and `SemanticRepairAdditiveH1Zero`: not used as sources in
+  Cycle 133.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG
+
+```text
+atom-generated family + selected-cover equality
+  + concrete SemanticRepairCoverRelativeCochainRealization
+    -> atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+    -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+    -> witness package + d1_from direct K.d law
+```
+
+This is a positive source theorem for the final direct differential law only.
+It does not construct the selected cochain realization from
+`CurrentG06InputSurface`, from conclusion-side semantic repair facts, or from a
+certificate field.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake env lean .tmp/G06Cycle133AxiomAudit.lean` - passed.
+- target declaration axiom audit:
+  `propext`, `Classical.choice`, `Quot.sound`.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` - clean.
+- hidden / bidirectional Unicode scan over changed Lean, report, and audit
+  files - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- local path scan over changed Lean, report, and audit files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: positive lower-source checkpoint for the final direct
+  selected differential law, not G-06 completion.
+- Proof-use: the proof calls the selected-cochain-realization-to-direct-source
+  theorem with `surface`, atom-generated `family`, selected-cover equality, and
+  the supplied concrete realization; the produced transparent source is then
+  destructed to expose the degree-wise witnesses and `d1_direct_from`.
+- Law visibility: the theorem returns the final direct law as the final
+  displayed proposition in an `Exists` package.  It is not hidden inside a new
+  structure/class/certificate field.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced.  The direct law is not moved into `CurrentG06InputSurface`,
+  `gluingData`, sheaf/descent data, class membership, or a new certificate.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- major findings / veto: none.
+- proof-use audit: passed.  The proof uses `surface`, atom-generated `family`,
+  selected-cover equality, and concrete `realization` through
+  `atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource`,
+  then destructs the produced transparent direct source to extract the witness
+  package and `d1_direct_from`.
+- direct-law visibility audit: passed.  The theorem exposes the final direct
+  law as the final displayed proposition of an `Exists` package; it does not
+  hide the law in a new structure/class/certificate field.
+- selected-realization boundary audit: passed.  The report states that all four
+  direct laws are now exposed only relative to a concrete selected cochain
+  realization, while the selected cochain realization itself remains the
+  lower-provenance blocker.
+- structure-field / certificate escape: none found.  No hidden `H1`, full
+  sheaf cohomology, refinement/naturality, runtime extraction, or repair
+  synthesis claim is added.
+- residual obligation: construct or discharge
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` itself
+  from allowed lower atom-supported selected cover/cochain data.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829712739
 
 ## Final Checkpoint Packet - Current Stop State
 
@@ -20369,6 +20514,12 @@ certificate field.
   `atomSupportedSelectedCochainRealization_constructs_d1DirectToLaw`.  This
   exposes the `d1_to` law over the extracted witness package without claiming
   the final `d1_from` direct law.
+- the same atom-generated selected cover data plus concrete selected cochain
+  realization are now fixed as a positive source for the final direct selected
+  semantic-delta / cover-relative `K.d` compatibility law, via
+  `atomSupportedSelectedCochainRealization_constructs_d1DirectFromLaw`.  All
+  four direct selected laws are now exposed relative to the selected cochain
+  realization boundary.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -20447,6 +20598,12 @@ finite lower witness inside the atom-supported lower-source boundary:
   as genuine lower provenance for the third direct selected differential law
   (`d1_to`).  The selected cochain realization itself and the final direct
   selected differential law (`d1_from`) still require lower provenance;
+- after Cycle 133, the same concrete selected cochain realization is confirmed
+  as genuine lower provenance for the final direct selected differential law
+  (`d1_from`).  Relative to a concrete selected cochain realization plus
+  atom-generated selected cover data, all degree-wise equivalences, degree-`2`
+  zero laws, and four direct selected differential laws have now been exposed;
+  the selected cochain realization itself still requires lower provenance;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
