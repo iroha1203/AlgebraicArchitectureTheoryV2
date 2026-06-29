@@ -23121,6 +23121,137 @@ therefore:
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832836373>
 
+## Cycle 156 - Bare Cover-Relative H1 Comparison Escape Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 156 blocks the next post-Cycle155 shortcut: supplying a bare
+`SemanticRepairCoverRelativeH1Comparison`, or a package indexed by such a
+comparison, from conclusion-side gluing/sheaf/descent/effective-gluing/
+semantic-`H1`-zero data.  The new helper theorem proves that the degree-`1`
+part of a cover-relative `H1` comparison is already an ordinary additive
+equivalence `E.coefficient.C1 ≃+ K.Cn 1`.  The no-constructor theorem then
+combines that extracted equivalence with the finite `PUnit` / `ZMod 2`
+boundary witness to force the finite contradiction.
+
+This is a fail-closed boundary theorem, not a positive construction.  It keeps
+the selected cochain realization and its transparent lower witness as visible
+`discharge-required` provenance.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeH1Comparison.c1AddEquiv`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1Comparison`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1ComparisonPackage`
+
+### Material Premise Ledger
+
+- bare `SemanticRepairCoverRelativeH1Comparison`: blocked as a conclusion-side
+  escape route because it contains a proof-used degree-`1` additive carrier
+  equivalence.
+- bare comparison package: blocked as a wrapper escape route; the theorem
+  extracts its underlying comparison and applies the bare-comparison boundary.
+- selected cochain realization and transparent lower witness:
+  `discharge-required`; Cycle 156 does not construct them.
+- `CurrentG06InputSurface`, atom-generated selected cover data, selected cover
+  equality, gluing data, cover-wise sheaf condition, descent, effective
+  gluing, and semantic additive `H1` zero: rejected as sufficient provenance
+  for the bare comparison.
+- finite `c1SourceEquiv` / `c1TargetEquiv` witnesses:
+  `discharge-required` only for the no-go boundary test; not lower provenance
+  for G-06.
+- refinement/naturality and full sheaf cohomology equivalence: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+SemanticRepairCoverRelativeH1Comparison
+  -> c1AddEquiv : E.coefficient.C1 ≃+ K.Cn 1
+  -> finite PUnit / ZMod 2 contradiction
+
+hypothetical conclusion-side bare comparison constructor
+  -> SemanticRepairCoverRelativeH1Comparison
+  -> c1AddEquiv
+  -> False
+
+hypothetical conclusion-side bare comparison package constructor
+  -> Exists comparison, Nonempty Package comparison
+  -> comparison
+  -> bare comparison no-go
+  -> False
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- `git diff --check`
+  - clean.
+- `git diff --cached --check`
+  - clean.
+- hidden / bidirectional Unicode scan over changed Lean/report targets
+  - clean.
+- placeholder scan over changed Lean/report targets
+  - Lean file clean for `sorry`, `admit`, `unsafe`, `axiom`, and `sorryAx`.
+    The report scan contains audit prose only.
+- target declaration axiom audit
+  - `#print axioms ...SemanticRepairCoverRelativeH1Comparison.c1AddEquiv`
+    depends only on `propext` and `Quot.sound`.
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1Comparison`
+    depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_coverRelativeH1ComparisonPackage`
+    depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed blocker theorem, not completion.
+- Proof-use: passed locally for the Lean source.  The bare-comparison theorem
+  extracts `c1AddEquiv` from the alleged comparison and consumes it in the
+  finite witness contradiction; the package theorem extracts its comparison
+  and calls the bare-comparison no-go.
+- Certificate provenance: passed for checkpoint.  The package is rejected as
+  provenance rather than accepted as a certificate.
+- Structure-field escape: none introduced.  No new structure, class,
+  certificate, or `CurrentG06InputSurface` field is added.
+- Claim boundary: cover-relative Cech `H1` only.  No full sheaf cohomology
+  equivalence, refinement/naturality theorem, arbitrary-site theorem, runtime
+  extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed` / `target-proof-checkpoint`.
+- completion candidate: no.
+- major finding / veto: none.
+- proof-use audit: passed.  `c1AddEquiv` exposes the degree-`1` additive
+  equivalence from the comparison fields; the bare-comparison no-go consumes
+  that equivalence in the finite witness contradiction; the package no-go
+  extracts the indexed comparison and applies the bare-comparison theorem.
+- anti-weakening audit: passed for checkpoint.  The theorem rejects, rather
+  than accepts, bare comparison/package data as provenance and keeps the claim
+  at cover-relative Cech `H1`.
+- certificate provenance audit: passed for checkpoint.  No structure, class,
+  certificate field, or `CurrentG06InputSurface` field is introduced.
+- report audit: passed.  The report records Cycle 156 as blocker-fixed /
+  non-completion and keeps selected cochain realization / explicit lower data
+  as remaining `discharge-required` obligations.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832985711>
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -23178,6 +23309,12 @@ therefore:
   conclusion-side escape route: any constructor of such a package over the
   accepted current/conclusion-side boundary exposes a selected cochain
   realization and hits the Cycle 124 no-go theorem.
+- a bare `SemanticRepairCoverRelativeH1Comparison`, and a package indexed only
+  by such a comparison, are also blocked as conclusion-side escape routes.
+  The comparison itself exposes a degree-`1` ordinary additive equivalence by
+  `SemanticRepairCoverRelativeH1Comparison.c1AddEquiv`, and any alleged
+  constructor over the accepted boundary therefore hits the finite
+  `PUnit` / `ZMod 2` contradiction by the Cycle 156 no-go theorems.
 - the accepted face-equation source is normalized to the direct selected Cech
   differential presentation: ordinary degree-wise additive equivalences, a
   degree-`2` zero-preserving equivalence, and four direct selected `K.d`
@@ -23446,6 +23583,12 @@ finite lower witness inside the atom-supported lower-source boundary:
   also blocked as a conclusion-side escape route.  Any alleged constructor of
   a grounded package exposes the selected cochain realization witness and then
   contradicts Cycle 124, so the package cannot replace lower provenance;
+- after Cycle 156, a bare cover-relative `H1` comparison and a package indexed
+  by such a comparison are also blocked as conclusion-side escape routes.  Any
+  alleged constructor exposes a degree-`1` ordinary additive equivalence
+  `E.coefficient.C1 ≃+ surface.K.Cn 1`, which composes with the finite
+  `PUnit` / `ZMod 2` witness to force contradiction.  Thus the comparison
+  itself cannot replace lower provenance;
 - after Cycle 127, a concrete selected cochain realization is confirmed as
   genuine lower provenance for the existence of the degree-`0` ordinary
   additive equivalence, but that realization itself is still not constructed
