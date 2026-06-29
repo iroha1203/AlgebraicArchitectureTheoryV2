@@ -22747,6 +22747,139 @@ accepted atom-supported current boundary
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832274929>
 
+## Cycle 153 - Current Boundary External Lower-Provenance Checkpoint
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 153 fixes the post-Cycle152 boundary in Lean: over the accepted
+atom-supported current G-06 boundary, the selected cochain realization is
+equivalent to the remaining transparent lower source, while current-boundary
+constructors for the named selected lower source, the direct lower source, and
+all four single-direct-law packages are empty.
+
+This is intentionally not a positive construction and not a completion theorem.
+It records that, under the current GOAL boundary, G-06 needs either a genuinely
+new lower-provenance source or an explicit boundary revision before it can
+become a completion candidate.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundarySelectedLowerSourceConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundaryDirectSourceConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundaryD0DirectToPackageConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundaryD0DirectFromPackageConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundaryD1DirectToPackageConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedCurrentBoundaryD1DirectFromPackageConstructor`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedCurrentBoundary_externalLowerProvenance_checkpoint`
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`.
+- atom-generated selected cover `family` and selected-cover equality:
+  `ambient-boundary`.
+- selected cochain realization: `discharge-required`; Cycle 153 identifies it
+  with the transparent lower source and does not construct it.
+- `AtomSupportedSelectedLowerSource`: `discharge-required`; Cycle 153 records
+  the current-boundary constructor type as empty using Cycle 143.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`:
+  `discharge-required`; Cycle 153 records the current-boundary constructor type
+  as empty using Cycle 144.
+- all four single-direct-law packages: `discharge-required`; Cycle 153 records
+  their current-boundary constructor types as empty using Cycles 149-152.
+- finite test-boundary equivalences for degree `0` and degree `2`:
+  theorem-direction boundary inputs for the no-constructor contradictions, not
+  discharged lower provenance.
+- conclusion-side gluing/sheaf/descent/effective-gluing/semantic-`H1`-zero
+  inputs are not used in this checkpoint theorem.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+selected cochain realization
+  <-> transparent external lower source
+
+accepted atom-supported current boundary
+  -/-> AtomSupportedSelectedLowerSource
+  -/-> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+  -/-> d0_to package
+  -/-> d0_from package
+  -/-> d1_to package
+  -/-> d1_from package
+
+therefore:
+  current G-06 boundary alone is not a completion candidate;
+  a new lower-provenance source or explicit boundary revision is required.
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- target declaration axiom audit:
+  - `#print axioms ...atomSupportedCurrentBoundary_externalLowerProvenance_checkpoint`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets
+  - clean.
+- placeholder scan over
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - clean for `axiom`, `admit`, `sorry`, `unsafe`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed checkpoint theorem, not completion.
+- Proof-use: pending T3 audit.  The proof calls the exact lower-source
+  equivalence theorem and wraps Cycles 143, 144, and 149-152 as `IsEmpty`
+  constructor-type witnesses.
+- Certificate provenance: unresolved by design.  The theorem explicitly leaves
+  selected cochain realization / lower-source provenance undischargeable under
+  the current boundary.
+- Structure-field escape: avoided.  The new declarations are type synonyms for
+  hypothetical constructor propositions plus one theorem; no new structure,
+  class, certificate, or surface field is introduced.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `proof-checkpoint`.
+- completion candidate: no.
+- major finding / veto: none.
+- proof-use audit: passed.  The theorem directly uses
+  `currentG06InputSurface_selectedCochainRealization_exactly_discharges_externalLowerSourceBoundary`
+  via `hboundary.1`, then wraps Cycles 143, 144, and 149-152 as six `IsEmpty`
+  constructor-type witnesses.
+- claim-boundary audit: passed.  The theorem and report keep this as
+  non-completion and state that positive lower provenance remains undischarged
+  under the current boundary.
+- structure-field escape audit: passed.  The new declarations are
+  `abbrev ... : Prop` constructor propositions only; no new structure, class,
+  certificate, or `CurrentG06InputSurface` field is introduced.
+- report audit: passed.  The Cycle 153 packet and final checkpoint remain
+  consistent with `target-proof-checkpoint`; G-06 is still not
+  `target-theorem-proved`.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832446246>
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -23045,6 +23178,12 @@ finite lower witness inside the atom-supported lower-source boundary:
 - after Cycle 152, the package that includes the final direct selected
   `d1_from` law is also blocked from atom-supported current-boundary generation
   without conclusion-side inputs; it remains genuine lower provenance;
+- after Cycle 153, the current stop state is fixed as a Lean checkpoint:
+  selected cochain realization is equivalent to the transparent external lower
+  source, while current-boundary constructors for the named selected lower
+  source, direct lower source, and all four single-direct-law packages are
+  empty.  Thus G-06 needs a genuine lower-provenance source or explicit GOAL
+  boundary revision before it can become a completion candidate;
 - after Cycle 127, a concrete selected cochain realization is confirmed as
   genuine lower provenance for the existence of the degree-`0` ordinary
   additive equivalence, but that realization itself is still not constructed
