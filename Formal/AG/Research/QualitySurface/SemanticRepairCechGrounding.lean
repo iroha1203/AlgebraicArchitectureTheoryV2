@@ -10357,6 +10357,30 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degr
   exact ⟨c0Carrier.toAddEquiv⟩
 
 /--
+Cycle 168 audit helper: explicit lower data also exposes the degree-`1`
+additive equivalence that any genuine constructor must actually produce.
+
+This is the degree-`1` analogue of the Cycle 167 helper.  It is intentionally
+one-way: it does not construct the explicit lower data, and it does not let an
+opaque certificate stand in for the indexed carrier comparison.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeOneAdditiveEquiv
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Nonempty
+      (letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 1
+       E.coefficient.C1 ≃+ K.Cn 1) := by
+  rcases lower with
+    ⟨_c0Carrier, c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact ⟨c1Carrier.toAddEquiv⟩
+
+/--
 Cycle 167 sharper blocker theorem: even the degree-`0` indexed carrier
 comparison cannot be uniformly constructed from the current boundary plus
 conclusion-side data and semantic cover Cech data.
@@ -10429,6 +10453,88 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
     c0Carrier.toAddEquiv
   let e : PUnit ≃+ ZMod 2 :=
     c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
+Cycle 168 sharper blocker theorem: even the degree-`1` indexed carrier
+comparison cannot be uniformly constructed from the current boundary plus
+conclusion-side data and semantic cover Cech data.
+
+This isolates the next missing indexed lower-provenance component after Cycle
+167.  The theorem proof-uses all alleged conclusion-side inputs by passing
+them to the hypothetical constructor, extracts the degree-`1` additive
+comparison, and applies the finite `PUnit` / `ZMod 2` boundary test.  A valid
+positive route must therefore generate the selected degree-`1` carrier
+comparison data, not obtain it from semantic Cech metadata, gluing, descent,
+effectivity, semantic `H1` zero, or an ambient certificate field.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_and_semanticCoverCechData_without_degreeOneCarrierComparison
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (semanticData :
+      SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z}
+        (site := site) semanticCover)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 1
+      surface.K.Cn 1 ≃+ ZMod 2)
+    (atomSupportedConclusionSideSemanticDataDegreeOneConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z}
+        (site := site) semanticCover ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      (letI := additive.c1AddCommGroup
+       letI := surfaceInput.K.cochainAddCommGroup 1
+       CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surfaceInput.K.Cn 1))) :
+    False := by
+  letI := additive.c1AddCommGroup
+  letI := surface.K.cochainAddCommGroup 1
+  let c1Carrier :
+      CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1) :=
+    atomSupportedConclusionSideSemanticDataDegreeOneConstructor
+      surface family hcover_eq semanticData gluingData hSheafFor hDescent
+      hEffective hSemanticH1Zero
+  let eSemanticToCech : E.coefficient.C1 ≃+ surface.K.Cn 1 :=
+    c1Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c1SourceEquiv.symm.trans (eSemanticToCech.trans c1TargetEquiv)
   rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
   rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
   have hzero_one : (0 : ZMod 2) = 1 := by
