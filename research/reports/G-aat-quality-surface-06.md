@@ -17729,7 +17729,11 @@ Finite witness boundary:
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828084472>.
-- PR / CI sync: pending.
+- PR / CI sync: PR #2783
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2783>;
+  CI run
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28341974487>
+  passed all checks.
 
 ## Final Checkpoint Packet - Current Stop State
 
