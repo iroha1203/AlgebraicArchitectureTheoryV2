@@ -10637,6 +10637,110 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
 
 end SemanticRepairCoverRelativeSectionRealizationBridge
 
+namespace SemanticRepairCoverRelativeFaceRestrictionRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 138 atom-supported conclusion-side face-restriction boundary theorem:
+adding atom-generated selected-cover data, a current gluing datum, cover-wise
+sheaf condition, descent, effective gluing, and semantic additive `H1` zero
+still does not uniformly construct selected face-restriction realization.
+
+The theorem proof-uses the hypothetical face-restriction realization
+constructor by passing it all accepted atom-supported and conclusion-side
+inputs.  The produced `SemanticRepairCoverRelativeFaceRestrictionRealization`
+is immediately converted to a selected cochain realization via
+`toCochainRealization`, and the Cycle 124 selected-realization no-go theorem
+supplies the contradiction.  Thus the face-restriction presentation cannot be
+used as a conclusion-side hiding place for the remaining selected lower
+witness.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_faceRestrictionRealization
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedConclusionSideFaceRestrictionConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        additive surfaceInput.coverBridge surfaceInput.K) :
+    False := by
+  let atomSupportedConclusionSideCochainRealizationConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeCochainRealization additive surfaceInput.K :=
+    fun surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticH1ZeroInput =>
+      (atomSupportedConclusionSideFaceRestrictionConstructor
+        surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticH1ZeroInput).toCochainRealization
+  exact
+    SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCochainRealization
+      (surface := surface) family hcover_eq gluingData hSheafFor hDescent
+      hEffective hSemanticH1Zero c0SourceEquiv c0TargetEquiv
+      atomSupportedConclusionSideCochainRealizationConstructor
+
+end SemanticRepairCoverRelativeFaceRestrictionRealization
+
 namespace SemanticRepairCarrierSpecificComparisonProvenance
 
 variable {Atom : Type u}
