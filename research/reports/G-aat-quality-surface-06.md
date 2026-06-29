@@ -18313,6 +18313,151 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
   the finite lower witness into structure fields, certificate fields,
   `gluingData`, descent/effective gluing, or `H1`-zero assumptions.
 
+## Cycle 120 - Degreewise Equivalence / Face-Equation Lower-Source Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 120 lowers the remaining finite lower witness one more level.  Instead of
+treating `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` as the
+immediate finite lower source, it introduces a transparent proposition whose
+material content is:
+
+- an atom-admissible `AATCoverageFamily` whose generated sieve is the selected
+  current cover;
+- ordinary degree-`0` and degree-`1` additive equivalences
+  `E.coefficient.C0 ≃+ surface.K.Cn 0` and
+  `E.coefficient.C1 ≃+ surface.K.Cn 1`;
+- a degree-`2` equivalence `E.coefficient.C2 ≃ surface.K.Cn 2` plus both zero
+  laws;
+- the four selected face-restriction equations for the section-family model
+  induced by those equivalences.
+
+Lean declarations:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndFaceRestrictionSource`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization`
+
+The theorem proof-uses the displayed equivalences to build the custom
+carrier-specific data used by the transparent finite witness, then proof-uses
+Cycle 119 to obtain:
+
+- `AtomSupportedSelectedLowerSource`;
+- selected cover membership in `S.topology`;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`;
+- selected carrier model plus face-restriction compatibility;
+- selected carrier geometry plus selected Cech face laws;
+- carrier-specific comparison provenance.
+
+### Discharged Obligation
+
+- Discharged the conversion from ordinary degree-wise equivalences plus four
+  selected face equations to the Cycle 119 atom-supported selected lower source.
+- The custom `CarrierSpecificAdditiveComparisonData` records are no longer the
+  immediate top-level lower-source vocabulary for this checkpoint; they are
+  constructed from ordinary additive equivalences by theorem proof.
+
+### Not Discharged
+
+- The ordinary degree-wise equivalences, degree-`2` zero laws, and four
+  selected face-restriction equations remain material input.
+- This cycle does not construct those equivalences or face equations from
+  `CurrentG06InputSurface`, selected cover membership, sheaf condition,
+  `gluingData`, descent/effective gluing, semantic additive `H1` zero, class
+  membership, or an opaque certificate.
+- Therefore this is not a G-06 completion theorem and not a full discharge of
+  the remaining finite lower witness.
+
+### Material Premise Ledger
+
+- atom-generated selected cover: `discharge-required` for cover membership,
+  already proof-used through the Cycle 119 path.
+- degree-`0` / degree-`1` additive equivalences, degree-`2` equivalence and
+  zero laws, and four selected face-restriction equations:
+  `discharge-required`; still the remaining transparent lower source.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+  `AtomSupportedSelectedLowerSource`, selected cochain realization, selected
+  carrier model plus compatibility, selected carrier geometry plus face laws,
+  and carrier-specific provenance: theorem-produced from the Cycle 120 source.
+
+### Dependency DAG
+
+```text
+AATCoverageFamily
+  + degreewise AddEquiv / Equiv source
+  + four selected face-restriction equations
+      -> CarrierSpecificAdditiveComparisonData in degrees 0 and 1
+      -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      -> AtomSupportedSelectedLowerSource
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected carrier model + face compatibility
+      -> selected carrier geometry + face laws
+      -> carrier-specific comparison provenance
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle120AxiomAudit.lean` reported that the Cycle 120
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle120AxiomAudit.lean` - passed.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files -
+  clean.
+- local path scan over changed Lean and audit files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: lower-source normalization checkpoint, not a construction
+  from `CurrentG06InputSurface` alone and not G-06 completion.
+- Proof-use: the ordinary degree-wise equivalences are converted to
+  `CarrierSpecificAdditiveComparisonData`; the four face equations are then
+  used to build the transparent finite lower witness, which is passed through
+  Cycle 119.
+- Structure-field escape: avoided.  The new lower source is a transparent
+  `Prop` and no new structure/class/certificate field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, and refinement/naturality remains outside this theorem.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed for checkpoint.  The source is destructed and used to
+  build the transparent finite lower witness; that lower witness is used to
+  build `AtomSupportedSelectedLowerSource`, and Cycle 119 is proof-used for
+  selected cover membership and downstream realization artifacts.
+- certificate provenance audit: passed for checkpoint.  No opaque certificate
+  is introduced; the new source is transparent `Prop` data.
+- anti-weakening audit: passed for checkpoint.  This is acceptable as a
+  normalization / lowering checkpoint, but not as full discharge of
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from accepted
+  atom-supported boundary data.
+- residual obligation: construct the ordinary degree-wise equivalences,
+  degree-`2` zero laws, and four selected face-restriction equations from
+  accepted atom-supported G-06 boundary data, or prove an equivalent selected
+  cochain realization source, without moving those facts into
+  structure/certificate fields, `gluingData`, descent/effective gluing, or
+  `H1`-zero assumptions.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -18354,6 +18499,10 @@ DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
 - an atom-supported selected lower-source proposition is fixed as strong enough
   to construct the selected cochain realization while proof-using
   atom-generated cover membership.
+- the accepted lower-source vocabulary is pushed one level below custom carrier
+  records: ordinary degree-wise additive equivalences, a degree-`2`
+  zero-preserving equivalence, and four selected face-restriction equations are
+  enough to construct the Cycle 119 source and selected cochain realization.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -18375,6 +18524,9 @@ finite lower witness inside the atom-supported lower-source boundary:
 - after Cycle 119, the atom-generated selected-cover part is discharged, but
   the transparent finite witness inside `AtomSupportedSelectedLowerSource`
   still needs a lower construction;
+- after Cycle 120, the custom carrier records inside that finite witness are
+  reducible to ordinary degree-wise equivalences, but those equivalences and
+  the four selected face-restriction equations still require lower provenance;
 - without moving the carrier maps, degree-`2` zero laws, or four selected
   face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.
