@@ -6696,6 +6696,80 @@ theorem no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_s
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 116 blocker theorem: conclusion-side descent, effective gluing, and
+semantic additive `H1` zero do not generate the transparent finite lower
+witness.
+
+This closes a different escape route from Cycles 110 and 115.  Even if a
+constructor is allowed to consume a current gluing datum, cover-wise sheaf
+condition, descent, effective global gluing for that datum, and
+`SemanticRepairAdditiveH1Zero`, it still cannot manufacture
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` uniformly.  Any such
+constructor would expose degree-`0` carrier-specific additive comparison data,
+which is impossible on the finite `PUnit` / `ZMod 2` boundary.
+
+The theorem is therefore a no-go boundary, not a completion theorem: it does
+not use descent, effective gluing, or semantic `H1` zero as hidden evidence for
+carrier maps, degree-`2` zero laws, or the four selected face equations.
+-/
+theorem no_constructor_from_currentG06InputSurface_and_gluingData_descent_effectiveGluing_semanticH1Zero_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputConclusionSideFiniteWitnessConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+        (gluingInput :
+          AAT.AG.Site.AATGluingData
+            S surfaceInput.presheaf surfaceInput.selectedCover) ->
+        AAT.AG.Site.AATSheafConditionFor
+          S surfaceInput.presheaf surfaceInput.selectedCover ->
+        AAT.AG.Site.AATDescent S surfaceInput.presheaf surfaceInput.selectedCover ->
+        (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+          AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+        SemanticRepairAdditiveH1Zero additive ->
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surfaceInput.coverBridge)
+          (K := surfaceInput.K)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  rcases
+      currentInputConclusionSideFiniteWitnessConstructor surface gluingData
+        hSheafFor hDescent hEffective hSemanticH1Zero with
+    ⟨c0Carrier, _c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cycle 56 blocker theorem: a surface-only constructor for the Cycle 55 direct
 lower bundle cannot be unconditional over the current G-06 input surface.
 
