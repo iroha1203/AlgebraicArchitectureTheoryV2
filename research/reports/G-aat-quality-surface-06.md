@@ -23888,3 +23888,122 @@ obstruction-sheaf realization, universal property, finite witness, or reviewed
 predecessor theorem.  If no such source exists, G-06 should remain
 `target-proof-checkpoint` or move to an explicit GOAL-boundary revision rather
 than `target-theorem-proved`.
+
+## Cycle 159 — exact lower-provenance equivalence for the selected coefficient layer
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### T1 Selector Result
+
+The selector again chose the positive obligation: construct
+`SelectedSemanticCoefficientDirectRealizationLayer` from genuine semantic atom /
+law provenance over an atom-generated selected cover, preferably by a
+canonical/free obstruction-sheaf realization, universal property, finite
+witness, or reviewed predecessor theorem.
+
+This cycle does not discharge that positive construction.  Instead it fixes the
+exact proof boundary: constructing the selected semantic coefficient layer is
+equivalent to constructing the atom-supported direct lower source.
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - `selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource`
+
+### Proof-Obligation Delta
+
+Discharged / fixed:
+
+- The layer introduced in Cycle 157 is now exactly identified with
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- Forward direction: a supplied layer is converted to the direct lower source
+  by `selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource`.
+- Reverse direction: a supplied direct lower source constructs the layer by
+  packaging the same atom-generated selected cover source, degree-wise carrier
+  identifications, degree-`2` zero laws, and four direct selected `K.d`
+  compatibility laws.
+
+Remaining:
+
+- No theorem constructs this equivalent direct source / layer from genuine
+  semantic atom / law provenance.
+- The positive selector obligation remains open.
+- Full refinement naturality and full sheaf cohomology comparison remain outside
+  this cycle's discharge.
+
+### Material Premise Ledger
+
+- `selected semantic coefficient realization layer`: still discharge-required.
+  Cycle 159 proves its construction is exactly the same material burden as
+  constructing `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- `degree-wise carrier identifications`, degree-`2` zero laws, and four direct
+  selected `K.d` compatibility laws: still material lower provenance.
+- `site / atom vocabulary / selected cover`: ambient-boundary only when it fixes
+  the selected AAT geometry.
+
+### Certificate Provenance
+
+- discharged: no new positive certificate provenance.
+- unresolved: the direct lower source / selected semantic coefficient layer
+  still needs a genuine construction theorem, finite witness, universal
+  property, canonical/free construction, or reviewed predecessor theorem.
+
+### Proof-Use Audit
+
+- The theorem proof-uses both directions:
+  - layer to direct source through the Cycle 157 route;
+  - direct source back to layer by constructing the transparent direct lower
+    bundle.
+- No material premise is attached as unused completion evidence.
+
+### Structure-Field Escape Audit
+
+- The theorem does not add a new certificate field or class membership.
+- It prevents the layer name from hiding material content by reducing it to the
+  already-visible direct source.
+
+### Route-Integrity Audit
+
+- status: pass for checkpoint.
+- No ad hoc `K`, `ObstructionSheaf`, cover, or differential law is selected.
+- The theorem is a boundary/equivalence theorem only.  It does not claim a
+  canonical/free realization exists.
+
+### Cheat-Route Audit
+
+- target-fitting construction: none accepted.
+- vacuity or degeneracy: none introduced.
+- one-way theorem as equivalence: none; both directions are proved.
+- GOAL / report reinterpretation: none; G-06 remains checkpoint.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed; Lake replayed existing unrelated linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle159AxiomAudit.lean` passed.
+  - `selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource`:
+    `[propext, Quot.sound]`
+- `git diff --check` passed.
+- placeholder scan over the changed Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets was
+  clean.
+- T3 audit subagent: approve / proof-checkpoint / completion_candidate no.  The
+  audit accepted the exact equivalence as a boundary theorem and confirmed that
+  positive atom/law lower-provenance construction remains unresolved.
+
+### Next Obligation
+
+Construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, equivalently
+`SelectedSemanticCoefficientDirectRealizationLayer`, from genuine semantic atom /
+law lower provenance.  If no such source exists under the current target
+boundary, the next result should be an explicit API-level blocker or GOAL-boundary
+revision proposal rather than `target-theorem-proved`.

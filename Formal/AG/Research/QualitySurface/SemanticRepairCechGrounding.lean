@@ -12345,6 +12345,71 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedSema
       atomSupportedCurrentBoundaryDirectSourceConstructor
 
 /--
+Cycle 159 exact lower-provenance boundary: constructing the selected semantic
+coefficient realization layer is equivalent to constructing the atom-supported
+direct lower source.
+
+This theorem does not construct the layer.  It removes an ambiguity left after
+Cycle 157: any genuine positive construction of the layer must construct the
+same atom-generated selected cover source, degree-wise carrier identifications,
+degree-`2` zero laws, and four direct selected `K.d` compatibility laws exposed
+by `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+-/
+theorem selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) <->
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface := by
+  constructor
+  · intro hlayer
+    rcases hlayer with ⟨layer⟩
+    exact
+      selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource
+        (additive := additive) surface layer
+  · intro source
+    rcases source with
+      ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        d0_direct_to, d0_direct_from, d1_direct_to, d1_direct_from⟩
+    let c0Carrier :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0) :=
+      by
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+    let c1Carrier :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1) :=
+      by
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+    let directLower :
+        DegreewiseCarrierDataAndDirectDifferentialLaws
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) := by
+      refine
+        ⟨c0Carrier, c1Carrier, c2Equiv,
+          c2Equiv_zero, c2Equiv_symm_zero,
+          ?_, ?_, ?_, ?_⟩
+      · intro primitive
+        simpa [c0Carrier, c1Carrier] using d0_direct_to primitive
+      · intro primitive
+        simpa [c0Carrier, c1Carrier] using d0_direct_from primitive
+      · intro cochain
+        simpa [c0Carrier, c1Carrier] using d1_direct_to cochain
+      · intro cochain
+        simpa [c0Carrier, c1Carrier] using d1_direct_from cochain
+    exact ⟨⟨family, hcover_eq, directLower⟩⟩
+
+/--
 Cycle 153 constructor type abbreviation for the first direct-law package escape.
 This is only a type synonym for a hypothetical constructor; it stores no witness
 or certificate.
