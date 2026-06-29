@@ -9496,6 +9496,81 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedCoch
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 124 conclusion-side boundary theorem: adding a current gluing datum,
+cover-wise sheaf condition, descent, effective gluing, and semantic additive
+`H1` zero to the atom-supported current G-06 boundary still does not uniformly
+construct the selected cochain realization.
+
+The theorem proof-uses every alleged conclusion-side input by passing it to
+the hypothetical constructor.  It then extracts the produced realization's
+degree-`0` additive equivalence and combines it with the finite `PUnit` /
+`ZMod 2` boundary equivalences to force `0 = 1`.  Thus conclusion-side
+gluing, descent/effectivity, and semantic `H1` zero cannot be used as hidden
+provenance for the missing cochain-realization layer.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCochainRealization
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedConclusionSideCochainRealizationConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeCochainRealization additive surfaceInput.K) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K :=
+    atomSupportedConclusionSideCochainRealizationConstructor
+      surface family hcover_eq gluingData hSheafFor hDescent hEffective
+      hSemanticH1Zero
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    realization.c0Equiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cycle 69 blocker theorem: a surface-only selected cochain-realization
 constructor would manufacture the ordinary additive-equivalence source exposed
 in Cycle 68.
