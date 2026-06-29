@@ -5923,6 +5923,182 @@ theorem atomSupportedSelectedLowerSource_constructs_selectedCochainRealization
       hcycle118.2.2.2⟩
 
 /--
+Cycle 120 transparent finite lower source below
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+This proposition replaces the custom carrier-comparison records by ordinary
+degree-wise equivalences in degrees `0` and `1`, a degree-`2` equivalence with
+zero laws, and the four selected face-restriction equations for the induced
+section-family model.  It still does not construct those equivalences or face
+equations from `CurrentG06InputSurface`, `gluingData`, descent/effective
+gluing, semantic `H1` zero, or an opaque certificate.
+-/
+abbrev AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) : Prop :=
+    Exists fun family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+      surface.selectedCover = Sieve.generate family.presieve /\
+      Exists fun c0Equiv :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        E.coefficient.C0 ≃+ surface.K.Cn 0 =>
+      Exists fun c1Equiv :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+        (let c0Carrier :=
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+         let c1Carrier :=
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+         let model :=
+          SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Carrier c1Carrier c2Equiv
+            c2Equiv_zero c2Equiv_symm_zero
+         let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          letI := surface.K.cochainAddCommGroup 1
+          forall primitive : E.coefficient.C0,
+            surface.K.alternatingFaceCombination 0
+                (fun σ i =>
+                  surface.K.faceRestrictionTerm 0 i
+                    (sectionWitness.c0SectionEquiv primitive) σ) =
+              sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          letI := surface.K.cochainAddCommGroup 1
+          forall primitive : surface.K.Cn 0,
+            E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+              sectionWitness.c1SectionEquiv.symm
+                (surface.K.alternatingFaceCombination 0
+                  (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ))) /\
+         (letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          forall cochain : E.coefficient.C1,
+            surface.K.alternatingFaceCombination 1
+                (fun σ i =>
+                  surface.K.faceRestrictionTerm 1 i
+                    (sectionWitness.c1SectionEquiv cochain) σ) =
+              sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+         (letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          forall cochain : surface.K.Cn 1,
+            E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+              sectionWitness.c2SectionEquiv.symm
+                (surface.K.alternatingFaceCombination 1
+                  (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
+
+/--
+Cycle 120 positive checkpoint: the ordinary degree-wise equivalence and
+selected face-restriction source constructs the Cycle 119 atom-supported lower
+source and hence the selected cochain realization.
+
+The proof first converts the displayed ordinary equivalences into the
+carrier-specific data used by the transparent finite witness, then proof-uses
+Cycle 119.  This lowers the remaining finite witness from a custom carrier
+record to ordinary equivalences plus four explicit face equations; it is still
+not a construction of those equivalences/equations from `CurrentG06InputSurface`
+alone.
+-/
+theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface) :
+    AtomSupportedSelectedLowerSource (additive := additive) surface /\
+      (Exists fun family :
+        AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+          surface.selectedCover = Sieve.generate family.presieve /\
+            surface.selectedCover ∈ S.topology surface.coverBase) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (Exists fun model :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model)) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) := by
+  rcases source with
+    ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  let c0Carrier :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0) :=
+    by
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+  let c1Carrier :
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1) :=
+    by
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+  let lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) := by
+    refine
+      ⟨c0Carrier, c1Carrier, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        ?_, ?_, ?_, ?_⟩
+    · intro primitive
+      simpa [c0Carrier, c1Carrier] using d0_face_to primitive
+    · intro primitive
+      simpa [c0Carrier, c1Carrier] using d0_face_from primitive
+    · intro cochain
+      simpa [c0Carrier, c1Carrier] using d1_face_to cochain
+    · intro cochain
+      simpa [c0Carrier, c1Carrier] using d1_face_from cochain
+  let selectedSource :
+      AtomSupportedSelectedLowerSource (additive := additive) surface :=
+    ⟨family, hcover_eq, lower⟩
+  have hcycle119 :=
+    atomSupportedSelectedLowerSource_constructs_selectedCochainRealization
+      (additive := additive) (surface := surface) selectedSource
+  exact
+    ⟨selectedSource,
+      hcycle119.1,
+      hcycle119.2.1,
+      hcycle119.2.2.1,
+      hcycle119.2.2.2.1,
+      hcycle119.2.2.2.2.1,
+      hcycle119.2.2.2.2.2.1⟩
+
+/--
 Cycle 98 transparent-lower-data theorem: the displayed degreewise carrier data
 and explicit selected face-restriction equations construct the Cycle 97
 selected carrier model and matching compatibility source.
