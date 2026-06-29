@@ -25124,3 +25124,171 @@ genuine semantic atom / law lower provenance, or obtaining a human-approved
 GOAL-boundary revision if such provenance is outside the current target.
 
 `$math-lean-review` is not run because this is not a completion candidate.
+
+## Cycle 167 — indexed degree-zero lower-provenance blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4838146016>
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the next lower-provenance obstruction at the smallest
+indexed component: even before constructing all of
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, the current
+boundary must generate the degree-`0` carrier comparison
+`CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`.
+
+This directly sharpens Cycle 166.  Cycle 166 rejected a uniform constructor for
+the full explicit lower data from atom-supported current boundary,
+semantic-cover Cech data, and conclusion-side sheaf / descent / effective
+gluing / semantic `H1` zero inputs.  Cycle 167 records that the first indexed
+carrier comparison itself is already unavailable from that route.
+
+### Lean Artifacts
+
+- New declarations:
+  - `SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeZeroAdditiveEquiv`
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_and_semanticCoverCechData_without_degreeZeroCarrierComparison`
+  - `SemanticRepairCoverRelativeCochainRealization.UnindexedSemanticAtomLawToken`
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_unindexedSemanticAtomLawToken_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+
+The helper theorem extracts the degree-`0` additive equivalence from the
+transparent explicit lower data.  It is one-way and does not construct the
+explicit lower data.
+
+The degree-zero blocker theorem proof-uses every alleged constructor input:
+`surface`, `family`, selected-cover equality, `semanticData`, `gluingData`,
+`hSheafFor`, `hDescent`, `hEffective`, and `hSemanticH1Zero`.  The returned
+degree-`0` carrier comparison is composed with the finite boundary-test
+equivalences `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`, which
+would force `0 = 1`.
+
+The unindexed-token theorem records that adding a metadata-only semantic
+atom/law token also cannot construct the full explicit lower data.  It
+specializes the token and reduces to the Cycle 164 current-boundary no-go.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The conclusion-side semantic Cech route is now rejected not only for the full
+  explicit lower witness, but already for the degree-`0` indexed carrier
+  comparison.
+- An unindexed semantic atom/law metadata token is rejected as lower provenance.
+
+Remaining:
+
+- Construct indexed semantic atom/law lower provenance that genuinely generates
+  the degree-`0` carrier comparison, the degree-`1` carrier comparison, the
+  degree-`2` zero laws, and the selected face-restriction equations.
+- Acceptable routes remain canonical/free obstruction-sheaf realization,
+  universal property, finite nonvacuous witness with adequacy, or a reviewed
+  predecessor theorem.
+- If such indexed provenance is outside the current target boundary, obtain an
+  explicit human-approved GOAL-boundary revision.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from semantic atom / law data.
+- degree-`0` carrier comparison:
+  `discharge-required`; cannot be uniformly obtained from current boundary plus
+  conclusion-side semantic Cech data under the finite boundary test.
+- unindexed semantic atom/law token: `blocked-as-metadata`; it carries no
+  selected carrier indexing, face-restriction equations, or differential
+  compatibility.
+- conclusion-side gluing / sheaf / descent / effective gluing / semantic `H1`
+  zero: still `blocked-as-extra-constructor-input`, not lower provenance.
+
+### Certificate Provenance
+
+- discharged: none as positive lower provenance.
+- fixed blocker: the first indexed carrier comparison cannot be manufactured by
+  the tested conclusion-side semantic Cech route.
+- unresolved: no canonical/free/universal/finite-witness construction of the
+  indexed carrier comparisons and face-restriction equations has been supplied.
+
+### Proof-Use Audit
+
+- The degree-zero blocker passes every alleged input to the constructor and
+  proof-uses the returned `CarrierSpecificAdditiveComparisonData` via
+  `toAddEquiv`.
+- The unindexed-token blocker passes the token to the constructor, then reduces
+  to the Cycle 164 no-go theorem.
+- No premise is attached merely as report decoration.
+
+### Structure-Field Escape Audit
+
+- status: concern-fixed-as-blocker.
+- No new selected `K`, coefficient object, structure field, certificate field,
+  or class membership was introduced.
+- Treating degree-`0` carrier comparison data, or an unindexed atom/law token,
+  as ambient lower provenance would hide a material premise of the selected
+  semantic coefficient realization gate.
+
+### Route-Integrity Audit
+
+- status: blocked.
+- Both blocker theorems are relative to visible finite boundary-test premises;
+  they are not unconditional impossibility theorems for every possible
+  canonical/free/universal construction.
+- The cycle does not weaken G-06 and does not accept conclusion-side data,
+  semantic Cech data, or metadata tokens as lower provenance.
+
+### Cheat-Route Audit
+
+- degree-`0` carrier comparison as ambient current-boundary data: rejected for
+  the tested uniform constructor route.
+- unindexed semantic atom/law token as lower provenance: rejected.
+- target-fitting choice of `K`, coefficient carrier, or equivalence: none
+  introduced.
+- vacuity, one-way-as-equivalence, and GOAL/report reinterpretation: none
+  introduced.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 167 as `blocker-fixed`:
+
+- the new theorems isolate a smaller lower-provenance gap rather than repeating
+  Cycle 166 at the same granularity;
+- finite boundary-test premises remain visible;
+- no positive lower-provenance claim is made;
+- no structure-field escape, certificate-provenance escape, or anti-weakening
+  issue was found.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle167AxiomAudit.lean` passed.
+- Axiom audit for the new declarations reported only expected standard axioms:
+  `[propext, Quot.sound]` for the extractor and
+  `[propext, Classical.choice, Quot.sound]` for the two blocker theorems.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- Hidden / bidirectional Unicode scan over changed Lean/report files was clean.
+- Absolute local path / private machine identifier scan over changed Lean/report
+  files was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains `target-blocked`, not `target-theorem-proved`.
+
+Cycle 167 sharpens the lower-provenance blocker to the degree-`0` indexed
+carrier comparison and rejects unindexed atom/law metadata as provenance.  The
+minimal next action is indexed semantic atom/law lower provenance that
+constructs the selected carrier comparisons and face-restriction equations, or
+an explicit human-approved GOAL-boundary revision.
+
+`$math-lean-review` is not run because this is not a completion candidate.
