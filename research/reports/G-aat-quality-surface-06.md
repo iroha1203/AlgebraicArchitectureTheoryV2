@@ -19365,6 +19365,155 @@ CurrentG06InputSurface
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829064864
 
+## Cycle 127 - Selected-Cochain / Degree-Zero Positive-Source Checkpoint
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `proof-obligation-partially-discharged`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 127 fixes the positive lower-source side of the Cycle 126 degree-`0`
+boundary.  Cycle 126 proved that the accepted atom-supported current G-06
+boundary plus conclusion-side gluing/sheaf/descent/effective-gluing and
+semantic additive `H1` zero cannot uniformly construct
+`E.coefficient.C0 ≃+ surface.K.Cn 0`.  Cycle 127 proves the corresponding
+honest lower-source statement: when atom-generated selected cover data and a
+concrete selected cover-relative cochain realization are supplied, Lean can
+proof-produce the existence of that degree-`0` ordinary additive equivalence.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_degreeZeroAdditiveEquiv`
+
+The theorem has the shape:
+
+```lean
+theorem atomSupportedSelectedCochainRealization_constructs_degreeZeroAdditiveEquiv
+    (surface : CurrentG06InputSurface)
+    (family : AATCoverageFamily ...)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Nonempty
+      (letI := additive.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       E.coefficient.C0 ≃+ surface.K.Cn 0)
+```
+
+The result is intentionally `Nonempty`, not raw data returned from a `theorem`.
+This keeps the declaration proposition-valued and avoids illicitly eliminating
+the `Prop`-valued transparent direct-source proposition into `Type`.  The
+proof first constructs the Cycle 121 transparent direct source from the
+selected cochain realization via
+`atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource`,
+then destructs that source to expose its first material additive-equivalence
+component.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`; fixes the selected AAT site,
+  cover bridge, presheaf, and cover-relative Cech complex.
+- atom-generated `family` and `hcover_eq`: `ambient-boundary` for this positive
+  lower-source theorem; proof-used to build the transparent direct source.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`:
+  `discharge-required` lower provenance for G-06 completion; Cycle 127 consumes
+  it but does not construct it.
+- degree-`0` ordinary additive equivalence:
+  `discharge-required`; now theorem-produced as `Nonempty` from the selected
+  cochain realization boundary, but still not generated from the accepted
+  current/conclusion-side boundary.
+- degree-`1` additive equivalence, degree-`2` equivalence and zero laws, and
+  four direct selected `K.d` laws: `discharge-required`; untouched by this
+  cycle except through the existing Cycle 122 direct-source construction.
+- conclusion-side `gluingData`, `AATSheafConditionFor`, `AATDescent`,
+  effective gluing, and `SemanticRepairAdditiveH1Zero`: not used as sources in
+  Cycle 127; Cycle 126 already blocked them as generators of the degree-`0`
+  equivalence.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG
+
+```text
+atom-generated family + selected-cover equality
+  + concrete SemanticRepairCoverRelativeCochainRealization
+    -> atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+    -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+    -> Nonempty (E.coefficient.C0 ≃+ surface.K.Cn 0)
+```
+
+This is a positive source theorem for the first material component of the
+transparent direct lower source.  It does not construct the selected cochain
+realization from `CurrentG06InputSurface`, from conclusion-side semantic repair
+facts, or from a certificate field.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake env lean .tmp/G06Cycle127AxiomAudit.lean` - passed.
+- target declaration axiom audit:
+  `propext`, `Classical.choice`, `Quot.sound`.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean except the
+  intentional `#print axioms` command in `.tmp/G06Cycle127AxiomAudit.lean`.
+- report placeholder scan contains audit prose for prior cycle scans; no
+  unresolved placeholder marker remains.
+- hidden / bidirectional Unicode scan over changed Lean/report/audit files -
+  clean.
+- remaining validation before PR: PR / CI sync.
+
+### Anti-Weakening Audit
+
+- Statement strength: positive lower-source checkpoint for degree `0`, not
+  G-06 completion.
+- Proof-use: the proof calls the selected-cochain-realization-to-direct-source
+  theorem with `surface`, atom-generated `family`, selected-cover equality, and
+  the supplied concrete realization; the produced transparent source is then
+  destructed to expose the degree-`0` equivalence.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced.  The degree-`0` equivalence is not moved into
+  `CurrentG06InputSurface`, `gluingData`, sheaf/descent data, class membership,
+  or a new certificate.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed.  The proof uses `family`, `hcover_eq`, and
+  `realization` through
+  `atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource`,
+  then extracts the first component of the produced transparent direct source.
+  It does not take `E.coefficient.C0 ≃+ surface.K.Cn 0` as a direct theorem
+  argument.
+- `Nonempty` audit: passed.  Returning `Nonempty (...)` keeps the declaration
+  proposition-valued and avoids illegal `Prop`-to-`Type` extraction from the
+  transparent direct-source proposition.
+- structure-field / certificate escape: none found.  No new
+  structure/class/certificate field is introduced; no hidden `H1` or full
+  sheaf cohomology claim is added.
+- residual obligation: construct or discharge
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` itself
+  from allowed lower atom-supported selected cover/cochain data.  Degree-`1`,
+  degree-`2`, zero-law, and direct differential provenance remain explicit
+  open obligations.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829138975
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -19433,6 +19582,13 @@ CurrentG06InputSurface
   is also blocked as a generator of the degree-`0` ordinary additive
   equivalence `E.coefficient.C0 ≃+ surface.K.Cn 0`, the first material
   component of the Cycle 121 direct lower source.
+- atom-generated selected cover data plus a concrete selected cochain
+  realization are now fixed as a positive source for the existence of the
+  degree-`0` ordinary additive equivalence, via
+  `atomSupportedSelectedCochainRealization_constructs_degreeZeroAdditiveEquiv`.
+  This proves the selected cochain realization boundary is genuinely strong
+  enough for the first material component, while preserving the Cycle 126
+  no-go result for current/conclusion-side data.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -19483,6 +19639,10 @@ finite lower witness inside the atom-supported lower-source boundary:
   `E.coefficient.C0 ≃+ surface.K.Cn 0`; this component still requires genuine
   lower provenance and cannot be generated uniformly from conclusion-side
   gluing/sheaf/descent/effective/H1-zero inputs;
+- after Cycle 127, a concrete selected cochain realization is confirmed as
+  genuine lower provenance for the existence of the degree-`0` ordinary
+  additive equivalence, but that realization itself is still not constructed
+  from the accepted atom-supported current/conclusion-side boundary;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or four direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
