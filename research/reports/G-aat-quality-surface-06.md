@@ -18133,7 +18133,11 @@ No-uniform carrier/equivalence blockers remain visible.
 - local path scan over changed Lean and audit files - clean.
 - Tracking Issue sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828276498>.
-- PR / CI sync pending.
+- PR / CI sync: PR #2786
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2786>;
+  CI run
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28343625153>
+  passed all checks.
 
 ### Anti-Weakening Audit
 
