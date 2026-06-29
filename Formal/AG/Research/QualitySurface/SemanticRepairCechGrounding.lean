@@ -12410,6 +12410,89 @@ theorem selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirec
     exact ⟨⟨family, hcover_eq, directLower⟩⟩
 
 /--
+Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
+selected cochain realization constructs the selected semantic coefficient
+realization layer.
+
+This theorem deliberately leaves the concrete selected cochain realization as a
+visible material premise.  It does not construct the realization from
+`CurrentG06InputSurface`, descent/effective gluing, semantic `H1` zero, or a
+certificate field.  Instead, it connects the older Cycle 122 source route to
+the Cycle 157/159 selected-layer boundary, so future lower-provenance work has
+a named Lean route into the currently missing layer.
+-/
+theorem atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization additive surface.K) :
+    Nonempty
+      (SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface) := by
+  have hsource :
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface :=
+    (atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource
+      (additive := additive) (surface := surface)
+      family hcover_eq realization).1
+  exact
+    (selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource
+      (additive := additive) surface).2 hsource
+
+/--
+Cycle 161 current-boundary checkpoint for the selected semantic coefficient
+layer.
+
+The first component records the exact Cycle 159 equivalence between the layer
+and the atom-supported direct source.  The remaining components turn the
+Cycle 144/158 no-constructor theorems into explicit `IsEmpty` statements for
+the accepted atom-supported current boundary.  This is blocker evidence, not
+completion evidence: it proves that the current boundary cannot be rebranded as
+the missing lower provenance.
+-/
+theorem atomSupportedCurrentBoundary_selectedSemanticCoefficientLayer_checkpoint
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2) :
+    (Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) <->
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundarySelectedSemanticCoefficientLayerConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryDirectSourceConstructor
+          Atom site semanticCover E additive U A S Ob) := by
+  refine
+    ⟨selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource
+      (additive := additive) surface, ?_, ?_⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_selectedSemanticCoefficientDirectRealizationLayer
+          (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndDirectDifferentialSource
+          (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+          constructor⟩
+
+/--
 Cycle 153 constructor type abbreviation for the first direct-law package escape.
 This is only a type synonym for a hypothetical constructor; it stores no witness
 or certificate.
