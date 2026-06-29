@@ -24007,3 +24007,124 @@ Construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, equivalentl
 law lower provenance.  If no such source exists under the current target
 boundary, the next result should be an explicit API-level blocker or GOAL-boundary
 revision proposal rather than `target-theorem-proved`.
+
+## Cycle 160 — API-level lower-provenance blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+
+### T1 Selector Result
+
+The selector again identified the same honest positive obligation:
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, equivalently
+`SelectedSemanticCoefficientDirectRealizationLayer`, from genuine semantic atom /
+law lower provenance.
+
+Because Cycles 157-159 already fixed the exact remaining proof boundary, the
+selector rejected another wrapper, accessor, current-boundary constructor, or
+conclusion-side shortcut.  The current `CoverRelativeCechComplex` /
+`ObstructionSheaf` APIs expose abstract cochain groups, selected differentials,
+`d ∘ d = 0`, sheaf carrier laws, and presheaf restriction maps, but they do not
+provide a canonical/free semantic atom / law realization that produces the
+degree-wise carrier equivalences, degree-`2` zero laws, and four direct selected
+`K.d` compatibility laws for arbitrary `surface.K`.
+
+### Evidence
+
+- `CoverRelativeCechComplex` stores:
+  - cochain additive groups,
+  - an abstract selected differential,
+  - `differential_eq_alternatingFaceCombination`,
+  - `differential_comp`.
+- `ObstructionSheaf` stores:
+  - an `AATSheaf`,
+  - additive group structure on sections,
+  - map-zero and map-add laws.
+- Neither API constructs the semantic coefficient carriers
+  `E.coefficient.C0/C1/C2` as the selected cover-relative cochain groups
+  `surface.K.Cn 0/1/2`, nor the four direct selected `K.d` compatibility laws.
+- Cycle 158 blocks accepted-current-boundary construction of the layer.
+- Cycle 159 proves that constructing the layer is exactly constructing the
+  atom-supported direct lower source.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The current blocker is no longer ambiguous.  The missing object is not another
+  theorem wrapper around the existing route; it is a genuine lower-provenance
+  source for the direct carrier/differential realization.
+
+Remaining:
+
+- A richer semantic atom / law construction is needed: canonical/free
+  obstruction-sheaf realization, universal property, finite witness, or reviewed
+  predecessor theorem that constructs
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- Without such a source, G-06 cannot honestly become a completion candidate.
+
+### Material Premise Ledger
+
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: discharge-required
+  and unresolved.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: equivalent
+  discharge-required premise by Cycle 159.
+- `CoverRelativeCechComplex` differential fields and `ObstructionSheaf` sheaf
+  fields: insufficient as provenance by themselves; treating them as the
+  construction would move material comparison laws into selected structure.
+
+### Certificate Provenance
+
+- discharged: none.
+- unresolved: no canonical/free construction, universal property, finite
+  witness, or reviewed predecessor theorem currently constructs the equivalent
+  direct source / layer.
+
+### Proof-Use Audit
+
+- No new theorem is introduced in this cycle.
+- The blocker proof-use rests on existing merged artifacts:
+  - Cycle 158 current-boundary no-constructor route;
+  - Cycle 159 exact equivalence between the selected layer and direct source.
+
+### Structure-Field Escape Audit
+
+- status: concern-found for any attempted completion route that simply selects
+  `K`, `ObstructionSheaf`, carrier equivalences, or `K.d` laws to fit semantic
+  `delta0/delta1`.
+- No such route is accepted in this cycle.
+
+### Route-Integrity Audit
+
+- status: blocked.
+- The current APIs do not supply the required input-boundary construction.
+- A valid next proof step must add genuine lower provenance, not another
+  conclusion-side package.
+
+### Cheat-Route Audit
+
+- target-fitting construction: found as a risk, not accepted.
+- vacuity or degeneracy: none accepted.
+- one-way theorem as equivalence: none accepted.
+- GOAL / report reinterpretation: none; G-06 remains checkpoint/blocker.
+
+### Validation
+
+- No Lean files changed in Cycle 160.
+- `git status --short --branch` confirmed the branch started clean at
+  `origin/main` after PR #2829.
+- This cycle records proof-state blocker evidence only; no final
+  `$math-lean-review` was run because `completion_candidate: no`.
+
+### Stop-State Assessment
+
+G-06 is not `target-theorem-proved`.
+
+Current stop state: `target-proof-checkpoint` with an API-level blocker.  The
+minimal next obligation is to introduce or locate a genuine semantic atom / law
+lower-provenance theorem that constructs
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.  If that construction
+cannot exist under the current target boundary, the next honest outcome is a
+GOAL-boundary revision proposal or `target-blocked`, not a wrapper completion.
