@@ -18614,6 +18614,158 @@ AATCoverageFamily
   degree-`2` zero laws, and four direct differential compatibility laws are
   still explicit material premises.
 
+## Cycle 122 - Atom-Supported Selected Cochain Realization Direct-Source Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 122 proves that the Cycle 121 direct differential source is obtained
+from atom-generated selected cover data plus a concrete selected cochain
+realization.  The selected cochain realization remains an explicit material
+premise; it is not reclassified as ambient boundary.
+
+Lean declaration:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_degreewiseEquivAndDirectDifferentialSource`
+
+The theorem exposes from the supplied realization:
+
+- ordinary degree-`0` and degree-`1` additive equivalences;
+- the degree-`2` equivalence and both zero laws;
+- the four direct selected `K.d` compatibility laws.
+
+It packages those fields with the supplied atom-admissible
+`AATCoverageFamily`, constructs
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, and immediately
+proof-uses the Cycle 121 constructor path to obtain:
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`;
+- `AtomSupportedSelectedLowerSource`;
+- selected cover membership in `S.topology`;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`;
+- selected carrier model plus face-restriction compatibility;
+- selected carrier geometry plus selected Cech face laws;
+- carrier-specific comparison provenance.
+
+### Discharged Obligation
+
+- Discharged the construction of the Cycle 121 direct differential source from
+  an explicit selected cochain realization plus atom-generated selected cover
+  data.
+- The ordinary equivalences, degree-`2` zero laws, and direct differential laws
+  are no longer hidden inside the realization for this checkpoint: they are
+  destructed and repackaged into the transparent Cycle 121 source, which is then
+  proof-used downstream.
+
+### Not Discharged
+
+- The selected cochain realization itself remains material input.
+- This cycle does not construct the realization from `CurrentG06InputSurface`,
+  selected cover membership, sheaf condition, `gluingData`, descent/effective
+  gluing, semantic additive `H1` zero, class membership, or an opaque
+  certificate.
+- Therefore this is not a G-06 completion theorem.
+
+### Material Premise Ledger
+
+- atom-generated selected cover: `discharge-required` for cover membership,
+  already proof-used through the Cycle 119 path.
+- concrete selected cochain realization:
+  `discharge-required`; still the remaining explicit lower source.
+- degree-wise ordinary equivalences, degree-`2` zero laws, and four direct
+  selected `K.d` laws: theorem-produced from the supplied selected cochain
+  realization in this checkpoint.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`,
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`,
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+  `AtomSupportedSelectedLowerSource`, selected carrier model plus compatibility,
+  selected carrier geometry plus face laws, and carrier-specific provenance:
+  theorem-produced from the Cycle 122 source.
+
+### Dependency DAG
+
+```text
+AATCoverageFamily
+  + SemanticRepairCoverRelativeCochainRealization
+      -> degreewise AddEquiv / Equiv source
+      -> degree-2 zero laws
+      -> four direct selected K.d laws
+      -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+      -> Cycle 121 direct-to-face source normalization
+      -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      -> AtomSupportedSelectedLowerSource
+      -> selected carrier model + face compatibility
+      -> selected carrier geometry + face laws
+      -> carrier-specific comparison provenance
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle122AxiomAudit.lean` reported that the Cycle 122
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle122AxiomAudit.lean` - passed.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- placeholder scan including this report finds existing audit prose for
+  `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and audit files -
+  clean.
+- local path scan over changed Lean, audit, and report files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: selected-cochain-realization provenance checkpoint, not a
+  construction from `CurrentG06InputSurface` alone and not G-06 completion.
+- Proof-use: the supplied realization fields are used to construct
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`; that source is
+  immediately consumed by the Cycle 121 theorem.
+- Structure-field escape: avoided.  No new structure/class/certificate field is
+  introduced.  The selected cochain realization remains an explicit theorem
+  premise and a remaining material obligation.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, refinement/naturality remains outside this theorem, and no
+  gluing/descent/semantic-`H1`-zero premise is used as a substitute.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed for checkpoint.  The theorem takes
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` as an
+  explicit premise, destructs its degree-wise equivalences, degree-`2` zero
+  laws, and `d0` / `d1` direct laws to construct the Cycle 121 direct source,
+  and immediately proof-uses the Cycle 121 theorem.
+- certificate provenance audit: passed for checkpoint.  The selected cochain
+  realization is still an explicit material premise and is not moved into
+  `CurrentG06InputSurface`, `gluingData`, a certificate field, or class
+  membership.
+- anti-weakening audit: passed for checkpoint.  No `gluingData`, descent,
+  effective gluing, semantic `H1` zero, refinement/naturality, or full sheaf
+  cohomology claim is introduced.
+- residual obligation: construct
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` itself
+  from the accepted atom-supported G-06 boundary, or prove a stronger boundary
+  / refutation showing why that provenance is unavailable.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -18664,6 +18816,10 @@ AATCoverageFamily
   degree-`2` zero-preserving equivalence, and four direct selected `K.d`
   compatibility laws are enough to produce the Cycle 120 face-restriction
   source and the selected cochain realization path.
+- atom-generated selected cover data plus a concrete selected cochain
+  realization are enough to construct the direct selected `K.d` source and
+  proof-use the Cycle 121 path; the realization is now the explicit remaining
+  lower source rather than an opaque place where the direct laws can hide.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -18693,9 +18849,13 @@ finite lower witness inside the atom-supported lower-source boundary:
   `CoverRelativeCechComplex.d_eq_alternatingFaceCombination`, but the ordinary
   equivalences, degree-`2` zero laws, and direct differential laws still
   require lower provenance;
-- without moving the carrier maps, degree-`2` zero laws, or four direct
-  selected differential laws into `CurrentG06InputSurface`, `gluingData`,
-  certificate fields, or class membership.
+- after Cycle 122, the ordinary equivalences, degree-`2` zero laws, and direct
+  differential laws are exposed from a concrete selected cochain realization;
+  that selected cochain realization itself still requires lower provenance;
+- without moving the selected cochain realization, carrier maps, degree-`2`
+  zero laws, or four direct selected differential laws into
+  `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
+  membership.
 - the current surface's presheaf restriction laws and selected Cech face
   identity are insufficient by Cycle 113 at the carrier-provenance level and
   by Cycle 115 at the transparent finite-lower-witness level; Cycle 114
