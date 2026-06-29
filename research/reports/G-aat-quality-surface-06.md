@@ -17588,6 +17588,149 @@ requires a theorem constructing
 atom-supported lower data, or an explicit GOAL-boundary revision that admits
 that finite carrier/face-law source as ambient selected input.
 
+## Cycle 115 - Direct No-Go for Presheaf/Face Inputs to Explicit Lower Data
+
+### Cycle Result
+
+- result: `blocker-fixed`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 115 fixes the direct lower-source blocker corresponding to the Cycle 114
+criterion.  Cycle 113 showed that `CurrentG06InputSurface` plus its derived
+presheaf restriction laws and selected Cech face identity cannot construct
+`SemanticRepairCarrierSpecificComparisonProvenance`.  Cycle 115 proves the same
+obstruction at the transparent finite lower witness itself:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+
+The theorem proof-uses the presheaf zero law, presheaf add law, and selected
+Cech face identity derived from the current surface, then decomposes any
+purported `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` constructor
+to obtain the degree-`0` carrier-specific additive comparison.  Under the
+finite test boundary `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`,
+that comparison would yield `PUnit ≃+ ZMod 2`, forcing `0 = 1`.
+
+### Discharged Obligation
+
+- Discharged the route from `CurrentG06InputSurface` plus presheaf restriction
+  laws plus selected Cech face identity to the transparent finite lower witness.
+- This is strictly targeted at the Cycle 114 lower-source criterion:
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- The proof does not route through `SemanticRepairCarrierSpecificComparisonProvenance`
+  as an opaque intermediate, and does not add a structure field, certificate
+  field, class membership, `gluingData`, H1-zero, descent, effective-gluing, or
+  full-sheaf-cohomology premise.
+
+### Not Discharged
+
+- Positive construction of
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from accepted
+  atom-supported lower data remains open.
+- Equivalently, positive construction of `SelectedSectionFamilyCarrierModel`
+  plus `SemanticRepairCoverRelativeFaceRestrictionCompatibility` remains open.
+- The theorem is a no-go boundary theorem, not the G-06 completion theorem.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`; proof-used to derive presheaf
+  zero/add laws and the selected Cech face identity.
+- presheaf restriction zero/add laws: `ambient-boundary`; proof-used as supplied
+  arguments to the blocked constructor.
+- selected Cech face identity:
+  `ambient-boundary`; proof-used as supplied argument to the blocked
+  constructor.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from accepted atom-supported data.
+- finite test boundary `E.coefficient.C0 ≃+ PUnit` and
+  `surface.K.Cn 0 ≃+ ZMod 2`: `boundary theorem witness`; used to show that a
+  uniform constructor would force an impossible additive equivalence.
+- refinement/naturality and full sheaf cohomology equivalence: `out-of-scope`
+  for this blocker theorem.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  -> presheaf zero law
+  -> presheaf add law
+  -> selected Cech face identity
+
+If these inputs constructed
+  DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+then extracting the degree-0 carrier comparison gives
+  E.coefficient.C0 ≃+ surface.K.Cn 0
+
+Finite witness boundary:
+  E.coefficient.C0 ≃+ PUnit
+  surface.K.Cn 0 ≃+ ZMod 2
+  would force PUnit ≃+ ZMod 2
+  would force (0 : ZMod 2) = 1
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle115AxiomAudit.lean` reported that the Cycle 115
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  — passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  — passed.
+- `lake build` — passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle115AxiomAudit.lean` — passed.
+- `git diff --check` — clean.
+- placeholder scan over changed Lean and audit files — clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files —
+  clean.
+- local path scan over changed Lean and audit files — clean.
+- Remaining validation is pending until PR / CI sync completes.
+
+### Anti-Weakening Audit
+
+- Statement strength: blocker theorem for the exact Cycle 114 transparent lower
+  source, not a completion theorem.
+- Proof-use: the theorem consumes the current-surface-derived presheaf zero/add
+  laws and selected Cech face identity as constructor inputs, then decomposes
+  the purported transparent finite lower witness.
+- Structure-field escape: avoided.  No new structure, class, or certificate
+  field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, and refinement/naturality remains outside this theorem.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `blocker-fixed` leaning `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed.  The theorem targets
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` directly, extracts
+  `c0Carrier.toAddEquiv`, and uses the finite `PUnit` / `ZMod 2` boundary to
+  derive contradiction.
+- anti-weakening caveat: the theorem is logically close to the Cycle 113/114
+  combination, so it is not an independent positive lower-source construction.
+  It is still a useful blocker fix because it pins the no-go theorem directly
+  at the Cycle 114 transparent lower-witness criterion.
+- structure-field escape audit: passed.  No new structure, certificate, class,
+  H1, descent, effective-gluing, or full-sheaf-cohomology premise was
+  introduced.
+- residual obligation: construct the transparent finite lower witness from an
+  accepted atom-supported lower source, or revise the GOAL boundary explicitly.
+
+### Tracking Issue Refs
+
+- Tracking Issue: #2636.
+- Cycle result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828084472>.
+- PR / CI sync: pending.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -17614,6 +17757,9 @@ that finite carrier/face-law source as ambient selected input.
 - the current surface plus presheaf restriction zero/add laws and selected Cech
   face identity is blocked as a generator of carrier-specific comparison
   provenance.
+- the current surface plus presheaf restriction zero/add laws and selected Cech
+  face identity is also blocked as a generator of the transparent finite lower
+  witness `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -17633,9 +17779,11 @@ lower-source boundary:
   face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.
 - the current surface's presheaf restriction laws and selected Cech face
-  identity are insufficient by Cycle 113, and Cycle 114 identifies the exact
-  transparent finite lower source still required; a genuinely richer lower
-  provenance source or explicit GOAL-boundary revision is required.
+  identity are insufficient by Cycle 113 at the carrier-provenance level and
+  by Cycle 115 at the transparent finite-lower-witness level; Cycle 114
+  identifies the exact finite lower source still required, so a genuinely
+  richer lower provenance source or explicit GOAL-boundary revision is
+  required.
 
 Until that provenance theorem exists, the theorem package must not be reported
 as `target-theorem-proved`.
