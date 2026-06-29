@@ -10381,6 +10381,33 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degr
   exact ⟨c1Carrier.toAddEquiv⟩
 
 /--
+Cycle 169 positive-source checkpoint: explicit lower data constructs the
+degree-`1` indexed carrier comparison itself, not merely its underlying
+ordinary additive equivalence.
+
+This keeps the selected semantic coefficient realization gate visible.  The
+result is the exact material premise
+`CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)` needed by the
+carrier model; it is not obtained from conclusion-side gluing, descent,
+effective gluing, semantic `H1` zero, or an opaque certificate.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeOneCarrierComparisonData
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Nonempty
+      (letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 1
+       CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1)) := by
+  rcases lower with
+    ⟨_c0Carrier, c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact ⟨c1Carrier⟩
+
+/--
 Cycle 167 sharper blocker theorem: even the degree-`0` indexed carrier
 comparison cannot be uniformly constructed from the current boundary plus
 conclusion-side data and semantic cover Cech data.
