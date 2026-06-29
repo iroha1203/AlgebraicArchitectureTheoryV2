@@ -18031,6 +18031,143 @@ degree-2 zero laws, and four selected face equations.
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28342887633>
   passed all checks.
 
+## Cycle 118 - Selected Cochain Realization Lower-Source Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 118 fixes the exact positive direction that remains legitimate after the
+Cycle 117 external lower-source boundary.  A concrete
+`SemanticRepairCoverRelativeCochainRealization` over the current G-06 input
+surface is theorem-equivalent to the transparent finite lower source and
+proof-produces all Cycle 117 presentations:
+
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `SelectedSectionFamilyCarrierModel` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`;
+- `SemanticRepairSelectedCarrierGeometry` plus
+  `SemanticRepairSelectedCechFaceLawSource`;
+- `SemanticRepairCarrierSpecificComparisonProvenance`.
+
+Lean declaration:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.currentG06InputSurface_selectedCochainRealization_exactly_discharges_externalLowerSourceBoundary`
+
+This theorem does not construct the selected cochain realization from
+`CurrentG06InputSurface` alone, from `gluingData`, from descent/effective
+gluing, or from semantic additive `H1` zero.  It records that if a future
+atom-supported source constructs the selected cochain realization, then the
+external lower-source boundary is actually discharged rather than renamed.
+
+### Discharged Obligation
+
+- Discharged the proof-use bridge from selected cochain realization to the
+  entire Cycle 117 lower-source boundary.
+- Fixed `SemanticRepairCoverRelativeCochainRealization` as an exact positive
+  discharge target for the remaining lower source, while keeping it visibly
+  material rather than ambient.
+
+### Not Discharged
+
+- Positive construction of
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` from
+  accepted atom-supported data remains open.
+- A supplied cochain realization still contains the degree-wise carrier
+  equivalences, degree-`2` zero laws, and differential / face compatibility
+  required by the lower source; it is not completion evidence unless generated
+  by a lower atom-supported theorem.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`:
+  `discharge-required`; now the exact positive source whose construction would
+  discharge the Cycle 117 lower boundary.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+  selected carrier model plus compatibility, selected carrier geometry plus
+  face laws, and carrier-specific provenance: `discharge-required`, but now
+  theorem-produced from selected cochain realization.
+- `CurrentG06InputSurface`, selected cover membership, sheaf condition,
+  descent, effective gluing, and semantic additive `H1` zero:
+  `ambient-boundary` or `direction-hypothesis`; still not generators of the
+  selected cochain realization.
+
+### Dependency DAG
+
+```text
+CurrentG06InputSurface
+  + selected cochain realization
+      <-> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      -> SelectedSectionFamilyCarrierModel
+           + SemanticRepairCoverRelativeFaceRestrictionCompatibility
+      -> SemanticRepairSelectedCarrierGeometry
+           + SemanticRepairSelectedCechFaceLawSource
+      -> SemanticRepairCarrierSpecificComparisonProvenance
+
+No-uniform carrier/equivalence blockers remain visible.
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle118AxiomAudit.lean` reported that the Cycle 118
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle118AxiomAudit.lean` - passed.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- hidden / bidirectional Unicode scan over changed Lean and audit files -
+  clean.
+- local path scan over changed Lean and audit files - clean.
+- Tracking Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828276498>.
+- PR / CI sync pending.
+
+### Anti-Weakening Audit
+
+- Statement strength: exact selected-cochain-realization discharge checkpoint,
+  not positive atom-supported construction and not G-06 completion.
+- Proof-use: the theorem proof-uses
+  `cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations`
+  and the Cycle 117 boundary theorem to produce every lower-source
+  presentation.
+- Structure-field escape: no new structure or certificate field is introduced.
+- Claim boundary: cover-relative Cech `H1` is still not identified with full
+  sheaf cohomology, and refinement/naturality remains outside this theorem.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed for checkpoint.  The theorem uses `surface` to
+  instantiate the current G-06 boundary and uses the supplied selected cochain
+  realization to derive transparent lower data, selected carrier model plus
+  face compatibility, selected carrier geometry plus face laws, and
+  carrier-specific provenance.
+- certificate provenance audit: passed for checkpoint.  Provenance is reached
+  through transparent lower data and the Cycle 117 boundary, not by an accessor
+  alone.
+- structure-field escape audit: passed.  `SemanticRepairCoverRelativeCochainRealization`
+  remains an explicit material premise and is theorem-equivalent to transparent
+  lower data; `CurrentG06InputSurface` is not extended with carrier maps or
+  conclusion-equivalent fields.
+- residual obligation: construct the selected cochain realization from
+  accepted atom-supported data.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -18067,6 +18204,8 @@ degree-2 zero laws, and four selected face equations.
   transparent finite data, selected carrier model plus face compatibility,
   selected carrier geometry plus face laws, and carrier-specific provenance are
   equivalent presentations of the same missing source.
+- a concrete selected cochain realization is fixed as exactly strong enough to
+  discharge that lower-source boundary and proof-produce all four presentations.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -18082,6 +18221,9 @@ lower-source boundary:
   equivalently construct `SelectedSectionFamilyCarrierModel` plus
   `SemanticRepairCoverRelativeFaceRestrictionCompatibility`, from accepted
   atom-supported data;
+- equivalently after Cycle 118, construct
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K` from
+  accepted atom-supported data;
 - without moving the carrier maps, degree-`2` zero laws, or four selected
   face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.

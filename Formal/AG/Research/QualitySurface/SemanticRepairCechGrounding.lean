@@ -5756,6 +5756,83 @@ theorem cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestriction
     exact ⟨provenance.toCochainRealization⟩
 
 /--
+Cycle 118 selected-cochain realization checkpoint: a concrete cochain
+realization is exactly strong enough to discharge the external lower source
+identified in Cycle 117.
+
+This is not a construction from `CurrentG06InputSurface` alone.  It records the
+positive direction that remains legitimate: if atom-supported input later
+constructs the selected cochain realization, then the transparent finite lower
+data, selected carrier/face-compatibility presentation, selected
+geometry/face-law presentation, and carrier-specific provenance are all
+available and proof-used through the Cycle 117 boundary.  The theorem also
+keeps the no-uniform carrier/equivalence blockers visible, so a supplied
+cochain realization cannot be counted as an ambient field or completion claim.
+-/
+theorem currentG06InputSurface_selectedCochainRealization_exactly_discharges_externalLowerSourceBoundary
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    (Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) <->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) /\
+      (Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) ->
+        (Exists fun model :
+          SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+          SemanticRepairCoverRelativeFaceRestrictionCompatibility
+            additive
+              (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+                model)) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+        Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K)) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          CarrierSpecificAdditiveComparisonData C D) /\
+      IsEmpty
+        ((C D : Type) -> [AddCommGroup C] -> [AddCommGroup D] ->
+          C ≃+ D) := by
+  have hboundary :=
+    currentG06InputSurface_lowerSource_boundary_exactly_externalSelectedCarrierGeometryAndFaceLaws
+      (additive := additive) (surface := surface)
+  refine
+    ⟨cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K),
+      ?_, hboundary.2.2.2.1, hboundary.2.2.2.2⟩
+  intro hrealization
+  have hlower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) :=
+    (cochainRealization_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)).1 hrealization
+  have hmodel :
+      Exists fun model :
+        SelectedSectionFamilyCarrierModel additive surface.coverBridge surface.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model) :=
+    hboundary.1.1 hlower
+  have hgeometry :
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry :=
+    hboundary.2.1.1 hmodel
+  have hprovenance :
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) :=
+    hboundary.2.2.1.1 hgeometry
+  exact ⟨hmodel, hgeometry, hprovenance⟩
+
+/--
 Cycle 98 transparent-lower-data theorem: the displayed degreewise carrier data
 and explicit selected face-restriction equations construct the Cycle 97
 selected carrier model and matching compatibility source.
