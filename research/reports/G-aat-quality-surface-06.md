@@ -23005,6 +23005,122 @@ CurrentG06InputSurface
 - Issue #2636 cycle-result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832655228>
 
+## Cycle 155 - Grounded Comparison Package Escape Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 155 blocks the post-Cycle154 shortcut of treating a grounded
+cover-relative `H1` comparison package as completion evidence while bypassing
+the selected cochain-realization source.  The new theorem shows that any
+constructor of a grounded package over the accepted atom-supported current
+boundary plus conclusion-side gluing/sheaf/descent/effective-gluing/semantic
+`H1`-zero data exposes a selected cochain realization and therefore hits the
+Cycle 124 selected-realization no-go theorem.
+
+This is a fail-closed boundary theorem, not a positive construction.  It keeps
+the lower-provenance obligation exactly where Cycle154 left it:
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` /
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` / selected cochain
+realization still need genuine accepted lower provenance before G-06 can
+become a completion candidate.
+
+### Lean Declarations
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_groundedComparisonPackage`
+
+### Material Premise Ledger
+
+- grounded cover-relative `H1` comparison package: blocked as a
+  conclusion-side escape route.  It is not accepted as ambient-boundary or
+  completion evidence because the theorem extracts its selected cochain
+  realization witness.
+- selected cochain realization: remains `discharge-required`; Cycle 155
+  proof-uses Cycle 124 to show conclusion-side data cannot generate it.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` and
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`: remain
+  `discharge-required`.
+- `CurrentG06InputSurface`, atom-generated selected cover data, and selected
+  cover equality: `ambient-boundary` for the no-go test.
+- conclusion-side gluing/sheaf/descent/effective-gluing/semantic `H1` zero:
+  explicitly passed to the hypothetical constructor and rejected as provenance.
+- refinement/naturality and full sheaf cohomology equivalence: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+hypothetical conclusion-side grounded-package constructor
+  -> Exists selected cochain realization
+  -> Cycle 124 selected-realization no-go
+  -> False
+
+therefore:
+  grounded cover-relative H1 comparison package
+  -/-> completion evidence without selected cochain realization provenance
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over changed Lean/report targets
+  - clean.
+- placeholder scan over changed Lean/report targets
+  - Lean file clean for `sorry`, `admit`, `unsafe`, `axiom`, and `sorryAx`.
+- target declaration axiom audit
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_groundedComparisonPackage`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed blocker theorem, not completion.
+- Proof-use: passed locally for the new declaration.  The theorem extracts the
+  realization witness from the alleged grounded package and immediately calls
+  Cycle 124.
+- Certificate provenance: passed for checkpoint.  No package, certificate,
+  structure, or class field is accepted as provenance.
+- Structure-field escape: none introduced.  No new structure, class,
+  certificate, or `CurrentG06InputSurface` field is added.
+- Claim boundary: cover-relative Cech `H1` only.  No full sheaf cohomology
+  equivalence, refinement/naturality theorem, arbitrary-site theorem, runtime
+  extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed` / `target-proof-checkpoint`.
+- completion candidate: no.
+- major finding / veto: none.
+- proof-use audit: passed.  The alleged grounded-package constructor returns
+  `Exists fun realization => Nonempty (Package realization.toH1Comparison)`;
+  the theorem extracts that realization and applies Cycle 124.
+- anti-weakening audit: passed for checkpoint.  The theorem rejects, rather
+  than accepts, conclusion-side gluing/sheaf/descent/effective-gluing/semantic
+  `H1`-zero data as provenance for the package.
+- certificate provenance audit: passed for checkpoint.  No structure, class,
+  certificate field, or package field is introduced or accepted as lower
+  provenance.
+- report audit: passed.  The report records the theorem as blocker-fixed /
+  non-completion and keeps selected cochain realization / explicit lower data
+  as remaining `discharge-required` obligations.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4832836373>
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -23058,6 +23174,10 @@ CurrentG06InputSurface
 - the atom-supported ordinary degree-wise equivalence plus face-restriction
   source is likewise proof-used all the way to a grounded cover-relative `H1`
   comparison package, while remaining a visible lower-source premise.
+- the grounded cover-relative `H1` comparison package is blocked as a
+  conclusion-side escape route: any constructor of such a package over the
+  accepted current/conclusion-side boundary exposes a selected cochain
+  realization and hits the Cycle 124 no-go theorem.
 - the accepted face-equation source is normalized to the direct selected Cech
   differential presentation: ordinary degree-wise additive equivalences, a
   degree-`2` zero-preserving equivalence, and four direct selected `K.d`
@@ -23322,6 +23442,10 @@ finite lower witness inside the atom-supported lower-source boundary:
   cover-relative `H1` comparison package.  This discharges the proof-use gap
   below selected cochain realization, but it does not construct the finite
   witness from the accepted atom-supported current boundary;
+- after Cycle 155, that grounded cover-relative `H1` comparison package is
+  also blocked as a conclusion-side escape route.  Any alleged constructor of
+  a grounded package exposes the selected cochain realization witness and then
+  contradicts Cycle 124, so the package cannot replace lower provenance;
 - after Cycle 127, a concrete selected cochain realization is confirmed as
   genuine lower provenance for the existence of the degree-`0` ordinary
   additive equivalence, but that realization itself is still not constructed
