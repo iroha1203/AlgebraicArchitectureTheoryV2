@@ -11755,6 +11755,252 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_d1DirectFrom
       (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
       atomSupportedCurrentBoundaryDegreeTwoZeroLawPackageConstructor
 
+/--
+Cycle 153 constructor type abbreviation for the atom-supported current-boundary
+selected lower-source escape.  This is only a type synonym for a hypothetical
+constructor; it stores no witness or certificate.
+-/
+abbrev AtomSupportedCurrentBoundarySelectedLowerSourceConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    AtomSupportedSelectedLowerSource (additive := additive) surfaceInput
+
+/--
+Cycle 153 constructor type abbreviation for the atom-supported current-boundary
+direct differential lower-source escape.  This is only a type synonym for a
+hypothetical constructor; it stores no witness or certificate.
+-/
+abbrev AtomSupportedCurrentBoundaryDirectSourceConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+      (additive := additive) surfaceInput
+
+/--
+Cycle 153 constructor type abbreviation for the first direct-law package escape.
+This is only a type synonym for a hypothetical constructor; it stores no witness
+or certificate.
+-/
+abbrev AtomSupportedCurrentBoundaryD0DirectToPackageConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    Exists fun c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surfaceInput.K.Cn 0 =>
+    Exists fun c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surfaceInput.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+    Exists fun _c2Equiv_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun _c2Equiv_symm_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+    forall primitive : E.coefficient.C0,
+      surfaceInput.K.d 0 (c0Equiv primitive) =
+        c1Equiv (E.coefficient.delta0 primitive)
+
+/--
+Cycle 153 constructor type abbreviation for the second direct-law package escape.
+This is only a type synonym for a hypothetical constructor; it stores no witness
+or certificate.
+-/
+abbrev AtomSupportedCurrentBoundaryD0DirectFromPackageConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    Exists fun c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surfaceInput.K.Cn 0 =>
+    Exists fun c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surfaceInput.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+    Exists fun _c2Equiv_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun _c2Equiv_symm_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+    forall primitive : surfaceInput.K.Cn 0,
+      letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.delta0 (c0Equiv.symm primitive) =
+        c1Equiv.symm (surfaceInput.K.d 0 primitive)
+
+/--
+Cycle 153 constructor type abbreviation for the third direct-law package escape.
+This is only a type synonym for a hypothetical constructor; it stores no witness
+or certificate.
+-/
+abbrev AtomSupportedCurrentBoundaryD1DirectToPackageConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    Exists fun _c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surfaceInput.K.Cn 0 =>
+    Exists fun c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surfaceInput.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+    Exists fun _c2Equiv_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun _c2Equiv_symm_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+    forall cochain : E.coefficient.C1,
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      surfaceInput.K.d 1 (c1Equiv cochain) =
+        c2Equiv (E.coefficient.delta1 cochain)
+
+/--
+Cycle 153 constructor type abbreviation for the final direct-law package escape.
+This is only a type synonym for a hypothetical constructor; it stores no witness
+or certificate.
+-/
+abbrev AtomSupportedCurrentBoundaryD1DirectFromPackageConstructor : Prop :=
+    (surfaceInput :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+    (familyInput :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surfaceInput.coverBase) ->
+    surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+    Exists fun _c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surfaceInput.K.Cn 0 =>
+    Exists fun c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surfaceInput.K.Cn 1 =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ surfaceInput.K.Cn 2 =>
+    Exists fun _c2Equiv_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun _c2Equiv_symm_zero :
+      letI := surfaceInput.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+    forall cochain : surfaceInput.K.Cn 1,
+      letI := additive.c1AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 1
+      E.coefficient.delta1 (c1Equiv.symm cochain) =
+        c2Equiv.symm (surfaceInput.K.d 1 cochain)
+
+/--
+Cycle 153 fail-closed boundary checkpoint: over the accepted atom-supported
+current G-06 boundary, the selected cochain realization is exactly the remaining
+external lower source, while the current-boundary constructors for the named
+selected lower source, direct lower source, and four single-direct-law packages
+are all empty.
+
+This theorem is a checkpoint, not completion.  It proof-uses the existing
+no-constructor theorems instead of moving selected cochain realization,
+degree-wise equivalences, degree-`2` zero laws, or direct selected `K.d` laws
+into `CurrentG06InputSurface`, structure fields, certificate fields, or class
+membership.
+-/
+theorem atomSupportedCurrentBoundary_externalLowerProvenance_checkpoint
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : surface.K.Cn 2 ≃ ZMod 2) :
+    (Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) <->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundarySelectedLowerSourceConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryDirectSourceConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryD0DirectToPackageConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryD0DirectFromPackageConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryD1DirectToPackageConstructor
+          Atom site semanticCover E additive U A S Ob) /\
+      IsEmpty
+        (@AtomSupportedCurrentBoundaryD1DirectFromPackageConstructor
+          Atom site semanticCover E additive U A S Ob) := by
+  have hboundary :=
+    currentG06InputSurface_selectedCochainRealization_exactly_discharges_externalLowerSourceBoundary
+      (additive := additive) (surface := surface)
+  refine ⟨hboundary.1, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_atomSupportedSelectedLowerSource
+          (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndDirectDifferentialSource
+          (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_d0DirectToPackage
+          (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_d0DirectFromPackage
+          (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_d1DirectToPackage
+          (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+          constructor⟩
+  · exact
+      ⟨fun constructor =>
+        no_constructor_from_atomSupportedCurrentG06Boundary_without_d1DirectFromPackage
+          (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+          constructor⟩
+
 end SemanticRepairCoverRelativeCochainRealization
 
 namespace SemanticRepairCarrierSpecificComparisonProvenance
