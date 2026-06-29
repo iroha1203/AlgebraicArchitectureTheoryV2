@@ -18458,6 +18458,162 @@ AATCoverageFamily
   structure/certificate fields, `gluingData`, descent/effective gluing, or
   `H1`-zero assumptions.
 
+## Cycle 121 - Direct Differential Lower-Source Checkpoint
+
+### Cycle Result
+
+- result: `proof-checkpoint`.
+- completion candidate: no.
+- target status: `target-proof-checkpoint`.
+
+Cycle 121 normalizes the remaining Cycle 120 face-equation source to the
+direct selected Cech differential presentation.  It introduces a transparent
+proposition whose material content is:
+
+- an atom-admissible `AATCoverageFamily` whose generated sieve is the selected
+  current cover;
+- ordinary degree-`0` and degree-`1` additive equivalences
+  `E.coefficient.C0 ≃+ surface.K.Cn 0` and
+  `E.coefficient.C1 ≃+ surface.K.Cn 1`;
+- a degree-`2` equivalence `E.coefficient.C2 ≃ surface.K.Cn 2` plus both zero
+  laws;
+- the four direct selected `K.d` compatibility laws for the section-family
+  model induced by those equivalences.
+
+Lean declarations:
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndDirectDifferentialSource`
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`
+
+The theorem proof-uses the four direct differential laws and
+`surface.K.d_eq_alternatingFaceCombination` to build the Cycle 120
+face-restriction source, then proof-uses Cycle 120 and Cycle 119 to obtain:
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`;
+- `AtomSupportedSelectedLowerSource`;
+- selected cover membership in `S.topology`;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`;
+- selected carrier model plus face-restriction compatibility;
+- selected carrier geometry plus selected Cech face laws;
+- carrier-specific comparison provenance.
+
+### Discharged Obligation
+
+- Discharged the conversion from an atom-supported ordinary degree-wise
+  equivalence source with four direct selected `K.d` laws to the Cycle 120
+  atom-supported face-equation source.
+- The four face-restriction equations are no longer primitive at this
+  checkpoint; they are theorem-produced by rewriting the direct `K.d` laws with
+  the general cover-relative Cech identity
+  `CoverRelativeCechComplex.d_eq_alternatingFaceCombination`.
+
+### Not Discharged
+
+- The ordinary degree-wise equivalences, degree-`2` zero laws, and four direct
+  selected differential laws remain material input.
+- This cycle does not construct those equivalences or direct differential laws
+  from `CurrentG06InputSurface`, selected cover membership, sheaf condition,
+  `gluingData`, descent/effective gluing, semantic additive `H1` zero, class
+  membership, or an opaque certificate.
+- Therefore this is not a G-06 completion theorem and not a full discharge of
+  the remaining finite lower witness.
+
+### Material Premise Ledger
+
+- atom-generated selected cover: `discharge-required` for cover membership,
+  already proof-used through the Cycle 119 path.
+- degree-`0` / degree-`1` additive equivalences, degree-`2` equivalence and
+  zero laws, and four direct selected `K.d` compatibility laws:
+  `discharge-required`; still the remaining transparent lower source.
+- four selected face-restriction equations:
+  discharged from the direct laws by theorem proof-use of
+  `surface.K.d_eq_alternatingFaceCombination`.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`,
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+  `AtomSupportedSelectedLowerSource`, selected cochain realization, selected
+  carrier model plus compatibility, selected carrier geometry plus face laws,
+  and carrier-specific provenance: theorem-produced from the Cycle 121 source.
+
+### Dependency DAG
+
+```text
+AATCoverageFamily
+  + degreewise AddEquiv / Equiv source
+  + degree-2 zero laws
+  + four direct selected K.d laws
+      -> d_eq_alternatingFaceCombination
+      -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      -> CarrierSpecificAdditiveComparisonData in degrees 0 and 1
+      -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      -> AtomSupportedSelectedLowerSource
+      -> SemanticRepairCoverRelativeCochainRealization
+      -> selected carrier model + face compatibility
+      -> selected carrier geometry + face laws
+      -> carrier-specific comparison provenance
+```
+
+### Axiom Audit
+
+- `lake env lean .tmp/G06Cycle121AxiomAudit.lean` reported that the Cycle 121
+  declaration depends only on standard axioms
+  `[propext, Classical.choice, Quot.sound]`.
+- No `sorryAx`, non-consulted `axiom`, `admit`, or `unsafe` dependency was
+  reported.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build` - passed, with pre-existing replayed linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle121AxiomAudit.lean` - passed.
+- `git diff --check` - clean.
+- placeholder scan over changed Lean and audit files - clean.
+- placeholder scan including this report finds existing audit prose for
+  `axiom` / `admit` / `unsafe`; no Lean placeholder was found.
+- hidden / bidirectional Unicode scan over changed Lean and audit files -
+  clean.
+- local path scan over changed Lean, audit, and report files - clean.
+
+### Anti-Weakening Audit
+
+- Statement strength: direct-law normalization checkpoint, not a construction
+  from `CurrentG06InputSurface` alone and not G-06 completion.
+- Proof-use: the direct selected `K.d` laws are destructed and used in all four
+  bridge obligations; each bridge rewrites by
+  `surface.K.d_eq_alternatingFaceCombination` before passing the constructed
+  face-equation source to Cycle 120.
+- Structure-field escape: avoided.  The new lower source is a transparent
+  `Prop` and no new structure/class/certificate field is introduced.
+- Claim boundary: cover-relative Cech `H1` is not identified with full sheaf
+  cohomology, refinement/naturality remains outside this theorem, and no
+  gluing/descent/semantic-`H1`-zero premise is used as a substitute.
+
+### T3 Audit
+
+- decision: approve.
+- result_type: `proof-checkpoint`.
+- completion_candidate: no.
+- major findings / veto: none.
+- proof-use audit: passed for checkpoint.  The source is destructed into the
+  four direct differential laws, and all four are rewritten through
+  `surface.K.d_eq_alternatingFaceCombination` to construct the Cycle 120
+  face-restriction source.
+- certificate provenance audit: passed for checkpoint.  The new source is a
+  transparent `Prop`; ordinary equivalences, zero laws, and direct differential
+  laws remain visible material premises.
+- anti-weakening audit: passed for checkpoint.  No `gluingData`, descent,
+  effective gluing, semantic `H1` zero, refinement/naturality, or full sheaf
+  cohomology claim is introduced.
+- residual obligation: construct or discharge
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` itself from the
+  allowed G-06 input boundary.  In particular, the ordinary equivalences,
+  degree-`2` zero laws, and four direct differential compatibility laws are
+  still explicit material premises.
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -18503,6 +18659,11 @@ AATCoverageFamily
   records: ordinary degree-wise additive equivalences, a degree-`2`
   zero-preserving equivalence, and four selected face-restriction equations are
   enough to construct the Cycle 119 source and selected cochain realization.
+- the accepted face-equation source is normalized to the direct selected Cech
+  differential presentation: ordinary degree-wise additive equivalences, a
+  degree-`2` zero-preserving equivalence, and four direct selected `K.d`
+  compatibility laws are enough to produce the Cycle 120 face-restriction
+  source and the selected cochain realization path.
 - the equivalent lower-source criterion is fixed:
   `SemanticRepairCarrierSpecificComparisonProvenance` is equivalent, over a
   current G-06 surface, to `SelectedSectionFamilyCarrierModel` plus
@@ -18527,8 +18688,13 @@ finite lower witness inside the atom-supported lower-source boundary:
 - after Cycle 120, the custom carrier records inside that finite witness are
   reducible to ordinary degree-wise equivalences, but those equivalences and
   the four selected face-restriction equations still require lower provenance;
-- without moving the carrier maps, degree-`2` zero laws, or four selected
-  face-restriction equations into `CurrentG06InputSurface`, `gluingData`,
+- after Cycle 121, the four selected face-restriction equations are reducible
+  to four direct selected `K.d` laws via
+  `CoverRelativeCechComplex.d_eq_alternatingFaceCombination`, but the ordinary
+  equivalences, degree-`2` zero laws, and direct differential laws still
+  require lower provenance;
+- without moving the carrier maps, degree-`2` zero laws, or four direct
+  selected differential laws into `CurrentG06InputSurface`, `gluingData`,
   certificate fields, or class membership.
 - the current surface's presheaf restriction laws and selected Cech face
   identity are insufficient by Cycle 113 at the carrier-provenance level and
