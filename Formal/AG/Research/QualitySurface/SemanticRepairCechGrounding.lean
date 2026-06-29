@@ -10741,6 +10741,123 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
 
 end SemanticRepairCoverRelativeFaceRestrictionRealization
 
+namespace SemanticRepairCoverRelativeCochainRealization
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {E : SemanticRepairSheafH1Envelope.{u, v, z, x, y} Atom}
+variable {additive : SemanticRepairAdditiveCechH1Data E}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 139 atom-supported conclusion-side exact-lower-pair boundary theorem:
+the accepted atom-supported current G-06 boundary plus conclusion-side
+gluing/sheaf/descent/effective-gluing/semantic-`H1`-zero inputs cannot
+uniformly construct the exact lower-source pair consisting of a selected
+section-family carrier model and selected face-restriction compatibility.
+
+The theorem proof-uses the hypothetical pair constructor by passing it all
+accepted atom-supported and conclusion-side inputs.  The produced carrier
+model constructs its section-family witness; the supplied compatibility then
+constructs a `SemanticRepairCoverRelativeFaceRestrictionRealization`, which is
+converted to selected cochain realization and fed to the Cycle 124 no-go
+theorem.  Thus the exact lower-source pair cannot be hidden as
+conclusion-side data.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCarrierModelAndFaceRestrictionCompatibility
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedConclusionSideExactLowerPairConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      Exists fun model :
+        SelectedSectionFamilyCarrierModel
+          additive surfaceInput.coverBridge surfaceInput.K =>
+        SemanticRepairCoverRelativeFaceRestrictionCompatibility
+          additive
+            (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+              model)) :
+    False := by
+  let atomSupportedConclusionSideCochainRealizationConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      SemanticRepairCoverRelativeCochainRealization additive surfaceInput.K :=
+    fun surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticH1ZeroInput => by
+      let lowerPair :=
+        atomSupportedConclusionSideExactLowerPairConstructor
+          surfaceInput familyInput hcoverInput gluingInput hSheafInput
+          hDescentInput hEffectiveInput hSemanticH1ZeroInput
+      let model := Classical.choose lowerPair
+      let compatibility := Classical.choose_spec lowerPair
+      exact
+        (SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+          (SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model)
+          compatibility).toCochainRealization
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCochainRealization
+      (surface := surface) family hcover_eq gluingData hSheafFor hDescent
+      hEffective hSemanticH1Zero c0SourceEquiv c0TargetEquiv
+      atomSupportedConclusionSideCochainRealizationConstructor
+
+end SemanticRepairCoverRelativeCochainRealization
+
 namespace SemanticRepairCarrierSpecificComparisonProvenance
 
 variable {Atom : Type u}

@@ -21021,6 +21021,137 @@ accepted current/conclusion-side boundary
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830294339
 
+## Cycle 139 - Exact Lower-Pair Conclusion-Side Boundary
+
+### Cycle Result
+
+- classification: `target-proof-checkpoint`.
+- result type: `blocker-fixed`.
+- completion candidate: no.
+- target theorem package status: still not `target-theorem-proved`.
+
+Cycle 139 blocks the exact lower-source pair as a conclusion-side escape over
+the accepted atom-supported current G-06 boundary.  The pair consists of a
+`SelectedSectionFamilyCarrierModel` together with
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` indexed by the
+section-family witness constructed from that model.  It is the material lower
+witness shape left visible by prior cycles, so it cannot be accepted as a
+theorem argument, certificate field, structure field, or conclusion-side data.
+
+The new theorem proof-uses the hypothetical lower-pair constructor by passing
+it atom-generated selected cover data, selected-cover equality, gluing data,
+cover-wise sheaf condition, descent, effective gluing, and semantic additive
+`H1` zero.  It constructs a
+`SemanticRepairCoverRelativeFaceRestrictionRealization` from the returned
+model/compatibility pair, converts that realization to
+`SemanticRepairCoverRelativeCochainRealization`, and then applies the Cycle
+124 selected-realization no-go theorem.
+
+### Lean Declaration
+
+- `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCarrierModelAndFaceRestrictionCompatibility`
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface`: `ambient-boundary`.
+- atom-generated selected cover `family` and selected-cover equality:
+  `ambient-boundary`.
+- conclusion-side `gluingData`, cover-wise `AATSheafConditionFor`,
+  `AATDescent`, effective gluing, and `SemanticRepairAdditiveH1Zero`:
+  theorem-direction inputs for the no-go boundary, not provenance for the
+  selected lower pair.
+- selected carrier model plus face-restriction compatibility:
+  `discharge-required`; Cycle 139 blocks generating this pair from the
+  accepted current/conclusion-side boundary.
+- `SemanticRepairCoverRelativeCochainRealization additive surface.K`: remains
+  `discharge-required`; the selected lower pair constructs it through
+  `SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness`
+  and `toCochainRealization`.
+- finite test-boundary equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`:
+  theorem-direction boundary inputs for the no-constructor contradiction, not
+  discharged provenance for the target package.
+- full sheaf cohomology equivalence, arbitrary-site comparison, runtime
+  extraction, repair synthesis: `out-of-scope`.
+
+### Proof DAG Delta
+
+```text
+accepted current/conclusion-side boundary
+  + hypothetical (SelectedSectionFamilyCarrierModel
+      + SemanticRepairCoverRelativeFaceRestrictionCompatibility)
+    -> SemanticRepairCoverRelativeFaceRestrictionRealization
+       via of_sectionFamilyWitness
+    -> SemanticRepairCoverRelativeCochainRealization
+       via toCochainRealization
+    -> Cycle 124 contradiction
+    -> False
+
+accepted current/conclusion-side boundary
+  -/-> selected carrier model + face-restriction compatibility
+```
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  - passed.
+- `lake build`
+  - passed.  Lake replayed unrelated existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`; no G-06 target
+    warning or error was introduced.
+- target declaration axiom audit:
+  - `#print axioms ...no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCarrierModelAndFaceRestrictionCompatibility`
+  - result: depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+- `git diff --check`
+  - clean.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets
+  - clean.
+- placeholder scan over
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  - clean for `axiom`, `admit`, `sorry`, `unsafe`.
+
+### Anti-Weakening Audit
+
+- Statement strength: fail-closed no-constructor theorem, not completion.
+- Proof-use: passed.  The hypothetical exact-lower-pair constructor is called
+  with every atom-supported and conclusion-side input, and the returned pair is
+  consumed through `of_sectionFamilyWitness` and `toCochainRealization` before
+  applying the existing no-go theorem.
+- Certificate provenance: unresolved by design.  The theorem blocks the exact
+  lower-pair escape; it does not construct the pair or the selected cochain
+  realization.
+- Structure-field escape: avoided.  No new structure/class/certificate field
+  is introduced, and the exact lower pair is explicitly blocked as a
+  conclusion-side hiding place for the material lower source.
+- Claim boundary: cover-relative Cech `H1` remains cover-relative.  No full
+  sheaf cohomology equivalence, refinement/naturality theorem, arbitrary-site
+  theorem, runtime extraction claim, or repair synthesis claim is asserted.
+
+### T3 Audit
+
+- decision: approve.
+- result type: `blocker-fixed`.
+- major findings / veto: none for this cycle.
+- proof-use audit: passed.  The hypothetical exact-lower-pair constructor is
+  called with every atom-supported and conclusion-side input.  The returned
+  pair is consumed via `Classical.choose`, `of_selectedSectionFamilyCarrierModel`,
+  `of_sectionFamilyWitness`, and `toCochainRealization` before the existing
+  no-go theorem is applied.
+- structure-field escape audit: passed.  No new structure/certificate field is
+  added; the exact lower pair is blocked as conclusion-side data rather than
+  reclassified as provenance.
+- residual obligation: construct the selected lower-source pair, selected
+  cochain realization, or equivalent finite lower witness from genuine
+  accepted atom-supported lower data.
+- completion candidate: no.
+
+### Tracking Issue Sync
+
+- Issue #2636 cycle-result sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4830461743
+
 ## Final Checkpoint Packet - Current Stop State
 
 ### Stop Classification
@@ -21110,6 +21241,13 @@ accepted current/conclusion-side boundary
   `SemanticRepairCoverRelativeFaceRestrictionRealization.toCochainRealization`
   and then hits the Cycle 124 contradiction by
   `SemanticRepairCoverRelativeFaceRestrictionRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_faceRestrictionRealization`.
+- the exact lower-source pair, a selected carrier model together with
+  face-restriction compatibility, is also blocked as conclusion-side escape
+  over the accepted atom-supported current boundary.  Any alleged pair
+  constructor builds `SemanticRepairCoverRelativeFaceRestrictionRealization`,
+  then `SemanticRepairCoverRelativeCochainRealization`, and then hits the
+  Cycle 124 contradiction by
+  `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_selectedCarrierModelAndFaceRestrictionCompatibility`.
 - the same accepted atom-supported current boundary plus conclusion-side data
   is also blocked as a generator of the degree-`0` ordinary additive
   equivalence `E.coefficient.C0 ≃+ surface.K.Cn 0`, the first material
@@ -21259,6 +21397,10 @@ finite lower witness inside the atom-supported lower-source boundary:
   face-restriction realization.  Since that realization projects to a selected
   cochain realization, any conclusion-side realization constructor would
   contradict the Cycle 124 no-go theorem;
+- after Cycle 139, the exact lower-source pair itself is also blocked from
+  conclusion-side generation.  Since that pair constructs face-restriction
+  realization and hence selected cochain realization, any conclusion-side
+  exact-lower-pair constructor would contradict the Cycle 124 no-go theorem;
 - without moving the selected cochain realization, carrier maps, degree-`2`
   zero laws, or direct selected differential laws into
   `CurrentG06InputSurface`, `gluingData`, certificate fields, or class
