@@ -9,7 +9,7 @@ artifacts, proof-obligation deltas, and discharge audits only.
 
 ## Target Proof State
 
-- status: target-proof-checkpoint
+- status: target-blocked
 - completion candidate: no
 - tracking Issue: #2636
 - protected boundary: this report does not change math source docs or the
@@ -24256,3 +24256,161 @@ Construct `SemanticRepairCoverRelativeCochainRealization`,
 law lower provenance.  If no such construction exists under the current target
 boundary, the next honest target-loop outcome is a GOAL-boundary revision
 proposal or `target-blocked`, not another wrapper theorem.
+
+## Cycle 162 — repeated lower-provenance blocker fixed as target-blocked
+
+- decision: approve
+- result_type: target-blocked
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4834282982>
+- date: 2026-06-29 UTC
+
+### T1 Selector Result
+
+The selector chose the same active lower-provenance obligation as Cycles 160
+and 161, but rejected another wrapper or accessor theorem as non-progress.
+
+Current Lean/API boundary does not construct any of the following from semantic
+atom / law input data:
+
+- `SemanticRepairCoverRelativeCochainRealization`;
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+- `SelectedSemanticCoefficientDirectRealizationLayer`.
+
+The accepted Cycle 159 equivalence and Cycle 161 checkpoint make the blocker
+precise: constructing the selected semantic coefficient realization layer is
+equivalent to constructing the atom-supported direct lower source, and the
+accepted current-boundary constructor route is `IsEmpty` for both the selected
+layer and direct source.  Therefore the honest Cycle 162 outcome is
+`target-blocked` under the current target boundary, not another conditional
+route theorem.
+
+### Lean Artifacts
+
+- No new Lean declaration in this cycle.
+- This report-only cycle fixes the stop-state over the already merged Cycle 159
+  and Cycle 161 evidence:
+  - `SemanticRepairCoverRelativeCochainRealization.selectedSemanticCoefficientDirectRealizationLayer_iff_atomSupportedDirectSource`;
+  - `SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer`;
+  - `SemanticRepairCoverRelativeCochainRealization.atomSupportedCurrentBoundary_selectedSemanticCoefficientLayer_checkpoint`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The repeated blocker is no longer treated as merely the next ordinary
+  checkpoint.  Under the current boundary, G-06 has reached a target-loop
+  blocked state for selected semantic coefficient realization provenance.
+- The loop explicitly rejects target-fitting selection of `K`,
+  `ObstructionSheaf`, carrier equivalences, or direct `K.d` laws as a completion
+  route.
+
+Remaining:
+
+- A genuine lower-provenance construction is still required before G-06 can
+  return to `target-proof-checkpoint` or become a completion candidate.
+- Acceptable next evidence must be one of:
+  - a canonical/free obstruction-sheaf realization;
+  - a universal property constructing the selected cochain realization or direct
+    source;
+  - a finite witness with nonvacuity / adequacy evidence;
+  - a reviewed predecessor theorem that constructs the same lower source;
+  - a human-approved GOAL-boundary revision.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeCochainRealization`: `discharge-required`,
+  unresolved, and not admitted as ambient boundary by the loop.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`:
+  `discharge-required`, unresolved, and exactly equivalent to the selected
+  layer construction by Cycle 159.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: `discharge-required`,
+  unresolved; its `directLower` field stores precisely the degree-wise carrier
+  identifications, degree-`2` zero laws, and four direct selected `K.d`
+  compatibility laws that must be generated.
+- `CoverRelativeCechComplex` and `ObstructionSheaf` API fields:
+  insufficient as provenance by themselves.  They expose selected complex and
+  sheaf structure but do not construct the semantic coefficient carriers or the
+  required comparison laws.
+
+### Certificate Provenance
+
+- discharged: none as positive lower provenance.
+- unresolved: no canonical/free construction, universal property, finite
+  witness, or reviewed predecessor theorem constructs the selected cochain
+  realization, direct source, or selected layer from semantic atom / law input
+  data.
+
+### Proof-Use Audit
+
+- Existing positive route theorems proof-use the lower source after it is
+  supplied; they do not construct it.
+- Cycle 161 correctly keeps `SemanticRepairCoverRelativeCochainRealization` as
+  a visible material premise.
+- No theorem argument, typeclass, structure field, certificate field, or opaque
+  membership is reclassified as discharge in Cycle 162.
+
+### Structure-Field Escape Audit
+
+- status: concern-fixed-as-blocker.
+- Accepting a selected `K`, `ObstructionSheaf`, degree-wise carrier
+  equivalences, or direct differential laws as input would move the target
+  conclusion into the boundary.
+- Cycle 162 does not add such a field and does not treat any existing field as
+  provenance.
+
+### Route-Integrity Audit
+
+- status: target-blocked.
+- The positive route remains valid only after the missing lower realization is
+  supplied.
+- The current boundary route is explicitly blocked by the Cycle 161
+  selected-layer checkpoint.
+- No completion packet is prepared because the selected semantic coefficient
+  realization gate remains unmet.
+
+### Cheat-Route Audit
+
+- target-fitting construction: rejected.
+- another accessor / wrapper / conditional route theorem: rejected.
+- vacuity or degeneracy: none accepted.
+- one-way theorem as equivalence: none introduced.
+- GOAL / report reinterpretation: none; G-06 remains governed by the original
+  G-06 completion criteria.
+
+### T3 Audit Result
+
+T3 audit initially rejected the report artifact because the top-level
+`Target Proof State` still said `target-proof-checkpoint`.  After synchronizing
+that state to `target-blocked`, the substantive audit result is approve:
+
+- `target-blocked` follows from repeated lower-provenance failure, not from a
+  weakened target theorem.
+- No Lean declaration was added to hide the missing source.
+- `completion_candidate: no` is correct, so final `$math-lean-review` is not
+  run.
+- No completion or refutation is overclaimed.
+
+### Validation
+
+- No Lean files changed in Cycle 162.
+- `git diff --check` passed.
+- Hidden / bidirectional Unicode scan over the changed report file was clean.
+- Local path / private machine identifier scan over the added report lines was
+  clean.
+- Lean build is not rerun for this report-only cycle; the referenced Lean
+  declarations were validated in Cycles 159 and 161.
+
+### Stop-State Assessment
+
+G-06 is `target-blocked`, not `target-theorem-proved`.
+
+The target theorem is not refuted.  The blocked point is provenance: the current
+target boundary still lacks a construction of the selected semantic coefficient
+realization lower source from semantic atom / law data.  The minimal next action
+is not another wrapper theorem; it is either genuine lower-provenance evidence
+or an explicit human-approved GOAL-boundary revision.
+
+`$math-lean-review` is not run because this is not a completion candidate.
