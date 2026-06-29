@@ -24128,3 +24128,131 @@ lower-provenance theorem that constructs
 `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.  If that construction
 cannot exist under the current target boundary, the next honest outcome is a
 GOAL-boundary revision proposal or `target-blocked`, not a wrapper completion.
+
+## Cycle 161 — selected-layer route and current-boundary checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+
+### T1 Selector Result
+
+The selector again chose the exact remaining discharge-required premise:
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`,
+equivalently `SelectedSemanticCoefficientDirectRealizationLayer`, from genuine
+semantic atom / law lower provenance.
+
+Because no canonical/free realization, universal property, finite witness, or
+reviewed predecessor theorem currently constructs that equivalent source from
+the accepted current boundary, Cycle 161 does not claim completion.  Instead it
+fixes two Lean-level route facts around the blocker:
+
+- a concrete selected cochain realization, together with atom-generated selected
+  cover data, is sufficient to construct the selected semantic coefficient
+  realization layer;
+- the accepted atom-supported current boundary still cannot be rebranded as a
+  constructor for either the selected layer or the direct source.
+
+### Lean Artifacts
+
+- `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `SemanticRepairCoverRelativeCochainRealization.atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer`
+- `SemanticRepairCoverRelativeCochainRealization.atomSupportedCurrentBoundary_selectedSemanticCoefficientLayer_checkpoint`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route from a future lower-provenance construction of
+  `SemanticRepairCoverRelativeCochainRealization` into
+  `SelectedSemanticCoefficientDirectRealizationLayer` is now named directly.
+- The current-boundary blocker is now stated at the selected-layer checkpoint
+  surface as `IsEmpty` for both the layer constructor and the direct-source
+  constructor.
+
+Remaining:
+
+- `SemanticRepairCoverRelativeCochainRealization` is still a visible material
+  premise in the positive theorem.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` /
+  `SelectedSemanticCoefficientDirectRealizationLayer` is still not constructed
+  from semantic atom / law lower provenance.
+- No canonical/free obstruction-sheaf realization, universal property, or finite
+  witness has been added.
+
+### Material Premise Ledger
+
+- `SelectedSemanticCoefficientDirectRealizationLayer`: still
+  discharge-required; not discharged by Cycle 161.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  discharge-required; exact equivalent boundary preserved.
+- `SemanticRepairCoverRelativeCochainRealization`: sufficient lower route into
+  the layer, but still material and unresolved as lower provenance.
+- current atom-supported boundary constructor for the layer / direct source:
+  blocked.
+
+### Certificate Provenance
+
+- discharged: none as positive lower provenance.
+- unresolved: construction of the selected cochain realization / direct source /
+  selected layer from semantic atom / law input data.
+
+### Proof-Use Audit
+
+- The positive theorem proof-uses the Cycle 122 route from selected cochain
+  realization to direct source, then proof-uses the Cycle 159 equivalence to
+  construct the selected layer.
+- The checkpoint theorem proof-uses the Cycle 158 selected-layer no-constructor
+  theorem and the Cycle 144 direct-source no-constructor theorem.
+- No material premise is claimed discharged merely because it appears as an
+  explicit argument.
+
+### Structure-Field Escape Audit
+
+- status: none accepted.
+- The new positive theorem keeps `SemanticRepairCoverRelativeCochainRealization`
+  as a visible premise rather than hiding it in a certificate field.
+- The checkpoint theorem turns current-boundary constructor routes into
+  `IsEmpty` evidence rather than adding a new selected structure field.
+
+### Route-Integrity Audit
+
+- status: checkpoint.
+- The route from selected cochain realization to layer is valid, but not
+  lower-provenance completion.
+- The current-boundary route remains blocked.
+
+### Cheat-Route Audit
+
+- target-fitting construction: none accepted.
+- vacuity or degeneracy: none introduced.
+- one-way theorem as equivalence: none introduced.
+- GOAL / report reinterpretation: none; G-06 remains checkpoint.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle161AxiomAudit.lean` passed.
+  - `atomSupportedSelectedCochainRealization_constructs_selectedSemanticCoefficientDirectRealizationLayer`:
+    `[propext, Classical.choice, Quot.sound]`
+  - `atomSupportedCurrentBoundary_selectedSemanticCoefficientLayer_checkpoint`:
+    `[propext, Classical.choice, Quot.sound]`
+- `git diff --check` passed.
+- placeholder scan over the changed Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the changed Lean/report targets was
+  clean.
+
+### Next Obligation
+
+Construct `SemanticRepairCoverRelativeCochainRealization`,
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, or
+`SelectedSemanticCoefficientDirectRealizationLayer` from genuine semantic atom /
+law lower provenance.  If no such construction exists under the current target
+boundary, the next honest target-loop outcome is a GOAL-boundary revision
+proposal or `target-blocked`, not another wrapper theorem.
