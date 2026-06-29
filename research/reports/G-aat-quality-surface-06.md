@@ -18025,7 +18025,11 @@ degree-2 zero laws, and four selected face equations.
 - Tracking Issue: #2636.
 - Cycle result sync:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4828193837>.
-- PR / CI sync: pending.
+- PR / CI sync: PR #2785
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/2785>;
+  CI run
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/28342887633>
+  passed all checks.
 
 ## Final Checkpoint Packet - Current Stop State
 
