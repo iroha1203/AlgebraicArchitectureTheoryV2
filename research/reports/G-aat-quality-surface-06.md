@@ -19467,7 +19467,15 @@ facts, or from a certificate field.
   unresolved placeholder marker remains.
 - hidden / bidirectional Unicode scan over changed Lean/report/audit files -
   clean.
-- remaining validation before PR: PR / CI sync.
+- PR #2795 CI passed:
+  - `lake build`
+  - `archsig cargo test`
+  - `fieldsig cargo test`
+  - `ArchSig analyze / FieldSig handoff e2e`
+  - Workers build
+- independent PR review gate: approve / mergeable, no major findings or veto.
+- PR #2795 merged into `main` at
+  `e87470962df4f74e2b7c14dc531968ce634f267a`.
 
 ### Anti-Weakening Audit
 
@@ -19513,6 +19521,8 @@ facts, or from a certificate field.
 
 - Issue #2636 cycle-result sync:
   https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829138975
+- Issue #2636 post-merge sync:
+  https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4829177044
 
 ## Final Checkpoint Packet - Current Stop State
 
