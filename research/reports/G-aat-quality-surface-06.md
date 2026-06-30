@@ -2289,6 +2289,139 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 174 — boundary-relation additive data does not construct indexed source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the exact Cycle 173 remaining premise:
+
+1. construct
+   `SemanticRepairCoverRelativeCochainRealization.IndexedSemanticAtomLawCarrierSource`
+   itself;
+2. acceptable lower provenance must be indexed semantic atom/law
+   input-boundary data, a canonical/free obstruction-sheaf realization,
+   universal property, finite nonvacuous witness, or reviewed predecessor
+   theorem;
+3. do not take the indexed source, selected cochain realization, explicit
+   lower data, selected layer, direct source, conclusion-side
+   gluing/sheaf/descent/effectivity, semantic `H1` zero, or an unindexed token
+   as the source.
+
+Cycle 174 tried the direct boundary-relation additive route.  The constructive
+attempt stops at the Lean type boundary: `SemanticRepairCoverH1BoundaryRelationAdditiveData`
+contains a true-sheaf boundary-relation Cech surface and additive laws for its
+own semantic carriers, but it has no maps into the selected
+`surface.K.Cn 0`, `surface.K.Cn 1`, or `surface.K.Cn 2`, and no four selected
+face-restriction equations for that `surface.K`.
+
+### Lean Artifacts
+
+- New declarations:
+  - `SemanticRepairCoverRelativeCochainRealization.indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource`
+
+The first declaration is a proof-use helper: any
+`IndexedSemanticAtomLawCarrierSource` exposes the transparent lower source
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+The second declaration is the Cycle 174 blocker: if the accepted
+atom-supported current G-06 boundary plus boundary-relation additive data could
+uniformly construct an indexed source, then the helper would uniformly
+construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, contrary
+to the Cycle 164 no-go theorem.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` is Lean-fixed as insufficient provenance for
+  `IndexedSemanticAtomLawCarrierSource`.
+- The source is shown to be at least as strong as the transparent explicit
+  lower data: degree-wise carrier comparisons, degree-`2` zero laws, and four
+  selected face-restriction equations.
+- The exact failed constructive route is recorded: boundary-relation additive
+  data does not index semantic carriers into arbitrary selected
+  `surface.K`.
+
+Remaining:
+
+- Construct the selected carrier comparisons and face equations from a genuine
+  lower indexed source, canonical/free realization, universal property, finite
+  nonvacuous witness, or reviewed predecessor theorem.
+- `IndexedSemanticAtomLawCarrierSource` remains `discharge-required` until
+  those fields are generated rather than assumed.
+- The broader G-06 completion criteria and final `$math-lean-review` remain
+  open.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`:
+  `blocked-as-insufficient-source` for indexed carrier/source construction.
+- `IndexedSemanticAtomLawCarrierSource`: still `discharge-required`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: still the
+  transparent selected lower data that must be constructed from a genuine
+  source.
+
+### Certificate Provenance
+
+- unresolved: carrier comparisons, degree-`2` zero laws, and four selected
+  face-restriction equations.
+- blocked: treating `boundaryData` as provenance for those fields.
+- no conclusion-side gluing/sheaf/descent/effectivity, semantic `H1` zero,
+  selected cochain realization, explicit lower data, selected layer, direct
+  source, or unindexed token is reclassified as provenance.
+
+### Proof-Use Audit
+
+- The helper consumes all fields of `IndexedSemanticAtomLawCarrierSource` and
+  produces the exact transparent lower proposition.
+- The blocker proof-uses the hypothetical source constructor by extracting
+  explicit lower data and feeding it to the existing Cycle 164 no-go theorem.
+- `boundaryData` is passed to the hypothetical constructor but contributes no
+  selected carrier indexing or face law in the proof, which is the blocker.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed, not completion.
+- No new selected `K`, cover, coefficient object, realization layer, or
+  theorem statement is chosen to fit the target conclusion.
+- The target theorem is not weakened.  The result narrows the next positive
+  source: it must generate selected carrier data and face laws, not just point
+  to the true-sheaf boundary-relation surface.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle174AxiomAudit.lean` passed.
+- Axiom audit reported expected standard axioms:
+  - `[propext, Quot.sound]` for
+    `indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+  - `[propext, Classical.choice, Quot.sound]` for
+    `no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should construct or refute a lower indexed source for the
+selected carrier comparisons and face laws, below
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.  `$math-lean-review`
+is not run because this is not a completion candidate.
+
 ## Cycle 173 — indexed semantic atom/law carrier source checkpoint
 
 - decision: approve

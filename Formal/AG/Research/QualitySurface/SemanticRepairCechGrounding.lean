@@ -13293,6 +13293,94 @@ theorem indexedSemanticAtomLawCarrierSource_constructs_selectedSemanticCoefficie
       family hcover_eq provenance
 
 /--
+Cycle 174 proof-use helper: an indexed semantic atom/law carrier source exposes
+exactly the transparent explicit lower data it contains.
+
+This is the audit direction used by the Cycle 174 blocker.  It confirms that a
+constructor for `IndexedSemanticAtomLawCarrierSource` would in particular
+construct the degree-wise carrier comparisons, degree-`2` zero laws, and four
+selected face-restriction equations.  The theorem does not construct those
+fields from `boundaryData`.
+-/
+theorem indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source : IndexedSemanticAtomLawCarrierSource (additive := additive) surface) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K) := by
+  refine
+    ⟨source.c0Carrier, source.c1Carrier, source.c2Equiv,
+      source.c2Equiv_zero, source.c2Equiv_symm_zero,
+      ?_, ?_, ?_, ?_⟩
+  · exact source.d0_face_to
+  · exact source.d0_face_from
+  · exact source.d1_face_to
+  · exact source.d1_face_from
+
+/--
+Cycle 174 blocker theorem: adding true-sheaf boundary-relation additive data to
+the accepted atom-supported current G-06 boundary still does not uniformly
+construct an indexed semantic atom/law carrier source.
+
+The proof uses a hypothetical source constructor, extracts the transparent
+explicit lower data by
+`indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+and reduces to the Cycle 164 no-go theorem.  Thus `boundaryData` is not lower
+provenance for the selected carrier comparisons or face equations; a valid
+positive route must still construct those indexed fields from a canonical/free
+realization, universal property, finite nonvacuous witness, or reviewed
+predecessor theorem.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryIndexedSourceConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      IndexedSemanticAtomLawCarrierSource (additive := additive) surface) :
+    False := by
+  let atomSupportedCurrentBoundaryExplicitLowerConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) :=
+    fun surfaceInput familyInput hcoverInput =>
+      indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (surface := surfaceInput)
+        (atomSupportedCurrentBoundaryIndexedSourceConstructor
+          surfaceInput familyInput hcoverInput boundaryData)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryExplicitLowerConstructor
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
