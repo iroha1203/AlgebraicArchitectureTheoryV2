@@ -103,6 +103,157 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 202 — external selected geometry / face-law current-boundary blocker
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the sharp post-Cycle-201 blocker boundary:
+
+`CurrentG06InputSurface` plus atom-generated selected-cover data must not be
+allowed to construct the external selected carrier geometry and selected Cech
+face-law source as an accessor.
+
+This is the exact lower source
+
+`Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`
+
+that constructs `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+Cycle 201 already showed that the Cycle 196 finite source is only a wrapper
+around atom-cover provenance plus explicit lower data, so this cycle moved one
+step below that wrapper.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_externalSelectedCarrierGeometryAndFaceLaws`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`.
+
+It destructs the alleged external lower source into `geometry` and `faceLaws`,
+uses
+`selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+to construct explicit lower data, and applies the existing Cycle 164
+`no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The escape route
+  `atom-supported current boundary -> selected carrier geometry + selected Cech face laws`
+  is blocked.
+- The blocker sharpens Cycle 201 by moving below the finite-source wrapper and
+  isolating the separated selected geometry / face-law source as still
+  non-constructible from the current boundary.
+
+Remaining:
+
+- Construct selected carrier geometry plus selected Cech face laws from genuine
+  semantic atom / law lower provenance.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  accepted lower provenance.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `CurrentG06InputSurface + atom-generated cover -> external selected geometry / face laws`:
+  blocked under the finite `PUnit` / `ZMod 2` test.
+- selected carrier geometry and selected Cech face laws:
+  `discharge-required`; still not generated from genuine semantic atom / law
+  lower provenance.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from accepted lower provenance.
+
+### Certificate Provenance
+
+- discharged for this blocker:
+  the negative reduction is explicit: selected geometry / face laws imply
+  explicit lower data, which contradicts the Cycle 164 no-constructor theorem.
+- unresolved:
+  no certificate or construction produces selected geometry / face laws from
+  the accepted G-06 input boundary.
+
+### Proof-Use Audit
+
+- The hypothetical constructor is proof-used by applying it to arbitrary
+  surface / family / cover-equality inputs.
+- Its output is destructed into `geometry` and `faceLaws`.
+- Both witnesses are passed to the existing explicit-lower constructor before
+  the Cycle 164 blocker is applied.
+
+### Structure-Field Escape Audit
+
+- status: blocker-fixed.
+- The theorem does not use selected geometry or face laws as hidden completion
+  evidence.
+- It blocks exactly the structure-field escape where those witnesses are
+  rebranded as an atom-supported current-boundary accessor.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The proof is a conservative contradiction against an existing
+  no-constructor theorem.
+- It does not weaken G-06, does not claim target completion, and does not turn
+  the Cycle 201 wrapper into provenance.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 202 as `blocker-fixed`:
+
+- the blocker is materially sharper than Cycle 201 because it targets the
+  separated external selected carrier geometry / face-law source below the
+  finite-source wrapper;
+- no hidden material premise, forbidden substitute, structure-field escape,
+  target-fitting construction, vacuity, one-way-as-equivalence, or GOAL/report
+  reinterpretation was found;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` remains unresolved.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle202AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, `sorryAx`, `TODO`, `FIXME`, and
+  `placeholder`.
+- Hidden / bidirectional Unicode scan over the target Lean file was clean.
+- Absolute local path / private machine identifier scan over added Lean diff was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle must construct selected carrier geometry plus selected Cech face
+laws, or directly construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, from genuine
+semantic atom / law lower provenance rather than current-boundary, wrapper, or
+selected-layer inputs.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 201 — finite-source wrapper route-integrity boundary
 
 - decision: approve

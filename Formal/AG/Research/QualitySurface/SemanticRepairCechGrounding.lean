@@ -10324,6 +10324,74 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseCa
       atomSupportedCurrentBoundaryCochainRealizationConstructor
 
 /--
+Cycle 202 post-wrapper blocker theorem: the atom-supported current G-06
+boundary alone cannot uniformly construct the external selected carrier
+geometry plus selected Cech face-law source.
+
+Cycle 201 showed that the atom-supported finite source is only a wrapper around
+an atom-generated cover witness plus the transparent explicit lower data.  This
+theorem fixes the next exact missing constructor boundary: if the current
+boundary could construct the separated external lower source
+`Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`,
+then the existing constructor
+`selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+would produce the explicit lower data, contradicting the Cycle 164
+current-boundary no-constructor theorem.  Thus the selected carrier geometry
+and face laws cannot be hidden as an atom-supported current-boundary accessor.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_externalSelectedCarrierGeometryAndFaceLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryExternalLowerSourceConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry
+          additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    False := by
+  let atomSupportedCurrentBoundaryExplicitLowerConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) :=
+    fun surfaceInput familyInput hcoverInput => by
+      rcases
+          atomSupportedCurrentBoundaryExternalLowerSourceConstructor
+            surfaceInput familyInput hcoverInput with
+        ⟨geometry, faceLaws⟩
+      exact
+        selectedCarrierGeometry_and_faceLawSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surfaceInput.coverBridge)
+          (K := surfaceInput.K)
+          geometry faceLaws
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryExplicitLowerConstructor
+
+/--
 Cycle 165 semantic-cover-Cech-data boundary theorem: adding the G-05
 cover-indexed semantic Cech data to the atom-supported current boundary still
 does not uniformly construct
