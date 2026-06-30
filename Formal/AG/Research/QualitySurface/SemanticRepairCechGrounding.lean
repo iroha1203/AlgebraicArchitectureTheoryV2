@@ -3978,6 +3978,90 @@ theorem no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_s
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 213 definitional degree-`0` section-family surface: the selected
+cover-relative complex's `C^0` carrier is exactly the general cover-relative
+degree-zero section family.
+
+This is positive input geometry, but it is only a definitional identification
+of the general Cech side.  It does not identify the semantic additive
+coefficient carrier with that section family.
+-/
+theorem currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    surface.K.Cn 0 =
+      AAT.AG.Cohomology.CoverRelativeCechCochain
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob 0 :=
+  rfl
+
+/--
+Cycle 213 component blocker: semantic boundary-relation Cech data plus the
+definitional cover-relative degree-`0` section-family surface still do not
+construct the degree-`0` carrier comparison.
+
+The constructor being refuted may use the boundary-relation additive data and
+the fact that `surface.K.Cn 0` is definitionally the general cover-relative
+`C^0` section family.  If it could produce the required
+`CarrierSpecificAdditiveComparisonData`, the finite `PUnit` / `ZMod 2` test
+boundary would force an additive equivalence between `PUnit` and `ZMod 2`.
+
+Thus the remaining `c0Carrier` source is not discharged by merely unfolding the
+general cover-relative degree-zero cochain surface; a genuine semantic
+atom/law section-realization theorem is still required.
+-/
+theorem no_constructor_from_semantic_cech_data_and_cover_relative_degree_zero_sections_without_degreeZeroSectionRealization
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      let coefficient :=
+        (toSheafH1Envelope
+          data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient
+      letI := data.toAdditiveCechH1Data.c0AddCommGroup
+      coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (semanticCechDegreeZeroSectionConstructor :
+      (dataInput :
+        SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom) ->
+      surface.K.Cn 0 =
+        AAT.AG.Cohomology.CoverRelativeCechCochain
+          (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob 0 ->
+      let coefficient :=
+        (toSheafH1Envelope
+          dataInput.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient
+      let additiveInput := dataInput.toAdditiveCechH1Data
+      letI := additiveInput.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData coefficient.C0 (surface.K.Cn 0)) :
+    False := by
+  let coefficient :=
+    (toSheafH1Envelope
+      data.boundaryRelation.toAbelianDescentData.toEnvelopeData).coefficient
+  let additiveData := data.toAdditiveCechH1Data
+  letI := additiveData.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let hdegreeZero :=
+    currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily
+      (surface := surface)
+  let c0Carrier :
+      CarrierSpecificAdditiveComparisonData coefficient.C0 (surface.K.Cn 0) :=
+    semanticCechDegreeZeroSectionConstructor data hdegreeZero
+  let eSemanticToCech : coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/

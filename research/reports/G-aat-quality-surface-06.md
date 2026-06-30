@@ -103,6 +103,150 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 213 — degree-zero section-family unfolding still lacks realization
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the next non-repeated `c0Carrier` boundary:
+
+1. unfold the general cover-relative degree-`0` side;
+2. test whether semantic boundary-relation Cech data plus that definitional
+   section-family surface constructs the degree-`0` carrier comparison;
+3. if not, fix the exact `degreeZeroSectionRealization` gap.
+
+Positive route inspection found that
+`AAT.AG.Cohomology.CoverRelativeCechComplex.Cn K 0` is definitionally the
+general cover-relative section family
+`CoverRelativeCechCochain (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob 0`.
+However, no current theorem identifies the semantic coefficient carrier
+`coefficient.C0` with that section-family surface from accepted semantic
+atom/law geometry.
+
+### Lean Artifacts
+
+- New declarations:
+  - `SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily`
+  - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_semantic_cech_data_and_cover_relative_degree_zero_sections_without_degreeZeroSectionRealization`
+
+The first theorem records the definitional equality:
+
+- `surface.K.Cn 0 =
+  AAT.AG.Cohomology.CoverRelativeCechCochain
+    (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob 0`
+
+The second theorem assumes:
+
+- boundary-relation additive semantic Cech data;
+- a current G-06 input surface;
+- finite boundary-test equivalences for the semantic `C0` carrier and the
+  selected cover-relative degree-`0` cochain carrier;
+- a hypothetical constructor using the semantic Cech data and the definitional
+  degree-`0` section-family equality to produce
+  `CarrierSpecificAdditiveComparisonData coefficient.C0 (surface.K.Cn 0)`.
+
+It converts the hypothetical `c0Carrier` to an additive equivalence and
+composes it with the finite `PUnit` / `ZMod 2` boundary equivalences to
+contradict `0 != 1` in `ZMod 2`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The general cover-relative degree-`0` cochain surface has been exposed as
+  the selected section-family type.
+- Semantic boundary-relation Cech data plus that definitional surface still
+  does not construct the semantic-to-section-family carrier comparison.
+- The exact missing positive source is now a
+  `degreeZeroSectionRealization` theorem that constructs `c0Carrier` from
+  accepted semantic atom/law geometry.
+
+Remaining:
+
+- Construct
+  `CarrierSpecificAdditiveComparisonData coefficient.C0 (surface.K.Cn 0)`
+  from an admissible semantic atom/law degree-zero section-realization source.
+- Audit that such a source is not a wrapper, class membership, selected
+  target-fitting `K`, or certificate-field escape.
+- `c1Carrier`, `c2Equiv` with zero laws, and selected face-restriction
+  equations remain unresolved after `c0Carrier`.
+
+### Material Premise Ledger
+
+- `surface.K.Cn 0` as cover-relative degree-`0` section family: discharged by
+  definitional equality.
+- semantic boundary-relation Cech data: blocked as a standalone source for
+  `c0Carrier` on the tested degree-zero section-family route.
+- `c0Carrier`: still `discharge-required`.
+- full carrier-specific comparison provenance: still unresolved.
+
+### Certificate Provenance
+
+- discharged as blocker evidence:
+  definitional `C^0` section-family equality does not certify semantic
+  `C0` equivalence to `surface.K.Cn 0`.
+- unresolved:
+  semantic atom/law section-realization provenance for degree zero.
+
+### Proof-Use / Escape Audit
+
+- The definitional equality is passed to the hypothetical constructor and the
+  returned `c0Carrier.toAddEquiv` is proof-used in the finite contradiction.
+- No new structure field, certificate field, class membership, selected `K`,
+  cover, coefficient object, wrapper realization, `H1` zero, descent, or
+  effective-gluing conclusion is introduced.
+- The theorem does not consume `IndexedSemanticAtomLawCarrierSource`,
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, or
+  carrier-specific provenance as lower provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed for the semantic Cech data plus definitional
+  degree-zero section-family route.
+- The theorem must be read narrowly: it does not show all semantic atom/law
+  lower-provenance routes are impossible.  It shows that merely unfolding
+  `K.Cn 0` to the general cover-relative section-family type is not enough.
+- The finite `PUnit` / `ZMod 2` boundary is explicit and used only as a
+  contradiction test.
+- T3 audit approved the cycle as `blocker-fixed` with
+  `completion_candidate: no`.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle213AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan on target Lean file and `.tmp/G06Cycle213AxiomAudit.lean`
+- hidden Unicode scan on changed/audit files
+- local absolute path scan on changed/audit files
+
+Axiom audit:
+
+- `currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily`
+  depends on `[propext, Quot.sound]`.
+- `no_constructor_from_semantic_cech_data_and_cover_relative_degree_zero_sections_without_degreeZeroSectionRealization`
+  depends on `[propext, Classical.choice, Quot.sound]`.
+
+T3 audit:
+
+- decision: approve
+- result_type: blocker-fixed
+- completion_candidate: no
+- next obligation: construct or boundary-mark a genuine semantic atom/law
+  `degreeZeroSectionRealization` that produces
+  `CarrierSpecificAdditiveComparisonData coefficient.C0 (surface.K.Cn 0)`
+  from the accepted input boundary.
+
 ## Cycle 212 — current surface geometry does not construct c0 carrier data
 
 - decision: approve
