@@ -13530,6 +13530,41 @@ theorem carrierSpecificComparisonProvenance_constructs_indexedSource_and_explici
       boundaryData sectionWitness compatibility
 
 /--
+Cycle 177 circularity boundary: with a supplied true-sheaf boundary-relation
+pointer, the indexed semantic atom/law carrier source is equivalent to
+carrier-specific comparison provenance.
+
+The forward direction is Cycle 173.  The backward direction is Cycle 176,
+where `boundaryData` supplies only the boundary-relation pointer needed to
+fill the indexed source record.  Therefore the indexed source is not a new
+primitive lower semantic atom/law provenance for the remaining G-06
+obligation; it repackages the same selected carrier maps, degree-`2` zero
+laws, and selected face equations as carrier-specific provenance.
+-/
+theorem indexedSemanticAtomLawCarrierSource_iff_carrierSpecificComparisonProvenance_relative_to_boundaryData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom) :
+    Nonempty (IndexedSemanticAtomLawCarrierSource (additive := additive) surface) <->
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) := by
+  constructor
+  · intro hsource
+    rcases hsource with ⟨source⟩
+    exact
+      indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance
+        (additive := additive) (surface := surface) source
+  · intro hprovenance
+    rcases hprovenance with ⟨provenance⟩
+    exact
+      (carrierSpecificComparisonProvenance_constructs_indexedSource_and_explicitLowerData
+        (additive := additive) (surface := surface)
+        boundaryData provenance).1
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.

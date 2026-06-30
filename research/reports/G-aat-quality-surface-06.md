@@ -2289,6 +2289,130 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 177 — indexed source is not lower carrier provenance
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4839251793>
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the circularity boundary for the only apparent indexed
+semantic atom/law source:
+
+1. prove that, once a true-sheaf boundary-relation pointer `boundaryData` is
+   supplied, `IndexedSemanticAtomLawCarrierSource` is equivalent to
+   `SemanticRepairCarrierSpecificComparisonProvenance`;
+2. record that the indexed source is not a new primitive lower semantic
+   atom/law provenance for the remaining Cycle 176 premise;
+3. keep the selected carrier maps, degree-`2` zero laws, and selected face
+   equations visible as the still-unconstructed material source.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.indexedSemanticAtomLawCarrierSource_iff_carrierSpecificComparisonProvenance_relative_to_boundaryData`
+
+The forward direction uses Cycle 173:
+`indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance`.
+
+The backward direction uses Cycle 176:
+`carrierSpecificComparisonProvenance_constructs_indexedSource_and_explicitLowerData`,
+where `boundaryData` supplies only the boundary-relation pointer needed to fill
+the indexed source record.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The indexed source route is now blocked as a genuine lower-provenance escape:
+  with `boundaryData`, it is equivalent to the same carrier-specific provenance
+  premise that Cycle 176 left open.
+- `boundaryData` is explicitly confined to pointer status; it does not
+  construct carrier maps, degree-`2` zero laws, or face equations.
+
+Remaining:
+
+- Construct or refute the lower carrier/face-law data underlying
+  `SemanticRepairCarrierSpecificComparisonProvenance` from canonical/free
+  semantic atom/law provenance, universal property, finite nonvacuous witness,
+  or reviewed predecessor theorem.
+- Do not use `IndexedSemanticAtomLawCarrierSource`, explicit lower data,
+  selected cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data as lower provenance.
+
+### Material Premise Ledger
+
+- `IndexedSemanticAtomLawCarrierSource`: blocked as equivalent to
+  `SemanticRepairCarrierSpecificComparisonProvenance` relative to `boundaryData`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: still
+  `discharge-required`.
+- `boundaryData`: boundary-relation pointer only.
+
+### Certificate Provenance
+
+- discharged: equivalence/circularity between indexed source and
+  carrier-specific provenance relative to `boundaryData`.
+- unresolved: construction of the selected carrier maps, degree-`2` zero laws,
+  and selected face equations from genuine lower atom/law provenance.
+
+### Proof-Use Audit
+
+- Forward direction proof-uses a supplied indexed source by extracting
+  carrier-specific provenance.
+- Backward direction proof-uses a supplied carrier-specific provenance to
+  construct the indexed source using Cycle 176.
+- No conclusion-side gluing/sheaf/descent/effectivity or semantic `H1` zero is
+  used.
+
+### Structure-Field Escape Audit
+
+- status: blocker-fixed.
+- The theorem prevents `IndexedSemanticAtomLawCarrierSource` from serving as a
+  structure-field escape for the same carrier/face-law premise.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+
+### Route-Integrity Audit
+
+- status: blocked-as-circular-route.
+- The cycle does not weaken G-06 and does not reinterpret the indexed source as
+  lower semantic atom/law provenance.
+- The remaining positive source must be strictly below carrier-specific
+  provenance, not an equivalent wrapper.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle177AxiomAudit.lean` passed.
+- Axiom audit reported expected standard axioms:
+  - `[propext, Quot.sound]` for
+    `indexedSemanticAtomLawCarrierSource_iff_carrierSpecificComparisonProvenance_relative_to_boundaryData`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should construct or refute a source strictly below
+`SemanticRepairCarrierSpecificComparisonProvenance`: selected carrier geometry
+and selected Cech face laws, or a canonical/free/universal finite witness that
+generates them.  `$math-lean-review` is not run because this is not a
+completion candidate.
+
 ## Cycle 176 — carrier-specific provenance constructs indexed source checkpoint
 
 - decision: approve
