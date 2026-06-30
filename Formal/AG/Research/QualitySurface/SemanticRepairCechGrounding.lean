@@ -14219,6 +14219,57 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelation
       atomSupportedCurrentBoundaryDegreeOneEquivConstructor
 
 /--
+Cycle 183 component boundary theorem: adding true-sheaf boundary-relation
+additive data to the accepted atom-supported current G-06 boundary still does
+not uniformly construct the degree-`2` carrier-equivalence component of the
+transparent direct lower bundle.
+
+The proof closes over the fixed `boundaryData` input and passes any alleged
+degree-`2` carrier-equivalence constructor directly to the Cycle 147
+degree-`2` no-constructor theorem.  The finite-test hypotheses remain
+explicit; this is a component blocker, not a positive construction or an
+absolute no-constructor theorem without the boundary test.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreeTwoCarrierEquiv
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : surface.K.Cn 2 ≃ ZMod 2)
+    (atomSupportedBoundaryDataDegreeTwoCarrierConstructor :
+      (surfaceInput :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      E.coefficient.C2 ≃ surfaceInput.K.Cn 2) :
+    False := by
+  let atomSupportedCurrentBoundaryDegreeTwoEquivConstructor :
+      (surfaceInput :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      E.coefficient.C2 ≃ surfaceInput.K.Cn 2 :=
+    fun surfaceInput familyInput hcoverInput =>
+      atomSupportedBoundaryDataDegreeTwoCarrierConstructor
+        surfaceInput familyInput hcoverInput boundaryData
+  exact
+    SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_without_degreeTwoCarrierEquiv
+      (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
+      atomSupportedCurrentBoundaryDegreeTwoEquivConstructor
+
+/--
 Cycle 137 atom-supported conclusion-side carrier-provenance boundary theorem:
 adding atom-generated selected-cover data, a current gluing datum, cover-wise
 sheaf condition, descent, effective gluing, and semantic additive `H1` zero
