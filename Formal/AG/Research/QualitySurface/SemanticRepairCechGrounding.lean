@@ -13122,6 +13122,177 @@ theorem atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSema
   exact ⟨⟨layer⟩, hcycle170.1, hcycle170.2.1, hcycle170.2.2⟩
 
 /--
+Cycle 173 indexed semantic atom/law lower source for the selected carrier
+comparison route.
+
+The `boundaryData` field ties the source to the true-sheaf boundary-relation
+semantic Cech surface, while the remaining fields are deliberately indexed by
+the selected cover-relative complex `surface.K`.  This is not an unindexed
+metadata token: it has to provide the degree-wise carrier comparisons,
+degree-`2` zero laws, and the four selected face-restriction equations that the
+G-06 selected realization gate actually consumes.
+
+The source still carries material lower data as visible fields.  Therefore a
+theorem consuming this structure is a proof checkpoint unless a later theorem
+constructs this source from the accepted input boundary, canonical/free
+realization, universal property, finite witness, or reviewed predecessor
+theorem.
+-/
+structure IndexedSemanticAtomLawCarrierSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) where
+  boundaryData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom
+  c0Carrier :
+    letI := additive.c0AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)
+  c1Carrier :
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 1
+    CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1)
+  c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2
+  c2Equiv_zero :
+    letI := surface.K.cochainAddCommGroup 2
+    c2Equiv E.coefficient.zero2 = 0
+  c2Equiv_symm_zero :
+    letI := surface.K.cochainAddCommGroup 2
+    c2Equiv.symm 0 = E.coefficient.zero2
+  d0_face_to :
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    letI := surface.K.cochainAddCommGroup 1
+    forall primitive : E.coefficient.C0,
+      surface.K.alternatingFaceCombination 0
+          (fun σ i =>
+            surface.K.faceRestrictionTerm 0 i
+              (sectionWitness.c0SectionEquiv primitive) σ) =
+        sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)
+  d0_face_from :
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    letI := additive.c0AddCommGroup
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    letI := surface.K.cochainAddCommGroup 1
+    forall primitive : surface.K.Cn 0,
+      E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+        sectionWitness.c1SectionEquiv.symm
+          (surface.K.alternatingFaceCombination 0
+            (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ))
+  d1_face_to :
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 1
+    forall cochain : E.coefficient.C1,
+      surface.K.alternatingFaceCombination 1
+          (fun σ i =>
+            surface.K.faceRestrictionTerm 1 i
+              (sectionWitness.c1SectionEquiv cochain) σ) =
+        sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)
+  d1_face_from :
+    let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+    let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 1
+    forall cochain : surface.K.Cn 1,
+      E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+        sectionWitness.c2SectionEquiv.symm
+          (surface.K.alternatingFaceCombination 1
+            (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))
+
+/--
+Cycle 173 positive checkpoint: an indexed semantic atom/law carrier source
+constructs carrier-specific comparison provenance.
+
+This proof uses the source fields as visible lower data and routes them through
+the existing Cycle 40 constructor for carrier-specific provenance.  It does
+not claim that `boundaryData` alone, an unindexed token, conclusion-side
+gluing/sheaf/descent/effectivity, semantic `H1` zero, or a selected cochain
+realization constructs the source.
+-/
+theorem indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source : IndexedSemanticAtomLawCarrierSource (additive := additive) surface) :
+    Nonempty
+      (SemanticRepairCarrierSpecificComparisonProvenance
+        additive surface.coverBridge surface.K) := by
+  exact
+    SemanticRepairCarrierSpecificComparisonProvenance.degreewiseCarrierData_and_explicitFaceRestrictionEquations_constructs_carrierSpecificComparisonProvenance
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)
+      source.c0Carrier source.c1Carrier source.c2Equiv
+      source.c2Equiv_zero source.c2Equiv_symm_zero
+      source.d0_face_to source.d0_face_from
+      source.d1_face_to source.d1_face_from
+
+/--
+Cycle 173 proof-use theorem: once the indexed semantic atom/law carrier source
+is supplied, the existing G-06 route reaches the selected semantic coefficient
+realization layer, explicit lower data, and selected cochain realization.
+
+The result is still a checkpoint, not G-06 completion, because the source
+itself remains a visible material premise that must be generated by a later
+input-boundary construction or finite witness.
+-/
+theorem indexedSemanticAtomLawCarrierSource_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source : IndexedSemanticAtomLawCarrierSource (additive := additive) surface) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  rcases
+      indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance
+        (additive := additive) (surface := surface) source with
+    ⟨provenance⟩
+  exact
+    atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (additive := additive) (surface := surface)
+      family hcover_eq provenance
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
