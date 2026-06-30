@@ -2289,6 +2289,151 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 179 — boundaryData does not construct direct finite witness
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the closest remaining `boundaryData` escape after Cycle 178:
+
+1. prove that adding true-sheaf boundary-relation additive data
+   `boundaryData` to the accepted atom-supported current G-06 boundary still
+   cannot uniformly construct
+   `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+2. use the existing positive route from that direct finite source to
+   carrier-specific comparison provenance;
+3. reduce the alleged direct-source constructor to the Cycle 178
+   carrier-provenance no-constructor theorem.
+
+This is not a completion candidate.  It blocks `boundaryData` as provenance for
+ordinary degree-wise equivalences, degree-`2` zero laws, and the four direct
+selected `K.d` laws.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreewiseEquivAndDirectDifferentialSource`
+
+The theorem assumes a hypothetical constructor from
+`CurrentG06InputSurface`, atom-generated selected-cover data,
+selected-cover equality, and `boundaryData` to
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.  It proof-uses the
+existing direct-source route:
+
+- `SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization`
+
+and extracts carrier-specific provenance, then applies Cycle 178:
+
+- `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_carrierSpecificComparisonProvenance`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus the accepted atom-supported current G-06 boundary is now
+  blocked as a uniform source for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- The Cycle 178 carrier-provenance blocker now also blocks the route that first
+  constructs the direct finite witness and then reaches provenance.
+
+Remaining:
+
+- Construct or refute a genuine positive source for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: a
+  canonical/free/universal nonvacuous finite witness that produces the carrier
+  maps, degree-`2` zero laws, and direct differential laws.
+- Do not use `boundaryData`, indexed source, explicit lower data, selected
+  cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data as lower provenance.
+
+### Material Premise Ledger
+
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`.
+- `boundaryData`: blocked as a lower-provenance generator for the direct finite
+  witness.
+- carrier maps, degree-`2` zero laws, and direct selected `K.d` laws: still the
+  unresolved material lower data.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData` is not provenance for the
+  direct finite witness.
+- unresolved: construction of the direct finite witness components from genuine
+  atom-supported finite/direct provenance.
+
+### Proof-Use Audit
+
+- The hypothetical direct-source constructor is used to produce
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- The proof uses the Cycle 121 positive route to obtain carrier-specific
+  comparison provenance.
+- The resulting provenance constructor is consumed by the Cycle 178
+  carrier-provenance no-constructor theorem.
+- No indexed source, explicit lower data, selected cochain realization,
+  selected layer, semantic `H1` zero, gluing/descent/effectivity, or
+  conclusion-side data is used as source.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+- The theorem rules out a constructor route instead of moving the remaining
+  lower data into a field.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The cycle does not weaken G-06 and does not reinterpret `boundaryData` as
+  direct finite witness provenance.
+- The remaining positive source must be a genuine canonical/free/universal
+  nonvacuous finite construction.
+
+### T3 Audit Result
+
+T3 approved the cycle as `blocker-fixed`.
+
+- statement not weakened: pass.
+- hidden material premise: none found.
+- structure-field escape: none found.
+- route integrity: pass.
+- completion candidate: no.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle179AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle should construct or refute a genuine canonical/free/universal
+nonvacuous finite witness for
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, or split its
+unresolved component provenance into the next exact boundary.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 178 — boundaryData does not construct carrier provenance
 
 - decision: approve
