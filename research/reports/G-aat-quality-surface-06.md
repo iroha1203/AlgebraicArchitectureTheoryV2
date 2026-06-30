@@ -103,6 +103,169 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 193 — separated carrier geometry plus face laws reaches selected layer
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose a positive checkpoint below the monolithic
+`SemanticRepairCarrierSpecificComparisonProvenance` input used by Cycle 171.
+Instead of adding another wrapper blocker, Cycle 193 fixes the route from the
+separated lower sources:
+
+- `SemanticRepairSelectedCarrierGeometry`;
+- `SemanticRepairSelectedCechFaceLawSource`.
+
+These inputs expose the carrier geometry and selected Cech face laws as visible
+material premises.  The theorem proves that those separated lower sources are
+enough to reach `SelectedSemanticCoefficientDirectRealizationLayer`,
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, explicit lower
+data, and selected cochain realization.  It does not construct the separated
+sources from the accepted current G-06 boundary.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.selectedCarrierGeometry_and_faceLaws_constructs_selectedSemanticCoefficientDirectRealizationLayer`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K`;
+- `SemanticRepairSelectedCechFaceLawSource additive geometry`.
+
+It constructs
+`SemanticRepairCarrierSpecificComparisonProvenance` by
+`SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws`
+and immediately proof-uses the existing audited route
+`atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 171 monolithic `SemanticRepairCarrierSpecificComparisonProvenance`
+  input is decomposed into visible lower premises
+  `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource`.
+- The separated lower sources are connected to the selected-layer / direct
+  source route without using selected cochain realization, selected layer,
+  `directLower`, `explicitLower`, `boundaryData`, semantic cover Cech data,
+  conclusion-side data, or semantic `H1` zero.
+
+Remaining:
+
+- Genuine semantic atom / law provenance for
+  `SemanticRepairSelectedCarrierGeometry` remains unresolved.
+- Genuine semantic atom / law provenance for
+  `SemanticRepairSelectedCechFaceLawSource` remains unresolved.
+- The four selected face laws, degree-`2` zero laws, and carrier equivalences
+  still need construction from the input boundary, a canonical / free
+  construction, universal property, finite witness, or reviewed predecessor
+  theorem.
+- Comparison, zero equivalence, refinement / naturality, the
+  Cech-vs-full-sheaf boundary, and final `$math-lean-review` remain incomplete
+  for target completion.
+
+### Material Premise Ledger
+
+- `SemanticRepairSelectedCarrierGeometry + SemanticRepairSelectedCechFaceLawSource -> SelectedSemanticCoefficientDirectRealizationLayer`:
+  discharged as a positive route.
+- `SemanticRepairSelectedCarrierGeometry`: still `discharge-required` from
+  genuine atom / law lower provenance.
+- `SemanticRepairSelectedCechFaceLawSource`: still `discharge-required` from
+  genuine atom / law lower provenance.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: reached only relative
+  to the visible separated lower premises.
+- `SemanticRepairCoverRelativeCochainRealization`: reached only relative to
+  the visible separated lower premises.
+
+### Certificate Provenance
+
+- discharged: monolithic provenance is not accepted as a theorem argument; it
+  is built inside the proof from visible `geometry` and `faceLaws`.
+- rejected as shortcuts: selected cochain realization, selected layer,
+  `directLower`, `explicitLower`, `boundaryData`, semantic cover Cech data,
+  conclusion-side sheaf/descent/effective-gluing data, and semantic `H1` zero.
+- unresolved: construction of `geometry` and `faceLaws` themselves from
+  genuine atom / law lower provenance.
+
+### Proof-Use Audit
+
+- `geometry` and `faceLaws` are proof-used by
+  `SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws`.
+- The resulting `provenance` is proof-used by
+  `atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer`.
+- The returned packet contains the selected layer, atom-supported direct
+  source, explicit lower data, and selected cochain realization.
+
+### Structure-Field Escape Audit
+
+- status: visible material premises only.
+- No new structure, class, instance, or certificate field is introduced.
+- Existing `SemanticRepairSelectedCarrierGeometry` and
+  `SemanticRepairSelectedCechFaceLawSource` remain theorem arguments and are
+  recorded as unresolved lower premises, not ambient certificates.
+
+### Route-Integrity Audit
+
+- status: proof-obligation-discharged for the separated lower-provenance route.
+- This is not a duplicate of Cycle 171: Cycle 171 consumes monolithic
+  `SemanticRepairCarrierSpecificComparisonProvenance`, while Cycle 193 builds
+  that provenance from carrier geometry and selected Cech face laws before
+  using the route.
+- This is a positive checkpoint, not a target completion theorem.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 193 as `proof-obligation-discharged`, with
+`completion_candidate: no`.
+
+The audit found no hidden selected cochain realization, selected layer,
+direct-lower bundle, `boundaryData`, semantic cover Cech data, conclusion-side
+data, semantic `H1` zero, or structure-field escape.  It confirmed that
+`geometry` and `faceLaws` are visible theorem arguments and that
+`faceLaws` still contains the four selected Cech face equations, so this
+theorem must not be read as final lower-provenance construction.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle193AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- local absolute path / private machine identifier scan over added diff lines
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop positive checkpoint,
+not target completion.
+
+The next cycle must construct `SemanticRepairSelectedCarrierGeometry` and
+`SemanticRepairSelectedCechFaceLawSource` from genuine semantic atom / law
+lower provenance, canonical / free construction, universal property, finite
+nonvacuous witness, or reviewed predecessor theorem.  If that cannot be done,
+the next cycle should isolate exactly whether carrier geometry or selected
+Cech face laws lack atom / law provenance.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 192 — semantic cover data plus boundaryData does not construct selected layer
 
 - decision: approve
