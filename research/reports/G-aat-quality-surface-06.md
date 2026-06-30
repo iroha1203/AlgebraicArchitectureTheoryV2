@@ -103,6 +103,150 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 203 — boundaryData does not construct external selected geometry / face laws
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the nearest semantic / law-looking pointer route after Cycle 202:
+adding `SemanticRepairCoverH1BoundaryRelationAdditiveData` to the
+atom-supported current G-06 boundary.
+
+Cycle 202 blocked current-boundary construction of the separated external
+selected carrier geometry plus selected Cech face laws.  Cycle 203 checks that
+the true-sheaf boundary-relation additive pointer does not change that
+boundary and cannot be counted as provenance for the same external lower
+source.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_externalSelectedCarrierGeometryAndFaceLaws`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`.
+
+It fixes `boundaryData` into the hypothetical constructor, obtains a
+current-boundary-only external-lower-source constructor, and applies the Cycle
+202 blocker
+`no_constructor_from_atomSupportedCurrentG06Boundary_without_externalSelectedCarrierGeometryAndFaceLaws`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route
+  `atom-supported current boundary + boundaryData -> selected carrier geometry + selected Cech face laws`
+  is blocked.
+- `boundaryData` is proof-used only to specialize the hypothetical constructor;
+  it is not treated as provenance.
+
+Remaining:
+
+- Construct selected carrier geometry plus selected Cech face laws from genuine
+  semantic atom / law lower provenance.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  accepted lower provenance.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `boundaryData -> external selected geometry / face laws`:
+  blocked relative to atom-supported current boundary and finite
+  `PUnit` / `ZMod 2` test.
+- selected carrier geometry and selected Cech face laws:
+  `discharge-required`; still not generated from genuine semantic atom / law
+  lower provenance.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from accepted lower provenance.
+
+### Certificate Provenance
+
+- discharged for this blocker:
+  `SemanticRepairCoverH1BoundaryRelationAdditiveData` is rejected as sufficient
+  provenance for selected carrier geometry, selected Cech face laws, or
+  explicit lower data under the tested constructor shape.
+- unresolved:
+  actual provenance for the selected lower source remains open.
+
+### Proof-Use Audit
+
+- `boundaryData` is used in the proof term by specializing the hypothetical
+  constructor.
+- `c0SourceEquiv` and `c0TargetEquiv` are forwarded through the predecessor
+  contradiction chain.
+- No selected geometry / face-law witness is accepted as completion evidence.
+
+### Structure-Field Escape Audit
+
+- status: blocker-fixed.
+- No new structure or certificate field is introduced.
+- The theorem blocks, rather than consumes, the selected face-law structure as
+  hidden lower provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- This is a direct boundaryData-variant reduction to the reviewed Cycle 202
+  blocker.
+- It does not weaken G-06, introduce an ad hoc selected geometry, or claim
+  target completion.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 203 as `blocker-fixed`:
+
+- the theorem closes the cheat route where `boundaryData` is treated as enough
+  to manufacture the external selected carrier geometry plus selected face
+  laws;
+- it does not duplicate Cycle 202 because it proof-uses the additional
+  `boundaryData` route;
+- no hidden material premise, forbidden substitute, structure-field escape,
+  target-fitting construction, vacuity, one-way-as-equivalence, or GOAL/report
+  reinterpretation was found.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle203AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, `sorryAx`, `TODO`, `FIXME`, and
+  `placeholder`.
+- Hidden / bidirectional Unicode scan over the target Lean file was clean.
+- Absolute local path / private machine identifier scan over added Lean diff was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle must construct or refute genuine semantic atom / law lower
+provenance for the external selected carrier geometry and selected Cech face
+laws, without routing through `boundaryData` or selected-layer consumers.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 202 — external selected geometry / face-law current-boundary blocker
 
 - decision: approve
