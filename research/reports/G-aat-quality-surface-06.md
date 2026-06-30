@@ -103,6 +103,179 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 191 — semantic cover data plus boundaryData still does not construct direct source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector returned to the central remaining selected-realization gate:
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`,
+equivalently `SelectedSemanticCoefficientDirectRealizationLayer`, from genuine
+semantic atom / law lower provenance for the selected `surface.K`.
+
+The selected positive route must derive carrier ids, degree-`2` zero laws, and
+all four direct selected `K.d` laws from canonical / free realization,
+universal property, finite witness, or reviewed predecessor evidence.  It may
+not use selected cochain realization, selected layer / direct lower wrappers,
+`explicitLower`, `directLower`, `boundaryData`, conclusion-side gluing /
+sheaf / descent / effective-gluing, or semantic `H1` zero as substitute lower
+provenance.
+
+Cycle 191 fixes the next exact obstruction: even adding G-05
+`SemanticRepairCoverCechDataWithZero` to true-sheaf boundary-relation data and
+all conclusion-side gluing / sheaf / descent / effective-gluing /
+semantic-`H1`-zero data still does not uniformly construct the atom-supported
+direct source under the explicit finite-test degree-`0` boundary.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_conclusionSideData_and_semanticCoverCechData_without_degreewiseEquivAndDirectDifferentialSource`
+
+The theorem assumes a hypothetical constructor from:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- `SemanticRepairCoverCechDataWithZero`;
+- conclusion-side gluing data;
+- `AATSheafConditionFor`;
+- `AATDescent`;
+- effective global gluing uniqueness;
+- `SemanticRepairAdditiveH1Zero`;
+- explicit finite-test degree-`0` boundary witnesses.
+
+It closes over the supplied `boundaryData`, passes semantic cover Cech data and
+the conclusion-side inputs explicitly, sends the alleged direct-source
+constructor through the Cycle 121 direct-source route to expose
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, and applies the
+Cycle 166 explicit-lower obstruction.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData`, `SemanticRepairCoverCechDataWithZero`, conclusion-side
+  sheaf/descent/effective-gluing data, and semantic `H1` zero are blocked as a
+  uniform source for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- The finite-test degree-`0` boundary remains explicit through
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`.
+
+Remaining:
+
+- Genuine semantic atom / law lower provenance for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` remains
+  unresolved.
+- Genuine construction of `SelectedSemanticCoefficientDirectRealizationLayer`,
+  equivalently its `directLower` content, from atom-generated geometry and the
+  restriction-derived Cech differential remains unresolved.
+- Comparison, zero equivalence, refinement / naturality, the
+  Cech-vs-full-sheaf boundary, and final `$math-lean-review` remain incomplete
+  for target completion.
+
+### Material Premise Ledger
+
+- `boundaryData + semanticData + conclusion-side data -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource`:
+  blocked relative to the explicit finite-test degree-`0` boundary.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: still
+  `discharge-required`.
+- `SemanticRepairCoverRelativeCochainRealization`: still
+  `discharge-required`.
+
+### Certificate Provenance
+
+- discharged as negative provenance only: `boundaryData`,
+  `SemanticRepairCoverCechDataWithZero`, sheaf/descent/effective-gluing data,
+  and semantic `H1` zero are explicitly blocked as substitute constructor
+  inputs for this route.
+- unresolved: canonical / free / universal / finite-witness construction of
+  the selected carrier equivalences, degree-`2` zero laws, and four direct
+  selected `K.d` laws.
+
+### Proof-Use Audit
+
+- The hypothetical direct-source constructor is proof-used to produce
+  `directSource`.
+- Cycle 121 then exposes
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` through
+  `hroute.2.2.2.1`.
+- Cycle 166 consumes the resulting explicit-lower constructor.
+- `boundaryData` is closed over, while `semanticData` and conclusion-side
+  inputs are passed explicitly.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected object, certificate field, or wrapper is
+  introduced.
+- `semanticData`, `boundaryData`, and conclusion-side inputs remain theorem
+  arguments and are not reclassified as lower provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The theorem is a valid exact obstruction, not a positive construction.
+- It is derivative but not mere blocker noise: it closes the combined
+  `boundaryData + semanticCoverCechData + conclusion-side` direct-source escape
+  by reducing it to the already audited Cycle 166 explicit-lower obstruction.
+- The theorem does not claim an unconditional impossibility theorem for all
+  canonical / free constructions, and it does not construct the selected
+  semantic coefficient realization layer.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 191 as `blocker-fixed`, with
+`completion_candidate: no`.
+
+The audit found no statement weakening, hidden material premise, or
+structure-field escape.  It confirmed that the alleged direct-source
+constructor is used to produce `directSource`; the Cycle 121 route exposes
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`; and Cycle 166
+consumes the resulting explicit-lower constructor.  It also confirmed that
+selected cochain realization, selected layer / direct lower wrappers,
+`explicitLower`, `directLower`, `boundaryData`, semantic cover Cech data,
+conclusion-side gluing / sheaf / descent / effective-gluing, and semantic
+`H1` zero remain rejected as lower-provenance substitutes.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle191AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle must construct
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, equivalently
+`SelectedSemanticCoefficientDirectRealizationLayer`, from genuine semantic
+atom / law lower provenance for selected `surface.K`, without selected cochain
+realization, selected layer, direct lower wrappers, `explicitLower`,
+`directLower`, `boundaryData`, conclusion-side data, semantic cover Cech data,
+or semantic `H1` zero substitutes.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 190 — boundaryData plus conclusion-side data does not construct direct source
 
 - decision: approve
