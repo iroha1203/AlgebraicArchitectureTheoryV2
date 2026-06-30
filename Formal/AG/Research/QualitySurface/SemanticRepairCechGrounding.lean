@@ -13616,6 +13616,52 @@ theorem selectedCarrierGeometry_and_faceLaws_constructs_selectedSemanticCoeffici
       family hcover_eq provenance
 
 /--
+Cycle 194 separated witness checkpoint: a section-family witness together with
+face-restriction compatibility constructs the selected semantic coefficient
+realization layer.
+
+This opens the Cycle 193 route one step lower.  The theorem constructs the
+selected carrier geometry and selected Cech face-law source from the separated
+`sectionWitness + compatibility` inputs, then immediately proof-uses the Cycle
+193 route to reach the selected layer, direct source, explicit lower data, and
+selected cochain realization.  The section-family witness and compatibility
+remain visible material premises; no selected cochain realization, selected
+layer, `directLower`, `boundaryData`, conclusion-side data, or semantic `H1`
+zero is used as lower provenance.
+-/
+theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        additive surface.coverBridge surface.K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  rcases
+      SemanticRepairCoverRelativeFaceRestrictionRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedCarrierGeometry_and_faceLawSource
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) sectionWitness compatibility with
+    ⟨geometry, faceLaws⟩
+  exact
+    selectedCarrierGeometry_and_faceLaws_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (additive := additive) (surface := surface)
+      family hcover_eq geometry faceLaws
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 
