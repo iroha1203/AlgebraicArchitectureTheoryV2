@@ -103,6 +103,120 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 205 — conclusion-side data does not construct external selected geometry / face laws
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the nearest conclusion-side escape route after Cycle 204: adding
+sheaf condition, descent, effective gluing, and semantic `H1` zero to the
+Cycle 204 inputs.
+
+The selected obligation closes the route where conclusion-side global gluing
+or zero-class data is treated as lower provenance for separated external
+selected carrier geometry plus selected Cech face laws.  This is a blocker
+theorem, not a completion candidate.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_semanticCoverCechData_and_conclusionSideData_without_externalSelectedCarrierGeometryAndFaceLaws`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- `SemanticRepairCoverCechDataWithZero`;
+- conclusion-side `AATGluingData`, `AATSheafConditionFor`, `AATDescent`,
+  effective global-section uniqueness, and `SemanticRepairAdditiveH1Zero`;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`.
+
+The proof applies the hypothetical constructor to the supplied conclusion-side
+inputs, destructs the resulting selected carrier geometry and selected face
+laws, constructs `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+extracts the degree-`0` carrier equivalence, and contradicts the finite
+`PUnit` / `ZMod 2` boundary.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route
+  `atom-supported current boundary + boundaryData + semanticCoverCechData + conclusion-side data -> selected carrier geometry + selected Cech face laws`
+  is blocked.
+- `gluingData`, `hSheafFor`, `hDescent`, `hEffective`, and
+  `hSemanticH1Zero` are proof-used through the hypothetical constructor.
+- Conclusion-side sheaf/descent/effective-gluing or zero data is not accepted
+  as provenance for selected carrier identifications or selected
+  face-restriction laws.
+
+Remaining:
+
+- Construct selected carrier geometry plus selected Cech face laws from genuine
+  semantic atom / law lower provenance.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  accepted lower provenance.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `boundaryData + semanticCoverCechData + conclusion-side data -> external selected geometry / face laws`:
+  blocked relative to atom-supported current boundary and finite
+  `PUnit` / `ZMod 2` test.
+- conclusion-side sheaf/descent/effective-gluing and semantic `H1` zero:
+  not accepted as lower provenance for selected carrier geometry or selected
+  Cech face laws.
+- selected carrier geometry and selected Cech face laws:
+  `discharge-required`; still not generated from genuine semantic atom / law
+  lower provenance.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from accepted lower provenance.
+
+### Certificate Provenance
+
+- discharged for this blocker:
+  conclusion-side sheaf/descent/effective-gluing data and
+  `SemanticRepairAdditiveH1Zero` are rejected as sufficient provenance for
+  external selected carrier geometry, selected Cech face laws, or explicit
+  lower data under the tested constructor shape.
+- unresolved:
+  actual construction theorem for external selected carrier geometry and face
+  laws from accepted semantic atom / law lower provenance.
+
+### Proof-Use / Escape Audit
+
+- Every added conclusion-side premise is passed to the hypothetical
+  constructor.
+- The proof does not project conclusion-side fields to construct selected
+  carrier geometry or selected face laws; it only derives contradiction from
+  the alleged constructor output.
+- No structure-field escape is introduced.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle205AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.
+
 ## Cycle 204 — semantic cover Cech data does not construct external selected geometry / face laws
 
 - decision: approve
