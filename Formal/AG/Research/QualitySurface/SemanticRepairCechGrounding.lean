@@ -13662,6 +13662,134 @@ theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selecte
       family hcover_eq geometry faceLaws
 
 /--
+Cycle 195 explicit finite-witness checkpoint: degreewise additive equivalences,
+degree-`2` zero laws, and the four displayed face-restriction equations
+construct the selected semantic coefficient realization layer.
+
+This opens the Cycle 194 route one step lower.  The theorem constructs the
+selected section-family carrier model from explicit degreewise equivalences and
+zero laws, constructs the section-family witness from that model, constructs
+face-restriction compatibility from the four explicit equations, then
+immediately proof-uses the Cycle 194 route.  The degreewise equivalences,
+degree-`2` zero laws, and four equations remain visible material premises; no
+selected cochain realization, selected layer, atom-supported direct source,
+`directLower`, `explicitLower`, `boundaryData`, conclusion-side data, or
+semantic `H1` zero is used as lower provenance.
+-/
+theorem degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0)
+    (c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surface.K.Cn 1)
+    (c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2)
+    (c2Equiv_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0)
+    (c2Equiv_symm_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2)
+    (d0_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          (SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero)
+      letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      letI := surface.K.cochainAddCommGroup 1
+      forall primitive : E.coefficient.C0,
+        surface.K.alternatingFaceCombination 0
+            (fun σ i =>
+              surface.K.faceRestrictionTerm 0 i
+                (sectionWitness.c0SectionEquiv primitive) σ) =
+          sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive))
+    (d0_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          (SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero)
+      letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      letI := surface.K.cochainAddCommGroup 1
+      forall primitive : surface.K.Cn 0,
+        E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+          sectionWitness.c1SectionEquiv.symm
+            (surface.K.alternatingFaceCombination 0
+              (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ)))
+    (d1_face_to :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          (SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero)
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      forall cochain : E.coefficient.C1,
+        surface.K.alternatingFaceCombination 1
+            (fun σ i =>
+              surface.K.faceRestrictionTerm 1 i
+                (sectionWitness.c1SectionEquiv cochain) σ) =
+          sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain))
+    (d1_face_from :
+      let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          (SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero)
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      forall cochain : surface.K.Cn 1,
+        E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+          sectionWitness.c2SectionEquiv.symm
+            (surface.K.alternatingFaceCombination 1
+              (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  let model :=
+    SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K)
+      c0Equiv c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero
+  let sectionWitness :=
+    SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K) model
+  let compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness :=
+    SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations
+      (additive := additive) (sectionWitness := sectionWitness)
+      d0_face_to d0_face_from d1_face_to d1_face_from
+  exact
+    sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (additive := additive) (surface := surface)
+      family hcover_eq sectionWitness compatibility
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 

@@ -103,6 +103,182 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 195 — explicit finite witnesses reach selected layer
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the strongest positive checkpoint below Cycle 194.  Instead
+of leaving `SemanticRepairCoverRelativeSectionFamilyWitness` and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility` as top-level
+wrapper premises, Cycle 195 lowers them to the displayed finite witness data:
+
+- degree-`0` additive equivalence
+  `E.coefficient.C0 ≃+ surface.K.Cn 0`;
+- degree-`1` additive equivalence
+  `E.coefficient.C1 ≃+ surface.K.Cn 1`;
+- degree-`2` carrier equivalence `E.coefficient.C2 ≃ surface.K.Cn 2`;
+- the two degree-`2` zero laws;
+- the four selected face-restriction equations.
+
+This keeps the remaining lower provenance explicit.  It avoids using
+`SelectedSectionFamilyCarrierModel`, section-family witness, face-restriction
+compatibility, indexed atom-law source, or face-restriction realization as an
+opaque certificate.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations_constructs_selectedSemanticCoefficientDirectRealizationLayer`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- degree-`0` and degree-`1` additive equivalences;
+- a degree-`2` carrier equivalence and both zero laws;
+- the four selected face-restriction equations.
+
+It constructs `SelectedSectionFamilyCarrierModel` with
+`SelectedSectionFamilyCarrierModel.of_degreewise_additive_equiv_and_c2_zero_equivalence`,
+constructs the section-family witness with
+`SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel`,
+constructs compatibility with
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility.of_explicit_face_restriction_equations`,
+then immediately proof-uses the Cycle 194 theorem
+`sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_selectedSemanticCoefficientDirectRealizationLayer`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 194 immediate lower premises
+  `SemanticRepairCoverRelativeSectionFamilyWitness` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` are decomposed
+  into explicit finite witness data.
+- The selected-layer / direct-source route is connected to those finite
+  witnesses without using selected cochain realization, selected layer,
+  atom-supported direct source, `directLower`, `explicitLower`,
+  `boundaryData`, semantic cover Cech data, conclusion-side data, semantic
+  `H1` zero, or `IndexedSemanticAtomLawCarrierSource`.
+
+Remaining:
+
+- Genuine lower provenance for the degree-`0` and degree-`1` additive
+  equivalences remains unresolved.
+- Genuine lower provenance for the degree-`2` carrier equivalence and both
+  zero laws remains unresolved.
+- Genuine lower provenance for the four selected face-restriction equations
+  remains unresolved.
+- Comparison, zero equivalence, refinement / naturality, the
+  Cech-vs-full-sheaf boundary, and final `$math-lean-review` remain incomplete
+  for target completion.
+
+### Material Premise Ledger
+
+- `degreewise equivalences + degree-2 zero laws + four face equations -> SelectedSemanticCoefficientDirectRealizationLayer`:
+  discharged as a positive route.
+- `E.coefficient.C0 ≃+ surface.K.Cn 0`: still `discharge-required`.
+- `E.coefficient.C1 ≃+ surface.K.Cn 1`: still `discharge-required`.
+- `E.coefficient.C2 ≃ surface.K.Cn 2`: still `discharge-required`.
+- `c2Equiv E.coefficient.zero2 = 0`: still `discharge-required`.
+- `c2Equiv.symm 0 = E.coefficient.zero2`: still `discharge-required`.
+- The four selected face-restriction equations: still
+  `discharge-required`.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: reached only relative
+  to the visible finite witnesses.
+- `SemanticRepairCoverRelativeCochainRealization`: reached only relative to
+  the visible finite witnesses.
+
+### Certificate Provenance
+
+- discharged: `SelectedSectionFamilyCarrierModel`, section-family witness, and
+  face-restriction compatibility are not accepted as theorem arguments; they
+  are constructed inside the proof from explicit finite witnesses.
+- rejected as shortcuts: selected cochain realization, selected layer,
+  atom-supported direct source, `directLower`, `explicitLower`,
+  `boundaryData`, semantic cover Cech data, conclusion-side
+  sheaf/descent/effective-gluing data, semantic `H1` zero, and
+  `IndexedSemanticAtomLawCarrierSource`.
+- unresolved: construction of the explicit finite witnesses themselves from
+  genuine lower provenance.
+
+### Proof-Use Audit
+
+- degreewise equivalences and degree-`2` zero laws are proof-used to construct
+  `SelectedSectionFamilyCarrierModel`.
+- the constructed model is proof-used to construct the section-family witness.
+- the four selected face-restriction equations are proof-used to construct
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- the constructed witness and compatibility are proof-used by the Cycle 194
+  route.
+- The returned packet contains the selected layer, atom-supported direct
+  source, explicit lower data, and selected cochain realization as outputs.
+
+### Structure-Field Escape Audit
+
+- status: wrapper premises removed from theorem arguments.
+- No new structure, class, instance, or certificate field is introduced.
+- The remaining material premises are displayed theorem arguments, not fields
+  of a newly introduced certificate.
+
+### Route-Integrity Audit
+
+- status: proof-obligation-discharged for the explicit finite-witness route.
+- This is not a duplicate of Cycle 194: Cycle 194 consumes section-family
+  witness plus compatibility, while Cycle 195 constructs both wrappers from
+  displayed finite data before using the Cycle 194 route.
+- This is a positive checkpoint, not a target completion theorem.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 195 as `proof-obligation-discharged`, with
+`completion_candidate: no`.
+
+The audit found no hidden selected cochain realization, selected layer,
+atom-supported direct source, `directLower`, `explicitLower`, `boundaryData`,
+semantic cover Cech data, conclusion-side gluing / sheaf / descent /
+effective-gluing / `H1`-zero data, `IndexedSemanticAtomLawCarrierSource`, or
+structure-field escape.  It confirmed that the remaining material premises are
+the degreewise equivalences, degree-`2` zero laws, and four selected
+face-restriction equations.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle195AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- local absolute path / private machine identifier scan over added diff lines
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop positive checkpoint,
+not target completion.
+
+The next cycle must construct the displayed finite witnesses from genuine
+semantic atom / law lower provenance, canonical / free construction,
+universal property, finite nonvacuous witness, or reviewed predecessor theorem.
+If direct construction fails, the next cycle should isolate exactly which of
+the nine displayed lower witnesses lacks provenance.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 194 — separated section witness plus face compatibility reaches selected layer
 
 - decision: approve
