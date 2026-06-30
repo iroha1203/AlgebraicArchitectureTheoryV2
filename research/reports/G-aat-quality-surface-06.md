@@ -103,6 +103,138 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 207 — canonical/free semantic atom-law realization constructor boundary
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 first inspected the current Lean surface for a positive canonical / free /
+universal-property / input-boundary construction of selected carrier geometry,
+selected Cech face laws, `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+or `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` from genuine semantic
+atom / law lower provenance.
+
+It found downstream positive routes from explicit lower data to the selected
+semantic coefficient realization layer and cochain realization, but no visible
+constructor for the explicit lower data itself.  The selected obligation was
+therefore to fix the exact constructor boundary: a future canonical/free
+semantic atom-law realization can be used only if it produces the transparent
+explicit finite lower data.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.canonicalOrFreeSemanticAtomLawRealization_constructor_boundary`
+
+The theorem assumes:
+
+- an inert `Realization : CurrentG06InputSurface -> Type`;
+- an explicit constructor
+  `Realization surface -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- atom-generated selected-cover data and selected-cover equality.
+
+It proves that the transparent lower data is proof-used to construct:
+
+- `SelectedSemanticCoefficientDirectRealizationLayer`;
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+- a selected cover-relative cochain realization;
+- selected carrier geometry plus selected Cech face laws;
+- carrier-specific comparison provenance.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- A semantic atom-law realization witness is not accepted as provenance by
+  itself.
+- The usable gate is now explicit:
+  `Realization -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- Once that transparent lower data is obtained, the downstream selected-layer,
+  direct-source, cochain-realization, selected-geometry, face-law, and
+  carrier-provenance routes are proof-used in one theorem.
+
+Remaining:
+
+- Construct `Realization` or an equivalent canonical/free/input-boundary
+  semantic atom-law realization from genuine semantic atom / law lower
+  provenance.
+- Prove the actual constructor
+  `Realization -> DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- Audit nonvacuity and anti-target-fitting for that concrete realization.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `Realization`: inert parameter only; not a discharged premise.
+- `realizationConstructsExplicitLower`: still a theorem argument and therefore
+  unresolved provenance.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: proof-used as the
+  transparent lower data that exposes degree-`0` / degree-`1` carrier
+  comparisons, degree-`2` zero laws, and four selected face-restriction
+  equations.
+
+### Certificate Provenance
+
+- discharged for this checkpoint:
+  the theorem fixes that only the transparent lower data output, not an opaque
+  realization witness, can feed the downstream G-06 selected realization route.
+- unresolved:
+  construction of the transparent lower data from a genuine semantic atom /
+  law source, canonical/free construction, universal property, finite witness,
+  or reviewed predecessor theorem.
+
+### Proof-Use / Escape Audit
+
+- `realizationConstructsExplicitLower surface realization` is bound as `lower`
+  and then used to build the direct lower bundle, selected semantic coefficient
+  layer, atom-supported selected lower source, selected cochain realization,
+  selected carrier geometry / face-law source, and carrier-specific provenance.
+- No new structure, certificate, axiom, or class membership is introduced.
+- No conclusion-side gluing, sheaf condition, descent, effective gluing,
+  semantic `H1` zero, boundary membership, global coherence, refinement
+  naturality, or full sheaf cohomology comparison is stored in the new theorem.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle207AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the target Lean file
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.
+
+### T3 Audit
+
+T3 audit approved Cycle 207 as `proof-checkpoint`:
+
+- statement not weakened;
+- no hidden material premise found;
+- no new structure-field escape;
+- route integrity passed because `Realization` is not accepted as provenance
+  without the explicit constructor to the transparent lower data;
+- completion candidate remains `no`.
+
+Next obligation:
+
+- Construct the actual canonical/free/input-boundary semantic atom-law
+  realization and prove that it generates
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, with degree-wise
+  carrier comparisons, degree-`2` zero laws, and four selected face-restriction
+  equations audited for provenance and nonvacuity.
+
 ## Cycle 206 — combined data does not construct the atom-supported finite witness source
 
 - decision: approve
