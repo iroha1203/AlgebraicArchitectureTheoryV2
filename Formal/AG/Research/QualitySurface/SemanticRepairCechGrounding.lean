@@ -211,6 +211,36 @@ theorem no_uniform_carrier_specific_additive_comparison_from_bare_groups :
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 189 finite-test witness: no additive equivalence can identify the
+singleton additive group `PUnit` with `ZMod 2`.
+
+This is a theorem-level finite witness for blocker tests.  It is not lower
+provenance for any selected semantic coefficient realization.
+-/
+theorem finiteTest_noAddEquiv_PUnit_ZMod2 (e : PUnit ≃+ ZMod 2) :
+    False := by
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
+Cycle 189 finite-test witness: no plain equivalence can identify `PUnit`
+with `ZMod 2`.
+
+This is the carrier-level version used by degree-`2` finite blocker tests.
+It is not a construction of a selected coefficient carrier.
+-/
+theorem finiteTest_noEquiv_PUnit_ZMod2 (e : PUnit ≃ ZMod 2) :
+    False := by
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 Cochain-level comparison between the semantic repair additive Cech data and a
 general cover-relative AAT Cech complex.
 
@@ -335,6 +365,113 @@ variable {S : AAT.AG.Site.AATSite A}
 variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Cycle 189 finite-test boundary audit for degree `0`: the displayed
+`PUnit`/`ZMod 2` test equivalences turn any semantic-to-selected degree-`0`
+additive equivalence into the finite contradiction.
+-/
+theorem finiteTestBoundary_blocks_degreeZeroAdditiveEquiv
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := K.cochainAddCommGroup 0
+      K.Cn 0 ≃+ ZMod 2)
+    (c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ K.Cn 0) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  exact
+    finiteTest_noAddEquiv_PUnit_ZMod2
+      (c0SourceEquiv.symm.trans (c0Equiv.trans c0TargetEquiv))
+
+/--
+Cycle 189 finite-test boundary audit for degree `1`: the displayed
+`PUnit`/`ZMod 2` test equivalences turn any semantic-to-selected degree-`1`
+additive equivalence into the finite contradiction.
+-/
+theorem finiteTestBoundary_blocks_degreeOneAdditiveEquiv
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := K.cochainAddCommGroup 1
+      K.Cn 1 ≃+ ZMod 2)
+    (c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ K.Cn 1) :
+    False := by
+  letI := additive.c1AddCommGroup
+  letI := K.cochainAddCommGroup 1
+  exact
+    finiteTest_noAddEquiv_PUnit_ZMod2
+      (c1SourceEquiv.symm.trans (c1Equiv.trans c1TargetEquiv))
+
+/--
+Cycle 189 finite-test boundary audit for degree `2`: the displayed
+`PUnit`/`ZMod 2` test equivalences turn any semantic-to-selected degree-`2`
+carrier equivalence into the finite contradiction.
+-/
+theorem finiteTestBoundary_blocks_degreeTwoCarrierEquiv
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : K.Cn 2 ≃ ZMod 2)
+    (c2Equiv : E.coefficient.C2 ≃ K.Cn 2) :
+    False := by
+  exact
+    finiteTest_noEquiv_PUnit_ZMod2
+      (c2SourceEquiv.symm.trans (c2Equiv.trans c2TargetEquiv))
+
+/--
+Cycle 189 theorem-level finite-test packet for the degree-wise equivalence
+boundary.  The packet consumes the explicit finite test witnesses and returns
+the three contradiction eliminators used by the current-boundary blocker
+family.
+
+It is blocker-test evidence only: it does not construct selected cochain
+realization, direct lower provenance, or atom/law-derived coefficient
+geometry.
+-/
+theorem finiteTestBoundary_blocks_degreewiseEquivPacket
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := K.cochainAddCommGroup 0
+      K.Cn 0 ≃+ ZMod 2)
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := K.cochainAddCommGroup 1
+      K.Cn 1 ≃+ ZMod 2)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : K.Cn 2 ≃ ZMod 2) :
+    ((letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ K.Cn 0) -> False) /\
+      ((letI := additive.c1AddCommGroup
+       letI := K.cochainAddCommGroup 1
+       E.coefficient.C1 ≃+ K.Cn 1) -> False) /\
+      ((E.coefficient.C2 ≃ K.Cn 2) -> False) := by
+  constructor
+  · intro c0Equiv
+    exact
+      finiteTestBoundary_blocks_degreeZeroAdditiveEquiv
+        (K := K) c0SourceEquiv c0TargetEquiv c0Equiv
+  · constructor
+    · intro c1Equiv
+      exact
+        finiteTestBoundary_blocks_degreeOneAdditiveEquiv
+          (K := K) c1SourceEquiv c1TargetEquiv c1Equiv
+    · intro c2Equiv
+      exact
+        finiteTestBoundary_blocks_degreeTwoCarrierEquiv
+          (K := K) c2SourceEquiv c2TargetEquiv c2Equiv
 
 /--
 Construct the selected semantic/general `H1` comparison from degree-wise
@@ -13879,6 +14016,46 @@ variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
 variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
 variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
   (SemanticRepairCover.toCoverRelativeCechCover coverBridge) Ob}
+
+/--
+Cycle 189 current-surface finite-test packet.  It specializes the general
+`PUnit`/`ZMod 2` witness packet to the selected cover-relative complex carried
+by a `CurrentG06InputSurface`.
+
+This packet is proof-use evidence for blocker tests only.  It does not promote
+the finite-test witnesses to ambient G-06 geometry and does not construct
+selected cochain realization or direct lower provenance.
+-/
+theorem currentG06InputSurface_finiteTestBoundary_blocks_degreewiseEquivPacket
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 1
+      surface.K.Cn 1 ≃+ ZMod 2)
+    (c2SourceEquiv : E.coefficient.C2 ≃ PUnit)
+    (c2TargetEquiv : surface.K.Cn 2 ≃ ZMod 2) :
+    ((letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0) -> False) /\
+      ((letI := additive.c1AddCommGroup
+       letI := surface.K.cochainAddCommGroup 1
+       E.coefficient.C1 ≃+ surface.K.Cn 1) -> False) /\
+      ((E.coefficient.C2 ≃ surface.K.Cn 2) -> False) :=
+  SemanticRepairCoverRelativeCochainRealization.finiteTestBoundary_blocks_degreewiseEquivPacket
+    (additive := additive) (K := surface.K)
+    c0SourceEquiv c0TargetEquiv
+    c1SourceEquiv c1TargetEquiv
+    c2SourceEquiv c2TargetEquiv
 
 /--
 Cycle 178 boundary theorem: adding true-sheaf boundary-relation additive data
