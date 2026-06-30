@@ -103,6 +103,143 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 209 — indexed semantic atom/law source to Cycle 208 boundary
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the positive lower-provenance route left by Cycle 208:
+
+1. construct carrier-specific comparison provenance from indexed semantic
+   atom/law lower provenance;
+2. use the existing carrier-specific provenance theorem to construct the
+   separated `SemanticRepairCoverRelativeSectionFamilyWitness` and
+   `SemanticRepairCoverRelativeFaceRestrictionCompatibility`;
+3. proof-use those witnesses through the Cycle 208 concrete realization
+   boundary.
+
+T1 rejected additional blockers, supplied `sectionWitness` / `compatibility`,
+`FaceRestrictionRealization`, conclusion-side gluing/sheaf/descent/effective
+gluing/`H1`-zero data, and inert wrappers as insufficient lower provenance.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.indexedSemanticAtomLawCarrierSource_constructs_canonicalOrFreeSemanticAtomLawRealization_boundary`
+
+The theorem consumes:
+
+- atom-generated selected-cover data;
+- `IndexedSemanticAtomLawCarrierSource`.
+
+It then constructs carrier-specific comparison provenance via
+`indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance`,
+extracts the separated witness pair via
+`constructs_sectionFamilyWitness_and_faceRestrictionCompatibility`, and
+proof-uses that pair through
+`sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_canonicalOrFreeSemanticAtomLawRealization_boundary`.
+
+### Proof-Obligation Delta
+
+Fixed relative to Cycle 208:
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness` is no longer a top-level
+  theorem argument once `IndexedSemanticAtomLawCarrierSource` is supplied.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility` is no longer a
+  top-level theorem argument once `IndexedSemanticAtomLawCarrierSource` is
+  supplied.
+- The constructed carrier-specific provenance is proof-used to obtain the
+  witness pair, and the pair is proof-used through the Cycle 208 concrete
+  realization boundary.
+
+Remaining:
+
+- Construct `IndexedSemanticAtomLawCarrierSource` from an accepted semantic
+  atom/law input boundary, canonical/free realization, universal property,
+  finite nonvacuous witness, or reviewed predecessor theorem.
+- Audit that the indexed source's carrier comparison fields, degree-`2` zero
+  laws, and selected face-restriction equations are not target-fitting.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: discharged relative to
+  `IndexedSemanticAtomLawCarrierSource`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged
+  relative to `IndexedSemanticAtomLawCarrierSource`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: constructed from the
+  indexed source and proof-used.
+- `IndexedSemanticAtomLawCarrierSource`: still a visible material lower
+  premise; it is not constructed in this cycle.
+- `boundaryData` inside the indexed source is not counted as selected carrier
+  or face-law provenance.
+
+### Certificate Provenance
+
+- discharged for this checkpoint:
+  carrier-specific provenance, section-family witness, and face-restriction
+  compatibility are generated from the indexed source and proof-used.
+- unresolved:
+  provenance for the indexed semantic atom/law source itself.
+
+### Proof-Use / Escape Audit
+
+- `source` is consumed by
+  `indexedSemanticAtomLawCarrierSource_constructs_carrierSpecificComparisonProvenance`.
+- the resulting `provenance` is consumed by
+  `constructs_sectionFamilyWitness_and_faceRestrictionCompatibility`.
+- the generated `sectionWitness` and `compatibility` are consumed by the Cycle
+  208 concrete realization boundary.
+- No new structure, typeclass, certificate, selected `K`, cover, coefficient
+  object, gluing/descent/effectivity field, or semantic `H1` zero witness is
+  introduced.
+- The indexed source remains a structure carrying material lower fields; this
+  theorem is therefore a proof checkpoint, not G-06 completion.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle209AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the target Lean file
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.  Full `lake build` passed with only
+pre-existing linter warnings in
+`Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### T3 Audit
+
+T3 audit approved Cycle 209 as `proof-checkpoint`:
+
+- Cycle 208 `sectionWitness` and `compatibility` top-level premises are removed
+  relative to `IndexedSemanticAtomLawCarrierSource`;
+- the generated provenance and witness pair are proof-used through the Cycle
+  208 boundary;
+- no target theorem weakening, conclusion-side route, structure-field escape,
+  vacuity, or wrapper-only completion claim was found;
+- the indexed source itself remains a material lower premise and must not be
+  counted as final provenance.
+
+Next obligation:
+
+- Construct `IndexedSemanticAtomLawCarrierSource` from an accepted semantic
+  atom/law input boundary, canonical/free obstruction-sheaf realization,
+  universal property, finite nonvacuous witness, or reviewed predecessor
+  theorem; otherwise fix an explicit blocker at that constructor boundary.
+
 ## Cycle 208 — concrete face-restriction realization boundary from separated lower witnesses
 
 - decision: approve
