@@ -15177,6 +15177,76 @@ theorem indexedSemanticAtomLawCarrierSource_constructs_canonicalOrFreeSemanticAt
       family hcover_eq sectionWitness compatibility
 
 /--
+Cycle 210 constructor-boundary blocker: the current atom-supported boundary
+plus the true-sheaf boundary-relation pointer cannot make a canonical/free
+realization route usable by manufacturing the indexed semantic atom/law source.
+
+The `Realization` parameter is intentionally inert.  The theorem says that if
+the current boundary plus `boundaryData` could construct such a realization,
+and if that realization could construct
+`IndexedSemanticAtomLawCarrierSource`, then it would give exactly the
+indexed-source constructor already blocked in Cycle 174.  Thus a future
+canonical/free route must provide genuinely new lower provenance for the
+indexed carrier comparisons, degree-`2` zero laws, and four selected face
+equations; `boundaryData` and a named realization wrapper do not suffice.
+-/
+theorem no_current_canonicalOrFreeRoute_without_indexedSemanticAtomLawCarrierSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (Realization :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) -> Type a)
+    (currentBoundaryRealizationConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      Realization surfaceInput)
+    (realizationConstructsIndexedSource :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      Realization surfaceInput ->
+      IndexedSemanticAtomLawCarrierSource (additive := additive) surfaceInput) :
+    False := by
+  let atomSupportedCurrentBoundaryIndexedSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      IndexedSemanticAtomLawCarrierSource (additive := additive) surfaceInput :=
+    fun surfaceInput familyInput hcoverInput boundaryInput =>
+      realizationConstructsIndexedSource surfaceInput
+        (currentBoundaryRealizationConstructor
+          surfaceInput familyInput hcoverInput boundaryInput)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource
+      (additive := additive) (surface := surface)
+      family hcover_eq boundaryData c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryIndexedSourceConstructor
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
