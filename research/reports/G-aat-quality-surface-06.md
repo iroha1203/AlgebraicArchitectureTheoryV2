@@ -103,6 +103,144 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 212 — current surface geometry does not construct c0 carrier data
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the positive obligation left after Cycle 211:
+
+1. construct
+   `CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`;
+2. do so from genuine semantic atom/law lower provenance, not from
+   `boundaryData`, inert `Realization` wrappers, `IndexedSemanticAtomLawCarrierSource`
+   as an unexplained premise, conclusion-side sheaf/descent/effective-gluing
+   data, semantic `H1` zero, or downstream explicit-lower consumer routes;
+3. if no current positive route exists, fix the exact route boundary that
+   fails.
+
+Inspection found no visible constructor from canonical/free obstruction-sheaf
+realization, universal property, finite nonvacuous adequacy witness, or
+reviewed predecessor theorem.  The current positive geometry exposed by the
+Lean surface is instead: presheaf restrictions preserve zero and addition, and
+the selected Cech differential is the alternating selected face-restriction
+combination.  Cycle 212 fixes that this route still stops before `c0Carrier`.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_degreeZeroCarrierComparisonData`
+
+The theorem assumes:
+
+- a current G-06 input surface;
+- finite boundary-test equivalences for the degree-`0` obstruction;
+- a hypothetical constructor that consumes the current surface plus the
+  exposed presheaf zero/addition laws and selected Cech face identity, and
+  returns `CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`.
+
+It derives the actual presheaf laws and selected face identity from
+`current_g06_presheaf_laws_stop_before_selected_differential_source`, applies
+the hypothetical constructor, converts the resulting `c0Carrier` to an
+additive equivalence, and composes with the finite `PUnit` / `ZMod 2` boundary
+equivalences to contradict `0 != 1` in `ZMod 2`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The current atom-generated site/sheaf/presheaf geometry currently exposed in
+  Lean does not construct `c0Carrier`.
+- Presheaf restriction zero/addition laws plus selected Cech face identity are
+  real positive structure, but they do not identify the semantic degree-`0`
+  coefficient carrier with the selected cover-relative degree-`0` cochain
+  carrier.
+- The finite boundary-test premises remain visible, so the theorem is a
+  component blocker under the stated test boundary.
+
+Remaining:
+
+- Construct `c0Carrier` from genuine semantic atom/law lower provenance.
+- If a proposed canonical/free source appears, audit it for nonvacuity,
+  anti-target-fitting, and proof-use before accepting it as provenance.
+- `c1Carrier`, `c2Equiv` with zero laws, and the four selected face-restriction
+  equations remain unresolved after `c0Carrier`.
+
+### Material Premise Ledger
+
+- current surface presheaf zero/addition laws: discharged as insufficient
+  positive geometry for `c0Carrier`.
+- selected Cech face identity: discharged as insufficient positive geometry
+  for `c0Carrier`.
+- `c0Carrier`: still `discharge-required` as a positive lower-provenance
+  construction.
+- full carrier-specific comparison provenance: still unresolved.
+
+### Certificate Provenance
+
+- discharged as blocker evidence:
+  the current surface's exposed presheaf laws and selected face identity do not
+  certify `c0Carrier`.
+- unresolved:
+  canonical/free/universal/finite-witness provenance that genuinely constructs
+  the degree-`0` carrier comparison from semantic atom/law geometry.
+
+### Proof-Use / Escape Audit
+
+- The hypothetical degree-`0` constructor is proof-used to obtain
+  `c0Carrier.toAddEquiv`; no positive construction is claimed.
+- No new structure, certificate field, class membership, selected `K`, cover,
+  coefficient object, `boundaryData`, wrapper realization, or conclusion-side
+  gluing/sheaf/descent/effective-gluing/semantic `H1` zero is introduced.
+- The theorem does not consume `IndexedSemanticAtomLawCarrierSource` or
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` as provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed for the current surface geometry route.
+- The theorem must be read narrowly: it blocks current G-06 surface plus
+  presheaf zero/addition laws plus selected face identity from manufacturing
+  `c0Carrier`; it does not classify canonical/free semantic atom/law lower
+  provenance routes as impossible.
+- The finite `PUnit` / `ZMod 2` boundary is used only as a contradiction test
+  for the hypothetical constructor, not as a degenerate positive witness.
+- T3 audit approved the cycle as `blocker-fixed` with
+  `completion_candidate: no`.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle212AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan on target Lean file and `.tmp/G06Cycle212AxiomAudit.lean`
+- hidden Unicode scan on changed/audit files
+- local absolute path scan on changed/audit files
+
+Axiom audit:
+
+- `no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_degreeZeroCarrierComparisonData`
+  depends on `[propext, Classical.choice, Quot.sound]`.
+
+T3 audit:
+
+- decision: approve
+- result_type: blocker-fixed
+- completion_candidate: no
+- next obligation: construct
+  `CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`
+  from genuine semantic atom/law lower provenance, or fix a sharper blocker
+  specifically covering a proposed lower-provenance source.
+
 ## Cycle 211 — current wrapper does not construct degree-zero carrier data
 
 - decision: approve
