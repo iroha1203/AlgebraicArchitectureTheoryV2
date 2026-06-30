@@ -12958,6 +12958,109 @@ theorem selectedSemanticCoefficientDirectRealizationLayer_constructs_explicitLow
       hcycle121.2.2.2.2.1⟩
 
 /--
+Cycle 171 constructive checkpoint: atom-supported carrier-specific comparison
+provenance constructs the selected semantic coefficient realization layer.
+
+The theorem keeps the atom-generated cover source and the concrete
+carrier-specific provenance visible.  It does not claim that the current G-06
+boundary, conclusion-side gluing, descent, effective gluing, semantic `H1`
+zero, or an opaque certificate constructs that provenance.  Instead it records
+the positive route from the already audited indexed carrier/face-law provenance
+into the Cycle 157 selected-layer gate, and then reuses Cycle 170 to obtain the
+explicit lower data and selected cochain realization.
+-/
+theorem atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        additive surface.coverBridge surface.K) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  let c0Carrier :=
+    SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData
+      provenance
+  let c1Carrier :=
+    SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData
+      provenance
+  let c2Equiv :=
+    SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv
+      provenance
+  let direct :=
+    provenance.toSectionRealizationBridge.toDirectDifferentialCompatibilityForSelectedCarrierModel
+  let directLower :
+      DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) := by
+    refine
+      ⟨c0Carrier, c1Carrier, c2Equiv,
+        provenance.toSection2_zero, provenance.fromSection2_zero,
+        ?_, ?_, ?_, ?_⟩
+    · intro primitive
+      simpa [c0Carrier, c1Carrier, c2Equiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+          direct.d0_direct_to primitive
+    · intro primitive
+      simpa [c0Carrier, c1Carrier, c2Equiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+          direct.d0_direct_from primitive
+    · intro cochain
+      simpa [c0Carrier, c1Carrier, c2Equiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+          direct.d1_direct_to cochain
+    · intro cochain
+      simpa [c0Carrier, c1Carrier, c2Equiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeZeroAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.degreeOneAdditiveComparisonData,
+        SemanticRepairCarrierSpecificComparisonProvenance.c2SectionEquiv] using
+          direct.d1_direct_from cochain
+  let layer :
+      SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface :=
+    { family := family
+      cover_eq := hcover_eq
+      directLower := directLower }
+  have hcycle170 :=
+    selectedSemanticCoefficientDirectRealizationLayer_constructs_explicitLowerData_and_selectedCochainRealization
+      (additive := additive) (surface := surface) layer
+  exact ⟨⟨layer⟩, hcycle170.1, hcycle170.2.1, hcycle170.2.2⟩
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
