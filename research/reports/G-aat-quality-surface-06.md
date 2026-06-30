@@ -103,6 +103,124 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 204 — semantic cover Cech data does not construct external selected geometry / face laws
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the nearest post-wrapper semantic-data escape route after Cycle
+203: adding both `SemanticRepairCoverH1BoundaryRelationAdditiveData` and the
+G-05 `SemanticRepairCoverCechDataWithZero` package to the atom-supported
+current G-06 boundary.
+
+Cycle 204 checks that semantic-side cover Cech data cannot be counted as
+provenance for separated external selected carrier geometry plus selected
+Cech face laws.  The theorem is deliberately a blocker theorem and not a
+completion candidate.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_semanticCoverCechData_without_externalSelectedCarrierGeometryAndFaceLaws`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- `SemanticRepairCoverCechDataWithZero`;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `Exists geometry, SemanticRepairSelectedCechFaceLawSource additive geometry`.
+
+It fixes `semanticData` into the hypothetical constructor, obtains a
+Cycle-203-style boundaryData-only constructor, and applies the Cycle 203
+blocker
+`no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_externalSelectedCarrierGeometryAndFaceLaws`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route
+  `atom-supported current boundary + boundaryData + semanticCoverCechData -> selected carrier geometry + selected Cech face laws`
+  is blocked.
+- `semanticData` is proof-used only to specialize the hypothetical
+  constructor; it is not treated as selected carrier or face-law provenance.
+- `boundaryData` remains a boundary-relation / additive pointer in this route,
+  not an input-boundary construction of the external selected lower source.
+
+Remaining:
+
+- Construct selected carrier geometry plus selected Cech face laws from genuine
+  semantic atom / law lower provenance.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  accepted lower provenance.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `boundaryData + semanticCoverCechData -> external selected geometry / face laws`:
+  blocked relative to atom-supported current boundary and finite
+  `PUnit` / `ZMod 2` test.
+- `SemanticRepairCoverCechDataWithZero`:
+  not accepted as provenance for selected carrier identifications or selected
+  face-restriction laws.
+- selected carrier geometry and selected Cech face laws:
+  `discharge-required`; still not generated from genuine semantic atom / law
+  lower provenance.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from accepted lower provenance.
+
+### Certificate Provenance
+
+- discharged for this blocker:
+  `SemanticRepairCoverCechDataWithZero` is rejected as sufficient provenance
+  for external selected carrier geometry, selected Cech face laws, or explicit
+  lower data under the tested constructor shape.
+- unresolved:
+  actual construction theorem for external selected carrier geometry and face
+  laws from accepted semantic atom / law lower provenance.
+
+### Proof-Use / Escape Audit
+
+- `semanticData` is used in the proof by fixing it into the hypothetical
+  constructor before reducing to the Cycle 203 blocker.
+- No semantic-data field is projected to construct selected carrier geometry
+  or selected Cech face laws.
+- No structure-field escape is introduced; the theorem blocks the escape route
+  rather than packaging it.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle204AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the added Lean diff
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 independent audit returned:
+
+- decision: approve
+- result_type: blocker-fixed
+- completion_candidate: no
+- blocking_findings: none
+
 ## Cycle 203 — boundaryData does not construct external selected geometry / face laws
 
 - decision: approve
