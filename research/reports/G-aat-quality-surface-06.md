@@ -103,6 +103,171 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 196 — atom-supported finite source reaches selected layer
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the remaining positive checkpoint immediately below Cycle
+195.  Instead of first adding another blocker, Cycle 196 connects the accepted
+finite source
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` directly to the selected
+semantic coefficient realization gate.
+
+The source is destructed into:
+
+- atom-generated selected-cover family and selected-cover equality;
+- degree-`0` additive equivalence;
+- degree-`1` additive equivalence;
+- degree-`2` carrier equivalence;
+- the two degree-`2` zero laws;
+- the four selected face-restriction equations.
+
+The nine finite witnesses remain material premises inside the source.  The
+cover family and equality are cover components of the source, not finite
+carrier / face-equation provenance.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedSemanticCoefficientDirectRealizationLayer`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource additive surface`.
+
+It destructs the finite source into its cover component and nine displayed
+finite witnesses, then immediately proof-uses the Cycle 195 theorem
+`degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations_constructs_selectedSemanticCoefficientDirectRealizationLayer`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The accepted atom-supported finite source is connected directly to the
+  selected-layer / direct-source route.
+- The route avoids the older selected cochain realization, selected layer,
+  atom-supported direct source, `directLower`, `explicitLower`,
+  `boundaryData`, semantic cover Cech data, conclusion-side data,
+  carrier-specific comparison provenance, and `IndexedSemanticAtomLawCarrierSource`
+  as inputs.
+
+Remaining:
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` itself remains a
+  visible material premise.
+- The nine finite witnesses inside that source remain undischarged from
+  genuine semantic atom / law lower provenance.
+- Comparison, zero equivalence, refinement / naturality, the
+  Cech-vs-full-sheaf boundary, and final `$math-lean-review` remain incomplete
+  for target completion.
+
+### Material Premise Ledger
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource -> SelectedSemanticCoefficientDirectRealizationLayer`:
+  discharged as a positive route.
+- atom-generated selected-cover family and selected-cover equality: proof-used
+  cover component of the source.
+- `E.coefficient.C0 ≃+ surface.K.Cn 0`: still `discharge-required`.
+- `E.coefficient.C1 ≃+ surface.K.Cn 1`: still `discharge-required`.
+- `E.coefficient.C2 ≃ surface.K.Cn 2`: still `discharge-required`.
+- `c2Equiv E.coefficient.zero2 = 0`: still `discharge-required`.
+- `c2Equiv.symm 0 = E.coefficient.zero2`: still `discharge-required`.
+- The four selected face-restriction equations: still
+  `discharge-required`.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: reached only relative
+  to the visible finite source.
+- `SemanticRepairCoverRelativeCochainRealization`: reached only relative to
+  the visible finite source.
+
+### Certificate Provenance
+
+- discharged: the atom-supported finite source is unpacked directly and
+  proof-used by the Cycle 195 selected-realization gate.
+- rejected as shortcuts: selected cochain realization, selected layer,
+  atom-supported direct source, `directLower`, `explicitLower`,
+  `boundaryData`, semantic cover Cech data, conclusion-side
+  sheaf/descent/effective-gluing data, semantic `H1` zero,
+  carrier-specific comparison provenance, and
+  `IndexedSemanticAtomLawCarrierSource`.
+- unresolved: construction of `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`
+  and its nine finite witnesses from genuine lower provenance.
+
+### Proof-Use Audit
+
+- the source is destructed into `family`, `hcover_eq`, degreewise
+  equivalences, degree-`2` zero laws, and four face-restriction equations.
+- those components are proof-used by the Cycle 195 theorem.
+- The returned packet contains the selected layer, atom-supported direct
+  source, explicit lower data, and selected cochain realization as outputs.
+
+### Structure-Field Escape Audit
+
+- status: finite source remains a visible theorem argument.
+- No new structure, class, instance, or certificate field is introduced.
+- `IndexedSemanticAtomLawCarrierSource` is not used.
+- This checkpoint does not claim that the source is generated from
+  `CurrentG06InputSurface`.
+
+### Route-Integrity Audit
+
+- status: proof-obligation-discharged for the atom-supported finite-source
+  route.
+- This is not a duplicate of Cycle 195: Cycle 195 consumes the displayed
+  finite witnesses directly, while Cycle 196 shows the accepted atom-supported
+  finite source exposes exactly those inputs and reaches the same gate.
+- This is a positive checkpoint, not a target completion theorem.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 196 as `proof-obligation-discharged`, with
+`completion_candidate: no`.
+
+The audit found no selected cochain realization, selected layer, atom-supported
+direct source, `directLower`, `explicitLower`, `boundaryData`, semantic cover
+Cech data, conclusion-side gluing / sheaf / descent / effective-gluing /
+`H1`-zero data, carrier-specific comparison provenance, or
+`IndexedSemanticAtomLawCarrierSource` input.  It confirmed that the finite
+source remains a visible material premise and that the nine finite witnesses
+remain the unresolved lower provenance.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle196AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- local absolute path / private machine identifier scan over added diff lines
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop positive checkpoint,
+not target completion.
+
+The next cycle must construct
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` from genuine accepted
+semantic atom / law lower provenance, or fix the minimal missing component
+blocker, starting with the degree-`0` additive equivalence if no positive
+source exists.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 195 — explicit finite witnesses reach selected layer
 
 - decision: approve
