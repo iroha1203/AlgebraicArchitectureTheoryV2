@@ -3911,6 +3911,73 @@ theorem no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_s
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
+Cycle 212 component blocker: the positive route from the currently exposed
+atom-supported geometry stops before the degree-`0` carrier comparison.
+
+The extra inputs are exactly the constructive facts already derivable from the
+current G-06 surface: presheaf restrictions preserve zero and addition, and the
+selected Cech differential is the alternating selected face-restriction
+combination.  If those facts could construct the degree-`0`
+`CarrierSpecificAdditiveComparisonData`, the finite `PUnit` / `ZMod 2` boundary
+would again force an additive equivalence between `PUnit` and `ZMod 2`.
+
+Thus the remaining `c0Carrier` source is not discharged by the current
+atom-generated site/sheaf/presheaf/selected-face geometry itself; a genuine
+lower provenance source is still required.
+-/
+theorem no_constructor_from_currentG06InputSurface_and_presheafRestriction_and_selectedCechFaceIdentity_without_degreeZeroCarrierComparisonData
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (currentInputPresheafFaceDegreeZeroCarrierConstructor :
+      (surface :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (∀ {source target : S.category} (f : source ⟶ target),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op 0 = 0) ->
+      (∀ {source target : S.category} (f : source ⟶ target)
+          (x y : Ob.carrier.toPresheaf.obj (op target)),
+        letI := Ob.addCommGroup target
+        letI := Ob.addCommGroup source
+        Ob.carrier.toPresheaf.map f.op (x + y) =
+          Ob.carrier.toPresheaf.map f.op x +
+            Ob.carrier.toPresheaf.map f.op y) ->
+      (∀ (n : Nat) (c : surface.K.Cn n),
+        surface.K.d n c =
+          surface.K.alternatingFaceCombination n
+            (fun σ i => surface.K.faceRestrictionTerm n i c σ)) ->
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  have hsurface :=
+    current_g06_presheaf_laws_stop_before_selected_differential_source
+      (surface := surface)
+  let c0Carrier :
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0) :=
+    currentInputPresheafFaceDegreeZeroCarrierConstructor surface
+      hsurface.1 hsurface.2.1 hsurface.2.2.1
+  let eSemanticToCech : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    c0Carrier.toAddEquiv
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (eSemanticToCech.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
 The degree-`0` carrier maps in carrier-specific provenance construct the
 additive equivalence required by the section-family witness.
 -/
