@@ -103,6 +103,119 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 206 — combined data does not construct the atom-supported finite witness source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 first searched for a positive canonical / free construction of selected
+carrier geometry, selected Cech face laws, or
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+semantic atom / law lower provenance.  No reviewed constructor of that kind was
+visible in the current Lean surface.
+
+It therefore selected the nearest unclosed constructor boundary: whether the
+combined inputs from Cycles 204 and 205 can manufacture the Cycle 196 finite
+witness source
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_conclusionSideData_and_semanticCoverCechData_without_degreewiseEquivAndFaceRestrictionSource`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- `SemanticRepairCoverCechDataWithZero`;
+- conclusion-side `AATGluingData`, `AATSheafConditionFor`, `AATDescent`,
+  effective global-section uniqueness, and `SemanticRepairAdditiveH1Zero`;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`.
+
+The proof fixes `boundaryData` and `semanticData` into the hypothetical
+constructor and reduces to the existing conclusion-side finite-source blocker
+`no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndFaceRestrictionSource`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route
+  `atom-supported current boundary + boundaryData + semanticCoverCechData + conclusion-side data -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource`
+  is blocked.
+- `boundaryData`, `semanticData`, and all conclusion-side inputs are proof-used
+  through the hypothetical constructor.
+- The Cycle 196 finite witness source is not accepted as generated from
+  boundary pointers, semantic Cech metadata, or conclusion-side
+  gluing/descent/zero data.
+
+Remaining:
+
+- Construct selected carrier geometry plus selected Cech face laws from genuine
+  semantic atom / law lower provenance.
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  accepted lower provenance.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `combined data -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  blocked relative to atom-supported current boundary and finite
+  `PUnit` / `ZMod 2` test.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  remains a wrapper around an atom-generated cover witness plus explicit lower
+  degree-wise carrier / face-restriction data; it is not lower provenance.
+- selected carrier geometry, selected Cech face laws, and
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not generated from genuine semantic atom / law
+  lower provenance.
+
+### Certificate Provenance
+
+- discharged for this blocker:
+  `boundaryData`, `SemanticRepairCoverCechDataWithZero`, conclusion-side
+  sheaf/descent/effective-gluing data, and `SemanticRepairAdditiveH1Zero` are
+  rejected as sufficient provenance for the Cycle 196 finite witness source
+  under the tested constructor shape.
+- unresolved:
+  actual construction theorem for finite carrier and selected face-restriction
+  witnesses from accepted semantic atom / law lower provenance.
+
+### Proof-Use / Escape Audit
+
+- `boundaryData` and `semanticData` are fixed into the hypothetical constructor
+  before reducing to the conclusion-side blocker.
+- The theorem introduces no new source or certificate structure.
+- No conclusion-side or semantic-data field is projected as finite carrier /
+  face-law provenance.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle206AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the added Lean diff
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.
+
 ## Cycle 205 — conclusion-side data does not construct external selected geometry / face laws
 
 - decision: approve
