@@ -14530,6 +14530,91 @@ theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selected
       d0_face_to d0_face_from d1_face_to d1_face_from
 
 /--
+Cycle 207 route-integrity checkpoint: a future canonical/free semantic
+atom-law realization is usable only through a constructor that produces the
+transparent explicit finite lower data.
+
+The parameter `Realization` is intentionally inert.  It is not treated as a
+certificate, class membership, or structure-field escape.  The theorem requires
+an explicit constructor from each realization witness to
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, then proof-uses
+that transparent output through the existing selected-layer and cochain routes.
+Thus the exact remaining positive obligation is the constructor theorem itself:
+degree-`0`/`1` carrier comparisons, degree-`2` zero laws, and the four selected
+face-restriction equations must be generated from genuine semantic atom/law
+lower provenance.
+-/
+theorem canonicalOrFreeSemanticAtomLawRealization_constructor_boundary
+    (Realization :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) -> Type a)
+    (realizationConstructsExplicitLower :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      Realization surfaceInput ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surfaceInput.coverBridge)
+        (K := surfaceInput.K))
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (realization : Realization surface) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+      (Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+        SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surface.coverBridge surface.K) := by
+  let lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) :=
+    realizationConstructsExplicitLower surface realization
+  let directLower :
+      DegreewiseCarrierDataAndDirectDifferentialLaws
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) :=
+    degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreewiseCarrierDataAndDirectDifferentialLaws
+      (additive := additive) (coverBridge := surface.coverBridge)
+      (K := surface.K) lower
+  let layer :
+      SelectedSemanticCoefficientDirectRealizationLayer
+        (additive := additive) surface :=
+    { family := family
+      cover_eq := hcover_eq
+      directLower := directLower }
+  let selectedLower :
+      AtomSupportedSelectedLowerSource (additive := additive) surface :=
+    ⟨family, hcover_eq, lower⟩
+  have hselectedLayer :=
+    selectedSemanticCoefficientDirectRealizationLayer_constructs_explicitLowerData_and_selectedCochainRealization
+      (additive := additive) (surface := surface) layer
+  have hselectedLower :=
+    atomSupportedSelectedLowerSource_constructs_selectedCochainRealization
+      (additive := additive) (surface := surface) selectedLower
+  exact
+    ⟨lower,
+      ⟨layer⟩,
+      hselectedLayer.1,
+      hselectedLayer.2.2,
+      hselectedLower.2.2.2.2.1,
+      hselectedLower.2.2.2.2.2.1⟩
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 
