@@ -13381,6 +13381,118 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelation
       atomSupportedCurrentBoundaryExplicitLowerConstructor
 
 /--
+Cycle 175 positive checkpoint: the existing finite section-family witness plus
+selected face-restriction compatibility constructs the indexed semantic
+atom/law carrier source.
+
+This lowers the Cycle 173/174 `IndexedSemanticAtomLawCarrierSource` premise to
+the older finite witness boundary.  The theorem does not construct that
+section-family witness or compatibility from `CurrentG06InputSurface`,
+`boundaryData`, selected cochain realization, selected layer,
+conclusion-side gluing/sheaf/descent/effectivity, or semantic `H1` zero.
+`boundaryData` remains a provenance pointer; the selected carrier data and face
+laws are supplied by the finite witness boundary and remain material premises.
+-/
+def sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSemanticAtomLawCarrierSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        additive surface.coverBridge surface.K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    IndexedSemanticAtomLawCarrierSource (additive := additive) surface where
+  boundaryData := boundaryData
+  c0Carrier := by
+    letI := additive.c0AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    exact
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv
+        sectionWitness.c0SectionEquiv
+  c1Carrier := by
+    letI := additive.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 1
+    exact
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv
+        sectionWitness.c1SectionEquiv
+  c2Equiv := sectionWitness.c2SectionEquiv
+  c2Equiv_zero := sectionWitness.c2SectionEquiv_zero
+  c2Equiv_symm_zero := sectionWitness.c2SectionEquiv_symm_zero
+  d0_face_to := by
+    dsimp [
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv]
+    exact compatibility.d0_face_to
+  d0_face_from := by
+    dsimp [
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv]
+    exact compatibility.d0_face_from
+  d1_face_to := by
+    dsimp [
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv]
+    exact compatibility.d1_face_to
+  d1_face_from := by
+    dsimp [
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv]
+    exact compatibility.d1_face_from
+
+/--
+Cycle 175 proof-use checkpoint: the finite witness boundary constructs the
+indexed source and immediately exposes the transparent explicit lower data.
+
+The result remains a checkpoint because the section-family witness and
+face-restriction compatibility are still visible material premises.  It only
+removes `IndexedSemanticAtomLawCarrierSource` as a top-level premise by
+constructing it from that lower finite boundary.
+-/
+theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSource_and_explicitLowerData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        additive surface.coverBridge surface.K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    Nonempty (IndexedSemanticAtomLawCarrierSource (additive := additive) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) := by
+  let source :
+      IndexedSemanticAtomLawCarrierSource (additive := additive) surface :=
+    sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSemanticAtomLawCarrierSource
+      (additive := additive) (surface := surface)
+      boundaryData sectionWitness compatibility
+  exact
+    ⟨⟨source⟩,
+      indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (surface := surface) source⟩
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
