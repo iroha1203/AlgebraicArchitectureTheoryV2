@@ -2289,6 +2289,116 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 175 — finite witness constructs indexed source checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the constructive lower route below Cycle 173/174:
+
+1. construct `IndexedSemanticAtomLawCarrierSource` from the existing finite
+   section-family witness plus selected face-restriction compatibility;
+2. include `boundaryData` only as the true-sheaf boundary-relation pointer;
+3. immediately proof-use the constructed indexed source through the Cycle 174
+   helper to expose `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+This is not a completion candidate.  The section-family witness and
+face-restriction compatibility still contain the actual selected carrier
+identifications, degree-`2` zero laws, and selected face equations.
+
+### Lean Artifacts
+
+- New declarations:
+  - `SemanticRepairCoverRelativeCochainRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSemanticAtomLawCarrierSource`
+  - `SemanticRepairCoverRelativeCochainRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSource_and_explicitLowerData`
+
+The first declaration constructs the Cycle 173 indexed source from
+`SemanticRepairCoverRelativeSectionFamilyWitness` and
+`SemanticRepairCoverRelativeFaceRestrictionCompatibility`.  The second
+declaration proof-uses that source with the Cycle 174 helper and obtains the
+transparent explicit lower data.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `IndexedSemanticAtomLawCarrierSource` is no longer only a top-level structure
+  premise: it is constructible from the older finite witness boundary.
+- The constructed source is immediately consumed to recover
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+Remaining:
+
+- Construct the section-family witness and selected face-restriction
+  compatibility from genuine semantic atom/law indexed provenance,
+  canonical/free realization, universal property, finite nonvacuous witness,
+  or reviewed predecessor theorem.
+- `boundaryData` remains a pointer and is not counted as selected carrier or
+  face-law provenance.
+- Broader G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `IndexedSemanticAtomLawCarrierSource`: discharged relative to
+  `SemanticRepairCoverRelativeSectionFamilyWitness` plus
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: still
+  `discharge-required`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: still
+  `discharge-required`.
+- `boundaryData`: not sufficient provenance for selected indexed carrier data.
+
+### Proof-Use Audit
+
+- The constructor fills the indexed source fields from
+  `sectionWitness.c0SectionEquiv`, `sectionWitness.c1SectionEquiv`,
+  `sectionWitness.c2SectionEquiv`, the two degree-`2` zero laws, and the four
+  compatibility face equations.
+- The proof-use theorem immediately applies
+  `indexedSemanticAtomLawCarrierSource_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- No selected cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data is used as source.
+
+### Route-Integrity Audit
+
+- status: proof-checkpoint.
+- No new `surface.K`, cover, coefficient object, obstruction sheaf, or face law
+  is chosen to fit the target.
+- The target theorem is not weakened; the remaining finite witness boundary is
+  explicit.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle175AxiomAudit.lean` passed.
+- Axiom audit reported expected standard axioms:
+  - `[propext, Quot.sound]` for
+    `sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSemanticAtomLawCarrierSource`;
+  - `[propext, Quot.sound]` for
+    `sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSource_and_explicitLowerData`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should construct or refute the finite section-family witness
+and selected face-restriction compatibility from genuine lower semantic
+atom/law provenance.  `$math-lean-review` is not run because this is not a
+completion candidate.
+
 ## Cycle 174 — boundary-relation additive data does not construct indexed source
 
 - decision: approve
