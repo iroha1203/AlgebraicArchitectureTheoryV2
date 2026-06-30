@@ -11354,6 +11354,116 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelation
       atomSupportedConclusionSideDirectSourceConstructor
 
 /--
+Cycle 191 semantic-cover-data combined obstruction: adding the G-05 semantic
+cover Cech data as well as true-sheaf boundary-relation data and all
+conclusion-side sheaf/descent/effective-gluing data still does not uniformly
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+
+The proof sends any alleged direct-source constructor through the existing
+Cycle 121 direct-source route to expose
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, then applies the
+Cycle 166 obstruction for current-boundary plus conclusion-side data plus
+semantic cover Cech data.  Thus semantic cover Cech metadata is not genuine
+lower provenance for the selected carrier equivalences or the four direct
+selected `K.d` laws.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_conclusionSideData_and_semanticCoverCechData_without_degreewiseEquivAndDirectDifferentialSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (semanticData :
+      SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z}
+        (site := site) semanticCover)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedBoundaryConclusionSemanticDataDirectSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z}
+        (site := site) semanticCover ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surfaceInput) :
+    False := by
+  let atomSupportedConclusionSideSemanticDataExplicitLowerConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverCechDataWithZero.{u, v, w, x, y, z}
+        (site := site) semanticCover ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surfaceInput.coverBridge)
+        (K := surfaceInput.K) :=
+    fun surfaceInput familyInput hcoverInput semanticDataInput gluingInput
+        hSheafInput hDescentInput hEffectiveInput hSemanticH1ZeroInput => by
+      let directSource :
+          AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+            (additive := additive) surfaceInput :=
+        atomSupportedBoundaryConclusionSemanticDataDirectSourceConstructor
+          surfaceInput familyInput hcoverInput boundaryData semanticDataInput
+          gluingInput hSheafInput hDescentInput hEffectiveInput
+          hSemanticH1ZeroInput
+      have hroute :=
+        atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization
+          (additive := additive) (surface := surfaceInput) directSource
+      exact hroute.2.2.2.1
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_and_semanticCoverCechData_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq semanticData gluingData hSheafFor
+      hDescent hEffective hSemanticH1Zero c0SourceEquiv c0TargetEquiv
+      atomSupportedConclusionSideSemanticDataExplicitLowerConstructor
+
+/--
 Cycle 126 conclusion-side degree-`0` boundary theorem: the accepted
 atom-supported current G-06 boundary plus conclusion-side gluing/sheaf/descent/
 effective-gluing/semantic-`H1`-zero inputs cannot uniformly construct even the
