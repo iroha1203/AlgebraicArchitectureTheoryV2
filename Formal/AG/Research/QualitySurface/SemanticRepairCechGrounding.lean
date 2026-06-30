@@ -10680,6 +10680,120 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_sele
       d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
 
 /--
+Cycle 201 route-integrity boundary: the Cycle 196 atom-supported finite source
+is exactly an atom-generated cover witness together with the transparent
+explicit lower data.
+
+This records the failed positive-route audit after the finite components have
+all been exposed.  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` is
+not a new semantic atom/law provenance below
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`; it repackages the
+same degree-wise carrier comparisons, degree-`2` zero laws, and four selected
+face-restriction equations with the selected-cover witness.  Therefore a valid
+next positive route must construct that explicit lower data from genuinely
+lower provenance, not merely pass through the Cycle 196 finite-source wrapper.
+-/
+theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_iff_coverWitness_and_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) :
+    AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface <->
+      Exists fun family :
+        AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+        surface.selectedCover = Sieve.generate family.presieve /\
+          DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K) := by
+  constructor
+  · intro source
+    rcases source with
+      ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+    let c0Carrier :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0) :=
+      by
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+    let c1Carrier :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        CarrierSpecificAdditiveComparisonData E.coefficient.C1 (surface.K.Cn 1) :=
+      by
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        exact CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+    refine
+      ⟨family, hcover_eq,
+        c0Carrier, c1Carrier, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        ?_, ?_, ?_, ?_⟩
+    · intro primitive
+      simpa [c0Carrier, c1Carrier] using d0_face_to primitive
+    · intro primitive
+      simpa [c0Carrier, c1Carrier] using d0_face_from primitive
+    · intro cochain
+      simpa [c0Carrier, c1Carrier] using d1_face_to cochain
+    · intro cochain
+      simpa [c0Carrier, c1Carrier] using d1_face_from cochain
+  · intro source
+    rcases source with
+      ⟨family, hcover_eq, lower⟩
+    rcases lower with
+      ⟨c0Carrier, c1Carrier, c2Equiv,
+        c2Equiv_zero, c2Equiv_symm_zero,
+        d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+    refine
+      ⟨family, hcover_eq,
+        (letI := additive.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         c0Carrier.toAddEquiv),
+        (letI := additive.c1AddCommGroup
+         letI := surface.K.cochainAddCommGroup 1
+         c1Carrier.toAddEquiv),
+        c2Equiv, c2Equiv_zero, c2Equiv_symm_zero, ?_, ?_, ?_, ?_⟩
+    · intro primitive
+      simpa [
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+          d0_face_to primitive
+    · intro primitive
+      simpa [
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+          d0_face_from primitive
+    · intro cochain
+      simpa [
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+          d1_face_to cochain
+    · intro cochain
+      simpa [
+        CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+        CarrierSpecificAdditiveComparisonData.toAddEquiv,
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+        SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+        SelectedSectionFamilyCarrierModel.c1SectionEquiv] using
+          d1_face_from cochain
+
+/--
 Cycle 167 sharper blocker theorem: even the degree-`0` indexed carrier
 comparison cannot be uniformly constructed from the current boundary plus
 conclusion-side data and semantic cover Cech data.
