@@ -2289,6 +2289,151 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 180 — boundaryData does not construct the transparent direct lower bundle
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the remaining direct finite-witness obligation after Cycle
+179:
+
+1. construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` from a
+   genuine canonical/free/universal nonvacuous finite atom/law witness; or
+2. if that construction is unavailable, expose the exact component-level
+   boundary without wrapping the same lower data in `boundaryData`, indexed
+   source, explicit lower data, selected cochain realization, selected layer,
+   semantic `H1` zero, gluing/descent/effectivity, or conclusion-side data.
+
+Cycle 180 follows the second branch.  It isolates the transparent direct lower
+bundle itself before it is packaged as the atom-supported direct finite
+witness.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreewiseCarrierDataAndDirectDifferentialLaws`
+
+The theorem assumes a hypothetical constructor from
+`CurrentG06InputSurface`, atom-generated selected-cover data,
+selected-cover equality, and `boundaryData` to
+`DegreewiseCarrierDataAndDirectDifferentialLaws`.  It packages that transparent
+direct lower bundle with the same selected-cover data into
+`SelectedSemanticCoefficientDirectRealizationLayer`, uses Cycle 157
+`selectedSemanticCoefficientDirectRealizationLayer_to_atomSupportedDirectSource`
+to obtain `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, and then
+applies the Cycle 179 direct-source no-constructor theorem.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus the accepted atom-supported current G-06 boundary is now
+  blocked as a uniform source for the transparent direct lower bundle
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`.
+- The Cycle 179 direct-source blocker is sharpened to the carrier maps,
+  degree-`2` zero laws, and four direct selected `K.d` laws before they are
+  wrapped as `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+
+Remaining:
+
+- Construct `DegreewiseCarrierDataAndDirectDifferentialLaws` or
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` from genuine lower
+  finite semantic atom/law provenance.
+- The blocker remains relative to the explicit finite-test hypotheses
+  `c0SourceEquiv` and `c0TargetEquiv` inherited from the predecessor
+  no-constructor route; these hypotheses are visible and are not completion
+  evidence.
+
+### Material Premise Ledger
+
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: still
+  `discharge-required`; `boundaryData` is blocked as a source.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`; Cycle 179 blocks `boundaryData` as a source and Cycle
+  180 blocks its transparent direct-lower component.
+- carrier maps, degree-`2` zero laws, and direct selected `K.d` laws: still the
+  unresolved material lower data.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData` is not provenance for the
+  transparent direct lower bundle.
+- unresolved: genuine atom/law provenance for the carrier identifications,
+  degree-`2` zero laws, and direct differential laws.
+
+### Proof-Use Audit
+
+- The hypothetical direct-lower constructor is proof-used to build
+  `DegreewiseCarrierDataAndDirectDifferentialLaws`.
+- The direct lower bundle is placed in a selected realization layer only inside
+  the contradiction route.
+- Cycle 157 converts that layer to an atom-supported direct source.
+- Cycle 179 consumes the resulting direct-source constructor and derives
+  `False`.
+- No indexed source, explicit lower data, selected cochain realization,
+  semantic `H1` zero, gluing/descent/effectivity, or conclusion-side data is
+  used as lower provenance.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+- `SelectedSemanticCoefficientDirectRealizationLayer` is used only as an
+  internal repackaging in the no-constructor proof, not as supplied provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The cycle does not weaken G-06 and does not treat `boundaryData` as direct
+  finite witness provenance.
+- The remaining positive source must still be a genuine canonical/free/
+  universal nonvacuous finite construction.
+
+### T3 Audit Result
+
+T3 approved the cycle as `blocker-fixed`.
+
+- statement not weakened: pass.
+- hidden material premise: none found.
+- structure-field escape: none found.
+- route integrity: pass.
+- completion candidate: no.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle180AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle should construct the direct lower bundle or atom-supported
+direct source from genuine lower finite semantic atom/law witness data, or
+prove a sharper no-constructor theorem removing the remaining auxiliary
+finite-test hypotheses if that is the next exact boundary.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 179 — boundaryData does not construct direct finite witness
 
 - decision: approve
