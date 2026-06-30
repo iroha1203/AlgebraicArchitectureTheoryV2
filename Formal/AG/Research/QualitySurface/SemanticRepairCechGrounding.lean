@@ -14615,6 +14615,72 @@ theorem canonicalOrFreeSemanticAtomLawRealization_constructor_boundary
       hselectedLower.2.2.2.2.2.1⟩
 
 /--
+Cycle 208 actual-realization constructor: separated section-family carrier
+data plus face-restriction compatibility construct the concrete
+face-restriction realization, and that realization satisfies the Cycle 207
+constructor boundary.
+
+This theorem does not introduce a new certificate structure.  It constructs the
+actual `SemanticRepairCoverRelativeFaceRestrictionRealization` from the
+already separated lower witnesses, then runs the Cycle 207 gate with
+`Realization` instantiated by that concrete realization type.  The downstream
+route is therefore proof-used only through the transparent
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` extracted from the
+realization, not through an inert witness, conclusion-side gluing/descent data,
+semantic `H1` zero, or an indexed wrapper.
+-/
+theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_canonicalOrFreeSemanticAtomLawRealization_boundary
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (sectionWitness :
+      SemanticRepairCoverRelativeSectionFamilyWitness
+        additive surface.coverBridge surface.K)
+    (compatibility :
+      SemanticRepairCoverRelativeFaceRestrictionCompatibility
+        additive sectionWitness) :
+    Exists fun _realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        additive surface.coverBridge surface.K =>
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive) (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        Nonempty
+          (SelectedSemanticCoefficientDirectRealizationLayer
+            (additive := additive) surface) /\
+        AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+          (additive := additive) surface /\
+        Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) /\
+        (Exists fun geometry :
+          SemanticRepairSelectedCarrierGeometry additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) /\
+        Nonempty
+          (SemanticRepairCarrierSpecificComparisonProvenance
+            additive surface.coverBridge surface.K) := by
+  let realization :
+      SemanticRepairCoverRelativeFaceRestrictionRealization
+        additive surface.coverBridge surface.K :=
+    SemanticRepairCoverRelativeFaceRestrictionRealization.of_sectionFamilyWitness
+      sectionWitness compatibility
+  have hboundary :=
+    canonicalOrFreeSemanticAtomLawRealization_constructor_boundary
+      (additive := additive)
+      (Realization := fun surfaceInput =>
+        SemanticRepairCoverRelativeFaceRestrictionRealization
+          additive surfaceInput.coverBridge surfaceInput.K)
+      (realizationConstructsExplicitLower := fun surfaceInput realizationInput =>
+        faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (additive := additive)
+          (coverBridge := surfaceInput.coverBridge)
+          (K := surfaceInput.K)
+          realizationInput)
+      surface family hcover_eq realization
+  exact ⟨realization, hboundary⟩
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 

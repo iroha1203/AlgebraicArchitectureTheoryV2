@@ -103,6 +103,130 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 208 — concrete face-restriction realization boundary from separated lower witnesses
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the positive route fixed by Cycle 207: construct an actual
+canonical/free/input-boundary `Realization` or equivalent semantic atom-law
+lower provenance, and prove that it generates
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+It rejected another blocker, `IndexedSemanticAtomLawCarrierSource`,
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`, conclusion-side
+gluing/sheaf/descent/effective-gluing/`H1`-zero data, and an inert
+`Realization` parameter as insufficient lower provenance.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_canonicalOrFreeSemanticAtomLawRealization_boundary`
+
+The theorem constructs a concrete
+`SemanticRepairCoverRelativeFaceRestrictionRealization` from:
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`;
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`.
+
+It then instantiates the Cycle 207 boundary theorem with this concrete
+realization type and uses
+`faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+as the explicit constructor to transparent lower data.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The inert Cycle 207 `Realization` parameter is replaced by the concrete
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`.
+- That realization is proof-used only through the transparent
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` it exposes.
+- The downstream selected layer, direct source, cochain realization, selected
+  carrier geometry / face laws, and carrier-specific provenance route remains
+  connected through transparent lower data.
+
+Remaining:
+
+- Construct `SemanticRepairCoverRelativeSectionFamilyWitness` from genuine
+  semantic atom / law lower provenance.
+- Construct `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from
+  genuine semantic atom / law lower provenance.
+- Audit nonvacuity and anti-target-fitting for those witnesses.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeFaceRestrictionRealization`: no longer inert in
+  this cycle; it is constructed from separated lower witnesses.
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: still theorem argument and
+  unresolved material lower premise.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: still theorem
+  argument and unresolved material lower premise.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: proof-used as the
+  transparent output of the concrete realization.
+
+### Certificate Provenance
+
+- discharged for this checkpoint:
+  concrete realization-to-explicit-lower route through the Cycle 207 gate.
+- unresolved:
+  semantic atom / law provenance for the separated section-family witness and
+  face-restriction compatibility.
+
+### Proof-Use / Escape Audit
+
+- `sectionWitness` and `compatibility` are both used to construct
+  `SemanticRepairCoverRelativeFaceRestrictionRealization`.
+- The constructed realization is used through
+  `faceRestrictionRealization_constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- No new structure, certificate, axiom, or class membership is introduced.
+- No claim is made that `CurrentG06InputSurface`, conclusion-side data,
+  semantic `H1` zero, or an indexed wrapper constructs the separated lower
+  witnesses.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle208AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the target Lean file
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.
+
+### T3 Audit
+
+T3 audit approved Cycle 208 as `proof-checkpoint`, not
+`proof-obligation-discharged`:
+
+- statement not weakened;
+- no hidden completion claim;
+- no new structure-field escape;
+- concrete realization boundary is closed;
+- `SemanticRepairCoverRelativeSectionFamilyWitness` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` remain material
+  lower premises.
+
+Next obligation:
+
+- Construct the section-family witness and face-restriction compatibility from
+  genuine semantic atom / law lower provenance, or prove an equivalent
+  canonical/free/input-boundary constructor with nonvacuity and
+  anti-target-fitting audit.
+
 ## Cycle 207 — canonical/free semantic atom-law realization constructor boundary
 
 - decision: approve
