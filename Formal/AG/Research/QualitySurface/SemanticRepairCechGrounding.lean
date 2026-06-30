@@ -12630,6 +12630,62 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEq
       atomSupportedCurrentBoundaryCochainRealizationConstructor
 
 /--
+Cycle 197 boundary theorem: adding true-sheaf boundary-relation additive data
+to the accepted atom-supported current boundary still does not uniformly
+construct `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`.
+
+The theorem keeps `boundaryData` proof-used by the hypothetical constructor,
+then specializes it away to the Cycle 142 atom-supported current-boundary
+blocker.  Thus `boundaryData` cannot be treated as carrying the degreewise
+additive equivalences, degree-`2` zero laws, or four selected face-restriction
+equations required by the Cycle 196 finite source.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreewiseEquivAndFaceRestrictionSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryBoundaryDataFaceRestrictionSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surfaceInput) :
+    False := by
+  let atomSupportedCurrentBoundaryFaceRestrictionSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surfaceInput :=
+    fun surfaceInput familyInput hcoverInput =>
+      atomSupportedCurrentBoundaryBoundaryDataFaceRestrictionSourceConstructor
+        surfaceInput familyInput hcoverInput boundaryData
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndFaceRestrictionSource
+      (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryFaceRestrictionSourceConstructor
+
+/--
 Cycle 143 atom-supported current-boundary selected-lower-source theorem:
 adding only atom-generated selected-cover data and selected-cover equality to
 the current G-06 boundary still does not uniformly construct

@@ -103,6 +103,158 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 197 — boundaryData does not construct finite face-restriction source
+
+- decision: approve
+- result_type: target-blocked
+- cycle_result: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector found no existing positive constructor that generates
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` from genuine accepted
+semantic atom / law lower provenance.  It therefore selected the minimal
+top-level remaining false route: adding true-sheaf boundary-relation additive
+data to the accepted atom-supported current boundary.
+
+The selected obligation blocks the claim that
+`SemanticRepairCoverH1BoundaryRelationAdditiveData` can supply the degreewise
+additive equivalences, degree-`2` zero laws, or four selected
+face-restriction equations required by the Cycle 196 finite source.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreewiseEquivAndFaceRestrictionSource`
+
+The theorem assumes:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- finite boundary-test equivalences
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`;
+- a hypothetical constructor from those inputs to
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`.
+
+It fixes `boundaryData` as an argument to the hypothetical constructor,
+obtains a current-boundary-only constructor, and applies the existing
+`no_constructor_from_atomSupportedCurrentG06Boundary_without_degreewiseEquivAndFaceRestrictionSource`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route
+  `atom-supported current boundary + boundaryData -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource`
+  is blocked.
+- `boundaryData` is proof-used only as an input to the hypothetical
+  constructor; it is not decomposed into carrier equivalences, degree-`2` zero
+  laws, or face equations.
+
+Remaining:
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` itself remains a
+  visible material premise.
+- The nine finite witnesses inside that source remain undischarged from
+  genuine semantic atom / law lower provenance.
+- The target-loop proof state is blocked for this false route only; G-06 and
+  `/goal` remain active.
+- Comparison, zero equivalence, refinement / naturality, the
+  Cech-vs-full-sheaf boundary, and final `$math-lean-review` remain incomplete
+  for target completion.
+
+### Material Premise Ledger
+
+- `boundaryData -> AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  blocked relative to the atom-supported current boundary and finite
+  `PUnit` / `ZMod 2` test.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`: still
+  `discharge-required`.
+- `E.coefficient.C0 ≃+ surface.K.Cn 0`: still `discharge-required`.
+- `E.coefficient.C1 ≃+ surface.K.Cn 1`: still `discharge-required`.
+- `E.coefficient.C2 ≃ surface.K.Cn 2`: still `discharge-required`.
+- the two degree-`2` zero laws: still `discharge-required`.
+- the four selected face-restriction equations: still `discharge-required`.
+
+### Certificate Provenance
+
+- rejected as source: `SemanticRepairCoverH1BoundaryRelationAdditiveData`
+  cannot be counted as the source of the finite witness.
+- rejected as shortcuts: selected cochain realization, selected layer,
+  atom-supported direct source, `directLower`, `explicitLower`,
+  conclusion-side sheaf/descent/effective-gluing data, semantic cover Cech
+  data, semantic `H1` zero, carrier-specific comparison provenance, and
+  `IndexedSemanticAtomLawCarrierSource`.
+- unresolved: construction of the finite source from genuine lower provenance.
+
+### Proof-Use Audit
+
+- the hypothetical boundaryData source constructor is proof-used by applying
+  it to the fixed `boundaryData`.
+- the resulting current-boundary-only constructor is proof-used by the existing
+  current-boundary no-constructor theorem.
+- no conclusion-side object, selected layer, selected cochain realization, or
+  indexed source is used.
+
+### Structure-Field Escape Audit
+
+- status: blocker-fixed for the boundaryData route.
+- No new structure, class, instance, or certificate field is introduced.
+- `boundaryData` is not treated as a structure-field escape for the nine
+  finite witnesses.
+
+### Route-Integrity Audit
+
+- status: target-blocked for this false route.
+- This is not target completion and not a `/goal blocked` condition.
+- The cycle fixes a proof-state blocker so the next cycle can select a new
+  positive route or a more precise missing-component blocker.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 197 as `blocker-fixed`, with `result_type:
+target-blocked` and `completion_candidate: no`.
+
+The audit found no selected cochain realization, selected layer,
+`directLower`, `explicitLower`, conclusion-side data, semantic cover Cech data,
+`IndexedSemanticAtomLawCarrierSource`, or carrier-specific comparison
+provenance input.  It confirmed that `boundaryData` is not used as a source
+for carrier equivalences, degree-`2` zero laws, or face equations.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle197AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- local absolute path / private machine identifier scan over added diff lines
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This cycle fixes a target-loop
+proof-state blocker only.  It must not be interpreted as blocking the
+repository `/goal`.
+
+The next cycle must either find a genuine positive source for
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`, or isolate a more
+precise missing component such as the degree-`0` additive equivalence.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 196 — atom-supported finite source reaches selected layer
 
 - decision: approve
