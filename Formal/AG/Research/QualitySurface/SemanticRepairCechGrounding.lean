@@ -10494,6 +10494,34 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degr
   exact ⟨c0Carrier.toAddEquiv⟩
 
 /--
+Cycle 198 positive-source checkpoint: explicit lower data exposes the
+degree-`0` indexed carrier comparison itself, not merely its underlying
+ordinary additive equivalence.
+
+This is the degree-`0` analogue of the Cycle 169 degree-`1` checkpoint.  It
+keeps the selected semantic coefficient realization gate visible by returning
+the exact material carrier-comparison component required by the carrier model.
+It does not construct the explicit lower data from the current boundary,
+`boundaryData`, conclusion-side gluing/descent/effective-gluing, semantic
+`H1` zero, or an opaque certificate.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeZeroCarrierComparisonData
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Nonempty
+      (letI := additive.c0AddCommGroup
+       letI := K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0)) := by
+  rcases lower with
+    ⟨c0Carrier, _c1Carrier, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  letI := additive.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  exact ⟨c0Carrier⟩
+
+/--
 Cycle 168 audit helper: explicit lower data also exposes the degree-`1`
 additive equivalence that any genuine constructor must actually produce.
 
