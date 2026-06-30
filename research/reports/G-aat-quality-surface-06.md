@@ -2289,6 +2289,149 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 178 — boundaryData does not construct carrier provenance
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the remaining ambiguity after Cycle 177:
+
+1. prove that adding true-sheaf boundary-relation additive data
+   `boundaryData` to the accepted atom-supported current G-06 boundary still
+   cannot uniformly construct
+   `SemanticRepairCarrierSpecificComparisonProvenance`;
+2. use the Cycle 177 equivalence between indexed source and carrier-specific
+   provenance relative to `boundaryData`;
+3. reduce the alleged carrier-provenance constructor to the Cycle 174 indexed
+   source no-constructor theorem.
+
+This is not a completion candidate.  It blocks `boundaryData` as lower
+carrier/face-law provenance and leaves the genuine positive source open.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_carrierSpecificComparisonProvenance`
+
+The theorem assumes a hypothetical constructor from
+`CurrentG06InputSurface`, an atom-generated selected-cover family, the
+selected-cover equality, and `boundaryData` to
+`SemanticRepairCarrierSpecificComparisonProvenance`.  It converts that
+constructor into an indexed-source constructor using Cycle 177:
+
+- `SemanticRepairCoverRelativeCochainRealization.indexedSemanticAtomLawCarrierSource_iff_carrierSpecificComparisonProvenance_relative_to_boundaryData`
+
+It then applies Cycle 174:
+
+- `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus the accepted atom-supported current G-06 boundary is now
+  blocked as a uniform source for
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- The Cycle 177 circularity boundary is lifted from indexed source to
+  carrier-specific provenance itself.
+
+Remaining:
+
+- Construct or refute the genuine positive lower source for carrier maps,
+  degree-`2` zero laws, and selected face equations:
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, or an equivalent
+  canonical/free/universal nonvacuous finite witness.
+- Do not use `boundaryData`, indexed source, explicit lower data, selected
+  cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data as lower provenance.
+
+### Material Premise Ledger
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: still
+  `discharge-required`.
+- `boundaryData`: blocked as a lower-provenance generator for carrier-specific
+  provenance.
+- carrier maps, degree-`2` zero laws, and selected face equations: still the
+  unresolved material lower data.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData` is not provenance for
+  carrier-specific comparison data.
+- unresolved: construction of the selected carrier maps, degree-`2` zero laws,
+  and selected face equations from genuine atom-supported finite/direct
+  provenance.
+
+### Proof-Use Audit
+
+- The hypothetical carrier-provenance constructor is used to build an indexed
+  semantic atom/law carrier source.
+- The proof uses Cycle 177 in the backward direction and then consumes the
+  resulting indexed-source constructor with the Cycle 174 no-constructor
+  theorem.
+- No selected cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data is used as source.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+- The theorem rules out a constructor route instead of moving the remaining
+  lower data into a field.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The cycle does not weaken G-06 and does not reinterpret `boundaryData` as
+  lower semantic atom/law provenance.
+- The remaining positive source must be a genuine atom-supported direct finite
+  witness or an equivalent canonical/free/universal nonvacuous construction.
+
+### T3 Audit Result
+
+T3 approved the cycle as `blocker-fixed`.
+
+- statement not weakened: pass.
+- hidden material premise: none found.
+- structure-field escape: none found.
+- route integrity: pass.
+- completion candidate: no.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle178AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle should construct or refute the genuine positive lower source:
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`, or an equivalent
+canonical/free/universal nonvacuous finite witness that produces the carrier
+maps, degree-`2` zero laws, and selected face equations.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 177 — indexed source is not lower carrier provenance
 
 - decision: approve
