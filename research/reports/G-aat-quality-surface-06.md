@@ -2289,6 +2289,137 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 176 — carrier-specific provenance constructs indexed source checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4839173244>
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the direct constructive route left open by Cycle 175:
+
+1. construct `SemanticRepairCoverRelativeSectionFamilyWitness` and
+   `SemanticRepairCoverRelativeFaceRestrictionCompatibility` from the existing
+   `SemanticRepairCarrierSpecificComparisonProvenance`;
+2. proof-use the resulting finite witness and compatibility through the Cycle
+   175 indexed-source route;
+3. keep `boundaryData` as a true-sheaf boundary-relation pointer only.
+
+This is not a completion candidate.  The carrier-specific provenance itself
+remains a visible material premise until it is constructed from canonical/free
+semantic atom/law provenance, a finite nonvacuous witness, a universal property,
+or a reviewed predecessor theorem.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.carrierSpecificComparisonProvenance_constructs_indexedSource_and_explicitLowerData`
+
+The theorem destructs
+`SemanticRepairCarrierSpecificComparisonProvenance.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility`
+and immediately applies the Cycle 175 proof-use theorem
+`sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSource_and_explicitLowerData`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness` and
+  `SemanticRepairCoverRelativeFaceRestrictionCompatibility` are no longer the
+  immediate top-level premises for the indexed source route once audited
+  carrier-specific comparison provenance is available.
+- The proof-use path reaches
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` through the Cycle
+  175 indexed source theorem.
+
+Remaining:
+
+- Construct an inhabitant of `SemanticRepairCarrierSpecificComparisonProvenance`
+  from genuine lower semantic atom/law provenance, canonical/free realization,
+  universal property, finite nonvacuous witness, or reviewed predecessor
+  theorem.
+- Do not treat `CurrentG06InputSurface`, `boundaryData`, selected cochain
+  realization, selected layer, semantic `H1` zero, gluing/descent/effectivity,
+  or conclusion-side data as that provenance.
+- Broader G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `SemanticRepairCoverRelativeSectionFamilyWitness`: discharged relative to
+  `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `SemanticRepairCoverRelativeFaceRestrictionCompatibility`: discharged
+  relative to `SemanticRepairCarrierSpecificComparisonProvenance`.
+- `SemanticRepairCarrierSpecificComparisonProvenance`: still
+  `discharge-required`.
+- `IndexedSemanticAtomLawCarrierSource`: remains discharged relative to the
+  lowered finite witness path.
+
+### Certificate Provenance
+
+- discharged relative to carrier-specific provenance: finite section-family
+  witness, selected face-restriction compatibility, indexed source, and
+  transparent explicit lower data.
+- unresolved: construction of the carrier-specific provenance inhabitant itself.
+
+### Proof-Use Audit
+
+- The new theorem destructs the existing carrier-specific provenance theorem
+  into `sectionWitness` and `compatibility`.
+- Those witnesses are immediately consumed by the Cycle 175 indexed-source
+  proof-use theorem.
+- No selected cochain realization, selected layer, semantic `H1` zero,
+  gluing/descent/effectivity, or conclusion-side data is used as source.
+
+### Structure-Field Escape Audit
+
+- status: checkpoint.
+- `SemanticRepairCarrierSpecificComparisonProvenance` contains carrier maps,
+  inverse/additivity laws, degree-`2` zero laws, and selected face laws.
+- It does not store `H1` zero, boundary membership, global coherence, descent,
+  effective gluing, refinement naturality, or full sheaf cohomology comparison.
+- Its own inhabitant construction remains the next material premise; this cycle
+  does not classify it as ambient boundary.
+
+### Route-Integrity Audit
+
+- status: positive checkpoint.
+- The theorem follows the existing lower-provenance route selected by T1 and
+  does not choose a new `K`, cover, coefficient object, selected realization,
+  or face law to fit the target.
+- The target theorem is not weakened, and completion remains `no`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle176AxiomAudit.lean` passed.
+- Axiom audit reported expected standard axioms:
+  - `[propext, Quot.sound]` for
+    `carrierSpecificComparisonProvenance_constructs_indexedSource_and_explicitLowerData`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should construct or refute
+`SemanticRepairCarrierSpecificComparisonProvenance` from genuine lower semantic
+atom/law provenance.  `$math-lean-review` is not run because this is not a
+completion candidate.
+
 ## Cycle 175 — finite witness constructs indexed source checkpoint
 
 - decision: approve
