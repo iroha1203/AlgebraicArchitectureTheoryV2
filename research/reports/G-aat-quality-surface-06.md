@@ -103,6 +103,161 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 201 — finite-source wrapper route-integrity boundary
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the full positive construction of
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+accepted lower provenance.  The selector explicitly rejected further accessors:
+Cycles 198, 169, 199, and 200 have already exposed the degree-`0` carrier
+comparison, degree-`1` carrier comparison, degree-`2` zero laws, and the four
+selected face-restriction equations relative to explicit lower data.
+
+The constructive attempt found no existing reviewed predecessor that generates
+the explicit lower data from the accepted semantic atom / law boundary.  The
+Cycle 196 finite source remained the nearest apparent route, so this cycle
+fixed its route-integrity boundary instead of treating it as new lower
+provenance.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_iff_coverWitness_and_degreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+
+The theorem proves that
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource surface` is equivalent to
+an atom-generated selected-cover witness plus
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` for `surface.K`.
+
+Forward direction:
+
+- destructs the Cycle 196 finite source;
+- converts the ordinary degree-`0` and degree-`1` additive equivalences into
+  carrier-specific comparison data via `CarrierSpecificAdditiveComparisonData.ofAddEquiv`;
+- retains the degree-`2` equivalence, both zero laws, and all four selected
+  face-restriction equations.
+
+Backward direction:
+
+- destructs the atom-generated cover witness and explicit lower data;
+- reconstructs the Cycle 196 finite source using `c0Carrier.toAddEquiv`,
+  `c1Carrier.toAddEquiv`, the degree-`2` equivalence / zero laws, and all four
+  selected face equations.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The Cycle 196 finite source is now Lean-named as a wrapper around atom-cover
+  provenance plus explicit lower data.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` can no longer be
+  counted as a genuine provenance layer below
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+
+Remaining:
+
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  genuine semantic atom / law lower provenance.
+- If that construction is impossible under the accepted boundary, fix a sharper
+  blocker explaining the missing constructor type.
+- Full G-06 completion criteria and final `$math-lean-review` remain open.
+
+### Material Premise Ledger
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  `proof-checkpoint`; equivalent to atom-cover witness plus explicit lower data.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from genuine semantic atom / law
+  lower provenance.
+- degree-`0` / degree-`1` carrier comparisons, degree-`2` zero laws, and the
+  four selected face-restriction equations remain visible components of the
+  explicit lower data, not independent completion evidence.
+
+### Certificate Provenance
+
+- discharged for this route-integrity checkpoint:
+  the Cycle 196 finite source is transparent wrapper data, not an opaque
+  certificate.
+- unresolved:
+  provenance for the carrier comparisons, degree-`2` zero laws, and selected
+  face-restriction equations themselves.
+
+### Proof-Use Audit
+
+- The forward proof uses the finite source components by converting
+  `c0Equiv` / `c1Equiv` through `ofAddEquiv` and carrying all face equations
+  into the explicit lower package.
+- The backward proof uses explicit lower data by reconstructing the ordinary
+  additive equivalences with `toAddEquiv` and reusing all four face equations.
+- No component is attached only as report decoration.
+
+### Structure-Field Escape Audit
+
+- status: clear for this checkpoint.
+- The theorem introduces no new structure, class, certificate field, selected
+  layer, selected realization, semantic Cech datum, conclusion-side
+  gluing/sheaf/descent/effective-gluing datum, semantic `H1` zero, or
+  carrier-specific provenance input.
+
+### Route-Integrity Audit
+
+- status: proof-checkpoint.
+- The theorem prevents treating the Cycle 196 finite-source wrapper as genuine
+  lower provenance.
+- It does not weaken G-06, does not construct explicit lower data from the
+  accepted boundary, and does not claim target completion.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 201 as `proof-checkpoint`:
+
+- the theorem materially advances the proof DAG by fixing the finite-source
+  wrapper boundary;
+- it does not hide a material premise, introduce structure-field escape, or
+  use a forbidden substitute;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` remains the
+  unresolved material premise.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle201AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported only expected standard axioms:
+  `[propext, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, `sorryAx`, `TODO`, `FIXME`, and
+  `placeholder`.
+- Hidden / bidirectional Unicode scan over changed Lean/report files was clean.
+- Absolute local path / private machine identifier scan over added Lean diff was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle must construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+semantic atom / law lower provenance, or fix a sharper blocker explaining why
+no such constructor exists under the accepted boundary.  The Cycle 196 finite
+source is now audited as a wrapper around explicit lower data, not a discharge
+of that lower data.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 197 — boundaryData does not construct finite face-restriction source
 
 - decision: approve
