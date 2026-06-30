@@ -255,6 +255,137 @@ precise missing component such as the degree-`0` additive equivalence.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 199 — degree-two equivalence and zero-law checkpoint
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the next non-duplicative finite witness below the Cycle 196 finite
+source: expose the degree-`2` carrier equivalence together with both
+zero-preservation laws from transparent explicit lower data.
+
+This follows Cycle 198 and Cycle 169.  Cycle 198 exposed the degree-`0`
+indexed carrier comparison from explicit lower data, and Cycle 169 exposed the
+degree-`1` indexed carrier comparison.  The full construction of
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` or
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+accepted lower provenance remains the central unresolved obligation.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeTwoEquivAndZeroLaws`
+
+The theorem destructs `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`
+and returns an existential package containing:
+
+- `c2Equiv : E.coefficient.C2 ≃ K.Cn 2`;
+- `c2Equiv E.coefficient.zero2 = 0`;
+- `c2Equiv.symm 0 = E.coefficient.zero2`.
+
+It does not construct the explicit lower data itself.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The degree-`2` carrier equivalence and both zero laws are now available as a
+  positive theorem from transparent explicit lower data.
+- The theorem keeps the finite witness components visible and does not route
+  through selected cochain realization, selected layer, `directLower`,
+  `boundaryData`, conclusion-side data, or semantic `H1` zero.
+
+Remaining:
+
+- Construct `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from
+  genuine accepted lower provenance.
+- Construct `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` from genuine
+  semantic atom / law provenance.
+- Continue isolating or constructing the four selected face-restriction
+  equations without treating explicit lower data as ambient input.
+
+### Material Premise Ledger
+
+- degree-`2` carrier equivalence plus zero laws from explicit lower data:
+  `proof-checkpoint`.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`:
+  `discharge-required`; still not constructed from semantic atom / law data.
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  `discharge-required`; still not constructed from accepted lower provenance.
+- `boundaryData`, selected cochain realization, selected layer, `directLower`,
+  `explicitLower`, semantic cover Cech data, conclusion-side gluing / sheaf /
+  descent / effective gluing, and semantic `H1` zero remain rejected as lower
+  provenance substitutes.
+
+### Certificate Provenance
+
+- discharged relative to explicit lower data: degree-`2` equivalence and both
+  zero laws.
+- unresolved: provenance for the explicit lower data itself and for the full
+  atom-supported finite source.
+- no certificate field, structure field, or theorem argument is treated as a
+  substitute for constructing the selected carrier comparison and face laws from
+  lower provenance.
+
+### Proof-Use Audit
+
+- The proof destructs the explicit lower data and returns the `c2Equiv`,
+  `c2Equiv_zero`, and `c2Equiv_symm_zero` components directly.
+- No premise is attached merely as report decoration.
+- No selected cochain realization, selected layer, `boundaryData`,
+  conclusion-side data, or semantic `H1` zero is used.
+
+### Structure-Field Escape Audit
+
+- status: clear for this checkpoint.
+- The theorem does not add a new structure, class, selected `K`, coefficient
+  object, or certificate field.
+- It exposes components of an already transparent lower-data proposition.
+
+### Route-Integrity Audit
+
+- status: positive checkpoint, not final theorem.
+- The theorem is deliberately relative to explicit lower data.
+- It does not weaken G-06 to a wrapper theorem or reclassify conclusion-side
+  data as lower provenance.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle199AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported only expected standard axioms:
+  `[propext, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, `sorryAx`, `TODO`, `FIXME`, and `placeholder`.
+- Hidden / bidirectional Unicode scan over changed Lean/report files was clean.
+- Absolute local path / private machine identifier scan over added Lean diff was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should again attempt the full positive construction of
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` or
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` from genuine
+accepted lower provenance.  If that still fails, the next finite witness should
+be the selected face-restriction equation package, without promoting the
+checkpoint to completion.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 198 — degree-zero indexed carrier positive-source checkpoint
 
 - decision: approve

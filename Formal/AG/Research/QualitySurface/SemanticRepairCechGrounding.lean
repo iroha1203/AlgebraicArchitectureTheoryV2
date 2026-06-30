@@ -10573,6 +10573,32 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degr
   exact ⟨c1Carrier⟩
 
 /--
+Cycle 199 positive-source checkpoint: explicit lower data exposes the
+degree-`2` carrier equivalence together with both zero-preservation laws.
+
+This is the degree-`2` analogue of the Cycle 198 and Cycle 169 indexed carrier
+checkpoints.  It keeps the selected semantic coefficient realization gate
+visible by returning the exact finite witness components required by the
+carrier model.  It does not construct the explicit lower data from the current
+boundary, `boundaryData`, conclusion-side gluing/descent/effective-gluing,
+semantic `H1` zero, or an opaque certificate.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degreeTwoEquivAndZeroLaws
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+      (letI := K.cochainAddCommGroup 2
+       c2Equiv E.coefficient.zero2 = 0) /\
+      (letI := K.cochainAddCommGroup 2
+       c2Equiv.symm 0 = E.coefficient.zero2) := by
+  rcases lower with
+    ⟨_c0Carrier, _c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  exact ⟨c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
+
+/--
 Cycle 167 sharper blocker theorem: even the degree-`0` indexed carrier
 comparison cannot be uniformly constructed from the current boundary plus
 conclusion-side data and semantic cover Cech data.
