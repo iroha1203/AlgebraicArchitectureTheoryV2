@@ -2289,6 +2289,176 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 171 — carrier-specific provenance reaches the selected layer
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4838726008>
+- date: 2026-06-30 JST
+
+### T1 Constructive Route
+
+The selector chose the central remaining selected semantic coefficient
+realization gate:
+
+1. construct `SelectedSemanticCoefficientDirectRealizationLayer`, equivalently
+   `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+2. use only genuine indexed lower provenance;
+3. do not use `directLower`, selected cochain realization, explicit lower data,
+   conclusion-side gluing/sheaf/descent/effectivity, semantic `H1` zero, or a
+   metadata token as lower provenance.
+
+Cycle 171 fixes the next positive route from the existing concrete
+carrier-specific comparison provenance.  It does not claim that this provenance
+is produced by the current G-06 boundary.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer`
+
+The theorem takes:
+
+- an atom-generated selected cover witness `family`;
+- `hcover_eq : surface.selectedCover = Sieve.generate family.presieve`;
+- a visible
+  `SemanticRepairCarrierSpecificComparisonProvenance additive surface.coverBridge surface.K`.
+
+It constructs:
+
+- `Nonempty (SelectedSemanticCoefficientDirectRealizationLayer (additive := additive) surface)`;
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`;
+- `Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K)`.
+
+The proof extracts degree-`0` / degree-`1` carrier comparison data,
+degree-`2` zero laws, and direct selected `K.d` compatibility from the
+carrier-specific provenance, builds the Cycle 157 selected layer, and then
+proof-uses the Cycle 170 theorem.
+
+### Proof-Obligation Delta
+
+Fixed relative to carrier-specific provenance:
+
+- `SemanticRepairCarrierSpecificComparisonProvenance` plus atom-generated
+  selected cover data now reaches the selected semantic coefficient realization
+  layer.
+- The selected layer then reaches the direct lower source, explicit lower data,
+  and selected cochain realization through already merged routes.
+
+Remaining:
+
+- Construct `SemanticRepairCarrierSpecificComparisonProvenance` itself from
+  genuine semantic atom / law data, canonical/free obstruction-sheaf
+  realization, universal property, finite nonvacuous witness, or a reviewed
+  predecessor theorem.
+- Do not treat `SemanticRepairCarrierSpecificComparisonProvenance` as a hidden
+  certificate field or as completion evidence by itself.
+- The broader G-06 material-premise ledger still requires the remaining
+  coverage/topology, sheaf/descent/effectivity, comparison, naturality,
+  Cech-vs-full-sheaf boundary, and cover-nerve provenance obligations before
+  final completion.
+
+### Material Premise Ledger
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: still
+  `discharge-required`; not constructed in this cycle.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: discharged relative to
+  carrier-specific provenance and atom-generated selected cover data.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: discharged
+  relative to carrier-specific provenance and atom-generated selected cover
+  data.
+- `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`: discharged
+  relative to carrier-specific provenance through the selected layer route.
+
+### Certificate Provenance
+
+- discharged relative to carrier-specific provenance: selected layer, direct
+  source, explicit lower data, selected cochain realization.
+- unresolved: provenance for `SemanticRepairCarrierSpecificComparisonProvenance`
+  itself.
+- no conclusion-side gluing, sheaf/descent, effective gluing, semantic `H1`
+  zero, or metadata token is reclassified as lower provenance.
+
+### Proof-Use Audit
+
+- The proof constructs `DegreewiseCarrierDataAndDirectDifferentialLaws` from
+  the carrier-specific provenance's carrier comparisons, degree-`2` zero laws,
+  and direct selected differential compatibility.
+- It constructs a `SelectedSemanticCoefficientDirectRealizationLayer` with the
+  supplied atom-generated cover witness and the constructed direct lower data.
+- It proof-uses Cycle 170 to obtain the direct source, explicit lower data, and
+  selected cochain realization.
+
+### Structure-Field Escape Audit
+
+- status: checkpoint, not completion.
+- The theorem exposes `SemanticRepairCarrierSpecificComparisonProvenance` as a
+  visible material premise and does not claim it is generated by the current
+  boundary.
+- Completion remains forbidden until that provenance is constructed from an
+  acceptable semantic atom / law source rather than supplied as a structure
+  field.
+
+### Route-Integrity Audit
+
+- status: positive checkpoint.
+- The cycle does not choose a new `K`, cover, coefficient object, or
+  differential law to fit the target conclusion.
+- The atom-generated selected cover equality remains visible.
+- The carrier-specific provenance remains visible and unresolved rather than
+  hidden in a class boundary.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 171 as `proof-checkpoint`:
+
+- the theorem honestly reduces proof distance by connecting visible
+  carrier-specific provenance to the selected semantic coefficient realization
+  layer and downstream lower data;
+- `SemanticRepairCarrierSpecificComparisonProvenance` remains unresolved and
+  visible as a material theorem argument;
+- no hidden material premise, unused material premise, route-integrity issue,
+  vacuity, one-way-as-equivalence, or GOAL/report reinterpretation was found;
+- the result must not be classified as `proof-obligation-discharged` until
+  `SemanticRepairCarrierSpecificComparisonProvenance` itself is constructed
+  from an acceptable semantic atom / law source.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings replayed in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle171AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- Hidden / bidirectional Unicode scan over the changed Lean file was clean.
+- Absolute local path / private machine identifier scan over the changed Lean
+  file was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next constructive obligation is to build
+`SemanticRepairCarrierSpecificComparisonProvenance` from genuine semantic atom /
+law lower provenance, canonical/free obstruction-sheaf realization, universal
+property, finite nonvacuous witness, or a reviewed predecessor theorem.  If
+that cannot be done under the current target boundary, the exact missing API or
+GOAL-boundary revision proposal must be recorded.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 170 — selected layer constructs explicit lower data
 
 - decision: approve
