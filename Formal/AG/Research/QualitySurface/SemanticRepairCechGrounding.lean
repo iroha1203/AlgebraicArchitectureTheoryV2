@@ -13493,6 +13493,43 @@ theorem sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexed
         (additive := additive) (surface := surface) source⟩
 
 /--
+Cycle 176 positive checkpoint: carrier-specific comparison provenance
+constructs the indexed source and immediately exposes the transparent explicit
+lower data.
+
+This lowers the Cycle 175 finite-witness boundary to the already audited
+carrier-specific comparison provenance.  The provenance stores only carrier
+maps, inverse/additivity laws, degree-`2` zero laws, and selected face laws; it
+does not store `H1` zero, boundary membership, global coherence, descent,
+effective gluing, refinement naturality, or full sheaf cohomology comparison.
+
+The result remains a checkpoint because the theorem does not construct the
+carrier-specific provenance from `CurrentG06InputSurface`, `boundaryData`,
+selected cochain realization, semantic `H1` zero, or conclusion-side
+gluing/sheaf/descent/effectivity.
+-/
+theorem carrierSpecificComparisonProvenance_constructs_indexedSource_and_explicitLowerData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        additive surface.coverBridge surface.K) :
+    Nonempty (IndexedSemanticAtomLawCarrierSource (additive := additive) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) := by
+  rcases
+      provenance.constructs_sectionFamilyWitness_and_faceRestrictionCompatibility with
+    ⟨sectionWitness, compatibility⟩
+  exact
+    sectionFamilyWitness_and_faceRestrictionCompatibility_constructs_indexedSource_and_explicitLowerData
+      (additive := additive) (surface := surface)
+      boundaryData sectionWitness compatibility
+
+/--
 Cycle 161 positive checkpoint: an atom-generated selected cover plus a concrete
 selected cochain realization constructs the selected semantic coefficient
 realization layer.
