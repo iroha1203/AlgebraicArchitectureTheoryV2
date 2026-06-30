@@ -2289,6 +2289,165 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 186 — boundaryData does not construct d0-from direct package
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the second direct selected `K.d` component boundary after
+the Cycle 185 `d0_to` package blocker:
+
+1. prove that adding `boundaryData` to the accepted atom-supported current G-06
+   boundary still cannot uniformly construct the `d0_from` direct package; and
+2. preserve the explicit finite-test hypotheses inherited from the predecessor
+   no-constructor theorem instead of claiming an absolute no-constructor result.
+
+Positive construction is not available from the current lower data.
+`boundaryData` is only true-sheaf `H1` boundary-relation additive data.  It
+does not provide ordinary degree-`0`/`1` additive equivalences, a degree-`2`
+equivalence, degree-`2` zero laws, or the reverse direct selected law
+`E.coefficient.delta0 (c0Equiv.symm primitive) =
+c1Equiv.symm (surfaceInput.K.d 0 primitive)`.  Existing positive routes
+require selected cochain realization, the direct lower bundle, selected carrier
+geometry, or finite-test discharge, all of which remain undischarged at this
+boundary.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_d0DirectFromPackage`
+
+The theorem assumes a hypothetical constructor from
+`CurrentG06InputSurface`, atom-generated selected-cover data,
+selected-cover equality, and `boundaryData` to a package containing:
+
+- ordinary degree-`0` and degree-`1` additive equivalences;
+- a degree-`2` carrier equivalence;
+- both degree-`2` zero laws; and
+- the direct `d0_from` compatibility law.
+
+It extracts only the degree-`2` carrier equivalence and zero-law component,
+then applies the Cycle 184 boundaryData-specific zero-law package blocker.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus the accepted atom-supported current G-06 boundary is
+  blocked as a uniform source for the `d0_from` direct package.
+- The `d0_from` law package cannot hide the already blocked degree-`2`
+  zero-law package provenance.
+
+Remaining:
+
+- `c2SourceEquiv` remains an explicit finite-test hypothesis.
+- `c2TargetEquiv` remains an explicit finite-test hypothesis.
+- This is not an absolute no-constructor theorem without those finite-test
+  hypotheses.
+- The `d1_to` and `d1_from` direct selected `K.d` component packages remain
+  unresolved.
+
+### Material Premise Ledger
+
+- `d0_from` direct package: blocked relative to `boundaryData` plus the
+  explicit finite-test boundary.
+- `d1_to`, `d1_from` direct packages: still `discharge-required`.
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: still
+  `discharge-required`.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData` is not provenance for the
+  `d0_from` direct package under the finite-test boundary.
+- unresolved: genuine atom/law provenance for the remaining direct selected
+  `K.d` components and finite-test assumptions.
+
+### Proof-Use Audit
+
+- The hypothetical `d0_from` package constructor is proof-used by extracting
+  its degree-`2` zero-law package component.
+- The proof passes `surface`, `family`, `hcover_eq`, `boundaryData`,
+  `c2SourceEquiv`, and `c2TargetEquiv` to the Cycle 184 no-constructor theorem.
+- No indexed source, explicit lower data, selected cochain realization,
+  selected layer, semantic `H1` zero, gluing/descent/effectivity, remaining
+  direct selected `K.d` laws, or conclusion-side data is used as lower
+  provenance.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+- The alleged constructor returns only an existential package and is
+  immediately reduced to the predecessor zero-law package obstruction.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The route is a predecessor reduction through the Cycle 184
+  boundaryData-specific zero-law package blocker, not a target-fitting
+  construction.
+- The finite-test boundary remains explicit and is not hidden as ambient data.
+
+### T3 Audit Result
+
+T3 approves Cycle 186 only as `blocker-fixed` evidence.  The new theorem does
+not weaken the target statement into a completion claim: it proves a relative
+no-constructor result for the `d0_from` direct package under the same explicit
+finite-test boundary inherited from the Cycle 184 blocker.
+
+No hidden material premise or structure-field escape was found.  The
+finite-test assumptions `c2SourceEquiv` and `c2TargetEquiv` remain explicit and
+are recorded as unresolved; the theorem is therefore not an absolute
+no-constructor theorem.  The hypothetical `d0_from` package constructor is
+proof-used only to extract the degree-`2` carrier equivalence and zero-law
+components, which are then passed to the existing Cycle 184 boundaryData-specific
+zero-law package blocker.
+
+Route integrity is preserved: the proof is a predecessor reduction through an
+already recorded blocker, not an ad hoc target-fitting construction and not a
+positive construction of selected cochain realization, direct lower data, or
+remaining selected `K.d` laws.  Therefore Cycle 186 can only be recorded as
+`blocker-fixed`; it is not a completion candidate and does not trigger
+`$math-lean-review`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle186AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over added diff lines
+  was clean.
+- `git diff --check` passed.
+- full `lake build` passed, with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle should either discharge or further audit the finite-test
+hypotheses, or continue fixing the remaining `d1_to` and `d1_from` direct
+selected `K.d` component blockers without claiming completion.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 185 — boundaryData does not construct d0-to direct package
 
 - decision: approve
