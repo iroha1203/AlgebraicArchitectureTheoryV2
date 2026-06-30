@@ -10599,6 +10599,87 @@ theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_degr
   exact ⟨c2Equiv, c2Equiv_zero, c2Equiv_symm_zero⟩
 
 /--
+Cycle 200 positive-source checkpoint: explicit lower data exposes the four
+selected face-restriction equations for the section witness induced by its
+carrier data and degree-`2` zero laws.
+
+This is the final finite-witness accessor below the Cycle 196 source.  It
+keeps `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` as the visible
+material premise: the theorem only destructs that transparent lower data and
+returns its four selected face-restriction equations.  It does not construct
+the explicit lower data from the current boundary, `boundaryData`,
+conclusion-side gluing/descent/effective-gluing, semantic `H1` zero, or an
+opaque certificate.
+-/
+theorem degreewiseCarrierDataAndExplicitFaceRestrictionEquations_constructs_selectedFaceRestrictionEquations
+    (lower :
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := coverBridge) (K := K)) :
+    Exists fun c0Carrier :
+      letI := additive.c0AddCommGroup
+      letI := K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (K.Cn 0) =>
+    Exists fun c1Carrier :
+      letI := additive.c1AddCommGroup
+      letI := K.cochainAddCommGroup 1
+      CarrierSpecificAdditiveComparisonData E.coefficient.C1 (K.Cn 1) =>
+    Exists fun c2Equiv : E.coefficient.C2 ≃ K.Cn 2 =>
+    Exists fun c2Equiv_zero :
+      letI := K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0 =>
+    Exists fun c2Equiv_symm_zero :
+      letI := K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2 =>
+      (let model :=
+        SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+          (additive := additive) (coverBridge := coverBridge) (K := K)
+          c0Carrier c1Carrier c2Equiv c2Equiv_zero c2Equiv_symm_zero
+       let sectionWitness :=
+        SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+          model
+       (letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        forall primitive : E.coefficient.C0,
+          K.alternatingFaceCombination 0
+              (fun σ i =>
+                K.faceRestrictionTerm 0 i
+                  (sectionWitness.c0SectionEquiv primitive) σ) =
+            sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+       (letI := additive.c0AddCommGroup
+        letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        forall primitive : K.Cn 0,
+          E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+            sectionWitness.c1SectionEquiv.symm
+              (K.alternatingFaceCombination 0
+                (fun σ i => K.faceRestrictionTerm 0 i primitive σ))) /\
+       (letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        forall cochain : E.coefficient.C1,
+          K.alternatingFaceCombination 1
+              (fun σ i =>
+                K.faceRestrictionTerm 1 i
+                  (sectionWitness.c1SectionEquiv cochain) σ) =
+            sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+       (letI := additive.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        forall cochain : K.Cn 1,
+          E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+            sectionWitness.c2SectionEquiv.symm
+              (K.alternatingFaceCombination 1
+                (fun σ i => K.faceRestrictionTerm 1 i cochain σ)))) := by
+  rcases lower with
+    ⟨c0Carrier, c1Carrier, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  exact
+    ⟨c0Carrier, c1Carrier, c2Equiv, c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+
+/--
 Cycle 167 sharper blocker theorem: even the degree-`0` indexed carrier
 comparison cannot be uniformly constructed from the current boundary plus
 conclusion-side data and semantic cover Cech data.
