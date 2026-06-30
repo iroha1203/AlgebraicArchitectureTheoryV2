@@ -2289,6 +2289,133 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 170 — selected layer constructs explicit lower data
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4838629197>
+- date: 2026-06-30 JST
+
+### T1 Constructive Route
+
+The cycle continues the direct-construction policy from Cycle 169.  Instead of
+adding another blocker, it tests the positive route from the selected semantic
+coefficient realization gate:
+
+1. assume the visible material provenance
+   `SelectedSemanticCoefficientDirectRealizationLayer (additive := additive) surface`;
+2. use the Cycle 159 equivalence to obtain
+   `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`;
+3. use the Cycle 121 route to convert direct selected `K.d` laws into selected
+   face-restriction equations via `K.d_eq_alternatingFaceCombination`;
+4. construct both
+   `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations` and
+   `SemanticRepairCoverRelativeCochainRealization`.
+
+This is constructive progress: the selected semantic coefficient realization
+layer now reaches the explicit lower data that prior cycles treated as the
+remaining gate.  It is still relative to the layer itself, so the current
+boundary has not discharged the layer.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.selectedSemanticCoefficientDirectRealizationLayer_constructs_explicitLowerData_and_selectedCochainRealization`
+
+The theorem returns the atom-supported direct lower source, the transparent
+explicit lower data, and a selected cochain realization.  The selected semantic
+coefficient realization layer is proof-used as the material source; it is not
+replaced by conclusion-side gluing, descent, effectivity, semantic `H1` zero, or
+a certificate field.
+
+### Proof-Obligation Delta
+
+Fixed relative to selected layer:
+
+- `SelectedSemanticCoefficientDirectRealizationLayer` now constructs
+  `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`.
+- The same route constructs
+  `SemanticRepairCoverRelativeCochainRealization additive surface.K`.
+- Direct selected `K.d` laws are converted into selected face-restriction
+  equations by existing Cech differential identity, rather than being left as a
+  separate unexplained premise.
+
+Remaining:
+
+- Construct `SelectedSemanticCoefficientDirectRealizationLayer` itself from
+  indexed semantic atom/law provenance.
+- Do not treat the current boundary, conclusion-side semantic Cech data,
+  gluing/sheaf/descent/effectivity, semantic `H1` zero, or metadata tokens as
+  that layer.
+
+### Material Premise Ledger
+
+- selected semantic coefficient realization layer:
+  `discharge-required`; now sufficient to construct explicit lower data and
+  selected cochain realization.
+- explicit lower data:
+  `proof-checkpoint`; discharged relative to the selected layer.
+- selected cochain realization:
+  `proof-checkpoint`; constructed relative to the selected layer.
+
+### Certificate Provenance
+
+- discharged relative to selected layer: direct lower source, explicit lower
+  data, and selected cochain realization.
+- unresolved: provenance for the selected layer itself.
+- no conclusion-side data is reclassified as lower provenance.
+
+### Proof-Use Audit
+
+- The proof first converts the layer to the atom-supported direct source via
+  the Cycle 159 equivalence.
+- It then consumes that direct source through the Cycle 121 constructor.
+- The returned explicit lower data and selected cochain realization are
+  projections from the constructed Cycle 121 package.
+
+### Structure-Field Escape Audit
+
+- status: clear for this checkpoint.
+- No new structure or certificate field is introduced.
+- The theorem exposes the selected layer as a visible argument and does not
+  hide it behind a theorem conclusion.
+
+### Route-Integrity Audit
+
+- status: positive checkpoint, not final theorem.
+- The selected semantic coefficient realization gate is preserved.
+- G-06 is not weakened: the remaining material premise is precisely the
+  construction of the selected layer from indexed semantic atom/law provenance.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle170AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported only expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next constructive target is the layer itself:
+`SelectedSemanticCoefficientDirectRealizationLayer` must be generated from
+indexed semantic atom/law provenance, not from conclusion-side repair facts.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 19 — lower finite witness constructs cochain realization
 
 - decision: approve
