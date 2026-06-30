@@ -103,6 +103,151 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 210 — current canonical/free wrapper does not construct indexed source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the exact constructor boundary left by Cycle 209:
+
+1. do not consume `IndexedSemanticAtomLawCarrierSource` again as a supplied
+   premise;
+2. check the current visible canonical/free route;
+3. fix that the route is usable only if it actually constructs the indexed
+   source, equivalently the degree-wise carrier comparisons, degree-`2` zero
+   laws, and four selected face-restriction equations.
+
+No current positive constructor was visible from accepted input boundary,
+canonical/free obstruction-sheaf realization, universal property, finite
+nonvacuous witness, or reviewed predecessor theorem.  The selected result is
+therefore a narrow blocker for the tested route: current boundary plus
+`boundaryData` plus an inert `Realization` wrapper.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_current_canonicalOrFreeRoute_without_indexedSemanticAtomLawCarrierSource`
+
+The theorem assumes:
+
+- atom-generated selected-cover data and selected-cover equality;
+- the true-sheaf boundary-relation pointer `boundaryData`;
+- finite boundary-test equivalences for the degree-`0` carrier obstruction;
+- an inert `Realization : CurrentG06InputSurface -> Type`;
+- a constructor from current boundary plus `boundaryData` to that
+  `Realization`;
+- a constructor from that `Realization` to
+  `IndexedSemanticAtomLawCarrierSource`.
+
+It composes the two constructors into the exact indexed-source constructor
+shape already blocked by Cycle 174 and applies
+`no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_indexedSemanticAtomLawCarrierSource`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- A named or inert canonical/free `Realization` wrapper is not enough lower
+  provenance for the selected realization gate.
+- Current boundary plus `boundaryData` cannot make such a route usable unless
+  the route genuinely constructs `IndexedSemanticAtomLawCarrierSource`.
+- By the Cycle 174 dependency, such a source would expose transparent carrier
+  comparisons, degree-`2` zero laws, and four selected face-restriction
+  equations.
+
+Remaining:
+
+- Construct `IndexedSemanticAtomLawCarrierSource`, or directly construct its
+  transparent fields, from genuine semantic atom/law lower provenance.
+- Acceptable evidence remains a canonical/free obstruction-sheaf realization,
+  universal property, finite nonvacuous witness with adequacy, or reviewed
+  predecessor theorem.
+- This cycle does not classify all possible canonical/free routes as
+  impossible.
+
+### Material Premise Ledger
+
+- `boundaryData`: blocked as lower provenance for indexed carrier/face-law
+  fields on the tested current-boundary route.
+- inert `Realization`: blocked as a wrapper-only substitute for indexed source
+  construction.
+- `IndexedSemanticAtomLawCarrierSource`: still `discharge-required`.
+- carrier maps, degree-`2` zero laws, and four selected face equations: still
+  unresolved lower provenance.
+
+### Certificate Provenance
+
+- discharged as blocker evidence:
+  `boundaryData` and a named `Realization` wrapper do not certify indexed
+  carrier/face-law fields.
+- unresolved:
+  provenance for `c0Carrier`, `c1Carrier`, `c2Equiv` with zero laws, and
+  `d0`/`d1` selected face equations from genuine semantic atom/law data.
+
+### Proof-Use / Escape Audit
+
+- `currentBoundaryRealizationConstructor` and
+  `realizationConstructsIndexedSource` are composed into the exact constructor
+  consumed by the Cycle 174 blocker.
+- `IndexedSemanticAtomLawCarrierSource` is not consumed as a supplied source
+  premise; only a hypothetical constructor to it is refuted.
+- No conclusion-side gluing/sheaf/descent/effective-gluing/semantic `H1` zero,
+  selected cochain realization, selected layer, or direct-lower bundle is used
+  as lower provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed for the current tested route.
+- The theorem must be read narrowly: it blocks current boundary plus
+  `boundaryData` plus inert wrapper, not every possible canonical/free or
+  universal construction.
+- The finite boundary-test premises remain visible.
+- No new selected `K`, cover, coefficient object, obstruction sheaf, or
+  target-fitting face law is introduced.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle210AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the target Lean file and axiom-audit file
+- hidden Unicode scan over the target Lean file
+- local-path scan over the target Lean file
+
+Axiom audit for the new declaration reported only
+`[propext, Classical.choice, Quot.sound]`.  Full `lake build` passed with only
+pre-existing linter warnings in
+`Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+### T3 Audit
+
+T3 audit approved Cycle 210 as `blocker-fixed`:
+
+- the theorem validly blocks the current-boundary plus `boundaryData` plus
+  inert-wrapper route;
+- it does not overclaim impossibility of all canonical/free routes;
+- no hidden weakening, structure-field escape, conclusion-side proof input, or
+  invalid use of the prior blocker was found;
+- completion candidate remains `no`.
+
+Next obligation:
+
+- Construct `IndexedSemanticAtomLawCarrierSource`, or directly construct its
+  transparent carrier/face-law fields, from genuine semantic atom/law lower
+  provenance: canonical/free obstruction-sheaf realization, universal
+  property, finite nonvacuous witness with adequacy, or reviewed predecessor
+  theorem.
+
 ## Cycle 209 — indexed semantic atom/law source to Cycle 208 boundary
 
 - decision: approve
