@@ -13790,6 +13790,46 @@ theorem degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations_constructs_
       family hcover_eq sectionWitness compatibility
 
 /--
+Cycle 196 atom-supported finite-source checkpoint: the accepted ordinary
+degreewise-equivalence and face-restriction source directly constructs the
+selected semantic coefficient realization layer.
+
+This proof deliberately bypasses the older selected-cochain-realization,
+selected-layer, direct-lower, `boundaryData`, conclusion-side, and
+`IndexedSemanticAtomLawCarrierSource` routes.  It destructs the atom-supported
+finite source into its cover source, degreewise equivalences, degree-`2` zero
+laws, and four selected face-restriction equations, then immediately proof-uses
+the Cycle 195 selected-realization gate.  The finite source remains the visible
+material premise; it is not generated here from `CurrentG06InputSurface`.
+-/
+theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  rcases source with
+    ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  exact
+    degreewiseAdditiveEquiv_and_explicitFaceRestrictionEquations_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (additive := additive) (surface := surface)
+      family hcover_eq c0Equiv c1Equiv c2Equiv
+      c2Equiv_zero c2Equiv_symm_zero
+      d0_face_to d0_face_from d1_face_to d1_face_from
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 
