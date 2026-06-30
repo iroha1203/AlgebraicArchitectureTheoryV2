@@ -6360,6 +6360,91 @@ abbrev AtomSupportedDegreewiseEquivAndFaceRestrictionSource
                   (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
 
 /--
+Cycle 215 residual finite source boundary obtained by deleting only the
+degree-`0` additive equivalence from
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`.
+
+The proposition keeps the atom-generated selected cover witness, the
+degree-`1` additive equivalence, the degree-`2` carrier equivalence and zero
+laws, and the selected face-restriction law continuations that become
+checkable once a degree-`0` equivalence is supplied.  It deliberately does not
+contain `E.coefficient.C0 ≃+ surface.K.Cn 0`.
+-/
+abbrev AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob)) : Prop :=
+    Exists fun family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+      surface.selectedCover = Sieve.generate family.presieve /\
+      Exists fun c1Equiv :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+      forall c0Equiv :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        E.coefficient.C0 ≃+ surface.K.Cn 0,
+        (let c0Carrier :=
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+         let c1Carrier :=
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+         let model :=
+          SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+            (additive := additive) (coverBridge := surface.coverBridge)
+            (K := surface.K)
+            c0Carrier c1Carrier c2Equiv
+            c2Equiv_zero c2Equiv_symm_zero
+         let sectionWitness :=
+          SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+            model
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          letI := surface.K.cochainAddCommGroup 1
+          forall primitive : E.coefficient.C0,
+            surface.K.alternatingFaceCombination 0
+                (fun σ i =>
+                  surface.K.faceRestrictionTerm 0 i
+                    (sectionWitness.c0SectionEquiv primitive) σ) =
+              sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+         (letI := additive.c0AddCommGroup
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          letI := surface.K.cochainAddCommGroup 1
+          forall primitive : surface.K.Cn 0,
+            E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+              sectionWitness.c1SectionEquiv.symm
+                (surface.K.alternatingFaceCombination 0
+                  (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ))) /\
+         (letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          forall cochain : E.coefficient.C1,
+            surface.K.alternatingFaceCombination 1
+                (fun σ i =>
+                  surface.K.faceRestrictionTerm 1 i
+                    (sectionWitness.c1SectionEquiv cochain) σ) =
+              sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+         (letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          forall cochain : surface.K.Cn 1,
+            E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+              sectionWitness.c2SectionEquiv.symm
+                (surface.K.alternatingFaceCombination 1
+                  (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
+
+/--
 Cycle 214 degree-`0` positive-source checkpoint: the atom-supported ordinary
 degree-wise equivalence and selected face-restriction source already exposes
 the exact degree-`0` carrier comparison required by the section-family route.
@@ -6390,6 +6475,54 @@ theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_degreeZe
   letI := additive.c0AddCommGroup
   letI := surface.K.cochainAddCommGroup 0
   exact ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv⟩
+
+/--
+Cycle 215 source-internal blocker: all finite-source components except the
+degree-`0` additive equivalence still do not construct that equivalence.
+
+The hypothetical constructor may consume the atom-supported selected cover
+witness, degree-`1` equivalence, degree-`2` zero-preserving equivalence, and
+the face-law continuations packaged in
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`.
+If it could return `E.coefficient.C0 ≃+ surface.K.Cn 0`, the finite
+`PUnit` / `ZMod 2` boundary would force an additive equivalence between
+`PUnit` and `ZMod 2`.
+
+Thus the degree-`0` equivalence remains an independent material premise of
+the atom-supported finite source until a genuine canonical/free/input-boundary
+provenance theorem constructs it.
+-/
+theorem no_constructor_from_atomSupportedDegreewiseEquivAndFaceRestrictionSource_without_degreeZeroAdditiveEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (degreeZeroEquivConstructor :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface ->
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0) :
+    False := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let c0Equiv : E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    degreeZeroEquivConstructor sourceWithoutC0
+  let e : PUnit ≃+ ZMod 2 :=
+    c0SourceEquiv.symm.trans (c0Equiv.trans c0TargetEquiv)
+  rcases e.surjective (0 : ZMod 2) with ⟨x0, hx0⟩
+  rcases e.surjective (1 : ZMod 2) with ⟨x1, hx1⟩
+  have hzero_one : (0 : ZMod 2) = 1 := by
+    rw [← hx0, ← hx1]
+  exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
 
 /--
 Cycle 120 positive checkpoint: the ordinary degree-wise equivalence and
