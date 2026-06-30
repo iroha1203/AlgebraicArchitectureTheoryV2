@@ -13570,6 +13570,52 @@ theorem atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSema
   exact ⟨⟨layer⟩, hcycle170.1, hcycle170.2.1, hcycle170.2.2⟩
 
 /--
+Cycle 193 separated lower-provenance checkpoint: selected carrier geometry plus
+selected Cech face laws construct the selected semantic coefficient realization
+layer.
+
+This opens the Cycle 171 route one step below the monolithic
+`SemanticRepairCarrierSpecificComparisonProvenance` input.  The theorem first
+constructs carrier-specific comparison provenance from the separated lower
+sources, then immediately proof-uses the existing atom-supported provenance
+route to obtain the selected layer, direct source, explicit lower data, and
+selected cochain realization.  The carrier geometry and face-law source remain
+visible material premises; no selected cochain realization, selected layer,
+`directLower`, `boundaryData`, conclusion-side data, or semantic `H1` zero is
+used as lower provenance.
+-/
+theorem selectedCarrierGeometry_and_faceLaws_constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (geometry :
+      SemanticRepairSelectedCarrierGeometry
+        additive surface.coverBridge surface.K)
+    (faceLaws :
+      SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (additive := additive) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty (SemanticRepairCoverRelativeCochainRealization additive surface.K) := by
+  let provenance :
+      SemanticRepairCarrierSpecificComparisonProvenance
+        additive surface.coverBridge surface.K :=
+    SemanticRepairCarrierSpecificComparisonProvenance.of_selectedCarrierGeometry_and_faceLaws
+      geometry faceLaws
+  exact
+    atomSupportedCarrierSpecificComparisonProvenance_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (additive := additive) (surface := surface)
+      family hcover_eq provenance
+
+/--
 Cycle 173 indexed semantic atom/law lower source for the selected carrier
 comparison route.
 
