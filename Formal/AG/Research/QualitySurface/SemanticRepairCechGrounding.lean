@@ -10633,6 +10633,67 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_unindexedSemanti
       atomSupportedCurrentBoundaryExplicitLowerConstructor
 
 /--
+Cycle 172 blocker theorem: an unindexed semantic atom / law metadata token
+still does not uniformly construct carrier-specific comparison provenance.
+
+The theorem proof-uses the hypothetical provenance constructor by converting
+the produced `SemanticRepairCarrierSpecificComparisonProvenance` into the
+transparent explicit lower data already known to be impossible from the same
+unindexed token route.  Thus the missing source is not another metadata token:
+it must be indexed semantic atom / law provenance that actually generates the
+carrier comparisons, degree-`2` zero laws, and selected face/differential laws.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_unindexedSemanticAtomLawToken_without_carrierSpecificComparisonProvenance
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (token : UnindexedSemanticAtomLawToken)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryTokenProvenanceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      UnindexedSemanticAtomLawToken ->
+      Nonempty
+        (SemanticRepairCarrierSpecificComparisonProvenance
+          additive surfaceInput.coverBridge surfaceInput.K)) :
+    False := by
+  let atomSupportedCurrentBoundaryTokenExplicitLowerConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      UnindexedSemanticAtomLawToken ->
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surfaceInput.coverBridge)
+        (K := surfaceInput.K) :=
+    fun surfaceInput familyInput hcoverInput tokenInput =>
+      (SemanticRepairCarrierSpecificComparisonProvenance.carrierSpecificComparisonProvenance_iff_degreewiseCarrierData_and_explicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surfaceInput.coverBridge)
+        (K := surfaceInput.K)).1
+        (atomSupportedCurrentBoundaryTokenProvenanceConstructor
+          surfaceInput familyInput hcoverInput tokenInput)
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_unindexedSemanticAtomLawToken_without_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq token c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryTokenExplicitLowerConstructor
+
+/--
 Cycle 124 conclusion-side boundary theorem: adding a current gluing datum,
 cover-wise sheaf condition, descent, effective gluing, and semantic additive
 `H1` zero to the atom-supported current G-06 boundary still does not uniformly

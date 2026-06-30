@@ -2459,6 +2459,158 @@ GOAL-boundary revision proposal must be recorded.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 172 — unindexed semantic token cannot construct carrier provenance
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4838813870>
+- date: 2026-06-30 JST
+
+### T1 Constructive Route
+
+The selector chose the exact remaining lower-provenance obligation after Cycle
+171:
+
+1. construct
+   `SemanticRepairCarrierSpecificComparisonProvenance additive surface.coverBridge surface.K`;
+2. do so from genuine indexed semantic atom / law lower provenance, canonical
+   or free obstruction-sheaf realization, universal property, finite
+   nonvacuous witness, or a reviewed predecessor theorem;
+3. do not duplicate existing wrappers around selected carrier geometry, face
+   laws, selected carrier model, explicit lower data, selected cochain
+   realization, direct source, or selected layer.
+
+The constructive search found only the existing
+`UnindexedSemanticAtomLawToken`, which is explicitly metadata-only.  The
+existing code already proves that this unindexed token cannot construct the
+transparent explicit lower data.  Cycle 172 therefore fixes the exact lower
+target blocker for carrier-specific provenance itself.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_unindexedSemanticAtomLawToken_without_carrierSpecificComparisonProvenance`
+
+The theorem says that if atom-supported current-boundary data plus an
+unindexed semantic atom / law token could uniformly construct
+`Nonempty (SemanticRepairCarrierSpecificComparisonProvenance additive surfaceInput.coverBridge surfaceInput.K)`,
+then the same input would construct
+`DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`, contradicting the
+Cycle 167 unindexed-token blocker.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- Unindexed semantic atom / law metadata is rejected as a source for
+  `SemanticRepairCarrierSpecificComparisonProvenance`, not only as a source for
+  explicit lower data.
+- The exact missing API is now sharper: the next positive source must be
+  indexed enough to generate carrier comparisons, degree-`2` zero laws, and
+  selected face/differential laws.
+
+Remaining:
+
+- Construct `SemanticRepairCarrierSpecificComparisonProvenance` from genuine
+  indexed semantic atom / law lower provenance, canonical/free
+  obstruction-sheaf realization, universal property, finite nonvacuous witness,
+  or a reviewed predecessor theorem.
+- If no such source is inside the current target boundary, record an explicit
+  GOAL-boundary revision proposal instead of reclassifying unindexed metadata
+  as provenance.
+
+### Material Premise Ledger
+
+- `SemanticRepairCarrierSpecificComparisonProvenance`: still
+  `discharge-required`; unindexed metadata route is blocked.
+- `UnindexedSemanticAtomLawToken`: rejected as lower provenance; it carries no
+  selected carrier indexing or selected face/differential law data.
+- `SelectedSemanticCoefficientDirectRealizationLayer`: remains discharged only
+  relative to carrier-specific provenance by Cycle 171.
+
+### Certificate Provenance
+
+- discharged: none as positive lower provenance.
+- fixed blocker: unindexed semantic atom / law token cannot generate
+  carrier-specific comparison provenance.
+- unresolved: indexed semantic atom / law source, canonical/free realization,
+  universal property, finite nonvacuous witness, or reviewed predecessor theorem
+  for the provenance itself.
+
+### Proof-Use Audit
+
+- The proof proof-uses the hypothetical provenance constructor by converting
+  the produced `SemanticRepairCarrierSpecificComparisonProvenance` through the
+  existing equivalence to explicit lower data.
+- It then proof-uses the Cycle 167 unindexed-token no-constructor theorem.
+- No conclusion-side gluing, sheaf/descent, effective gluing, semantic `H1`
+  zero, selected cochain realization, explicit lower data, direct source, or
+  selected layer is used as lower provenance.
+
+### Structure-Field Escape Audit
+
+- status: blocker-fixed.
+- No new structure or certificate field is introduced.
+- The theorem does not add an indexed provenance wrapper; it only rejects the
+  unindexed metadata route for the current remaining premise.
+
+### Route-Integrity Audit
+
+- status: blocked for the unindexed-token route.
+- The result does not weaken G-06 or reinterpret the GOAL/report.
+- It narrows the next constructive obligation to an actually indexed
+  semantic atom / law source rather than another metadata token.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 172 as `blocker-fixed`:
+
+- the theorem is derivative of Cycle 167 but materially useful because it lifts
+  the unindexed-token no-constructor boundary from explicit lower data to
+  carrier-specific provenance via the existing equivalence;
+- the missing API is identified precisely enough: not unindexed metadata, but
+  indexed semantic atom / law provenance or an equivalent canonical/free/
+  universal/finite source for carrier-specific comparison provenance;
+- no hidden material premise, unused material premise, structure-field escape,
+  target-fitting construction, vacuity, one-way-as-equivalence, or GOAL/report
+  reinterpretation was found;
+- this is not a positive selected-realization construction and not a completion
+  candidate.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings replayed in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle172AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- Hidden / bidirectional Unicode scan over the changed Lean/report files was
+  clean.
+- Absolute local path / private machine identifier scan over the changed
+  Lean/report files was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should attempt to locate or define a genuine indexed semantic
+atom / law lower-provenance source that generates
+`SemanticRepairCarrierSpecificComparisonProvenance`, rather than adding another
+unindexed token, wrapper, or conclusion-side premise.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 170 — selected layer constructs explicit lower data
 
 - decision: approve
