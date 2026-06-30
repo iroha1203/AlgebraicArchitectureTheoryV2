@@ -103,6 +103,145 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 211 — current wrapper does not construct degree-zero carrier data
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 narrowed the Cycle 210 indexed-source blocker to the first transparent
+component of that source:
+
+1. do not require a full `IndexedSemanticAtomLawCarrierSource` as the tested
+   output;
+2. test whether the current atom-supported boundary plus `boundaryData` and an
+   inert canonical/free `Realization` wrapper can manufacture only the
+   degree-`0` carrier comparison;
+3. reduce any such route to the existing Cycle 181 component blocker.
+
+No current positive constructor was visible from accepted input boundary,
+canonical/free obstruction-sheaf realization, universal property, finite
+nonvacuous witness, or reviewed predecessor theorem.  The selected result is
+therefore a narrow component blocker for the tested wrapper route, not an
+absolute impossibility theorem for all canonical/free constructions.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.no_current_canonicalOrFreeRoute_without_degreeZeroCarrierComparisonData`
+
+The theorem assumes:
+
+- atom-generated selected-cover data and selected-cover equality;
+- the true-sheaf boundary-relation pointer `boundaryData`;
+- finite boundary-test equivalences for the degree-`0` carrier obstruction;
+- an inert `Realization : CurrentG06InputSurface -> Type`;
+- a constructor from current boundary plus `boundaryData` to that
+  `Realization`;
+- a constructor from that `Realization` to
+  `CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`.
+
+It composes the two hypothetical route components into the exact component
+constructor consumed by Cycle 181 and applies
+`SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreeZeroCarrierComparisonData`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- A named or inert canonical/free `Realization` wrapper is not enough lower
+  provenance even for the degree-`0` carrier-comparison field `c0Carrier`.
+- Current boundary plus `boundaryData` cannot make such a route usable unless
+  the route genuinely constructs the component from acceptable lower
+  provenance.
+- The finite boundary-test premises remain visible, so this is a component
+  blocker under the stated test boundary rather than an absolute
+  no-constructor theorem.
+
+Remaining:
+
+- Construct `c0Carrier` from genuine semantic atom/law lower provenance.
+- Construct the remaining `c1Carrier`, `c2Equiv` with zero laws, and selected
+  face-restriction equations from the same kind of provenance.
+- Acceptable evidence remains a canonical/free obstruction-sheaf realization,
+  universal property, finite nonvacuous witness with adequacy, or reviewed
+  predecessor theorem.
+
+### Material Premise Ledger
+
+- `boundaryData`: blocked as lower provenance for `c0Carrier` on the tested
+  current-boundary route.
+- inert `Realization`: blocked as a wrapper-only substitute for degree-`0`
+  carrier comparison construction.
+- `c0Carrier`: still `discharge-required` as a positive lower-provenance
+  construction.
+- remaining carrier maps, degree-`2` zero laws, and four selected face
+  equations: still unresolved lower provenance.
+
+### Certificate Provenance
+
+- discharged as blocker evidence:
+  `boundaryData` and a named `Realization` wrapper do not certify
+  `c0Carrier` under the stated finite-test boundary.
+- unresolved:
+  provenance for `c0Carrier`, `c1Carrier`, `c2Equiv` with zero laws, and
+  `d0`/`d1` selected face equations from genuine semantic atom/law data.
+
+### Proof-Use / Escape Audit
+
+- `currentBoundaryRealizationConstructor` and
+  `realizationConstructsDegreeZeroCarrier` are both used to build the exact
+  constructor consumed by the Cycle 181 blocker.
+- No `IndexedSemanticAtomLawCarrierSource` is consumed as a premise.
+- No conclusion-side gluing/sheaf/descent/effective-gluing/semantic `H1` zero,
+  selected cochain realization, selected layer, or direct-lower bundle is used
+  as lower provenance.
+- No new selected `K`, cover, coefficient object, structure field, certificate
+  field, or class boundary is introduced.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed for the current tested component route.
+- The theorem must be read narrowly: it blocks current boundary plus
+  `boundaryData` plus inert wrapper from manufacturing `c0Carrier`; it does not
+  classify all possible canonical/free routes as impossible.
+- The finite boundary-test premises remain explicit.
+- T3 audit approved the cycle as `blocker-fixed` with
+  `completion_candidate: no`.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle211AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan on target Lean file and `.tmp/G06Cycle211AxiomAudit.lean`
+- hidden Unicode scan on changed/audit files
+- local absolute path scan on changed/audit files
+
+Axiom audit:
+
+- `no_current_canonicalOrFreeRoute_without_degreeZeroCarrierComparisonData`
+  depends on `[propext, Classical.choice, Quot.sound]`.
+
+T3 audit:
+
+- decision: approve
+- result_type: blocker-fixed
+- completion_candidate: no
+- next obligation: construct genuine lower provenance for `c0Carrier`, or the
+  full degreewise carrier/face-restriction data, from semantic atom/law
+  geometry rather than from `boundaryData`, wrapper realizations, or
+  conclusion-side fields.
+
 ## Cycle 210 — current canonical/free wrapper does not construct indexed source
 
 - decision: approve
