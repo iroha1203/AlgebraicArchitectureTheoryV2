@@ -10392,6 +10392,68 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_without_externalSele
       atomSupportedCurrentBoundaryExplicitLowerConstructor
 
 /--
+Cycle 203 boundary-data post-wrapper blocker theorem: adding the true-sheaf
+boundary-relation additive pointer to the atom-supported current G-06 boundary
+still cannot uniformly construct the external selected carrier geometry plus
+selected Cech face-law source.
+
+The proof keeps `boundaryData` proof-used by the hypothetical constructor, then
+specializes it away to the Cycle 202 current-boundary external-lower-source
+blocker.  Thus `SemanticRepairCoverH1BoundaryRelationAdditiveData` remains a
+boundary-relation pointer; it is not provenance for the selected carrier
+geometry, selected Cech face laws, or the transparent explicit lower data they
+construct.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_externalSelectedCarrierGeometryAndFaceLaws
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedCurrentBoundaryBoundaryDataExternalLowerSourceConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry
+          additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry) :
+    False := by
+  let atomSupportedCurrentBoundaryExternalLowerSourceConstructor :
+      (surface :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (family :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surface.coverBase) ->
+      surface.selectedCover = Sieve.generate family.presieve ->
+      Exists fun geometry :
+        SemanticRepairSelectedCarrierGeometry
+          additive surface.coverBridge surface.K =>
+          SemanticRepairSelectedCechFaceLawSource additive geometry :=
+    fun surfaceInput familyInput hcoverInput =>
+      atomSupportedCurrentBoundaryBoundaryDataExternalLowerSourceConstructor
+        surfaceInput familyInput hcoverInput boundaryData
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_without_externalSelectedCarrierGeometryAndFaceLaws
+      (surface := surface) family hcover_eq c0SourceEquiv c0TargetEquiv
+      atomSupportedCurrentBoundaryExternalLowerSourceConstructor
+
+/--
 Cycle 165 semantic-cover-Cech-data boundary theorem: adding the G-05
 cover-indexed semantic Cech data to the atom-supported current boundary still
 does not uniformly construct
