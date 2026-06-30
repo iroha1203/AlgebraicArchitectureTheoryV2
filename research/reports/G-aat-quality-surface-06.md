@@ -103,6 +103,137 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 214 — degree-zero witness exposed from atom-supported finite source
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+T1 selected the next positive checkpoint around the same `c0Carrier` gate:
+
+1. avoid repeating the Cycle 211 wrapper blocker, Cycle 212 current-surface
+   presheaf route, or Cycle 213 semantic-Cech section-family blocker;
+2. inspect whether a positive canonical/free/input-boundary constructor already
+   exists for the degree-`0` semantic-to-cover-relative carrier comparison;
+3. if none exists, expose the sharpest non-repeated finite source boundary
+   that actually produces the needed degree-`0` carrier comparison.
+
+Inspection found no current constructor from accepted semantic atom/law
+geometry, semantic Cech data, boundary data, canonical/free obstruction-sheaf
+realization, universal property, or reviewed predecessor theorem.  The nearest
+positive source is the existing
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource`: it contains the
+ordinary degree-`0` additive equivalence needed to build `c0Carrier`, while the
+source and the equivalence provenance remain visible material premises.
+
+### Lean Artifacts
+
+- New declaration:
+  - `SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_degreeZeroCarrierComparisonData`
+
+The theorem assumes:
+
+- a current G-06 input surface;
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` for that surface.
+
+It destructs the source, extracts the degree-`0` additive equivalence
+`E.coefficient.C0 ≃+ surface.K.Cn 0`, and returns
+`CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)` via
+`CarrierSpecificAdditiveComparisonData.ofAddEquiv`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The route from `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` to the
+  exact degree-`0` carrier comparison is now named directly.
+- The selected semantic coefficient realization gate remains visible as the
+  actual `CarrierSpecificAdditiveComparisonData` object, not merely an erased
+  additive equivalence.
+
+Remaining:
+
+- Construct `AtomSupportedDegreewiseEquivAndFaceRestrictionSource` from G-06
+  input-boundary geometry.
+- Construct or prove provenance for the degree-`0` additive equivalence
+  `E.coefficient.C0 ≃+ surface.K.Cn 0`.
+- Audit any proposed source for canonical/free/input-boundary provenance,
+  nonvacuity, adequacy, and anti-target-fitting.
+
+### Material Premise Ledger
+
+- `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`:
+  `discharge-required`; still unresolved as input-boundary provenance.
+- degree-`0` additive equivalence inside that source:
+  proof-used to construct `c0Carrier`, but its own provenance remains
+  unresolved.
+- `c0Carrier` relative to the source:
+  exposed by the new theorem as a proof-checkpoint, not as final discharge.
+
+### Certificate Provenance
+
+- discharged relative to the explicit source:
+  the theorem destructs `source` and uses its `c0Equiv` component to construct
+  `c0Carrier`.
+- unresolved:
+  provenance of `source` itself, and nonvacuity / adequacy provenance for
+  `c0Equiv`.
+
+### Proof-Use / Escape Audit
+
+- `source` is proof-used by pattern matching, and `c0Equiv` is proof-used in
+  `CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv`.
+- The remaining source components are not used by this degree-`0` projection
+  theorem; they remain part of the broader finite-source package, not evidence
+  for completion.
+- No new structure field, certificate field, class membership, selected `K`,
+  cover, coefficient object, wrapper realization, `H1` zero, descent, or
+  effective-gluing conclusion is introduced.
+
+### Route-Integrity Audit
+
+- status: proof-checkpoint for the bounded extraction claim.
+- The theorem must not be read as proving route integrity for G-06 completion:
+  the additive equivalence is supplied by the source rather than constructed
+  from semantic atom/law geometry.
+- T3 audit found no target statement weakening or hidden material premise, but
+  warned that treating the source as discharged provenance would be an
+  overclaim.
+
+### Validation
+
+Local validation:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle214AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan on target Lean file and `.tmp/G06Cycle214AxiomAudit.lean`
+- hidden Unicode scan on changed/audit files
+- local absolute path scan on changed/audit files
+
+Axiom audit:
+
+- `atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_degreeZeroCarrierComparisonData`
+  depends on `[propext, Quot.sound]`.
+
+T3 audit:
+
+- decision: approve
+- result_type: proof-checkpoint
+- completion_candidate: no
+- next obligation:
+  construct or refute a canonical/free/input-boundary source for the degree-`0`
+  equivalence inside `AtomSupportedDegreewiseEquivAndFaceRestrictionSource`,
+  with nonvacuity / adequacy evidence that it is not a target-fitting finite
+  equivalence.
+
 ## Cycle 213 — degree-zero section-family unfolding still lacks realization
 
 - decision: approve
