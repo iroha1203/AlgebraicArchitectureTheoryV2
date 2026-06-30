@@ -13949,6 +13949,73 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelation
       atomSupportedCurrentBoundaryIndexedSourceConstructor
 
 /--
+Cycle 179 boundary theorem: adding true-sheaf boundary-relation additive data
+to the accepted atom-supported current G-06 boundary still does not uniformly
+construct the atom-supported direct finite witness.
+
+The proof uses the existing direct-source positive route: a hypothetical
+constructor for `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`
+would construct carrier-specific comparison provenance.  Cycle 178 already
+blocks such carrier provenance from the same atom-supported boundary plus
+`boundaryData`.  Hence `boundaryData` is not provenance for the ordinary
+degree-wise equivalences, degree-`2` zero laws, or four direct selected `K.d`
+compatibility laws either.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreewiseEquivAndDirectDifferentialSource
+    (surface :
+      CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedBoundaryDataDirectSourceConstructor :
+      (surfaceInput :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surfaceInput) :
+    False := by
+  let atomSupportedBoundaryDataCarrierProvenanceConstructor :
+      (surfaceInput :
+        CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      SemanticRepairCarrierSpecificComparisonProvenance
+        additive surfaceInput.coverBridge surfaceInput.K :=
+    fun surfaceInput familyInput hcoverInput boundaryInput => by
+      let directSource :
+          SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+            (additive := additive) surfaceInput :=
+        atomSupportedBoundaryDataDirectSourceConstructor
+          surfaceInput familyInput hcoverInput boundaryInput
+      have hroute :=
+        SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndDirectDifferentialSource_constructs_selectedCochainRealization
+          (additive := additive) (surface := surfaceInput) directSource
+      exact Classical.choice hroute.2.2.2.2.2.2.2
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_carrierSpecificComparisonProvenance
+      (surface := surface) family hcover_eq boundaryData
+      c0SourceEquiv c0TargetEquiv
+      atomSupportedBoundaryDataCarrierProvenanceConstructor
+
+/--
 Cycle 137 atom-supported conclusion-side carrier-provenance boundary theorem:
 adding atom-generated selected-cover data, a current gluing datum, cover-wise
 sheaf condition, descent, effective gluing, and semantic additive `H1` zero
