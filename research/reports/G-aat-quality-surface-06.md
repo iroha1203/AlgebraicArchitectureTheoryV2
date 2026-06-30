@@ -2289,6 +2289,141 @@ already been ruled out as a source.
 
 `$math-lean-review` is not run because this is not a completion candidate.
 
+## Cycle 181 — boundaryData does not construct degree-0 carrier comparison data
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the first component-level boundary under the Cycle 180
+transparent direct lower bundle:
+
+1. prove that adding `boundaryData` to the accepted atom-supported current G-06
+   boundary still cannot uniformly construct the degree-`0`
+   `CarrierSpecificAdditiveComparisonData` component; and
+2. preserve the explicit finite-test hypotheses inherited from the predecessor
+   no-constructor theorem instead of claiming an absolute no-constructor result.
+
+This is not a completion candidate.  It sharpens the unresolved direct lower
+bundle by isolating the first carrier-map component before the direct `K.d`
+laws are assembled.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCarrierSpecificComparisonProvenance.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_without_degreeZeroCarrierComparisonData`
+
+The theorem assumes a hypothetical constructor from
+`CurrentG06InputSurface`, atom-generated selected-cover data,
+selected-cover equality, and `boundaryData` to
+`CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`.
+It converts the returned carrier data to an ordinary additive equivalence via
+`.toAddEquiv`, then applies the existing Cycle 145 degree-`0`
+no-constructor theorem.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus the accepted atom-supported current G-06 boundary is
+  blocked as a uniform source for the degree-`0` carrier comparison data.
+- `CarrierSpecificAdditiveComparisonData` is audited as no weaker than the
+  ordinary degree-`0` additive-equivalence constructor required by the direct
+  lower source.
+
+Remaining:
+
+- `c0SourceEquiv` remains an explicit finite-test hypothesis.
+- `c0TargetEquiv` remains an explicit finite-test hypothesis.
+- This is not an absolute no-constructor theorem without those finite-test
+  hypotheses.
+- Degree-`1`, degree-`2`, zero-law, and direct selected `K.d` component
+  provenance remain unresolved.
+
+### Material Premise Ledger
+
+- degree-`0` carrier comparison data: blocked relative to
+  `boundaryData` plus the explicit finite-test boundary.
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: still
+  `discharge-required`.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData` is not provenance for the
+  degree-`0` carrier comparison component under the finite-test boundary.
+- unresolved: genuine atom/law provenance for the degree-`0` component without
+  finite-test assumptions, and for the remaining direct lower components.
+
+### Proof-Use Audit
+
+- The hypothetical degree-`0` carrier-data constructor is proof-used to build
+  a degree-`0` additive-equivalence constructor via `.toAddEquiv`.
+- The proof passes `surface`, `family`, `hcover_eq`, `c0SourceEquiv`, and
+  `c0TargetEquiv` to the Cycle 145 no-constructor theorem.
+- No indexed source, explicit lower data, selected cochain realization,
+  selected layer, semantic `H1` zero, gluing/descent/effectivity, or
+  conclusion-side data is used as lower provenance.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected `K`, coefficient object, or certificate
+  field is introduced.
+- The existing carrier-data fields cannot serve as an escape hatch here,
+  because the proof immediately projects them to the predecessor additive
+  equivalence obstruction.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The route is a predecessor reduction through `.toAddEquiv`, not a
+  target-fitting construction.
+- The finite-test boundary remains explicit and is not hidden as ambient data.
+
+### T3 Audit Result
+
+T3 approved the cycle as `blocker-fixed`.
+
+- statement not weakened: pass.
+- hidden material premise: none found; finite-test hypotheses are explicit.
+- structure-field escape: none found.
+- route integrity: pass.
+- completion candidate: no.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle181AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over changed files was clean.
+- local absolute path / private machine identifier scan over changed files was
+  clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle should either discharge or further audit the finite-test
+hypotheses `c0SourceEquiv` and `c0TargetEquiv`, or continue fixing the next
+direct-lower component blocker without claiming completion.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 180 — boundaryData does not construct the transparent direct lower bundle
 
 - decision: approve
