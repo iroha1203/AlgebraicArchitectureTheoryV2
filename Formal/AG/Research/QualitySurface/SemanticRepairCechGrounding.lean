@@ -11261,6 +11261,99 @@ theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideDa
       atomSupportedConclusionSideCochainRealizationConstructor
 
 /--
+Cycle 190 combined semantic-boundary obstruction: even after adding the
+true-sheaf boundary-relation additive data to the accepted atom-supported
+current G-06 boundary and all conclusion-side sheaf/descent/effective-gluing
+data, there is still no uniform constructor for
+`AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+
+The proof closes over the supplied `boundaryData` and reduces the alleged
+constructor to the Cycle 125 conclusion-side direct-source blocker.  Thus
+`boundaryData` plus semantic `H1` zero and effective gluing is not genuine
+semantic atom/law lower provenance for the degree-wise carrier equivalences,
+degree-`2` zero laws, or the four direct selected `K.d` compatibility laws.
+-/
+theorem no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_conclusionSideData_without_degreewiseEquivAndDirectDifferentialSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S surface.presheaf surface.selectedCover)
+    (hSheafFor :
+      AAT.AG.Site.AATSheafConditionFor
+        S surface.presheaf surface.selectedCover)
+    (hDescent :
+      AAT.AG.Site.AATDescent S surface.presheaf surface.selectedCover)
+    (hEffective :
+      ∃! globalSection : surface.presheaf.obj (op surface.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData globalSection)
+    (hSemanticH1Zero :
+      SemanticRepairAdditiveH1Zero additive)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (atomSupportedBoundaryAndConclusionSideDirectSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surfaceInput) :
+    False := by
+  let atomSupportedConclusionSideDirectSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      (familyInput :
+        AAT.AG.Site.AATCoverageFamily
+          S.requirements S.overlap surfaceInput.coverBase) ->
+      surfaceInput.selectedCover = Sieve.generate familyInput.presieve ->
+      (gluingInput :
+        AAT.AG.Site.AATGluingData
+          S surfaceInput.presheaf surfaceInput.selectedCover) ->
+      AAT.AG.Site.AATSheafConditionFor
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      AAT.AG.Site.AATDescent
+        S surfaceInput.presheaf surfaceInput.selectedCover ->
+      (∃! globalSection : surfaceInput.presheaf.obj (op surfaceInput.coverBase),
+        AAT.AG.Site.AATGlobalSectionRealizes gluingInput globalSection) ->
+      SemanticRepairAdditiveH1Zero additive ->
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (additive := additive) surfaceInput :=
+    fun surfaceInput familyInput hcoverInput gluingInput hSheafInput
+        hDescentInput hEffectiveInput hSemanticH1ZeroInput =>
+      atomSupportedBoundaryAndConclusionSideDirectSourceConstructor
+        surfaceInput familyInput hcoverInput boundaryData gluingInput
+        hSheafInput hDescentInput hEffectiveInput hSemanticH1ZeroInput
+  exact
+    no_constructor_from_atomSupportedCurrentG06Boundary_and_conclusionSideData_without_degreewiseEquivAndDirectDifferentialSource
+      (surface := surface) family hcover_eq gluingData hSheafFor hDescent
+      hEffective hSemanticH1Zero c0SourceEquiv c0TargetEquiv
+      atomSupportedConclusionSideDirectSourceConstructor
+
+/--
 Cycle 126 conclusion-side degree-`0` boundary theorem: the accepted
 atom-supported current G-06 boundary plus conclusion-side gluing/sheaf/descent/
 effective-gluing/semantic-`H1`-zero inputs cannot uniformly construct even the

@@ -103,6 +103,164 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 190 — boundaryData plus conclusion-side data does not construct direct source
+
+- decision: approve
+- result_type: blocker-fixed
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-06-30 JST
+
+### T1 Selector Result
+
+The selector chose the central remaining selected-realization gate:
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` from
+genuine semantic atom / law lower provenance.
+
+The attempted positive route found that the current accepted input boundary
+still has no theorem-level way to generate the degree-wise carrier
+equivalences, degree-`2` zero laws, and four direct selected `K.d`
+compatibility laws for the arbitrary selected `surface.K`.  Existing positive
+routes consume a selected cochain realization, direct lower bundle, selected
+semantic coefficient realization layer, carrier-specific provenance, or
+finite witness boundary; using any of those as an input would leave the
+material premise undischarged.
+
+Cycle 190 therefore fixes the next exact obstruction: even adding
+true-sheaf boundary-relation additive `boundaryData` to all conclusion-side
+gluing / sheaf / descent / effective-gluing / semantic-`H1`-zero data still
+does not construct the direct source.
+
+### Lean Artifacts
+
+- New declaration:
+  - `Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding.SemanticRepairCoverRelativeCochainRealization.no_constructor_from_atomSupportedCurrentG06Boundary_and_boundaryRelationAdditiveData_and_conclusionSideData_without_degreewiseEquivAndDirectDifferentialSource`
+
+The theorem assumes a hypothetical constructor from:
+
+- `CurrentG06InputSurface`;
+- atom-generated selected-cover data and selected-cover equality;
+- `SemanticRepairCoverH1BoundaryRelationAdditiveData`;
+- conclusion-side gluing data;
+- `AATSheafConditionFor`;
+- `AATDescent`;
+- effective global gluing uniqueness;
+- `SemanticRepairAdditiveH1Zero`;
+- explicit finite-test degree-`0` boundary witnesses.
+
+It closes over the supplied `boundaryData`, converts the alleged constructor
+to the Cycle 125 conclusion-side direct-source constructor shape, and applies
+the existing direct-source blocker.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- `boundaryData` plus conclusion-side sheaf/descent/effective-gluing and
+  semantic `H1` zero is blocked as a uniform source for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`.
+- The finite-test degree-`0` boundary remains explicit through
+  `E.coefficient.C0 ≃+ PUnit` and `surface.K.Cn 0 ≃+ ZMod 2`.
+
+Remaining:
+
+- Genuine semantic atom / law provenance for
+  `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` remains
+  unresolved.
+- `SelectedSemanticCoefficientDirectRealizationLayer` remains below the
+  selected semantic coefficient realization gate.
+- Selected cochain realization, direct lower source, carrier / law provenance,
+  comparison / zero equivalence, cover refinement / naturality, and the
+  Cech-vs-full-sheaf boundary remain incomplete for target completion.
+
+### Material Premise Ledger
+
+- `boundaryData + conclusion-side data -> AtomSupportedDegreewiseEquivAndDirectDifferentialSource`:
+  blocked relative to the explicit finite-test degree-`0` boundary.
+- `AtomSupportedDegreewiseEquivAndDirectDifferentialSource`: still
+  `discharge-required`.
+- `DegreewiseCarrierDataAndDirectDifferentialLaws`: still
+  `discharge-required`.
+- `SemanticRepairCoverRelativeCochainRealization`: still
+  `discharge-required`.
+
+### Certificate Provenance
+
+- discharged as blocker evidence: `boundaryData`, semantic `H1` zero,
+  sheaf/descent/effective-gluing data, and selected-cover membership are not
+  provenance for the atom-supported direct source under the finite-test
+  boundary.
+- unresolved: genuine atom / law construction of the direct source and the
+  selected semantic coefficient realization layer.
+
+### Proof-Use Audit
+
+- The hypothetical constructor is proof-used by closing over `boundaryData`,
+  converting it to the Cycle 125 conclusion-side constructor shape, and feeding
+  it to the existing direct-source blocker.
+- No selected cochain realization, selected layer, direct lower bundle,
+  explicit lower data, carrier-specific provenance, or semantic `H1` zero is
+  used as lower provenance.
+
+### Structure-Field Escape Audit
+
+- status: none found.
+- No new structure, class, selected object, coefficient object, or certificate
+  field is introduced.
+- Conclusion-side data remains explicit theorem input and is not reclassified
+  as provenance.
+
+### Route-Integrity Audit
+
+- status: blocker-fixed.
+- The route is a predecessor reduction to Cycle 125, not a positive
+  target-fitting construction.
+- The theorem does not claim an absolute no-constructor result without the
+  finite-test boundary, and it does not weaken the selected semantic
+  coefficient realization gate.
+
+### T3 Audit Result
+
+T3 audit approved Cycle 190 as `blocker-fixed`, with
+`completion_candidate: no`.
+
+The audit found no statement weakening, hidden material premise, or
+structure-field escape.  It confirmed that the theorem is proof-use evidence
+for contradiction only: `boundaryData` is closed over and the alleged direct
+source constructor is reduced to the Cycle 125 blocker.  The finite-test
+degree-`0` witnesses remain explicit, and no conclusion-side data is promoted
+to lower provenance.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `lake env lean .tmp/G06Cycle190AxiomAudit.lean` passed.
+- Axiom audit for the new declaration reported expected standard axioms:
+  - `[propext, Classical.choice, Quot.sound]`.
+- placeholder scan over the target Lean file and audit file was clean for
+  `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`.
+- hidden / bidirectional Unicode scan over the target Lean file and audit file
+  was clean.
+- `git diff --check` passed.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.  This is a target-loop blocker-fixed
+cycle, not `/goal blocked`.
+
+The next cycle must return to the same positive obligation at a lower level:
+construct `AtomSupportedDegreewiseEquivAndDirectDifferentialSource` from
+genuine semantic atom / law lower provenance, without using selected cochain
+realization, selected layer / direct lower wrappers, `explicitLower`,
+`directLower`, `boundaryData`, or conclusion-side gluing / descent /
+effective-gluing / semantic `H1` zero as substitutes.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 189 — finite-test PUnit/ZMod2 boundary packet
 
 - decision: approve
