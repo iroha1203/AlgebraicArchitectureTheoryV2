@@ -6360,6 +6360,38 @@ abbrev AtomSupportedDegreewiseEquivAndFaceRestrictionSource
                   (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
 
 /--
+Cycle 214 degree-`0` positive-source checkpoint: the atom-supported ordinary
+degree-wise equivalence and selected face-restriction source already exposes
+the exact degree-`0` carrier comparison required by the section-family route.
+
+This theorem only lowers the visible boundary from the whole
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSource` package to its first
+selected coefficient-realization component.  The source itself remains a
+material premise: this does not construct the degree-`0` equivalence from
+`CurrentG06InputSurface`, semantic Cech data, canonical/free geometry,
+gluing/descent/effective-gluing data, semantic `H1` zero, or an opaque
+certificate.
+-/
+theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_degreeZeroCarrierComparisonData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface) :
+    Nonempty
+      (letI := additive.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)) := by
+  rcases source with
+    ⟨_family, _hcover_eq, c0Equiv, _c1Equiv, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero,
+      _d0_face_to, _d0_face_from, _d1_face_to, _d1_face_from⟩
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  exact ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv⟩
+
+/--
 Cycle 120 positive checkpoint: the ordinary degree-wise equivalence and
 selected face-restriction source constructs the Cycle 119 atom-supported lower
 source and hence the selected cochain realization.
