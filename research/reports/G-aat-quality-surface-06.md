@@ -103,6 +103,140 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 296 -- common restriction via sheaf descent from arrow law
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4856651546>
+- date: 2026-07-01 JST
+
+### T1 Selector Result
+
+T1 selected the non-circular provenance of
+`GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization`.
+The strict target was to produce the common base `sourceSection` and displayed
+cover-arrow restriction equalities from canonical/free/input-boundary semantic
+atom/law overlap geometry without passing `arrowCompatibilityLaw`,
+`commonRestrictionRealization`, a derived presieve law, or downstream
+effective-gluing output as an input.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_constructs_commonRestrictionRealization`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_iff_commonRestrictionRealization`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw`
+
+### Proof-Obligation Delta
+
+Discharged as a conditional checkpoint:
+
+- `commonRestrictionRealization` is no longer an independent premise once
+  `source.arrowCompatibilityLaw` is available;
+- an arrow-compatible support-only source is read as a compatible Mathlib
+  presieve family by `arrowCompatibilityLaw_iff_presieveFamilyCompatible`;
+- that compatible family is extended to the atom-generated selected cover by
+  `FamilyOfElements.sieveExtend`;
+- `AATSheafCondition.cover` and `AATDescent.exists_global` construct the common
+  base `sourceSection`;
+- `Presieve.extend_agrees` and the displayed-cover evaluation law identify the
+  glued section's restrictions with the original support-only interpretations;
+- the constructed `commonRestrictionRealization` is proof-used by the existing
+  Cycle 295 presieve source / presieve law route.
+
+Still remaining:
+
+- `source.arrowCompatibilityLaw` remains material lower data;
+- the strict T1 target is not fully discharged, because Cycle 296 still starts
+  from `arrowCompatibilityLaw`;
+- the next obligation is to construct `arrowCompatibilityLaw` from
+  canonical/free/input-boundary semantic atom/law overlap geometry without
+  passing `arrowCompatibilityLaw`, `commonRestrictionRealization`, a derived
+  presieve law, or downstream effective-gluing output as input.
+
+### Material Premise Ledger
+
+- `commonRestrictionRealization`: conditionally discharged from
+  `arrowCompatibilityLaw` by sheaf descent and `extend_agrees`; no longer needs
+  to be passed separately once arrow compatibility is available.
+- `arrowCompatibilityLaw`: still material; not discharged in this cycle.
+- `sourceSection`: not accepted as an argument; constructed by descent.
+- derived presieve law / downstream effective gluing: not used to construct
+  `commonRestrictionRealization`.
+
+### Certificate Provenance
+
+Discharged in this cycle:
+
+- `arrowCompatibilityLaw` to compatible presieve family;
+- compatible presieve family to generated-sieve gluing data;
+- generated-sieve gluing data to common base section by sheaf descent;
+- displayed-cover restriction equalities by `Presieve.extend_agrees`.
+
+Unresolved:
+
+- provenance of `arrowCompatibilityLaw` from lower semantic atom/law geometry.
+
+### Proof-Use Audit
+
+- `hcompatible` is used to obtain the compatible presieve family and displayed
+  evaluation law.
+- `hpresieveCompatible` is used for `sieveExtend` overlap agreement and
+  `extend_agrees`.
+- the constructed `hrealized` is used by
+  `commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw`.
+- T3 found no unused material premise.
+
+### Structure-Field Escape Audit
+
+- no new structure field hides `commonRestrictionRealization`;
+- no `sourceSection` or restriction equality is stored as a certificate field;
+- `arrowCompatibilityLaw` remains a visible theorem argument and must not be
+  counted as discharged.
+
+### Route Integrity Audit
+
+- T3 judged the Cycle 296 route non-circular relative to Cycle 295: the forward
+  construction does not use `commonRestrictionRealization` or the Cycle 295
+  reverse theorem;
+- no target-fitting construction, vacuity/degeneracy, one-way-as-equivalence,
+  or GOAL/report reinterpretation was found;
+- T3 explicitly rejected classifying this as `proof-obligation-discharged`,
+  because the route still assumes the `arrowCompatibilityLaw` that T1 had
+  excluded from the strict discharge target.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake build FormalAGResearch`
+- `lake build` (existing `Formal/Arch/Extension/FeatureExtensionExamples.lean`
+  linter warning only)
+- `#print axioms` for the three Cycle 296 declarations:
+  `[propext, Classical.choice, Quot.sound]`
+- `git diff --check`
+- placeholder scan on the changed Lean file
+- hidden / bidirectional Unicode scan on the changed Lean file
+- local/private path scan on changed Lean/report files
+
+### T3 Audit Result
+
+Independent T3 audit approved Cycle 296 as `proof-checkpoint`:
+
+- Lean evidence and local validation passed;
+- statement not weakened;
+- hidden material premise: none found;
+- structure-field escape: none found;
+- completion candidate: no;
+- next obligation: construct `source.arrowCompatibilityLaw` from
+  canonical/free/input-boundary semantic atom/law overlap geometry.
+
 ## Cycle 295 -- presieve compatibility split from support-only source
 
 - decision: approve

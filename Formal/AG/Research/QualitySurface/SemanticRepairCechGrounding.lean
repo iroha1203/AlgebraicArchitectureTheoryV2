@@ -16021,6 +16021,106 @@ theorem commonRestrictionRealization_constructs_arrowCompatibilityLaw
   exact hcompatible i j Z gi gj hcomm
 
 /--
+Cycle 296 sheaf-descent provenance checkpoint: the isolated arrow
+compatibility law constructs the common base-section realization.
+
+The construction does not assume a `sourceSection` or
+`commonRestrictionRealization`.  It reads the arrow-compatible displayed
+cover family as a Mathlib presieve family, extends it to the atom-generated
+selected cover, applies the obstruction sheaf's descent, and then uses
+`extend_agrees` to identify the glued section's displayed-cover restrictions
+with the original support-only interpretations.
+
+This still leaves `arrowCompatibilityLaw` as material lower data; it only
+removes `commonRestrictionRealization` as an independent premise once that
+arrow law is available.
+-/
+theorem arrowCompatibilityLaw_constructs_commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    source.commonRestrictionRealization := by
+  rcases (source.arrowCompatibilityLaw_iff_presieveFamilyCompatible).1
+      hcompatible with
+    ⟨presieveSections, hpresieveCompatible, heval⟩
+  let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+  let localSections :
+      AAT.AG.Site.AATLocalSectionFamily S Ob.carrier.toPresheaf
+        selectedCover :=
+    presieveSections.sieveExtend
+  let gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        selectedCover :=
+    { localSections := localSections
+      overlapAgreement := hpresieveCompatible.sieveExtend }
+  have hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  let hFor :
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover :=
+    AAT.AG.Site.AATSheafCondition.cover Ob.carrier.isSheaf
+      selectedCover hgenerated.1
+  let hDescent :
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover :=
+    AAT.AG.Site.AATSheafConditionFor.descent hFor
+  rcases AAT.AG.Site.AATDescent.exists_global hDescent gluingData with
+    ⟨sourceSection, hglobal⟩
+  refine ⟨sourceSection, ?_⟩
+  intro i
+  let coverArrow :=
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i
+  have hglobal_i :
+      Ob.carrier.toPresheaf.map coverArrow.op sourceSection =
+        gluingData.localSections coverArrow
+          (Sieve.le_generate regime.cover.presieve
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+            (coverArrowPresieveMem i)) :=
+    hglobal coverArrow
+      (Sieve.le_generate regime.cover.presieve
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+        (coverArrowPresieveMem i))
+  have hagree :
+      gluingData.localSections coverArrow
+          (Sieve.le_generate regime.cover.presieve
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+            (coverArrowPresieveMem i)) =
+        presieveSections coverArrow (coverArrowPresieveMem i) := by
+    dsimp [gluingData, localSections, coverArrow]
+    simpa [selectedCover] using
+      (CategoryTheory.Presieve.extend_agrees
+        (P := Ob.carrier.toPresheaf)
+        hpresieveCompatible
+        (coverArrowPresieveMem i))
+  exact (hglobal_i.trans (hagree.trans (heval i))).symm
+
+/--
+On the atom-generated selected cover, the support-only arrow compatibility law
+and the common-restriction realization carry the same sheaf-theoretic content.
+
+The forward direction is the Cycle 296 sheaf-descent construction; the reverse
+direction is the Cycle 295 canonical restriction compatibility construction.
+-/
+theorem arrowCompatibilityLaw_iff_commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.arrowCompatibilityLaw <-> source.commonRestrictionRealization := by
+  exact
+    ⟨source.arrowCompatibilityLaw_constructs_commonRestrictionRealization,
+      source.commonRestrictionRealization_constructs_arrowCompatibilityLaw⟩
+
+/--
 Construct the Cycle 290 presieve-free source from support-only data once the
 local interpretations are realized as restrictions of one common base section.
 -/
@@ -16283,6 +16383,67 @@ theorem commonRestrictionRealization_constructs_presieveFreeSource_and_presieveL
       presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
         skeleton presieveSource,
       presieveSource.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+/--
+Cycle 296 proof-use checkpoint: an arrow-compatible support-only source now
+constructs the common-restriction realization and then feeds that realization
+through the existing Cycle 295 presieve source/law route.
+
+This theorem does not construct the arrow law from atom/law choices alone.
+Its role is to remove `commonRestrictionRealization` as a separate theorem
+argument once the displayed-cover arrow law has been proved from lower
+semantic geometry.
+-/
+theorem arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.commonRestrictionRealization /\
+      source.arrowCompatibilityLaw /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hrealized :=
+    source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible
+  have hpackage :=
+    source.commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw
+      hrealized
+  exact
+    ⟨hrealized,
+      hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2⟩
 
 end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
