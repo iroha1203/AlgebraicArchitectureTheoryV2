@@ -16993,6 +16993,179 @@ theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw
         hcompatible i j Z gi gj hcomm⟩
 
 /--
+Cycle 300 bare support-only overlap restriction equality.
+
+This removes the semantic atom and required-law witnesses from the Cycle 299
+pointwise law.  The result is the exact remaining restriction equality: for
+every common refinement of two displayed atom/law cover arrows, the two
+interpreted local obstruction sections restrict to the same section.
+
+The support witnesses are intentionally absent here.  They are already carried
+by the support-only source and by source-section-free atom/law choices; they
+do not generate this equality.
+-/
+def pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall (i j : regime.cover.Index) {Z : S.category}
+      (gi :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (gj :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
+    gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
+        gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
+      Ob.carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 300 exact boundary: the bare overlap restriction equality is exactly
+`arrowCompatibilityLaw`.
+
+This theorem identifies the rock face below Cycle 299.  Any future
+canonical/free semantic atom/law geometry that claims to construct the
+pointwise overlap law must construct this equality; support witnesses alone
+cannot lower it.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality <->
+      source.arrowCompatibilityLaw := by
+  rfl
+
+/--
+Cycle 300 decomposition of the Cycle 299 pointwise semantic atom/law law.
+
+The forward direction forgets support witnesses.  The reverse direction adds
+only trace-visible atom support and required-law support already available
+from the support-only source.  Thus the support part is not a separate
+provenance problem; the material premise is precisely
+`pointwiseSupportOnlyOverlapRestrictionEquality`.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw.trans
+      source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw.symm
+
+/--
+Cycle 300 proof-use checkpoint: the bare overlap restriction equality is
+already enough to run the Cycle 299 route.
+
+This does not construct the equality.  It removes semantic support witnesses
+as a possible explanation of the remaining gap and leaves the next positive
+obligation as a genuine construction of the restriction equality from
+canonical/free atom/law overlap geometry.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    let hlaw :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).2
+        hoverlap
+    let hcompatible :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+        hlaw
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hlaw :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).2
+      hoverlap
+  let hcompatible :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+      hlaw
+  have hpackage :=
+    source.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hcompatible
+  exact
+    ⟨hoverlap,
+      hlaw,
+      hpackage.2.1,
+      hpackage.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2⟩
+
+/--
+Cycle 300 no-escape theorem: without `arrowCompatibilityLaw`, the bare
+overlap restriction equality is absent as well.
+
+This is the fail-closed form of the decomposition: a future construction may
+target `pointwiseSupportOnlyOverlapRestrictionEquality`, but it cannot be
+counted as lower provenance unless it really reconstructs the same
+compatibility law.
+-/
+theorem no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  intro hoverlap
+  exact hmissing
+    ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      hoverlap)
+
+/--
 Cycle 299 proof-use checkpoint: once the pointwise support-only overlap law is
 available, it reconstructs `arrowCompatibilityLaw` and feeds the existing
 Cycle 296 common-restriction / presieve-free-source route.
@@ -17240,6 +17413,130 @@ theorem withSourceSection_localInput_localSection
   rfl
 
 end GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 300 comparison between source-section-free atom/law choices and a
+support-only source.
+
+This comparison records only that the chosen atoms and laws are drawn from the
+support-only source's displayed support lists.  It does not mention local
+sections, a base section, presieve compatibility, or overlap restriction
+equality.
+-/
+def sourceSectionFreeChoicesPreserveDisplayedSupport
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton) : Prop :=
+  forall i : regime.cover.Index,
+    choices.atom i ∈ source.atomSupport i (source.input i) ∧
+      choices.lawIndex i ∈ source.lawSupport i (source.input i)
+
+/--
+Cycle 300 support/equality split for source-section-free choices.
+
+Source-section-free atom/law choices can supply the trace-visible atom and
+required-law witnesses around each overlap, provided they preserve the
+support-only source's displayed support lists.  The overlap restriction
+equality itself remains a separate input.
+-/
+theorem sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpreserves :
+      source.sourceSectionFreeChoicesPreserveDisplayedSupport choices)
+    (hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw := by
+  intro i j Z gi gj hcomm
+  have hpreserves_i := hpreserves i
+  have hpreserves_j := hpreserves j
+  exact
+    ⟨⟨choices.atom i, hpreserves_i.1, choices.atom_traceVisible i⟩,
+      ⟨choices.lawIndex i, hpreserves_i.2, choices.law_required i⟩,
+      ⟨choices.atom j, hpreserves_j.1, choices.atom_traceVisible j⟩,
+      ⟨choices.lawIndex j, hpreserves_j.2, choices.law_required j⟩,
+      hoverlap i j gi gj hcomm⟩
+
+/--
+Cycle 300 exact reduction under support-preserving source-section-free choices.
+
+Once the choices are known to preserve the displayed support lists, the
+Cycle 299 pointwise semantic atom/law law is equivalent to the bare overlap
+restriction equality.  Therefore source-section-free choices are not the
+missing provenance for compatibility; they only account for the semantic
+support witnesses around the equality.
+-/
+theorem sourceSectionFreeChoices_reduce_pointwiseSupportOnlySemanticAtomLawOverlapLaw_to_overlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpreserves :
+      source.sourceSectionFreeChoicesPreserveDisplayedSupport choices) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  constructor
+  · intro hlaw
+    exact
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).1
+        hlaw
+  · intro hoverlap
+    exact
+      source.sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+        choices hpreserves hoverlap
+
+/--
+Cycle 300 no-escape theorem for source-section-free choices.
+
+If the isolated arrow compatibility law is missing, there is no
+support-preserving source-section-free atom/law choice package together with
+the bare overlap restriction equality.  The choices may still be valid
+semantic input-boundary data, but they cannot close the compatibility gap
+without the equality.
+-/
+theorem no_sourceSectionFreeChoices_with_overlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun choices :
+        GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+          skeleton =>
+        source.sourceSectionFreeChoicesPreserveDisplayedSupport choices /\
+          source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  rintro ⟨_choices, _hpreserves, hoverlap⟩
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
 /--
 Cycle 294 source-to-choices bridge: a presieve-free semantic atom/law source

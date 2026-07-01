@@ -103,6 +103,114 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 300 -- bare overlap restriction equality boundary
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4857800383>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the next strict obligation as constructing the Cycle 299
+`pointwiseSupportOnlySemanticAtomLawOverlapLaw` from canonical/free semantic
+atom/law overlap geometry, without accepting any of the following as lower
+input:
+
+- `arrowCompatibilityLaw`;
+- `commonRestrictionRealization` or `sourceSection`;
+- raw compatible presieve family;
+- presieve-free source or base-restriction source;
+- ad hoc selected cover, coefficient, obstruction sheaf, or Cech complex.
+
+T1 also flagged the main risk: the Cycle 299 law is already equivalent to
+`arrowCompatibilityLaw`, so any construction that merely moves the overlap
+restriction equality into a theorem argument, structure field, certificate, or
+renamed source is circular.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestriction_presieveFreeSource_and_presieveLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.sourceSectionFreeChoicesPreserveDisplayedSupport`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.sourceSectionFreeChoices_reduce_pointwiseSupportOnlySemanticAtomLawOverlapLaw_to_overlapRestrictionEquality`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_sourceSectionFreeChoices_with_overlapRestrictionEquality_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed as a proof checkpoint:
+
+- the Cycle 299 pointwise semantic atom/law law is decomposed into semantic
+  support witnesses plus a bare overlap restriction equality;
+- the bare equality is exactly equivalent to `arrowCompatibilityLaw`;
+- once this equality is available, it reconstructs the pointwise semantic
+  atom/law law and runs the existing common-restriction / presieve-free-source
+  route;
+- support-preserving source-section-free choices can supply the atom/law
+  support witnesses, but only if the overlap restriction equality is already
+  available.
+
+Still remaining:
+
+- this cycle does not construct the bare overlap restriction equality;
+- support witnesses and source-section-free atom/law choices are not sufficient
+  provenance for compatibility;
+- the next positive obligation remains a genuine construction of
+  `pointwiseSupportOnlyOverlapRestrictionEquality` / `arrowCompatibilityLaw`
+  from canonical/free semantic atom/law overlap geometry.
+
+### Material Premise Ledger
+
+- `pointwiseSupportOnlyOverlapRestrictionEquality`: newly named
+  `discharge-required` interface equivalent to `arrowCompatibilityLaw`.
+- `pointwiseSupportOnlySemanticAtomLawOverlapLaw`: reduced to the bare overlap
+  restriction equality plus already available support witnesses.
+- `sourceSectionFreeChoicesPreserveDisplayedSupport`: records only support-list
+  preservation; it does not contain local-section compatibility, a base
+  section, a presieve law, or any common-restriction data.
+- `arrowCompatibilityLaw`: still unresolved and still the exact remaining
+  compatibility premise.
+
+### T3 Audit
+
+T3 verdict: approve / proof-checkpoint / completion candidate: no.
+
+- No new structure field or certificate hides the overlap restriction equality.
+- No `sourceSection`, `commonRestrictionRealization`, compatible presieve
+  family, presieve-free source, base-restriction source, or selected
+  coefficient choice was introduced as hidden lower provenance.
+- The new declarations do not pretend to discharge the pointwise law; they
+  expose that the material premise is exactly the bare restriction equality.
+- T3's remaining blocker is unchanged: construct
+  `pointwiseSupportOnlyOverlapRestrictionEquality` / `arrowCompatibilityLaw`
+  from canonical/free semantic atom/law overlap geometry.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean` on a temporary axiom-audit scratch file
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- hidden/bidirectional Unicode scan on changed Lean file
+- local/private path scan on changed Lean and report files
+- placeholder scan on changed Lean file
+
+Axiom audit for the new declarations reported only standard dependencies:
+`[propext, Quot.sound]` or `[propext, Classical.choice, Quot.sound]`.
+
 ## Cycle 299 -- pointwise support-only overlap law interface
 
 - decision: approve
