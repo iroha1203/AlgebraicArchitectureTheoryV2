@@ -103,6 +103,100 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 298 -- display-preserving base-restriction no-escape boundary
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4857285555>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the display-preserving base-restriction boundary:
+
+- a base-restriction source with a visible `sourceSection` must not count as a
+  lower provenance discharge for a support-only source unless it preserves the
+  same displayed local interpretations;
+- if it does preserve those displayed interpretations, it must reconstruct the
+  original `source.arrowCompatibilityLaw`;
+- therefore Cycle 298 should fix the exact no-escape/equivalence boundary
+  rather than claim construction of `sourceSection` from atom/law geometry.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSourcePreservesDisplayedInterpretation`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_constructs_baseRestrictionSource_preservingDisplayedInterpretation`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_baseRestrictionSource_preservingDisplayedInterpretation_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed as a blocker/no-escape boundary:
+
+- display-preserving base-restriction provenance is equivalent to the isolated
+  support-only `arrowCompatibilityLaw`;
+- without `source.arrowCompatibilityLaw`, no base-restriction source can
+  preserve the displayed support-only interpretations;
+- a base section may be sufficient input for compatibility, but it cannot be
+  counted as atom/law provenance for the same displayed local sections unless
+  it also reconstructs the missing arrow-level overlap law.
+
+Still remaining:
+
+- this is not a discharge of the remaining T1 target;
+- `sourceSection` remains visible lower data whenever a base-restriction source
+  is supplied directly;
+- the next positive obligation is to construct `source.arrowCompatibilityLaw`
+  itself, or a strictly lower semantic atom/law overlap law that implies it,
+  from canonical/free/input-boundary semantic atom/law geometry.
+
+### Material Premise Ledger
+
+- `arrowCompatibilityLaw`: still `discharge-required`; now equivalent to any
+  display-preserving base-restriction presentation of the same support-only
+  local interpretations.
+- `sourceSection`: still visible lower datum; no longer usable as a provenance
+  escape for the support-only source without reconstructing
+  `arrowCompatibilityLaw`.
+- `commonRestrictionRealization` / presieve-free source route: still
+  conditionally derived once `arrowCompatibilityLaw` is available.
+
+### T3 Audit
+
+T3 verdict: approve / no major findings.
+
+- The new block is a valid blocker/checkpoint, not a false discharge.
+- The forward direction explicitly assumes `hcompatible :
+  source.arrowCompatibilityLaw`.
+- The reverse direction shows any display-preserving base-restriction source
+  reconstructs `source.arrowCompatibilityLaw`.
+- No hidden `sourceSection`, compatible presieve family,
+  `commonRestrictionRealization`, or selected-cover/coefficient data was counted
+  as generated.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean` on a temporary axiom-audit scratch file
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- hidden/bidirectional Unicode scan on changed Lean file
+- local/private path scan on changed Lean file
+- placeholder scan on changed Lean file
+
+Axiom audit for the new declarations reported only standard dependencies:
+`[propext, Quot.sound]` or `[propext, Classical.choice, Quot.sound]`.
+
 ## Cycle 297 -- no-escape boundary for support-only presieve interpretations
 
 - decision: approve
