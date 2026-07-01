@@ -103,6 +103,98 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 308 -- sourceC0 common-refinement bridge splits into selected-face equality and factorization
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4859476390>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the exact bridge left open by Cycle 307:
+
+1. extract the degree-`0` Cech face equality from
+   `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero`, using the
+   existing `K.d_eq_alternatingFaceCombination 0` surface if possible;
+2. connect the selected finite-poset degree-`1` simplex face equality to the
+   arbitrary common-refinement equality required by
+   `source.pointwiseSupportOnlyOverlapRestrictionEquality`;
+3. if the current API cannot construct that bridge directly, fix the missing
+   finite-poset common-refinement factorization as a Lean blocker theorem
+   rather than treating it as discharge evidence.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_sourceC0CommonRefinementFactorizationLaw`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_without_arrowCompatibilityLaw`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_without_arrowCompatibilityLaw_of_commonRefinementFactorization`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The Cycle 307 bridge is no longer a single opaque
+  `sourceC0CechZero -> source.pointwiseSupportOnlyOverlapRestrictionEquality`
+  premise.
+- The bridge is decomposed into two named material laws:
+  selected degree-`1` face equality for generated `sourceC0`, and arbitrary
+  common-refinement factorization through selected degree-`1` faces.
+- The positive theorem shows that those two laws, together with
+  `sourceC0CechZero`, construct the bare overlap equality.
+- The refined Cycle 307 law is recovered from the same two laws.
+- Two no-escape theorems show that, under `¬ source.arrowCompatibilityLaw` and
+  Cech-zero `sourceC0`, neither law can be silently supplied together with the
+  other without reconstructing the forbidden overlap equality.
+
+Remaining:
+
+- `sourceC0CechZero` is still not discharged from atom/law support.
+- `sourceC0SelectedDegreeOneFaceEquality` is still a material law.  The current
+  `CoverRelativeCechComplex` API identifies `K.d 0` with the abstract
+  `alternatingFaceCombination`, but does not yet expose the degree-`0`
+  two-face subtraction/equality eliminator needed here.
+- `sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces` is still a
+  material law.  The current finite-poset cover surface does not yet provide a
+  theorem that every arbitrary presieve common refinement factors through a
+  selected degree-`1` overlap simplex with the required displayed readings.
+
+### Material Premise Ledger
+
+- canonical support-only `sourceC0`: discharged in Cycle 307.
+- displayed-reading law for `sourceC0`: discharged in Cycle 307.
+- `sourceC0CechZero`: discharge-required.
+- selected degree-`1` face equality from Cech-zero `sourceC0`:
+  discharge-required.
+- common-refinement factorization through selected degree-`1` faces:
+  discharge-required and conclusion-equivalent risk if treated as a supplied
+  law.
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality` /
+  `arrowCompatibilityLaw`: still not discharged.
+
+### Validation
+
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake build FormalAGResearch`
+- `lake env lean .tmp/G06Cycle308AxiomAudit.lean`
+- `git diff --check`
+- hidden / bidirectional Unicode scan on the changed Lean file
+- `axiom` / `admit` / `sorry` / `unsafe` scan on the changed Lean file
+
+The Cycle 308 axiom audit reports only standard
+`[propext, Classical.choice, Quot.sound]` dependencies for the new
+declarations.
+
 ## Cycle 307 -- support-only sourceC0 exposes the common-refinement bridge
 
 - decision: approve
