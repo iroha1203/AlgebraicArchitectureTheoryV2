@@ -103,6 +103,124 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 306 -- support-only overlap reading is separated from overlap equality
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4859132841>
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the ideal next proof obligation after Cycle 305: construct
+`law_reads_overlap`, or equivalently
+`source.pointwiseSupportOnlyOverlapRestrictionEquality`, from lower
+canonical/free semantic atom/law geometry without carrying the overlap equality,
+`arrowCompatibilityLaw`, common restriction realization, selected `K`, or an
+equality-bearing certificate as input.
+
+Inspecting the current lower layer showed that this direct discharge is not
+available.  `Law` is a predicate on `ArchitectureObject`,
+`LawUniverse.Required` records the role of a law index, and
+`SemanticAtomLawAdditiveCoefficientGeometry` exposes atom/law support
+membership, but no semantic rule that turns support membership into equality of
+obstruction-sheaf restrictions.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapCanonicalFreeSupportReading`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_overlapEquality`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_with_overlapEquality_without_arrowCompatibilityLaw`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_constructor_without_arrowCompatibilityLaw`
+
+`AtomLawOverlapCanonicalFreeSupportReading` is the support-only part of the
+Cycle 305 reading.  It records only generated source-section-free atom/law
+choices, source support preservation, and coefficient atom/law support
+membership.  It deliberately stores no `sourceSection`, `baseSource`,
+presieve-free source, `commonRestrictionRealization`, selected `K`,
+`arrowCompatibilityLaw`, `law_reads_overlap`, or pointwise overlap equality.
+
+### Proof-Obligation Delta
+
+Fixed as blocker:
+
+- support-only atom/law membership is now separated from the
+  equality-producing `law_reads_overlap` field;
+- the full canonical/free overlap reading is exactly support reading plus
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality`;
+- even with an existing support reading, no constructor from support reading to
+  overlap equality can exist under `¬ source.arrowCompatibilityLaw`.
+
+Remaining:
+
+- construct `source.pointwiseSupportOnlyOverlapRestrictionEquality`;
+- equivalently construct `source.arrowCompatibilityLaw`;
+- the next positive lower interface must contain genuine restriction/overlap
+  semantics, not only atom support, law support, or `LawUniverse.Required`
+  membership.
+
+### Material Premise Ledger
+
+- support-only atom/law choices and support membership:
+  `classified-as-support-only`;
+- `law_reads_overlap`: `discharge-required`;
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality`:
+  `discharge-required`;
+- `source.arrowCompatibilityLaw`: `discharge-required`;
+- construction of support reading itself from lower data:
+  `not-supplied-by-this-cycle`;
+- selected `K` route package: downstream consumer only.
+
+### T3 Audit Result
+
+T3 approved Cycle 306 as `blocker-fixed`, not as a discharged proof obligation.
+
+Key audit points:
+
+- no G-06 completion claim is made;
+- the new support-reading structure is not a structure-field escape because it
+  deliberately omits the equality-bearing fields;
+- the equivalence theorem prevents treating the full Cycle 305 reading as
+  support provenance alone;
+- the no-constructor theorem rejects the cheat route from support membership to
+  restriction equality under missing arrow compatibility;
+- the next obligation is narrowed from vague law provenance to an explicit
+  equality / arrow-compatibility construction.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake env lean .tmp/G06Cycle306AxiomAudit.lean` passed.
+- Axiom audit for the new declarations reported only expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- Placeholder scan over the changed Lean file was clean.
+- Hidden / bidirectional Unicode scan over the changed Lean file, this report,
+  and the Cycle 306 scratch file was clean.
+- `git diff --check` passed.
+- Local path scan over the changed Lean file, this report, and the Cycle 306
+  scratch file was clean.
+
+Cycle 306 stops with the hard boundary exposed: current support-only semantic
+atom/law geometry does not itself read overlap equality.  The next rock face is
+therefore a genuine lower semantic law interpretation / overlap law, or a proof
+that no such lower interface exists without adding new mathematics.
+
 ## Cycle 305 -- canonical/free overlap-reading interface is fixed
 
 - decision: approve
