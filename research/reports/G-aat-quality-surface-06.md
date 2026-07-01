@@ -103,6 +103,154 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 317 -- generated coefficient route cannot bypass sourceC0 residual-zero
+
+- decision: approve
+- result_type: blocker-fixed / route-integrity checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the route-integrity blocker left by Cycle 316:
+
+- the generated semantic coefficient identity layer already fixes
+  `C0/C1/C2 := K.Cn 0/1/2`, `delta0/delta1 := K.d 0/1`, identity
+  `c0Equiv/c1Equiv`, and the cocycle law `K.d_comp_d_eq_zero`;
+- but those facts only prove residual cocyclehood / boundary-generated H1-zero
+  surfaces, and must not be used as a substitute for
+  `K.d 0 sourceC0 = 0`;
+- the next checkpoint should tie the generated coefficient residual to the same
+  support-only canonical `sourceC0` and the same atom/law-overlap-generated `K`,
+  then prove that residual-zero is exactly `sourceC0CechZero`;
+- do not pass `sourceC0CechZero`, `source.arrowCompatibilityLaw`,
+  `law_reads_overlap`, arbitrary selected `K`, residual-boundary, H1-zero,
+  descent/effectivity, global coherence, external `c0Equiv`, or old
+  `sourceWithoutC0` as a hidden discharge.
+
+Cycle 317 did not construct the missing lower overlap law.  It fixed the
+generated-coefficient form of the remaining material premise: for the same
+support-only source, the generated residual is definitionally `K.d 0 sourceC0`,
+and residual-zero is equivalent to Cycle 316's `sourceC0CechZero`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0BoundaryGeneratedSemanticCoefficient`
+  constructs a boundary-generated coefficient from the same support-only
+  canonical `sourceC0`.  The `c0Order` list contains `sourceC0`, the `c1Order`
+  list contains `K.d 0 sourceC0`, and the primitive is exactly `sourceC0`.
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient`
+  reads that boundary-generated layer as the existing generated semantic
+  coefficient layer.
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_eq_sourceC0Boundary`
+  proves the generated residual is definitionally the Cech boundary
+  `K.d 0 sourceC0`.
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero`
+  proves residual-zero is exactly `sourceC0CechZero` for the same source and
+  atom/law-overlap-generated `K`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidualZero_without_arrowCompatibilityLaw`
+  proves generated residual-zero cannot bypass missing
+  `source.arrowCompatibilityLaw`: residual-zero implies `sourceC0CechZero`,
+  which implies the overlap equality blocked by absent arrow compatibility.
+- `atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0GeneratedResidualZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry`
+  reconstructs full canonical/free overlap reading from support-only provenance
+  plus generated residual-zero.
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_sourceC0GeneratedResidualZero_of_atomLawOverlapGeometry`
+  restates the Cycle 316 exact boundary as support-only provenance plus zero of
+  the generated source-`C0` residual.
+
+### Proof-Obligation Delta
+
+Cycle 317 closes one cheat route:
+
+- before: the generated identity/cochain-realization layer produced cocycle,
+  boundary, and H1-zero surfaces, but it was still tempting to treat those as if
+  they discharged `sourceC0CechZero`;
+- after: Lean pins the exact residual for this route to `K.d 0 sourceC0`, and
+  proves residual-zero iff `sourceC0CechZero`;
+- therefore generated coefficient identity, residual cocyclehood,
+  residual-boundary, additive H1-zero, and cochain realization are explicitly
+  weaker than the remaining overlap-law premise.
+
+This is not a completion candidate.  It is a blocker-fixed route-integrity
+checkpoint: the generated coefficient layer is now connected to the rock face
+without allowing a semantic-adequacy or H1-zero shortcut.
+
+### Premise-Discharge Audit
+
+- `sourceC0CechZero`: not discharged.  It is exactly equivalent to generated
+  source-`C0` residual-zero.
+- `source.arrowCompatibilityLaw`: not supplied.  The no-escape theorem proves
+  generated residual-zero would contradict its absence via the existing overlap
+  equality boundary.
+- `law_reads_overlap`: not supplied.  It remains material lower law-reading
+  content for a future construction.
+- arbitrary `K`: not accepted.  The new definitions use
+  `atomLawOverlapCoverRelativeCechComplex coverGeometry
+  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf`.
+- external `c0Equiv`, old `sourceWithoutC0`, descent/effectivity, global
+  coherence, H1-zero: not proof-used to discharge residual-zero.
+
+### T3 Review
+
+Independent T3 audit approved Cycle 317 with result type `blocker-fixed` /
+route-integrity checkpoint and `completion_candidate: no`.
+
+T3 noted:
+
+- blocking findings: none;
+- anti-weakening verdict: pass;
+- the new layer is tied to the same `sourceC0`, same support-only source, and
+  same atom/law-overlap-generated `K`;
+- the no-escape theorem is meaningful for target-loop purposes, but should be
+  read as "the generated coefficient route cannot bypass the rock face", not as
+  a new lower overlap-law construction.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle317AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean/audit files was clean for `admit`,
+  `sorry`, `unsafe`, and `sorryAx`.
+- direct declaration-level `axiom` scan over the changed Lean/audit files was
+  clean.
+- scan for `by trivial` / bare `by simp` escape patterns over the changed
+  Lean/audit files was clean.
+- hidden/bidirectional Unicode scan over the changed Lean/audit files was clean.
+- private/local path scan over the changed Lean/audit files was clean.
+
+Full `lake build` replayed two pre-existing linter warnings in
+`Formal/Arch/Extension/FeatureExtensionExamples.lean`; no new G-06 warning was
+introduced.
+
+The Cycle 317 axiom audit for the seven new declarations reports only standard
+`[propext, Classical.choice, Quot.sound]` dependencies.
+
+### Next Obligation
+
+Construct generated residual-zero, equivalently `sourceC0CechZero`,
+`source.arrowCompatibilityLaw`, or `law_reads_overlap`, from a nonvacuous lower
+semantic atom/law overlap law-generation layer that does not store the target
+restriction equality as a field.
+
+The next constructive layer must:
+
+- keep the same support-only source and canonical `sourceC0`;
+- keep the same atom/law-overlap-generated `K`;
+- generate the residual-zero / overlap equality from semantic atom/law
+  law-reading geometry;
+- avoid residual-boundary, H1-zero, descent/effectivity, arbitrary comparison
+  maps, or global coherence as substitutes for the local overlap law.
+
 ## Cycle 316 -- law-reading is exactly support provenance plus generated sourceC0 Cech-zero
 
 - decision: approve
