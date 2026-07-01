@@ -17644,6 +17644,101 @@ theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_overl
 
 end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
+namespace GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 302 self-preservation checkpoint: a base-restriction source preserves
+the displayed interpretation of the support-only source it generates.
+
+This does not construct the base section from lower semantic atom/law geometry.
+It removes only the separate display-preservation proof when the support-only
+source is the canonical one read from the same base-restriction source.
+-/
+theorem toSupportOnly_selfPreservesDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.baseRestrictionSourcePreservesDisplayedInterpretation source := by
+  intro _i
+  rfl
+
+/--
+Cycle 302 proof-use checkpoint: a base-restriction source, read as its own
+support-only source, constructs the bare overlap equality exposed in Cycle 300.
+
+Compared with Cycle 301, this theorem no longer needs an external support-only
+source or a separate display-preservation premise.  The base section itself is
+still visible lower provenance, so this is not a final G-06 discharge.
+-/
+theorem toSupportOnly_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    (source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+        source.toSupportOnly_constructs_arrowCompatibilityLaw
+
+/--
+Cycle 302 route checkpoint: the self-preserving base-restriction source runs
+the full Cycle 300 overlap-equality route for its generated support-only source.
+
+The theorem exposes the generated display-preservation proof, the bare overlap
+equality, the pointwise semantic atom/law overlap law, the isolated arrow law,
+common restriction, and the presieve section-extension law.  It deliberately
+keeps the base-restriction source as theorem input.
+-/
+theorem baseRestriction_constructs_selfPreservingSupportOnly_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let supportOnly :=
+      source.toSupportOnlySemanticAtomLawInputBoundarySource
+    supportOnly.baseRestrictionSourcePreservesDisplayedInterpretation source /\
+      supportOnly.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      supportOnly.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      supportOnly.arrowCompatibilityLaw /\
+      supportOnly.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  dsimp
+  let supportOnly :=
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+  have hpreserves :
+      supportOnly.baseRestrictionSourcePreservesDisplayedInterpretation source :=
+    source.toSupportOnly_selfPreservesDisplayedInterpretation
+  have hpackage :=
+    supportOnly.baseRestrictionSource_preservingDisplayedInterpretation_constructs_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+      source hpreserves
+  exact
+    ⟨hpreserves,
+      hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2.1,
+      hpackage.2.2.2.2.2⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
 /--
 Cycle 294 source-to-choices bridge: a presieve-free semantic atom/law source
 constructs the source-section-free atom/law choices required by Cycle 293.
