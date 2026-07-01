@@ -103,6 +103,142 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 305 -- canonical/free overlap-reading interface is fixed
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4858983061>
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the only useful next rock face after Cycle 304:
+construct `source.pointwiseSupportOnlyOverlapRestrictionEquality` from a lower
+canonical/free semantic atom/law overlap-reading layer, then proof-use that
+equality through the Cycle 304 same-source generated selected-`K` route package.
+
+The selector explicitly rejected another downstream selected-`K` package,
+base-section route, raw presieve compatibility route, or support-only witness
+strengthening.  Cycle 304 already proves that the route package is exactly as
+strong as the overlap equality, so the missing proof distance is now entirely
+in the lower law-reading provenance.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapCanonicalFreeOverlapReading`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_exposes_support`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_generatedSelectedKRoutePackage`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_without_arrowCompatibilityLaw`
+
+`AtomLawOverlapCanonicalFreeOverlapReading` records:
+
+- a source-section-free atom/law choice package;
+- preservation of the support-only source support lists;
+- coefficient-geometry atom/law support for the same local sections;
+- the remaining material law-reading clause
+  `law_reads_overlap`, which reads the restriction equality on every displayed
+  common refinement.
+
+It stores no `sourceSection`, base-restriction source, presieve-free source,
+raw `arrowCompatibilityLaw`, `commonRestrictionRealization`, `c0Carrier`,
+`c0Equiv`, old `sourceWithoutC0`, or selected `K`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The next lower interface is now a named canonical/free atom/law
+  overlap-reading layer rather than an informal requirement.
+- The layer is proof-used into the bare overlap restriction equality and then
+  into the exact Cycle 304 generated selected-`K` route package.
+- The no-escape theorem proves that no such reading exists for the same
+  support-only source under `¬ source.arrowCompatibilityLaw`.
+
+Remaining:
+
+- `law_reads_overlap` is still material lower data.
+- Since
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality` is definitionally the
+  same content as `source.arrowCompatibilityLaw`, this cycle does not discharge
+  the overlap law.
+- The next constructive obligation is to generate `law_reads_overlap`, or an
+  equivalent pointwise overlap equality, from genuine lower semantic atom/law
+  provenance without placing that equality in a structure field or theorem
+  argument.
+
+### Material Premise Ledger
+
+- source-section-free atom/law choices: carried visibly.
+- support preservation against the support-only source: carried visibly and
+  proof-used.
+- coefficient-geometry law support: carried visibly and proof-used as the
+  antecedent of `law_reads_overlap`.
+- coefficient-geometry atom support: exposed by the audit theorem; not part of
+  the equality construction.
+- `law_reads_overlap`: `discharge-required`.
+- generated selected-`K` package: downstream consumer only, not lower
+  provenance.
+
+### T3 Audit Result
+
+T3 approved Cycle 305 as `proof-checkpoint`, not as
+`proof-obligation-discharged`.
+
+Key audit points:
+
+- theorem strength matches a checkpoint: no G-06 completion claim is made;
+- `law_reads_overlap` is materially the remaining compatibility premise at the
+  point of use, even though syntactically it is indexed by coefficient law
+  support;
+- the proof does consume `law_reads_overlap`, `coefficient_law_support`, and
+  `source_support`, so the new layer is not inert;
+- the no-escape theorem prevents treating the structure as a hidden completion
+  certificate;
+- route integrity is preserved because the generated selected-`K` package is
+  reached through the Cycle 304 equivalence.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake env lean .tmp/G06Cycle305AxiomAudit.lean` passed.
+- Axiom audit for the new declarations reported only expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` passed.
+- placeholder scan over the target Lean file was clean for `sorry`, `admit`,
+  declaration-level `axiom`, `unsafe`, and `sorryAx`.
+- Hidden / bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 305 axiom-audit scratch file was clean.
+- Absolute local path / private machine identifier scan over the changed
+  Lean/report files and Cycle 305 axiom-audit scratch file was clean.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+Cycle 305 fixes the first clean shape of the new mathematical layer: a
+canonical/free semantic atom/law overlap-reading interface below the generated
+selected-`K` route.  The next cycle should not add another route package; it
+should construct `law_reads_overlap` from lower atom/law geometry or prove a
+precise blocker explaining why the current semantic law universe cannot supply
+that equality.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 304 -- generated selected-K route package is exactly overlap equality
 
 - decision: approve

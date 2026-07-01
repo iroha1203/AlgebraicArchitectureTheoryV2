@@ -22393,6 +22393,296 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePacka
     source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
       hmissing hoverlap
 
+/--
+Cycle 305 canonical/free atom/law overlap-reading layer for the support-only
+source.
+
+This record is deliberately below the Cycle 304 generated selected-`K` route.
+It stores no `sourceSection`, no base-restriction source, no presieve-free
+source, no raw `arrowCompatibilityLaw`, no `commonRestrictionRealization`, no
+`c0Carrier`, no `c0Equiv`, and no selected `K` data.  Instead it connects a
+source-section-free atom/law choice to the additive coefficient geometry and
+requires the selected laws to read the restriction equality on every displayed
+common refinement.
+
+The last field is still material lower data: it is the law-reading content that
+was absent from support-only lists.  The following theorems proof-use it into
+the exact Cycle 304 boundary rather than treating it as a completion claim.
+-/
+structure AtomLawOverlapCanonicalFreeOverlapReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) where
+  choices :
+    SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+      skeleton
+  source_support :
+    source.sourceSectionFreeChoicesPreserveDisplayedSupport choices
+  coefficient_atom_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.atom i ∈
+        coefficientGeometry.atomSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+  coefficient_law_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.lawIndex i ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+  law_reads_overlap :
+    forall
+      (i j :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index)
+      {Z : S.category}
+      (gi :
+        Z ⟶
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+      (gj :
+        Z ⟶
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j),
+      gi ≫
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion i =
+        gj ≫
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion j ->
+      choices.lawIndex i ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i)) ->
+      choices.lawIndex j ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j)
+          (source.interpret j (source.input j)) ->
+      (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 305 audit view: the canonical/free overlap-reading layer exposes both
+the support-only source support and the coefficient-geometry support for the
+same source-section-free atom/law choices.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_exposes_support
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    source.sourceSectionFreeChoicesPreserveDisplayedSupport reading.choices /\
+      (forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        reading.choices.atom i ∈
+          coefficientGeometry.atomSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i)) /\
+        reading.choices.lawIndex i ∈
+          coefficientGeometry.lawSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i))) := by
+  exact
+    ⟨reading.source_support,
+      fun i =>
+        ⟨reading.coefficient_atom_support i,
+          reading.coefficient_law_support i⟩⟩
+
+/--
+Cycle 305 positive checkpoint: a canonical/free atom/law overlap-reading layer
+constructs the bare support-only overlap restriction equality.
+
+The proof consumes the selected law-reading field on each common refinement and
+then rebuilds the semantic atom/law overlap law using the source-section-free
+support choices.  Thus the equality is not imported as `hoverlap`, and the
+support witnesses are proof-used rather than left inert.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+    intro i j Z gi gj hcomm
+    exact
+      reading.law_reads_overlap i j gi gj hcomm
+        (reading.coefficient_law_support i)
+        (reading.coefficient_law_support j)
+  have hsemantic :
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw :=
+    source.sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+      reading.choices reading.source_support hoverlap
+  exact
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).1
+      hsemantic
+
+/--
+Cycle 305 proof-use checkpoint: the canonical/free atom/law overlap-reading
+layer feeds the exact Cycle 304 generated selected-`K` route package.
+
+The route still passes through the Cycle 304 equivalence, so the generated
+selected-`K` package is not a substitute for overlap provenance; it is the
+consumer of the overlap equality constructed above.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_generatedSelectedKRoutePackage
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source := by
+  have hoverlap :=
+    atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source reading
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+      coverGeometry coefficientGeometry skeleton source).2 hoverlap
+
+/--
+Cycle 305 fail-closed boundary: if the isolated arrow compatibility law is
+absent, no canonical/free atom/law overlap-reading layer can exist for the same
+support-only source.
+
+This prevents the new layer from becoming a structure-field escape.  Its
+law-reading field is exactly the still-material lower provenance needed to
+construct the Cycle 304 package.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  rintro ⟨reading⟩
+  have hoverlap :=
+    atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source reading
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
 end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
 
 namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
