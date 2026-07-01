@@ -24934,6 +24934,148 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidualZer
       hmissing hoverlap
 
 /--
+Cycle 318 exact boundary: zero of the Cycle 317 source-`C0` generated
+residual is exactly the isolated support-only arrow-compatibility law.
+
+Thus a future lower semantic atom/law layer cannot merely construct a generated
+coefficient, a Cech-side zero predicate, or support membership.  To close this
+route for the same support-only source and the same atom/law-overlap-generated
+`K`, it must construct the same arrow-level overlap law.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    (let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+     letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+     (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source).residual = 0) <->
+      source.arrowCompatibilityLaw := by
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source).trans
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+        coverGeometry coefficientGeometry skeleton source)
+
+/--
+Cycle 318 constructor-reduction: any uniform construction of the Cycle 317
+source-`C0` generated residual-zero from support-only canonical/free
+provenance already constructs the isolated arrow-compatibility law.
+
+This is the proof-use form of the Cycle 318 boundary.  It prevents the
+support-only side of the canonical/free atom/law layer from being counted as a
+residual-zero generator unless the missing lower overlap law has actually been
+constructed.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) :
+    source.arrowCompatibilityLaw := by
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).1
+      (constructor supportReading)
+
+/--
+Cycle 318 no-constructor corollary: support-only canonical/free atom/law
+provenance cannot uniformly construct zero of the source-`C0` generated
+residual while the same support-only source lacks the arrow-compatibility law.
+
+The corollary is residual-specific: it closes the apparent loophole left after
+Cycle 317 by showing that support-only provenance plus generated coefficient
+machinery still has exactly the same missing lower semantic overlap law.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) := by
+  intro constructor
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport constructor)
+
+/--
 Cycle 317 generated-residual constructor: support-only canonical/free atom/law
 provenance plus zero of the source-`C0` generated residual constructs the full
 canonical/free overlap-reading layer.
