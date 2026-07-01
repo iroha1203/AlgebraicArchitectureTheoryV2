@@ -103,6 +103,155 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 307 -- support-only sourceC0 exposes the common-refinement bridge
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4859351825>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the next rock face below Cycle 306:
+
+1. build the support-only source's displayed degree-`0` Cech cochain inside the
+   existing `atomLawOverlapCoverRelativeCechComplex`;
+2. test whether `K.d 0 sourceC0 = 0` can be read, through the degree-`0`
+   Cech face equation, as the arbitrary common-refinement equality demanded by
+   `source.pointwiseSupportOnlyOverlapRestrictionEquality`;
+3. if not, isolate the missing common-refinement factorization law without
+   treating it as completion evidence.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0ReadsDisplayedInterpretations`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reads_displayedInterpretations`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reading_cechZero_constructor_without_arrowCompatibilityLaw`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw`
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0Factorization_constructs_canonicalFreeOverlapReading`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The support-only source now has a canonical displayed cochain
+  `sourceC0 : K.Cn 0`, built by restricting each local interpretation along
+  the generated `zeroSimplexToChart` map.
+- The displayed reading of that cochain is theorem-level and uses no external
+  `c0Carrier`, `c0Equiv`, selected `K`, or conclusion-side comparison.
+- The remaining bridge is named exactly:
+  `sourceC0CechZero -> source.pointwiseSupportOnlyOverlapRestrictionEquality`.
+- A no-constructor theorem shows that displayed `sourceC0` plus `K.d 0
+  sourceC0 = 0` cannot be used as a uniform constructor for the overlap
+  equality under `¬ source.arrowCompatibilityLaw`.
+- A no-escape theorem shows that, under `¬ source.arrowCompatibilityLaw` and
+  `sourceC0CechZero`, no common-refinement factorization law of the named shape
+  can be available.
+
+Remaining:
+
+- `sourceC0CechZero` is not yet discharged from atom/law support.
+- More importantly, the degree-`0` Cech face equation has not yet been
+  connected to arbitrary common refinements.  The next proof obligation is to
+  extract the relevant face equality from `K.d_eq_alternatingFaceCombination 0`
+  and prove the finite-poset common-refinement factorization needed to recover
+  `pointwiseSupportOnlyOverlapRestrictionEquality`.
+
+### Material Premise Ledger
+
+- canonical support-only `sourceC0`: discharged.
+- displayed-reading law for `sourceC0`: discharged by `rfl`.
+- `sourceC0CechZero`: material premise, still discharge-required.
+- `sourceC0CommonRefinementFactorizationLaw`: material premise, explicitly
+  conclusion-equivalent risk, not completion evidence.
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality` /
+  `arrowCompatibilityLaw`: still not discharged.
+
+### Certificate Provenance
+
+- `sourceC0` is generated from:
+  - the existing finite-poset cover-relative Cech complex;
+  - the source-section-free skeleton;
+  - the support-only presieve source's displayed local interpretations.
+- No certificate field, structure field, selected coefficient object, or
+  external carrier equivalence is used as lower provenance.
+- The factorization law is intentionally separated because it is the exact
+  missing semantic/geometric bridge, not a certificate.
+
+### Proof-Use Audit
+
+- `sourceC0_reads_displayedInterpretations` unfolds the generated cochain and
+  closes by `rfl`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reading_cechZero_constructor_without_arrowCompatibilityLaw`
+  proof-uses the generated display law and `hcechZero`, then contradicts
+  `hmissing`.
+- `sourceC0CommonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+  proof-uses `hfactor hcechZero`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_without_arrowCompatibilityLaw`
+  proof-uses `hmissing`, `hcechZero`, and `hfactor`.
+
+### Structure-Field Escape Audit
+
+- status: clear for the generated `sourceC0` construction.
+- status: blocked for final theorem completion.
+- The cycle adds no new data structure that packages the missing equality as a
+  field.  The named factorization law is a `Prop` used only to mark the
+  remaining bridge and is rejected by the no-escape theorem under missing arrow
+  compatibility.
+
+### T3 Audit Result
+
+Independent T3 audit approved Cycle 307 as `proof-checkpoint`, not as a
+completion candidate:
+
+- `sourceC0` is natural: it lives in the existing
+  `atomLawOverlapCoverRelativeCechComplex ... .Cn 0` and restricts displayed
+  chart sections along `zeroSimplexToChart`.
+- `sourceC0CommonRefinementFactorizationLaw` is conclusion-equivalent if read
+  as a completion premise, since it targets
+  `pointwiseSupportOnlyOverlapRestrictionEquality`, already equivalent to
+  `arrowCompatibilityLaw`.
+- Current comments and no-escape theorems correctly expose it as a missing law,
+  not as a discharge.
+- The next obligation is not to assume the factorization law, but to derive it
+  from the degree-`0` Cech face equation and finite-poset common-refinement
+  geometry.
+
+### Validation
+
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle307AxiomAudit.lean` passed.
+- Axiom audit for the new Cycle 307 declarations reported only expected
+  standard axioms: `[propext, Classical.choice, Quot.sound]`.
+- `git diff --check` passed.
+- Hidden / bidirectional Unicode scan over the changed Lean file was clean.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+Cycle 307 confirms that the `C0` object itself can be generated from the
+canonical/free/input-boundary semantic atom/law geometry.  The hard rock is now
+sharper: prove that the generated degree-`0` Cech-zero equation supplies
+arbitrary common-refinement overlap equality, or prove that the current cover
+API lacks the finite-poset face/factorization data needed for that theorem.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 306 -- support-only overlap reading is separated from overlap equality
 
 - decision: approve
