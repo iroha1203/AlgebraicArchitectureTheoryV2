@@ -103,6 +103,149 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 295 -- presieve compatibility split from support-only source
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4856319112>
+- date: 2026-07-01 JST
+
+### T1 Selector Result
+
+T1 selected the nearest proof-used material premise left by Cycle 294:
+
+- construct or lower
+  `GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource.compatible`
+  from canonical/free/input-boundary semantic atom/law overlap geometry;
+- if that cannot be fully constructed, fix the exact missing overlap,
+  restriction, or common-refinement law as the next blocker.
+
+The selector explicitly rejected reworking the generated coefficient layer:
+`C0/C1/C2`, `delta0/delta1`, identity `c0Equiv`, quotient/exactness, and
+residual-boundary reading were already fixed by earlier cycles.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.toPresieveFreeSemanticAtomLawInputBoundarySource`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.coverArrowPresieveMem`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw_iff_presieveFamilyCompatible`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization_constructs_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw`
+
+### Proof-Obligation Delta
+
+Fixed as blocker:
+
+- the old `presieveSource.compatible` field is isolated as a named
+  `arrowCompatibilityLaw` on support-only semantic atom/law data;
+- `arrowCompatibilityLaw` is equivalent to a compatible Mathlib presieve
+  family whose displayed-cover evaluations are the support-only
+  interpretations;
+- if local interpretations are restrictions of one common base section, then
+  `arrowCompatibilityLaw` is constructed by Mathlib's canonical
+  `Presieve.Arrows.toCompatible`;
+- from that common-restriction realization, the old presieve-free source and
+  the presieve section-extension law are constructed and proof-used.
+
+Still remaining:
+
+- `commonRestrictionRealization` is material lower data;
+- support-only atom/law data alone is not enough to construct compatibility;
+- the common base section and restriction equalities must still be constructed
+  from canonical/free/input-boundary semantic atom/law geometry;
+- semantic bridge maps, global coherence, cover refinement/naturality, and the
+  full-sheaf boundary remain open.
+
+### Material Premise Ledger
+
+- `presieveSource.compatible`: no longer opaque in the new support-only layer;
+  it is exposed as `arrowCompatibilityLaw`.
+- `arrowCompatibilityLaw`: constructed from `commonRestrictionRealization`.
+- `commonRestrictionRealization`: still material; next obligation is to
+  construct it from the lower semantic atom/law geometry or isolate the exact
+  missing common-base restriction law.
+- `sourceSection`, external `c0Equiv`, external `c0Carrier`, old
+  `sourceWithoutC0`, arbitrary selected `K`, raw top-level presieve family,
+  and external canonical envelope: not introduced as route arguments.
+
+### Certificate Provenance
+
+Discharged in this cycle:
+
+- arrow compatibility provenance from `commonRestrictionRealization` through
+  `Presieve.Arrows.toCompatible`;
+- displayed cover-arrow membership via `coverArrowPresieveMem`;
+- old presieve-free source compatibility supplied by the constructed
+  `arrowCompatibilityLaw`, not by a support-only structure field.
+
+Unresolved:
+
+- provenance of `commonRestrictionRealization`;
+- provenance of the common base section from sheaf/descent/effective gluing or
+  another input-boundary construction.
+
+### Proof-Use Audit
+
+- `hrealized` is used to derive `hcompatible`.
+- `hcompatible` is used as the `compatible` field of the reconstructed
+  presieve-free source.
+- the reconstructed presieve source is used to obtain the presieve
+  section-extension law.
+- no unused material premise was found by T3.
+
+### Structure-Field Escape Audit
+
+- Compatibility is not stored in the support-only source.
+- Conclusion-side compatibility is explicit as `arrowCompatibilityLaw` or
+  constructed from `commonRestrictionRealization`.
+- `commonRestrictionRealization` remains a strong visible premise and cannot be
+  counted as discharged until constructed from input-boundary geometry.
+
+### T3 Audit Result
+
+Independent T3 audit approved Cycle 295 as `blocker-fixed`:
+
+- statement not weakened;
+- hidden material premise: none found;
+- route integrity: pass for blocker-fixing checkpoint;
+- cheat-route audit: no target-fitting construction, vacuity, one-way-as-
+  equivalence, or GOAL/report reinterpretation found;
+- completion remains rejected because `commonRestrictionRealization` is still
+  material.
+
+Next obligation:
+
+- construct `commonRestrictionRealization` from canonical/free/input-boundary
+  semantic atom/law overlap geometry, or fix the next exact missing common-base
+  restriction law as blocker.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build FormalAGResearch` passed.
+- `git diff --check` passed.
+- placeholder scan over the target Lean file was clean for `axiom`, `admit`,
+  `sorry`, and `unsafe`.
+- hidden / bidirectional Unicode scan over the target Lean file passed.
+- local path / private machine identifier scan over the target Lean file
+  passed.
+- axiom audit for Cycle 295 declarations reported only standard axioms:
+  `[propext, Classical.choice, Quot.sound]` or `[propext, Quot.sound]`.
+
 ## Cycle 294 -- choices and presieve law lowered to one presieve-free source
 
 - decision: approve

@@ -15805,6 +15805,243 @@ theorem exposes_pointwise_nonvacuity_support_and_presieve_evaluation
 end GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
 
 /--
+Cycle 295 support-only presieve-indexed semantic atom/law local source.
+
+This is the Cycle 290 source with the arrow-level compatibility law removed.
+It records the local semantic inputs, support witnesses, and interpreted local
+sections on the displayed atom/law cover arrows.  It intentionally does not
+claim that those local sections glue; the exact remaining law is
+`arrowCompatibilityLaw` below.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  LocalInput : regime.cover.Index -> Type r
+  input : (i : regime.cover.Index) -> LocalInput i
+  atomSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List U.Atom
+  atomSupport_traceVisible :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists atom : U.Atom,
+        atom ∈ atomSupport i localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport i localInput
+  lawSupport_required :
+    forall (i : regime.cover.Index) (localInput : LocalInput i)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+  interpret :
+    (i : regime.cover.Index) -> LocalInput i ->
+      Ob.carrier.toPresheaf.obj
+        (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+The exact arrow-level overlap law missing from support-only semantic atom/law
+data.
+
+This is the former `compatible` field of the Cycle 290 source, isolated as a
+named law rather than hidden inside the source record.
+-/
+def arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  CategoryTheory.Presieve.Arrows.Compatible Ob.carrier.toPresheaf
+    (fun i : regime.cover.Index =>
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+    (fun i : regime.cover.Index => source.interpret i (source.input i))
+
+/--
+A common base section realizes the support-only local interpretations when
+each interpreted section is obtained by restriction along the displayed
+atom/law cover arrow.
+-/
+def commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  Exists fun sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base) =>
+    forall i : regime.cover.Index,
+      source.interpret i (source.input i) =
+        Ob.carrier.toPresheaf.map
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+          sourceSection
+
+/--
+Construct the Cycle 290 presieve-free source once the isolated arrow
+compatibility law is supplied.
+-/
+def toPresieveFreeSemanticAtomLawInputBoundarySource
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := source.interpret
+  compatible := hcompatible
+
+/-- The displayed atom/law cover arrow belongs to the generated presieve. -/
+def coverArrowPresieveMem
+    (i : regime.cover.Index) :
+    regime.cover.presieve
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i) := by
+  change
+    Presieve.ofArrows
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+  exact Presieve.ofArrows.mk i
+
+/--
+The isolated compatibility law is exactly the existence of a compatible
+Mathlib presieve family that evaluates to the support-only interpretations on
+the displayed atom/law cover arrows.
+-/
+theorem arrowCompatibilityLaw_iff_presieveFamilyCompatible
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.arrowCompatibilityLaw <->
+      Exists fun presieveSections :
+        Presieve.FamilyOfElements Ob.carrier.toPresheaf
+          regime.cover.presieve =>
+        presieveSections.Compatible /\
+          (forall i : regime.cover.Index,
+            presieveSections
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) =
+              source.interpret i (source.input i)) := by
+  constructor
+  · intro hcompatible
+    let presieveSections :
+        Presieve.FamilyOfElements Ob.carrier.toPresheaf
+          regime.cover.presieve := by
+      let family :
+          Presieve.FamilyOfElements Ob.carrier.toPresheaf
+            (Presieve.ofArrows
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)) :=
+        hcompatible.familyOfElements
+      simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        AAT.AG.Site.AATCoverageFamily.presieve] using family
+    refine ⟨presieveSections, ?_, ?_⟩
+    · dsimp [presieveSections]
+      simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        AAT.AG.Site.AATCoverageFamily.presieve] using
+        hcompatible.familyOfElements_compatible
+    · intro i
+      dsimp [presieveSections]
+      simp [AAT.AG.Cohomology.finitePosetCoverRelativeCover]
+  · rintro ⟨presieveSections, hcompatible, heval⟩
+    intro i j Z gi gj hcomm
+    have hcompat :=
+      hcompatible gi gj
+        (coverArrowPresieveMem i)
+        (coverArrowPresieveMem j)
+        hcomm
+    change
+      Ob.carrier.toPresheaf.map gi.op
+          (presieveSections
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+            (coverArrowPresieveMem i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (presieveSections
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j)
+            (coverArrowPresieveMem j)) at hcompat
+    rw [heval i, heval j] at hcompat
+    exact hcompat
+
+/--
+Restriction from one common base section constructs the isolated arrow
+compatibility law by Mathlib's canonical `Presieve.Arrows.toCompatible`.
+-/
+theorem commonRestrictionRealization_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    source.arrowCompatibilityLaw := by
+  rcases hrealized with ⟨sourceSection, hsection⟩
+  have hcompatible :=
+    (CategoryTheory.Presieve.Arrows.toCompatible
+      Ob.carrier.toPresheaf
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      sourceSection).property
+  intro i j Z gi gj hcomm
+  change
+    Ob.carrier.toPresheaf.map gi.op
+        (source.interpret i (source.input i)) =
+      Ob.carrier.toPresheaf.map gj.op
+        (source.interpret j (source.input j))
+  rw [hsection i, hsection j]
+  exact hcompatible i j Z gi gj hcomm
+
+/--
+Construct the Cycle 290 presieve-free source from support-only data once the
+local interpretations are realized as restrictions of one common base section.
+-/
+def toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+      skeleton :=
+  source.toPresieveFreeSemanticAtomLawInputBoundarySource
+    (source.commonRestrictionRealization_constructs_arrowCompatibilityLaw
+      hrealized)
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
 Cycle 291 presieve pointwise semantic atom/law local input.
 
 This is the cover-indexed analogue of the finite-poset pointwise
@@ -15990,6 +16227,64 @@ theorem presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_presieveFr
       presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
         skeleton source,
       source.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 295 provenance checkpoint: common-restriction support-only data
+constructs the old presieve-free source and the presieve section-extension law.
+
+The theorem does not count support-only data as enough.  It proof-uses the
+common-restriction realization to construct the isolated arrow compatibility
+law, then feeds that law into the Cycle 290 source and presieve-family route.
+-/
+theorem commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.arrowCompatibilityLaw /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hcompatible :=
+    source.commonRestrictionRealization_constructs_arrowCompatibilityLaw
+      hrealized
+  let presieveSource :=
+    source.toPresieveFreeSemanticAtomLawInputBoundarySource hcompatible
+  exact
+    ⟨hcompatible,
+      ⟨presieveSource⟩,
+      presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        skeleton presieveSource,
+      presieveSource.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
 /--
 Cycle 292 restriction-realized presieve pointwise semantic atom/law basis.
