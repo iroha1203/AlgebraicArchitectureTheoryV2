@@ -16904,6 +16904,159 @@ theorem no_baseRestrictionSource_preservingDisplayedInterpretation_without_arrow
     ((source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).2
       hbase)
 
+/--
+Cycle 299 pointwise support-only semantic atom/law overlap law.
+
+This is the fully unfolded displayed-cover law below
+`arrowCompatibilityLaw`.  For any two displayed atom/law cover arrows and any
+common refinement square, the two interpreted local obstruction sections have
+the same restriction to the refinement.  The statement also re-exposes the
+trace-visible atom and required-law support already carried by the support-only
+source, so the next constructive layer has a precise semantic atom/law target
+to hit.
+
+No base section, common-restriction realization, raw presieve family,
+presieve-free source, or base-restriction source is accepted here.
+-/
+def pointwiseSupportOnlySemanticAtomLawOverlapLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall (i j : regime.cover.Index) {Z : S.category}
+      (gi :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (gj :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
+    gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
+        gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport i (source.input i) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport i (source.input i) ∧
+          S.lawUniverse.Required lawIndex) /\
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport j (source.input j) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport j (source.input j) ∧
+          S.lawUniverse.Required lawIndex) /\
+      Ob.carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 299 exact boundary: the pointwise support-only semantic atom/law overlap
+law is exactly the isolated `arrowCompatibilityLaw`.
+
+The forward direction forgets the support witnesses and keeps the displayed
+restriction equality.  The reverse direction combines the isolated arrow law
+with the support-only source's visible atom and law support witnesses.  Thus
+adding trace-visible atom support and required-law support around the overlap
+law does not by itself construct the missing compatibility; the restriction
+equality remains the same material premise.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.arrowCompatibilityLaw := by
+  constructor
+  · intro hlaw i j Z gi gj hcomm
+    rcases hlaw i j gi gj hcomm with
+      ⟨_hAtomI, _hLawI, _hAtomJ, _hLawJ, hoverlap⟩
+    exact hoverlap
+  · intro hcompatible i j Z gi gj hcomm
+    rcases source.lawSupport_nonempty i (source.input i) with
+      ⟨lawIndexI, hLawIndexI⟩
+    rcases source.lawSupport_nonempty j (source.input j) with
+      ⟨lawIndexJ, hLawIndexJ⟩
+    exact
+      ⟨source.atomSupport_traceVisible i (source.input i),
+        ⟨lawIndexI, hLawIndexI,
+          source.lawSupport_required i (source.input i)
+            lawIndexI hLawIndexI⟩,
+        source.atomSupport_traceVisible j (source.input j),
+        ⟨lawIndexJ, hLawIndexJ,
+          source.lawSupport_required j (source.input j)
+            lawIndexJ hLawIndexJ⟩,
+        hcompatible i j Z gi gj hcomm⟩
+
+/--
+Cycle 299 proof-use checkpoint: once the pointwise support-only overlap law is
+available, it reconstructs `arrowCompatibilityLaw` and feeds the existing
+Cycle 296 common-restriction / presieve-free-source route.
+
+This theorem does not construct the pointwise law from atom/law choices alone.
+It fixes the exact law future cycles must generate from canonical/free
+semantic atom/law overlap geometry.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hlaw : source.pointwiseSupportOnlySemanticAtomLawOverlapLaw) :
+    let hcompatible :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+        hlaw
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hcompatible :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+      hlaw
+  have hpackage :=
+    source.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hcompatible
+  exact
+    ⟨hlaw,
+      hpackage.2.1,
+      hpackage.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2⟩
+
 end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
 /--

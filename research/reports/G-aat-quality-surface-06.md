@@ -103,6 +103,103 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 299 -- pointwise support-only overlap law interface
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4857516163>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the exact pointwise lower interface below the remaining
+`source.arrowCompatibilityLaw`:
+
+- define the fully unfolded support-only semantic atom/law overlap law for the
+  displayed atom/law cover arrows;
+- prove that this pointwise law is equivalent to `source.arrowCompatibilityLaw`;
+- proof-use the law through the existing Cycle 296
+  common-restriction / presieve-free-source route;
+- do not supply `sourceSection`, `commonRestrictionRealization`, raw presieve
+  family, presieve-free source, base-restriction source, selected cover, or
+  selected coefficient data as a new input.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlySemanticAtomLawOverlapLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw`
+
+### Proof-Obligation Delta
+
+Fixed as a proof checkpoint:
+
+- the remaining `arrowCompatibilityLaw` is now exposed as a pointwise displayed
+  cover-overlap restriction equality, with trace-visible atom support and
+  required-law support re-exposed on both sides of each overlap;
+- the new pointwise law is exactly equivalent to `arrowCompatibilityLaw`;
+- once the pointwise law is available, it reconstructs `arrowCompatibilityLaw`
+  and immediately feeds the Cycle 296 common-restriction / presieve-free-source
+  route.
+
+Still remaining:
+
+- this cycle does not construct the pointwise law from semantic atom/law choices
+  alone;
+- the restriction equality remains the same material premise as
+  `arrowCompatibilityLaw`;
+- the next positive obligation is to construct this pointwise support-only
+  overlap law, or a strictly lower law implying it, from canonical/free
+  semantic atom/law overlap geometry.
+
+### Material Premise Ledger
+
+- `pointwiseSupportOnlySemanticAtomLawOverlapLaw`: newly named
+  `discharge-required` interface equivalent to `arrowCompatibilityLaw`.
+- `arrowCompatibilityLaw`: still `discharge-required`; no longer hidden behind
+  presieve, base-restriction, or support-only presentation.
+- trace-visible atom support and required-law support: re-exposed from the
+  support-only source; they do not by themselves construct compatibility.
+- `sourceSection` / `commonRestrictionRealization`: not supplied as theorem
+  inputs in the new pointwise law.
+
+### T3 Audit
+
+T3 verdict: approve / proof-checkpoint / no major or minor findings.
+
+- The pointwise law is the intended displayed-cover restriction equality for
+  all displayed cover arrows, refinements, and commuting squares.
+- No hidden `sourceSection`, `commonRestrictionRealization`, raw presieve
+  family, presieve-free source, base-restriction source, selected cover, or
+  selected coefficient choice was introduced.
+- The equivalence with `arrowCompatibilityLaw` is valid and not overstated:
+  the forward direction forgets support witnesses, and the reverse direction
+  adds only support witnesses already present in the source.
+- The proof-use theorem correctly routes the law through the existing Cycle 296
+  downstream construction while leaving provenance unresolved.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean` on a temporary axiom-audit scratch file
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- hidden/bidirectional Unicode scan on changed Lean file
+- local/private path scan on changed Lean file
+- placeholder scan on changed Lean file
+
+Axiom audit for the new declarations reported only standard dependencies:
+`[propext, Quot.sound]` or `[propext, Classical.choice, Quot.sound]`.
+
 ## Cycle 298 -- display-preserving base-restriction no-escape boundary
 
 - decision: approve
