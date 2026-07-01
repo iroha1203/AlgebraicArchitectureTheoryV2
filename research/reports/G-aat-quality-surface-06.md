@@ -103,6 +103,122 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 311 -- sourceC0 Cech-zero is exactly arrow compatibility
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the remaining Cycle 310 premise itself:
+
+- after Cycle 310, the atom/law overlap geometry constructs the arbitrary
+  common-refinement factorization through selected degree-`1` faces;
+- the only remaining visible premise in the generated `sourceC0` route is
+  `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero`;
+- that premise must not be treated as lower provenance unless it can be
+  generated from a lower semantic law, or else identified as an exact blocker.
+
+The selected obligation was therefore to fix the exact boundary between
+generated `sourceC0CechZero` and the already-isolated
+`source.arrowCompatibilityLaw`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero`
+  proves the reverse bridge: the isolated arrow-compatibility law gives
+  `K.d 0 sourceC0 = 0` for the atom/law-generated cover-relative Cech complex.
+  The proof uses selected degree-`1` face restrictions and the degree-`0`
+  standard Cech differential eliminator.
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry`
+  combines the Cycle 310 forward bridge with the new reverse bridge and proves
+  that generated `sourceC0CechZero` is equivalent to the support-only
+  `arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_without_arrowCompatibilityLaw_of_atomLawOverlapGeometry`
+  records the no-escape form: once atom/law overlap geometry supplies the
+  common-refinement side, missing `arrowCompatibilityLaw` rules out
+  `sourceC0CechZero` itself.
+
+### Proof-Obligation Delta
+
+Discharged as blocker-fixed:
+
+- `sourceC0CechZero` is no longer an opaque Cech-side premise.
+- Under the atom/law-generated overlap geometry of Cycle 310, it is exactly the
+  same boundary as `source.arrowCompatibilityLaw`.
+- The generated Cech differential, selected face restrictions, and
+  common-refinement geometry are proof-used rather than supplied as fields.
+
+Still remaining:
+
+- `source.arrowCompatibilityLaw` itself remains material.
+- A future positive cycle must construct that lower semantic overlap law from
+  canonical/free semantic atom/law input-boundary geometry, or redesign the
+  source boundary so that the law is a legitimate input-boundary theorem.
+- The result is not a completion candidate because the exact remaining premise
+  is conclusion-equivalent to the support-only overlap equality isolated in
+  Cycle 300.
+
+### Material Premise Ledger
+
+- `sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces`: discharged by
+  Cycle 310 from atom/law overlap geometry.
+- `sourceC0CechZero`: exact-boundary fixed in this cycle; equivalent to
+  `source.arrowCompatibilityLaw` under the generated overlap geometry.
+- `source.arrowCompatibilityLaw`: still discharge-required.
+- external `c0Equiv`, old `sourceWithoutC0`, arbitrary selected `K`, residual
+  boundary witness, semantic/additive `H1` zero, descent/effectivity, and
+  global coherence are not introduced.
+
+### Route Integrity Audit
+
+- `arrowCompatibilityLaw -> sourceC0CechZero` uses the generated
+  cover-relative Cech complex and the standard degree-`0` differential
+  face-equality eliminator.
+- `sourceC0CechZero -> arrowCompatibilityLaw` uses the Cycle 310 atom/law
+  common-refinement theorem and the existing
+  `pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw`.
+- No new structure field or certificate stores Cech-zero, overlap equality,
+  comparison equivalence, boundary membership, or global coherence.
+- This cycle therefore narrows the rock face; it does not break through it.
+
+### Validation
+
+Passed:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle311AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean file and Cycle 311 axiom-audit scratch
+  file for `axiom`, `admit`, `sorry`, `unsafe`, and `sorryAx`
+- hidden/bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 311 axiom-audit scratch file
+- private/local path scan over the changed Lean/report files and Cycle 311
+  axiom-audit scratch file
+
+The Cycle 311 axiom audit for the three new declarations reports only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 audit approved the cycle as `blocker-fixed` with
+`completion_candidate: no`.
+
+### Next Obligation
+
+Construct `source.arrowCompatibilityLaw` from genuine canonical/free semantic
+atom/law input-boundary geometry, or fix a sharper theorem-level blocker
+showing why the current support-only source cannot generate that law without a
+new lower semantic layer.
+
 ## Cycle 310 -- atom/law overlap geometry generates common-refinement factorization
 
 - decision: approve

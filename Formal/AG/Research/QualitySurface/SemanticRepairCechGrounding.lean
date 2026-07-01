@@ -24050,6 +24050,183 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOve
         coverGeometry coefficientGeometry skeleton source)
 
 /--
+Cycle 311 reverse bridge: the isolated arrow-compatibility law constructs the
+Cech-zero equation for the generated support-only `sourceC0`.
+
+This is not a completion theorem because `arrowCompatibilityLaw` is exactly the
+support-only semantic overlap law isolated in Cycle 300.  The point is that
+`sourceC0CechZero` is no longer an opaque Cech-side premise: for the
+atom/law-generated cover-relative complex it is the degree-`0` differential
+reading of the same arrow-level compatibility.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let canonicalGeometry :=
+    coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+  have hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+      hcompatible
+  letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+  change K.d 0 sourceC0 = 0
+  funext sigma
+  letI :=
+    (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (canonicalGeometry.toObstructionCoefficientRegime Ob) 1 sigma)
+  have hface :
+      K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma =
+        K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma := by
+    let vertex0 : cover.simplex 0 := cover.face 0 (0 : Fin 2) sigma
+    let vertex1 : cover.simplex 0 := cover.face 0 (1 : Fin 2) sigma
+    let i : cover.Index := skeleton.zeroSimplexChart vertex0
+    let j : cover.Index := skeleton.zeroSimplexChart vertex1
+    let gi : cover.overlap 1 sigma ⟶ cover.chart i :=
+      cover.faceRestriction 0 (0 : Fin 2) sigma ≫
+        skeleton.zeroSimplexToChart vertex0
+    let gj : cover.overlap 1 sigma ⟶ cover.chart j :=
+      cover.faceRestriction 0 (1 : Fin 2) sigma ≫
+        skeleton.zeroSimplexToChart vertex1
+    have hcomm : gi ≫ cover.inclusion i = gj ≫ cover.inclusion j := by
+      exact Subsingleton.elim _ _
+    have h := hoverlap i j gi gj hcomm
+    dsimp [
+      sourceC0,
+      AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0]
+    rw [← CategoryTheory.FunctorToTypes.map_comp_apply,
+      ← CategoryTheory.FunctorToTypes.map_comp_apply]
+    simpa [gi, gj, i, j, vertex0, vertex1] using h
+  have hstd :
+      standardCechDifferential C.faces 0 sourceC0 sigma = 0 := by
+    exact
+      (standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+        (geometry := canonicalGeometry) (Ob := Ob)
+        C.faces sourceC0 sigma).2 (by
+          simpa [
+            K, C,
+            AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+            AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+            AAT.AG.Site.FinitePosetCechFaceRestriction] using hface)
+  simpa [
+    K, C, atomLawOverlapCoverRelativeCechComplex,
+    atomLawOverlapSelectedCechComplexAdditiveLaw,
+    atomLawOverlapStandardFinitePosetCechComplex,
+    standardFinitePosetCechComplex,
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw.toCoverRelativeCechComplex,
+    AAT.AG.Cohomology.CoverRelativeCechComplex.d] using hstd
+
+/--
+Cycle 311 exact boundary: under the atom/law-generated common-refinement
+geometry, the generated support-only `sourceC0` is Cech-zero exactly when the
+support-only source satisfies the isolated arrow-compatibility law.
+
+The forward direction uses the Cycle 310 geometry-generated bridge from
+`sourceC0CechZero` to the bare overlap equality; the reverse direction is the
+Cycle 311 differential reading of `arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source <->
+      source.arrowCompatibilityLaw := by
+  constructor
+  · intro hcechZero
+    exact
+      (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+        (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOverlapGeometry_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+          coverGeometry coefficientGeometry skeleton source hcechZero)
+  · intro hcompatible
+    exact
+      atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source hcompatible
+
+/--
+Cycle 311 no-escape theorem: after the common-refinement side is generated by
+atom/law overlap geometry, missing `arrowCompatibilityLaw` rules out the
+generated `sourceC0CechZero` equation itself.
+
+Thus the remaining rock is no longer a Cech-complex artifact or a hidden
+`c0Equiv`/`sourceWithoutC0` gap.  It is exactly the lower semantic overlap law
+for the support-only source.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_without_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact hmissing
+    ((atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).1 hcechZero)
+
+/--
 Cycle 308 no-escape theorem: if arrow compatibility is absent and the
 generated `sourceC0` is Cech-zero, then the selected degree-`1` face equality
 law and the arbitrary common-refinement factorization law cannot both hold.
