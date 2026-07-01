@@ -103,6 +103,142 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 292 -- presieve compatibility lowered to restriction-realized source section
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4855218724>
+- date: 2026-07-01 JST
+
+### T1 Selector Result
+
+T1 selected the remaining material premise from Cycle 291: the
+`compatible` field of
+`GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis`.
+
+The cycle should not try to identify cover-indexed presieve inputs with
+degree-`0` Cech simplex inputs yet. The highest-leverage non-completion step is
+to show that presieve arrow compatibility is not a standalone overlap
+certificate when all local sections are restrictions of one common base
+section.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis`
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.localInput`
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis`
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.localInput_localSection`
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.SourceSectionFreeSkeleton.presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_pointwiseBasis_presieveSource_and_presieveLaw`
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPointwiseCompatibilityArgument`
+
+### Proof-Obligation Delta
+
+Discharged as checkpoint:
+
+- the Cycle 291 top route no longer accepts a pointwise basis containing an
+  external `compatible` proof;
+- cover-indexed local sections are generated as
+  `Ob.carrier.toPresheaf.map ((finitePosetCoverRelativeCover C).inclusion i).op
+  basis.sourceSection`;
+- presieve arrow compatibility is produced by
+  `CategoryTheory.Presieve.Arrows.toCompatible`, so it is presheaf
+  functoriality from a common input-boundary source section rather than an
+  ad hoc overlap certificate;
+- the generated selected-`K` top route still reaches the same identity
+  `c0Equiv`, `c0Carrier`, grounded comparison package, residual boundary,
+  semantic `H1` zero, and additive `H1` zero through the existing canonical
+  generated semantic coefficient route.
+
+Still remaining:
+
+- `sourceSection` itself is still visible input-boundary data;
+- cover-indexed atom and law choices are still visible input-boundary data;
+- the degree-`0` Cech-simplex indexed source is not yet identified with the
+  cover-indexed presieve source;
+- semantic bridge maps, global coherence, cover refinement/naturality, and the
+  full-sheaf boundary remain open.
+
+### Material Premise Ledger
+
+- `GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis.compatible`:
+  lowered; no longer a theorem argument or structure field in the Cycle 292
+  route input.
+- `GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.sourceSection`:
+  still material; visible as common base section input.
+- cover-indexed semantic atom/law choices:
+  still material; visible as `atom`, `atom_traceVisible`, `lawIndex`, and
+  `law_required`.
+- raw `Presieve.FamilyOfElements`, old `sourceWithoutC0`, external `c0Equiv`,
+  external `c0Carrier`, arbitrary selected `K`, and external canonical
+  envelope: not introduced.
+
+### Certificate Provenance
+
+Discharged in this cycle:
+
+- arrow-level presieve compatibility from a common source section via
+  `Presieve.Arrows.toCompatible`;
+- local section provenance as restriction along the displayed atom/law cover
+  inclusion;
+- the Cycle 291 pointwise basis from restriction-realized lower data;
+- the Cycle 290 presieve source, presieve law, generated-sieve gluing,
+  effective gluing, canonical generated coefficient, identity cochain
+  realization, and `c0Carrier` through the existing generated selected-`K`
+  route.
+
+Unresolved:
+
+- construction of the common `sourceSection`;
+- construction of the cover-indexed atom/law choices from a lower semantic
+  atom/law overlap geometry;
+- comparison between cover-indexed presieve local inputs and selected
+  degree-`0` Cech simplex local inputs.
+
+### T3 Audit Result
+
+Independent T3 audit approved Cycle 292 as `proof-checkpoint`:
+
+- no `compatible` field appears in the new restriction-realized basis;
+- `compatible` is proof-used through `Presieve.Arrows.toCompatible` applied to
+  `basis.sourceSection`;
+- no raw `Presieve.FamilyOfElements`, `sourceWithoutC0`, external `c0Equiv`,
+  external `c0Carrier`, arbitrary selected `K`, or external canonical envelope
+  is introduced;
+- the theorem is explicitly not a completion candidate because `sourceSection`
+  and cover-indexed atom/law choices remain material.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` passed.
+- placeholder scan over the target Lean file was clean for `sorry`, `admit`,
+  and `axiom`.
+- Axiom audit for the three new declarations reported only expected standard
+  axioms: `[propext, Quot.sound]` or
+  `[propext, Classical.choice, Quot.sound]`.
+
+### Stop-State Assessment
+
+G-06 remains active and incomplete.
+
+The next cycle should lower the remaining `sourceSection` and cover-indexed
+atom/law choices. A viable next step is to connect the restriction-realized
+presieve source to the existing effective-gluing/source-section construction,
+or to prove the exact boundary showing why a lower semantic overlap geometry
+must supply that common section.
+
+`$math-lean-review` is not run because this is not a completion candidate.
+
 ## Cycle 291 -- presieve source lowered to cover-indexed pointwise semantic atom/law basis
 
 - decision: approve
