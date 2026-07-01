@@ -103,6 +103,148 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 297 -- no-escape boundary for support-only presieve interpretations
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4856980539>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the remaining Cycle 296 material premise:
+
+- construct
+  `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw`
+  from canonical/free/input-boundary semantic atom/law overlap geometry;
+- do not pass `arrowCompatibilityLaw`, `commonRestrictionRealization`, raw
+  compatible presieve families, `sourceSection`, derived presieve law, or
+  downstream effective-gluing/descent output as input.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_presieveFamilyCompatible_preservingDisplayedInterpretation_without_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.presieveFreeSourcePreservesDisplayedInterpretation`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.presieveFreeSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_presieveFreeSource_preservingDisplayedInterpretation_without_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource`
+- `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnlySemanticAtomLawInputBoundarySource`
+- `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnly_commonRestrictionRealization`
+- `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnly_constructs_arrowCompatibilityLaw`
+- `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.baseRestriction_constructs_supportOnly_arrowCompatibility_commonRestriction_presieveFreeSource_and_presieveLaw`
+
+### Proof-Obligation Delta
+
+Fixed as a blocker/no-escape boundary:
+
+- a raw compatible `Presieve.FamilyOfElements` cannot preserve the displayed
+  support-only interpretations unless it reconstructs `source.arrowCompatibilityLaw`;
+- a downstream presieve-free semantic atom/law source cannot preserve the same
+  displayed support-only interpretations unless its `compatible` field
+  reconstructs `source.arrowCompatibilityLaw`;
+- therefore the remaining premise cannot be hidden by changing presentation
+  from support-only source to raw presieve family or presieve-free source while
+  claiming to realize the same local sections.
+
+Added as a proof-use checkpoint:
+
+- if local interpretations are generated as restrictions of a visible base
+  section along the displayed atom/law cover inclusions, then
+  `arrowCompatibilityLaw` follows by presheaf functoriality;
+- that constructed arrow law is proof-used through the Cycle 296
+  common-restriction and presieve-free-source route.
+
+Still remaining:
+
+- this is not a discharge of the T1 target, because the base-restriction source
+  carries `sourceSection`;
+- `sourceSection` is common-restriction-level lower data and cannot be counted
+  as naturally generated from semantic atom/law support alone;
+- the next obligation is to construct the base section / base-restriction
+  provenance itself from canonical/free/input-boundary semantic atom/law
+  overlap geometry, or to fix the exact missing overlap law below it.
+
+### Material Premise Ledger
+
+- `arrowCompatibilityLaw`: still `discharge-required`; no longer bypassable by
+  preserving displayed interpretations through raw presieve-family or
+  presieve-free-source presentation.
+- `sourceSection` in the base-restriction source: visible lower datum; proof-use
+  checkpoint only, not a final discharge.
+- `commonRestrictionRealization`: not hidden as a theorem argument in the
+  base-restriction route, but its witness-level content is exactly why the
+  route is not classified as `proof-obligation-discharged`.
+
+### Certificate Provenance
+
+- discharged in this cycle: no-escape provenance for presentation changes that
+  preserve displayed local interpretations.
+- conditionally constructed: `arrowCompatibilityLaw` from a visible
+  base-restriction `sourceSection`.
+- unresolved: provenance of that base section from lower atom/law overlap
+  geometry.
+
+### Proof-Use Audit
+
+- the raw-presieve blocker proof uses the existing
+  `arrowCompatibilityLaw_iff_presieveFamilyCompatible` equivalence;
+- the presieve-free no-escape theorem uses the presieve-free source's
+  `compatible` field and the preservation equations to reconstruct
+  `source.arrowCompatibilityLaw`;
+- the base-restriction checkpoint constructs support-only `interpret` by
+  presheaf restriction, derives `arrowCompatibilityLaw`, and then feeds that
+  law into the Cycle 296 downstream route.
+
+### Structure-Field Escape Audit
+
+- blocker/no-escape theorems: clear; they add no new certificate structure and
+  prevent hiding the missing law in a presentation change.
+- base-restriction source: high risk if misclassified.  The `sourceSection`
+  field is visible, but counting it as canonical semantic atom/law generation
+  would be a structure-field escape.
+- report classification therefore remains `blocker-fixed`, not
+  `proof-obligation-discharged`.
+
+### Route Integrity Audit
+
+- no target theorem weakening is accepted;
+- no raw compatible family, common-restriction witness, or downstream descent
+  result is counted as lower semantic atom/law provenance;
+- the positive base-restriction route is recorded only as a sufficient
+  checkpoint identifying the next lower datum to construct.
+
+### T3 Audit Result
+
+Independent T3 audit approved Cycle 297 as `blocker-fixed` with an embedded
+proof-use checkpoint:
+
+- the no-escape theorems are mathematically valid and useful;
+- Cycle 297 does not discharge the T1 obligation because the base-restriction
+  source stores `sourceSection`;
+- `sourceSection` is not hidden, but it is too strong to count as generated
+  from semantic atom/law support alone;
+- remaining obligation: construct the base section / base-restriction
+  provenance itself from atom/law overlap geometry.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake build FormalAGResearch`
+- `lake build` (existing `Formal/Arch/Extension/FeatureExtensionExamples.lean`
+  linter warning only)
+- `#print axioms` for the new Cycle 297 declarations:
+  `[propext, Classical.choice, Quot.sound]` or smaller standard dependencies
+- `git diff --check`
+- placeholder scan on the changed Lean file
+
 ## Cycle 296 -- common restriction via sheaf descent from arrow law
 
 - decision: approve
