@@ -103,6 +103,119 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 304 -- generated selected-K route package is exactly overlap equality
+
+- decision: approve
+- result_type: exact-boundary
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4858815295>
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the closest remaining rock face as constructing
+`source.pointwiseSupportOnlyOverlapRestrictionEquality` from lower
+canonical/free semantic atom/law overlap geometry, then proof-using it through
+the Cycle 303 generated selected-`K` identity route without accepting
+`hoverlap`, `arrowCompatibilityLaw`, `commonRestrictionRealization`,
+`baseSource`, `sourceSection`, raw presieve family, presieve-free source,
+`c0Equiv`, `c0Carrier`, old `sourceWithoutC0`, or selected `K` as theorem
+arguments.
+
+Cycle 304 does not discharge that equality.  It fixes the exact boundary:
+the same-source generated selected-`K` route package produced by Cycle 303 is
+equivalent to `source.pointwiseSupportOnlyOverlapRestrictionEquality`.  Thus a
+future theorem cannot honestly remove the `hoverlap` argument while preserving
+the same support-only source and route conclusion unless it constructs the same
+overlap equality from genuinely lower semantic atom/law provenance.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality`
+- `CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed in this cycle:
+
+- the Cycle 303 same-source route conclusion is factored as a named `Prop`
+  package;
+- the package is proved equivalent to the bare support-only overlap equality;
+- the forward direction reconstructs the missing equality from the
+  display-preserving base-restriction comparison and does not use the route,
+  presieve-free source, selected `K`, or cochain comparison components;
+- the reverse direction is exactly the Cycle 303 proof-use route from
+  `pointwiseSupportOnlyOverlapRestrictionEquality`;
+- a no-escape corollary proves that if `source.arrowCompatibilityLaw` is
+  absent, then the same-source generated selected-`K` route package is absent
+  as well.
+
+Still remaining:
+
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality` is not discharged;
+- `source.arrowCompatibilityLaw` is not discharged;
+- source-section-free atom/law support choices still account only for support
+  witnesses, not for the restriction equality;
+- next constructive obligation: build the overlap restriction equality from a
+  genuinely lower semantic atom/law overlap-reading layer, or prove the exact
+  minimal additional law needed to do so.
+
+### Material Premise Ledger
+
+- `hoverlap`: now shown equivalent to the full same-source generated
+  selected-`K` route package; not discharged.
+- `arrowCompatibilityLaw`: still definitionally the same material content as
+  the bare overlap equality and remains the lower obstruction.
+- `baseSource`: exposed inside the package, but the forward direction only
+  uses it together with displayed-interpretation preservation to reconstruct
+  `hoverlap`; it is not hidden as a completion certificate.
+- `sourceSection`, `commonRestrictionRealization`, presieve-free source, and
+  selected `K`: present only inside the named package inherited from Cycle 303;
+  they do not lower the remaining overlap premise.
+
+### T3 Audit
+
+T3 verdict: PASS / exact-boundary / completion candidate: no.
+
+- The statement is approved as a blocker/exact-boundary theorem, not as a
+  proof-obligation discharge.
+- The package does not weaken G-06 into a completion claim; it proves that the
+  same-source route package is exactly as strong as `hoverlap`.
+- The forward direction uses
+  `baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`.
+- The reverse direction reuses the Cycle 303 theorem.
+- The no-escape theorem extracts `hoverlap` through the equivalence and then
+  invokes
+  `no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw`.
+- Caveat: any completion reading of the package components must be rejected;
+  the remaining obligation is lower semantic atom/law provenance for
+  `pointwiseSupportOnlyOverlapRestrictionEquality` /
+  `arrowCompatibilityLaw`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake env lean .tmp/G06Cycle304AxiomAudit.lean` passed.
+- Axiom audit for the three new declarations reported only
+  `[propext, Classical.choice, Quot.sound]`.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` passed.
+- Hidden / bidirectional Unicode and local/private path scans over the changed
+  Lean/report files and Cycle 304 scratch file were clean.
+
 ## Cycle 303 -- overlap equality constructs base source and generated selected-K route
 
 - decision: approve

@@ -22252,6 +22252,147 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_supportOnlyOverlapEquality_cons
       hselfPresieveLaw,
       hroute⟩
 
+/--
+Cycle 304 exact package for the same-source generated selected-`K` route below
+the support-only semantic atom/law source.
+
+The package is intentionally the conclusion of Cycle 303, factored as a named
+`Prop`.  It still contains the display-preservation comparison between the
+constructed base-restriction source and the original support-only source, so it
+cannot be satisfied by changing the local semantic sections while claiming to
+close the same source.
+-/
+def AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  Exists fun baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+    source.baseRestrictionSourcePreservesDisplayedInterpretation
+      baseSource /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.baseRestrictionSourcePreservesDisplayedInterpretation baseSource) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.arrowCompatibilityLaw) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.commonRestrictionRealization) /\
+    Nonempty
+      (SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) /\
+    SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+      skeleton /\
+    AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult.{v, w, r}
+      coverGeometry coefficientGeometry skeleton
+
+/--
+Cycle 304 exact boundary: the same-source generated selected-`K` route package
+is equivalent to the bare support-only overlap restriction equality.
+
+The forward direction reconstructs the missing equality from the displayed
+base-restriction preservation comparison.  The reverse direction is precisely
+the Cycle 303 route.  Therefore a future theorem cannot honestly remove the
+`hoverlap` argument while preserving the same source and conclusion package
+unless it constructs the same overlap equality from a genuinely lower semantic
+atom/law layer.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  constructor
+  · rintro ⟨baseSource, hpreserves, _hselfPreserves, _hselfOverlap,
+      _hselfArrow, _hselfCommon, _hselfPresieveSource, _hselfPresieveLaw,
+      _hroute⟩
+    exact
+      source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        baseSource hpreserves
+  · intro hoverlap
+    exact
+      atomLawOverlap_sourceSectionFreeSkeleton_supportOnlyOverlapEquality_constructs_baseRestrictionSource_and_identityRoute_with_generatedSelectedK_withoutBaseSourceArgument
+        coverGeometry coefficientGeometry skeleton source hoverlap
+
+/--
+Cycle 304 no-escape corollary: if the isolated arrow compatibility law is
+absent, the same-source generated selected-`K` route package is absent as well.
+
+This pins down the current rock face.  Source-section-free atom/law support
+data, generated selected `K`, and the route package cannot bypass the overlap
+restriction law; the next constructive layer must generate that law rather than
+rename it.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hpackage
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    (atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+      coverGeometry coefficientGeometry skeleton source).1 hpackage
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
 end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
 
 namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
