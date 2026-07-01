@@ -16090,6 +16090,90 @@ theorem localInput_localSection
 end GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
 
 /--
+Cycle 293 source-section-free presieve semantic atom/law choices.
+
+This is the part of the Cycle 292 restriction-realized presieve basis that is
+genuinely cover-indexed semantic atom/law input.  It intentionally omits the
+common base `sourceSection`; that section must be produced by the generated
+selected-cover effective-gluing/descent route before the Cycle 292
+restriction-realized basis can be formed.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  atom : regime.cover.Index -> U.Atom
+  atom_traceVisible :
+    forall i : regime.cover.Index,
+      semanticSite.sourceTraceToken (atom i) = true
+  lawIndex : regime.cover.Index -> S.lawUniverse.Index
+  law_required :
+    forall i : regime.cover.Index,
+      S.lawUniverse.Required (lawIndex i)
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+
+/--
+Form the Cycle 292 restriction-realized presieve basis once effective gluing
+has produced the common base section.
+-/
+def withSourceSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+      skeleton where
+  sourceSection := sourceSection
+  atom := choices.atom
+  atom_traceVisible := choices.atom_traceVisible
+  lawIndex := choices.lawIndex
+  law_required := choices.law_required
+
+@[simp]
+theorem withSourceSection_sourceSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    (choices.withSourceSection sourceSection).sourceSection = sourceSection := by
+  rfl
+
+@[simp]
+theorem withSourceSection_localInput_localSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base))
+    (i : regime.cover.Index) :
+    ((choices.withSourceSection sourceSection).localInput i).localSection =
+      Ob.carrier.toPresheaf.map
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+        sourceSection := by
+  rfl
+
+end GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+
+/--
 Cycle 292 positive checkpoint: a restriction-realized presieve basis constructs
 the Cycle 291 pointwise basis, the Cycle 290 presieve source, and the presieve
 section-extension law without accepting a separate pointwise compatibility
@@ -16395,6 +16479,80 @@ theorem presieveSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceS
     skeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
       (skeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
         hpresieve)
+
+/--
+Cycle 293 effective-gluing checkpoint: a presieve-level local-section and
+overlap law produces the common base section needed by the Cycle 292
+restriction-realized presieve basis.
+
+The theorem does not accept `sourceSection`, a source-bearing pointwise basis,
+`c0Equiv`, `c0Carrier`, the old `sourceWithoutC0`, or a selected `K` as an
+argument.  The base section is obtained by the existing generated-cover
+effective-gluing/descent theorem from the visible presieve law; the
+cover-indexed atom/law choices remain visible lower data.
+-/
+theorem presieveSectionExtensionAndOverlapLaw_constructs_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_withoutSourceSectionArgument
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpresieve :
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun pointwiseBasis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+    Exists fun presieveBasis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton =>
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData
+        pointwiseBasis.sourceSection /\
+      presieveBasis.sourceSection = pointwiseBasis.sourceSection /\
+      (forall i : regime.cover.Index,
+        (presieveBasis.localInput i).localSection =
+          Ob.carrier.toPresheaf.map
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+            pointwiseBasis.sourceSection) /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  dsimp
+  have hconstructed :=
+    presieveSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      skeleton hpresieve
+  rcases hconstructed with
+    ⟨gluingData, pointwiseBasis, _hc0, _hc1, _hatom, _hlawIndex,
+      hFor, hDescent, hglobal, _hlocal, _hsource⟩
+  let presieveBasis :=
+    choices.withSourceSection pointwiseBasis.sourceSection
+  exact
+    ⟨gluingData, pointwiseBasis, presieveBasis,
+      hFor,
+      hDescent,
+      hglobal,
+      rfl,
+      (fun i => by
+        simp [presieveBasis,
+          GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis.withSourceSection]),
+      ⟨presieveBasis⟩,
+      ⟨presieveBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis⟩,
+      hpresieve⟩
 
 /--
 Cycle 276 blocker: generated cover membership and zero-simplex arrow
@@ -19968,6 +20126,138 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveRestrictionRealizedSema
     atomLawOverlap_sourceSectionFreeSkeleton_presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPresieveSourceArgument
       coverGeometry coefficientGeometry skeleton
       presieveBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis
+
+/--
+Cycle 293 presieve/effective-gluing generated selected-`K` route.
+
+This lowers the Cycle 292 route input one step further: the route no longer
+accepts a restriction-realized presieve basis carrying a standalone
+`sourceSection`.  It takes cover-indexed semantic atom/law choices and a visible
+presieve local-section/overlap law.  Effective gluing/descent constructs the
+common base section; that section is then used to form the Cycle 292
+restriction-realized basis and run the generated selected-`K` identity route.
+
+The presieve law and cover-indexed atom/law choices remain material lower data,
+so this is still a checkpoint rather than a G-06 completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveEffectiveGluing_constructs_identityRoute_with_generatedSelectedK_withoutSourceSectionArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (choices :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpresieve :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  have hbasis :=
+    skeleton.presieveSectionExtensionAndOverlapLaw_constructs_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_withoutSourceSectionArgument
+      choices hpresieve
+  rcases hbasis with
+    ⟨_gluingData, _pointwiseBasis, presieveBasis,
+      _hFor, _hDescent, _hglobal, _hsourceSection, _hlocal,
+      _hpresieveBasis, _hpointwiseBasis, _hpresieve⟩
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPointwiseCompatibilityArgument
+      coverGeometry coefficientGeometry skeleton presieveBasis
 
 end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
 
