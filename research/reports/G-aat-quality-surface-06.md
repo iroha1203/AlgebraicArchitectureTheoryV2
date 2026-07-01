@@ -103,6 +103,131 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 313 -- support-only reading does not construct base-restriction provenance
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the no-escape form under the Cycle 312 boundary:
+
+- Cycle 312 lowered generated `sourceC0CechZero` to
+  `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`;
+- existing positive routes either supply such a base source first or pass an
+  equivalent overlap/arrow law;
+- therefore the shortest honest obligation is to show that support-only
+  canonical/free atom/law provenance cannot itself be treated as a constructor
+  for the missing base-restriction provenance while the same source lacks
+  `arrowCompatibilityLaw`.
+
+This is blocker evidence only.  It does not construct the missing
+base-restriction/law-reading layer.
+
+### Lean Artifact
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_baseRestrictionSource_constructor_without_arrowCompatibilityLaw`
+  proves that, for the same support-only source, a hypothetical constructor
+  from `AtomLawOverlapCanonicalFreeSupportReading` to
+  `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`
+  contradicts `¬ source.arrowCompatibilityLaw`.
+
+The proof uses the support reading to invoke the hypothetical constructor, then
+uses the existing exact boundary
+`source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation`
+to recover `source.arrowCompatibilityLaw` and contradict `hmissing`.
+
+### Proof-Obligation Delta
+
+Fixed as blocker:
+
+- support-only canonical/free atom/law provenance is not enough to construct a
+  display-preserving base-restriction source for the same support-only source;
+- the proof keeps the source fixed and does not switch to the
+  self-support-only source generated from a supplied base-restriction source;
+- the old external `c0Equiv` / `sourceWithoutC0` route remains closed for this
+  branch.
+
+Still remaining:
+
+- a positive theorem must genuinely construct
+  `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`
+  from lower semantic atom/law input-boundary geometry, or introduce and
+  justify a new base-restriction/law-reading layer;
+- G-06 completion still requires the downstream coefficient realization,
+  residual-boundary, descent/effectivity, cover-refinement, and final
+  `$math-lean-review` gates.
+
+### Material Premise Ledger
+
+- `AtomLawOverlapCanonicalFreeSupportReading`: proof-used as the input to the
+  hypothetical constructor.
+- `source.arrowCompatibilityLaw`: assumed absent only to prove the blocker; not
+  discharged.
+- `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`:
+  not discharged; shown not constructible from support-only reading under
+  `¬ source.arrowCompatibilityLaw`.
+- external `c0Equiv`, old `sourceWithoutC0`, arbitrary selected `K`, residual
+  boundary witness, semantic/additive `H1` zero, descent/effectivity, and
+  global coherence are not introduced.
+
+### Route Integrity Audit
+
+- The theorem quantifies over the same support-only source throughout.
+- No new structure or certificate field stores base-restriction preservation,
+  overlap equality, coefficient equivalence, boundary membership, or global
+  coherence.
+- The proof does not treat a one-way theorem as equivalence; it uses the
+  existing exact boundary to turn the hypothetical base-source existence into
+  `source.arrowCompatibilityLaw`.
+- This cycle must not be counted as a positive discharge.  It only closes the
+  support-only constructor escape route and sharpens the next constructive
+  obligation.
+
+### Validation
+
+Passed:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle313AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean file and Cycle 313 axiom-audit scratch
+  file for `admit`, `sorry`, `unsafe`, and `sorryAx`
+- direct `axiom` scan over the changed Lean file
+- hidden/bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 313 axiom-audit scratch file
+- private/local path scan over the changed Lean/report files and Cycle 313
+  axiom-audit scratch file
+
+The Cycle 313 axiom audit for the new declaration reports only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 audit approved the cycle as `blocker-fixed` with
+`completion_candidate: no`.  It confirmed that `hsupport` is proof-used by the
+hypothetical constructor, no hidden base-source field is introduced, and the
+same support-only source is fixed throughout.
+
+### Next Obligation
+
+Construct the missing base-restriction/law-reading layer from genuine
+canonical/free semantic atom/law input-boundary geometry, or prove a sharper
+obstruction showing that such a layer cannot be generated from the current
+support-only boundary without adding new mathematical structure.
+
 ## Cycle 312 -- sourceC0 Cech-zero is exactly base-restriction preservation
 
 - decision: approve
