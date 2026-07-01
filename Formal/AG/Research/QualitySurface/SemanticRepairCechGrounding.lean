@@ -10256,6 +10256,45 @@ theorem standardAlternatingFaceCombination_map_add
   · simp [h, neg_add_rev, add_comm]
 
 /--
+Cycle 309 degree-`0` eliminator for the generated standard alternating sum.
+
+In degree `0`, the selected alternating combination over the two face
+restrictions is zero exactly when the two selected face terms are equal.  This
+is a theorem about the standard finite-poset Cech operator generated from the
+obstruction-sheaf additive structure; it is not a new field of a Cech complex
+or a certificate attached to a source.
+-/
+theorem standardAlternatingFaceCombination_degreeZero_eq_zero_iff
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) 1)
+    (terms :
+      Fin 2 ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+    standardAlternatingFaceCombination geometry Ob 0 simplex terms = 0 <->
+      terms (0 : Fin 2) = terms (1 : Fin 2) := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+  constructor
+  · intro hsum
+    have hsum' : terms (0 : Fin 2) + -terms (1 : Fin 2) = 0 := by
+      simpa [standardAlternatingFaceCombination] using hsum
+    exact sub_eq_zero.mp (by simpa [sub_eq_add_neg] using hsum')
+  · intro hterm
+    simp [standardAlternatingFaceCombination, Fin.sum_univ_two, hterm]
+
+/--
 Cycle 250 canonical finite-poset Cech additive data.
 
 The zero section and face-combination operator are built from the generated
@@ -10481,6 +10520,53 @@ theorem standardCechDifferential_eq_restrictions
         (fun i =>
           AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i) :=
   rfl
+
+/--
+Cycle 309 standard-differential degree-`0` eliminator.
+
+For the generated standard finite-poset Cech differential, a degree-`0`
+cochain has zero differential on a selected degree-`1` simplex exactly when the
+two selected face restrictions agree on that simplex.
+-/
+theorem standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) 0)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) 1) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+    standardCechDifferential faces 0 cochain simplex = 0 <->
+      AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (1 : Fin 2) := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+  change
+    standardAlternatingFaceCombination geometry Ob 0 simplex
+        (fun i =>
+          AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i) = 0 <->
+      AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (1 : Fin 2)
+  exact
+    standardAlternatingFaceCombination_degreeZero_eq_zero_iff
+      geometry Ob simplex
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i)
 
 /--
 The standard differential sends the standard zero cochain to the standard zero
@@ -23358,6 +23444,76 @@ def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquali
         K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma
 
 /--
+Cycle 309 positive bridge: the generated Cech-zero equation of `sourceC0`
+constructs the selected degree-`1` face equality.
+
+The proof uses the overlap-generated cover-relative Cech complex, unfolds its
+standard finite-poset differential at degree `0`, and applies the degree-`0`
+alternating-sum eliminator.  Thus the first half of the Cycle 308
+common-refinement bridge is no longer a material premise: it is generated from
+`K.d 0 sourceC0 = 0`.  The arbitrary common-refinement factorization remains
+separate.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+      coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero sigma
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let canonicalGeometry :=
+    coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  have hpoint : K.d 0 sourceC0 sigma = 0 := by
+    have h := congrArg (fun cochain => cochain sigma) hcechZero
+    simpa [
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero,
+      K, sourceC0, Ob] using h
+  have hfinite :
+      AAT.AG.Site.FinitePosetCechFaceRestriction C.faces sourceC0 sigma
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction C.faces sourceC0 sigma
+          (1 : Fin 2) := by
+    exact
+      (standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+        (geometry := canonicalGeometry) (Ob := Ob)
+        C.faces sourceC0 sigma).1 (by
+          simpa [
+            K, C, atomLawOverlapCoverRelativeCechComplex,
+            atomLawOverlapSelectedCechComplexAdditiveLaw,
+            atomLawOverlapStandardFinitePosetCechComplex,
+            standardFinitePosetCechComplex,
+            FinitePosetAtomLawSelectedCechComplexAdditiveLaw.toCoverRelativeCechComplex,
+            AAT.AG.Cohomology.CoverRelativeCechComplex.d] using hpoint)
+  simpa [
+    K, C, sourceC0,
+    AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.FinitePosetCechFaceRestriction] using hfinite
+
+/--
 Cycle 308 common-refinement factorization through selected degree-`1` faces.
 
 For every presieve common refinement of two displayed cover arrows, this asks
@@ -23554,6 +23710,91 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_an
     atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
       coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
       hfactor
+
+/--
+Cycle 309 stronger bridge: Cech-zero plus the selected-face factorization
+constructs the bare overlap equality.
+
+Compared with Cycle 308, the selected degree-`1` face equality is no longer an
+input.  It is generated from `sourceC0CechZero` by
+`atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality`.
+The only remaining bridge premise is the genuine common-refinement
+factorization through selected degree-`1` Cech faces.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  let hselectedFace :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality
+      coverGeometry coefficientGeometry skeleton source
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
+      hfactor
+
+/--
+Cycle 309 refinement of the named Cycle 307 bridge: the common-refinement
+factorization through selected degree-`1` faces now constructs the whole
+`sourceC0CommonRefinementFactorizationLaw`.
+
+The law still expects `sourceC0CechZero`, but it no longer expects the selected
+face equality as an independent material premise.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_commonRefinementFactorization_constructs_sourceC0CommonRefinementFactorizationLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+      coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hfactor
 
 /--
 Cycle 308 no-escape theorem: if arrow compatibility is absent and the
