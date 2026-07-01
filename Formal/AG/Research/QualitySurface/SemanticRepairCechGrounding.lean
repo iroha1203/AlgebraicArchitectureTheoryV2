@@ -1,5 +1,9 @@
 import Formal.AG.Cohomology.CechComplex
+import Formal.AG.Cohomology.FinitePosetComparison
 import Formal.AG.Research.QualitySurface.SemanticRepairTrueSheafH1
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.AlgebraicTopology.SimplexCategory.Basic
+import Mathlib.Algebra.Category.Grp.Basic
 
 /-!
 G-06 evidence for the AAT site/sheaf/Cech `H1` grounding theorem.
@@ -92,6 +96,470 @@ def toCoverRelativeCechCover
   bridge.coverRelative
 
 end SemanticRepairCover
+
+/--
+Cycle 238 zero-simplex chart incidence for a cover-relative Cech cover.
+
+This is the exact cover-geometry premise exposed by Cycle 237: every selected
+degree-`0` simplex must come from a displayed cover chart, with the overlap
+object identified with that chart.  The record stores no map to the base beyond
+what can then be generated from `cover.inclusion`, and it stores no residual,
+comparison, boundary, descent, or `H1` conclusion.
+-/
+structure CoverRelativeCechZeroSimplexChartIncidence
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S) where
+  zeroSimplexChart : cover.simplex 0 -> cover.Index
+  zeroSimplexOverlap_eq_chart :
+    forall sigma : cover.simplex 0,
+      cover.overlap 0 sigma = cover.chart (zeroSimplexChart sigma)
+
+namespace CoverRelativeCechZeroSimplexChartIncidence
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+
+/--
+Cycle 238 blocker: the bare `CoverRelativeCechCover` API cannot universally
+construct zero-simplex chart incidence.
+
+If such a constructor worked for every cover-relative Cech cover, then applying
+it to any cover with a selected degree-`0` simplex but empty chart index type
+would produce an element of the empty index type.  Thus Cycle 237's
+`zeroSimplexChart` / `zeroSimplexOverlap_eq_chart` fields are real material
+cover-incidence data, not consequences of the current cover API alone.
+-/
+theorem no_constructor_from_coverRelativeCechCover_without_zeroSimplexChartIncidence
+    (sigma : cover.simplex 0)
+    (hIndex : IsEmpty cover.Index)
+    (zeroSimplexChartIncidenceConstructor :
+      (coverInput : AAT.AG.Cohomology.CoverRelativeCechCover S) ->
+        CoverRelativeCechZeroSimplexChartIncidence coverInput) :
+    False := by
+  exact
+    hIndex.false
+      ((zeroSimplexChartIncidenceConstructor cover).zeroSimplexChart sigma)
+
+/--
+Cycle 238 bridge-level blocker: the current semantic-cover bridge only maps
+semantic cover charts into selected degree-`0` simplices.  Without additional
+incidence data, that direction cannot produce a chart index for each selected
+degree-`0` simplex.
+
+On a bridge whose selected cover-relative target has an empty chart index type,
+the existing `chartSimplex` field still provides a selected degree-`0` simplex
+from any semantic cover chart.  A bridge-only incidence constructor would then
+produce an impossible chart index.  Therefore a future positive route must add
+or construct genuine zero-simplex/chart incidence; it cannot read it off from
+`SemanticRepairCoverRelativeCoverBridge` as currently defined.
+-/
+theorem no_constructor_from_coverBridge_without_zeroSimplexChartIncidence
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {semanticCover : SemanticRepairCover.{u, v, w} site}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (bridge : SemanticRepairCoverRelativeCoverBridge semanticCover S)
+    (chart : semanticCover.CoverChart)
+    (hIndex :
+      IsEmpty (SemanticRepairCover.toCoverRelativeCechCover bridge).Index)
+    (zeroSimplexChartIncidenceConstructor :
+      (bridgeInput : SemanticRepairCoverRelativeCoverBridge semanticCover S) ->
+        CoverRelativeCechZeroSimplexChartIncidence
+          (SemanticRepairCover.toCoverRelativeCechCover bridgeInput)) :
+    False := by
+  let incidence := zeroSimplexChartIncidenceConstructor bridge
+  exact hIndex.false (incidence.zeroSimplexChart (bridge.chartSimplex chart))
+
+end CoverRelativeCechZeroSimplexChartIncidence
+
+/--
+Cycle 239 chart-indexed zero cover geometry.
+
+This is the positive cover-geometry layer demanded by the Cycle 238 blocker:
+degree-`0` selected simplices are the displayed cover chart indices
+themselves.  Higher simplices and their face restrictions remain explicit
+cover-relative Cech geometry.  The structure does not contain a coefficient
+realization, Cech differential law, residual-boundary proof, comparison map,
+descent/effectivity, or `H1` conclusion.
+-/
+structure CoverRelativeCechChartIndexedZeroCover
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A) where
+  base : S.category
+  Index : Type r
+  chart : Index -> S.category
+  inclusion : forall i : Index, chart i ⟶ base
+  positiveSimplex : Nat -> Type r
+  positiveOverlap : forall n : Nat, positiveSimplex n -> S.category
+  faceZero : Fin 2 -> positiveSimplex 0 -> Index
+  faceSucc :
+    forall n : Nat, Fin (n + 3) -> positiveSimplex (n + 1) ->
+      positiveSimplex n
+  faceRestrictionZero :
+    forall (i : Fin 2) (sigma : positiveSimplex 0),
+      positiveOverlap 0 sigma ⟶ chart (faceZero i sigma)
+  faceRestrictionSucc :
+    forall (n : Nat) (i : Fin (n + 3)) (sigma : positiveSimplex (n + 1)),
+      positiveOverlap (n + 1) sigma ⟶ positiveOverlap n (faceSucc n i sigma)
+
+namespace CoverRelativeCechChartIndexedZeroCover
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+
+/--
+Read a chart-indexed zero cover as a general cover-relative Cech cover.
+
+The `0`-simplices and `0`-overlaps are definitionally the cover chart indices
+and chart objects; positive degrees are supplied by the remaining Cech
+geometry.
+-/
+def toCoverRelativeCechCover
+    (charted : CoverRelativeCechChartIndexedZeroCover S) :
+    AAT.AG.Cohomology.CoverRelativeCechCover S where
+  base := charted.base
+  Index := charted.Index
+  chart := charted.chart
+  inclusion := charted.inclusion
+  simplex
+    | 0 => charted.Index
+    | n + 1 => charted.positiveSimplex n
+  overlap
+    | 0, chartIndex => charted.chart chartIndex
+    | n + 1, sigma => charted.positiveOverlap n sigma
+  face
+    | 0, i, sigma => charted.faceZero i sigma
+    | n + 1, i, sigma => charted.faceSucc n i sigma
+  faceRestriction
+    | 0, i, sigma => charted.faceRestrictionZero i sigma
+    | n + 1, i, sigma => charted.faceRestrictionSucc n i sigma
+
+/--
+The generated cover has degree-`0` simplices definitionally equal to chart
+indices.
+-/
+theorem zero_simplex_eq_index
+    (charted : CoverRelativeCechChartIndexedZeroCover S) :
+    charted.toCoverRelativeCechCover.simplex 0 = charted.Index := by
+  rfl
+
+/--
+The generated cover has degree-`0` overlaps definitionally equal to chart
+objects.
+-/
+theorem zero_overlap_eq_chart
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (chartIndex : charted.toCoverRelativeCechCover.simplex 0) :
+    charted.toCoverRelativeCechCover.overlap 0 chartIndex =
+      charted.toCoverRelativeCechCover.chart chartIndex := by
+  rfl
+
+/--
+Cycle 239 positive provenance theorem: chart-indexed zero cover geometry
+constructs the exact zero-simplex chart incidence required by Cycle 237 and
+shown non-derivable from the bare API in Cycle 238.
+-/
+def toZeroSimplexChartIncidence
+    (charted : CoverRelativeCechChartIndexedZeroCover S) :
+    CoverRelativeCechZeroSimplexChartIncidence
+      charted.toCoverRelativeCechCover where
+  zeroSimplexChart := fun chartIndex => chartIndex
+  zeroSimplexOverlap_eq_chart := by
+    intro chartIndex
+    rfl
+
+/--
+The generated incidence sends each selected degree-`0` simplex to itself as a
+chart index.
+-/
+theorem zeroSimplexChart_eq_self
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (chartIndex : charted.toCoverRelativeCechCover.simplex 0) :
+    charted.toZeroSimplexChartIncidence.zeroSimplexChart chartIndex =
+      chartIndex := by
+  rfl
+
+/--
+Cycle 239 positive checkpoint: chart-indexed zero cover geometry constructs
+zero-simplex chart incidence without accepting an external incidence
+certificate.
+-/
+theorem constructs_zeroSimplexChartIncidence
+    (charted : CoverRelativeCechChartIndexedZeroCover S) :
+    Nonempty
+      (CoverRelativeCechZeroSimplexChartIncidence
+        charted.toCoverRelativeCechCover) :=
+  ⟨charted.toZeroSimplexChartIncidence⟩
+
+end CoverRelativeCechChartIndexedZeroCover
+
+/--
+Cycle 240 atom/law selected chart-indexed cover geometry.
+
+This is the cover-provenance layer below Cycle 239.  It starts from an
+admissible AAT coverage family and enough chart-indexed Cech geometry to build
+the Cycle 239 `CoverRelativeCechChartIndexedZeroCover`.  It stores no
+coefficient complex, residual, boundary primitive, comparison equivalence,
+descent/effectivity witness, or `H1` conclusion.
+-/
+structure CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A) where
+  base : S.category
+  family : AAT.AG.Site.AATCoverageFamily S.requirements S.overlap base
+  familyIndexWitness : family.Index
+  Index : Type r
+  chart : Index -> S.category
+  inclusion : forall i : Index, chart i ⟶ base
+  familyChart : family.Index -> Index
+  familyChart_eq :
+    forall i : family.Index,
+      chart (familyChart i) =
+        AAT.AG.Site.ContextCategoryObject.of S.contextPreorder (family.patch i)
+  familyChart_inclusion_eq :
+    forall i : family.Index,
+      eqToHom (familyChart_eq i) ≫ homOfLE (family.inclusion i) =
+        inclusion (familyChart i)
+  positiveSimplex : Nat -> Type r
+  positiveOverlap : forall n : Nat, positiveSimplex n -> S.category
+  faceZero : Fin 2 -> positiveSimplex 0 -> Index
+  faceSucc :
+    forall n : Nat, Fin (n + 3) -> positiveSimplex (n + 1) ->
+      positiveSimplex n
+  faceRestrictionZero :
+    forall (i : Fin 2) (sigma : positiveSimplex 0),
+      positiveOverlap 0 sigma ⟶ chart (faceZero i sigma)
+  faceRestrictionSucc :
+    forall (n : Nat) (i : Fin (n + 3)) (sigma : positiveSimplex (n + 1)),
+      positiveOverlap (n + 1) sigma ⟶ positiveOverlap n (faceSucc n i sigma)
+
+namespace CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+
+/--
+Build the Cycle 239 chart-indexed zero cover from the atom/law selected cover
+geometry.
+-/
+def toChartIndexedZeroCover
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S) :
+    CoverRelativeCechChartIndexedZeroCover S where
+  base := geometry.base
+  Index := geometry.Index
+  chart := geometry.chart
+  inclusion := geometry.inclusion
+  positiveSimplex := geometry.positiveSimplex
+  positiveOverlap := geometry.positiveOverlap
+  faceZero := geometry.faceZero
+  faceSucc := geometry.faceSucc
+  faceRestrictionZero := geometry.faceRestrictionZero
+  faceRestrictionSucc := geometry.faceRestrictionSucc
+
+/--
+The selected atom/law family carried by the geometry is a cover in the
+`AATSite` topology.
+-/
+theorem generatedSelectedCover_mem
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S) :
+    Sieve.generate geometry.family.presieve ∈ S.topology geometry.base := by
+  simpa [selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology] using
+    atomGeneratedCoverage_generates_AATGrothendieckTopology geometry.family
+
+/--
+The accepted atom/law charted geometry is nonvacuous at degree `0`: the
+displayed admissible family witness selects a chart index.
+-/
+theorem chartIndex_nonempty
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S) :
+    Nonempty geometry.toChartIndexedZeroCover.Index :=
+  ⟨geometry.familyChart geometry.familyIndexWitness⟩
+
+/--
+Cycle 240 positive cover-provenance checkpoint: atom/law selected charted
+geometry constructs the Cycle 239 chart-indexed cover, proves the selected
+AAT coverage family is a topology cover, exposes nonvacuity, and generates
+zero-simplex chart incidence.
+
+This is not a coefficient or `H1` result.  It only lowers the cover geometry
+needed by the generated semantic coefficient route.
+-/
+theorem constructs_from_atomLawSelectedCoverGeometry
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S) :
+    Exists fun charted : CoverRelativeCechChartIndexedZeroCover S =>
+      charted.base = geometry.base /\
+      Sieve.generate geometry.family.presieve ∈ S.topology geometry.base /\
+      Nonempty charted.Index /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) := by
+  exact
+    ⟨geometry.toChartIndexedZeroCover,
+      rfl,
+      generatedSelectedCover_mem geometry,
+      chartIndex_nonempty geometry,
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        geometry.toChartIndexedZeroCover⟩
+
+/--
+Cycle 241 finite-poset generated chart-indexed cover geometry.
+
+The positive Cech simplices, overlaps, faces, and face restrictions are read
+from the selected finite-poset Cech complex.  Degree `0` is kept chart-indexed
+by the admissible AAT cover itself, while degree `1+` uses the finite-poset
+nerve.  Thus the Cycle 240 positive geometry fields are no longer chosen
+independently in this route.
+-/
+def ofFinitePosetCechComplex
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index) :
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S where
+  base := regime.base
+  family := regime.cover
+  familyIndexWitness := familyIndexWitness
+  Index := regime.cover.Index
+  chart := fun i =>
+    AAT.AG.Site.ContextCategoryObject.of S.contextPreorder
+      (regime.cover.patch i)
+  inclusion := fun i => homOfLE (regime.cover.inclusion i)
+  familyChart := fun i => i
+  familyChart_eq := by
+    intro i
+    rfl
+  familyChart_inclusion_eq := by
+    intro i
+    rfl
+  positiveSimplex := fun n =>
+    AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)
+  positiveOverlap := fun n sigma =>
+    AAT.AG.Site.FinitePosetCechOverlapObject regime (n + 1) sigma
+  faceZero := fun i sigma =>
+    regime.simplexIndices 0 (C.faces.face 0 sigma i) 0
+  faceSucc := fun n i sigma =>
+    C.faces.face (n + 1) sigma i
+  faceRestrictionZero := by
+    intro i sigma
+    exact
+      homOfLE
+        (S.contextPreorder.trans
+          (C.faces.faceOverlap_le 0 sigma i)
+          (regime.simplexOverlap_le_patch 0 (C.faces.face 0 sigma i) 0))
+  faceRestrictionSucc := by
+    intro n i sigma
+    exact homOfLE (C.faces.faceOverlap_le (n + 1) sigma i)
+
+/--
+The finite-poset generated cover has positive simplices definitionally equal
+to the selected finite-poset nerve simplices in shifted degree.
+-/
+theorem ofFinitePosetCechComplex_positiveSimplex_eq
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (n : Nat) :
+    ((ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness).toChartIndexedZeroCover).positiveSimplex n =
+      AAT.AG.Site.FinitePosetCechSimplex regime (n + 1) := by
+  rfl
+
+/--
+The finite-poset generated cover reads positive overlaps from the selected
+finite-poset overlap objects.
+-/
+theorem ofFinitePosetCechComplex_positiveOverlap_eq
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (n : Nat)
+    (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) :
+    ((ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness).toChartIndexedZeroCover).positiveOverlap
+      n sigma =
+      AAT.AG.Site.FinitePosetCechOverlapObject regime (n + 1) sigma := by
+  rfl
+
+/--
+The generated degree-`1` faces land in the underlying AAT cover index by taking
+the unique chart index of the finite-poset degree-`0` face.
+-/
+theorem ofFinitePosetCechComplex_faceZero_eq
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (i : Fin 2)
+    (sigma : AAT.AG.Site.FinitePosetCechSimplex regime 1) :
+    ((ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness).toChartIndexedZeroCover).faceZero
+      i sigma =
+      regime.simplexIndices 0 (C.faces.face 0 sigma i) 0 := by
+  rfl
+
+/--
+The generated higher faces are exactly the selected finite-poset Cech faces.
+-/
+theorem ofFinitePosetCechComplex_faceSucc_eq
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (n : Nat) (i : Fin (n + 3))
+    (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 2)) :
+    ((ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness).toChartIndexedZeroCover).faceSucc
+      n i sigma =
+      C.faces.face (n + 1) sigma i := by
+  rfl
+
+/--
+Cycle 241 positive checkpoint: a selected finite-poset AAT Cech complex
+constructs the atom/law selected chart-indexed cover geometry and exposes the
+finite-positive Cech provenance used by Cycle 240.
+
+The result still does not construct coefficient groups, differentials,
+residuals, source sections, local atom/law inputs, descent/effectivity, or any
+`H1` conclusion.  It only removes the independently selected positive Cech
+geometry fields from the chart-indexed cover route.
+-/
+theorem constructs_atomLawGeneratedPositiveCechCoverGeometry
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index) :
+    let geometry :=
+      ofFinitePosetCechComplex (S := S) regime C familyIndexWitness
+    let charted := geometry.toChartIndexedZeroCover
+    Sieve.generate regime.cover.presieve ∈ S.topology regime.base /\
+      Nonempty charted.Index /\
+      (forall n : Nat,
+        charted.positiveSimplex n =
+          AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) /\
+      (forall (i : Fin 2)
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime 1),
+        charted.faceZero i sigma =
+          regime.simplexIndices 0 (C.faces.face 0 sigma i) 0) /\
+      (forall (n : Nat) (i : Fin (n + 3))
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 2)),
+        charted.faceSucc n i sigma =
+          C.faces.face (n + 1) sigma i) /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) := by
+  dsimp
+  exact
+    ⟨generatedSelectedCover_mem
+        (ofFinitePosetCechComplex (S := S) regime C familyIndexWitness),
+      chartIndex_nonempty
+        (ofFinitePosetCechComplex (S := S) regime C familyIndexWitness),
+      (fun n => by rfl),
+      (fun i sigma => by rfl),
+      (fun n i sigma => by rfl),
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        ((ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover)⟩
+
+end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
 
 /--
 The G-05 cover nerve's `True` component predicates are justified by typed
@@ -6445,6 +6913,183 @@ abbrev AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEqui
                   (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
 
 /--
+Cycle 228 explicit continuation law demanded by the old residual source.
+
+Once degree-`1`, degree-`2`, and zero-preserving data have been selected, the
+old `sourceWithoutC0` shape still asks for these four face-restriction laws for
+every future degree-`0` additive equivalence.  This is stronger than the
+canonical generated route, which supplies the identity degree-`0` comparison
+because `C0 := surface.K.Cn 0`.
+-/
+abbrev AtomSupportedDegreeZeroEquivFaceLawContinuation
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (c1Equiv :
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      E.coefficient.C1 ≃+ surface.K.Cn 1)
+    (c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2)
+    (c2Equiv_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv E.coefficient.zero2 = 0)
+    (c2Equiv_symm_zero :
+      letI := surface.K.cochainAddCommGroup 2
+      c2Equiv.symm 0 = E.coefficient.zero2)
+    (c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0) : Prop :=
+    (let c0Carrier :=
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv c0Equiv
+     let c1Carrier :=
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv c1Equiv
+     let model :=
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K)
+        c0Carrier c1Carrier c2Equiv
+        c2Equiv_zero c2Equiv_symm_zero
+     let sectionWitness :=
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel
+        model
+     (letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      letI := surface.K.cochainAddCommGroup 1
+      forall primitive : E.coefficient.C0,
+        surface.K.alternatingFaceCombination 0
+            (fun σ i =>
+              surface.K.faceRestrictionTerm 0 i
+                (sectionWitness.c0SectionEquiv primitive) σ) =
+          sectionWitness.c1SectionEquiv (E.coefficient.delta0 primitive)) /\
+     (letI := additive.c0AddCommGroup
+      letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      letI := surface.K.cochainAddCommGroup 1
+      forall primitive : surface.K.Cn 0,
+        E.coefficient.delta0 (sectionWitness.c0SectionEquiv.symm primitive) =
+          sectionWitness.c1SectionEquiv.symm
+            (surface.K.alternatingFaceCombination 0
+              (fun σ i => surface.K.faceRestrictionTerm 0 i primitive σ))) /\
+     (letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      forall cochain : E.coefficient.C1,
+        surface.K.alternatingFaceCombination 1
+            (fun σ i =>
+              surface.K.faceRestrictionTerm 1 i
+                (sectionWitness.c1SectionEquiv cochain) σ) =
+          sectionWitness.c2SectionEquiv (E.coefficient.delta1 cochain)) /\
+     (letI := additive.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      forall cochain : surface.K.Cn 1,
+        E.coefficient.delta1 (sectionWitness.c1SectionEquiv.symm cochain) =
+          sectionWitness.c2SectionEquiv.symm
+            (surface.K.alternatingFaceCombination 1
+              (fun σ i => surface.K.faceRestrictionTerm 1 i cochain σ))))
+
+/--
+Cycle 228 blocker audit: an old residual source contains a uniform
+degree-`0` face-law continuation for every future `c0Equiv`.
+
+This theorem is intentionally not a construction of `sourceWithoutC0`; it
+extracts the hidden strength of such a source.  The canonical generated route
+from Cycle 227 only supplies the identity degree-`0` comparison, so this
+uniform continuation is an additional law unless separately proved.
+-/
+theorem atomSupportedSourceWithoutDegreeZeroEquiv_requires_uniform_degreeZeroFaceLawContinuation
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface) :
+    Exists fun family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+      surface.selectedCover = Sieve.generate family.presieve /\
+      Exists fun c1Equiv :
+        letI := additive.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        E.coefficient.C1 ≃+ surface.K.Cn 1 =>
+      Exists fun c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv E.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = E.coefficient.zero2 =>
+      forall c0Equiv :
+        letI := additive.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        E.coefficient.C0 ≃+ surface.K.Cn 0,
+        AtomSupportedDegreeZeroEquivFaceLawContinuation
+          (additive := additive) surface c1Equiv c2Equiv
+          c2Equiv_zero c2Equiv_symm_zero c0Equiv := by
+  rcases sourceWithoutC0 with
+    ⟨family, hcover_eq, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero, faceLaws⟩
+  exact
+    ⟨family, hcover_eq, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero, faceLaws⟩
+
+/--
+Cycle 228 no-go theorem: a single bad future degree-`0` equivalence for every
+candidate lower package rules out the old residual `sourceWithoutC0`.
+
+The obstruction premise says that after any selected cover witness and
+degree-`1`/degree-`2` package are chosen, some degree-`0` additive equivalence
+breaks the four face-law continuations.  A `sourceWithoutC0` would have to
+supply those continuations for that same equivalence, contradiction.
+
+This fixes the exact extra law missing from the canonical generated route:
+`K.d_eq_alternatingFaceCombination` gives the identity carrier route, but it
+does not make arbitrary degree-`0` equivalences commute with the selected Cech
+face laws.
+-/
+theorem no_atomSupportedSourceWithoutDegreeZeroEquiv_of_degreeZeroFaceLawObstruction
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (hobstruction :
+      forall
+        (family :
+          AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+        (_hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+        (c1Equiv :
+          letI := additive.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          E.coefficient.C1 ≃+ surface.K.Cn 1)
+        (c2Equiv : E.coefficient.C2 ≃ surface.K.Cn 2)
+        (c2Equiv_zero :
+          letI := surface.K.cochainAddCommGroup 2
+          c2Equiv E.coefficient.zero2 = 0)
+        (c2Equiv_symm_zero :
+          letI := surface.K.cochainAddCommGroup 2
+          c2Equiv.symm 0 = E.coefficient.zero2),
+        exists c0Equiv :
+          letI := additive.c0AddCommGroup
+          letI := surface.K.cochainAddCommGroup 0
+          E.coefficient.C0 ≃+ surface.K.Cn 0,
+          ¬ AtomSupportedDegreeZeroEquivFaceLawContinuation
+              (additive := additive) surface c1Equiv c2Equiv
+              c2Equiv_zero c2Equiv_symm_zero c0Equiv) :
+    ¬ AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface := by
+  intro sourceWithoutC0
+  rcases sourceWithoutC0 with
+    ⟨family, hcover_eq, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero, faceLaws⟩
+  rcases
+    hobstruction family hcover_eq c1Equiv c2Equiv
+      c2Equiv_zero c2Equiv_symm_zero with
+    ⟨badC0Equiv, hbadC0Equiv⟩
+  exact hbadC0Equiv (faceLaws badC0Equiv)
+
+/--
 Cycle 214 degree-`0` positive-source checkpoint: the atom-supported ordinary
 degree-wise equivalence and selected face-restriction source already exposes
 the exact degree-`0` carrier comparison required by the section-family route.
@@ -6523,6 +7168,74 @@ theorem no_constructor_from_atomSupportedDegreewiseEquivAndFaceRestrictionSource
   have hzero_one : (0 : ZMod 2) = 1 := by
     rw [← hx0, ← hx1]
   exact (by norm_num : (0 : ZMod 2) ≠ 1) hzero_one
+
+/--
+Cycle 216 positive checkpoint: the Cycle 215 residual finite source is exactly
+ready to accept a genuine degree-`0` additive equivalence.
+
+The residual source is intentionally stronger than a plain source-with-one-field
+deleted: it carries the selected face-restriction continuations for every future
+degree-`0` equivalence.  Therefore, once a non-target-fitting
+`E.coefficient.C0 ≃+ surface.K.Cn 0` is constructed from legitimate lower
+geometry, no additional face-law premise is needed to reconstruct the ordinary
+atom-supported finite source.
+
+This theorem does not construct the degree-`0` equivalence or the residual
+source itself.  It only fixes the plug-in boundary that the next positive
+provenance theorem must hit.
+-/
+theorem atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroAdditiveEquiv_constructs_source
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0) :
+    AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (additive := additive) surface := by
+  rcases sourceWithoutC0 with
+    ⟨family, hcover_eq, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero, faceLaws⟩
+  rcases faceLaws c0Equiv with
+    ⟨d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+  exact
+    ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv,
+      c2Equiv_zero, c2Equiv_symm_zero,
+      d0_face_to, d0_face_from, d1_face_to, d1_face_from⟩
+
+/--
+Cycle 217 positive checkpoint: the Cycle 216 plug-in boundary can be lowered
+from a bare degree-`0` additive equivalence to the existing carrier-specific
+comparison datum.
+
+The premise is still material.  This theorem only records that the exact
+remaining positive source is the transparent map/inverse/additivity package
+`CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)`;
+it does not construct that package from semantic cover data, selected cover
+membership, descent, semantic `H1` zero, or a certificate field.
+-/
+theorem atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroCarrierComparisonData_constructs_source
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (c0Carrier :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)) :
+    AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (additive := additive) surface := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  exact
+    atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroAdditiveEquiv_constructs_source
+      (additive := additive) surface sourceWithoutC0 c0Carrier.toAddEquiv
 
 /--
 Cycle 120 positive checkpoint: the ordinary degree-wise equivalence and
@@ -6652,6 +7365,12587 @@ theorem atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_grounded
       hcycle120.2.2.1,
       realization,
       realization.grounded_package_of_cochain_realization⟩
+
+/--
+Cycle 216 route checkpoint: once the residual finite source and a genuine
+degree-`0` additive equivalence are supplied, the already proved G-06 machinery
+reaches the grounded cover-relative comparison package.
+
+The theorem keeps both inputs visible.  In particular, it does not treat
+`sourceWithoutC0` or `c0Equiv` as discharged lower provenance, and it does not
+introduce a selected `K`, coefficient carrier, structure field, or certificate
+field.
+-/
+theorem atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroAdditiveEquiv_constructs_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (c0Equiv :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0) :
+    AtomSupportedSelectedLowerSource (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization additive surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  let source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface :=
+    atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroAdditiveEquiv_constructs_source
+      (additive := additive) surface sourceWithoutC0 c0Equiv
+  exact
+    atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage
+      (additive := additive) (surface := surface) source
+
+/--
+Cycle 217 route checkpoint: a residual finite source plus the transparent
+degree-`0` carrier comparison datum reaches the same grounded comparison
+package fixed in Cycle 216.
+
+This keeps the remaining source honest: the theorem proof-uses
+`c0Carrier.toAddEquiv`, so the exact lower object still to construct is the
+carrier-specific comparison data between semantic primitives and selected
+degree-`0` cover-relative cochains.  No selected `K`, coefficient carrier,
+structure field, conclusion-side descent/effective-gluing data, or semantic
+zero result is smuggled into the proof.
+-/
+theorem atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroCarrierComparisonData_constructs_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (c0Carrier :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0)) :
+    AtomSupportedSelectedLowerSource (additive := additive) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (additive := additive) (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization additive surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  letI := additive.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  let source :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (additive := additive) surface :=
+    atomSupportedSourceWithoutDegreeZeroEquiv_and_degreeZeroCarrierComparisonData_constructs_source
+      (additive := additive) surface sourceWithoutC0 c0Carrier
+  exact
+    atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage
+      (additive := additive) (surface := surface) source
+
+/--
+Cycle 217 blocker: adding boundary-relation data, the definitional
+degree-`0` cover-relative cochain surface, and the Cycle 216 residual finite
+source still does not construct the missing degree-`0` additive equivalence.
+
+The hypothetical constructor may inspect the current G-06 surface, the
+true-sheaf boundary-relation additive pointer, the fact that `surface.K.Cn 0`
+is the general cover-relative `C^0` section family, and the residual
+atom-supported source with every component except degree `0`.  If those inputs
+could manufacture `E.coefficient.C0 ≃+ surface.K.Cn 0`, the finite
+`PUnit` / `ZMod 2` boundary would again force an additive equivalence between
+`PUnit` and `ZMod 2`.
+
+Thus Cycle 216's plug-in boundary cannot be closed by merely recombining the
+currently exposed semantic boundary data and the unfolded `C^0` section-family
+surface.  A genuine canonical/free/input-boundary theorem constructing the
+degree-`0` carrier comparison remains required.
+-/
+theorem no_constructor_from_boundaryRelation_degreeZeroCochain_and_atomSupportedSourceWithoutC0_without_degreeZeroAdditiveEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0SourceEquiv :
+      letI := additive.c0AddCommGroup
+      E.coefficient.C0 ≃+ PUnit)
+    (c0TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 0
+      surface.K.Cn 0 ≃+ ZMod 2)
+    (sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface)
+    (boundaryDegreeZeroResidualConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      surfaceInput.K.Cn 0 =
+        AAT.AG.Cohomology.CoverRelativeCechCochain
+          (SemanticRepairCover.toCoverRelativeCechCover
+            surfaceInput.coverBridge) Ob 0 ->
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surfaceInput ->
+      letI := additive.c0AddCommGroup
+      letI := surfaceInput.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surfaceInput.K.Cn 0) :
+    False := by
+  let hdegreeZero :=
+    SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily
+      (surface := surface)
+  let degreeZeroEquivConstructor :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface ->
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      E.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    fun sourceInput =>
+      boundaryDegreeZeroResidualConstructor
+        surface boundaryData hdegreeZero sourceInput
+  exact
+    no_constructor_from_atomSupportedDegreewiseEquivAndFaceRestrictionSource_without_degreeZeroAdditiveEquiv
+      (additive := additive) surface c0SourceEquiv c0TargetEquiv
+      sourceWithoutC0 degreeZeroEquivConstructor
+
+/--
+Cycle 218 blocker: even after supplying the degree-`0` carrier comparison,
+boundary-relation data plus the unfolded degree-`0` cover-relative cochain
+surface still does not construct the Cycle 216 residual finite source.
+
+This is the residual-source side of the Cycle 217 audit.  The hypothetical
+constructor may inspect `boundaryData`, the definitional `C^0` section-family
+surface, and the visible `c0Carrier`.  If it could return
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`,
+then destructing that residual source would expose a degree-`1` additive
+equivalence.  The finite `PUnit` / `ZMod 2` degree-`1` boundary rules this out.
+
+Thus a future proof cannot treat the residual source as automatically available
+once the degree-`0` comparison is supplied; the residual source itself still
+needs genuine lower provenance.
+-/
+theorem no_constructor_from_boundaryRelation_degreeZeroCochain_and_degreeZeroCarrierComparison_without_atomSupportedSourceWithoutC0
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (boundaryData :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom)
+    (c0Carrier :
+      letI := additive.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      CarrierSpecificAdditiveComparisonData E.coefficient.C0 (surface.K.Cn 0))
+    (c1SourceEquiv :
+      letI := additive.c1AddCommGroup
+      E.coefficient.C1 ≃+ PUnit)
+    (c1TargetEquiv :
+      letI := surface.K.cochainAddCommGroup 1
+      surface.K.Cn 1 ≃+ ZMod 2)
+    (boundaryDegreeZeroCarrierResidualSourceConstructor :
+      (surfaceInput :
+        SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+          (semanticCover := semanticCover) (S := S) (Ob := Ob)) ->
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} Atom ->
+      surfaceInput.K.Cn 0 =
+        AAT.AG.Cohomology.CoverRelativeCechCochain
+          (SemanticRepairCover.toCoverRelativeCechCover
+            surfaceInput.coverBridge) Ob 0 ->
+      (letI := additive.c0AddCommGroup
+       letI := surfaceInput.K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData E.coefficient.C0
+        (surfaceInput.K.Cn 0)) ->
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surfaceInput) :
+    False := by
+  let hdegreeZero :=
+    SemanticRepairCarrierSpecificComparisonProvenance.currentG06InputSurface_degreeZeroCochain_is_coverRelativeSectionFamily
+      (surface := surface)
+  let sourceWithoutC0 :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv
+        (additive := additive) surface :=
+    boundaryDegreeZeroCarrierResidualSourceConstructor
+      surface boundaryData hdegreeZero c0Carrier
+  rcases sourceWithoutC0 with
+    ⟨_family, _hcover_eq, c1Equiv, _c2Equiv,
+      _c2Equiv_zero, _c2Equiv_symm_zero, _faceLaws⟩
+  exact
+    finiteTestBoundary_blocks_degreeOneAdditiveEquiv
+      (additive := additive) (K := surface.K)
+      c1SourceEquiv c1TargetEquiv c1Equiv
+
+/--
+Cycle 219 generated coefficient layer: a semantic residual coefficient surface
+whose carrier degrees and differentials are generated directly by a selected
+cover-relative Cech complex.
+
+This is the "front-loaded" route for G-06.  The semantic coefficient layer does
+not first choose unrelated carriers and then ask for comparison data; it takes
+`C0`, `C1`, `C2`, `delta0`, and `delta1` from the cover-relative complex
+itself.  The selected residual remains explicit lower data, together with its
+ordinary Cech cocycle proof.  No quotient exactness, global semantic repair
+coherence, effective descent, refinement naturality, or full sheaf cohomology
+comparison is stored here.
+-/
+structure CoverRelativeCechGeneratedSemanticCoefficient
+    {Atom : Type u}
+    (site : SemanticRepairSite.{u, v} Atom)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  residual : K.Cn 1
+  residual_cocycle :
+    letI := K.cochainAddCommGroup 2
+    K.d 1 residual = 0
+
+namespace CoverRelativeCechGeneratedSemanticCoefficient
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Read a generated cover-relative Cech coefficient layer as a semantic residual
+coefficient sheaf.
+
+The differential laws are not certificate fields: `zero1_cocycle` is
+`map_zero` for `K.d 1`, and `delta1_delta0_zero` is exactly the selected Cech
+law `K.d_comp_d_eq_zero`.
+-/
+def toCoefficient
+    (generated : CoverRelativeCechGeneratedSemanticCoefficient site K) :
+    SemanticResidualCoefficientSheaf.{u, v, r, r, r} site where
+  C0 := K.Cn 0
+  C1 := K.Cn 1
+  C2 := K.Cn 2
+  c0Order := generated.c0Order
+  c1Order := generated.c1Order
+  zero1 := by
+    letI := K.cochainAddCommGroup 1
+    exact 0
+  zero2 := by
+    letI := K.cochainAddCommGroup 2
+    exact 0
+  delta0 := K.d 0
+  delta1 := K.d 1
+  zero1_cocycle := by
+    letI := K.cochainAddCommGroup 1
+    letI := K.cochainAddCommGroup 2
+    exact (K.d 1).map_zero
+  delta1_delta0_zero := by
+    intro primitive
+    simpa using K.d_comp_d_eq_zero 0 primitive
+  residual := generated.residual
+  residual_cocycle := generated.residual_cocycle
+
+/--
+Cycle 277 coefficient checkpoint: the generated coefficient layer exposes the
+ordinary Cech cocycle input without any comparison package.
+
+The theorem unfolds only the generated data: `C0/C1/C2` are the selected Cech
+cochains, `delta0/delta1` are `K.d 0/1`, the residual is the selected generated
+degree-`1` cochain, and boundaries are cocycles by `K.d_comp_d_eq_zero`.
+It does not assert that the residual is a boundary or that its `H1` class is
+zero.
+-/
+theorem constructs_additiveCechCocycleInputLayer
+    (generated : CoverRelativeCechGeneratedSemanticCoefficient site K) :
+    (forall primitive : K.Cn 0,
+      generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      generated.toCoefficient.residual = generated.residual /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      (forall primitive : K.Cn 0,
+        letI := K.cochainAddCommGroup 2
+        K.d 1 (K.d 0 primitive) = 0) := by
+  refine ⟨(fun _ => rfl), (fun _ => rfl), rfl, generated.residual_cocycle, ?_⟩
+  intro primitive
+  exact K.d_comp_d_eq_zero 0 primitive
+
+end CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 223 boundary-generated coefficient layer.
+
+This is a positive sufficient input-boundary shape, not a theorem that every
+selected residual cocycle is a boundary.  The degree-`1` residual is generated
+from the degree-`0` input primitive by the selected Cech differential
+`K.d 0`, and its cocycle law is exactly `K.d_comp_d_eq_zero`.
+-/
+structure CoverRelativeCechBoundaryGeneratedSemanticCoefficient
+    {Atom : Type u}
+    (site : SemanticRepairSite.{u, v} Atom)
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  primitive : K.Cn 0
+
+namespace CoverRelativeCechBoundaryGeneratedSemanticCoefficient
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Read a boundary-generated coefficient layer as the Cycle 219 generated
+coefficient layer.
+
+The selected residual is definitionally `K.d 0 primitive`; the cocycle proof is
+generated by the Cech differential-square law.
+-/
+def toGeneratedCoefficient
+    (boundary :
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient site K) :
+    CoverRelativeCechGeneratedSemanticCoefficient site K where
+  c0Order := boundary.c0Order
+  c1Order := boundary.c1Order
+  residual := K.d 0 boundary.primitive
+  residual_cocycle := by
+    letI := K.cochainAddCommGroup 2
+    exact K.d_comp_d_eq_zero 0 boundary.primitive
+
+end CoverRelativeCechBoundaryGeneratedSemanticCoefficient
+
+/--
+Cycle 219 generated semantic H1 envelope.
+
+This wraps the generated coefficient layer in the existing semantic H1 envelope
+shape while keeping the quotient relation and exactness witnesses visible.
+Thus Cycle 219 discharges the carrier/differential comparison source, not the
+semantic H1 exactness or global repair conclusion.
+-/
+structure CoverRelativeCechGeneratedSemanticEnvelope
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (generated : CoverRelativeCechGeneratedSemanticCoefficient site K) where
+  primitiveSemanticallyClosed : generated.toCoefficient.C0 -> Prop
+  torsorObstruction : Bool
+  higherObstruction : Bool
+  stackObstruction : Bool
+  finiteShadow : generated.toCoefficient.C1 -> Bool
+  finiteShadow_boundary_zero :
+    forall primitive,
+      finiteShadow (generated.toCoefficient.delta0 primitive) = false
+  cohomologous :
+    generated.toCoefficient.C1 -> generated.toCoefficient.C1 -> Prop
+  cohomologous_refl :
+    forall cochain, cohomologous cochain cochain
+  cohomologous_symm :
+    forall {left right}, cohomologous left right -> cohomologous right left
+  cohomologous_trans :
+    forall {left middle right},
+      cohomologous left middle ->
+        cohomologous middle right ->
+          cohomologous left right
+  boundary_cohomologous_zero :
+    forall primitive,
+      cohomologous (generated.toCoefficient.delta0 primitive)
+        generated.toCoefficient.zero1
+  exact_boundary_of_cohomologous_zero :
+    forall cochain,
+      generated.toCoefficient.delta1 cochain =
+        generated.toCoefficient.zero2 ->
+        cohomologous cochain generated.toCoefficient.zero1 ->
+          exists primitive, generated.toCoefficient.delta0 primitive = cochain
+
+namespace CoverRelativeCechGeneratedSemanticEnvelope
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+variable {generated : CoverRelativeCechGeneratedSemanticCoefficient site K}
+
+/-- Read the generated coefficient layer through the existing semantic H1 envelope API. -/
+def toEnvelope
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    SemanticRepairSheafH1Envelope.{u, v, r, r, r} Atom where
+  site := site
+  coefficient := generated.toCoefficient
+  primitiveSemanticallyClosed := envelope.primitiveSemanticallyClosed
+  torsorObstruction := envelope.torsorObstruction
+  higherObstruction := envelope.higherObstruction
+  stackObstruction := envelope.stackObstruction
+  finiteShadow := envelope.finiteShadow
+  finiteShadow_boundary_zero := envelope.finiteShadow_boundary_zero
+  cohomologous := envelope.cohomologous
+  cohomologous_refl := envelope.cohomologous_refl
+  cohomologous_symm := envelope.cohomologous_symm
+  cohomologous_trans := envelope.cohomologous_trans
+  boundary_cohomologous_zero := envelope.boundary_cohomologous_zero
+  exact_boundary_of_cohomologous_zero :=
+    envelope.exact_boundary_of_cohomologous_zero
+
+/--
+The generated envelope has the additive Cech data required by the semantic
+`Z1 / B1` surface.
+
+The additive laws are exactly the selected Cech differential's additive
+homomorphism laws.  No `H1` zero or boundary primitive is introduced.
+-/
+def toAdditiveCechH1Data
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    SemanticRepairAdditiveCechH1Data envelope.toEnvelope where
+  c0AddCommGroup := K.cochainAddCommGroup 0
+  c1AddCommGroup := K.cochainAddCommGroup 1
+  zero1_eq_zero := by
+    letI := K.cochainAddCommGroup 1
+    change (0 : K.Cn 1) = 0
+    rfl
+  delta0_zero := by
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    exact (K.d 0).map_zero
+  delta0_add := by
+    intro left right
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    exact (K.d 0).map_add left right
+  delta0_neg := by
+    intro primitive
+    letI := K.cochainAddCommGroup 0
+    letI := K.cochainAddCommGroup 1
+    exact (K.d 0).map_neg primitive
+
+/--
+Cycle 277 additive cocycle-input checkpoint for the generated route.
+
+The generated envelope constructs the existing additive `Z1 / B1` input layer
+with no external `c0Equiv`, old `sourceWithoutC0`, or arbitrary comparison
+package.  The selected residual is a visible additive cocycle, every selected
+boundary is a visible cocycle, and additive `H1` zero is exactly the remaining
+boundary-primitive law `exists primitive, K.d 0 primitive = generated.residual`.
+That primitive is not constructed here.
+-/
+theorem constructs_additiveCechCocycleInputLayer
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain = K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : K.Cn 1)) /\
+      (forall primitive : K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope (K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : K.Cn 0, K.d 0 primitive = generated.residual) := by
+  have hresidual :
+      SemanticRepairSheafH1.CechZ1 envelope.toEnvelope generated.residual := by
+    simpa [
+      SemanticRepairSheafH1.CechZ1, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient] using
+        generated.residual_cocycle
+  have hzero :
+      letI := K.cochainAddCommGroup 1
+      SemanticRepairSheafH1.CechZ1 envelope.toEnvelope (0 : K.Cn 1) := by
+    letI := K.cochainAddCommGroup 1
+    letI := K.cochainAddCommGroup 2
+    change K.d 1 (0 : K.Cn 1) = (0 : K.Cn 2)
+    exact (K.d 1).map_zero
+  have hboundaryCocycle :
+      forall primitive : K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (K.d 0 primitive) := by
+    intro primitive
+    simpa [
+      SemanticRepairSheafH1.CechZ1, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient] using
+        K.d_comp_d_eq_zero 0 primitive
+  have hzeroIff :
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : K.Cn 0, K.d 0 primitive = generated.residual := by
+    simpa [
+      SemanticRepairSheafH1.CechB1, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient] using
+        (semanticRepairAdditiveH1Zero_iff_boundary
+          envelope.toAdditiveCechH1Data)
+  refine
+    ⟨⟨envelope.toAdditiveCechH1Data⟩,
+      (fun _ => rfl),
+      (fun _ => rfl),
+      ⟨⟨generated.residual, hresidual⟩, rfl⟩,
+      ?_,
+      hboundaryCocycle,
+      hzeroIff⟩
+  letI := K.cochainAddCommGroup 1
+  exact ⟨⟨(0 : K.Cn 1), hzero⟩, rfl⟩
+
+/--
+The generated envelope directly realizes its semantic cochains in the selected
+cover-relative Cech complex by identity maps in degrees `0`, `1`, and `2`.
+
+This is the front-loaded coefficient route: the semantic carriers are
+definitionally the carriers of `K`, and the differential compatibility is
+definitionally the selected Cech differential.  No `c0Equiv`,
+`sourceWithoutC0`, quotient comparison, residual boundary, `H1` zero, or
+descent/effectivity conclusion is supplied as a field.
+-/
+def toCochainRealization
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    SemanticRepairCoverRelativeCochainRealization
+      envelope.toAdditiveCechH1Data K where
+  c0Equiv := by
+    letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact AddEquiv.refl (K.Cn 0)
+  c1Equiv := by
+    letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+    letI := K.cochainAddCommGroup 1
+    exact AddEquiv.refl (K.Cn 1)
+  c2Equiv := Equiv.refl (K.Cn 2)
+  c2Equiv_zero := by
+    letI := K.cochainAddCommGroup 2
+    rfl
+  c2Equiv_symm_zero := by
+    letI := K.cochainAddCommGroup 2
+    rfl
+  d0_to := by
+    intro primitive
+    rfl
+  d0_from := by
+    intro primitive
+    rfl
+  d1_to := by
+    intro cochain
+    rfl
+  d1_from := by
+    intro cochain
+    rfl
+
+/--
+The degree-`0` additive carrier comparison in the generated route is the
+identity map on `K.Cn 0`.
+-/
+theorem toCochainRealization_c0Equiv_apply
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated)
+    (primitive : K.Cn 0) :
+    envelope.toCochainRealization.c0Equiv primitive = primitive := by
+  rfl
+
+/--
+The inverse degree-`0` additive carrier comparison in the generated route is
+also the identity map on `K.Cn 0`.
+-/
+theorem toCochainRealization_c0Equiv_symm_apply
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated)
+    (primitive : K.Cn 0) :
+    letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    envelope.toCochainRealization.c0Equiv.symm primitive = primitive := by
+  letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+  letI := K.cochainAddCommGroup 0
+  rfl
+
+/--
+Cycle 286 identity-carrier checkpoint: the generated semantic coefficient
+layer constructs the degree-`0` carrier comparison and `c0Equiv` by identity.
+
+This is the narrow front-loaded coefficient result.  Since
+`generated.toCoefficient.C0` is definitionally `surface.K.Cn 0`, the
+carrier-specific comparison and both directions of the cochain realization's
+degree-`0` equivalence are identity maps.  No external `c0Equiv`,
+`c0Carrier`, old `sourceWithoutC0`, residual-boundary witness, quotient
+comparison, descent/effectivity, or global coherence conclusion is supplied.
+-/
+theorem generatedSemanticCoefficient_constructs_identityC0Carrier_and_c0Equiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Nonempty
+      (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData
+        envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) := by
+  refine ⟨?_, ?_, ?_⟩
+  · letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    exact
+      ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv
+        envelope.toCochainRealization.c0Equiv⟩
+  · intro primitive
+    exact toCochainRealization_c0Equiv_apply envelope primitive
+  · intro primitive
+    exact toCochainRealization_c0Equiv_symm_apply envelope primitive
+
+/--
+The generated envelope reaches the selected cover-relative comparison package
+through the identity cochain realization, without any external comparison
+equivalence.
+-/
+theorem constructs_groundedComparisonPackage_from_identityCochainRealization
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+        envelope.toCochainRealization.toH1Comparison) :=
+  envelope.toCochainRealization.grounded_package_of_cochain_realization
+
+/--
+The generated envelope supplies the degree-`0` carrier comparison by
+definition: the semantic primitive carrier is the selected cover-relative
+`C^0` cochain carrier.
+-/
+def constructs_degreeZeroCarrierComparisonData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    let Egen := envelope.toEnvelope
+    let additiveGen := envelope.toAdditiveCechH1Data
+    letI := additiveGen.c0AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    CarrierSpecificAdditiveComparisonData Egen.coefficient.C0
+      (surface.K.Cn 0) := by
+  letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+  letI := surface.K.cochainAddCommGroup 0
+  exact
+    CarrierSpecificAdditiveComparisonData.ofAddEquiv
+      ({ toFun := fun primitive => primitive
+         invFun := fun primitive => primitive
+         left_inv := by intro primitive; rfl
+         right_inv := by intro primitive; rfl
+         map_add' := by intro left right; rfl } :
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toEnvelope.coefficient.C0 ≃+ surface.K.Cn 0)
+
+/--
+The generated envelope supplies the degree-`1` carrier comparison by
+definition: semantic residual cochains are the selected cover-relative `C^1`
+cochains.
+-/
+def constructs_degreeOneCarrierComparisonData
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    let Egen := envelope.toEnvelope
+    let additiveGen := envelope.toAdditiveCechH1Data
+    letI := additiveGen.c1AddCommGroup
+    letI := surface.K.cochainAddCommGroup 1
+    CarrierSpecificAdditiveComparisonData Egen.coefficient.C1
+      (surface.K.Cn 1) := by
+  letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+  letI := surface.K.cochainAddCommGroup 1
+  exact
+    CarrierSpecificAdditiveComparisonData.ofAddEquiv
+      ({ toFun := fun cochain => cochain
+         invFun := fun cochain => cochain
+         left_inv := by intro cochain; rfl
+         right_inv := by intro cochain; rfl
+         map_add' := by intro left right; rfl } :
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toEnvelope.coefficient.C1 ≃+ surface.K.Cn 1)
+
+/--
+Cycle 219 positive checkpoint: a generated semantic envelope constructs the
+full atom-supported degree-wise equivalence and face-restriction source.
+
+The proof uses identity carrier comparisons because `C0`, `C1`, and `C2` were
+generated from `surface.K` at the coefficient level.  The four face laws are
+the selected Cech theorem `K.d_eq_alternatingFaceCombination`.  This theorem
+therefore avoids the Cycle 216/218 residual-source shape, which asked for laws
+uniformly over an arbitrary degree-`0` equivalence.
+-/
+theorem constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (E := envelope.toEnvelope)
+      (additive := envelope.toAdditiveCechH1Data)
+      surface := by
+  let c0Equiv :
+      letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      envelope.toEnvelope.coefficient.C0 ≃+ surface.K.Cn 0 :=
+    by
+      letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+      letI := surface.K.cochainAddCommGroup 0
+      exact
+        { toFun := fun primitive => primitive
+          invFun := fun primitive => primitive
+          left_inv := by intro primitive; rfl
+          right_inv := by intro primitive; rfl
+          map_add' := by intro left right; rfl }
+  let c1Equiv :
+      letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      envelope.toEnvelope.coefficient.C1 ≃+ surface.K.Cn 1 :=
+    by
+      letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+      letI := surface.K.cochainAddCommGroup 1
+      exact
+        { toFun := fun cochain => cochain
+          invFun := fun cochain => cochain
+          left_inv := by intro cochain; rfl
+          right_inv := by intro cochain; rfl
+          map_add' := by intro left right; rfl }
+  let c2Equiv : envelope.toEnvelope.coefficient.C2 ≃ surface.K.Cn 2 :=
+    { toFun := fun cochain => cochain
+      invFun := fun cochain => cochain
+      left_inv := by intro cochain; rfl
+      right_inv := by intro cochain; rfl }
+  refine ⟨family, hcover_eq, c0Equiv, c1Equiv, c2Equiv, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · letI := surface.K.cochainAddCommGroup 2
+    change (0 : surface.K.Cn 2) = 0
+    rfl
+  · letI := surface.K.cochainAddCommGroup 2
+    change (0 : surface.K.Cn 2) = 0
+    rfl
+  · intro primitive
+    simpa [
+      c0Equiv, c1Equiv, c2Equiv, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 0 primitive).symm
+  · intro primitive
+    simpa [
+      c0Equiv, c1Equiv, c2Equiv, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 0 primitive
+  · intro cochain
+    simpa [
+      c0Equiv, c1Equiv, c2Equiv, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 1 cochain).symm
+  · intro cochain
+    simpa [
+      c0Equiv, c1Equiv, c2Equiv, toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 1 cochain
+
+/--
+Cycle 219 proof-use checkpoint: the generated semantic envelope immediately
+feeds the existing atom-supported source route and reaches the grounded
+cover-relative comparison package.
+
+The result is still not G-06 completion: `generated.residual`, the generated
+envelope's quotient/exactness relation, the selected atom-supported cover
+witness, and the true-sheaf/gluing inputs remain visible where required by the
+surrounding target theorem.
+-/
+theorem constructs_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    AtomSupportedSelectedLowerSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) := by
+  exact
+    atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_groundedComparisonPackage
+      (E := envelope.toEnvelope)
+      (additive := envelope.toAdditiveCechH1Data)
+      (surface := surface)
+      (constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (surface := surface) family hcover_eq generated envelope)
+
+end CoverRelativeCechGeneratedSemanticEnvelope
+
+/--
+Cycle 220 canonical quotient relation for a generated semantic coefficient
+layer.
+
+Two generated degree-`1` semantic cochains are cohomologous exactly when their
+difference is a selected cover-relative Cech boundary.  This is a definition
+from `K.d 0`, not a structure field carrying semantic exactness as an external
+certificate.
+-/
+def coverRelativeCechGeneratedCanonicalCohomologous
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (_generated : CoverRelativeCechGeneratedSemanticCoefficient site K)
+    (left right : K.Cn 1) : Prop :=
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  exists primitive : K.Cn 0, left - right = K.d 0 primitive
+
+/--
+Cycle 220 canonical generated envelope: the semantic H1 quotient relation and
+exactness fields are generated from the selected cover-relative Cech boundary
+relation.
+
+The non-H1 observation fields remain visible.  In particular, this structure
+does not generate a residual, cover witness, semantic closure predicate,
+obstruction booleans, or finite-shadow policy from nothing; it only removes the
+quotient/exactness structure-field escape left by Cycle 219.
+-/
+structure CoverRelativeCechGeneratedCanonicalH1Envelope
+    {Atom : Type u}
+    {site : SemanticRepairSite.{u, v} Atom}
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (generated : CoverRelativeCechGeneratedSemanticCoefficient site K) where
+  primitiveSemanticallyClosed : generated.toCoefficient.C0 -> Prop
+  torsorObstruction : Bool
+  higherObstruction : Bool
+  stackObstruction : Bool
+  finiteShadow : generated.toCoefficient.C1 -> Bool
+  finiteShadow_boundary_zero :
+    forall primitive,
+      finiteShadow (generated.toCoefficient.delta0 primitive) = false
+
+namespace CoverRelativeCechGeneratedCanonicalH1Envelope
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+variable {generated : CoverRelativeCechGeneratedSemanticCoefficient site K}
+
+/--
+Cycle 281 observation-minimal canonical generated envelope.
+
+The quotient relation, exactness laws, additive Cech data, and identity
+cochain realization are still generated by `K.d 0`, `K.d 1`, and the selected
+cover-relative Cech complex through `toGeneratedEnvelope`.  The remaining
+observation fields are deliberately inert defaults.  This constructor is not a
+semantic adequacy theorem for `primitiveSemanticallyClosed`, obstruction
+booleans, or finite-shadow policy; it only removes those non-H1 observation
+fields as theorem arguments for the generated Cech core.
+-/
+def defaultObservationEnvelope
+    (generated : CoverRelativeCechGeneratedSemanticCoefficient site K) :
+    CoverRelativeCechGeneratedCanonicalH1Envelope generated where
+  primitiveSemanticallyClosed := fun _primitive => True
+  torsorObstruction := false
+  higherObstruction := false
+  stackObstruction := false
+  finiteShadow := fun _cochain => false
+  finiteShadow_boundary_zero := by
+    intro primitive
+    rfl
+
+/--
+The canonical generated Cech relation is reflexive.
+
+This is the ordinary boundary witness `0`, using the additive homomorphism law
+for `K.d 0`.
+-/
+theorem canonicalCohomologous_refl
+    (cochain : K.Cn 1) :
+    coverRelativeCechGeneratedCanonicalCohomologous generated cochain cochain := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  refine ⟨0, ?_⟩
+  simp
+
+/-- The canonical generated Cech relation is symmetric. -/
+theorem canonicalCohomologous_symm
+    {left right : K.Cn 1}
+    (h :
+      coverRelativeCechGeneratedCanonicalCohomologous generated left right) :
+    coverRelativeCechGeneratedCanonicalCohomologous generated right left := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  rcases h with ⟨primitive, hprimitive⟩
+  refine ⟨-primitive, ?_⟩
+  have hneg : K.d 0 (-primitive) = -(K.d 0 primitive) :=
+    (K.d 0).map_neg primitive
+  calc
+    right - left = -(left - right) := by abel
+    _ = -(K.d 0 primitive) := by rw [hprimitive]
+    _ = K.d 0 (-primitive) := hneg.symm
+
+/-- The canonical generated Cech relation is transitive. -/
+theorem canonicalCohomologous_trans
+    {left middle right : K.Cn 1}
+    (hleft :
+      coverRelativeCechGeneratedCanonicalCohomologous generated left middle)
+    (hright :
+      coverRelativeCechGeneratedCanonicalCohomologous generated middle right) :
+    coverRelativeCechGeneratedCanonicalCohomologous generated left right := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  rcases hleft with ⟨leftPrimitive, hleftPrimitive⟩
+  rcases hright with ⟨rightPrimitive, hrightPrimitive⟩
+  refine ⟨leftPrimitive + rightPrimitive, ?_⟩
+  calc
+    left - right = (left - middle) + (middle - right) := by abel
+    _ = K.d 0 leftPrimitive + K.d 0 rightPrimitive := by
+      rw [hleftPrimitive, hrightPrimitive]
+    _ = K.d 0 (leftPrimitive + rightPrimitive) := by
+      exact ((K.d 0).map_add leftPrimitive rightPrimitive).symm
+
+/--
+Every generated boundary is canonically cohomologous to zero.
+
+This is the `CechB1 -> zero class` direction generated from `K.d 0`; it is not
+an externally supplied exactness field.
+-/
+theorem canonicalBoundary_cohomologous_zero
+    (primitive : K.Cn 0) :
+    coverRelativeCechGeneratedCanonicalCohomologous generated
+      (K.d 0 primitive)
+      (by
+        letI := K.cochainAddCommGroup 1
+        exact 0) := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  refine ⟨primitive, ?_⟩
+  simp
+
+/--
+The canonical zero-class exactness field is generated by destructing the
+coboundary witness.
+
+The cocycle premise is accepted by the existing envelope API but is not needed
+to recover the boundary primitive from the canonical relation.
+-/
+theorem canonicalExact_boundary_of_cohomologous_zero
+    (cochain : K.Cn 1)
+    (_hcycle :
+      letI := K.cochainAddCommGroup 2
+      K.d 1 cochain = 0)
+    (hzero :
+      coverRelativeCechGeneratedCanonicalCohomologous generated cochain
+        (by
+          letI := K.cochainAddCommGroup 1
+          exact 0)) :
+    exists primitive : K.Cn 0, K.d 0 primitive = cochain := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  rcases hzero with ⟨primitive, hprimitive⟩
+  refine ⟨primitive, ?_⟩
+  simpa using hprimitive.symm
+
+/--
+Read a canonical generated H1 envelope as the Cycle 219 generated envelope.
+
+This is the key Cycle 220 discharge: `cohomologous`, equivalence laws,
+boundary-zero, and zero-class exactness are no longer fields to be supplied by
+the caller; they are generated from the selected Cech boundary map `K.d 0`.
+-/
+def toGeneratedEnvelope
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    CoverRelativeCechGeneratedSemanticEnvelope generated where
+  primitiveSemanticallyClosed := canonical.primitiveSemanticallyClosed
+  torsorObstruction := canonical.torsorObstruction
+  higherObstruction := canonical.higherObstruction
+  stackObstruction := canonical.stackObstruction
+  finiteShadow := canonical.finiteShadow
+  finiteShadow_boundary_zero := canonical.finiteShadow_boundary_zero
+  cohomologous :=
+    fun left right =>
+      coverRelativeCechGeneratedCanonicalCohomologous generated left right
+  cohomologous_refl := by
+    intro cochain
+    exact canonicalCohomologous_refl (generated := generated) cochain
+  cohomologous_symm := by
+    intro left right h
+    exact canonicalCohomologous_symm (generated := generated) h
+  cohomologous_trans := by
+    intro left middle right hleft hright
+    exact canonicalCohomologous_trans (generated := generated) hleft hright
+  boundary_cohomologous_zero := by
+    intro primitive
+    exact canonicalBoundary_cohomologous_zero (generated := generated) primitive
+  exact_boundary_of_cohomologous_zero := by
+    intro cochain hcycle hzero
+    exact canonicalExact_boundary_of_cohomologous_zero
+      (generated := generated) cochain hcycle hzero
+
+/-- Read the canonical generated layer through the existing semantic H1 envelope API. -/
+def toEnvelope
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    SemanticRepairSheafH1Envelope.{u, v, r, r, r} Atom :=
+  canonical.toGeneratedEnvelope.toEnvelope
+
+/-- The canonical generated layer inherits additive Cech H1 data from `K`. -/
+def toAdditiveCechH1Data
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    SemanticRepairAdditiveCechH1Data canonical.toEnvelope :=
+  canonical.toGeneratedEnvelope.toAdditiveCechH1Data
+
+/--
+The canonical generated layer reaches the full atom-supported source through
+the Cycle 219 generated-envelope route.
+-/
+theorem constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (E := canonical.toEnvelope)
+      (additive := canonical.toAdditiveCechH1Data)
+      surface :=
+  CoverRelativeCechGeneratedSemanticEnvelope.constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+    (surface := surface) family hcover_eq generated canonical.toGeneratedEnvelope
+
+/--
+Cycle 227 audit checkpoint: the canonical generated route constructs both the
+degree-`0` carrier comparison and the full atom-supported face-restriction
+source from the same generated Cech coefficient layer.
+
+The first component is the identity additive comparison because the semantic
+degree-`0` carrier is definitionally `surface.K.Cn 0`.  The second component is
+the full source whose face laws are generated by
+`surface.K.d_eq_alternatingFaceCombination`.  No `c0Equiv`,
+`sourceWithoutC0`, residual-boundary witness, semantic `H1` zero, or additive
+`H1` zero is accepted as an input.
+-/
+theorem constructs_identityDegreeZeroCarrierComparisonData_and_atomSupportedSource
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    Nonempty
+      (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+       letI := surface.K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData canonical.toEnvelope.coefficient.C0
+        (surface.K.Cn 0)) /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface := by
+  exact
+    ⟨⟨CoverRelativeCechGeneratedSemanticEnvelope.constructs_degreeZeroCarrierComparisonData
+        (surface := surface) generated canonical.toGeneratedEnvelope⟩,
+      constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (surface := surface) family hcover_eq generated canonical⟩
+
+/--
+Cycle 220 proof-use checkpoint: the canonical generated H1 envelope reaches the
+grounded cover-relative comparison package with quotient/exactness generated
+from `K.d 0`.
+
+Remaining material inputs are now narrower: the selected residual cocycle,
+non-H1 observation fields, and atom-supported cover witness are still visible.
+-/
+theorem constructs_groundedComparisonPackage
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) :=
+  CoverRelativeCechGeneratedSemanticEnvelope.constructs_groundedComparisonPackage
+    (surface := surface) family hcover_eq generated canonical.toGeneratedEnvelope
+
+/--
+Cycle 221 residual boundary predicate for the canonical generated route.
+
+The selected residual has zero class exactly when this visible primitive exists.
+This predicate does not choose the primitive or assert residual vanishing; it
+names the remaining residual-boundary provenance that a later cycle must
+construct from atom/law input-boundary data.
+-/
+def residualBoundary
+    (_canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    Prop :=
+  exists primitive : K.Cn 0, K.d 0 primitive = generated.residual
+
+/--
+For the canonical generated envelope, semantic sheaf-level H1 zero of the
+selected residual is equivalent to the residual being a selected Cech boundary.
+
+This theorem narrows the remaining residual premise to the concrete boundary
+witness `K.d 0 primitive = generated.residual`.  It does not construct that
+primitive.
+-/
+theorem semanticH1Zero_iff_residualBoundary
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    SemanticRepairH1Zero canonical.toEnvelope <-> canonical.residualBoundary := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  constructor
+  · intro hzero
+    rcases hzero.2 with ⟨primitive, hprimitive⟩
+    refine ⟨primitive, ?_⟩
+    simpa [
+      residualBoundary,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toEnvelope,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toGeneratedEnvelope,
+      CoverRelativeCechGeneratedSemanticEnvelope.toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient] using
+        hprimitive.symm
+  · intro hboundary
+    rcases hboundary with ⟨primitive, hprimitive⟩
+    refine ⟨canonical.toEnvelope.coefficient.residual_cocycle, ?_⟩
+    refine ⟨primitive, ?_⟩
+    simp [
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toEnvelope,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toGeneratedEnvelope,
+      CoverRelativeCechGeneratedSemanticEnvelope.toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      hprimitive]
+
+/--
+For the canonical generated envelope, additive `Z1 / B1` H1 zero of the
+selected residual is equivalent to the same concrete residual boundary witness.
+
+This connects the target-strength additive quotient surface to the canonical
+generated residual-boundary premise.
+-/
+theorem additiveH1Zero_iff_residualBoundary
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data <->
+      canonical.residualBoundary := by
+  letI := K.cochainAddCommGroup 0
+  letI := K.cochainAddCommGroup 1
+  constructor
+  · intro hzero
+    have hboundary :
+        CechB1 canonical.toEnvelope
+          canonical.toEnvelope.coefficient.residual :=
+      (semanticRepairAdditiveH1Zero_iff_boundary
+        canonical.toAdditiveCechH1Data).1 hzero
+    rcases hboundary with ⟨primitive, hprimitive⟩
+    refine ⟨primitive, ?_⟩
+    simpa [
+      residualBoundary,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toEnvelope,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toGeneratedEnvelope,
+      CoverRelativeCechGeneratedSemanticEnvelope.toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient] using
+        hprimitive
+  · intro hboundary
+    apply
+      (semanticRepairAdditiveH1Zero_iff_boundary
+        canonical.toAdditiveCechH1Data).2
+    rcases hboundary with ⟨primitive, hprimitive⟩
+    refine ⟨primitive, ?_⟩
+    simp [
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toEnvelope,
+      CoverRelativeCechGeneratedCanonicalH1Envelope.toGeneratedEnvelope,
+      CoverRelativeCechGeneratedSemanticEnvelope.toEnvelope,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      hprimitive]
+
+/--
+Cycle 272 observation-field audit: the non-H1 observation fields of a canonical
+generated envelope do not affect the generated Cech `H1` core.
+
+For two canonical envelopes over the same generated coefficient layer, the
+residual-boundary predicate is the same concrete selected Cech boundary
+predicate, semantic and additive `H1` zero are transported through that same
+predicate, and the identity cochain-realization laws remain definitional.  This
+does not construct or validate the observation fields themselves; it only
+prevents them from being mistaken for hidden provenance for boundary membership
+or the identity generated realization.
+-/
+theorem generatedCechH1Core_independent_of_observationFields
+    (canonicalLeft canonicalRight :
+      CoverRelativeCechGeneratedCanonicalH1Envelope generated) :
+    (canonicalLeft.residualBoundary <-> canonicalRight.residualBoundary) /\
+      (SemanticRepairH1Zero canonicalLeft.toEnvelope <->
+        SemanticRepairH1Zero canonicalRight.toEnvelope) /\
+      (SemanticRepairAdditiveH1Zero canonicalLeft.toAdditiveCechH1Data <->
+        SemanticRepairAdditiveH1Zero canonicalRight.toAdditiveCechH1Data) /\
+      (forall primitive : K.Cn 0,
+        letI := canonicalLeft.toAdditiveCechH1Data.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        canonicalLeft.toGeneratedEnvelope.toCochainRealization.c0Equiv
+          primitive = primitive) /\
+      (forall primitive : K.Cn 0,
+        letI := canonicalRight.toAdditiveCechH1Data.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        canonicalRight.toGeneratedEnvelope.toCochainRealization.c0Equiv
+          primitive = primitive) /\
+      (forall cochain : K.Cn 1,
+        letI := canonicalLeft.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        canonicalLeft.toGeneratedEnvelope.toCochainRealization.c1Equiv
+          cochain = cochain) /\
+      (forall cochain : K.Cn 1,
+        letI := canonicalRight.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        canonicalRight.toGeneratedEnvelope.toCochainRealization.c1Equiv
+          cochain = cochain) /\
+      (forall primitive : K.Cn 0,
+        letI := canonicalLeft.toAdditiveCechH1Data.c0AddCommGroup
+        letI := canonicalLeft.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        K.d 0
+            (canonicalLeft.toGeneratedEnvelope.toCochainRealization.c0Equiv
+              primitive) =
+          canonicalLeft.toGeneratedEnvelope.toCochainRealization.c1Equiv
+            (generated.toCoefficient.delta0 primitive)) /\
+      (forall primitive : K.Cn 0,
+        letI := canonicalRight.toAdditiveCechH1Data.c0AddCommGroup
+        letI := canonicalRight.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        K.d 0
+            (canonicalRight.toGeneratedEnvelope.toCochainRealization.c0Equiv
+              primitive) =
+          canonicalRight.toGeneratedEnvelope.toCochainRealization.c1Equiv
+            (generated.toCoefficient.delta0 primitive)) /\
+      (forall cochain : K.Cn 1,
+        letI := canonicalLeft.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        K.d 1
+            (canonicalLeft.toGeneratedEnvelope.toCochainRealization.c1Equiv
+              cochain) =
+          canonicalLeft.toGeneratedEnvelope.toCochainRealization.c2Equiv
+            (generated.toCoefficient.delta1 cochain)) /\
+      (forall cochain : K.Cn 1,
+        letI := canonicalRight.toAdditiveCechH1Data.c1AddCommGroup
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        K.d 1
+            (canonicalRight.toGeneratedEnvelope.toCochainRealization.c1Equiv
+              cochain) =
+          canonicalRight.toGeneratedEnvelope.toCochainRealization.c2Equiv
+            (generated.toCoefficient.delta1 cochain)) := by
+  refine
+    ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact Iff.rfl
+  · constructor
+    · intro hzero
+      exact
+        (canonicalRight.semanticH1Zero_iff_residualBoundary).2
+          ((canonicalLeft.semanticH1Zero_iff_residualBoundary).1 hzero)
+    · intro hzero
+      exact
+        (canonicalLeft.semanticH1Zero_iff_residualBoundary).2
+          ((canonicalRight.semanticH1Zero_iff_residualBoundary).1 hzero)
+  · constructor
+    · intro hzero
+      exact
+        (canonicalRight.additiveH1Zero_iff_residualBoundary).2
+          ((canonicalLeft.additiveH1Zero_iff_residualBoundary).1 hzero)
+    · intro hzero
+      exact
+        (canonicalLeft.additiveH1Zero_iff_residualBoundary).2
+          ((canonicalRight.additiveH1Zero_iff_residualBoundary).1 hzero)
+  · intro primitive
+    rfl
+  · intro primitive
+    rfl
+  · intro cochain
+    rfl
+  · intro cochain
+    rfl
+  · intro primitive
+    rfl
+  · intro primitive
+    rfl
+  · intro cochain
+    rfl
+  · intro cochain
+    rfl
+
+/--
+Cycle 222 blocker: a selected residual cocycle that is not a selected
+`K.d 0` boundary cannot have zero semantic H1 class.
+
+This records the precise direction missing from `K.d_comp_d_eq_zero`: the Cech
+law proves every boundary is a cocycle, but it does not prove every selected
+cocycle is a boundary.
+-/
+theorem not_semanticH1Zero_of_residual_not_boundary
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated)
+    (hnotBoundary :
+      forall primitive : K.Cn 0, K.d 0 primitive ≠ generated.residual) :
+    ¬ SemanticRepairH1Zero canonical.toEnvelope := by
+  intro hzero
+  rcases (canonical.semanticH1Zero_iff_residualBoundary).1 hzero with
+    ⟨primitive, hprimitive⟩
+  exact hnotBoundary primitive hprimitive
+
+/--
+Cycle 222 blocker: a selected residual cocycle that is not a selected
+`K.d 0` boundary cannot have zero additive `Z1 / B1` H1 class.
+
+Thus the generated Cech layer still requires genuine atom/law/input-boundary
+provenance for `exists primitive, K.d 0 primitive = generated.residual`; the
+residual cocycle law alone is not enough.
+-/
+theorem not_additiveH1Zero_of_residual_not_boundary
+    (canonical : CoverRelativeCechGeneratedCanonicalH1Envelope generated)
+    (hnotBoundary :
+      forall primitive : K.Cn 0, K.d 0 primitive ≠ generated.residual) :
+    ¬ SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  intro hzero
+  rcases (canonical.additiveH1Zero_iff_residualBoundary).1 hzero with
+    ⟨primitive, hprimitive⟩
+  exact hnotBoundary primitive hprimitive
+
+end CoverRelativeCechGeneratedCanonicalH1Envelope
+
+namespace CoverRelativeCechGeneratedSemanticCoefficient
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {regime : AAT.AG.Site.FinitePosetAATSiteRegime S}
+variable {C : AAT.AG.Site.FinitePosetCechComplex regime}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 242 finite-poset selected-complex constructor for the generated semantic
+coefficient layer.
+
+The selected semantic carriers and differentials are generated from
+`D.generalComplex`, the PRD-4 cover-relative complex selected by the
+finite-poset comparison data.  The residual remains visible selected input,
+with its ordinary Cech cocycle law.  This does not generate residual boundary,
+`H1` zero, descent/effectivity, refinement naturality, or a full sheaf
+cohomology comparison.
+-/
+def ofFinitePosetComparisonData
+    (D : AAT.AG.Cohomology.FinitePosetCechComparisonData C Ob)
+    (c0Order : List (D.generalComplex.Cn 0))
+    (c1Order : List (D.generalComplex.Cn 1))
+    (residual : D.generalComplex.Cn 1)
+    (residual_cocycle :
+      letI := D.generalComplex.cochainAddCommGroup 2
+      D.generalComplex.d 1 residual = 0) :
+    CoverRelativeCechGeneratedSemanticCoefficient site D.generalComplex where
+  c0Order := c0Order
+  c1Order := c1Order
+  residual := residual
+  residual_cocycle := residual_cocycle
+
+/--
+Cycle 242 proof-use checkpoint: finite-poset comparison data selects the
+general cover-relative Cech complex used by the generated semantic coefficient
+route.
+
+This theorem removes the arbitrary-`K` route at this checkpoint: `C0`, `C1`,
+`C2`, `delta0`, and `delta1` are generated from `D.generalComplex`, and the
+cochain realization uses identity carrier equivalences.  It is still not a
+completion claim, because the finite-poset comparison data, residual cocycle,
+non-H1 observation fields, residual boundary, descent/effectivity, and
+cover-refinement/full-sheaf boundaries remain visible or out of scope.
+-/
+theorem finitePosetComparisonData_constructs_generatedSemanticCoefficientRoute
+    (D : AAT.AG.Cohomology.FinitePosetCechComparisonData C Ob)
+    (c0Order : List (D.generalComplex.Cn 0))
+    (c1Order : List (D.generalComplex.Cn 1))
+    (residual : D.generalComplex.Cn 1)
+    (residual_cocycle :
+      letI := D.generalComplex.cochainAddCommGroup 2
+      D.generalComplex.d 1 residual = 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofFinitePosetComparisonData
+          (site := site) D c0Order c1Order residual residual_cocycle)) :
+    let generated :=
+      ofFinitePosetComparisonData
+        (site := site) D c0Order c1Order residual residual_cocycle
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall primitive : D.generalComplex.Cn 0,
+      generated.toCoefficient.delta0 primitive =
+        D.generalComplex.d 0 primitive) /\
+      (forall cochain : D.generalComplex.Cn 1,
+        generated.toCoefficient.delta1 cochain =
+          D.generalComplex.d 1 cochain) /\
+      (forall primitive : D.generalComplex.Cn 0,
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : D.generalComplex.Cn 0,
+        letI := canonical.toGeneratedEnvelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := D.generalComplex.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      Nonempty
+        (letI := canonical.toGeneratedEnvelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := D.generalComplex.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toGeneratedEnvelope.toEnvelope.coefficient.C0
+          (D.generalComplex.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data D.generalComplex) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) := by
+  dsimp
+  exact
+    ⟨(fun _ => rfl),
+      (fun _ => rfl),
+      (fun primitive =>
+        CoverRelativeCechGeneratedSemanticEnvelope.toCochainRealization_c0Equiv_apply
+          canonical.toGeneratedEnvelope primitive),
+      (fun primitive =>
+        CoverRelativeCechGeneratedSemanticEnvelope.toCochainRealization_c0Equiv_symm_apply
+          canonical.toGeneratedEnvelope primitive),
+      (by
+        letI := canonical.toGeneratedEnvelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := D.generalComplex.cochainAddCommGroup 0
+        exact
+          ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv
+            canonical.toGeneratedEnvelope.toCochainRealization.c0Equiv⟩),
+      ⟨canonical.toGeneratedEnvelope.toCochainRealization⟩,
+      canonical.toGeneratedEnvelope.constructs_groundedComparisonPackage_from_identityCochainRealization⟩
+
+/--
+Cycle 243 audit checkpoint: finite-poset comparison data exposes additive
+cover-relative cochain structure and comparison maps as material provenance.
+
+This is intentionally an audit theorem, not a construction theorem.  It shows
+which data are still carried by `FinitePosetCechComparisonData` after Cycle 242:
+additive structure on the general cover-relative cochains, maps to and from the
+PRD-2 finite-poset cochains, and compatibility of the selected cover-relative
+differential with the finite-poset differential.
+-/
+theorem finitePosetComparisonData_exposes_materialAdditiveAndDifferentialComparisonFields
+    (D : AAT.AG.Cohomology.FinitePosetCechComparisonData C Ob)
+    (n : Nat) :
+    Nonempty
+        (AddCommGroup
+          (AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n)) /\
+      Nonempty
+        (AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n ->
+          AAT.AG.Site.FinitePosetCechCochain regime n) /\
+      Nonempty
+        (AAT.AG.Site.FinitePosetCechCochain regime n ->
+          AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n) /\
+      (forall c : D.generalComplex.Cn n,
+        D.comparisonTarget.toFinitePosetCochain (n + 1)
+            (D.generalComplex.d n c) =
+          C.differential n
+            (D.comparisonTarget.toFinitePosetCochain n c)) := by
+  exact
+    ⟨⟨D.cochainAddCommGroup n⟩,
+      ⟨D.toFinitePosetCochain n⟩,
+      ⟨D.fromFinitePosetCochain n⟩,
+      fun c =>
+        AAT.AG.Cohomology.FinitePosetCechComparisonData.differential_compatible
+          D n c⟩
+
+/--
+Cycle 243 blocker: a constructor from a finite-poset Čech complex alone cannot
+be treated as provenance for `FinitePosetCechComparisonData` unless the
+cover-relative cochain carriers have already been made nonempty/additive.
+
+The reason is structural: `FinitePosetCechComparisonData` contains an
+`AddCommGroup` for every general cover-relative cochain type.  If a selected
+degree has no cover-relative cochain at all, a universal constructor would
+nevertheless manufacture a zero cochain, contradiction.  A future positive
+route must therefore supply an additive coefficient realization theorem or
+finite witness below `FinitePosetCechComparisonData`; it cannot classify the
+comparison-data record itself as atom/law provenance.
+-/
+theorem no_finitePosetComparisonData_constructor_from_finitePosetCechComplex_without_coverRelativeCochainNonempty
+    (n : Nat)
+    (hNoCochain :
+      IsEmpty
+        (AAT.AG.Cohomology.CoverRelativeCechCochain
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n))
+    (comparisonDataConstructor :
+      (Cinput : AAT.AG.Site.FinitePosetCechComplex regime) ->
+        AAT.AG.Cohomology.FinitePosetCechComparisonData Cinput Ob) :
+    False := by
+  let D := comparisonDataConstructor C
+  letI := D.cochainAddCommGroup n
+  exact
+    hNoCochain.false
+      (0 :
+        AAT.AG.Cohomology.CoverRelativeCechCochain
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n)
+
+/--
+Cycle 244 lower additive coefficient realization.
+
+This is below `FinitePosetCechComparisonData`: it identifies each selected
+finite-poset coefficient section with the obstruction-sheaf section on the same
+AAT context object, and proves that the identification respects restriction
+maps.  It stores no Cech differential, no cohomology comparison map, no
+residual-boundary witness, and no `H1` zero/effectivity conclusion.
+-/
+structure FinitePosetAtomLawAdditiveCoefficientRealization
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) where
+  sectionAddCommGroup :
+    forall W : S.category,
+      AddCommGroup (regime.coefficient.obj (Opposite.op W))
+  sectionAddEquiv :
+    forall W : S.category,
+      letI := sectionAddCommGroup W
+      regime.coefficient.obj (Opposite.op W) ≃+
+        Ob.carrier.toPresheaf.obj (Opposite.op W)
+  restriction_natural :
+    forall {source target : S.category} (f : source ⟶ target)
+      (x : regime.coefficient.obj (Opposite.op target)),
+      letI := sectionAddCommGroup source
+      letI := sectionAddCommGroup target
+      sectionAddEquiv source (regime.coefficient.map f.op x) =
+        Ob.carrier.toPresheaf.map f.op (sectionAddEquiv target x)
+
+namespace FinitePosetAtomLawAdditiveCoefficientRealization
+
+variable {realization :
+  FinitePosetAtomLawAdditiveCoefficientRealization regime Ob}
+
+/--
+The lower section-wise realization makes finite-poset cochains additive
+pointwise, without using `FinitePosetCechComparisonData`.
+-/
+def finitePosetCochainAddCommGroup
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (n : Nat) :
+    AddCommGroup (AAT.AG.Site.FinitePosetCechCochain regime n) := by
+  letI (simplex : AAT.AG.Site.FinitePosetCechSimplex regime n) :
+      AddCommGroup (AAT.AG.Site.FinitePosetCechSection regime n simplex) :=
+    realization.sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex)
+  change
+    AddCommGroup
+      ((simplex : AAT.AG.Site.FinitePosetCechSimplex regime n) ->
+        AAT.AG.Site.FinitePosetCechSection regime n simplex)
+  infer_instance
+
+/--
+The obstruction sheaf already supplies pointwise additive groups, hence the
+cover-relative cochain carrier is additive pointwise.  This constructor is
+below `FinitePosetCechComparisonData` and does not use its `cochainAddCommGroup`
+field.
+-/
+def coverRelativeCochainAddCommGroup
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat) :
+    AddCommGroup
+      (AAT.AG.Cohomology.CoverRelativeCechCochain
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n) := by
+  letI (simplex :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex n) :
+      AddCommGroup
+        (Ob.carrier.toPresheaf.obj
+          (Opposite.op
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap
+              n simplex))) :=
+  Ob.addCommGroup
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap n simplex)
+  change
+    AddCommGroup
+      ((simplex :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex n) ->
+        Ob.carrier.toPresheaf.obj
+          (Opposite.op
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap
+              n simplex)))
+  infer_instance
+
+/--
+Transport a finite-poset cochain to the corresponding cover-relative
+obstruction cochain, pointwise over the same selected finite-poset simplex.
+-/
+def toCoverRelativeCochain
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (n : Nat) :
+    AAT.AG.Site.FinitePosetCechCochain regime n ->
+      AAT.AG.Cohomology.CoverRelativeCechCochain
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n :=
+  fun cochain simplex =>
+    let W := AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex
+    letI := realization.sectionAddCommGroup W
+    realization.sectionAddEquiv W (cochain simplex)
+
+/--
+Transport a cover-relative obstruction cochain back to the selected
+finite-poset coefficient cochain.
+-/
+def fromCoverRelativeCochain
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (n : Nat) :
+    AAT.AG.Cohomology.CoverRelativeCechCochain
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n ->
+      AAT.AG.Site.FinitePosetCechCochain regime n :=
+  fun cochain simplex =>
+    let W := AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex
+    letI := realization.sectionAddCommGroup W
+    (realization.sectionAddEquiv W).symm (cochain simplex)
+
+/--
+The section-wise realization induces a degree-wise additive equivalence between
+finite-poset cochains and cover-relative obstruction cochains.
+-/
+def cochainAddEquiv
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (n : Nat) :
+    letI := realization.finitePosetCochainAddCommGroup n
+    letI := coverRelativeCochainAddCommGroup (regime := regime) C Ob n
+    AAT.AG.Site.FinitePosetCechCochain regime n ≃+
+      AAT.AG.Cohomology.CoverRelativeCechCochain
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n := by
+  letI := realization.finitePosetCochainAddCommGroup n
+  letI := coverRelativeCochainAddCommGroup (regime := regime) C Ob n
+  refine
+    { toFun := realization.toCoverRelativeCochain C n
+      invFun := realization.fromCoverRelativeCochain C n
+      left_inv := ?_
+      right_inv := ?_
+      map_add' := ?_ }
+  · intro cochain
+    funext simplex
+    let W := AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex
+    letI := realization.sectionAddCommGroup W
+    simp [toCoverRelativeCochain, fromCoverRelativeCochain]
+  · intro cochain
+    funext simplex
+    let W := AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex
+    letI := realization.sectionAddCommGroup W
+    simp [toCoverRelativeCochain, fromCoverRelativeCochain]
+  · intro left right
+    funext simplex
+    let W := AAT.AG.Site.FinitePosetCechOverlapObject regime n simplex
+    letI := realization.sectionAddCommGroup W
+    change
+      realization.sectionAddEquiv W ((left + right) simplex) =
+        realization.sectionAddEquiv W (left simplex) +
+          realization.sectionAddEquiv W (right simplex)
+    exact
+      (realization.sectionAddEquiv W).map_add (left simplex) (right simplex)
+
+/--
+Face restrictions commute with the lower additive coefficient realization.
+This is the restriction-map provenance needed before the selected finite-poset
+differential can be read as a cover-relative Cech differential.
+-/
+theorem faceRestriction_transport
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (n : Nat) (i : Fin (n + 2))
+    (cochain : AAT.AG.Site.FinitePosetCechCochain regime n)
+    (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) :
+    realization.sectionAddEquiv
+        (AAT.AG.Site.FinitePosetCechOverlapObject regime (n + 1) sigma)
+        (AAT.AG.Site.FinitePosetCechFaceRestriction C.faces cochain sigma i) =
+      Ob.carrier.toPresheaf.map
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).faceRestriction
+            n i sigma).op
+        (realization.sectionAddEquiv
+          (AAT.AG.Site.FinitePosetCechOverlapObject regime n
+            (C.faces.face n sigma i))
+          (cochain (C.faces.face n sigma i))) := by
+  simpa [
+    AAT.AG.Site.FinitePosetCechFaceRestriction,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover] using
+    realization.restriction_natural
+      (homOfLE (C.faces.faceOverlap_le n sigma i))
+      (cochain (C.faces.face n sigma i))
+
+/--
+Cycle 244 positive lower-carrier checkpoint: the lower additive coefficient
+realization constructs the nonempty finite-poset cochain carrier, the
+cover-relative cochain additive carrier, a degree-wise additive equivalence,
+and restriction-map transport, without accepting `FinitePosetCechComparisonData`.
+
+This still does not construct the selected Cech differential as an additive
+homomorphism, prove `d ∘ d = 0` on the transported additive complex, or provide
+cohomology comparison maps.
+-/
+theorem constructs_lowerAdditiveCochainCarrierRealization
+    (realization :
+      FinitePosetAtomLawAdditiveCoefficientRealization regime Ob)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (n : Nat) :
+    Nonempty (AAT.AG.Site.FinitePosetCechCochain regime n) /\
+      Nonempty
+        (AddCommGroup
+          (AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n)) /\
+      Nonempty
+        (letI := realization.finitePosetCochainAddCommGroup n
+         letI := coverRelativeCochainAddCommGroup
+          (regime := regime) C Ob n
+         AAT.AG.Site.FinitePosetCechCochain regime n ≃+
+          AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n) /\
+      (forall (m : Nat) (i : Fin (m + 2))
+        (cochain : AAT.AG.Site.FinitePosetCechCochain regime m)
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (m + 1)),
+        realization.sectionAddEquiv
+            (AAT.AG.Site.FinitePosetCechOverlapObject regime (m + 1) sigma)
+            (AAT.AG.Site.FinitePosetCechFaceRestriction C.faces cochain sigma i) =
+          Ob.carrier.toPresheaf.map
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).faceRestriction
+                m i sigma).op
+            (realization.sectionAddEquiv
+              (AAT.AG.Site.FinitePosetCechOverlapObject regime m
+                (C.faces.face m sigma i))
+              (cochain (C.faces.face m sigma i)))) := by
+  letI := realization.finitePosetCochainAddCommGroup n
+  letI := coverRelativeCochainAddCommGroup (regime := regime) C Ob n
+  exact
+    ⟨⟨0⟩,
+      ⟨coverRelativeCochainAddCommGroup (regime := regime) C Ob n⟩,
+      ⟨realization.cochainAddEquiv C n⟩,
+      fun m i cochain sigma =>
+        realization.faceRestriction_transport C m i cochain sigma⟩
+
+end FinitePosetAtomLawAdditiveCoefficientRealization
+
+/--
+Cycle 245 atom/law finite-poset cover geometry with the coefficient slot left
+unfilled.
+
+This is the input-boundary part of a finite-poset AAT Cech regime: selected
+contexts, an atom/law admissible cover, selected nerve simplices, overlaps, and
+U-adequacy.  It deliberately has no coefficient presheaf field.  The
+coefficient is generated canonically in `toObstructionCoefficientRegime` from
+the obstruction sheaf carrier.
+-/
+structure FinitePosetAtomLawCoverGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (S : AAT.AG.Site.AATSite A) where
+  ContextIndex : Type r
+  finiteContextIndex : Finite ContextIndex
+  context : ContextIndex -> AAT.AG.Site.ArchCtx A
+  contextLe : ContextIndex -> ContextIndex -> Prop
+  contextLe_refl : forall i : ContextIndex, contextLe i i
+  contextLe_trans :
+    forall {i j k : ContextIndex}, contextLe i j -> contextLe j k ->
+      contextLe i k
+  contextLe_antisymm :
+    forall {i j : ContextIndex}, contextLe i j -> contextLe j i -> i = j
+  contextLe_sound :
+    forall {i j : ContextIndex}, contextLe i j ->
+      S.contextPreorder.le (context i) (context j)
+  contextMeet : ContextIndex -> ContextIndex -> ContextIndex
+  contextMeet_le_left : forall i j : ContextIndex, contextLe (contextMeet i j) i
+  contextMeet_le_right : forall i j : ContextIndex, contextLe (contextMeet i j) j
+  context_le_meet :
+    forall {i j k : ContextIndex}, contextLe k i -> contextLe k j ->
+      contextLe k (contextMeet i j)
+  base : S.category
+  cover : AAT.AG.Site.AATCoverageFamily S.requirements S.overlap base
+  finiteCoverIndex : Finite cover.Index
+  nerveSimplex : Nat -> Type r
+  finiteNerveSimplex : forall n : Nat, Finite (nerveSimplex n)
+  simplexIndices : forall n : Nat, nerveSimplex n -> Fin (n + 1) -> cover.Index
+  simplexOverlap : forall n : Nat, nerveSimplex n -> AAT.AG.Site.ArchCtx A
+  simplexOverlap_le_patch :
+    forall (n : Nat) (simplex : nerveSimplex n) (k : Fin (n + 1)),
+      S.contextPreorder.le (simplexOverlap n simplex)
+        (cover.patch (simplexIndices n simplex k))
+  adequacyRequirements :
+    AAT.AG.Site.UAdequacyRequirements S.contextPreorder S.requirements
+  coverAdequate :
+    AAT.AG.Site.UAdequateCover adequacyRequirements cover
+
+namespace FinitePosetAtomLawCoverGeometry
+
+/--
+Generate the finite-poset AAT site regime whose coefficient presheaf is exactly
+the selected obstruction sheaf carrier.
+
+This is the canonical coefficient route for Cycle 245: the coefficient field is
+not supplied by comparison data and is not chosen to fit a later `c0Equiv`.
+-/
+def toObstructionCoefficientRegime
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    AAT.AG.Site.FinitePosetAATSiteRegime S where
+  ContextIndex := geometry.ContextIndex
+  finiteContextIndex := geometry.finiteContextIndex
+  context := geometry.context
+  contextLe := geometry.contextLe
+  contextLe_refl := geometry.contextLe_refl
+  contextLe_trans := by
+    intro i j k hij hjk
+    exact geometry.contextLe_trans hij hjk
+  contextLe_antisymm := by
+    intro i j hij hji
+    exact geometry.contextLe_antisymm hij hji
+  contextLe_sound := by
+    intro i j hij
+    exact geometry.contextLe_sound hij
+  contextMeet := geometry.contextMeet
+  contextMeet_le_left := geometry.contextMeet_le_left
+  contextMeet_le_right := geometry.contextMeet_le_right
+  context_le_meet := by
+    intro i j k hki hkj
+    exact geometry.context_le_meet hki hkj
+  base := geometry.base
+  cover := geometry.cover
+  finiteCoverIndex := geometry.finiteCoverIndex
+  nerveSimplex := geometry.nerveSimplex
+  finiteNerveSimplex := geometry.finiteNerveSimplex
+  simplexIndices := geometry.simplexIndices
+  simplexOverlap := geometry.simplexOverlap
+  simplexOverlap_le_patch := geometry.simplexOverlap_le_patch
+  adequacyRequirements := geometry.adequacyRequirements
+  coverAdequate := geometry.coverAdequate
+  coefficient := Ob.carrier.toPresheaf
+
+/--
+The generated regime's coefficient sections are definitionally obstruction
+sheaf sections.
+-/
+theorem toObstructionCoefficientRegime_coefficient_obj
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (W : S.category) :
+    (geometry.toObstructionCoefficientRegime Ob).coefficient.obj
+        (Opposite.op W) =
+      Ob.carrier.toPresheaf.obj (Opposite.op W) := by
+  rfl
+
+/--
+Cycle 245 construction: the Cycle 244 additive coefficient realization is
+generated from the coefficient-free finite-poset atom/law cover geometry and
+the obstruction sheaf carrier.
+
+The additive groups come from `Ob.addCommGroup`; the section equivalence is
+identity; restriction naturality is definitional functoriality of the same
+presheaf map.  No `FinitePosetCechComparisonData`, external `c0Equiv`,
+`sourceWithoutC0`, residual boundary, or `H1` zero/effectivity data is used.
+-/
+def toAdditiveCoefficientRealization
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    FinitePosetAtomLawAdditiveCoefficientRealization
+      (geometry.toObstructionCoefficientRegime Ob) Ob where
+  sectionAddCommGroup := Ob.addCommGroup
+  sectionAddEquiv := by
+    intro W
+    letI := Ob.addCommGroup W
+    exact AddEquiv.refl (Ob.carrier.toPresheaf.obj (Opposite.op W))
+  restriction_natural := by
+    intro source target f x
+    rfl
+
+/--
+The generated section equivalence is the identity on every obstruction sheaf
+section.
+-/
+theorem toAdditiveCoefficientRealization_sectionAddEquiv_apply
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (W : S.category)
+    (x : Ob.carrier.toPresheaf.obj (Opposite.op W)) :
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddEquiv W x = x := by
+  rfl
+
+/--
+Cycle 245 positive checkpoint: coefficient-free finite-poset atom/law cover
+geometry canonically constructs the lower additive coefficient realization.
+
+This discharges the Cycle 244 realization-certificate provenance for the
+canonical obstruction-coefficient finite-poset regime.  It does not construct a
+selected Cech differential, cohomology comparison, residual boundary,
+descent/effectivity witness, or full sheaf-cohomology comparison.
+-/
+theorem constructs_additiveCoefficientRealization_from_obstructionCoefficientGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    Nonempty
+        (FinitePosetAtomLawAdditiveCoefficientRealization
+          (geometry.toObstructionCoefficientRegime Ob) Ob) /\
+      (forall (W : S.category)
+        (x : Ob.carrier.toPresheaf.obj (Opposite.op W)),
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddEquiv W x =
+          x) /\
+      (forall {source target : S.category} (f : source ⟶ target)
+        (x : Ob.carrier.toPresheaf.obj (Opposite.op target)),
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddEquiv source
+            (Ob.carrier.toPresheaf.map f.op x) =
+          Ob.carrier.toPresheaf.map f.op
+            ((geometry.toAdditiveCoefficientRealization Ob).sectionAddEquiv
+              target x)) := by
+  exact
+    ⟨⟨geometry.toAdditiveCoefficientRealization Ob⟩,
+      (fun W x =>
+        geometry.toAdditiveCoefficientRealization_sectionAddEquiv_apply Ob W x),
+      (fun f x => rfl)⟩
+
+/--
+The Cycle 245 canonical realization feeds the Cycle 244 cochain-carrier
+construction, still below `FinitePosetCechComparisonData`.
+-/
+theorem constructs_lowerAdditiveCochainCarrierRealization_from_obstructionCoefficientGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (C :
+      AAT.AG.Site.FinitePosetCechComplex
+        (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat) :
+    Nonempty
+        (FinitePosetAtomLawAdditiveCoefficientRealization
+          (geometry.toObstructionCoefficientRegime Ob) Ob) /\
+      Nonempty
+        (AAT.AG.Site.FinitePosetCechCochain
+          (geometry.toObstructionCoefficientRegime Ob) n) /\
+      Nonempty
+        (AddCommGroup
+          (AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n)) /\
+      Nonempty
+        (let realization := geometry.toAdditiveCoefficientRealization Ob
+         letI := realization.finitePosetCochainAddCommGroup n
+         letI :=
+          FinitePosetAtomLawAdditiveCoefficientRealization.coverRelativeCochainAddCommGroup
+            (regime := geometry.toObstructionCoefficientRegime Ob) C Ob n
+         AAT.AG.Site.FinitePosetCechCochain
+            (geometry.toObstructionCoefficientRegime Ob) n ≃+
+          AAT.AG.Cohomology.CoverRelativeCechCochain
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob n) := by
+  let realization := geometry.toAdditiveCoefficientRealization Ob
+  have hcarrier :=
+    realization.constructs_lowerAdditiveCochainCarrierRealization C n
+  exact
+    ⟨⟨realization⟩,
+      hcarrier.1,
+      hcarrier.2.1,
+      hcarrier.2.2.1⟩
+
+end FinitePosetAtomLawCoverGeometry
+
+/--
+Cycle 246 lower obstruction-coefficient law.
+
+This separates the remaining Cycle 245 `Ob : ObstructionSheaf S` input into a
+selected AAT sheaf carrier and the exact additive restriction law still needed
+to use that carrier as an obstruction coefficient object.  It is intentionally
+not a zero/`H1`/boundary/effectivity certificate, and it does not contain a
+Cech complex or comparison map.
+-/
+structure SemanticAtomLawAdditiveRestrictionLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (F : AAT.AG.Site.AATSheaf S) where
+  sectionAddCommGroup :
+    forall W : S.category,
+      AddCommGroup (F.toPresheaf.obj (Opposite.op W))
+  restriction_map_zero :
+    forall {source target : S.category} (f : source ⟶ target),
+      letI := sectionAddCommGroup target
+      letI := sectionAddCommGroup source
+      F.toPresheaf.map f.op 0 = 0
+  restriction_map_add :
+    forall {source target : S.category} (f : source ⟶ target)
+      (x y : F.toPresheaf.obj (Opposite.op target)),
+      letI := sectionAddCommGroup target
+      letI := sectionAddCommGroup source
+      F.toPresheaf.map f.op (x + y) =
+        F.toPresheaf.map f.op x + F.toPresheaf.map f.op y
+
+namespace SemanticAtomLawAdditiveRestrictionLaw
+
+/--
+Read an AAT sheaf carrier together with its additive restriction law as an
+obstruction sheaf.
+
+This is the precise remaining lower law after Cycle 245: it removes the
+opaque `Ob` package from the generated coefficient route, but it still records
+that additive restriction compatibility must be generated from semantic
+atom/law coefficient geometry in a later cycle.
+-/
+def toObstructionSheaf
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {F : AAT.AG.Site.AATSheaf S}
+    (law : SemanticAtomLawAdditiveRestrictionLaw F) :
+    AAT.AG.Cohomology.ObstructionSheaf S where
+  carrier := F
+  addCommGroup := law.sectionAddCommGroup
+  map_zero := by
+    intro source target f
+    exact law.restriction_map_zero f
+  map_add := by
+    intro source target f x y
+    exact law.restriction_map_add f x y
+
+/--
+Cycle 246 positive checkpoint: the lower additive restriction law constructs
+the obstruction sheaf consumed by the Cycle 245 generated-regime route.
+
+No external `ObstructionSheaf`, `FinitePosetCechComparisonData`, `c0Equiv`,
+`sourceWithoutC0`, residual boundary, or `H1` zero/effectivity data is supplied.
+-/
+theorem constructs_obstructionSheaf_from_semanticAtomLawAdditiveRestrictionLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {F : AAT.AG.Site.AATSheaf S}
+    (law : SemanticAtomLawAdditiveRestrictionLaw F) :
+    Nonempty (AAT.AG.Cohomology.ObstructionSheaf S) /\
+      law.toObstructionSheaf.carrier = F /\
+      (forall {source target : S.category} (f : source ⟶ target),
+        letI := law.sectionAddCommGroup target
+        letI := law.sectionAddCommGroup source
+        F.toPresheaf.map f.op 0 = 0) /\
+      (forall {source target : S.category} (f : source ⟶ target)
+        (x y : F.toPresheaf.obj (Opposite.op target)),
+        letI := law.sectionAddCommGroup target
+        letI := law.sectionAddCommGroup source
+        F.toPresheaf.map f.op (x + y) =
+          F.toPresheaf.map f.op x + F.toPresheaf.map f.op y) := by
+  exact
+    ⟨⟨law.toObstructionSheaf⟩,
+      rfl,
+      (fun f => law.restriction_map_zero f),
+      (fun f x y => law.restriction_map_add f x y)⟩
+
+/--
+The generated obstruction sheaf feeds the Cycle 245 coefficient-free
+finite-poset cover geometry route without taking `Ob` as an input package.
+-/
+theorem constructs_additiveCoefficientRealization_from_semanticAtomLawObstructionLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    {F : AAT.AG.Site.AATSheaf S}
+    (law : SemanticAtomLawAdditiveRestrictionLaw F) :
+    let Ob := law.toObstructionSheaf
+    Ob.carrier = F /\
+      Nonempty
+        (FinitePosetAtomLawAdditiveCoefficientRealization
+          (geometry.toObstructionCoefficientRegime Ob) Ob) := by
+  exact
+    ⟨rfl,
+      ⟨geometry.toAdditiveCoefficientRealization law.toObstructionSheaf⟩⟩
+
+/--
+Cycle 246 blocker: a bare AAT sheaf carrier cannot universally generate an
+obstruction sheaf preserving that carrier without at least nonempty/additive
+section data.
+
+If such a carrier-preserving constructor existed for every AAT sheaf, then any
+selected empty section type would receive a zero element from the resulting
+`AddCommGroup`, contradiction.  Thus the additive restriction law above is
+material lower provenance, not a removable wrapper.
+-/
+theorem no_obstructionSheaf_constructor_from_AATSheaf_without_sectionNonempty
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (F : AAT.AG.Site.AATSheaf S)
+    (W : S.category)
+    (hEmpty : IsEmpty (F.toPresheaf.obj (Opposite.op W)))
+    (constructor :
+      (Finput : AAT.AG.Site.AATSheaf S) ->
+        AAT.AG.Cohomology.ObstructionSheaf S)
+    (hCarrier : (constructor F).carrier = F) :
+    False := by
+  let Ob := constructor F
+  letI : AddCommGroup (F.toPresheaf.obj (Opposite.op W)) := by
+    rw [← hCarrier]
+    exact Ob.addCommGroup W
+  exact hEmpty.false (0 : F.toPresheaf.obj (Opposite.op W))
+
+end SemanticAtomLawAdditiveRestrictionLaw
+
+/--
+Cycle 247 semantic atom/law additive coefficient geometry.
+
+The coefficient object is not a bare `AATSheaf` plus postulated additive laws:
+it is a presheaf valued in bundled additive commutative groups.  Therefore
+section additivity and restriction additivity are generated by the category of
+additive groups, while the atom/law support fields keep the semantic
+input-boundary provenance visible.  The structure stores no Cech complex,
+comparison equivalence, residual boundary, `H1` zero, descent/effectivity, or
+global coherence conclusion.
+-/
+structure SemanticAtomLawAdditiveCoefficientGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A) where
+  coefficient : S.categoryᵒᵖ ⥤ AddCommGrpCat.{r}
+  isSheaf :
+    AAT.AG.Site.AATSheafCondition S (coefficient ⋙ forget AddCommGrpCat)
+  atomSupport :
+    (W : S.category) -> coefficient.obj (Opposite.op W) -> List U.Atom
+  atomSupport_traceVisible :
+    forall (W : S.category) (localSection : coefficient.obj (Opposite.op W)),
+      exists atom : U.Atom,
+        atom ∈ atomSupport W localSection ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (W : S.category) ->
+      coefficient.obj (Opposite.op W) -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (W : S.category) (localSection : coefficient.obj (Opposite.op W)),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport W localSection
+  lawSupport_required :
+    forall (W : S.category) (localSection : coefficient.obj (Opposite.op W))
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport W localSection -> S.lawUniverse.Required lawIndex
+
+namespace SemanticAtomLawAdditiveCoefficientGeometry
+
+/-- Read the additive-group-valued semantic coefficient geometry as an AAT sheaf. -/
+def toAATSheaf
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S) :
+    AAT.AG.Site.AATSheaf S where
+  carrier := geometry.coefficient ⋙ forget AddCommGrpCat
+  isSheaf := geometry.isSheaf
+
+/--
+The section additive group is generated by the bundled additive group object
+at the selected AAT context.
+-/
+def sectionAddCommGroup
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (W : S.category) :
+    AddCommGroup (geometry.toAATSheaf.toPresheaf.obj (Opposite.op W)) := by
+  dsimp [toAATSheaf, AAT.AG.Site.AATSheaf.toPresheaf]
+  exact (geometry.coefficient.obj (Opposite.op W)).str
+
+/--
+Restriction maps preserve zero because they are morphisms in
+`AddCommGrpCat`, not because a zero-law certificate was supplied separately.
+-/
+theorem restriction_map_zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    {source target : S.category} (f : source ⟶ target) :
+    letI := geometry.sectionAddCommGroup target
+    letI := geometry.sectionAddCommGroup source
+    geometry.toAATSheaf.toPresheaf.map f.op 0 = 0 := by
+  letI := geometry.sectionAddCommGroup target
+  letI := geometry.sectionAddCommGroup source
+  dsimp [toAATSheaf, sectionAddCommGroup,
+    AAT.AG.Site.AATSheaf.toPresheaf]
+  change (geometry.coefficient.map f.op).hom 0 = 0
+  exact (geometry.coefficient.map f.op).hom.map_zero
+
+/--
+Restriction maps preserve addition because they are morphisms in
+`AddCommGrpCat`, not because an additive compatibility certificate was supplied
+as a separate field.
+-/
+theorem restriction_map_add
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    {source target : S.category} (f : source ⟶ target)
+    (x y : geometry.toAATSheaf.toPresheaf.obj (Opposite.op target)) :
+    letI := geometry.sectionAddCommGroup target
+    letI := geometry.sectionAddCommGroup source
+    geometry.toAATSheaf.toPresheaf.map f.op (x + y) =
+      geometry.toAATSheaf.toPresheaf.map f.op x +
+        geometry.toAATSheaf.toPresheaf.map f.op y := by
+  letI := geometry.sectionAddCommGroup target
+  letI := geometry.sectionAddCommGroup source
+  letI : AddCommGroup
+      ((forget AddCommGrpCat).obj
+        (geometry.coefficient.obj (Opposite.op target))) :=
+    (geometry.coefficient.obj (Opposite.op target)).str
+  letI : AddCommGroup
+      ((forget AddCommGrpCat).obj
+        (geometry.coefficient.obj (Opposite.op source))) :=
+    (geometry.coefficient.obj (Opposite.op source)).str
+  dsimp [toAATSheaf, sectionAddCommGroup,
+    AAT.AG.Site.AATSheaf.toPresheaf] at x y ⊢
+  change (geometry.coefficient.map f.op).hom (x + y) =
+    (geometry.coefficient.map f.op).hom x +
+      (geometry.coefficient.map f.op).hom y
+  exact (geometry.coefficient.map f.op).hom.map_add x y
+
+/--
+Cycle 247 construction: additive-group-valued semantic atom/law coefficient
+geometry generates the exact Cycle 246 additive restriction law.
+
+The final `sectionAddCommGroup`, `restriction_map_zero`, and
+`restriction_map_add` are not accepted as theorem arguments; they are read from
+the bundled additive-group-valued presheaf and its additive morphisms.
+-/
+def toAdditiveRestrictionLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S) :
+    SemanticAtomLawAdditiveRestrictionLaw geometry.toAATSheaf where
+  sectionAddCommGroup := geometry.sectionAddCommGroup
+  restriction_map_zero := by
+    intro source target f
+    exact geometry.restriction_map_zero f
+  restriction_map_add := by
+    intro source target f x y
+    exact geometry.restriction_map_add f x y
+
+/--
+The semantic atom/law supports carried by the additive coefficient geometry
+are proof-used pointwise; they are not replaced by an inert coefficient carrier.
+-/
+theorem exposes_pointwise_atomLaw_support
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S) :
+    forall (W : S.category)
+      (localSection : geometry.coefficient.obj (Opposite.op W)),
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport W localSection ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport W localSection ∧
+          S.lawUniverse.Required lawIndex) := by
+  intro W localSection
+  rcases geometry.lawSupport_nonempty W localSection with
+    ⟨lawIndex, hLawMem⟩
+  exact
+    ⟨geometry.atomSupport_traceVisible W localSection,
+      ⟨lawIndex, hLawMem,
+        geometry.lawSupport_required W localSection lawIndex hLawMem⟩⟩
+
+/--
+Cycle 247 positive checkpoint: semantic atom/law additive coefficient geometry
+constructs the Cycle 246 additive restriction law and hence the obstruction
+sheaf consumed by the generated coefficient route.
+
+This still is not a G-06 completion claim: the additive-group-valued semantic
+coefficient geometry itself remains the next lower object to construct from a
+canonical/free input-boundary model or finite witness.
+-/
+theorem constructs_additiveRestrictionLaw_from_atomLawGeneratedCoefficientGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : SemanticAtomLawAdditiveCoefficientGeometry semanticSite S) :
+    Nonempty (SemanticAtomLawAdditiveRestrictionLaw geometry.toAATSheaf) /\
+      Nonempty (AAT.AG.Cohomology.ObstructionSheaf S) /\
+      (forall (W : S.category)
+        (localSection : geometry.coefficient.obj (Opposite.op W)),
+        (exists atom : U.Atom,
+          atom ∈ geometry.atomSupport W localSection ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ geometry.lawSupport W localSection ∧
+            S.lawUniverse.Required lawIndex)) := by
+  exact
+    ⟨⟨geometry.toAdditiveRestrictionLaw⟩,
+      ⟨geometry.toAdditiveRestrictionLaw.toObstructionSheaf⟩,
+      geometry.exposes_pointwise_atomLaw_support⟩
+
+/--
+Cycle 247 proof-use checkpoint: the generated additive restriction law feeds
+the Cycle 245 coefficient-free finite-poset cover geometry route.
+
+The resulting finite-poset additive coefficient realization is driven by the
+same semantic atom/law additive coefficient geometry.  No external
+`ObstructionSheaf`, `c0Equiv`, `sourceWithoutC0`,
+`FinitePosetCechComparisonData`, residual boundary, or `H1` zero/effectivity
+data is consumed.
+-/
+theorem constructs_additiveCoefficientRealization_from_atomLawGeneratedCoefficientGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S) :
+    let F := coefficientGeometry.toAATSheaf
+    let law := coefficientGeometry.toAdditiveRestrictionLaw
+    let Ob := law.toObstructionSheaf
+    Ob.carrier = F /\
+      Nonempty (SemanticAtomLawAdditiveRestrictionLaw F) /\
+      Nonempty (AAT.AG.Cohomology.ObstructionSheaf S) /\
+      Nonempty
+        (FinitePosetAtomLawAdditiveCoefficientRealization
+          (coverGeometry.toObstructionCoefficientRegime Ob) Ob) := by
+  dsimp
+  have hroute :=
+    SemanticAtomLawAdditiveRestrictionLaw.constructs_additiveCoefficientRealization_from_semanticAtomLawObstructionLaw
+      coverGeometry coefficientGeometry.toAdditiveRestrictionLaw
+  exact
+    ⟨hroute.1,
+      ⟨coefficientGeometry.toAdditiveRestrictionLaw⟩,
+      ⟨coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf⟩,
+      hroute.2⟩
+
+end SemanticAtomLawAdditiveCoefficientGeometry
+
+/--
+Cycle 248 finite-poset selected Cech additive law.
+
+The Cycle 245/247 route generates the obstruction coefficient object, but a
+selected finite-poset Cech complex still stores its differential as a function.
+To read that selected finite-poset complex as a general cover-relative Cech
+complex, the remaining material law is exactly that its selected zero sections
+are the additive zeros and its selected differential is additive.
+
+This record stores no comparison map, no `c0Equiv`, no `sourceWithoutC0`, no
+residual-boundary witness, and no `H1` zero/effectivity conclusion.
+-/
+structure FinitePosetAtomLawSelectedCechComplexAdditiveLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)) where
+  zeroSection_eq_zero :
+    forall (n : Nat)
+      (simplex :
+        AAT.AG.Site.FinitePosetCechSimplex
+          (geometry.toObstructionCoefficientRegime Ob) n),
+      letI :=
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) n simplex)
+      C.additive.zeroSection n simplex = 0
+  differential_map_add :
+    forall (n : Nat)
+      (left right :
+        AAT.AG.Site.FinitePosetCechCochain
+          (geometry.toObstructionCoefficientRegime Ob) n),
+      let realization := geometry.toAdditiveCoefficientRealization Ob
+      letI := realization.finitePosetCochainAddCommGroup n
+      letI := realization.finitePosetCochainAddCommGroup (n + 1)
+      C.differential n (left + right) =
+        C.differential n left + C.differential n right
+
+namespace FinitePosetAtomLawSelectedCechComplexAdditiveLaw
+
+/--
+The selected finite-poset differential becomes an additive homomorphism once the
+Cycle 248 additive law is supplied.
+-/
+def finiteDifferentialAddMonoidHom
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C)
+    (n : Nat) :
+    let realization := geometry.toAdditiveCoefficientRealization Ob
+    letI := realization.finitePosetCochainAddCommGroup n
+    letI := realization.finitePosetCochainAddCommGroup (n + 1)
+    AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n →+
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) := by
+  let realization := geometry.toAdditiveCoefficientRealization Ob
+  letI := realization.finitePosetCochainAddCommGroup n
+  letI := realization.finitePosetCochainAddCommGroup (n + 1)
+  refine
+    { toFun := C.differential n
+      map_zero' := ?_
+      map_add' := ?_ }
+  · funext simplex
+    have hzeroInput :
+        (0 :
+          AAT.AG.Site.FinitePosetCechCochain
+            (geometry.toObstructionCoefficientRegime Ob) n) =
+          AAT.AG.Site.FinitePosetCechZeroCochain C.additive n := by
+      funext tau
+      letI :=
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) n tau)
+      exact (law.zeroSection_eq_zero n tau).symm
+    rw [hzeroInput]
+    have hdiff :=
+      congrArg (fun cochain => cochain simplex)
+        (C.differential_zero n)
+    simpa [AAT.AG.Site.FinitePosetCechZeroCochain,
+      law.zeroSection_eq_zero (n + 1) simplex] using hdiff
+  · intro left right
+    exact law.differential_map_add n left right
+
+/--
+Cycle 248 construction: a finite-poset atom/law Cech complex with the minimal
+additive law generates the general cover-relative Cech complex consumed by the
+front-loaded semantic coefficient layer.
+
+The cover, simplices, overlaps, face restrictions, coefficient carrier, and
+section additive groups are generated by the Cycle 245 obstruction-coefficient
+route.  The only additional differential premise is the explicit selected
+finite-poset additive law above.
+-/
+def toCoverRelativeCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C) :
+    AAT.AG.Cohomology.CoverRelativeCechComplex
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob where
+  cochainAddCommGroup :=
+    FinitePosetAtomLawAdditiveCoefficientRealization.coverRelativeCochainAddCommGroup
+      (regime := geometry.toObstructionCoefficientRegime Ob) C Ob
+  alternatingFaceCombination := by
+    intro n terms simplex
+    exact C.additive.combineFaces n simplex (terms simplex)
+  differential := by
+    intro n
+    exact law.finiteDifferentialAddMonoidHom n
+  differential_eq_alternatingFaceCombination := by
+    intro n cochain
+    funext simplex
+    exact C.differential_eq_restrictions n cochain simplex
+  differential_comp := by
+    intro n cochain
+    funext simplex
+    have hdiff :=
+      congrArg (fun value => value simplex)
+        (C.differential_comp_zero n cochain)
+    simpa [AAT.AG.Site.FinitePosetCechZeroCochain,
+      law.zeroSection_eq_zero (n + 2) simplex] using hdiff
+
+/--
+The generated cover-relative Cech complex uses the selected finite-poset
+differential definitionally.
+-/
+theorem toCoverRelativeCechComplex_d_eq_finiteDifferential
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C)
+    (n : Nat)
+    (cochain : (law.toCoverRelativeCechComplex).Cn n) :
+    (law.toCoverRelativeCechComplex).d n cochain = C.differential n cochain := by
+  rfl
+
+/--
+The generated cover-relative Cech complex inherits `d ∘ d = 0` from the selected
+finite-poset complex and the Cycle 248 zero-section law.
+-/
+theorem toCoverRelativeCechComplex_d_comp_d_eq_zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C)
+    (n : Nat)
+    (cochain : (law.toCoverRelativeCechComplex).Cn n) :
+    letI := (law.toCoverRelativeCechComplex).cochainAddCommGroup (n + 2)
+    (law.toCoverRelativeCechComplex).d (n + 1)
+        ((law.toCoverRelativeCechComplex).d n cochain) = 0 :=
+  (law.toCoverRelativeCechComplex).d_comp_d_eq_zero n cochain
+
+end FinitePosetAtomLawSelectedCechComplexAdditiveLaw
+
+/--
+Cycle 249 lower alternating-face additivity law.
+
+Cycle 248 required the selected finite-poset differential itself to preserve
+addition.  This lower law moves that premise beneath the differential: the
+selected alternating face-combination operator must preserve pointwise addition
+of its face terms, while restriction additivity is generated by the
+obstruction-sheaf additive restriction law.
+
+This record still stores a material finite-poset algebra law.  It stores no
+cover-relative `K`, comparison map, `c0Equiv`, `sourceWithoutC0`, residual
+boundary, `H1` zero/effectivity, or global coherence conclusion.
+-/
+structure FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)) where
+  zeroSection_eq_zero :
+    forall (n : Nat)
+      (simplex :
+        AAT.AG.Site.FinitePosetCechSimplex
+          (geometry.toObstructionCoefficientRegime Ob) n),
+      letI :=
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) n simplex)
+      C.additive.zeroSection n simplex = 0
+  combineFaces_map_add :
+    forall (n : Nat)
+      (simplex :
+        AAT.AG.Site.FinitePosetCechSimplex
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+      (left right :
+        Fin (n + 2) ->
+          AAT.AG.Site.FinitePosetCechSection
+            (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex),
+      letI :=
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+      C.additive.combineFaces n simplex (fun i => left i + right i) =
+        C.additive.combineFaces n simplex left +
+          C.additive.combineFaces n simplex right
+
+namespace FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+
+/--
+Face restrictions are additive in the generated obstruction-coefficient route.
+
+This is not a new certificate field: it is proved from `Ob.map_add` for the
+restriction morphism selected by the finite-poset face.
+-/
+theorem faceRestriction_map_add
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (_law : FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+      geometry Ob C)
+    (n : Nat)
+    (left right :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+    (i : Fin (n + 2)) :
+    let realization := geometry.toAdditiveCoefficientRealization Ob
+    letI := realization.finitePosetCochainAddCommGroup n
+    letI := realization.finitePosetCochainAddCommGroup (n + 1)
+    letI := realization.sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    AAT.AG.Site.FinitePosetCechFaceRestriction C.faces
+        (left + right) simplex i =
+      AAT.AG.Site.FinitePosetCechFaceRestriction C.faces left simplex i +
+        AAT.AG.Site.FinitePosetCechFaceRestriction C.faces right simplex i := by
+  let realization := geometry.toAdditiveCoefficientRealization Ob
+  letI := realization.finitePosetCochainAddCommGroup n
+  letI := realization.finitePosetCochainAddCommGroup (n + 1)
+  letI := realization.sectionAddCommGroup
+    (AAT.AG.Site.FinitePosetCechOverlapObject
+      (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+  dsimp [AAT.AG.Site.FinitePosetCechFaceRestriction]
+  simpa [Pi.add_apply,
+    FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime] using
+      Ob.map_add
+        (homOfLE (C.faces.faceOverlap_le n simplex i))
+        (left (C.faces.face n simplex i))
+        (right (C.faces.face n simplex i))
+
+/--
+Cycle 249 construction: lower alternating-face additivity and obstruction-sheaf
+restriction additivity generate the Cycle 248 selected differential additivity
+law.
+
+The selected differential no longer needs its own `map_add` field in this
+route: it is derived by unfolding `C.differential_eq_restrictions`, proving each
+face restriction additive from `Ob.map_add`, and applying
+`combineFaces_map_add`.
+-/
+def toSelectedCechComplexAdditiveLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+      geometry Ob C) :
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C where
+  zeroSection_eq_zero := law.zeroSection_eq_zero
+  differential_map_add := by
+    intro n left right
+    let realization := geometry.toAdditiveCoefficientRealization Ob
+    letI := realization.finitePosetCochainAddCommGroup n
+    letI := realization.finitePosetCochainAddCommGroup (n + 1)
+    funext simplex
+    letI := realization.sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    change
+      C.differential n (left + right) simplex =
+        C.differential n left simplex + C.differential n right simplex
+    rw [C.differential_eq_restrictions n (left + right) simplex]
+    rw [C.differential_eq_restrictions n left simplex]
+    rw [C.differential_eq_restrictions n right simplex]
+    have hfaces :
+        (fun i =>
+          AAT.AG.Site.FinitePosetCechFaceRestriction C.faces
+            (left + right) simplex i) =
+          (fun i =>
+            AAT.AG.Site.FinitePosetCechFaceRestriction C.faces left simplex i +
+              AAT.AG.Site.FinitePosetCechFaceRestriction C.faces right
+                simplex i) := by
+      funext i
+      exact law.faceRestriction_map_add n left right simplex i
+    rw [hfaces]
+    exact law.combineFaces_map_add n simplex
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction C.faces left simplex i)
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction C.faces right simplex i)
+
+/--
+Cycle 249 proof-use checkpoint: the lower alternating-face law constructs the
+Cycle 248 selected Cech complex additive law and exposes the derived
+finite-poset differential additivity theorem.
+-/
+theorem constructs_selectedCechComplexAdditiveLaw_from_alternatingFaceAdditivity
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law : FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+      geometry Ob C) :
+    Nonempty (FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C) /\
+      (forall (n : Nat)
+        (left right :
+          AAT.AG.Site.FinitePosetCechCochain
+            (geometry.toObstructionCoefficientRegime Ob) n),
+        let realization := geometry.toAdditiveCoefficientRealization Ob
+        letI := realization.finitePosetCochainAddCommGroup n
+        letI := realization.finitePosetCochainAddCommGroup (n + 1)
+        C.differential n (left + right) =
+          C.differential n left + C.differential n right) := by
+  exact
+    ⟨⟨law.toSelectedCechComplexAdditiveLaw⟩,
+      law.toSelectedCechComplexAdditiveLaw.differential_map_add⟩
+
+end FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw
+
+/--
+Cycle 250 standard finite alternating face combination.
+
+This is the canonical additive operator available from the section
+`AddCommGroup` generated by the atom/law obstruction-coefficient geometry.  It
+does not use cover-relative comparison data, an external Cech complex, or an
+additivity certificate for the operator.
+-/
+def standardAlternatingFaceCombination
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+    (terms :
+      Fin (n + 2) ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex) :
+    AAT.AG.Site.FinitePosetCechSection
+      (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+  exact Finset.univ.sum
+    (fun i : Fin (n + 2) =>
+      if Even i.val then terms i else -terms i)
+
+/-- The standard alternating combination sends all-zero face terms to zero. -/
+theorem standardAlternatingFaceCombination_zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1)) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    standardAlternatingFaceCombination geometry Ob n simplex
+        (fun _ => 0) = 0 := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+  dsimp [standardAlternatingFaceCombination]
+  simp
+
+/--
+The standard alternating combination is additive because it is a finite sum of
+identity and negation maps in the generated section `AddCommGroup`.
+-/
+theorem standardAlternatingFaceCombination_map_add
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+    (left right :
+      Fin (n + 2) ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    standardAlternatingFaceCombination geometry Ob n simplex
+        (fun i => left i + right i) =
+      standardAlternatingFaceCombination geometry Ob n simplex left +
+        standardAlternatingFaceCombination geometry Ob n simplex right := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+  dsimp [standardAlternatingFaceCombination]
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  by_cases h : Even i.val
+  · simp [h]
+  · simp [h, neg_add_rev, add_comm]
+
+/--
+Cycle 250 canonical finite-poset Cech additive data.
+
+The zero section and face-combination operator are built from the generated
+section `AddCommGroup`: zero is the group zero, and `combineFaces` is the
+standard finite alternating sum over the selected faces.
+-/
+def standardCechAdditiveData
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    AAT.AG.Site.FinitePosetCechAdditiveData
+      (geometry.toObstructionCoefficientRegime Ob) where
+  zeroSection := by
+    intro n simplex
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) n simplex)
+    exact 0
+  combineFaces := by
+    intro n simplex terms
+    exact standardAlternatingFaceCombination geometry Ob n simplex terms
+  combineFaces_zero := by
+    intro n simplex
+    exact standardAlternatingFaceCombination_zero geometry Ob n simplex
+
+/-- The standard Cech additive data has definitionally zero zero-sections. -/
+theorem standardCechAdditiveData_zeroSection_eq_zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) n) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) n simplex)
+    (standardCechAdditiveData geometry Ob).zeroSection n simplex = 0 := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) n simplex)
+  rfl
+
+/--
+The standard Cech additive data inherits additivity of `combineFaces` from the
+finite alternating-sum construction.
+-/
+theorem standardCechAdditiveData_combineFaces_map_add
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+    (left right :
+      Fin (n + 2) ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    (standardCechAdditiveData geometry Ob).combineFaces n simplex
+        (fun i => left i + right i) =
+      (standardCechAdditiveData geometry Ob).combineFaces n simplex left +
+        (standardCechAdditiveData geometry Ob).combineFaces n simplex right := by
+  exact standardAlternatingFaceCombination_map_add geometry Ob n simplex left right
+
+/--
+Cycle 250 construction: once the selected finite-poset Cech complex uses the
+standard additive data, the Cycle 249 alternating-face additivity law is
+generated rather than supplied as a separate certificate.
+
+The equality `C.additive = standardCechAdditiveData geometry Ob` is still a
+material selection boundary: the selected complex must actually use the
+canonical additive data.  The remaining differential and `d ∘ d = 0` fields
+still live in `C`.
+-/
+def standardCechAdditiveData_toAlternatingAdditivityLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob))
+    (hadd : C.additive = standardCechAdditiveData geometry Ob) :
+    FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw geometry Ob C where
+  zeroSection_eq_zero := by
+    intro n simplex
+    simpa [hadd] using
+      standardCechAdditiveData_zeroSection_eq_zero geometry Ob n simplex
+  combineFaces_map_add := by
+    intro n simplex left right
+    simpa [hadd] using
+      standardCechAdditiveData_combineFaces_map_add
+        geometry Ob n simplex left right
+
+/--
+The standard additive data immediately generates the Cycle 248 selected Cech
+complex additive law through the Cycle 249 lower face-additivity route.
+-/
+def standardCechAdditiveData_toSelectedCechComplexAdditiveLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob))
+    (hadd : C.additive = standardCechAdditiveData geometry Ob) :
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C :=
+  FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw.toSelectedCechComplexAdditiveLaw
+    (standardCechAdditiveData_toAlternatingAdditivityLaw C hadd)
+
+/--
+Cycle 250 proof-use checkpoint: the standard additive data constructs both the
+Cycle 249 alternating-face law and the Cycle 248 selected differential
+additivity law, exposing the generated `combineFaces` and `differential`
+additivity theorems.
+-/
+theorem constructs_selectedCechComplexAdditiveLaw_from_standardCechAdditiveData
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (hadd : C.additive = standardCechAdditiveData geometry Ob) :
+    Nonempty
+        (FinitePosetAtomLawSelectedCechAlternatingAdditivityLaw geometry Ob C) /\
+      Nonempty
+        (FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C) /\
+      (forall (n : Nat)
+        (simplex :
+          AAT.AG.Site.FinitePosetCechSimplex
+            (geometry.toObstructionCoefficientRegime Ob) n),
+        letI :=
+          (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+            (AAT.AG.Site.FinitePosetCechOverlapObject
+              (geometry.toObstructionCoefficientRegime Ob) n simplex)
+        C.additive.zeroSection n simplex = 0) /\
+      (forall (n : Nat)
+        (simplex :
+          AAT.AG.Site.FinitePosetCechSimplex
+            (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+        (left right :
+          Fin (n + 2) ->
+            AAT.AG.Site.FinitePosetCechSection
+              (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex),
+        letI :=
+          (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+            (AAT.AG.Site.FinitePosetCechOverlapObject
+              (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+        C.additive.combineFaces n simplex (fun i => left i + right i) =
+          C.additive.combineFaces n simplex left +
+            C.additive.combineFaces n simplex right) /\
+      (forall (n : Nat)
+        (left right :
+          AAT.AG.Site.FinitePosetCechCochain
+            (geometry.toObstructionCoefficientRegime Ob) n),
+        let realization := geometry.toAdditiveCoefficientRealization Ob
+        letI := realization.finitePosetCochainAddCommGroup n
+        letI := realization.finitePosetCochainAddCommGroup (n + 1)
+        C.differential n (left + right) =
+          C.differential n left + C.differential n right) := by
+  let law := standardCechAdditiveData_toAlternatingAdditivityLaw C hadd
+  exact
+    ⟨⟨law⟩,
+      ⟨law.toSelectedCechComplexAdditiveLaw⟩,
+      law.zeroSection_eq_zero,
+      law.combineFaces_map_add,
+      law.toSelectedCechComplexAdditiveLaw.differential_map_add⟩
+
+/--
+Cycle 251 standard finite-poset Cech differential.
+
+The differential is now fixed by the standard additive data and the selected
+face restrictions.  It is not a field of a selected `FinitePosetCechComplex`;
+the remaining exactness question is whether this generated differential
+squares to zero.
+-/
+def standardCechDifferential
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n) :
+    AAT.AG.Site.FinitePosetCechCochain
+      (geometry.toObstructionCoefficientRegime Ob) (n + 1) :=
+  fun simplex =>
+    (standardCechAdditiveData geometry Ob).combineFaces n simplex
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i)
+
+/-- The standard differential is definitionally the standard face-restriction sum. -/
+theorem standardCechDifferential_eq_restrictions
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1)) :
+    standardCechDifferential faces n cochain simplex =
+      (standardCechAdditiveData geometry Ob).combineFaces n simplex
+        (fun i =>
+          AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i) :=
+  rfl
+
+/--
+The standard differential sends the standard zero cochain to the standard zero
+cochain.  This is generated from `Ob.map_zero` for each face restriction and
+`standardCechAdditiveData.combineFaces_zero`.
+-/
+theorem standardCechDifferential_zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat) :
+    standardCechDifferential faces n
+        (AAT.AG.Site.FinitePosetCechZeroCochain
+          (standardCechAdditiveData geometry Ob) n) =
+      AAT.AG.Site.FinitePosetCechZeroCochain
+        (standardCechAdditiveData geometry Ob) (n + 1) := by
+  funext simplex
+  dsimp [standardCechDifferential]
+  have hfaces :
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces
+          (AAT.AG.Site.FinitePosetCechZeroCochain
+            (standardCechAdditiveData geometry Ob) n) simplex i) =
+        (fun _ =>
+          (standardCechAdditiveData geometry Ob).zeroSection
+            (n + 1) simplex) := by
+    funext i
+    dsimp [AAT.AG.Site.FinitePosetCechFaceRestriction,
+      AAT.AG.Site.FinitePosetCechZeroCochain]
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) n
+          (faces.face n simplex i))
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+    rw [standardCechAdditiveData_zeroSection_eq_zero geometry Ob n
+      (faces.face n simplex i)]
+    rw [standardCechAdditiveData_zeroSection_eq_zero geometry Ob (n + 1)
+      simplex]
+    exact Ob.map_zero (homOfLE (faces.faceOverlap_le n simplex i))
+  rw [hfaces]
+  exact (standardCechAdditiveData geometry Ob).combineFaces_zero n simplex
+
+/--
+Cycle 252 generic alternating sum over obstruction-sheaf sections.
+
+This is the group-level core used to expand the second standard Cech
+differential.  It is independent of a selected Cech complex and depends only
+on the obstruction sheaf's additive section laws.
+-/
+def obstructionSheafStandardAlternatingCombination
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (W : S.category) (m : Nat)
+    (terms : Fin m -> Ob.carrier.toPresheaf.obj (Opposite.op W)) :
+    Ob.carrier.toPresheaf.obj (Opposite.op W) := by
+  classical
+  letI := Ob.addCommGroup W
+  exact Finset.univ.sum
+    (fun i : Fin m =>
+      if Even i.val then terms i else -terms i)
+
+/--
+Obstruction-sheaf restriction maps commute with the standard alternating sum.
+This is the functorial/additive part of the `d²` expansion; the remaining
+geometry is the two-face cancellation law.
+-/
+theorem obstructionSheafStandardAlternatingCombination_map
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    {source target : S.category} (f : source ⟶ target)
+    (m : Nat)
+    (terms : Fin m -> Ob.carrier.toPresheaf.obj (Opposite.op target)) :
+    Ob.carrier.toPresheaf.map f.op
+        (obstructionSheafStandardAlternatingCombination Ob target m terms) =
+      obstructionSheafStandardAlternatingCombination Ob source m
+        (fun i => Ob.carrier.toPresheaf.map f.op (terms i)) := by
+  classical
+  letI := Ob.addCommGroup target
+  letI := Ob.addCommGroup source
+  let restrictionHom :
+      Ob.carrier.toPresheaf.obj (Opposite.op target) →+
+        Ob.carrier.toPresheaf.obj (Opposite.op source) := {
+    toFun := Ob.carrier.toPresheaf.map f.op
+    map_zero' := Ob.map_zero f
+    map_add' := by
+      intro x y
+      exact Ob.map_add f x y }
+  dsimp [obstructionSheafStandardAlternatingCombination]
+  change
+    restrictionHom
+        (Finset.univ.sum
+          (fun i : Fin m => if Even i.val then terms i else -terms i)) =
+      Finset.univ.sum
+        (fun i : Fin m =>
+          if Even i.val then restrictionHom (terms i) else -restrictionHom (terms i))
+  rw [map_sum restrictionHom]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  by_cases h : Even i.val
+  · simp [h]
+  · simp [h, map_neg restrictionHom (terms i)]
+
+/--
+The finite-poset standard alternating face combination is the generic
+obstruction-sheaf alternating sum on the selected overlap object.
+-/
+theorem standardAlternatingFaceCombination_eq_obstructionSheafStandardAlternatingCombination
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1))
+    (terms :
+      Fin (n + 2) ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex) :
+    standardAlternatingFaceCombination geometry Ob n simplex terms =
+      obstructionSheafStandardAlternatingCombination Ob
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 1) simplex)
+        (n + 2) terms := by
+  rfl
+
+/--
+Cycle 252 double-face term: restrict a degree-`n` cochain along an inner face
+of an outer face, then restrict the resulting section back to the original
+`(n+3)`-fold selected overlap.
+
+This is the atomic term that a cosimplicial two-face identity must pair and
+cancel.  It is below `differential_comp_zero`: it mentions neither a selected
+`FinitePosetCechComplex` nor a completed `d ∘ d = 0` certificate.
+-/
+def standardCechDoubleFaceRestriction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (outer : Fin (n + 3)) (inner : Fin (n + 2)) :
+    AAT.AG.Site.FinitePosetCechSection
+      (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex :=
+  Ob.carrier.toPresheaf.map
+      (homOfLE (faces.faceOverlap_le (n + 1) simplex outer)).op
+    (AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain
+      (faces.face (n + 1) simplex outer) inner)
+
+/--
+Cycle 254 double-face restriction map before applying a cochain value.
+
+This isolates the route-level geometry of the two successive face
+restrictions.  It is lower than `FinitePosetAtomLawCechTwoFaceTermEquality`:
+no cochain, finite sum, sign, or exactness claim appears here.
+-/
+def standardCechDoubleFaceRestrictionMap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (outer : Fin (n + 3)) (inner : Fin (n + 2)) :
+    Ob.carrier.toPresheaf.obj
+        (Opposite.op
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) n
+            (faces.face n (faces.face (n + 1) simplex outer) inner))) ->
+      AAT.AG.Site.FinitePosetCechSection
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex :=
+  Ob.carrier.toPresheaf.map
+    (homOfLE
+      (S.contextPreorder.trans
+        (faces.faceOverlap_le (n + 1) simplex outer)
+        (faces.faceOverlap_le n
+          (faces.face (n + 1) simplex outer) inner))).op
+
+/--
+The double-face restricted cochain term is the corresponding route-level map
+applied to the selected lower cochain value.
+-/
+theorem standardCechDoubleFaceRestriction_eq_restrictionMap_apply
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (outer : Fin (n + 3)) (inner : Fin (n + 2)) :
+    standardCechDoubleFaceRestriction faces n cochain simplex outer inner =
+      standardCechDoubleFaceRestrictionMap faces n simplex outer inner
+        (cochain (faces.face n (faces.face (n + 1) simplex outer) inner)) := by
+  dsimp [standardCechDoubleFaceRestriction,
+    AAT.AG.Site.FinitePosetCechFaceRestriction,
+    standardCechDoubleFaceRestrictionMap,
+    FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime]
+  rw [← CategoryTheory.FunctorToTypes.map_comp_apply]
+  congr
+
+/--
+Transport the left two-face restriction map along a selected equality of the
+two lower face simplices.
+
+This is the route-level object that a genuine cosimplicial two-face identity
+should identify with the right route map.
+-/
+def standardCechDoubleFaceRestrictionMapTransported
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2))
+    (hface :
+      faces.face n (faces.face (n + 1) simplex j.succ) i =
+        faces.face n (faces.face (n + 1) simplex i.castSucc) j) :
+    Ob.carrier.toPresheaf.obj
+        (Opposite.op
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) n
+            (faces.face n (faces.face (n + 1) simplex i.castSucc) j))) ->
+      AAT.AG.Site.FinitePosetCechSection
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex :=
+  Ob.carrier.toPresheaf.map
+    (homOfLE
+      (S.contextPreorder.trans
+        (faces.faceOverlap_le (n + 1) simplex j.succ)
+        (by
+          simpa [hface] using
+            faces.faceOverlap_le n
+              (faces.face (n + 1) simplex j.succ) i))).op
+
+/--
+Cycle 255 discharge: the transported two-face restriction map agrees with the
+right route map by preorder-thinness.
+
+The only remaining geometric premise is the two-face simplex identity itself.
+Restriction-map compatibility is no longer stored as a structure field.
+-/
+theorem standardCechDoubleFaceRestrictionMapTransported_eq_of_twoFaceSimplexIdentity
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2))
+    (hface :
+      faces.face n (faces.face (n + 1) simplex j.succ) i =
+        faces.face n (faces.face (n + 1) simplex i.castSucc) j) :
+    standardCechDoubleFaceRestrictionMapTransported
+        faces n simplex i j hface =
+      standardCechDoubleFaceRestrictionMap
+        faces n simplex i.castSucc j := by
+  funext x
+  dsimp [standardCechDoubleFaceRestrictionMapTransported,
+    standardCechDoubleFaceRestrictionMap,
+    FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime]
+
+/--
+If two lower face simplices coincide, applying the composite restriction map to
+the corresponding cochain value is invariant under the transport of that lower
+simplex.  The proof uses proof irrelevance for the thin preorder homs.
+-/
+theorem standardCechCompositeRestrictionMap_apply_eq_of_lowSimplex_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (n : Nat)
+    (top :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (lowLeft lowRight :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (h : lowLeft = lowRight)
+    (hleLeft :
+      S.contextPreorder.le
+        ((geometry.toObstructionCoefficientRegime Ob).simplexOverlap (n + 2) top)
+        ((geometry.toObstructionCoefficientRegime Ob).simplexOverlap n lowLeft))
+    (hleRight :
+      S.contextPreorder.le
+        ((geometry.toObstructionCoefficientRegime Ob).simplexOverlap (n + 2) top)
+        ((geometry.toObstructionCoefficientRegime Ob).simplexOverlap n lowRight))
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n) :
+    Ob.carrier.toPresheaf.map (homOfLE hleLeft).op (cochain lowLeft) =
+      Ob.carrier.toPresheaf.map (homOfLE hleRight).op (cochain lowRight) := by
+  cases h
+  congr
+
+/--
+Cycle 256 transport bridge: the left double-face route applied to the left
+lower cochain value equals the transported left route applied to the right
+lower cochain value.
+-/
+theorem standardCechDoubleFaceRestrictionMap_apply_transport
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2))
+    (hface :
+      faces.face n (faces.face (n + 1) simplex j.succ) i =
+        faces.face n (faces.face (n + 1) simplex i.castSucc) j) :
+    standardCechDoubleFaceRestrictionMap faces n simplex j.succ i
+        (cochain (faces.face n (faces.face (n + 1) simplex j.succ) i)) =
+      standardCechDoubleFaceRestrictionMapTransported faces n simplex i j hface
+        (cochain (faces.face n (faces.face (n + 1) simplex i.castSucc) j)) := by
+  dsimp [standardCechDoubleFaceRestrictionMap,
+    standardCechDoubleFaceRestrictionMapTransported,
+    FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime]
+  exact
+    standardCechCompositeRestrictionMap_apply_eq_of_lowSimplex_eq
+      (geometry := geometry) (Ob := Ob) n simplex
+      (faces.face n (faces.face (n + 1) simplex j.succ) i)
+      (faces.face n (faces.face (n + 1) simplex i.castSucc) j)
+      hface
+      (S.contextPreorder.trans
+        (faces.faceOverlap_le (n + 1) simplex j.succ)
+        (faces.faceOverlap_le n (faces.face (n + 1) simplex j.succ) i))
+      (S.contextPreorder.trans
+        (faces.faceOverlap_le (n + 1) simplex j.succ)
+        (by
+          simpa [hface] using
+            faces.faceOverlap_le n (faces.face (n + 1) simplex j.succ) i))
+      cochain
+
+/--
+Cycle 258 canonical tuple simplex for a selected finite cover index type.
+
+This is the free cover-nerve shape: an `n`-simplex is just an ordered
+`(n+1)`-tuple of selected cover indices. Face maps and all higher face
+identities are generated by precomposition with morphisms in
+`SimplexCategory`; no restriction-map equality, signed cancellation, exactness,
+or H1 statement is stored here.
+-/
+abbrev FinitePosetCechCanonicalTupleSimplex (Index : Type r) (n : Nat) :=
+  Fin (n + 1) -> Index
+
+namespace FinitePosetCechCanonicalTupleSimplex
+
+/-- Contravariant map on canonical cover-index tuples. -/
+def simplexMap {Index : Type r} {n m : Nat}
+    (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+    (simplex : FinitePosetCechCanonicalTupleSimplex Index m) :
+    FinitePosetCechCanonicalTupleSimplex Index n :=
+  fun i => simplex (f.toOrderHom i)
+
+@[simp]
+theorem simplexMap_apply {Index : Type r} {n m : Nat}
+    (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+    (simplex : FinitePosetCechCanonicalTupleSimplex Index m)
+    (i : Fin (n + 1)) :
+    simplexMap f simplex i = simplex (f.toOrderHom i) :=
+  rfl
+
+/--
+The canonical tuple nerve is functorial because it is generated by
+precomposition in `SimplexCategory`.
+-/
+theorem simplexMap_comp {Index : Type r} {n m l : Nat}
+    (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+    (g : SimplexCategory.mk m ⟶ SimplexCategory.mk l)
+    (simplex : FinitePosetCechCanonicalTupleSimplex Index l) :
+    simplexMap (f ≫ g) simplex = simplexMap f (simplexMap g simplex) :=
+  rfl
+
+/--
+The triangular two-face identity in the canonical tuple nerve is exactly the
+standard coface identity in `SimplexCategory`.
+-/
+theorem twoFace_simplex_eq {Index : Type r}
+    (n : Nat)
+    (simplex : FinitePosetCechCanonicalTupleSimplex Index (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    simplexMap (SimplexCategory.δ i)
+        (simplexMap (SimplexCategory.δ j.succ) simplex) =
+      simplexMap (SimplexCategory.δ j)
+        (simplexMap (SimplexCategory.δ i.castSucc) simplex) := by
+  rw [← simplexMap_comp, ← simplexMap_comp, SimplexCategory.δ_comp_δ hle]
+
+end FinitePosetCechCanonicalTupleSimplex
+
+/--
+Cycle 258 canonical tuple nerve source for an existing finite-poset Cech regime.
+
+The selected regime may use an abstract `nerveSimplex n`; this source says that
+the abstract simplices are controlled by their ordered cover-index tuples. The
+composition law for `simplexMap` is therefore generated from tuple
+extensionality plus the defining equation on `simplexIndices`, rather than
+stored as an independent two-face or cancellation certificate.
+-/
+structure FinitePosetCechCanonicalTupleNerveSource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (K : AAT.AG.Site.FinitePosetAATSiteRegime S) where
+  simplex_ext :
+    forall (n : Nat)
+      (left right : AAT.AG.Site.FinitePosetCechSimplex K n),
+      (forall i : Fin (n + 1),
+        K.simplexIndices n left i = K.simplexIndices n right i) ->
+        left = right
+  simplexMap :
+    forall {n m : Nat}, (SimplexCategory.mk n ⟶ SimplexCategory.mk m) ->
+      AAT.AG.Site.FinitePosetCechSimplex K m ->
+        AAT.AG.Site.FinitePosetCechSimplex K n
+  simplexMap_indices :
+    forall {n m : Nat}
+      (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+      (simplex : AAT.AG.Site.FinitePosetCechSimplex K m)
+      (i : Fin (n + 1)),
+      K.simplexIndices n (simplexMap f simplex) i =
+        K.simplexIndices m simplex (f.toOrderHom i)
+  faceOverlap_le :
+    forall (n : Nat)
+      (simplex : AAT.AG.Site.FinitePosetCechSimplex K (n + 1))
+      (i : Fin (n + 2)),
+      S.contextPreorder.le (K.simplexOverlap (n + 1) simplex)
+        (K.simplexOverlap n (simplexMap (SimplexCategory.δ i) simplex))
+
+namespace FinitePosetCechCanonicalTupleNerveSource
+
+/--
+The abstract selected nerve action is functorial because its cover-index tuples
+are functorial and selected simplices are extensional in those tuples.
+-/
+theorem simplexMap_comp
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (source : FinitePosetCechCanonicalTupleNerveSource K)
+    {n m l : Nat}
+    (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+    (g : SimplexCategory.mk m ⟶ SimplexCategory.mk l)
+    (simplex : AAT.AG.Site.FinitePosetCechSimplex K l) :
+    source.simplexMap (f ≫ g) simplex =
+      source.simplexMap f (source.simplexMap g simplex) := by
+  apply source.simplex_ext n
+  intro i
+  calc
+    K.simplexIndices n (source.simplexMap (f ≫ g) simplex) i =
+        K.simplexIndices l simplex ((f ≫ g).toOrderHom i) := by
+      exact source.simplexMap_indices (f ≫ g) simplex i
+    _ = K.simplexIndices l simplex (g.toOrderHom (f.toOrderHom i)) := by
+      rfl
+    _ = K.simplexIndices m (source.simplexMap g simplex) (f.toOrderHom i) := by
+      exact (source.simplexMap_indices g simplex (f.toOrderHom i)).symm
+    _ = K.simplexIndices n
+          (source.simplexMap f (source.simplexMap g simplex)) i := by
+      exact (source.simplexMap_indices f (source.simplexMap g simplex) i).symm
+
+end FinitePosetCechCanonicalTupleNerveSource
+
+/--
+Cycle 257 lower face provenance: a selected finite-poset Cech nerve carries
+a contravariant action of the simplex category on its selected simplices.
+
+The action supplies face maps by applying the standard coface maps
+`SimplexCategory.δ i`.  Its functoriality is precisely the lower source needed
+to generate the triangular two-face simplex identity.  This structure does not
+store restriction-map equality, term equality, signed cancellation, double-sum
+cancellation, `d ∘ d = 0`, or any H1 conclusion.
+-/
+structure FinitePosetCechSimplicialFaceAction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (K : AAT.AG.Site.FinitePosetAATSiteRegime S) where
+  simplexMap :
+    forall {n m : Nat}, (SimplexCategory.mk n ⟶ SimplexCategory.mk m) ->
+      AAT.AG.Site.FinitePosetCechSimplex K m ->
+        AAT.AG.Site.FinitePosetCechSimplex K n
+  simplexMap_comp :
+    forall {n m l : Nat}
+      (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+      (g : SimplexCategory.mk m ⟶ SimplexCategory.mk l)
+      (simplex : AAT.AG.Site.FinitePosetCechSimplex K l),
+      simplexMap (f ≫ g) simplex = simplexMap f (simplexMap g simplex)
+  faceOverlap_le :
+    forall (n : Nat)
+      (simplex : AAT.AG.Site.FinitePosetCechSimplex K (n + 1))
+      (i : Fin (n + 2)),
+      S.contextPreorder.le (K.simplexOverlap (n + 1) simplex)
+        (K.simplexOverlap n (simplexMap (SimplexCategory.δ i) simplex))
+
+namespace FinitePosetCechSimplicialFaceAction
+
+/--
+Read a simplicial finite-poset face action as the existing selected face-data
+API.
+-/
+def toFaceData
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (action : FinitePosetCechSimplicialFaceAction K) :
+    AAT.AG.Site.FinitePosetCechFaceData K where
+  face := by
+    intro n simplex i
+    exact action.simplexMap (SimplexCategory.δ i) simplex
+  faceOverlap_le := action.faceOverlap_le
+
+/--
+Cycle 257 discharge below the triangular law: the two lower face simplices
+agree on the standard triangular Cech domain because `SimplexCategory.δ`
+satisfies the coface identity and the selected nerve action is functorial.
+-/
+theorem twoFace_simplex_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (action : FinitePosetCechSimplicialFaceAction K)
+    (n : Nat)
+    (simplex : AAT.AG.Site.FinitePosetCechSimplex K (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    (action.toFaceData).face n
+        ((action.toFaceData).face (n + 1) simplex j.succ) i =
+      (action.toFaceData).face n
+        ((action.toFaceData).face (n + 1) simplex i.castSucc) j := by
+  dsimp [toFaceData]
+  rw [← action.simplexMap_comp
+    (SimplexCategory.δ i) (SimplexCategory.δ j.succ) simplex]
+  rw [← action.simplexMap_comp
+    (SimplexCategory.δ j) (SimplexCategory.δ i.castSucc) simplex]
+  rw [SimplexCategory.δ_comp_δ hle]
+
+end FinitePosetCechSimplicialFaceAction
+
+namespace FinitePosetCechCanonicalTupleNerveSource
+
+/--
+Cycle 258 construction: canonical tuple nerve provenance generates the
+simplicial face action consumed by the Cycle 257 triangular Cech route.
+-/
+def toSimplicialFaceAction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (source : FinitePosetCechCanonicalTupleNerveSource K) :
+    FinitePosetCechSimplicialFaceAction K where
+  simplexMap := source.simplexMap
+  simplexMap_comp := by
+    intro n m l f g simplex
+    exact source.simplexMap_comp f g simplex
+  faceOverlap_le := source.faceOverlap_le
+
+/--
+The generated action has exactly the coface maps determined by the canonical
+tuple nerve source.
+-/
+theorem toSimplicialFaceAction_face_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (source : FinitePosetCechCanonicalTupleNerveSource K)
+    (n : Nat)
+    (simplex : AAT.AG.Site.FinitePosetCechSimplex K (n + 1))
+    (i : Fin (n + 2)) :
+    (source.toSimplicialFaceAction.toFaceData).face n simplex i =
+      source.simplexMap (SimplexCategory.δ i) simplex :=
+  rfl
+
+/--
+The triangular two-face simplex identity is generated through the action built
+from canonical tuple nerve provenance.
+-/
+theorem toSimplicialFaceAction_twoFace_simplex_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {K : AAT.AG.Site.FinitePosetAATSiteRegime S}
+    (source : FinitePosetCechCanonicalTupleNerveSource K)
+    (n : Nat)
+    (simplex : AAT.AG.Site.FinitePosetCechSimplex K (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    (source.toSimplicialFaceAction.toFaceData).face n
+        ((source.toSimplicialFaceAction.toFaceData).face (n + 1) simplex j.succ) i =
+      (source.toSimplicialFaceAction.toFaceData).face n
+        ((source.toSimplicialFaceAction.toFaceData).face (n + 1) simplex i.castSucc) j :=
+  source.toSimplicialFaceAction.twoFace_simplex_eq n simplex i j hle
+
+end FinitePosetCechCanonicalTupleNerveSource
+
+/--
+Cycle 259 universal n-ary tuple-overlap basis below the canonical cover nerve.
+
+This is lower than the Cycle 258 tuple-overlap geometry: it supplies an overlap
+context for each ordered cover-index tuple, projections to every component, and
+the universal lifting property for any context mapping to all tuple components.
+It stores no simplex-category monotonicity, face-action law, two-face equality,
+cancellation, differential exactness, or H1 conclusion.
+-/
+structure FinitePosetAtomLawCanonicalTupleOverlapBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) where
+  tupleOverlap :
+    forall n : Nat,
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n ->
+        AAT.AG.Site.ArchCtx A
+  tupleOverlap_le_patch :
+    forall (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n)
+      (k : Fin (n + 1)),
+      S.contextPreorder.le (tupleOverlap n simplex)
+        (geometry.cover.patch (simplex k))
+  tupleOverlap_lift :
+    forall {n : Nat} {X : AAT.AG.Site.ArchCtx A}
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n),
+      (forall k : Fin (n + 1),
+        S.contextPreorder.le X (geometry.cover.patch (simplex k))) ->
+        S.contextPreorder.le X (tupleOverlap n simplex)
+
+/--
+Cycle 258 canonical tuple-overlap geometry below the finite-poset cover nerve.
+
+This is the missing lower AAT layer identified by the canonical/free route: the
+selected atom/law cover supplies ordered cover-index tuples as simplices, and a
+tuple overlap context mapping to every tuple component.  The final field is now
+read as geometric monotonicity for tuple pullback; Cycle 259 constructs it from
+the lower universal tuple-overlap basis.  It stores no face-action law, no
+two-face equality, no cancellation, no differential exactness, and no H1
+conclusion.
+-/
+structure FinitePosetAtomLawCanonicalTupleOverlapGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) where
+  tupleOverlap :
+    forall n : Nat,
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n ->
+        AAT.AG.Site.ArchCtx A
+  tupleOverlap_le_patch :
+    forall (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n)
+      (k : Fin (n + 1)),
+      S.contextPreorder.le (tupleOverlap n simplex)
+        (geometry.cover.patch (simplex k))
+  tupleOverlap_le_tupleMap :
+    forall {n m : Nat}
+      (f : SimplexCategory.mk n ⟶ SimplexCategory.mk m)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index m),
+      S.contextPreorder.le (tupleOverlap m simplex)
+        (tupleOverlap n
+          (FinitePosetCechCanonicalTupleSimplex.simplexMap f simplex))
+
+namespace FinitePosetAtomLawCanonicalTupleOverlapGeometry
+
+/--
+Read canonical tuple-overlap geometry as a coefficient-free atom/law cover
+geometry whose selected nerve is definitionally the free ordered tuple nerve.
+-/
+def toCanonicalTupleCoverGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry) :
+    FinitePosetAtomLawCoverGeometry S where
+  ContextIndex := geometry.ContextIndex
+  finiteContextIndex := geometry.finiteContextIndex
+  context := geometry.context
+  contextLe := geometry.contextLe
+  contextLe_refl := geometry.contextLe_refl
+  contextLe_trans := by
+    intro i j k hij hjk
+    exact geometry.contextLe_trans hij hjk
+  contextLe_antisymm := by
+    intro i j hij hji
+    exact geometry.contextLe_antisymm hij hji
+  contextLe_sound := by
+    intro i j hij
+    exact geometry.contextLe_sound hij
+  contextMeet := geometry.contextMeet
+  contextMeet_le_left := geometry.contextMeet_le_left
+  contextMeet_le_right := geometry.contextMeet_le_right
+  context_le_meet := by
+    intro i j k hki hkj
+    exact geometry.context_le_meet hki hkj
+  base := geometry.base
+  cover := geometry.cover
+  finiteCoverIndex := geometry.finiteCoverIndex
+  nerveSimplex := fun n =>
+    FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n
+  finiteNerveSimplex := by
+    intro n
+    letI := geometry.finiteCoverIndex
+    infer_instance
+  simplexIndices := by
+    intro n simplex k
+    exact simplex k
+  simplexOverlap := tupleGeometry.tupleOverlap
+  simplexOverlap_le_patch := tupleGeometry.tupleOverlap_le_patch
+  adequacyRequirements := geometry.adequacyRequirements
+  coverAdequate := geometry.coverAdequate
+
+/--
+The canonical tuple cover geometry has tuple simplices definitionally.
+-/
+theorem toCanonicalTupleCoverGeometry_nerveSimplex_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry)
+    (n : Nat) :
+    tupleGeometry.toCanonicalTupleCoverGeometry.nerveSimplex n =
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n := by
+  rfl
+
+/--
+The generated canonical tuple cover geometry reads simplex indices by
+evaluation of the ordered tuple.
+-/
+theorem toCanonicalTupleCoverGeometry_simplexIndices_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry)
+    (n : Nat)
+    (simplex :
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n)
+    (k : Fin (n + 1)) :
+    tupleGeometry.toCanonicalTupleCoverGeometry.simplexIndices n simplex k =
+      simplex k := by
+  rfl
+
+/--
+The canonical tuple-overlap layer constructs the canonical tuple nerve source;
+`simplexMap` is precomposition in `SimplexCategory`, and functoriality is then
+generated by tuple extensionality.
+-/
+def toCanonicalTupleNerveSource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    FinitePosetCechCanonicalTupleNerveSource
+      (tupleGeometry.toCanonicalTupleCoverGeometry.toObstructionCoefficientRegime Ob) where
+  simplex_ext := by
+    intro n left right h
+    funext i
+    exact h i
+  simplexMap := by
+    intro n m f simplex
+    exact FinitePosetCechCanonicalTupleSimplex.simplexMap f simplex
+  simplexMap_indices := by
+    intro n m f simplex i
+    rfl
+  faceOverlap_le := by
+    intro n simplex i
+    exact tupleGeometry.tupleOverlap_le_tupleMap (SimplexCategory.δ i) simplex
+
+/--
+Cycle 258 positive provenance checkpoint: canonical tuple-overlap geometry
+constructs the lower tuple nerve source and the simplicial face action consumed
+by the Cech cancellation route.
+-/
+theorem constructs_canonicalTupleNerveSource_and_simplicialFaceAction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    Nonempty
+        (FinitePosetCechCanonicalTupleNerveSource
+          (tupleGeometry.toCanonicalTupleCoverGeometry.toObstructionCoefficientRegime Ob)) /\
+      Nonempty
+        (FinitePosetCechSimplicialFaceAction
+          (tupleGeometry.toCanonicalTupleCoverGeometry.toObstructionCoefficientRegime Ob)) :=
+  ⟨⟨tupleGeometry.toCanonicalTupleNerveSource Ob⟩,
+    ⟨(tupleGeometry.toCanonicalTupleNerveSource Ob).toSimplicialFaceAction⟩⟩
+
+end FinitePosetAtomLawCanonicalTupleOverlapGeometry
+
+namespace FinitePosetAtomLawCanonicalTupleOverlapBasis
+
+/--
+Cycle 259 construction: the universal tuple-overlap basis generates the
+tuple-map monotonicity field used by canonical tuple-overlap geometry.
+
+The proof is the expected AAT geometry argument: if a larger tuple overlap maps
+to every component of the larger tuple, then it maps to every component of any
+tuple pulled back along a simplex morphism, so the universal lift maps it into
+the smaller pulled-back tuple overlap.
+-/
+def toCanonicalTupleOverlapGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (basis : FinitePosetAtomLawCanonicalTupleOverlapBasis geometry) :
+    FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry where
+  tupleOverlap := basis.tupleOverlap
+  tupleOverlap_le_patch := basis.tupleOverlap_le_patch
+  tupleOverlap_le_tupleMap := by
+    intro n m f simplex
+    exact
+      basis.tupleOverlap_lift
+        (FinitePosetCechCanonicalTupleSimplex.simplexMap f simplex)
+        (fun k => by
+          simpa [FinitePosetCechCanonicalTupleSimplex.simplexMap] using
+            basis.tupleOverlap_le_patch m simplex (f.toOrderHom k))
+
+/--
+Cycle 259 positive provenance checkpoint: a universal canonical tuple-overlap
+basis constructs the Cycle 258 tuple-overlap geometry, then the canonical tuple
+nerve source and simplicial face action.
+-/
+theorem constructs_canonicalTupleOverlapGeometry_and_simplicialFaceAction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (basis : FinitePosetAtomLawCanonicalTupleOverlapBasis geometry)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    Nonempty (FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry) /\
+      Nonempty
+        (FinitePosetCechCanonicalTupleNerveSource
+          (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+            (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+              basis.toCanonicalTupleOverlapGeometry)
+            Ob)) /\
+      Nonempty
+        (FinitePosetCechSimplicialFaceAction
+          (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+            (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+              basis.toCanonicalTupleOverlapGeometry)
+            Ob)) := by
+  let tupleGeometry := basis.toCanonicalTupleOverlapGeometry
+  have h :=
+    FinitePosetAtomLawCanonicalTupleOverlapGeometry.constructs_canonicalTupleNerveSource_and_simplicialFaceAction
+      tupleGeometry Ob
+  exact ⟨⟨tupleGeometry⟩, h.1, h.2⟩
+
+end FinitePosetAtomLawCanonicalTupleOverlapBasis
+
+namespace FinitePosetAtomLawCoverGeometry
+
+/--
+Cycle 259 canonical n-ary tuple overlap generated from the AAT site overlap.
+
+The construction is free on ordered cover-index tuples: a singleton tuple uses
+its patch, and a longer tuple is the selected binary overlap over the cover base
+between the already-generated initial tuple overlap and the last patch.
+-/
+def canonicalTupleOverlapFromOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    forall n : Nat,
+      FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n ->
+        AAT.AG.Site.ArchCtx A
+  | 0, simplex => geometry.cover.patch (simplex 0)
+  | n + 1, simplex =>
+      S.overlap.overlap geometry.base.ctx
+        (canonicalTupleOverlapFromOverlap geometry n
+          (fun k => simplex k.castSucc))
+        (geometry.cover.patch (simplex (Fin.last (n + 1))))
+
+/--
+The generated n-ary tuple overlap is a readable context over the cover base.
+-/
+theorem canonicalTupleOverlapFromOverlap_le_base
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    forall (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n),
+      S.contextPreorder.le
+        (geometry.canonicalTupleOverlapFromOverlap n simplex)
+        geometry.base.ctx
+  | 0, simplex => geometry.cover.inclusion (simplex 0)
+  | n + 1, simplex =>
+      S.overlap.overlap_le_base
+        (canonicalTupleOverlapFromOverlap_le_base geometry n
+          (fun k => simplex k.castSucc))
+        (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+
+/--
+The generated n-ary tuple overlap maps to every patch in the tuple.
+-/
+theorem canonicalTupleOverlapFromOverlap_le_patch
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    forall (n : Nat)
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n)
+      (k : Fin (n + 1)),
+      S.contextPreorder.le
+        (geometry.canonicalTupleOverlapFromOverlap n simplex)
+        (geometry.cover.patch (simplex k))
+  | 0, simplex, k => by
+      have hk : k = 0 := by
+        apply Fin.ext
+        exact Nat.eq_zero_of_le_zero (Nat.le_of_lt_succ k.isLt)
+      subst k
+      exact S.contextPreorder.refl (geometry.cover.patch (simplex 0))
+  | n + 1, simplex, k => by
+      refine Fin.lastCases ?_ (fun initIndex => ?_) k
+      · exact
+          S.overlap.overlap_le_right
+            (geometry.canonicalTupleOverlapFromOverlap_le_base n
+              (fun q => simplex q.castSucc))
+            (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+      · exact
+          S.contextPreorder.trans
+            (S.overlap.overlap_le_left
+              (geometry.canonicalTupleOverlapFromOverlap_le_base n
+                (fun q => simplex q.castSucc))
+              (geometry.cover.inclusion (simplex (Fin.last (n + 1)))))
+            (geometry.canonicalTupleOverlapFromOverlap_le_patch n
+              (fun q => simplex q.castSucc) initIndex)
+
+/--
+The generated n-ary tuple overlap satisfies the universal lifting property for
+contexts mapping to every patch in the tuple.
+-/
+theorem canonicalTupleOverlapFromOverlap_lift
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    forall {n : Nat} {X : AAT.AG.Site.ArchCtx A}
+      (simplex : FinitePosetCechCanonicalTupleSimplex geometry.cover.Index n),
+      (forall k : Fin (n + 1),
+        S.contextPreorder.le X (geometry.cover.patch (simplex k))) ->
+        S.contextPreorder.le X
+          (geometry.canonicalTupleOverlapFromOverlap n simplex)
+  | 0, _, _, hX => hX 0
+  | n + 1, _, simplex, hX =>
+      S.overlap.overlap_lift
+        (geometry.canonicalTupleOverlapFromOverlap_le_base n
+          (fun q => simplex q.castSucc))
+        (geometry.cover.inclusion (simplex (Fin.last (n + 1))))
+        (geometry.canonicalTupleOverlapFromOverlap_lift
+          (fun q => simplex q.castSucc) (fun q => hX q.castSucc))
+        (hX (Fin.last (n + 1)))
+
+/--
+Cycle 259 lower AAT overlap basis generated from the selected site overlap and
+cover inclusions.
+-/
+def canonicalTupleOverlapBasisFromOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    FinitePosetAtomLawCanonicalTupleOverlapBasis geometry where
+  tupleOverlap := geometry.canonicalTupleOverlapFromOverlap
+  tupleOverlap_le_patch := geometry.canonicalTupleOverlapFromOverlap_le_patch
+  tupleOverlap_lift := by
+    intro n X simplex hX
+    exact geometry.canonicalTupleOverlapFromOverlap_lift simplex hX
+
+/--
+Cycle 259 construction: the selected AAT site overlap constructs the canonical
+tuple-overlap geometry used by the canonical tuple nerve route.
+-/
+def canonicalTupleOverlapGeometryFromOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry :=
+  (geometry.canonicalTupleOverlapBasisFromOverlap).toCanonicalTupleOverlapGeometry
+
+/--
+Cycle 259 positive discharge: no external tuple geometry is supplied.  The
+canonical tuple-overlap geometry is generated from the finite atom/law cover,
+its patch-to-base inclusions, and the site overlap pullback.
+-/
+theorem constructs_canonicalTupleOverlapGeometry_from_overlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S) :
+    Nonempty (FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry) :=
+  ⟨geometry.canonicalTupleOverlapGeometryFromOverlap⟩
+
+/--
+Cycle 259 proof-use discharge: the overlap-generated tuple geometry constructs
+the canonical tuple nerve source and its simplicial face action.
+-/
+theorem constructs_canonicalTupleNerveSource_and_simplicialFaceAction_from_overlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    Nonempty
+        (FinitePosetCechCanonicalTupleNerveSource
+          (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+            (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+              geometry.canonicalTupleOverlapGeometryFromOverlap)
+            Ob)) /\
+      Nonempty
+        (FinitePosetCechSimplicialFaceAction
+          (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+            (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+              geometry.canonicalTupleOverlapGeometryFromOverlap)
+            Ob)) :=
+  FinitePosetAtomLawCanonicalTupleOverlapGeometry.constructs_canonicalTupleNerveSource_and_simplicialFaceAction
+      geometry.canonicalTupleOverlapGeometryFromOverlap Ob
+
+end FinitePosetAtomLawCoverGeometry
+
+/--
+Cycle 254/257 lower two-face restriction-map law.
+
+After Cycle 257 this law stores only the triangular two-face simplex identity
+needed below local term equality.  The domain `i ≤ j` matches the standard
+coface identity `δᵢδⱼ₊₁ = δⱼδᵢ` used in Cech cancellation.  The transported
+restriction-map equality and local term equality are generated theorems rather
+than fields.  The law does not state signed cancellation, double-sum
+cancellation, `d ∘ d = 0`, or any H1 conclusion.
+-/
+structure FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)) where
+  twoFace_simplex_eq :
+    forall (n : Nat)
+      (simplex :
+        AAT.AG.Site.FinitePosetCechSimplex
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+      (i j : Fin (n + 2)),
+      i ≤ j ->
+      faces.face n (faces.face (n + 1) simplex j.succ) i =
+        faces.face n (faces.face (n + 1) simplex i.castSucc) j
+
+namespace FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+
+/--
+The triangular domain of the finite-poset two-face law is the same domain as
+the standard coface identity in the simplex category.
+-/
+theorem simplexCategory_delta_comp_delta_triangular_domain
+    (n : Nat) (i j : Fin (n + 2)) (hle : i ≤ j) :
+    SimplexCategory.δ i ≫ SimplexCategory.δ j.succ =
+      SimplexCategory.δ j ≫ SimplexCategory.δ i.castSucc :=
+  SimplexCategory.δ_comp_δ hle
+
+/--
+The transported two-face restriction-map equality generated from the stored
+triangular two-face simplex identity.
+-/
+theorem twoFace_restrictionMap_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawCechTwoFaceRestrictionMapLaw geometry Ob faces)
+    (n : Nat)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    standardCechDoubleFaceRestrictionMapTransported
+        faces n simplex i j (law.twoFace_simplex_eq n simplex i j hle) =
+      standardCechDoubleFaceRestrictionMap
+        faces n simplex i.castSucc j :=
+  standardCechDoubleFaceRestrictionMapTransported_eq_of_twoFaceSimplexIdentity
+    faces n simplex i j (law.twoFace_simplex_eq n simplex i j hle)
+
+end FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+
+namespace FinitePosetCechSimplicialFaceAction
+
+/--
+Cycle 257 construction: a simplicial finite-poset face action generates the
+triangular two-face restriction-map law consumed by the local Cech cancellation
+route.
+
+This is still a checkpoint, not a final exactness theorem: the selected
+simplicial face action itself is the remaining lower geometric source to build
+from the atom-generated cover nerve.
+-/
+def toTwoFaceRestrictionMapLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (action :
+      FinitePosetCechSimplicialFaceAction
+        (geometry.toObstructionCoefficientRegime Ob)) :
+    FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+      geometry Ob action.toFaceData where
+  twoFace_simplex_eq := by
+    intro n simplex i j hle
+    exact action.twoFace_simplex_eq n simplex i j hle
+
+/--
+The generated triangular law exposes exactly the existing selected face data
+read from the simplicial action.
+-/
+theorem toTwoFaceRestrictionMapLaw_faces_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (action :
+      FinitePosetCechSimplicialFaceAction
+        (geometry.toObstructionCoefficientRegime Ob)) :
+    (action.toTwoFaceRestrictionMapLaw
+      (geometry := geometry) (Ob := Ob)).twoFace_simplex_eq =
+      fun n simplex i j hle =>
+        action.twoFace_simplex_eq n simplex i j hle := by
+  rfl
+
+end FinitePosetCechSimplicialFaceAction
+
+/--
+Cycle 252 explicit double alternating face sum for the second standard Cech
+differential.
+
+The outer sum ranges over faces of the `(n+3)`-fold overlap; the inner sum
+ranges over faces of the selected outer face.  The object is still the
+original overlap, so this is the concrete cancellation surface for
+cosimplicial two-face identities.
+-/
+def standardCechDoubleAlternatingFaceCombination
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    AAT.AG.Site.FinitePosetCechSection
+      (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex :=
+  obstructionSheafStandardAlternatingCombination Ob
+    (AAT.AG.Site.FinitePosetCechOverlapObject
+      (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    (n + 3)
+    (fun outer =>
+      obstructionSheafStandardAlternatingCombination Ob
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+        (n + 2)
+        (fun inner =>
+          standardCechDoubleFaceRestriction faces n cochain simplex outer inner))
+
+/--
+Cycle 253 signed double-face term.
+
+This is the individual summand of the explicit double alternating face sum:
+the inner face contributes its sign, and then the outer face contributes its
+sign.  It is the local object on which the usual Cech `δᵢδⱼ` / `δⱼδᵢ`
+pairing acts.
+-/
+def standardCechSignedDoubleFaceTerm
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (outer : Fin (n + 3)) (inner : Fin (n + 2)) :
+    AAT.AG.Site.FinitePosetCechSection
+      (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  let term := standardCechDoubleFaceRestriction faces n cochain simplex outer inner
+  let innerSigned := if Even inner.val then term else -term
+  exact if Even outer.val then innerSigned else -innerSigned
+
+/--
+Cycle 260 pure finite-index rectangle sum.
+
+This is independent of AAT geometry.  It exposes the standard Cech index
+rectangle with `N + 1` outer faces and `N` inner faces.
+-/
+def finiteCechRectangleSum (M : Type*) [AddCommMonoid M] (N : Nat)
+    (f : Fin (N + 1) -> Fin N -> M) : M :=
+  Finset.univ.sum
+    (fun outer : Fin (N + 1) =>
+      Finset.univ.sum (fun inner : Fin N => f outer inner))
+
+/--
+Cycle 260 pure finite-index triangular paired sum.
+
+The two terms in each summand are exactly the standard Cech paired indices
+`(j.succ, i)` and `(i.castSucc, j)` over the triangular domain `i ≤ j`.
+-/
+def finiteCechTriangularPairSum (M : Type*) [AddCommMonoid M] (N : Nat)
+    (f : Fin (N + 1) -> Fin N -> M) : M :=
+  Finset.univ.sum
+    (fun i : Fin N =>
+      (Finset.univ.filter (fun j : Fin N => i ≤ j)).sum
+        (fun j => f j.succ i + f i.castSucc j))
+
+theorem finiteCech_sum_filter_castSucc_le
+    {M : Type*} [AddCommMonoid M] {N : Nat}
+    (i : Fin N) (g : Fin (N + 1) -> M) :
+    (Finset.univ.filter (fun j : Fin (N + 1) => i.castSucc ≤ j)).sum g =
+      (Finset.univ.filter (fun j : Fin N => i ≤ j)).sum (fun j => g j.castSucc) +
+        g (Fin.last N) := by
+  rw [Finset.sum_filter, Fin.sum_univ_castSucc, ← Finset.sum_filter]
+  simp [Fin.castSucc_le_castSucc_iff, Fin.le_last]
+
+theorem finiteCech_sum_filter_last_le
+    {M : Type*} [AddCommMonoid M] {N : Nat}
+    (g : Fin (N + 1) -> M) :
+    (Finset.univ.filter (fun j : Fin (N + 1) => Fin.last N ≤ j)).sum g =
+      g (Fin.last N) := by
+  rw [Finset.sum_filter, Fin.sum_univ_castSucc]
+  simp [Fin.last_le_iff, Fin.castSucc_ne_last]
+
+theorem finiteCechRectangleSum_succ
+    {M : Type*} [AddCommMonoid M] (N : Nat)
+    (f : Fin (N + 1 + 1) -> Fin (N + 1) -> M) :
+    finiteCechRectangleSum M (N + 1) f =
+      finiteCechRectangleSum M N (fun outer inner => f outer.castSucc inner.castSucc) +
+        Finset.univ.sum (fun outer : Fin (N + 1) => f outer.castSucc (Fin.last N)) +
+          Finset.univ.sum (fun inner : Fin (N + 1) =>
+            f (Fin.last (N + 1)) inner) := by
+  unfold finiteCechRectangleSum
+  simp_rw [Fin.sum_univ_castSucc]
+  rw [Finset.sum_add_distrib]
+  simp [add_assoc, add_comm, add_left_comm]
+
+theorem finiteCechTriangularPairSum_succ
+    {M : Type*} [AddCommMonoid M] (N : Nat)
+    (f : Fin (N + 1 + 1) -> Fin (N + 1) -> M) :
+    finiteCechTriangularPairSum M (N + 1) f =
+      finiteCechTriangularPairSum M N
+        (fun outer inner => f outer.castSucc inner.castSucc) +
+        Finset.univ.sum (fun inner : Fin (N + 1) =>
+          f (Fin.last (N + 1)) inner) +
+          Finset.univ.sum (fun outer : Fin (N + 1) =>
+            f outer.castSucc (Fin.last N)) := by
+  unfold finiteCechTriangularPairSum
+  simp_rw [Fin.sum_univ_castSucc]
+  simp_rw [finiteCech_sum_filter_castSucc_le]
+  rw [finiteCech_sum_filter_last_le]
+  simp [Finset.sum_add_distrib, add_assoc, add_comm, add_left_comm]
+
+/--
+Cycle 260 pure finite reindexing theorem.
+
+The standard Cech rectangle of double-face indices is exactly the canonical
+triangular pairing of the two opposite-order deletion routes.  This is the
+finite combinatorial layer needed to promote local pair cancellation to the full
+double alternating sum.
+-/
+theorem finiteCechRectangleSum_eq_triangularPairSum
+    {M : Type*} [AddCommMonoid M] (N : Nat)
+    (f : Fin (N + 1) -> Fin N -> M) :
+    finiteCechRectangleSum M N f = finiteCechTriangularPairSum M N f := by
+  induction N with
+  | zero =>
+      simp [finiteCechRectangleSum, finiteCechTriangularPairSum]
+  | succ N ih =>
+      rw [finiteCechRectangleSum_succ, finiteCechTriangularPairSum_succ, ih]
+      simp [add_comm, add_left_comm]
+
+/--
+Cycle 260 finite-index expansion: the concrete double alternating combination is
+the nested finite sum of the signed double-face terms.
+
+This does not yet reindex the sum into cancelling pairs.  It only removes the
+remaining opacity of the nested `obstructionSheafStandardAlternatingCombination`
+definition, so the next obligation is a purely finite triangular decomposition
+of the standard Cech index rectangle.
+-/
+theorem standardCechDoubleAlternatingFaceCombination_eq_signedDoubleFaceTermSum
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    standardCechDoubleAlternatingFaceCombination faces n cochain simplex =
+      letI :=
+        (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+          (AAT.AG.Site.FinitePosetCechOverlapObject
+            (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+      Finset.univ.sum
+        (fun outer : Fin (n + 3) =>
+          Finset.univ.sum
+            (fun inner : Fin (n + 2) =>
+              standardCechSignedDoubleFaceTerm
+                faces n cochain simplex outer inner)) := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  dsimp [standardCechDoubleAlternatingFaceCombination,
+    obstructionSheafStandardAlternatingCombination,
+    standardCechSignedDoubleFaceTerm]
+  refine Finset.sum_congr rfl ?_
+  intro outer _houter_mem
+  by_cases houter : Even outer.val
+  · simp [houter]
+  · simp [houter, Finset.sum_neg_distrib]
+
+/--
+Cycle 260 canonical triangular pairing surface for the standard Cech rectangle.
+
+Each summand is one of the usual paired routes
+`(outer, inner) = (j.succ, i)` and `(outer, inner) = (i.castSucc, j)` with
+`i ≤ j`.  The definition is intentionally only a finite-index surface: it does
+not assert that the standard double alternating sum has already been reindexed
+into this form.
+-/
+def standardCechTriangularDoubleFacePairSum
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    AAT.AG.Site.FinitePosetCechSection
+      (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  exact
+    Finset.univ.sum
+      (fun i : Fin (n + 2) =>
+        (Finset.univ.filter (fun j : Fin (n + 2) => i ≤ j)).sum
+          (fun j =>
+            standardCechSignedDoubleFaceTerm faces n cochain simplex j.succ i +
+              standardCechSignedDoubleFaceTerm faces n cochain simplex i.castSucc j))
+
+/--
+Cycle 260 reindexing for the generated signed Cech double-face terms.
+
+This is the AAT-facing use of the pure finite-index theorem above.  It does not
+use any cancellation or exactness law; it only states that the standard Cech
+rectangle is the canonical triangular pairing domain.
+-/
+theorem standardCechSignedDoubleFaceTermSum_eq_triangularPairSum
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    Finset.univ.sum
+        (fun outer : Fin (n + 3) =>
+          Finset.univ.sum
+            (fun inner : Fin (n + 2) =>
+              standardCechSignedDoubleFaceTerm
+                faces n cochain simplex outer inner)) =
+      standardCechTriangularDoubleFacePairSum faces n cochain simplex := by
+  classical
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  change
+    finiteCechRectangleSum
+        (AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+        (n + 2)
+        (fun outer inner =>
+          standardCechSignedDoubleFaceTerm faces n cochain simplex outer inner) =
+      finiteCechTriangularPairSum
+        (AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+        (n + 2)
+        (fun outer inner =>
+          standardCechSignedDoubleFaceTerm faces n cochain simplex outer inner)
+  exact
+    finiteCechRectangleSum_eq_triangularPairSum (n + 2)
+      (fun outer inner =>
+        standardCechSignedDoubleFaceTerm faces n cochain simplex outer inner)
+
+/--
+Cycle 260 standard double-face reindexing.
+
+The expanded double alternating face combination is definitionally the signed
+rectangle sum, and the pure finite theorem reindexes that rectangle as the
+canonical triangular paired sum.
+-/
+theorem standardCechDoubleAlternatingFaceCombination_eq_triangularPairSum
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    standardCechDoubleAlternatingFaceCombination faces n cochain simplex =
+      standardCechTriangularDoubleFacePairSum faces n cochain simplex := by
+  rw [standardCechDoubleAlternatingFaceCombination_eq_signedDoubleFaceTermSum]
+  exact standardCechSignedDoubleFaceTermSum_eq_triangularPairSum
+    faces n cochain simplex
+
+/--
+Cycle 253 local two-face term equality.
+
+For `i,j : Fin (n+2)`, the two Cech double-face routes paired by the simplicial
+identity are the terms
+`outer = j.succ, inner = i` and `outer = i.castSucc, inner = j`.
+
+This is deliberately local: it records the atomic equality of the two
+restricted sections before finite-sum reindexing.  Later cycles should derive
+this equality from selected two-face identities and restriction-composition
+equality.
+-/
+def FinitePosetAtomLawCechTwoFaceTermEquality
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) : Prop :=
+  standardCechDoubleFaceRestriction faces n cochain simplex j.succ i =
+    standardCechDoubleFaceRestriction faces n cochain simplex i.castSucc j
+
+namespace FinitePosetAtomLawCechTwoFaceTermEquality
+
+/--
+Cycle 256 bridge: a selected two-face simplex identity generates the local
+two-face term equality used by signed-pair cancellation.
+
+The proof uses the Cycle 255 restriction-map equality as a theorem rather than
+storing it as a certificate field on the law.
+-/
+theorem of_twoFaceSimplexIdentity
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2))
+    (hface :
+      faces.face n (faces.face (n + 1) simplex j.succ) i =
+        faces.face n (faces.face (n + 1) simplex i.castSucc) j) :
+    FinitePosetAtomLawCechTwoFaceTermEquality faces n cochain simplex i j := by
+  dsimp [FinitePosetAtomLawCechTwoFaceTermEquality]
+  rw [standardCechDoubleFaceRestriction_eq_restrictionMap_apply]
+  rw [standardCechDoubleFaceRestrictionMap_apply_transport
+    faces n cochain simplex i j hface]
+  rw [standardCechDoubleFaceRestrictionMapTransported_eq_of_twoFaceSimplexIdentity
+    faces n simplex i j hface]
+  rw [standardCechDoubleFaceRestriction_eq_restrictionMap_apply]
+
+end FinitePosetAtomLawCechTwoFaceTermEquality
+
+namespace FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+
+/--
+Cycle 256 proof-use bridge from the lower two-face law to the local term
+equality required by signed-pair cancellation.
+-/
+theorem toTwoFaceTermEquality
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawCechTwoFaceRestrictionMapLaw geometry Ob faces)
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    FinitePosetAtomLawCechTwoFaceTermEquality faces n cochain simplex i j :=
+  FinitePosetAtomLawCechTwoFaceTermEquality.of_twoFaceSimplexIdentity
+    faces n cochain simplex i j (law.twoFace_simplex_eq n simplex i j hle)
+
+end FinitePosetAtomLawCechTwoFaceRestrictionMapLaw
+
+/--
+Cycle 253 paired signed double-face terms cancel.
+
+This is the first sign-level discharge below the Cycle 252 double-face
+cancellation premise.  It proves that once the paired two-face routes identify
+the same restricted section, their two signed contributions cancel because
+`j.succ` shifts parity by one while `i.castSucc` preserves parity.
+
+The theorem does not yet prove the whole double alternating sum is zero; the
+remaining finite reindexing / pairing of all double-face summands is still a
+separate proof obligation.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2))
+    (hterm :
+      FinitePosetAtomLawCechTwoFaceTermEquality faces n cochain simplex i j) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm faces n cochain simplex j.succ i +
+        standardCechSignedDoubleFaceTerm faces n cochain simplex i.castSucc j =
+      (standardCechAdditiveData geometry Ob).zeroSection (n + 2) simplex := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  rw [standardCechAdditiveData_zeroSection_eq_zero geometry Ob (n + 2) simplex]
+  dsimp [FinitePosetAtomLawCechTwoFaceTermEquality] at hterm
+  dsimp [standardCechSignedDoubleFaceTerm]
+  rw [hterm]
+  by_cases hi : Even i.val
+  · by_cases hj : Even j.val
+    · simp [hi, hj, Nat.even_add_one]
+    · simp [hi, hj, Nat.even_add_one]
+  · by_cases hj : Even j.val
+    · simp [hi, hj, Nat.even_add_one]
+    · simp [hi, hj, Nat.even_add_one]
+
+/--
+Cycle 257 triangular-domain adequacy bridge: the triangular two-face law feeds
+the existing local signed-pair cancellation theorem for exactly the paired
+summands `outer = j.succ, inner = i` and `outer = i.castSucc, inner = j`.
+
+This is still local.  It does not prove that all terms in the finite double
+alternating sum have been paired.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel_of_twoFaceRestrictionMapLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawCechTwoFaceRestrictionMapLaw geometry Ob faces)
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm faces n cochain simplex j.succ i +
+        standardCechSignedDoubleFaceTerm faces n cochain simplex i.castSucc j =
+      (standardCechAdditiveData geometry Ob).zeroSection (n + 2) simplex :=
+  standardCechSignedDoubleFaceTerm_pair_cancel
+    faces n cochain simplex i j
+    (FinitePosetAtomLawCechTwoFaceRestrictionMapLaw.toTwoFaceTermEquality
+      law n cochain simplex i j hle)
+
+/--
+Cycle 257 direct proof-use bridge: a simplicial finite-poset face action
+generates the triangular two-face law and therefore the local signed-pair
+cancellation theorem.
+
+This is the strongest Cycle 257 local result.  It still does not perform the
+finite reindexing needed to cancel the whole double alternating sum.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel_of_simplicialFaceAction
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (action :
+      FinitePosetCechSimplicialFaceAction
+        (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+        j.succ i +
+        standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+          i.castSucc j =
+      (standardCechAdditiveData geometry Ob).zeroSection (n + 2) simplex :=
+  standardCechSignedDoubleFaceTerm_pair_cancel_of_twoFaceRestrictionMapLaw
+    (FinitePosetCechSimplicialFaceAction.toTwoFaceRestrictionMapLaw
+      (geometry := geometry) (Ob := Ob) action)
+    n cochain simplex i j hle
+
+/--
+Cycle 258 proof-use bridge: canonical tuple nerve provenance generates the
+simplicial face action, which generates the local signed-pair cancellation used
+in the standard Cech double-face route.
+
+This is still local. It does not claim that all double-face summands have been
+paired or that the standard differential satisfies `d ∘ d = 0`.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel_of_canonicalTupleNerveSource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (source :
+      FinitePosetCechCanonicalTupleNerveSource
+        (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    let action := source.toSimplicialFaceAction
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+        j.succ i +
+        standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+          i.castSucc j =
+      (standardCechAdditiveData geometry Ob).zeroSection (n + 2) simplex :=
+  standardCechSignedDoubleFaceTerm_pair_cancel_of_simplicialFaceAction
+    source.toSimplicialFaceAction n cochain simplex i j hle
+
+/--
+Cycle 258 proof-use bridge from the new tuple-overlap layer: canonical
+tuple-overlap geometry constructs the canonical tuple nerve source, then the
+simplicial face action, and finally the local signed-pair cancellation.
+
+This keeps the remaining premise at the geometric tuple-overlap level; it does
+not accept a face-action source, two-face law, cancellation law, `d ∘ d = 0`,
+or H1 conclusion as input.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel_of_atomLawCanonicalTupleOverlapGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    (tupleGeometry :
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry geometry)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (tupleGeometry.toCanonicalTupleCoverGeometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (tupleGeometry.toCanonicalTupleCoverGeometry.toObstructionCoefficientRegime Ob)
+        (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+    let action := source.toSimplicialFaceAction
+    let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+    letI :=
+      (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (canonicalGeometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+        j.succ i +
+        standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+          i.castSucc j =
+      (standardCechAdditiveData canonicalGeometry Ob).zeroSection (n + 2) simplex :=
+  standardCechSignedDoubleFaceTerm_pair_cancel_of_canonicalTupleNerveSource
+    (geometry := tupleGeometry.toCanonicalTupleCoverGeometry) (Ob := Ob)
+    (tupleGeometry.toCanonicalTupleNerveSource Ob) n cochain simplex i j hle
+
+/--
+Cycle 259 proof-use bridge from the selected AAT overlap: the atom/law cover
+geometry first generates canonical n-ary tuple overlaps from the site overlap,
+then constructs the canonical tuple nerve route and the local signed-pair
+cancellation.
+
+No external tuple-overlap geometry, face-action source, two-face law,
+cancellation law, `d ∘ d = 0`, or H1 conclusion is supplied.
+-/
+theorem standardCechSignedDoubleFaceTerm_pair_cancel_of_atomLawOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+          (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+            geometry.canonicalTupleOverlapGeometryFromOverlap)
+          Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+          (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+            geometry.canonicalTupleOverlapGeometryFromOverlap)
+          Ob)
+        (n + 2))
+    (i j : Fin (n + 2)) (hle : i ≤ j) :
+    let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+    let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+    let action := source.toSimplicialFaceAction
+    let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+    letI :=
+      (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (canonicalGeometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+        j.succ i +
+        standardCechSignedDoubleFaceTerm action.toFaceData n cochain simplex
+          i.castSucc j =
+      (standardCechAdditiveData canonicalGeometry Ob).zeroSection (n + 2) simplex :=
+  standardCechSignedDoubleFaceTerm_pair_cancel_of_atomLawCanonicalTupleOverlapGeometry
+    geometry.canonicalTupleOverlapGeometryFromOverlap Ob n cochain simplex i j hle
+
+/--
+Cycle 260 triangular finite-sum discharge from the selected AAT overlap.
+
+The proof does not assume a double-face cancellation law.  It sums the local
+Cycle 259 signed-pair cancellation over the canonical triangular index domain
+`i ≤ j`.  The only remaining gap to the full standard Cech `d² = 0` law is the
+pure finite reindexing theorem identifying the nested standard rectangle with
+this triangular pair surface.
+-/
+theorem standardCechTriangularDoubleFacePairSum_eq_zero_of_atomLawOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+          (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+            geometry.canonicalTupleOverlapGeometryFromOverlap)
+          Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime
+          (FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry
+            geometry.canonicalTupleOverlapGeometryFromOverlap)
+          Ob)
+        (n + 2)) :
+    let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+    let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+    let action := source.toSimplicialFaceAction
+    let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+    letI :=
+      (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (canonicalGeometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+    standardCechTriangularDoubleFacePairSum
+        action.toFaceData n cochain simplex =
+      (standardCechAdditiveData canonicalGeometry Ob).zeroSection (n + 2) simplex := by
+  classical
+  let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+  let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+  let action := source.toSimplicialFaceAction
+  let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+  letI :=
+    (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (canonicalGeometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+  change
+    standardCechTriangularDoubleFacePairSum action.toFaceData n cochain simplex =
+      (standardCechAdditiveData canonicalGeometry Ob).zeroSection (n + 2) simplex
+  rw [standardCechAdditiveData_zeroSection_eq_zero canonicalGeometry Ob (n + 2) simplex]
+  dsimp [standardCechTriangularDoubleFacePairSum]
+  refine Finset.sum_eq_zero ?_
+  intro i _hi_mem
+  refine Finset.sum_eq_zero ?_
+  intro j hj_mem
+  have hle : i ≤ j := (Finset.mem_filter.mp hj_mem).2
+  exact
+    standardCechSignedDoubleFaceTerm_pair_cancel_of_atomLawOverlap
+      geometry Ob n cochain simplex i j hle
+
+/--
+One outer face restriction of the standard differential expands to the inner
+double-face alternating sum.  This uses only the generated standard
+differential, the generated standard alternating sum, and additive
+functoriality of the obstruction sheaf restriction map.
+-/
+theorem standardCechFaceRestriction_standardCechDifferential_eq_innerDoubleAlternating
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2))
+    (outer : Fin (n + 3)) :
+    AAT.AG.Site.FinitePosetCechFaceRestriction faces
+        (standardCechDifferential faces n cochain) simplex outer =
+      obstructionSheafStandardAlternatingCombination Ob
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+        (n + 2)
+        (fun inner =>
+          standardCechDoubleFaceRestriction faces n cochain simplex outer inner) := by
+  let outerSimplex := faces.face (n + 1) simplex outer
+  change
+    Ob.carrier.toPresheaf.map
+        (homOfLE (faces.faceOverlap_le (n + 1) simplex outer)).op
+      (standardCechDifferential faces n cochain outerSimplex) =
+      obstructionSheafStandardAlternatingCombination Ob
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2) simplex)
+        (n + 2)
+        (fun inner =>
+          standardCechDoubleFaceRestriction faces n cochain simplex outer inner)
+  rw [standardCechDifferential_eq_restrictions]
+  dsimp [standardCechAdditiveData]
+  rw [standardAlternatingFaceCombination_eq_obstructionSheafStandardAlternatingCombination]
+  exact
+    obstructionSheafStandardAlternatingCombination_map Ob
+      (homOfLE (faces.faceOverlap_le (n + 1) simplex outer)) (n + 2)
+      (fun inner =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain
+          outerSimplex inner)
+
+/--
+Cycle 252 expansion theorem: the second standard Cech differential is exactly
+the explicit double alternating face sum.
+
+This theorem is the new foothold.  It lowers the remaining exactness question
+from an opaque `differential_comp_zero` field to a concrete finite-poset
+cosimplicial cancellation problem over two selected face indices.
+-/
+theorem standardCechSecondDifferential_eq_doubleAlternatingFaceCombination
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (n : Nat)
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 2)) :
+    standardCechDifferential faces (n + 1)
+        (standardCechDifferential faces n cochain) simplex =
+      standardCechDoubleAlternatingFaceCombination faces n cochain simplex := by
+  dsimp [standardCechDifferential, standardCechDoubleAlternatingFaceCombination]
+  dsimp [standardCechAdditiveData]
+  rw [standardAlternatingFaceCombination_eq_obstructionSheafStandardAlternatingCombination]
+  congr
+  funext outer
+  exact
+    standardCechFaceRestriction_standardCechDifferential_eq_innerDoubleAlternating
+      faces n cochain simplex outer
+
+/--
+Cycle 252 lower exactness law: the explicit double alternating face sum
+cancels.
+
+This is intentionally below `FinitePosetAtomLawStandardCechDifferentialCompLaw`.
+It is the place where finite-poset cosimplicial two-face identities,
+restriction-composition equality, and the opposite parity of paired faces must
+be discharged.  Supplying the old `differential_comp_zero` field does not
+populate this law.
+-/
+structure FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)) where
+  doubleFace_cancellation :
+    forall (n : Nat)
+      (cochain :
+        AAT.AG.Site.FinitePosetCechCochain
+          (geometry.toObstructionCoefficientRegime Ob) n)
+      (simplex :
+        AAT.AG.Site.FinitePosetCechSimplex
+          (geometry.toObstructionCoefficientRegime Ob) (n + 2)),
+      standardCechDoubleAlternatingFaceCombination faces n cochain simplex =
+        (standardCechAdditiveData geometry Ob).zeroSection (n + 2) simplex
+
+/--
+Cycle 251/252 remaining exactness law for the standard finite-poset Cech
+differential.
+
+This is the precise material law still not generated by the current
+`FinitePosetCechFaceData` API.  A future discharge should derive it from
+finite-nerve cosimplicial face identities and functoriality of the coefficient
+presheaf, not supply it as a completion certificate.
+-/
+structure FinitePosetAtomLawStandardCechDifferentialCompLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)) where
+  differential_comp_zero :
+    forall (n : Nat)
+      (cochain :
+        AAT.AG.Site.FinitePosetCechCochain
+          (geometry.toObstructionCoefficientRegime Ob) n),
+      standardCechDifferential faces (n + 1)
+          (standardCechDifferential faces n cochain) =
+        AAT.AG.Site.FinitePosetCechZeroCochain
+          (standardCechAdditiveData geometry Ob) (n + 2)
+
+namespace FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+
+/--
+The Cycle 252 double-face cancellation law constructs the Cycle 251 standard
+`d ∘ d = 0` law by proof-use of the expansion theorem.  This is a lower route,
+not a completion: the double-face cancellation law itself remains to be
+derived from canonical finite-poset face identities.
+-/
+def toStandardCechDifferentialCompLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+        geometry Ob faces) :
+    FinitePosetAtomLawStandardCechDifferentialCompLaw geometry Ob faces where
+  differential_comp_zero := by
+    intro n cochain
+    funext simplex
+    rw [standardCechSecondDifferential_eq_doubleAlternatingFaceCombination]
+    exact law.doubleFace_cancellation n cochain simplex
+
+end FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+
+/--
+Cycle 260 construction of the double-face cancellation law from the selected AAT
+overlap.
+
+This no longer accepts a reindexing premise.  The proof first reindexes the
+standard double alternating sum into the canonical triangular pair surface, then
+sums the Cycle 259 local atom/law-overlap cancellation over that triangular
+domain.
+-/
+def atomLawOverlap_constructs_doubleFaceCancellationLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+    let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+    let action := source.toSimplicialFaceAction
+    let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+    FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+      canonicalGeometry Ob action.toFaceData where
+  doubleFace_cancellation := by
+    intro n cochain simplex
+    rw [standardCechDoubleAlternatingFaceCombination_eq_triangularPairSum]
+    exact
+      standardCechTriangularDoubleFacePairSum_eq_zero_of_atomLawOverlap
+        geometry Ob n cochain simplex
+
+/--
+Cycle 260 proof-use checkpoint: the selected AAT overlap now constructs both the
+double-face cancellation law and the standard finite-poset `d ∘ d = 0` law via
+the lower reindexing and local cancellation route.
+-/
+theorem constructs_doubleFaceCancellation_and_standardDifferentialComp_from_atomLawOverlap
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+    let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+    let action := source.toSimplicialFaceAction
+    let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+    Nonempty
+        (FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+          canonicalGeometry Ob action.toFaceData) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob action.toFaceData) := by
+  let tupleGeometry := geometry.canonicalTupleOverlapGeometryFromOverlap
+  let source := tupleGeometry.toCanonicalTupleNerveSource Ob
+  let action := source.toSimplicialFaceAction
+  let canonicalGeometry := tupleGeometry.toCanonicalTupleCoverGeometry
+  let law := atomLawOverlap_constructs_doubleFaceCancellationLaw geometry Ob
+  change
+    Nonempty
+        (FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw
+          canonicalGeometry Ob action.toFaceData) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob action.toFaceData)
+  exact
+    ⟨⟨law⟩,
+      ⟨FinitePosetAtomLawCechCosimplicialDoubleFaceCancellationLaw.toStandardCechDifferentialCompLaw
+        law⟩⟩
+
+/--
+Construct the selected finite-poset Cech complex from standard additive data,
+standard face-restriction differential, and the remaining standard
+`d ∘ d = 0` law.
+
+This removes the previous `hadd`, selected `differential`,
+`differential_eq_restrictions`, and `differential_zero` choices from the route.
+It still does not discharge `d ∘ d = 0`.
+-/
+def standardFinitePosetCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (law :
+      FinitePosetAtomLawStandardCechDifferentialCompLaw geometry Ob faces) :
+    AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob) where
+  additive := standardCechAdditiveData geometry Ob
+  faces := faces
+  differential := standardCechDifferential faces
+  differential_eq_restrictions := by
+    intro n cochain simplex
+    rfl
+  differential_zero := by
+    intro n
+    exact standardCechDifferential_zero faces n
+  differential_comp_zero := by
+    intro n cochain
+    exact law.differential_comp_zero n cochain
+
+/-- The standard complex uses the standard Cech additive data definitionally. -/
+theorem standardFinitePosetCechComplex_additive_eq_standardCechAdditiveData
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawStandardCechDifferentialCompLaw geometry Ob faces) :
+    (standardFinitePosetCechComplex faces law).additive =
+      standardCechAdditiveData geometry Ob := by
+  rfl
+
+/--
+The standard complex immediately supplies the Cycle 248 additive law without a
+separate `hadd` argument.
+-/
+def standardFinitePosetCechComplex_toSelectedCechComplexAdditiveLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob)}
+    (law :
+      FinitePosetAtomLawStandardCechDifferentialCompLaw geometry Ob faces) :
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob
+      (standardFinitePosetCechComplex faces law) :=
+  standardCechAdditiveData_toSelectedCechComplexAdditiveLaw
+    (standardFinitePosetCechComplex faces law) rfl
+
+/--
+Cycle 251 proof-use checkpoint: standard additive data and standard
+face-restriction differential construct the selected finite-poset Cech complex
+up to the remaining standard `d ∘ d = 0` law.
+-/
+theorem constructs_standardFinitePosetCechComplex_from_standardDifferentialCompLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (law :
+      FinitePosetAtomLawStandardCechDifferentialCompLaw geometry Ob faces) :
+    Nonempty
+        (AAT.AG.Site.FinitePosetCechComplex
+          (geometry.toObstructionCoefficientRegime Ob)) /\
+      Nonempty
+        (FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob
+          (standardFinitePosetCechComplex faces law)) /\
+      (standardFinitePosetCechComplex faces law).additive =
+        standardCechAdditiveData geometry Ob /\
+      (forall (n : Nat)
+        (cochain :
+          AAT.AG.Site.FinitePosetCechCochain
+            (geometry.toObstructionCoefficientRegime Ob) n)
+        (simplex :
+          AAT.AG.Site.FinitePosetCechSimplex
+            (geometry.toObstructionCoefficientRegime Ob) (n + 1)),
+        (standardFinitePosetCechComplex faces law).differential n cochain
+            simplex =
+          (standardCechAdditiveData geometry Ob).combineFaces n simplex
+            (fun i =>
+              AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain
+                simplex i)) /\
+      (forall (n : Nat),
+        (standardFinitePosetCechComplex faces law).differential n
+            (AAT.AG.Site.FinitePosetCechZeroCochain
+              (standardCechAdditiveData geometry Ob) n) =
+          AAT.AG.Site.FinitePosetCechZeroCochain
+            (standardCechAdditiveData geometry Ob) (n + 1)) := by
+  exact
+    ⟨⟨standardFinitePosetCechComplex faces law⟩,
+      ⟨standardFinitePosetCechComplex_toSelectedCechComplexAdditiveLaw law⟩,
+      rfl,
+      (fun n cochain simplex => rfl),
+      (fun n => standardCechDifferential_zero faces n)⟩
+
+/--
+Cycle 248 constructor: the semantic coefficient layer is generated from the
+cover-relative Cech complex produced by the atom/law finite-poset route.
+
+The selected residual is still input data with its ordinary Cech cocycle proof.
+No `FinitePosetCechComparisonData`, external `K`, `c0Equiv`, `sourceWithoutC0`,
+residual boundary, or `H1` zero/effectivity data is consumed.
+-/
+def ofAtomLawFinitePosetCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (geometry.toObstructionCoefficientRegime Ob)}
+    {law : FinitePosetAtomLawSelectedCechComplexAdditiveLaw geometry Ob C}
+    (site : SemanticRepairSite.{r, v} U.Atom)
+    (c0Order : List (law.toCoverRelativeCechComplex.Cn 0))
+    (c1Order : List (law.toCoverRelativeCechComplex.Cn 1))
+    (residual : law.toCoverRelativeCechComplex.Cn 1)
+    (residual_cocycle :
+      let K := law.toCoverRelativeCechComplex
+      letI := K.cochainAddCommGroup 2
+      K.d 1 residual = 0) :
+    CoverRelativeCechGeneratedSemanticCoefficient
+      site law.toCoverRelativeCechComplex where
+  c0Order := c0Order
+  c1Order := c1Order
+  residual := residual
+  residual_cocycle := residual_cocycle
+
+/--
+Cycle 248 carrier checkpoint: in the atom/law finite-poset generated route, the
+degree-`0` semantic carrier comparison is identity because the semantic
+coefficient was generated from the constructed cover-relative `K`.
+-/
+theorem atomLawFinitePoset_constructs_identityC0Carrier
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (coverGeometry.toObstructionCoefficientRegime
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)}
+    {law :
+      FinitePosetAtomLawSelectedCechComplexAdditiveLaw coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf C}
+    (c0Order : List (law.toCoverRelativeCechComplex.Cn 0))
+    (c1Order : List (law.toCoverRelativeCechComplex.Cn 1))
+    (residual : law.toCoverRelativeCechComplex.Cn 1)
+    (residual_cocycle :
+      let K := law.toCoverRelativeCechComplex
+      letI := K.cochainAddCommGroup 2
+      K.d 1 residual = 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofAtomLawFinitePosetCechComplex
+          (site := semanticSite) c0Order c1Order residual
+          residual_cocycle)) :
+    let K := law.toCoverRelativeCechComplex
+    Nonempty
+      (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+       letI := K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData
+        canonical.toEnvelope.coefficient.C0 (K.Cn 0)) := by
+  dsimp
+  letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+  letI := law.toCoverRelativeCechComplex.cochainAddCommGroup 0
+  exact
+    ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv
+      canonical.toGeneratedEnvelope.toCochainRealization.c0Equiv⟩
+
+/--
+Cycle 248 proof-use checkpoint: the Cycle 245/247 atom/law finite-poset route
+generates the cover-relative Cech complex consumed by the existing Cech-native
+semantic coefficient layer.
+
+The result proves the requested `C0 := K.Cn 0`, `C1 := K.Cn 1`,
+`C2 := K.Cn 2`, `delta0 := K.d 0`, `delta1 := K.d 1`, and identity
+degree-`0` carrier behavior for the generated route.  The selected residual
+cocycle and the finite-poset differential additive law remain visible material
+premises.
+-/
+theorem atomLawFinitePoset_constructs_generatedSemanticCoefficientRoute
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    {C : AAT.AG.Site.FinitePosetCechComplex
+      (coverGeometry.toObstructionCoefficientRegime
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)}
+    {law :
+      FinitePosetAtomLawSelectedCechComplexAdditiveLaw coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf C}
+    (c0Order : List (law.toCoverRelativeCechComplex.Cn 0))
+    (c1Order : List (law.toCoverRelativeCechComplex.Cn 1))
+    (residual : law.toCoverRelativeCechComplex.Cn 1)
+    (residual_cocycle :
+      let K := law.toCoverRelativeCechComplex
+      letI := K.cochainAddCommGroup 2
+      K.d 1 residual = 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofAtomLawFinitePosetCechComplex
+          (site := semanticSite) c0Order c1Order residual
+          residual_cocycle)) :
+    let K := law.toCoverRelativeCechComplex
+    let generated :=
+      ofAtomLawFinitePosetCechComplex
+        (site := semanticSite) c0Order c1Order residual residual_cocycle
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall primitive : K.Cn 0,
+      generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) := by
+  dsimp
+  exact
+    ⟨(fun _ => rfl),
+      (fun _ => rfl),
+      atomLawFinitePoset_constructs_identityC0Carrier
+        coverGeometry coefficientGeometry c0Order c1Order residual
+        residual_cocycle canonical,
+      ⟨canonical.toGeneratedEnvelope.toCochainRealization⟩,
+      canonical.toGeneratedEnvelope.constructs_groundedComparisonPackage_from_identityCochainRealization⟩
+
+/--
+Cycle 261 standard-law constructor from the selected AAT overlap.
+
+This is the post-Cycle-260 bridge: the standard Cech differential-square law
+is no longer supplied as a premise.  It is generated from the canonical tuple
+overlap geometry and the double-face cancellation theorem produced from the
+selected atom/law overlap.
+-/
+def atomLawOverlapStandardCechDifferentialCompLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    FinitePosetAtomLawStandardCechDifferentialCompLaw
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      Ob
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+        |>.toSimplicialFaceAction |>.toFaceData) :=
+  (atomLawOverlap_constructs_doubleFaceCancellationLaw coverGeometry Ob).toStandardCechDifferentialCompLaw
+
+/--
+Cycle 261 standard finite-poset Cech complex generated from the selected AAT
+overlap.
+
+The complex uses the canonical tuple cover geometry, the canonical tuple face
+action, the standard additive Cech data, and the standard differential whose
+`d ∘ d = 0` law is generated by
+`atomLawOverlapStandardCechDifferentialCompLaw`.
+-/
+def atomLawOverlapStandardFinitePosetCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    AAT.AG.Site.FinitePosetCechComplex
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob) :=
+  standardFinitePosetCechComplex
+    ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+      |>.toSimplicialFaceAction |>.toFaceData)
+    (atomLawOverlapStandardCechDifferentialCompLaw coverGeometry Ob)
+
+/--
+Cycle 261 selected additive law for the overlap-generated standard finite-poset
+Cech complex.
+
+No additive or comparison field is introduced here; the law is the standard
+additive Cech law for the complex constructed above.
+-/
+def atomLawOverlapSelectedCechComplexAdditiveLaw
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      Ob
+      (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob) :=
+  standardFinitePosetCechComplex_toSelectedCechComplexAdditiveLaw
+    (atomLawOverlapStandardCechDifferentialCompLaw coverGeometry Ob)
+
+/--
+The cover-relative Cech complex generated by the selected AAT overlap route.
+-/
+abbrev atomLawOverlapCoverRelativeCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) :
+    AAT.AG.Cohomology.CoverRelativeCechComplex
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)) Ob :=
+  (atomLawOverlapSelectedCechComplexAdditiveLaw coverGeometry Ob).toCoverRelativeCechComplex
+
+/--
+Cycle 261 constructor: the semantic coefficient layer is generated from the
+cover-relative Cech complex produced by the selected atom/law overlap route.
+
+The selected residual cocycle remains visible input data, but the Cech complex,
+standard differential-square law, degree carriers, and comparison route are not
+external arguments.
+-/
+def ofAtomLawOverlapCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (c0Order : List
+      ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0))
+    (c1Order : List
+      ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1))
+    (residual :
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1)
+    (residual_cocycle :
+      let K := atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+      letI := K.cochainAddCommGroup 2
+      K.d 1 residual = 0) :
+    CoverRelativeCechGeneratedSemanticCoefficient semanticSite
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf) :=
+  ofAtomLawFinitePosetCechComplex
+    (geometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+    (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+    (C :=
+      atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+    (law :=
+      atomLawOverlapSelectedCechComplexAdditiveLaw coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+    (site := semanticSite) c0Order c1Order residual residual_cocycle
+
+/--
+Cycle 261 proof-use checkpoint: selected AAT overlap geometry and semantic
+atom/law additive coefficient geometry construct the standard finite-poset
+Cech complex consumed by the generated semantic coefficient route.
+
+This is intentionally not a completion theorem.  It still leaves the selected
+residual cocycle and the canonical generated envelope's non-H1 observation
+fields visible.  It does discharge the previous external-standard-law gap:
+`C0`, `C1`, `delta0`, `delta1`, the identity degree-`0` carrier comparison,
+and the identity cochain realization are all generated from the overlap-built
+cover-relative Cech complex.
+-/
+theorem atomLawOverlap_constructs_generatedSemanticCoefficientRoute
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (c0Order : List
+      ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0))
+    (c1Order : List
+      ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1))
+    (residual :
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1)
+    (residual_cocycle :
+      let K := atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+      letI := K.cochainAddCommGroup 2
+      K.d 1 residual = 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofAtomLawOverlapCechComplex coverGeometry coefficientGeometry
+          c0Order c1Order residual residual_cocycle)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let canonicalGeometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let generated :=
+      ofAtomLawOverlapCechComplex coverGeometry coefficientGeometry
+        c0Order c1Order residual residual_cocycle
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive : K.Cn 0,
+        generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) := by
+  dsimp
+  have hroute :=
+    atomLawFinitePoset_constructs_generatedSemanticCoefficientRoute
+      (coverGeometry :=
+        coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      (C :=
+        atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+      (law :=
+        atomLawOverlapSelectedCechComplexAdditiveLaw coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+      c0Order c1Order residual residual_cocycle canonical
+  exact
+    ⟨⟨atomLawOverlapStandardCechDifferentialCompLaw coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf⟩,
+      hroute⟩
+
+end CoverRelativeCechGeneratedSemanticCoefficient
+
+namespace CoverRelativeCechBoundaryGeneratedSemanticCoefficient
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Cycle 223 positive checkpoint: a boundary-generated residual constructs the
+visible residual-boundary predicate for the canonical generated route.
+
+This does not prove an arbitrary selected residual is a boundary.  It only
+records that when the residual is generated as `K.d 0 primitive`, the remaining
+Cycle 221 premise is discharged by definition.
+-/
+theorem constructs_residualBoundary
+    (boundary :
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient site K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        boundary.toGeneratedCoefficient) :
+    canonical.residualBoundary := by
+  refine ⟨boundary.primitive, ?_⟩
+  rfl
+
+/--
+Cycle 223 positive checkpoint: semantic H1 zero follows for the
+boundary-generated residual through the Cycle 221 equivalence.
+-/
+theorem constructs_semanticH1Zero
+    (boundary :
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient site K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        boundary.toGeneratedCoefficient) :
+    SemanticRepairH1Zero canonical.toEnvelope :=
+  (canonical.semanticH1Zero_iff_residualBoundary).2
+    (boundary.constructs_residualBoundary canonical)
+
+/--
+Cycle 223 positive checkpoint: additive `Z1 / B1` H1 zero follows for the
+boundary-generated residual through the Cycle 221 equivalence.
+-/
+theorem constructs_additiveH1Zero
+    (boundary :
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient site K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        boundary.toGeneratedCoefficient) :
+    SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data :=
+  (canonical.additiveH1Zero_iff_residualBoundary).2
+    (boundary.constructs_residualBoundary canonical)
+
+/--
+Cycle 278 proof-use checkpoint: a boundary-generated residual also constructs
+the Cycle 277 additive Cech cocycle input layer.
+
+This is the boundary-generated closure of the new additive input surface.  The
+selected residual is definitionally `K.d 0 boundary.primitive`, its cocycle law
+is produced by `K.d_comp_d_eq_zero`, and the same primitive discharges the
+canonical residual-boundary and semantic/additive `H1` zero predicates.  No
+`c0Equiv`, old `sourceWithoutC0`, external comparison package, arbitrary
+residual-cocycle certificate, or residual-boundary witness is accepted.
+-/
+theorem constructs_additiveCechCocycleInputLayer_and_residualBoundary
+    (boundary :
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient site K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        boundary.toGeneratedCoefficient) :
+    let generated := boundary.toGeneratedCoefficient
+    generated.residual = K.d 0 boundary.primitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data canonical.toEnvelope) /\
+      (forall primitive : K.Cn 0,
+        canonical.toEnvelope.coefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        canonical.toEnvelope.coefficient.delta1 cochain = K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle canonical.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle canonical.toAdditiveCechH1Data =>
+        letI := K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : K.Cn 1)) /\
+      (forall primitive : K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 canonical.toEnvelope
+          (K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data <->
+        exists primitive : K.Cn 0,
+          K.d 0 primitive = generated.residual) /\
+      (exists primitive : K.Cn 0,
+        primitive = boundary.primitive /\
+          K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let generated := boundary.toGeneratedCoefficient
+  have hinput :=
+    canonical.toGeneratedEnvelope.constructs_additiveCechCocycleInputLayer
+  rcases hinput with
+    ⟨hdata, hdelta0, hdelta1, hresidualCocycle, hzeroCocycle,
+      hboundaryCocycle, hzeroIff⟩
+  have hcocycle :
+      letI := K.cochainAddCommGroup 2
+      K.d 1 generated.residual = 0 := by
+    letI := K.cochainAddCommGroup 2
+    exact K.d_comp_d_eq_zero 0 boundary.primitive
+  exact
+    ⟨rfl,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      ⟨boundary.primitive, rfl, rfl⟩,
+      boundary.constructs_residualBoundary canonical,
+      boundary.constructs_semanticH1Zero canonical,
+      boundary.constructs_additiveH1Zero canonical⟩
+
+/--
+Cycle 262 constructor: boundary-generated residuals over the
+overlap-generated cover-relative Cech complex.
+
+This specializes the Cycle 223 boundary-generated coefficient layer to the
+Cycle 261 atom/law-overlap-generated `K`.  The residual is not supplied with a
+separate cocycle certificate; it is generated as `K.d 0 primitive`, and its
+cocycle proof is produced by `K.d_comp_d_eq_zero`.
+-/
+def ofAtomLawOverlapBoundaryCechComplex
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (c0Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0))
+    (c1Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1))
+    (primitive :
+      (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite
+      (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf) where
+  c0Order := c0Order
+  c1Order := c1Order
+  primitive := primitive
+
+/--
+Cycle 262 proof-use checkpoint: boundary-generated residuals over the
+overlap-generated `K` inherit the Cycle 261 generated semantic coefficient
+route without accepting a selected residual cocycle as input.
+
+The degree-`0` primitive remains visible lower input-boundary data.  Therefore
+this is a residual-cocycle provenance checkpoint, not a proof that every
+selected residual cocycle is a boundary.
+-/
+theorem atomLawOverlap_boundaryGenerated_constructs_generatedSemanticCoefficientRoute
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (c0Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0))
+    (c1Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1))
+    (primitive :
+      (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry c0Order c1Order primitive
+          |>.toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let canonicalGeometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+    let K :=
+      CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry Ob
+    let boundary :=
+      ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry c0Order c1Order primitive
+    let generated := boundary.toGeneratedCoefficient
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    generated.residual = K.d 0 primitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) := by
+  dsimp
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let K :=
+    CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+      coverGeometry Ob
+  let boundary :=
+    ofAtomLawOverlapBoundaryCechComplex
+      coverGeometry coefficientGeometry c0Order c1Order primitive
+  let residual_cocycle :
+      letI := K.cochainAddCommGroup 2
+      K.d 1 (K.d 0 primitive) = 0 := by
+    letI := K.cochainAddCommGroup 2
+    exact K.d_comp_d_eq_zero 0 primitive
+  have hroute :=
+    CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlap_constructs_generatedSemanticCoefficientRoute
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      c0Order c1Order (K.d 0 primitive) residual_cocycle canonical
+  exact
+    ⟨rfl,
+      residual_cocycle,
+      hroute.1,
+      hroute.2.1,
+      hroute.2.2.1,
+      hroute.2.2.2.1,
+      hroute.2.2.2.2.1,
+      hroute.2.2.2.2.2⟩
+
+/--
+Cycle 262 residual-boundary checkpoint over the overlap-generated `K`.
+
+The selected residual is zero in the generated semantic and additive H1
+surfaces only because it was generated as a Cech boundary.  No arbitrary
+selected residual cocycle, residual-boundary witness, H1-zero certificate,
+descent/effectivity witness, or global-coherence conclusion is accepted.
+-/
+theorem atomLawOverlap_boundaryGenerated_constructs_residualBoundary_and_h1Zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (c0Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0))
+    (c1Order : List
+      ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1))
+    (primitive :
+      (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+        coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry c0Order c1Order primitive
+          |>.toGeneratedCoefficient)) :
+    canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  let boundary :=
+    ofAtomLawOverlapBoundaryCechComplex
+      coverGeometry coefficientGeometry c0Order c1Order primitive
+  exact
+    ⟨boundary.constructs_residualBoundary canonical,
+      boundary.constructs_semanticH1Zero canonical,
+      boundary.constructs_additiveH1Zero canonical⟩
+
+end CoverRelativeCechBoundaryGeneratedSemanticCoefficient
+
+/--
+Cycle 226 free semantic atom/law input-boundary source.
+
+This is the accepted local input geometry below the Cycle 224
+`CoverRelativeCechSemanticAtomLawInputBoundaryGeometry` record.  It records,
+for each selected cover-relative `0`-simplex, the chosen semantic atom/law
+input and its interpretation as a local obstruction-sheaf section.  It does
+not carry an arbitrary boundary predicate: the boundary relation is generated
+freely below by a single constructor from this input data.
+-/
+structure CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) where
+  LocalInput : cover.simplex 0 -> Type r
+  input : (sigma : cover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+  interpret :
+    (sigma : cover.simplex 0) -> LocalInput sigma ->
+      Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))
+
+/--
+Free boundary relation generated by a semantic atom/law input-boundary source.
+
+The only way to inhabit this predicate is the `generated` constructor, using
+exactly the source's atom support, law support, and interpretation for the
+selected local input.  Thus `interpretation_generated` for the Cycle 224
+geometry is a definitional free-boundary fact, not a conclusion-side field.
+-/
+inductive CoverRelativeCechFreeSemanticAtomLawBoundary
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :
+    (sigma : cover.simplex 0) -> source.LocalInput sigma ->
+      List U.Atom -> List S.lawUniverse.Index ->
+        Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) -> Prop
+  | generated (sigma : cover.simplex 0)
+      (localInput : source.LocalInput sigma) :
+      CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+        (source.atomSupport sigma localInput)
+        (source.lawSupport sigma localInput)
+        (source.interpret sigma localInput)
+
+namespace CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+The free boundary predicate contains exactly the input-boundary generator and
+no additional conclusion-side content.
+-/
+theorem freeBoundary_iff_generated_input
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob)
+    {sigma : cover.simplex 0}
+    {localInput : source.LocalInput sigma}
+    {atoms : List U.Atom}
+    {laws : List S.lawUniverse.Index}
+    {localSection : Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))} :
+    CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+        atoms laws localSection <->
+      atoms = source.atomSupport sigma localInput /\
+        laws = source.lawSupport sigma localInput /\
+          localSection = source.interpret sigma localInput := by
+  constructor
+  · intro h
+    cases h
+    exact ⟨rfl, rfl, rfl⟩
+  · rintro ⟨rfl, rfl, rfl⟩
+    exact CoverRelativeCechFreeSemanticAtomLawBoundary.generated
+      (source := source) sigma localInput
+
+/--
+Cycle 229 pointwise nonvacuity / adequacy audit for the free semantic atom/law
+source.
+
+For every selected cover-relative `0`-simplex, a free source exposes the chosen
+local input, a trace-visible semantic atom, a required law, the interpreted
+local obstruction-sheaf section, and the free boundary witness generated from
+that same input.  This is still not a construction of the source itself; it
+only makes the nonvacuity and adequacy obligations carried by the source
+proof-used and visible.
+-/
+theorem exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :
+    forall sigma : cover.simplex 0,
+      Exists fun localInput : source.LocalInput sigma =>
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport sigma localInput ∧
+          S.lawUniverse.Required lawIndex) /\
+      Exists fun localSection :
+        Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+        localSection = source.interpret sigma localInput /\
+          CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+            (source.atomSupport sigma localInput)
+            (source.lawSupport sigma localInput)
+            localSection := by
+  intro sigma
+  let localInput := source.input sigma
+  rcases source.lawSupport_nonempty sigma localInput with
+    ⟨lawIndex, hLawIndex⟩
+  exact
+    ⟨localInput,
+      source.atomSupport_traceVisible sigma localInput,
+      ⟨lawIndex, hLawIndex,
+        source.lawSupport_required sigma localInput lawIndex hLawIndex⟩,
+      source.interpret sigma localInput,
+      rfl,
+      CoverRelativeCechFreeSemanticAtomLawBoundary.generated
+        (source := source) sigma localInput⟩
+
+/--
+Cycle 229 no-go theorem: if every possible selected local input at some
+`0`-simplex lacks either trace-visible atom support or required-law support,
+then no free semantic atom/law source can exist.
+
+The theorem fixes the pointwise obstruction left by Cycle 226.  The free
+boundary relation is canonical relative to a source, but the source itself
+still has to provide nonvacuous atom/law input data at every selected
+`0`-simplex.
+-/
+theorem no_freeSemanticAtomLawInputBoundarySource_of_pointwise_atom_or_law_obstruction
+    (sigma : cover.simplex 0)
+    (hobstruction :
+      forall
+        (source :
+          CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+            semanticSite S cover Ob)
+        (localInput : source.LocalInput sigma),
+        (forall atom : U.Atom,
+          atom ∈ source.atomSupport sigma localInput ->
+            semanticSite.sourceTraceToken atom ≠ true) \/
+        (forall lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport sigma localInput ->
+            ¬ S.lawUniverse.Required lawIndex)) :
+    IsEmpty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) := by
+  refine ⟨?_⟩
+  intro source
+  have hpointwise :=
+    source.exposes_pointwise_nonvacuity_and_support sigma
+  rcases hpointwise with
+    ⟨localInput, hatom, hlaw, _localSection, _hsection, _hboundary⟩
+  rcases hobstruction source localInput with hAtomObstruction | hLawObstruction
+  · rcases hatom with ⟨atom, hAtomMem, hAtomTrace⟩
+    exact hAtomObstruction atom hAtomMem hAtomTrace
+  · rcases hlaw with ⟨lawIndex, hLawMem, hLawRequired⟩
+    exact hLawObstruction lawIndex hLawMem hLawRequired
+
+end CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 234 boundary-primitive free semantic atom/law input-boundary source.
+
+This is the free-source version whose local interpretation is no longer an
+arbitrary field.  The local obstruction-sheaf section at each selected
+cover-relative `0`-simplex is generated by evaluating a boundary-generated
+degree-`0` Cech primitive.  The layer still carries semantic atom/law local
+input and support data; it does not store residual-boundary proof,
+semantic/additive `H1` zero, comparison equivalence, descent/effectivity, or
+global coherence.
+-/
+structure CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  boundary :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K
+  LocalInput : cover.simplex 0 -> Type r
+  input : (sigma : cover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+/--
+Cycle 234 canonical/free cover-boundary data name for the boundary-primitive
+free source.
+
+This is an abbreviation, not a new certificate.  It names the lower input
+boundary used in Cycle 234: semantic atom/law local input and support data
+together with a boundary-generated Cech primitive, with interpretation
+generated by that primitive.
+-/
+abbrev CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) :=
+  CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    semanticSite S cover Ob K
+
+namespace CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Read the boundary-primitive source as the Cycle 226 free semantic atom/law
+input-boundary source.
+
+The generated `interpret` function is definitionally the selected
+boundary-generated Cech primitive evaluated at the local `0`-simplex.
+-/
+def toFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := fun sigma _localInput => source.boundary.primitive sigma
+
+/--
+The selected free-source interpretation is exactly the boundary-generated
+degree-`0` Cech primitive evaluated at the selected simplex.
+-/
+theorem selectedInput_interpret_eq_boundaryPrimitive
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    (source.toFreeSemanticAtomLawInputBoundarySource).interpret sigma
+        ((source.toFreeSemanticAtomLawInputBoundarySource).input sigma) =
+      source.boundary.primitive sigma := by
+  rfl
+
+/--
+Cycle 234 positive source-construction checkpoint: boundary-primitive semantic
+atom/law input data constructs the Cycle 226 free source without accepting an
+arbitrary interpretation map.
+-/
+theorem constructs_freeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :=
+  ⟨source.toFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 234 proof-use checkpoint: the boundary-primitive source constructs the
+free source and still exposes the pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    let freeSource := source.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  let freeSource := source.toFreeSemanticAtomLawInputBoundarySource
+  exact
+    ⟨⟨freeSource⟩,
+      freeSource.exposes_pointwise_nonvacuity_and_support⟩
+
+end CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 235 restriction-realized boundary-primitive free semantic atom/law
+input-boundary source.
+
+This lowers the Cycle 234 boundary primitive.  Instead of accepting
+`boundary.primitive : K.Cn 0` as a field, it generates the degree-`0`
+cover-relative Cech primitive by restricting a single obstruction-sheaf section
+over `sectionSource` to every selected cover-relative `0`-simplex.
+
+The semantic atom/law local input and support data remain visible lower data.
+No residual-boundary proof, semantic/additive `H1` zero, comparison
+equivalence, descent/effectivity, full sheaf cohomology comparison, or global
+coherence is stored here.
+-/
+structure CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sectionSource : S.category
+  sourceSection : Ob.carrier.toPresheaf.obj (op sectionSource)
+  sectionToLocal :
+    (sigma : cover.simplex 0) -> cover.overlap 0 sigma ⟶ sectionSource
+  LocalInput : cover.simplex 0 -> Type r
+  input : (sigma : cover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+namespace CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+The restriction-realized degree-`0` Cech primitive generated by the lower
+obstruction-sheaf source section.
+-/
+def toPrimitive
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    K.Cn 0 :=
+  fun sigma =>
+    Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+      source.sourceSection
+
+/--
+Read the restriction-realized source as the Cycle 223 boundary-generated
+coefficient layer.
+-/
+def toBoundaryGeneratedCoefficient
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  primitive := source.toPrimitive
+
+/--
+Read the restriction-realized source as the Cycle 234 boundary-primitive free
+semantic atom/law source.
+-/
+def toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K where
+  boundary := source.toBoundaryGeneratedCoefficient
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+
+/--
+The boundary primitive produced from the restriction-realized source is exactly
+the presheaf restriction of `sourceSection` at each selected `0`-simplex.
+-/
+theorem boundaryPrimitive_eq_restricted_sourceSection
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.toBoundaryGeneratedCoefficient.primitive sigma =
+      Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+        source.sourceSection := by
+  rfl
+
+/--
+Cycle 235 positive checkpoint: restriction-realized lower data constructs the
+Cycle 234 boundary-primitive free source without accepting a bare
+`boundary.primitive` field.
+-/
+theorem constructs_boundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 235 proof-use checkpoint: the restriction-realized source constructs the
+Cycle 226 free source through the Cycle 234 boundary-primitive free source and
+exposes the same pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    let boundarySource :=
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 236 base-restriction boundary-primitive free semantic atom/law
+input-boundary source.
+
+This narrows the Cycle 235 restriction-realized source by fixing the source
+object to the selected cover-relative base.  The degree-`0` Cech primitive is
+generated by restricting a single obstruction-sheaf section over `cover.base`
+along displayed maps from each selected `0`-simplex overlap to that base.
+
+The displayed maps are still visible lower cover-geometry data.  This record
+therefore does not claim that arbitrary `CoverRelativeCechCover` already
+contains enough structure to produce them, and it stores no residual-boundary
+proof, semantic/additive `H1` zero, comparison equivalence,
+descent/effectivity, full sheaf cohomology comparison, or global coherence.
+-/
+structure CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection : Ob.carrier.toPresheaf.obj (op cover.base)
+  zeroSimplexToBase :
+    (sigma : cover.simplex 0) -> cover.overlap 0 sigma ⟶ cover.base
+  LocalInput : cover.simplex 0 -> Type r
+  input : (sigma : cover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+namespace CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+The base-restricted degree-`0` Cech primitive generated by the displayed
+obstruction-sheaf section over the selected cover base.
+-/
+def toPrimitive
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    K.Cn 0 :=
+  fun sigma =>
+    Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+      source.sourceSection
+
+/--
+Read the base-restriction source as the Cycle 235 restriction-realized lower
+source, with `sectionSource` definitionally fixed to `cover.base`.
+-/
+def toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  sectionSource := cover.base
+  sourceSection := source.sourceSection
+  sectionToLocal := source.zeroSimplexToBase
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+
+/--
+The Cycle 235 source constructed from base-restriction data has source object
+definitionally equal to the selected cover-relative base.
+-/
+theorem restrictionRealized_sectionSource_eq_base
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    (source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource).sectionSource =
+      cover.base := by
+  rfl
+
+/--
+Read the base-restriction source as a boundary-generated coefficient layer.
+-/
+def toBoundaryGeneratedCoefficient
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  primitive := source.toPrimitive
+
+/--
+Read the base-restriction source as the Cycle 234 boundary-primitive free
+semantic atom/law source through the Cycle 235 restriction-realized source.
+-/
+def toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K :=
+  source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    |>.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+The boundary primitive produced from the base-restriction source is exactly the
+presheaf restriction of the base section at each selected `0`-simplex.
+-/
+theorem boundaryPrimitive_eq_baseRestricted_sourceSection
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.toBoundaryGeneratedCoefficient.primitive sigma =
+      Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+        source.sourceSection := by
+  rfl
+
+/--
+Cycle 236 positive checkpoint: base-restriction lower data constructs the
+Cycle 235 restriction-realized source without accepting an arbitrary source
+object.
+-/
+theorem constructs_restrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 236 positive checkpoint: base-restriction lower data constructs the
+Cycle 234 boundary-primitive free source through the Cycle 235 source.
+-/
+theorem constructs_boundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 236 proof-use checkpoint: the base-restriction source constructs the
+Cycle 226 free source through the Cycle 235 and Cycle 234 sources, while
+preserving the pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    let restrictionSource :=
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 267 finite-poset chart-projection boundary-primitive source.
+
+This is the theorem-level transport route below the Cycle 266 bridge blocker.
+For a selected finite-poset cover-relative cover, degree-`0` simplices are not
+definitionally cover chart indices.  Instead, each selected degree-`0` simplex
+projects to its unique displayed cover index `simplexIndices 0 sigma 0`, and
+the overlap maps to that chart by the selected overlap-to-patch law.  The
+base-restriction map is then generated by composing this projection morphism
+with the selected cover inclusion.
+
+The record stores the base section and local semantic atom/law input data, but
+it stores no chart incidence equality, no cover equality bridge, no fresh
+complex, no comparison equivalence, no residual-boundary proof, no `H1` zero,
+no descent/effectivity witness, and no global coherence conclusion.
+-/
+structure CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+  LocalInput :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0 -> Type r
+  input :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      LocalInput sigma
+  atomSupport :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0)
+      (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0)
+      (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0)
+      (localInput : LocalInput sigma) (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+namespace CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {regime : AAT.AG.Site.FinitePosetAATSiteRegime S}
+variable {C : AAT.AG.Site.FinitePosetCechComplex regime}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+The canonical degree-`0` reindex map from a selected finite-poset simplex to a
+displayed cover chart index.
+-/
+def zeroSimplexChart
+    (_source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).Index :=
+  regime.simplexIndices 0 sigma 0
+
+/--
+The degree-`0` reindex is exactly the selected simplex's unique cover index.
+-/
+theorem zeroSimplexChart_eq_simplexIndex
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    source.zeroSimplexChart sigma = regime.simplexIndices 0 sigma 0 := by
+  rfl
+
+/--
+The generated projection from the selected degree-`0` overlap to its displayed
+cover chart.
+-/
+def zeroSimplexToChart
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap 0 sigma ⟶
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart
+        (source.zeroSimplexChart sigma) :=
+  homOfLE (regime.simplexOverlap_le_patch 0 sigma 0)
+
+/--
+The overlap-to-chart morphism is generated by the finite-poset selected
+overlap-to-patch law.
+-/
+theorem zeroSimplexToChart_eq_overlapProjection
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    source.zeroSimplexToChart sigma =
+      homOfLE (regime.simplexOverlap_le_patch 0 sigma 0) := by
+  rfl
+
+/--
+The generated overlap-to-base map: project the selected finite-poset
+degree-`0` overlap to its cover chart, then use the selected cover inclusion.
+-/
+def zeroSimplexToBase
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap 0 sigma ⟶
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+  source.zeroSimplexToChart sigma ≫
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+      (source.zeroSimplexChart sigma)
+
+/--
+The generated base map is the finite-poset overlap projection followed by the
+selected cover inclusion.
+-/
+theorem zeroSimplexToBase_eq_projection_inclusion
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    source.zeroSimplexToBase sigma =
+      source.zeroSimplexToChart sigma ≫
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+          (source.zeroSimplexChart sigma) := by
+  rfl
+
+/--
+Read the finite-poset chart-projection source as the Cycle 236
+base-restriction source.  The displayed `zeroSimplexToBase` maps are generated
+from the selected finite-poset simplex projection; they are not supplied as
+independent cover-geometry fields.
+-/
+def toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K) :
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  sourceSection := source.sourceSection
+  zeroSimplexToBase := source.zeroSimplexToBase
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+
+/--
+The boundary primitive produced from the finite-poset chart-projection source
+is exactly the base section restricted along the generated projection/inclusion
+map.
+-/
+theorem boundaryPrimitive_eq_projectionRestricted_sourceSection
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        |>.toBoundaryGeneratedCoefficient).primitive sigma =
+      Ob.carrier.toPresheaf.map
+        (source.zeroSimplexToChart sigma ≫
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+            (source.zeroSimplexChart sigma)).op
+        source.sourceSection := by
+  rfl
+
+end CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 237 chart/base-restriction boundary-primitive free semantic atom/law
+input-boundary source.
+
+This is a lower cover-geometry layer under Cycle 236.  It no longer accepts
+the maps from selected `0`-simplex overlaps to `cover.base` directly.  Instead,
+each selected `0`-simplex is identified with a displayed cover chart, and the
+base map is generated as the chart inclusion after transporting along that
+incidence equality.
+
+The chart incidence data are still material input-boundary geometry: this
+record does not construct the base section, the chart assignment/equality, the
+semantic atom/law supports, residual-boundary proofs, `H1` zero, comparison
+equivalence, descent/effectivity, full sheaf cohomology comparison, or global
+coherence.
+-/
+structure CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection : Ob.carrier.toPresheaf.obj (op cover.base)
+  zeroSimplexChart : cover.simplex 0 -> cover.Index
+  zeroSimplexOverlap_eq_chart :
+    forall sigma : cover.simplex 0,
+      cover.overlap 0 sigma = cover.chart (zeroSimplexChart sigma)
+  LocalInput : cover.simplex 0 -> Type r
+  input : (sigma : cover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+The generated base map for a selected `0`-simplex: transport the overlap along
+its chart-incidence equality, then use the displayed cover inclusion.
+-/
+def zeroSimplexToBase
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    cover.overlap 0 sigma ⟶ cover.base :=
+  eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+    cover.inclusion (source.zeroSimplexChart sigma)
+
+/--
+The generated base map is definitionally the chart inclusion after transport.
+-/
+theorem zeroSimplexToBase_eq_chartInclusion
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.zeroSimplexToBase sigma =
+      eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+        cover.inclusion (source.zeroSimplexChart sigma) := by
+  rfl
+
+/--
+Read the chart/base source as the Cycle 236 base-restriction source, generating
+the `zeroSimplexToBase` maps from cover chart incidence rather than storing
+them directly.
+-/
+def toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  sourceSection := source.sourceSection
+  zeroSimplexToBase := source.zeroSimplexToBase
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+
+/--
+The Cycle 236 source constructed from chart/base data uses the generated chart
+inclusion maps, not independently supplied overlap-to-base maps.
+-/
+theorem baseRestriction_zeroSimplexToBase_eq_chartInclusion
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.zeroSimplexToBase sigma =
+      eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+        cover.inclusion (source.zeroSimplexChart sigma) := by
+  rfl
+
+/--
+The chart/base degree-`0` Cech primitive is the base section restricted along
+the generated chart-inclusion map for each selected `0`-simplex.
+-/
+def toPrimitive
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    K.Cn 0 :=
+  source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.toPrimitive
+
+/--
+Read the chart/base source as a boundary-generated coefficient layer through
+the generated Cycle 236 base-restriction source.
+-/
+def toBoundaryGeneratedCoefficient
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K :=
+  source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    |>.toBoundaryGeneratedCoefficient
+
+/--
+Read the chart/base source as the Cycle 235 restriction-realized source through
+the generated Cycle 236 base-restriction source.
+-/
+def toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K :=
+  source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    |>.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Read the chart/base source as the Cycle 234 boundary-primitive free semantic
+atom/law source through the generated Cycle 236 base-restriction source.
+-/
+def toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob K :=
+  source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    |>.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+The chart/base primitive unfolds to restriction of the base section along the
+generated transported chart inclusion.
+-/
+theorem boundaryPrimitive_eq_chartRestricted_sourceSection
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.toBoundaryGeneratedCoefficient.primitive sigma =
+      Ob.carrier.toPresheaf.map
+        (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+          cover.inclusion (source.zeroSimplexChart sigma)).op
+        source.sourceSection := by
+  rfl
+
+/--
+Cycle 237 positive checkpoint: chart/base lower geometry constructs the
+Cycle 236 base-restriction source without accepting arbitrary overlap-to-base
+maps.
+-/
+theorem constructs_baseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 237 positive checkpoint: chart/base lower geometry constructs the
+Cycle 235 restriction-realized source through the generated Cycle 236 source.
+-/
+theorem constructs_restrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 237 positive checkpoint: chart/base lower geometry constructs the
+Cycle 234 boundary-primitive free source through the generated Cycle 236
+source.
+-/
+theorem constructs_boundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :=
+  ⟨source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 237 proof-use checkpoint: the chart/base source constructs the Cycle 226
+free source through the generated Cycle 236, Cycle 235, and Cycle 234 sources,
+while preserving pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 239 chart-indexed version of the Cycle 237 chart/base source.
+
+This source is over a `CoverRelativeCechChartIndexedZeroCover`, so it no longer
+stores `zeroSimplexChart` or `zeroSimplexOverlap_eq_chart`: those are generated
+definitionally by the chart-indexed zero cover.  It still keeps the base
+section, local semantic atom/law inputs, and pointwise support witnesses as
+visible input-boundary data.
+-/
+structure CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection : Ob.carrier.toPresheaf.obj (op charted.base)
+  LocalInput : charted.toCoverRelativeCechCover.simplex 0 -> Type r
+  input :
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) -> LocalInput sigma
+  atomSupport :
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) ->
+      LocalInput sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : charted.toCoverRelativeCechCover.simplex 0)
+      (localInput : LocalInput sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) ->
+      LocalInput sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : charted.toCoverRelativeCechCover.simplex 0)
+      (localInput : LocalInput sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localInput
+  lawSupport_required :
+    forall (sigma : charted.toCoverRelativeCechCover.simplex 0)
+      (localInput : LocalInput sigma) (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+
+namespace CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {charted : CoverRelativeCechChartIndexedZeroCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  charted.toCoverRelativeCechCover Ob}
+
+/--
+Read the chart-indexed source as the Cycle 237 chart/base source by generating
+the zero-simplex chart incidence from `charted`.
+-/
+def toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S charted.toCoverRelativeCechCover Ob K where
+  c0Order := source.c0Order
+  c1Order := source.c1Order
+  sourceSection := source.sourceSection
+  zeroSimplexChart := charted.toZeroSimplexChartIncidence.zeroSimplexChart
+  zeroSimplexOverlap_eq_chart :=
+    charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+
+/--
+The chart-indexed source generates the Cycle 236 base-restriction source
+through the generated Cycle 237 chart/base source.
+-/
+def toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S charted.toCoverRelativeCechCover Ob K :=
+  source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    |>.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+For a chart-indexed degree-`0` simplex, the generated overlap-to-base map is
+the transported displayed chart inclusion generated by the chart-indexed
+incidence.
+-/
+theorem baseRestriction_zeroSimplexToBase_eq_generated_chartInclusion
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K)
+    (chartIndex : charted.toCoverRelativeCechCover.simplex 0) :
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.zeroSimplexToBase
+        chartIndex =
+      eqToHom
+          (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+            chartIndex) ≫
+        charted.toCoverRelativeCechCover.inclusion
+          (charted.toZeroSimplexChartIncidence.zeroSimplexChart chartIndex) := by
+  rfl
+
+/--
+Cycle 239 positive checkpoint: chart-indexed zero cover geometry constructs
+the Cycle 237 chart/base source without externally supplied zero-simplex chart
+incidence.
+-/
+theorem constructs_chartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    Nonempty
+      (CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted.toCoverRelativeCechCover Ob K) :=
+  ⟨source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 239 proof-use checkpoint: after generating the Cycle 237 chart/base
+source, the existing route reaches the Cycle 226 free source and preserves the
+pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted.toCoverRelativeCechCover Ob) /\
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 240 proof-use checkpoint: an atom/law selected chart-indexed cover
+geometry feeds the Cycle 239 chart/base/free-source route.
+
+The theorem proof-uses the generated zero-simplex incidence to build
+`zeroSimplexToBase`, then reaches the free semantic atom/law source and its
+pointwise nonvacuity/support obligations.  The coefficient complex, residual,
+boundary primitive, comparison package, descent/effectivity, and `H1` zero
+remain outside this cover-provenance layer.
+-/
+theorem proofUses_chartIndexedCoverGeometry_in_freeSourceRoute
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      geometry.toChartIndexedZeroCover.toCoverRelativeCechCover Ob)
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S geometry.toChartIndexedZeroCover Ob K) :
+    let charted := geometry.toChartIndexedZeroCover
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Sieve.generate geometry.family.presieve ∈ S.topology geometry.base /\
+      Nonempty charted.Index /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      Nonempty
+        (CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S charted.toCoverRelativeCechCover Ob K) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S charted.toCoverRelativeCechCover Ob) /\
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  have hfree :=
+    source.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+  exact
+    ⟨CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry,
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.chartIndex_nonempty
+        geometry,
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        geometry.toChartIndexedZeroCover,
+      (fun sigma =>
+        source.baseRestriction_zeroSimplexToBase_eq_generated_chartInclusion
+          sigma),
+      source.constructs_chartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource,
+      hfree.1,
+      hfree.2⟩
+
+/--
+Cycle 241 proof-use checkpoint: finite-poset generated cover geometry feeds
+the Cycle 239 chart-indexed free-source route.
+
+This theorem combines the finite-poset construction of the chart-indexed cover
+geometry with the existing Cycle 240 proof-use theorem.  The `K` and `source`
+arguments are still visible lower data over the generated cover; this theorem
+therefore discharges the positive-cover-geometry provenance only, not the
+coefficient-complex, residual, source-section, local-input, descent, or `H1`
+obligations.
+-/
+theorem finitePosetGeneratedCoverGeometry_proofUses_freeSourceRoute
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      ((CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness).toChartIndexedZeroCover
+          |>.toCoverRelativeCechCover) Ob)
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover Ob K) :
+    let geometry :=
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness
+    let charted := geometry.toChartIndexedZeroCover
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Sieve.generate regime.cover.presieve ∈ S.topology regime.base /\
+      Nonempty charted.Index /\
+      (forall n : Nat,
+        charted.positiveSimplex n =
+          AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) /\
+      (forall (i : Fin 2)
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime 1),
+        charted.faceZero i sigma =
+          regime.simplexIndices 0 (C.faces.face 0 sigma i) 0) /\
+      (forall (n : Nat) (i : Fin (n + 3))
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 2)),
+        charted.faceSucc n i sigma =
+          C.faces.face (n + 1) sigma i) /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S charted.toCoverRelativeCechCover Ob) /\
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  have hgeometry :=
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.constructs_atomLawGeneratedPositiveCechCoverGeometry
+      (S := S) regime C familyIndexWitness
+  have hroute :=
+    proofUses_chartIndexedCoverGeometry_in_freeSourceRoute
+      (semanticSite := semanticSite)
+      (geometry :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness)
+      Ob K source
+  exact
+    ⟨hgeometry.1,
+      hgeometry.2.1,
+      hgeometry.2.2.1,
+      hgeometry.2.2.2.1,
+      hgeometry.2.2.2.2.1,
+      hgeometry.2.2.2.2.2,
+      hroute.2.2.2.2.2.1,
+      hroute.2.2.2.2.2.2⟩
+
+/--
+Cycle 266 blocker bridge: the data required before the chart-indexed zero-cover
+route can be used as the selected atom/law-overlap route.
+
+The bridge deliberately records only the missing identification/transport
+requirements.  It is not a discharge theorem: constructing this bridge from
+atom/law input-boundary geometry remains a separate obligation.
+-/
+structure AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Kcharted : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob) : Prop where
+  cover_eq :
+    charted.toCoverRelativeCechCover =
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)
+  complex_heq :
+    HEq Kcharted (atomLawOverlapCoverRelativeCechComplex coverGeometry Ob)
+  differential_transport :
+    forall n : Nat,
+      HEq (Kcharted.d n)
+        ((atomLawOverlapCoverRelativeCechComplex coverGeometry Ob).d n)
+
+/--
+Any bridge that lets a chart-indexed zero cover serve as the selected
+atom/law-overlap cover must identify its degree-`0` chart indices with the
+selected finite-poset degree-`0` simplices.
+
+This is the concrete cover-shape obstruction left after Cycle 265: the
+chart-indexed route has degree `0` simplices equal to cover indices, while the
+selected Cycle 261 route uses finite-poset `0`-simplices.
+-/
+theorem chartIndexed_selectedFinitePosetBridge_forces_degreeZeroIndex_eq_selectedSimplex
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Kcharted : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob)
+    (bridge :
+      AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+        coverGeometry Ob charted Kcharted) :
+    charted.Index =
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)).simplex 0 := by
+  change charted.toCoverRelativeCechCover.simplex 0 =
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+      (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)).simplex 0
+  exact congrArg (fun cover => cover.simplex 0) bridge.cover_eq
+
+/--
+Cycle 266 blocker: without the selected finite-poset cover/complex bridge, the
+chart-indexed zero-cover route cannot be promoted to the selected
+atom/law-overlap H1 route.
+
+This does not reject the chart-indexed route.  It fixes the missing material
+premise: a future positive cycle must construct the bridge identifying the cover
+and transporting the selected Cycle 261 `K.d` laws, rather than replacing the
+selected `K` by a fresh chart-indexed complex or a generic `surface.K`.
+-/
+theorem no_atomLawOverlap_chartIndexedRoute_without_selectedFinitePosetCoverComplexBridge
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Kcharted : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob)
+    (hnoBridge :
+      IsEmpty
+        (AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+          coverGeometry Ob charted Kcharted)) :
+    ¬ ∃ _ :
+      AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+        coverGeometry Ob charted Kcharted,
+        charted.Index =
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)).simplex 0 ∧
+        HEq Kcharted (atomLawOverlapCoverRelativeCechComplex coverGeometry Ob) ∧
+        (forall n : Nat,
+          HEq (Kcharted.d n)
+            ((atomLawOverlapCoverRelativeCechComplex coverGeometry Ob).d n)) := by
+  rintro ⟨bridge, _hdegree0, _hK, _hd⟩
+  exact hnoBridge.false bridge
+
+end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
+
+/--
+Cycle 230 pointwise semantic atom/law local input.
+
+This is the first positive layer below the Cycle 226 free source.  A local
+input is not an arbitrary token: it carries one trace-visible semantic atom,
+one required law, and the local obstruction-sheaf section interpreted from
+that atom/law input.  It does not contain a residual, a boundary witness,
+semantic/additive `H1` zero, comparison equivalence, descent/effectivity, or
+global coherence.
+-/
+structure CoverRelativeCechPointwiseSemanticAtomLawLocalInput
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (sigma : cover.simplex 0) where
+  atom : U.Atom
+  atom_traceVisible : semanticSite.sourceTraceToken atom = true
+  lawIndex : S.lawUniverse.Index
+  law_required : S.lawUniverse.Required lawIndex
+  localSection : Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))
+
+/--
+Cycle 230 pointwise input-boundary basis.
+
+The basis chooses, for every selected cover-relative `0`-simplex, a pointwise
+semantic atom/law local input.  This is narrower than the Cycle 226 free source:
+support lists are generated as singletons, and the selected local input type is
+the typed pointwise atom/law/section record above.  The local section itself is
+still material input, so this is a source-construction checkpoint rather than a
+G-06 completion certificate.
+-/
+structure CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) where
+  selectedInput :
+    (sigma : cover.simplex 0) ->
+      CoverRelativeCechPointwiseSemanticAtomLawLocalInput
+        semanticSite S cover Ob sigma
+
+namespace CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Construct the Cycle 226 free semantic atom/law source from the Cycle 230
+pointwise basis.
+
+The construction generates `LocalInput`, selected `input`, singleton atom
+support, singleton required-law support, and `interpret` from the pointwise
+atom/law/section record.  No `c0Equiv`, `sourceWithoutC0`, residual boundary,
+comparison equivalence, exactness, descent, or `H1` zero is accepted as input.
+-/
+def toFreeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+      semanticSite S cover Ob where
+  LocalInput :=
+    CoverRelativeCechPointwiseSemanticAtomLawLocalInput
+      semanticSite S cover Ob
+  input := basis.selectedInput
+  atomSupport := fun _ localInput => [localInput.atom]
+  atomSupport_traceVisible := by
+    intro _ localInput
+    exact ⟨localInput.atom, by simp, localInput.atom_traceVisible⟩
+  lawSupport := fun _ localInput => [localInput.lawIndex]
+  lawSupport_nonempty := by
+    intro _ localInput
+    exact ⟨localInput.lawIndex, by simp⟩
+  lawSupport_required := by
+    intro _ localInput lawIndex hmem
+    have hEq : lawIndex = localInput.lawIndex := by
+      simpa using hmem
+    simpa [hEq] using localInput.law_required
+  interpret := fun _ localInput => localInput.localSection
+
+/--
+Cycle 230 positive source-construction checkpoint: a pointwise atom/law basis
+constructs the free semantic atom/law input-boundary source.
+
+This discharges the arbitrary support-list / arbitrary local-input shape of
+the Cycle 226 source.  It does not discharge the remaining provenance of the
+pointwise `localSection` field.
+-/
+theorem constructs_freeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :=
+  ⟨basis.toFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 230 proof-use checkpoint: the source constructed from a pointwise basis
+still exposes the Cycle 229 nonvacuity and support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (basis :
+      CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    let source := basis.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : source.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = source.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+              (source.atomSupport sigma localInput)
+              (source.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  let source := basis.toFreeSemanticAtomLawInputBoundarySource
+  exact
+    ⟨⟨source⟩,
+      source.exposes_pointwise_nonvacuity_and_support⟩
+
+end CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+
+/--
+Cycle 268 finite-poset chart-projection pointwise atom/law basis.
+
+This is the pointwise/free input-boundary layer under the Cycle 267 selected
+finite-poset chart-projection source.  It keeps the selected base section as
+input-boundary geometry, but generates the local input type and support lists
+from one trace-visible semantic atom and one required law at each selected
+degree-`0` simplex.  The local section recorded in the pointwise input is the
+restriction of the base section along the finite-poset chart projection.
+
+The basis contains no residual-boundary proof, `H1` zero, comparison
+equivalence, descent/effectivity, full sheaf cohomology comparison, or global
+coherence conclusion.
+-/
+structure CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+  atom :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      U.Atom
+  atom_traceVisible :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      S.lawUniverse.Index
+  law_required :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {regime : AAT.AG.Site.FinitePosetAATSiteRegime S}
+variable {C : AAT.AG.Site.FinitePosetCechComplex regime}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+The local pointwise section generated by the finite-poset chart projection.
+-/
+def projectedLocalSection
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    Ob.carrier.toPresheaf.obj
+      (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap
+        0 sigma)) :=
+  Ob.carrier.toPresheaf.map
+    (homOfLE (regime.simplexOverlap_le_patch 0 sigma 0) ≫
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+        (regime.simplexIndices 0 sigma 0)).op
+    basis.sourceSection
+
+/--
+Read the pointwise basis as the Cycle 267 finite-poset chart-projection source.
+The generated source has singleton semantic atom/law supports and uses the
+finite-poset chart projection for the local pointwise section.
+-/
+def toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) :
+    CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S regime C Ob K where
+  c0Order := basis.c0Order
+  c1Order := basis.c1Order
+  sourceSection := basis.sourceSection
+  LocalInput :=
+    CoverRelativeCechPointwiseSemanticAtomLawLocalInput
+      semanticSite S (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob
+  input := fun sigma =>
+    { atom := basis.atom sigma
+      atom_traceVisible := basis.atom_traceVisible sigma
+      lawIndex := basis.lawIndex sigma
+      law_required := basis.law_required sigma
+      localSection := basis.projectedLocalSection sigma }
+  atomSupport := fun _ localInput => [localInput.atom]
+  atomSupport_traceVisible := by
+    intro _ localInput
+    exact ⟨localInput.atom, by simp, localInput.atom_traceVisible⟩
+  lawSupport := fun _ localInput => [localInput.lawIndex]
+  lawSupport_nonempty := by
+    intro _ localInput
+    exact ⟨localInput.lawIndex, by simp⟩
+  lawSupport_required := by
+    intro _ localInput lawIndex hmem
+    have hEq : lawIndex = localInput.lawIndex := by
+      simpa using hmem
+    simpa [hEq] using localInput.law_required
+
+/--
+The selected pointwise local section in the generated source is exactly the
+base section restricted along the finite-poset projection to the displayed
+degree-`0` chart and then to the selected cover base.
+-/
+theorem selectedInput_localSection_eq_projectedLocalSection
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K)
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    ((basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource).input
+        sigma).localSection =
+      basis.projectedLocalSection sigma := by
+  rfl
+
+/--
+Cycle 268 positive construction checkpoint: pointwise semantic atom/law data
+constructs the Cycle 267 finite-poset chart-projection source.  This removes
+arbitrary local input and support-list fields from the source premise; the base
+section, selected orders, and pointwise atom/law choices remain visible
+input-boundary data.
+-/
+theorem constructs_finitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) :
+    Nonempty
+      (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K) :=
+  ⟨basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 268 proof-use checkpoint: the source generated from the pointwise basis
+still exposes nonvacuous singleton semantic atom/law support after the Cycle
+267 finite-poset chart-projection source is lowered to the free source.
+-/
+theorem constructs_freeSource_and_exposes_singleton_pointwise_support
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) :
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      baseSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S regime C Ob K) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob) /\
+      forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap
+              0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  exact
+    ⟨⟨source⟩,
+      baseSource.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support⟩
+
+/--
+Cycle 273 source-section-free skeleton under the finite-poset pointwise
+atom/law basis.
+
+This is the part of the Cycle 268 basis that is genuinely pointwise
+semantic atom/law and selected order data.  It intentionally omits the
+global `sourceSection`; that field must be supplied by a separate
+sheaf/descent construction before the old basis can be formed.
+-/
+structure SourceSectionFreeSkeleton where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  atom :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      U.Atom
+  atom_traceVisible :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      S.lawUniverse.Index
+  law_required :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace SourceSectionFreeSkeleton
+
+/--
+The canonical degree-`0` reindex map used by the source-section-free
+skeleton.  It is independent of the later global source section.
+-/
+def zeroSimplexChart
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).Index :=
+  let _sourceOrder := skeleton.c0Order
+  regime.simplexIndices 0 sigma 0
+
+/--
+The canonical projection from a selected finite-poset degree-`0` overlap to
+its displayed cover chart, independent of the later global source section.
+-/
+def zeroSimplexToChart
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap 0 sigma ⟶
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart
+        (skeleton.zeroSimplexChart sigma) :=
+  homOfLE (regime.simplexOverlap_le_patch 0 sigma 0)
+
+/--
+The overlap-to-base arrow whose membership in a selected `Sieve` cover is
+needed to read the sheaf-descent local family at each finite-poset
+degree-`0` simplex.
+-/
+def zeroSimplexToBase
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) :
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap 0 sigma ⟶
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+  skeleton.zeroSimplexToChart sigma ≫
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+      (skeleton.zeroSimplexChart sigma)
+
+/--
+Form the old pointwise basis after a global source section has been produced
+by a separate construction.
+-/
+def withSourceSection
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+      semanticSite S regime C Ob K where
+  c0Order := skeleton.c0Order
+  c1Order := skeleton.c1Order
+  sourceSection := sourceSection
+  atom := skeleton.atom
+  atom_traceVisible := skeleton.atom_traceVisible
+  lawIndex := skeleton.lawIndex
+  law_required := skeleton.law_required
+
+/--
+Cycle 273 positive source-section provenance checkpoint: sheaf descent turns a
+compatible selected-cover local family into the `sourceSection` of the
+finite-poset pointwise atom/law basis.
+
+The theorem does not accept `sourceSection` as an input.  It gets the global
+section from the obstruction sheaf's `AATSheafCondition`, a selected cover
+membership proof, and a compatible `AATGluingData`.  The extra membership
+hypothesis says exactly that the finite-poset overlap-to-base arrows used by
+the pointwise source are among the selected cover arrows, so the descent
+amalgamation can be read at those arrows.
+-/
+theorem effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+    (hcover :
+      selectedCover ∈
+        S.topology (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+    (gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover)
+    (zeroSimplexToBase_mem :
+      forall
+        (sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+        selectedCover (skeleton.zeroSimplexToBase sigma)) :
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            (zeroSimplexToBase_mem sigma)) /\
+      Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) := by
+  let hFor :
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover :=
+    AAT.AG.Site.AATSheafCondition.cover Ob.carrier.isSheaf
+      selectedCover hcover
+  let hDescent :
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover :=
+    AAT.AG.Site.AATSheafConditionFor.descent hFor
+  rcases AAT.AG.Site.AATDescent.exists_global hDescent gluingData with
+    ⟨globalSection, hglobal⟩
+  let basis := skeleton.withSourceSection globalSection
+  refine
+    ⟨basis, rfl, rfl, (fun _ => rfl), (fun _ => rfl),
+      hFor, hDescent, hglobal, ?_, ?_⟩
+  · intro sigma
+    simpa [basis, withSourceSection, projectedLocalSection, zeroSimplexToBase,
+      zeroSimplexToChart, zeroSimplexChart] using
+        hglobal (skeleton.zeroSimplexToBase sigma)
+          (zeroSimplexToBase_mem sigma)
+  · exact
+      basis.constructs_finitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 275 generated selected-cover checkpoint: the finite-poset atom/law cover
+itself supplies both the topology membership and the degree-`0`
+overlap-to-base membership needed by the Cycle 273 effective-gluing theorem.
+
+The selected cover is fixed to `Sieve.generate regime.cover.presieve`.  The
+topology proof comes from atom-generated AAT coverage.  Each
+`zeroSimplexToBase` arrow is obtained by precomposing a displayed cover
+inclusion with `zeroSimplexToChart`, so its membership follows from the
+generated sieve rather than from an external cover-membership premise.
+-/
+theorem generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    selectedCover ∈
+        S.topology (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base /\
+      forall
+        (sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+        selectedCover (skeleton.zeroSimplexToBase sigma) := by
+  dsimp
+  refine ⟨?_, ?_⟩
+  · simpa [
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+      selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology] using
+        atomGeneratedCoverage_generates_AATGrothendieckTopology regime.cover
+  · intro sigma
+    have hchart :
+        (Sieve.generate regime.cover.presieve)
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+            (skeleton.zeroSimplexChart sigma)) := by
+      exact
+        Sieve.le_generate regime.cover.presieve _
+          (Presieve.ofArrows.mk (skeleton.zeroSimplexChart sigma))
+    simpa [zeroSimplexToBase] using
+      (Sieve.generate regime.cover.presieve).downward_closed hchart
+        (skeleton.zeroSimplexToChart sigma)
+
+/--
+Cycle 275 proof-use checkpoint: Cycle 273's effective-gluing construction runs
+on the finite-poset atom/law generated selected cover without receiving
+`hcover` or `zeroSimplexToBase_mem` as external arguments.
+
+The compatible `AATGluingData` remains the visible local-family input.  This
+cycle discharges the generated-cover membership layer only; it does not
+construct the gluing datum or final global coherence package.
+-/
+theorem generatedFinitePosetSelectedCover_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve)) :
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve) /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve) /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) := by
+  let hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  exact
+    skeleton.effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      (selectedCover := Sieve.generate regime.cover.presieve)
+      hgenerated.1 gluingData hgenerated.2
+
+/--
+Cycle 276 missing-law boundary: generated-cover gluing needs local sections on
+the generated sieve together with overlap compatibility.
+
+The pointwise atom/law skeleton and Cycle 275 generated cover membership only
+identify the cover and its degree-`0` overlap-to-base arrows.  A genuine
+`AATGluingData` still requires an `AATLocalSectionFamily` on every arrow of
+`Sieve.generate regime.cover.presieve` and the full `AATOverlapAgreement` for
+that family.  This proposition names that additional generated-arrow extension
+and overlap law without adding a new certificate structure.
+-/
+def GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) : Prop :=
+  let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+  selectedCover ∈
+      S.topology (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base /\
+    (forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      selectedCover (skeleton.zeroSimplexToBase sigma)) /\
+    Exists fun localSections :
+      AAT.AG.Site.AATLocalSectionFamily S Ob.carrier.toPresheaf selectedCover =>
+      AAT.AG.Site.AATOverlapAgreement localSections
+
+/--
+Cycle 290 presieve-indexed semantic atom/law local source.
+
+The Cycle 289 lower law still accepted a raw compatible
+`Presieve.FamilyOfElements` on the atom/law cover presieve.  This layer moves
+one step lower: for every displayed cover arrow it records a semantic
+atom/law local input, an interpreted obstruction-sheaf local section, and the
+explicit arrow-level compatibility law used to build Mathlib's compatible
+family for the `Presieve.ofArrows` cover.
+
+This is intentionally indexed by `regime.cover.Index`, not by selected
+degree-`0` Cech simplices.  There is no general inverse from cover arrows to
+`0`-simplices in the current finite-poset surface, so conflating those two
+indices would hide an incidence premise.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  LocalInput : regime.cover.Index -> Type r
+  input : (i : regime.cover.Index) -> LocalInput i
+  atomSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List U.Atom
+  atomSupport_traceVisible :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists atom : U.Atom,
+        atom ∈ atomSupport i localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport i localInput
+  lawSupport_required :
+    forall (i : regime.cover.Index) (localInput : LocalInput i)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+  interpret :
+    (i : regime.cover.Index) -> LocalInput i ->
+      Ob.carrier.toPresheaf.obj
+        (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))
+  compatible :
+    CategoryTheory.Presieve.Arrows.Compatible Ob.carrier.toPresheaf
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      (fun i : regime.cover.Index => interpret i (input i))
+
+namespace GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Evaluate the presieve-indexed semantic local source as Mathlib's
+`FamilyOfElements` on the original atom/law cover presieve.
+
+The construction uses the standard `Presieve.Arrows.Compatible.familyOfElements`
+for a `Presieve.ofArrows`; no generated-sieve local family is selected here.
+-/
+noncomputable def toPresieveFamily
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    Presieve.FamilyOfElements Ob.carrier.toPresheaf regime.cover.presieve := by
+  let family :
+      Presieve.FamilyOfElements Ob.carrier.toPresheaf
+        (Presieve.ofArrows
+          (fun i : regime.cover.Index =>
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+          (fun i : regime.cover.Index =>
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)) :=
+    source.compatible.familyOfElements
+  simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.AATCoverageFamily.presieve] using family
+
+/--
+The semantic local source produces a compatible family on the original
+atom/law cover presieve.
+-/
+theorem toPresieveFamily_compatible
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toPresieveFamily.Compatible := by
+  dsimp [toPresieveFamily]
+  simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.AATCoverageFamily.presieve] using
+    source.compatible.familyOfElements_compatible
+
+/--
+Cycle 290 proof-use audit: the presieve semantic source exposes, for every
+cover arrow, a selected local input, trace-visible atom support, required law
+support, the interpreted local obstruction section, and the fact that the
+generated presieve family evaluates to that interpretation on the displayed
+cover arrow.
+-/
+theorem exposes_pointwise_nonvacuity_support_and_presieve_evaluation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    forall i : regime.cover.Index,
+      Exists fun localInput : source.LocalInput i =>
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport i localInput ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport i localInput ∧
+          S.lawUniverse.Required lawIndex) /\
+      Exists fun localSection :
+        Ob.carrier.toPresheaf.obj
+          (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+        localSection = source.interpret i localInput /\
+          source.toPresieveFamily
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+            (by
+              change
+                Presieve.ofArrows
+                  (fun i : regime.cover.Index =>
+                    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+                  (fun i : regime.cover.Index =>
+                    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+                  ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              exact Presieve.ofArrows.mk i) = localSection := by
+  intro i
+  let localInput := source.input i
+  rcases source.lawSupport_nonempty i localInput with
+    ⟨lawIndex, hLawIndex⟩
+  have hfamily :
+      source.toPresieveFamily
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+        (by
+          change
+            Presieve.ofArrows
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+          exact Presieve.ofArrows.mk i) =
+        source.interpret i localInput := by
+    simp [toPresieveFamily, AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+      AAT.AG.Site.AATCoverageFamily.presieve, localInput]
+  exact
+    ⟨localInput,
+      source.atomSupport_traceVisible i localInput,
+      ⟨lawIndex, hLawIndex,
+        source.lawSupport_required i localInput lawIndex hLawIndex⟩,
+      source.interpret i localInput,
+      rfl,
+      hfamily⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 291 presieve pointwise semantic atom/law local input.
+
+This is the cover-indexed analogue of the finite-poset pointwise
+atom/law input.  It lives on the displayed atom/law cover arrows
+`regime.cover.Index`, not on selected degree-`0` Cech simplices.  Thus it
+does not use or hide an inverse from cover arrows to `0`-simplices.
+-/
+structure GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocalInput
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (i : regime.cover.Index) where
+  atom : U.Atom
+  atom_traceVisible : semanticSite.sourceTraceToken atom = true
+  lawIndex : S.lawUniverse.Index
+  law_required : S.lawUniverse.Required lawIndex
+  localSection :
+    Ob.carrier.toPresheaf.obj
+      (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))
+
+/--
+Cycle 291 presieve pointwise semantic atom/law basis.
+
+The basis generates the Cycle 290 presieve-indexed source from one
+trace-visible atom, one required law, and one interpreted local section on
+each displayed cover arrow.  The remaining compatibility field is still a
+visible arrow-level overlap law; it is not counted as constructed from the
+pointwise choices alone.
+-/
+structure GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  input :
+    (i : regime.cover.Index) ->
+      GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocalInput
+        skeleton i
+  compatible :
+    CategoryTheory.Presieve.Arrows.Compatible Ob.carrier.toPresheaf
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      (fun i : regime.cover.Index => (input i).localSection)
+
+namespace GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+
+/--
+Read the cover-indexed pointwise basis as the Cycle 290 presieve-free semantic
+atom/law source.
+-/
+def toPresieveFreeSemanticAtomLawInputBoundarySource
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput :=
+    GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocalInput
+      skeleton
+  input := basis.input
+  atomSupport := fun _ localInput => [localInput.atom]
+  atomSupport_traceVisible := by
+    intro _ localInput
+    exact ⟨localInput.atom, by simp, localInput.atom_traceVisible⟩
+  lawSupport := fun _ localInput => [localInput.lawIndex]
+  lawSupport_nonempty := by
+    intro _ localInput
+    exact ⟨localInput.lawIndex, by simp⟩
+  lawSupport_required := by
+    intro _ localInput lawIndex hmem
+    have hEq : lawIndex = localInput.lawIndex := by
+      simpa using hmem
+    simpa [hEq] using localInput.law_required
+  interpret := fun _ localInput => localInput.localSection
+  compatible := by
+    simpa using basis.compatible
+
+end GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+
+/--
+Cycle 289 lower generated-arrow layer: compatible local sections on the
+original atom/law cover presieve.
+
+This is one level below
+`GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw`:
+it does not ask for a local family on the generated sieve.  Instead, the local
+family lives on the displayed atom/law cover presieve `regime.cover.presieve`,
+and compatibility is then lifted to the generated sieve by Mathlib's
+`FamilyOfElements.sieveExtend`.
+
+The layer is still a real material premise: it does not construct the presieve
+family from pointwise semantic atoms/laws.  Its role is to isolate the exact
+additional semantic local-section law needed below Cycle 288.
+-/
+def GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) : Prop :=
+  let _sourceOrder := skeleton.c0Order
+  Exists fun presieveSections :
+    Presieve.FamilyOfElements Ob.carrier.toPresheaf regime.cover.presieve =>
+      presieveSections.Compatible
+
+/--
+Cycle 290 constructor from presieve-indexed semantic atom/law local geometry.
+
+The raw `Presieve.FamilyOfElements` premise of Cycle 289 is no longer supplied
+directly.  It is generated from the cover-indexed semantic local source using
+Mathlib's arrow-family construction, and its compatibility is exactly the
+source's arrow-level compatibility law.
+-/
+theorem presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+      skeleton := by
+  dsimp [GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw]
+  exact ⟨source.toPresieveFamily, source.toPresieveFamily_compatible⟩
+
+/--
+Cycle 291 positive checkpoint: a cover-indexed pointwise semantic atom/law
+basis constructs the Cycle 290 presieve source and immediately reaches the
+presieve section-extension law.
+
+This lowers the arbitrary presieve source premise.  The theorem still keeps
+`compatible` as a field of the pointwise basis, so it is not a completion claim
+for the overlap law.
+-/
+theorem presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_presieveFreeSemanticAtomLawInputBoundarySource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    let source :=
+      basis.toPresieveFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : source.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = source.interpret i localInput /\
+            source.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (by
+                change
+                  Presieve.ofArrows
+                    (fun i : regime.cover.Index =>
+                      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+                    (fun i : regime.cover.Index =>
+                      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+                    ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+                exact Presieve.ofArrows.mk i) = localSection) := by
+  dsimp
+  let source :=
+    basis.toPresieveFreeSemanticAtomLawInputBoundarySource
+  exact
+    ⟨⟨source⟩,
+      presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        skeleton source,
+      source.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+/--
+Cycle 289 presieve-to-generated-sieve constructor.
+
+Compatible sections on the displayed atom/law cover presieve extend to
+compatible sections on the generated selected-cover sieve.  Thus the Cycle 288
+generated-arrow law can be obtained without taking local sections or overlap
+agreement directly on `Sieve.generate regime.cover.presieve`.
+
+This does not discharge the lower semantic atom/law local-section generation
+premise; it only replaces the generated-sieve law by a presieve-level law and
+proof-uses Mathlib's `sieveExtend` compatibility theorem.
+-/
+theorem presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hpresieve :
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+      skeleton := by
+  dsimp [GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw]
+    at hpresieve
+  rcases hpresieve with ⟨presieveSections, hcompatible⟩
+  dsimp [GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw]
+  let hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  refine ⟨hgenerated.1, hgenerated.2, ?_⟩
+  let localSections :
+      AAT.AG.Site.AATLocalSectionFamily S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve) :=
+    presieveSections.sieveExtend
+  exact ⟨localSections, hcompatible.sieveExtend⟩
+
+/--
+Cycle 276 transparency theorem: a generated selected-cover gluing datum exposes
+exactly the generated-arrow local-section extension and overlap law.
+
+This is not a construction of `AATGluingData` from the pointwise atom/law
+skeleton.  It records the material content carried by any such gluing datum.
+-/
+theorem generatedFinitePosetSelectedCover_gluingData_constructs_generatedArrowSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve)) :
+    GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+      skeleton := by
+  dsimp [GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw]
+  let hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  refine ⟨hgenerated.1, hgenerated.2, ?_⟩
+  exact ⟨gluingData.localSections, gluingData.overlapAgreement⟩
+
+/--
+Cycle 276 sufficiency boundary: once the generated-arrow local-section
+extension and overlap law is supplied, it is enough to produce a generated
+selected-cover `AATGluingData`.
+
+The theorem is conditional on the named law; it does not derive that law from
+the finite-poset pointwise atom/law skeleton.
+-/
+theorem generatedArrowSectionExtensionAndOverlapLaw_constructs_generatedFinitePosetSelectedCover_gluingData
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hlaw :
+      GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton) :
+    Nonempty
+      (AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve)) := by
+  dsimp [GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw]
+    at hlaw
+  rcases hlaw with ⟨_hcover, _hzeroSimplexMem, localSections,
+    overlapAgreement⟩
+  exact
+    ⟨{ localSections := localSections
+       overlapAgreement := overlapAgreement }⟩
+
+/--
+Cycle 276 exact boundary theorem: on the generated finite-poset selected cover,
+having an `AATGluingData` is equivalent to having the generated-arrow
+local-section extension and overlap law.
+
+This prevents treating pointwise atom/law data or cover membership alone as a
+gluing datum.  The remaining positive task is to construct the named law from
+canonical/free/input-boundary semantic atom/law geometry.
+-/
+theorem generatedFinitePosetSelectedCover_gluingData_iff_generatedArrowSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) :
+    Nonempty
+        (AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+          (Sieve.generate regime.cover.presieve)) <->
+      GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton := by
+  constructor
+  · intro h
+    rcases h with ⟨gluingData⟩
+    exact
+      skeleton.generatedFinitePosetSelectedCover_gluingData_constructs_generatedArrowSectionExtensionAndOverlapLaw
+        gluingData
+  · intro hlaw
+    exact
+      skeleton.generatedArrowSectionExtensionAndOverlapLaw_constructs_generatedFinitePosetSelectedCover_gluingData
+        hlaw
+
+/--
+Cycle 288 source-section provenance checkpoint: the named generated-arrow
+section-extension and overlap law constructs the generated-cover gluing datum,
+then effective gluing constructs the old pointwise basis.
+
+This removes `AATGluingData`, `sourceSection`, and the source-bearing `basis`
+as direct inputs for the generated finite-poset cover.  It does not construct
+the named generated-arrow law itself; that law remains the explicit lower
+obligation.
+-/
+theorem generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hlaw :
+      GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) := by
+  dsimp [GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw]
+    at hlaw
+  rcases hlaw with ⟨_hcoverLaw, _hzeroMemLaw, localSections,
+    overlapAgreement⟩
+  let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+  let gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover :=
+    { localSections := localSections
+      overlapAgreement := overlapAgreement }
+  have hbasis :=
+    skeleton.generatedFinitePosetSelectedCover_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      gluingData
+  rcases hbasis with
+    ⟨basis, hc0, hc1, hatom, hlawIndex, hFor, hDescent, hglobal,
+      hlocal, hsource⟩
+  exact
+    ⟨gluingData, basis, hc0, hc1, hatom, hlawIndex, hFor, hDescent,
+      hglobal, hlocal, hsource⟩
+
+/--
+Cycle 289 effective-gluing checkpoint from the presieve-level law.
+
+The generated-sieve local family and overlap agreement are no longer accepted
+directly.  They are obtained by extending a compatible family on the original
+atom/law cover presieve, and the resulting generated-arrow law is immediately
+proof-used to construct the generated-cover gluing datum and the old
+source-bearing pointwise basis.
+
+The presieve-level compatible family remains the lower material premise.
+-/
+theorem presieveSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hpresieve :
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) := by
+  exact
+    skeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      (skeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
+        hpresieve)
+
+/--
+Cycle 276 blocker: generated cover membership and zero-simplex arrow
+membership do not by themselves supply the compatible generated-cover local
+family.  If the generated-arrow section-extension and overlap law is absent,
+then no generated selected-cover `AATGluingData` exists.
+-/
+theorem no_generatedFinitePosetSelectedCover_gluingData_without_generatedArrowSectionExtensionAndOverlapLaw
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hmissing :
+      ¬ GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton) :
+    ¬ Nonempty
+      (AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        (Sieve.generate regime.cover.presieve)) := by
+  intro hgluing
+  exact hmissing
+    ((skeleton.generatedFinitePosetSelectedCover_gluingData_iff_generatedArrowSectionExtensionAndOverlapLaw).1
+      hgluing)
+
+/--
+Cycle 276 blocker package: Cycle 275's generated cover membership can still be
+present while generated-cover gluing is blocked by the missing local-section
+extension and overlap law.
+-/
+theorem generatedFinitePosetSelectedCover_membership_without_generatedArrowSectionExtensionAndOverlapLaw_blocks_gluingData
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K))
+    (hmissing :
+      ¬ GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    selectedCover ∈
+        S.topology (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base /\
+      (forall
+        (sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+        selectedCover (skeleton.zeroSimplexToBase sigma)) /\
+      ¬ Nonempty
+        (AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover) := by
+  dsimp
+  let hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  exact
+    ⟨hgenerated.1, hgenerated.2,
+      skeleton.no_generatedFinitePosetSelectedCover_gluingData_without_generatedArrowSectionExtensionAndOverlapLaw
+        hmissing⟩
+
+end SourceSectionFreeSkeleton
+
+end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+
+/--
+Cycle 231 restriction-realized pointwise atom/law input-boundary basis.
+
+This narrows the Cycle 230 pointwise basis by no longer accepting each
+`localSection` independently.  A single obstruction-sheaf section over a
+chosen source object is restricted along the displayed morphism to every
+selected cover-relative `0`-simplex.  The atom and law choices remain
+pointwise semantic input; no residual boundary, `H1` zero, comparison
+equivalence, descent/effectivity, or global coherence is stored in this
+record.
+-/
+structure CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) where
+  sectionSource : S.category
+  sourceSection : Ob.carrier.toPresheaf.obj (op sectionSource)
+  sectionToLocal :
+    (sigma : cover.simplex 0) -> cover.overlap 0 sigma ⟶ sectionSource
+  atom : (sigma : cover.simplex 0) -> U.Atom
+  atom_traceVisible :
+    forall sigma : cover.simplex 0,
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex : (sigma : cover.simplex 0) -> S.lawUniverse.Index
+  law_required :
+    forall sigma : cover.simplex 0,
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Construct the Cycle 230 pointwise basis from restriction-realized lower data.
+
+The resulting local section is definitionally the presheaf restriction of the
+displayed source section.  This is the new proof-use point: the downstream
+free-source route can no longer choose local sections independently.
+-/
+def toPointwiseSemanticAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+      semanticSite S cover Ob where
+  selectedInput := fun sigma =>
+    { atom := basis.atom sigma
+      atom_traceVisible := basis.atom_traceVisible sigma
+      lawIndex := basis.lawIndex sigma
+      law_required := basis.law_required sigma
+      localSection :=
+        Ob.carrier.toPresheaf.map (basis.sectionToLocal sigma).op
+          basis.sourceSection }
+
+/--
+The constructed pointwise local section is exactly the restriction of the
+source section along the displayed morphism.
+-/
+theorem selectedInput_localSection_eq_restricted_sourceSection
+    (basis :
+      CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob)
+    (sigma : cover.simplex 0) :
+    (basis.toPointwiseSemanticAtomLawInputBoundaryBasis.selectedInput sigma).localSection =
+      Ob.carrier.toPresheaf.map (basis.sectionToLocal sigma).op
+        basis.sourceSection := by
+  rfl
+
+/--
+Cycle 231 positive construction checkpoint: restriction-realized pointwise
+atom/law data constructs the Cycle 230 pointwise input-boundary basis.
+-/
+theorem constructs_pointwiseSemanticAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    Nonempty
+      (CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :=
+  ⟨basis.toPointwiseSemanticAtomLawInputBoundaryBasis⟩
+
+/--
+Cycle 231 proof-use checkpoint: the restriction-realized basis constructs the
+free semantic atom/law input-boundary source and still exposes the Cycle 229
+pointwise nonvacuity/support obligations.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (basis :
+      CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :
+    let pointwise := basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+    let source := pointwise.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : source.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = source.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+              (source.atomSupport sigma localInput)
+              (source.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+
+/--
+Cycle 232 boundary-primitive pointwise atom/law input-boundary basis.
+
+This is the generated-Cech version of the pointwise basis.  Instead of taking
+each local section independently, it reads the local section at a selected
+`0`-simplex by evaluating a boundary-generated degree-`0` Cech primitive.
+Thus the semantic local input is tied to the cover-relative Cech coefficient
+layer where `C0 := K.Cn 0`.
+
+The record still carries pointwise semantic atom/law choices.  It does not
+store residual-boundary proof, `H1` zero, comparison equivalence, descent,
+effective gluing, global coherence, or full sheaf cohomology comparison.
+-/
+structure CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob) where
+  boundary :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K
+  atom : (sigma : cover.simplex 0) -> U.Atom
+  atom_traceVisible :
+    forall sigma : cover.simplex 0,
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex : (sigma : cover.simplex 0) -> S.lawUniverse.Index
+  law_required :
+    forall sigma : cover.simplex 0,
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Construct the Cycle 230 pointwise basis from a boundary-generated Cech
+primitive.
+
+The resulting local section is definitionally the value of the selected
+degree-`0` Cech primitive at the chosen `0`-simplex.
+-/
+def toPointwiseSemanticAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K) :
+    CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+      semanticSite S cover Ob where
+  selectedInput := fun sigma =>
+    { atom := basis.atom sigma
+      atom_traceVisible := basis.atom_traceVisible sigma
+      lawIndex := basis.lawIndex sigma
+      law_required := basis.law_required sigma
+      localSection := basis.boundary.primitive sigma }
+
+/--
+The constructed pointwise local section is exactly the selected
+boundary-generated Cech primitive evaluated at the local `0`-simplex.
+-/
+theorem selectedInput_localSection_eq_boundaryPrimitive
+    (basis :
+      CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    (basis.toPointwiseSemanticAtomLawInputBoundaryBasis.selectedInput sigma).localSection =
+      basis.boundary.primitive sigma := by
+  rfl
+
+/--
+Cycle 232 positive construction checkpoint: a boundary-generated Cech
+primitive plus pointwise semantic atom/law choices constructs the Cycle 230
+pointwise input-boundary basis.
+-/
+theorem constructs_pointwiseSemanticAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S cover Ob) :=
+  ⟨basis.toPointwiseSemanticAtomLawInputBoundaryBasis⟩
+
+/--
+Cycle 232 proof-use checkpoint: the boundary-primitive basis constructs the
+free semantic atom/law input-boundary source and exposes pointwise
+nonvacuity/support through the Cycle 230/229 route.
+-/
+theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+    (basis :
+      CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K) :
+    let pointwise := basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+    let source := pointwise.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) /\
+      forall sigma : cover.simplex 0,
+        Exists fun localInput : source.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = source.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
+              (source.atomSupport sigma localInput)
+              (source.lawSupport sigma localInput)
+              localSection := by
+  dsimp
+  exact
+    basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+      |>.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+
+end CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+
+namespace CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Construct the Cycle 232 boundary-primitive pointwise basis from the Cycle 234
+boundary-primitive free source.
+
+The boundary primitive is retained definitionally, while the pointwise atom and
+law selectors are extracted from the source's visible support witnesses.
+-/
+def toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+      semanticSite S cover Ob K where
+  boundary := source.boundary
+  atom := fun sigma =>
+    Classical.choose
+      (source.atomSupport_traceVisible sigma (source.input sigma))
+  atom_traceVisible := by
+    intro sigma
+    exact
+      (Classical.choose_spec
+        (source.atomSupport_traceVisible sigma (source.input sigma))).2
+  lawIndex := fun sigma =>
+    Classical.choose
+      (source.lawSupport_nonempty sigma (source.input sigma))
+  law_required := by
+    intro sigma
+    exact
+      source.lawSupport_required sigma (source.input sigma)
+        (Classical.choose
+          (source.lawSupport_nonempty sigma (source.input sigma)))
+        (Classical.choose_spec
+          (source.lawSupport_nonempty sigma (source.input sigma)))
+
+/--
+Cycle 234 positive checkpoint: a boundary-primitive free source constructs the
+Cycle 232 boundary-primitive pointwise basis without accepting arbitrary
+pointwise selector fields.
+-/
+theorem constructs_boundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K) :=
+  ⟨source.toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis⟩
+
+end CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 224 semantic atom/law input-boundary geometry for the boundary-generated
+route.
+
+This is the first local layer below the Cycle 223 `primitive : K.Cn 0`
+premise.  It presents the primitive as the interpretation of a selected local
+boundary generator over each cover-relative `0`-simplex, together with visible
+semantic atom support and selected required-law support.  The pointwise
+boundary predicate remains an explicit local atom/law obligation: this layer
+does not manufacture that predicate from `CurrentG06InputSurface`, and it does
+not store a degree-`0` Cech cochain, residual boundary membership, `H1` zero,
+exactness, descent, or global repair coherence.
+-/
+structure CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (cover : AAT.AG.Cohomology.CoverRelativeCechCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S) where
+  LocalBoundaryGenerator : cover.simplex 0 -> Type r
+  generator : (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma
+  atomSupport :
+    (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma -> List U.Atom
+  atomSupport_traceVisible :
+    forall (sigma : cover.simplex 0) (localGen : LocalBoundaryGenerator sigma),
+      exists atom : U.Atom,
+        atom ∈ atomSupport sigma localGen ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (sigma : cover.simplex 0) ->
+      LocalBoundaryGenerator sigma -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (sigma : cover.simplex 0) (localGen : LocalBoundaryGenerator sigma),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport sigma localGen
+  lawSupport_required :
+    forall (sigma : cover.simplex 0) (localGen : LocalBoundaryGenerator sigma)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localGen -> S.lawUniverse.Required lawIndex
+  semanticAtomLawBoundary :
+    (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma ->
+      List U.Atom -> List S.lawUniverse.Index ->
+        Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) -> Prop
+  interpret :
+    (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma ->
+      Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))
+  interpretation_generated :
+    forall sigma : cover.simplex 0,
+      semanticAtomLawBoundary sigma (generator sigma)
+        (atomSupport sigma (generator sigma))
+        (lawSupport sigma (generator sigma))
+        (interpret sigma (generator sigma))
+
+namespace CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Construct the Cycle 224 input-boundary geometry from the Cycle 226 free
+semantic atom/law source.
+
+The only boundary predicate supplied to the geometry is the free relation
+generated from the source.  In particular, `interpretation_generated` is not a
+field imported from outside the source; it is the `generated` constructor of
+`CoverRelativeCechFreeSemanticAtomLawBoundary`.
+-/
+def ofFreeSemanticAtomLawInputBoundarySource
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+      semanticSite S cover Ob where
+  LocalBoundaryGenerator := source.LocalInput
+  generator := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  semanticAtomLawBoundary :=
+    CoverRelativeCechFreeSemanticAtomLawBoundary source
+  interpret := source.interpret
+  interpretation_generated := by
+    intro sigma
+    exact CoverRelativeCechFreeSemanticAtomLawBoundary.generated
+      (source := source) sigma (source.input sigma)
+
+/--
+Cycle 226 constructor checkpoint: a free semantic atom/law source constructs
+the Cycle 224 input-boundary geometry without accepting `semanticAtomLawBoundary`
+or `interpretation_generated` as external fields.
+-/
+theorem freeSource_constructs_inputBoundaryGeometry
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob) :
+    Nonempty
+      (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob) :=
+  ⟨ofFreeSemanticAtomLawInputBoundarySource source⟩
+
+/--
+Read the input-boundary geometry as the degree-`0` cover-relative cochain
+primitive consumed by Cycle 223.
+
+This is only the type-level passage from pointwise local sections to the
+selected Cech `C^0` product.  The local atom/law provenance stays visible in
+`interpretation_generated`.
+-/
+def toPrimitive
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob) :
+    AAT.AG.Cohomology.CoverRelativeCechCochain cover Ob 0 :=
+  fun sigma => geometry.interpret sigma (geometry.generator sigma)
+
+/--
+Audit view of the local input-boundary layer.
+
+For every selected `0`-simplex, the layer exposes a trace-visible semantic atom
+support, a selected required-law support, and the pointwise atom/law boundary
+predicate for the local primitive.  It exposes no residual-boundary or `H1`
+conclusion.
+-/
+theorem exposes_visible_atom_required_law_and_local_boundary
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob) :
+    forall sigma : cover.simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      geometry.semanticAtomLawBoundary sigma
+        (geometry.generator sigma)
+        (geometry.atomSupport sigma (geometry.generator sigma))
+        (geometry.lawSupport sigma (geometry.generator sigma))
+        (geometry.interpret sigma (geometry.generator sigma)) := by
+  intro sigma
+  rcases geometry.lawSupport_nonempty sigma (geometry.generator sigma) with
+    ⟨lawIndex, hLawIndex⟩
+  exact
+    ⟨geometry.atomSupport_traceVisible sigma (geometry.generator sigma),
+      ⟨lawIndex, hLawIndex,
+        geometry.lawSupport_required sigma (geometry.generator sigma)
+          lawIndex hLawIndex⟩,
+      geometry.interpretation_generated sigma⟩
+
+/--
+Convert the pointwise semantic atom/law input-boundary geometry into the Cycle
+223 boundary-generated coefficient layer.
+
+The residual is still not a field here: downstream it is definitionally
+`K.d 0 geometry.toPrimitive`.
+-/
+def toBoundaryGeneratedCoefficient
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1)) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K where
+  c0Order := c0Order
+  c1Order := c1Order
+  primitive := geometry.toPrimitive
+
+/--
+The local input-boundary geometry supplies the boundary-generated coefficient
+object required by Cycle 223.
+-/
+theorem constructs_boundaryGeneratedCoefficient
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1)) :
+    Nonempty
+      (CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite K) :=
+  ⟨geometry.toBoundaryGeneratedCoefficient (K := K) c0Order c1Order⟩
+
+/--
+Cycle 233 constructor checkpoint: the semantic atom/law input-boundary
+geometry constructs the Cycle 232 boundary-primitive pointwise basis.
+
+The selected pointwise atom and law are not new material fields here.  They
+are chosen from the visible support witnesses already carried by the local
+input-boundary geometry, while the local section is still the interpreted
+degree-`0` Cech primitive.
+-/
+def toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1)) :
+    CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+      semanticSite S cover Ob K where
+  boundary := geometry.toBoundaryGeneratedCoefficient (K := K) c0Order c1Order
+  atom := fun sigma =>
+    Classical.choose
+      (geometry.atomSupport_traceVisible sigma (geometry.generator sigma))
+  atom_traceVisible := by
+    intro sigma
+    exact
+      (Classical.choose_spec
+        (geometry.atomSupport_traceVisible sigma (geometry.generator sigma))).2
+  lawIndex := fun sigma =>
+    Classical.choose
+      (geometry.lawSupport_nonempty sigma (geometry.generator sigma))
+  law_required := by
+    intro sigma
+    exact
+      geometry.lawSupport_required sigma (geometry.generator sigma)
+        (Classical.choose
+          (geometry.lawSupport_nonempty sigma (geometry.generator sigma)))
+        (Classical.choose_spec
+          (geometry.lawSupport_nonempty sigma (geometry.generator sigma)))
+
+/--
+Cycle 233 positive checkpoint: semantic atom/law input-boundary geometry is
+enough to construct the Cycle 232 boundary-primitive pointwise atom/law basis.
+-/
+theorem constructs_boundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1)) :
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S cover Ob K) :=
+  ⟨geometry.toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+    (K := K) c0Order c1Order⟩
+
+/--
+Cycle 224 positive checkpoint: semantic atom/law input-boundary geometry
+constructs the visible residual-boundary predicate after conversion through
+the Cycle 223 boundary-generated route.
+-/
+theorem constructs_residualBoundary
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := K) c0Order c1Order).toGeneratedCoefficient) :
+    canonical.residualBoundary :=
+  (geometry.toBoundaryGeneratedCoefficient
+    (K := K) c0Order c1Order).constructs_residualBoundary canonical
+
+/--
+Cycle 224 positive checkpoint: the local semantic atom/law input-boundary layer
+reaches semantic `H1` zero only through the Cycle 223 residual-boundary theorem.
+-/
+theorem constructs_semanticH1Zero
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := K) c0Order c1Order).toGeneratedCoefficient) :
+    SemanticRepairH1Zero canonical.toEnvelope :=
+  (geometry.toBoundaryGeneratedCoefficient
+    (K := K) c0Order c1Order).constructs_semanticH1Zero canonical
+
+/--
+Cycle 224 positive checkpoint: the same local semantic atom/law input-boundary
+layer reaches additive `Z1 / B1` zero only through the Cycle 223
+residual-boundary theorem.
+-/
+theorem constructs_additiveH1Zero
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := K) c0Order c1Order).toGeneratedCoefficient) :
+    SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data :=
+  (geometry.toBoundaryGeneratedCoefficient
+    (K := K) c0Order c1Order).constructs_additiveH1Zero canonical
+
+/--
+Cycle 278 proof-use checkpoint: semantic atom/law input-boundary geometry
+constructs the additive Cech cocycle input layer and the residual-boundary
+zero-class consequences.
+
+This composes the Cycle 224 input-boundary geometry with the Cycle 278
+boundary-generated additive input theorem.  The lower atom/law support and
+local boundary predicate remain visible, while the residual is generated as
+`K.d 0 geometry.toPrimitive`.  No arbitrary residual cocycle, residual-boundary
+certificate, `c0Equiv`, old `sourceWithoutC0`, external comparison package,
+descent/effectivity witness, or final global-coherence conclusion is accepted.
+-/
+theorem constructs_additiveCechCocycleInputLayer_and_residualBoundary_and_h1Zero
+    {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob)
+    (c0Order : List (K.Cn 0)) (c1Order : List (K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := K) c0Order c1Order).toGeneratedCoefficient) :
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient (K := K) c0Order c1Order
+    let generated := boundary.toGeneratedCoefficient
+    (forall sigma : cover.simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      geometry.semanticAtomLawBoundary sigma
+        (geometry.generator sigma)
+        (geometry.atomSupport sigma (geometry.generator sigma))
+        (geometry.lawSupport sigma (geometry.generator sigma))
+        (geometry.interpret sigma (geometry.generator sigma))) /\
+      boundary.primitive = geometry.toPrimitive /\
+      generated.residual = K.d 0 geometry.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data canonical.toEnvelope) /\
+      (forall primitive : K.Cn 0,
+        canonical.toEnvelope.coefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        canonical.toEnvelope.coefficient.delta1 cochain = K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle canonical.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle canonical.toAdditiveCechH1Data =>
+        letI := K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : K.Cn 1)) /\
+      (forall primitive : K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 canonical.toEnvelope
+          (K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data <->
+        exists primitive : K.Cn 0,
+          K.d 0 primitive = generated.residual) /\
+      (exists primitive : K.Cn 0,
+        primitive = geometry.toPrimitive /\
+          K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient (K := K) c0Order c1Order
+  let generated := boundary.toGeneratedCoefficient
+  have hroute :=
+    boundary.constructs_additiveCechCocycleInputLayer_and_residualBoundary
+      canonical
+  rcases hroute with
+    ⟨_hresidualBoundaryGenerated, hcocycle, hdata, hdelta0, hdelta1,
+      hresidualCocycle, hzeroCocycle, hboundaryCocycle, hzeroIff,
+      _hprimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  have hresidual :
+      generated.residual = K.d 0 geometry.toPrimitive := by
+    rfl
+  exact
+    ⟨geometry.exposes_visible_atom_required_law_and_local_boundary,
+      rfl,
+      hresidual,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      ⟨geometry.toPrimitive, rfl, hresidual.symm⟩,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 225 route checkpoint: local semantic atom/law input-boundary geometry,
+read through the canonical generated Cech envelope, reaches the grounded
+cover-relative comparison package and the residual zero-class consequences.
+
+This theorem composes the Cycle 224 local input-boundary layer with the Cycle
+219/220 generated canonical route.  It does not take `c0Equiv`,
+`sourceWithoutC0`, a carrier comparison, a residual-boundary witness, or
+semantic/additive `H1` zero as an argument.  The carrier comparisons and
+selected face laws are generated by the cover-relative Cech complex `surface.K`
+inside the generated canonical route; the residual zero-class consequences are
+obtained only after the local generator is interpreted as the degree-`0`
+boundary input.
+-/
+theorem constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      geometry.semanticAtomLawBoundary sigma
+        (geometry.generator sigma)
+        (geometry.atomSupport sigma (geometry.generator sigma))
+        (geometry.lawSupport sigma (geometry.generator sigma))
+        (geometry.interpret sigma (geometry.generator sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient (K := surface.K) c0Order c1Order
+  have hgrounded :
+      AtomSupportedSelectedLowerSource
+          (E := canonical.toEnvelope)
+          (additive := canonical.toAdditiveCechH1Data) surface /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (E := canonical.toEnvelope)
+          (additive := canonical.toAdditiveCechH1Data)
+          (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun realization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data surface.K =>
+          Nonempty
+            (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+              realization.toH1Comparison)) :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.constructs_groundedComparisonPackage
+      (surface := surface) family hcover_eq
+      (boundary.toGeneratedCoefficient) canonical
+  exact
+    ⟨geometry.exposes_visible_atom_required_law_and_local_boundary,
+      hgrounded.1,
+      hgrounded.2.1,
+      hgrounded.2.2,
+      boundary.constructs_residualBoundary canonical,
+      boundary.constructs_semanticH1Zero canonical,
+      boundary.constructs_additiveH1Zero canonical⟩
+
+/--
+Cycle 226 free-source route checkpoint: a free semantic atom/law
+input-boundary source is enough to run the Cycle 225 generated canonical route.
+
+This theorem removes `CoverRelativeCechSemanticAtomLawInputBoundaryGeometry`
+as a top-level premise.  The local boundary evidence in the first component is
+the free boundary relation generated from `source`; no residual-boundary,
+semantic/additive `H1` zero, exactness, descent, global coherence, or full
+sheaf-cohomology comparison is stored in the source.
+-/
+theorem freeSource_constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((ofFreeSemanticAtomLawInputBoundarySource source).toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport sigma (source.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
+        (source.input sigma)
+        (source.atomSupport sigma (source.input sigma))
+        (source.lawSupport sigma (source.input sigma))
+        (source.interpret sigma (source.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  let geometry :=
+    ofFreeSemanticAtomLawInputBoundarySource source
+  have hroute :=
+    constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq geometry c0Order c1Order canonical
+  simpa [geometry, ofFreeSemanticAtomLawInputBoundarySource] using hroute
+
+/--
+Cycle 230 route checkpoint: a pointwise semantic atom/law input-boundary basis
+constructs the free source and then runs the existing generated canonical
+route.
+
+Compared with Cycle 226, the theorem no longer accepts an arbitrary
+`CoverRelativeCechFreeSemanticAtomLawInputBoundarySource`.  The source is
+generated from per-simplex pointwise local inputs whose supports are singleton
+trace-visible atom / required-law lists.  The remaining material premise is the
+pointwise local section carried by each local input; the theorem still does not
+claim that those sections are produced by restriction maps alone.
+-/
+theorem pointwiseInputBoundaryBasis_constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (basis :
+      CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((ofFreeSemanticAtomLawInputBoundarySource
+          basis.toFreeSemanticAtomLawInputBoundarySource).toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    let source := basis.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport sigma (source.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
+        (source.input sigma)
+        (source.atomSupport sigma (source.input sigma))
+        (source.lawSupport sigma (source.input sigma))
+        (source.interpret sigma (source.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    freeSource_constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      basis.toFreeSemanticAtomLawInputBoundarySource
+      c0Order c1Order canonical
+
+/--
+Cycle 231 route checkpoint: a restriction-realized pointwise atom/law basis
+constructs the pointwise/free source and then runs the generated canonical
+route.
+
+Compared with Cycle 230, the pointwise local section is no longer an
+independent field: it is the presheaf restriction of `sourceSection` along the
+displayed local morphism.  The remaining material premise is the construction
+of that source object, source section, and local restriction morphisms from the
+accepted semantic atom/law cover boundary; this theorem therefore remains a
+proof checkpoint rather than a G-06 completion claim.
+-/
+theorem restrictionRealizedPointwiseBasis_constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (basis :
+      CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((ofFreeSemanticAtomLawInputBoundarySource
+          (basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+            |>.toFreeSemanticAtomLawInputBoundarySource)).toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    let pointwise := basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+    let source := pointwise.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport sigma (source.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
+        (source.input sigma)
+        (source.atomSupport sigma (source.input sigma))
+        (source.lawSupport sigma (source.input sigma))
+        (source.interpret sigma (source.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    pointwiseInputBoundaryBasis_constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+      c0Order c1Order canonical
+
+/--
+Cycle 232 route checkpoint: a boundary-generated Cech primitive constructs the
+pointwise/free semantic atom-law source and then runs the generated canonical
+route.
+
+Compared with Cycle 231, this does not require a single global
+`sectionSource` and local restriction morphisms.  The pointwise local section
+is generated by evaluating the selected degree-`0` Cech primitive in
+`basis.boundary`.  The pointwise atom/law choices remain visible material
+lower data, so this is a proof checkpoint, not a G-06 completion claim.
+-/
+theorem boundaryPrimitivePointwiseBasis_constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (basis :
+      CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((ofFreeSemanticAtomLawInputBoundarySource
+          (basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+            |>.toFreeSemanticAtomLawInputBoundarySource)).toBoundaryGeneratedCoefficient
+          (K := surface.K) basis.boundary.c0Order
+          basis.boundary.c1Order).toGeneratedCoefficient) :
+    let pointwise := basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+    let source := pointwise.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport sigma (source.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
+        (source.input sigma)
+        (source.atomSupport sigma (source.input sigma))
+        (source.lawSupport sigma (source.input sigma))
+        (source.interpret sigma (source.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    pointwiseInputBoundaryBasis_constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+      basis.boundary.c0Order basis.boundary.c1Order canonical
+
+/--
+Cycle 233 route checkpoint: accepted semantic atom/law input-boundary
+geometry first constructs the boundary-primitive pointwise basis, then runs
+the Cycle 232 generated-Cech route.
+
+This removes pointwise atom/law selector fields from the route premise.  The
+choices are obtained from the geometry's visible atom support and nonempty
+required-law support.  The geometry itself remains material lower data, so
+this is still a proof checkpoint rather than a G-06 completion claim.
+-/
+theorem inputBoundaryGeometry_constructs_boundaryPrimitivePointwiseBasis_and_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((ofFreeSemanticAtomLawInputBoundarySource
+          ((geometry.toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+              (K := surface.K) c0Order c1Order)
+            |>.toPointwiseSemanticAtomLawInputBoundaryBasis
+            |>.toFreeSemanticAtomLawInputBoundarySource)).toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    let basis :=
+      geometry.toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        (K := surface.K) c0Order c1Order
+    let pointwise := basis.toPointwiseSemanticAtomLawInputBoundaryBasis
+    let source := pointwise.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport sigma (source.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
+          (source.input sigma)
+          (source.atomSupport sigma (source.input sigma))
+          (source.lawSupport sigma (source.input sigma))
+          (source.interpret sigma (source.input sigma))) /\
+        AtomSupportedSelectedLowerSource
+          (E := canonical.toEnvelope)
+          (additive := canonical.toAdditiveCechH1Data) surface /\
+        DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+          (E := canonical.toEnvelope)
+          (additive := canonical.toAdditiveCechH1Data)
+          (coverBridge := surface.coverBridge)
+          (K := surface.K) /\
+        (Exists fun realization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data surface.K =>
+          Nonempty
+            (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+              realization.toH1Comparison)) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  let basis :=
+    geometry.toBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
+      (K := surface.K) c0Order c1Order
+  exact
+    ⟨⟨basis⟩,
+      boundaryPrimitivePointwiseBasis_constructs_groundedComparisonPackage_and_h1Zero
+        (surface := surface) family hcover_eq basis canonical⟩
+
+end CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+namespace CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Read the boundary-primitive free source as semantic atom/law input-boundary
+geometry.
+
+The geometry's interpretation is generated by the underlying
+boundary-primitive free source, so the resulting degree-`0` primitive is the
+selected boundary primitive rather than an arbitrary local-section field.
+-/
+def toSemanticAtomLawInputBoundaryGeometry
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+      semanticSite S cover Ob :=
+  CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+    source.toFreeSemanticAtomLawInputBoundarySource
+
+/--
+The geometry generated from a boundary-primitive free source has the same
+degree-`0` primitive as the source's boundary-generated coefficient.
+-/
+theorem toGeometry_toPrimitive_eq_boundaryPrimitive
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K)
+    (sigma : cover.simplex 0) :
+    source.toSemanticAtomLawInputBoundaryGeometry.toPrimitive sigma =
+      source.boundary.primitive sigma := by
+  simp [
+    toSemanticAtomLawInputBoundaryGeometry,
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource,
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toPrimitive,
+    toFreeSemanticAtomLawInputBoundarySource]
+
+/--
+Cycle 234 input-boundary geometry checkpoint: a boundary-primitive free source
+constructs the semantic atom/law input-boundary geometry, with interpretation
+fixed by the generated Cech primitive.
+-/
+theorem constructs_inputBoundaryGeometry
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob) :=
+  ⟨source.toSemanticAtomLawInputBoundaryGeometry⟩
+
+/--
+Cycle 234 route checkpoint: a boundary-primitive free source runs the generated
+canonical route without accepting an arbitrary free-source interpretation map
+or a top-level input-boundary geometry.
+
+The remaining material lower data are the boundary primitive itself and the
+semantic atom/law local input/support data.  No residual-boundary proof,
+semantic/additive `H1` zero, comparison package, exactness,
+descent/effectivity, full sheaf cohomology comparison, or global coherence is
+stored in this source.
+-/
+theorem constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              source.toFreeSemanticAtomLawInputBoundarySource)
+            source.boundary.c0Order source.boundary.c1Order))) :
+    let freeSource := source.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.freeSource_constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      source.toFreeSemanticAtomLawInputBoundarySource
+      source.boundary.c0Order source.boundary.c1Order canonical
+
+end CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+/--
+Cycle 234 constructor checkpoint under the canonical/free cover-boundary name.
+
+The data is an abbreviation for the boundary-primitive free semantic atom/law
+source, so this theorem does not introduce a new certificate field.  It records
+that the accepted lower input boundary constructs the Cycle 224 geometry while
+keeping interpretation generated by the boundary primitive.
+-/
+theorem canonicalFreeCoverBoundary_constructs_inputBoundaryGeometry
+    (data :
+      CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+        semanticSite S cover Ob K) :
+    Nonempty
+      (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S cover Ob) :=
+  data.constructs_inputBoundaryGeometry
+
+/--
+Cycle 234 route checkpoint under the canonical/free cover-boundary name.
+
+This composes the boundary-primitive free source with the existing generated
+Cech route.  It removes the arbitrary `interpret` field of the Cycle 226 free
+source and the top-level Cycle 224 geometry premise from this route.  The data
+still visibly contains semantic atom/law input/support data and the selected
+boundary primitive, so this is not a G-06 completion claim.
+-/
+theorem canonicalFreeCoverBoundary_constructs_boundaryPrimitivePointwiseBasis_and_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (data :
+      CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              data.toFreeSemanticAtomLawInputBoundarySource)
+            data.boundary.c0Order data.boundary.c1Order))) :
+    let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq data canonical
+
+end CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+namespace CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 236 proof-use checkpoint for the T1-selected lower-provenance obligation:
+the restriction-realized input-boundary source, together with the canonical
+generated envelope built from it, constructs the explicit degree-wise carrier
+and face-restriction lower package.
+
+This theorem does not accept `c0Carrier`, `c1Carrier`, `c0Equiv`, the old
+`sourceWithoutC0`, or selected face laws as arguments.  The package is obtained
+by applying the canonical generated route, whose carrier comparisons are
+identity comparisons on `surface.K.Cn 0/1/2` and whose face laws are generated
+from `surface.K.d_eq_alternatingFaceCombination`.
+-/
+theorem constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (E := canonical.toEnvelope)
+      (additive := canonical.toAdditiveCechH1Data)
+      (coverBridge := surface.coverBridge)
+      (K := surface.K) := by
+  let lowerSource :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (surface := surface) family hcover_eq
+      (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+        (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+          (K := surface.K)
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+            (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+              |>.toFreeSemanticAtomLawInputBoundarySource))
+          source.c0Order source.c1Order))
+      canonical
+  exact
+    (atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedCochainRealization
+      (E := canonical.toEnvelope)
+      (additive := canonical.toAdditiveCechH1Data)
+      (surface := surface) lowerSource).2.2.1
+
+/--
+Cycle 235 route checkpoint: a restriction-realized lower source constructs the
+boundary-primitive free source and runs the generated canonical route.
+
+Compared with Cycle 234, the boundary primitive is no longer supplied as a bare
+`K.Cn 0` field.  It is generated by restricting `sourceSection` along
+`sectionToLocal`.  The semantic atom/law local input and support data remain
+visible lower data, so this is not a G-06 completion claim.
+-/
+theorem constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    let boundarySource :=
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      canonical
+
+/--
+Cycle 263 proof-use checkpoint: the Cycle 262 atom/law-overlap
+boundary-generated route runs with a primitive generated from restriction-realized
+semantic atom/law input-boundary data.
+
+This removes the bare `primitive : K.Cn 0` theorem argument from the selected
+atom/law-overlap boundary route.  The primitive is `source.toPrimitive`, and for
+each selected degree-`0` simplex it unfolds to restriction of
+`source.sourceSection` along `source.sectionToLocal`.  The theorem remains a
+checkpoint: `sourceSection`, `sectionToLocal`, local semantic atom/law inputs,
+`c0Order`, `c1Order`, and the canonical generated envelope are still visible
+lower/input-boundary data.
+-/
+theorem atomLawOverlap_restrictionRealized_constructs_boundaryGeneratedRoute_and_h1Zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex
+            coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex
+          coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry source.c0Order source.c1Order
+          source.toPrimitive).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let canonicalGeometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover :=
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry source.c0Order source.c1Order
+        source.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let boundarySource :=
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall sigma : cover.simplex 0,
+      boundary.primitive sigma =
+        Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+          source.sourceSection) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 source.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceSupport :=
+    source.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
+  have hroute :=
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient.atomLawOverlap_boundaryGenerated_constructs_generatedSemanticCoefficientRoute
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      source.c0Order source.c1Order source.toPrimitive canonical
+  have hzero :=
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient.atomLawOverlap_boundaryGenerated_constructs_residualBoundary_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      source.c0Order source.c1Order source.toPrimitive canonical
+  exact
+    ⟨(fun sigma => by rfl),
+      sourceSupport.1,
+      sourceSupport.2,
+      hroute.1,
+      hroute.2.1,
+      hroute.2.2.1,
+      hroute.2.2.2.1,
+      hroute.2.2.2.2.1,
+      hroute.2.2.2.2.2.1,
+      hroute.2.2.2.2.2.2.1,
+      hroute.2.2.2.2.2.2.2,
+      hzero.1,
+      hzero.2.1,
+      hzero.2.2⟩
+
+end CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {cover : AAT.AG.Cohomology.CoverRelativeCechCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex cover Ob}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 236 proof-use checkpoint under the base-restriction refinement: the
+base-restriction source, together with the canonical generated envelope built
+from it, constructs the explicit degree-wise carrier and face-restriction lower
+package without accepting `c0Carrier`, `c0Equiv`, the old `sourceWithoutC0`,
+or selected face laws as external inputs.
+
+Compared with the restriction-realized theorem above, this also fixes the
+source object to the selected cover-relative base.  The displayed
+`zeroSimplexToBase` maps and the base section remain visible material lower
+cover geometry.
+-/
+theorem constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (E := canonical.toEnvelope)
+      (additive := canonical.toAdditiveCechH1Data)
+      (coverBridge := surface.coverBridge)
+      (K := surface.K) :=
+  CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      canonical
+
+/--
+Cycle 236 route checkpoint: a base-restriction lower source constructs the
+Cycle 235 restriction-realized source and then runs the generated canonical
+route.
+
+Compared with Cycle 235, the source object is no longer arbitrary: it is
+definitionally the selected cover-relative base.  The remaining material lower
+data are the base section, the displayed maps from selected `0`-simplex
+overlaps to the base, and the semantic atom/law local input and support data.
+The theorem is therefore a proof checkpoint, not a G-06 completion claim.
+-/
+theorem constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    let restrictionSource :=
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      canonical
+
+/--
+Cycle 264 proof-use checkpoint: the selected atom/law-overlap boundary route
+runs with a base-restriction primitive.
+
+This lowers the Cycle 263 restriction-realized source by removing an arbitrary
+`sectionToLocal` argument from the selected route.  The primitive now unfolds as
+restriction of one obstruction-sheaf section over `cover.base` along the
+displayed maps from each selected degree-`0` overlap to that base.  The theorem
+still records a proof checkpoint only: the base section, the displayed
+overlap-to-base maps, local semantic atom/law inputs and supports, the selected
+orders, and the canonical generated envelope remain material lower data.
+-/
+theorem atomLawOverlap_baseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+    {S : AAT.AG.Site.AATSite A}
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex
+            coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex
+          coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry source.c0Order source.c1Order
+          source.toPrimitive).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let canonicalGeometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover :=
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry source.c0Order source.c1Order
+        source.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let boundarySource := source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall sigma : cover.simplex 0,
+      boundary.primitive sigma =
+        Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+          source.sourceSection) /\
+      Nonempty
+        (CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob K) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 source.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let restrictionSource :=
+    source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hroute :=
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.atomLawOverlap_restrictionRealized_constructs_boundaryGeneratedRoute_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      restrictionSource canonical
+  rcases hroute with
+    ⟨hprimitive, hfree, hsupport, hresidual, hcocycle, hdiff, hdelta0,
+      hdelta1, hcarrier, hrealization, hcomparison, hresidualBoundary,
+      hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨(fun sigma => by simpa using hprimitive sigma),
+      ⟨restrictionSource⟩,
+      hfree,
+      hsupport,
+      hresidual,
+      hcocycle,
+      hdiff,
+      hdelta0,
+      hdelta1,
+      hcarrier,
+      hrealization,
+      hcomparison,
+      hresidualBoundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 267 selected proof-use checkpoint: the atom/law-overlap boundary route
+runs with the selected finite-poset degree-`0` chart projection.
+
+This is the positive theorem-level transport replacing the Cycle 266 literal
+cover-equality bridge for the selected route.  It keeps the selected Cycle 261
+`atomLawOverlapCoverRelativeCechComplex` fixed, generates the degree-`0`
+chart/base transport from `simplexIndices 0 sigma 0` and
+`simplexOverlap_le_patch 0 sigma 0`, and then proof-uses the Cycle 264 selected
+base-restriction route.
+-/
+theorem atomLawOverlap_finitePosetChartProjection_constructs_boundaryGeneratedRoute_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (source :
+      CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry source.c0Order source.c1Order
+          (source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            |>.toPrimitive)).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry source.c0Order source.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let boundarySource := baseSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall sigma : cover.simplex 0,
+      source.zeroSimplexChart sigma = regime.simplexIndices 0 sigma 0) /\
+      (forall sigma : cover.simplex 0,
+        source.zeroSimplexToChart sigma =
+          homOfLE (regime.simplexOverlap_le_patch 0 sigma 0)) /\
+      (forall sigma : cover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          source.zeroSimplexToChart sigma ≫
+            cover.inclusion (source.zeroSimplexChart sigma)) /\
+      (forall sigma : cover.simplex 0,
+        boundary.primitive sigma =
+          Ob.carrier.toPresheaf.map
+            (source.zeroSimplexToChart sigma ≫
+              cover.inclusion (source.zeroSimplexChart sigma)).op
+            source.sourceSection) /\
+      Nonempty
+        (CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob K) /\
+      Nonempty
+        (CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob K) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 baseSource.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+          Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hroute :=
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.atomLawOverlap_baseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      baseSource canonical
+  rcases hroute with
+    ⟨hprimitive, hrestriction, hfree, hsupport, hresidual, hcocycle, hdiff,
+      hdelta0, hdelta1, hcarrier, hrealization, hcomparison,
+      hresidualBoundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨(fun sigma => by rfl),
+      (fun sigma => by rfl),
+      (fun sigma => by rfl),
+      (fun sigma => by rfl),
+      ⟨baseSource⟩,
+      hrestriction,
+      hfree,
+      hsupport,
+      hresidual,
+      hcocycle,
+      hdiff,
+      hdelta0,
+      hdelta1,
+      hcarrier,
+      hrealization,
+      hcomparison,
+      hresidualBoundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 268 selected proof-use checkpoint: pointwise semantic atom/law basis
+constructs the finite-poset chart-projection source and then runs the Cycle 267
+selected atom/law-overlap boundary route.
+
+The theorem proof-uses the generated source in the selected H1 route.  It does
+not discharge the remaining base-section provenance, selected order
+provenance, canonical envelope observations, descent/effectivity, cover
+refinement/naturality, or the final G-06 target package.
+-/
+theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_source_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          ((basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource)
+            |>.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            |>.toPrimitive)).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource := baseSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) /\
+      (forall sigma : cover.simplex 0,
+        ((source.input sigma).localSection =
+          basis.projectedLocalSection sigma)) /\
+      (forall sigma : cover.simplex 0,
+        source.zeroSimplexChart sigma = regime.simplexIndices 0 sigma 0) /\
+      (forall sigma : cover.simplex 0,
+        source.zeroSimplexToChart sigma =
+          homOfLE (regime.simplexOverlap_le_patch 0 sigma 0)) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 baseSource.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hroute :=
+    CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.atomLawOverlap_finitePosetChartProjection_constructs_boundaryGeneratedRoute_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      source canonical
+  rcases hroute with
+    ⟨hchart, htoChart, _htoBase, _hprimitive, _hbase, _hrestriction,
+      hfree, hsupport, hresidual, hcocycle, _hdiff, _hdelta0, _hdelta1,
+      _hcarrier, hrealization, hcomparison, hresidualBoundary, hsemanticH1,
+      hadditiveH1⟩
+  exact
+    ⟨⟨source⟩,
+      (fun sigma => by rfl),
+      hchart,
+      htoChart,
+      hfree,
+      hsupport,
+      hresidual,
+      hcocycle,
+      hrealization,
+      hcomparison,
+      hresidualBoundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 269 proof-use checkpoint: the pointwise finite-poset chart-projection
+route also re-emits the generated semantic coefficient data produced by the
+Cycle 267 selected route.
+
+Cycle 268 constructed the selected source but intentionally dropped the
+differential and degree-`0` carrier outputs.  This theorem keeps the same
+constructed pointwise/free source and exposes the generated standard
+differential law, the direct selected `delta0` / `delta1` equations, and the
+identity degree-`0` carrier comparison.  It still does not discharge the base
+section provenance, selected order provenance, canonical envelope observation
+fields, descent/effectivity, cover refinement/naturality, or the final G-06
+target package.
+-/
+theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_generatedCoefficientRoute_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          ((basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource)
+            |>.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            |>.toPrimitive)).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource := baseSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S regime C Ob K) /\
+      (forall sigma : cover.simplex 0,
+        ((source.input sigma).localSection =
+          basis.projectedLocalSection sigma)) /\
+      (forall sigma : cover.simplex 0,
+        source.zeroSimplexChart sigma = regime.simplexIndices 0 sigma 0) /\
+      (forall sigma : cover.simplex 0,
+        source.zeroSimplexToChart sigma =
+          homOfLE (regime.simplexOverlap_le_patch 0 sigma 0)) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 baseSource.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+          Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hroute :=
+    CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.atomLawOverlap_finitePosetChartProjection_constructs_boundaryGeneratedRoute_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      source canonical
+  rcases hroute with
+    ⟨hchart, htoChart, _htoBase, _hprimitive, _hbase, _hrestriction,
+      hfree, hsupport, hresidual, hcocycle, hdiff, hdelta0, hdelta1,
+      hcarrier, hrealization, hcomparison, hresidualBoundary, hsemanticH1,
+      hadditiveH1⟩
+  exact
+    ⟨⟨source⟩,
+      (fun sigma => by rfl),
+      hchart,
+      htoChart,
+      hfree,
+      hsupport,
+      hresidual,
+      hcocycle,
+      hdiff,
+      hdelta0,
+      hdelta1,
+      hcarrier,
+      hrealization,
+      hcomparison,
+      hresidualBoundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 270 proof-use checkpoint: the pointwise finite-poset chart-projection
+route exposes the explicit residual-boundary primitive generated by the
+constructed source.
+
+Cycle 269 re-emitted the generated coefficient route outputs, including the
+identity `C0` carrier comparison.  This theorem focuses on the
+`sourceWithoutC0` side: the residual boundary is not accepted as an `H1`
+certificate and is not merely re-emitted from the selected route.  It is built
+from the concrete primitive `baseSource.toPrimitive`, with
+`generated.residual = K.d 0 baseSource.toPrimitive` supplied by the constructed
+atom/law-overlap route.  The semantic and additive `H1` zero conclusions are
+then derived through the canonical residual-boundary equivalences.
+-/
+theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_explicitResidualBoundary_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          ((basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource)
+            |>.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            |>.toPrimitive)).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime Ob)
+          C Ob K) /\
+      (exists primitive : K.Cn 0,
+        primitive = baseSource.toPrimitive /\
+          K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hboundary : canonical.residualBoundary := by
+    refine ⟨baseSource.toPrimitive, ?_⟩
+    rfl
+  exact
+    ⟨⟨source⟩,
+      ⟨baseSource.toPrimitive, rfl, rfl⟩,
+      hboundary,
+      (canonical.semanticH1Zero_iff_residualBoundary).2 hboundary,
+      (canonical.additiveH1Zero_iff_residualBoundary).2 hboundary⟩
+
+/--
+Cycle 271 proof-use checkpoint: the pointwise finite-poset chart-projection
+route constructs the identity cochain realization, the degree-`0` carrier
+comparison, and the explicit residual-boundary primitive from the same
+constructed source.
+
+This is the selected identity/generated route version of the old
+`c0Carrier` / `sourceWithoutC0` lower packet.  It does not accept
+`c0Carrier`, `c0Equiv`, `sourceWithoutC0`, selected face laws,
+residual-boundary, or `H1` zero as inputs.  The cochain realization is the
+canonical generated identity realization, and the residual boundary is built
+from `baseSource.toPrimitive`.
+-/
+theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityCochainRealization_explicitPrimitive_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          ((basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource)
+            |>.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            |>.toPrimitive)).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime Ob)
+          C Ob K) /\
+      (Exists fun identityRealization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K =>
+        identityRealization = realization /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            identityRealization.c0Equiv primitive = primitive) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            identityRealization.c0Equiv.symm primitive = primitive) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            identityRealization.c1Equiv cochain = cochain) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            identityRealization.c1Equiv.symm cochain = cochain) /\
+          (forall cochain : K.Cn 2,
+            identityRealization.c2Equiv cochain = cochain) /\
+          (forall cochain : K.Cn 2,
+            identityRealization.c2Equiv.symm cochain = cochain) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            letI := K.cochainAddCommGroup 1
+            K.d 0 (identityRealization.c0Equiv primitive) =
+              identityRealization.c1Equiv
+                (generated.toCoefficient.delta0 primitive)) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            letI := K.cochainAddCommGroup 1
+            generated.toCoefficient.delta0
+                (identityRealization.c0Equiv.symm primitive) =
+              identityRealization.c1Equiv.symm (K.d 0 primitive)) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            letI := K.cochainAddCommGroup 2
+            K.d 1 (identityRealization.c1Equiv cochain) =
+              identityRealization.c2Equiv
+                (generated.toCoefficient.delta1 cochain)) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            letI := K.cochainAddCommGroup 2
+            generated.toCoefficient.delta1
+                (identityRealization.c1Equiv.symm cochain) =
+              identityRealization.c2Equiv.symm (K.d 1 cochain))) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : K.Cn 0,
+        primitive = baseSource.toPrimitive /\
+          K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let realization := canonical.toGeneratedEnvelope.toCochainRealization
+  have hidentity :
+      Exists fun identityRealization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data
+          (atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf) =>
+        identityRealization = realization /\
+          (forall primitive :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 0
+            identityRealization.c0Equiv primitive = primitive) /\
+          (forall primitive :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 0
+            identityRealization.c0Equiv.symm primitive = primitive) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            identityRealization.c1Equiv cochain = cochain) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            identityRealization.c1Equiv.symm cochain = cochain) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 2,
+            identityRealization.c2Equiv cochain = cochain) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 2,
+            identityRealization.c2Equiv.symm cochain = cochain) /\
+          (forall primitive :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 0
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).d 0
+                (identityRealization.c0Equiv primitive) =
+              identityRealization.c1Equiv
+                (((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+                  coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+                  baseSource.toPrimitive).toGeneratedCoefficient).toCoefficient.delta0
+                    primitive)) /\
+          (forall primitive :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 0
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+              coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+              baseSource.toPrimitive).toGeneratedCoefficient).toCoefficient.delta0
+                (identityRealization.c0Equiv.symm primitive) =
+              identityRealization.c1Equiv.symm
+                ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).d 0
+                    primitive)) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 2
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).d 1
+                (identityRealization.c1Equiv cochain) =
+              identityRealization.c2Equiv
+                (((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+                  coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+                  baseSource.toPrimitive).toGeneratedCoefficient).toCoefficient.delta1
+                    cochain)) /\
+          (forall cochain :
+            (atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 1
+            letI :=
+              (atomLawOverlapCoverRelativeCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+                |>.cochainAddCommGroup 2
+            ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+              coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+              baseSource.toPrimitive).toGeneratedCoefficient).toCoefficient.delta1
+                (identityRealization.c1Equiv.symm cochain) =
+              identityRealization.c2Equiv.symm
+                ((atomLawOverlapCoverRelativeCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).d 1
+                    cochain)) := by
+    refine
+      ⟨realization, rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · intro primitive
+      rfl
+    · intro primitive
+      rfl
+    · intro cochain
+      rfl
+    · intro cochain
+      rfl
+    · intro cochain
+      rfl
+    · intro cochain
+      rfl
+    · intro primitive
+      rfl
+    · intro primitive
+      rfl
+    · intro cochain
+      rfl
+    · intro cochain
+      rfl
+  have hboundary : canonical.residualBoundary := by
+    refine ⟨baseSource.toPrimitive, ?_⟩
+    rfl
+  exact
+    ⟨⟨source⟩,
+      hidentity,
+      (by
+        letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+        letI :=
+          (atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+            |>.cochainAddCommGroup 0
+        exact
+          ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv
+            realization.c0Equiv⟩),
+      realization.grounded_package_of_cochain_realization,
+      ⟨baseSource.toPrimitive, rfl, rfl⟩,
+      hboundary,
+      (canonical.semanticH1Zero_iff_residualBoundary).2 hboundary,
+      (canonical.additiveH1Zero_iff_residualBoundary).2 hboundary⟩
+
+/--
+Cycle 287 selected-`K` provenance checkpoint: the finite-poset atom/law
+overlap route constructs the selected cover-relative Cech complex used by the
+identity cochain realization.
+
+Compared with Cycle 286's chart-indexed route, this theorem does not take a
+visible selected `K` argument.  The complex is fixed to
+`atomLawOverlapCoverRelativeCechComplex coverGeometry Ob`, whose differential
+comes from the atom/law overlap finite-poset Cech construction.  The canonical
+envelope is also generated internally using the observation-minimal default.
+
+The pointwise basis and generated-cover gluing law behind its source section
+remain separate obligations; this is not a completion claim.
+-/
+theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+        baseSource.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+          Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive : K.Cn 0,
+        generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime Ob)
+          C Ob K) /\
+      (Exists fun identityRealization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K =>
+        identityRealization = realization /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            identityRealization.c0Equiv primitive = primitive) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            identityRealization.c0Equiv.symm primitive = primitive) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            identityRealization.c1Equiv cochain = cochain) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            identityRealization.c1Equiv.symm cochain = cochain) /\
+          (forall cochain : K.Cn 2,
+            identityRealization.c2Equiv cochain = cochain) /\
+          (forall cochain : K.Cn 2,
+            identityRealization.c2Equiv.symm cochain = cochain) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            letI := K.cochainAddCommGroup 1
+            K.d 0 (identityRealization.c0Equiv primitive) =
+              identityRealization.c1Equiv
+                (generated.toCoefficient.delta0 primitive)) /\
+          (forall primitive : K.Cn 0,
+            letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 0
+            letI := K.cochainAddCommGroup 1
+            generated.toCoefficient.delta0
+                (identityRealization.c0Equiv.symm primitive) =
+              identityRealization.c1Equiv.symm (K.d 0 primitive)) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            letI := K.cochainAddCommGroup 2
+            K.d 1 (identityRealization.c1Equiv cochain) =
+              identityRealization.c2Equiv
+                (generated.toCoefficient.delta1 cochain)) /\
+          (forall cochain : K.Cn 1,
+            letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+            letI := K.cochainAddCommGroup 1
+            letI := K.cochainAddCommGroup 2
+            generated.toCoefficient.delta1
+                (identityRealization.c1Equiv.symm cochain) =
+              identityRealization.c2Equiv.symm (K.d 1 cochain))) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : K.Cn 0,
+        primitive = baseSource.toPrimitive /\
+          K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundary :=
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+      coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+      baseSource.toPrimitive
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  have hdiff :
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+          Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) :=
+    ⟨atomLawOverlapStandardCechDifferentialCompLaw coverGeometry Ob⟩
+  have hdelta0 :
+      forall primitive : K.Cn 0,
+        generated.toCoefficient.delta0 primitive = K.d 0 primitive := by
+    intro primitive
+    rfl
+  have hdelta1 :
+      forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain := by
+    intro cochain
+    rfl
+  have hidentityRoute :=
+    atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityCochainRealization_explicitPrimitive_and_h1Zero
+      coverGeometry coefficientGeometry basis canonical
+  rcases hidentityRoute with
+    ⟨hsource, hidentity, hcarrier, hcomparison, hprimitive, hboundary,
+      hsemantic, hadditive⟩
+  exact
+    ⟨hdiff, hdelta0, hdelta1, hsource, hidentity, hcarrier, hcomparison,
+      hprimitive, hboundary, hsemantic, hadditive⟩
+
+/--
+Cycle 288 basis-free generated selected-`K` route.
+
+Starting from a source-section-free skeleton and the explicit generated-arrow
+section-extension/overlap law, this theorem constructs the generated-cover
+gluing datum, obtains the source-bearing pointwise basis by effective gluing,
+and then runs the Cycle 287 identity route over the atom/law-generated selected
+`K`.
+
+The theorem does not accept `basis`, `sourceSection`, `AATGluingData`, selected
+`K`, `HEq K ...`, or differential transport as arguments.  The named
+generated-arrow law remains a visible lower premise and is not counted as
+completion.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_generatedArrowLaw_constructs_identityRoute_with_generatedSelectedK_withoutBasisArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (hlaw :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let regime :=
+    (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      |>.toObstructionCoefficientRegime Ob
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  have hbasis :=
+    skeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      hlaw
+  rcases hbasis with
+    ⟨gluingData, basis, hc0, hc1, hatom, hlawIndex, hFor, hDescent,
+      hglobal, hlocal, _hsourceFromGluing⟩
+  have hroute :=
+    atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument
+      coverGeometry coefficientGeometry basis
+  rcases hroute with
+    ⟨hdiff, hdelta0, hdelta1, hsource, hidentity, hcarrier, hcomparison,
+      hprimitive, hboundary, hsemantic, hadditive⟩
+  rcases hidentity with
+    ⟨identityRealization, hrealization, hc0Apply, hc0Symm, _hc1Apply,
+      _hc1Symm, _hc2Apply, _hc2Symm, _hdelta0Forward, _hdelta0Backward,
+      _hdelta1Forward, _hdelta1Backward⟩
+  refine
+    ⟨gluingData, basis, hc0, hc1, hatom, hlawIndex, hFor, hDescent,
+      hglobal, hlocal, ?_⟩
+  exact
+    ⟨hdiff, hdelta0, hdelta1, hsource,
+      ⟨identityRealization, hrealization, hc0Apply, hc0Symm⟩,
+      hcarrier, hcomparison, hprimitive, hboundary, hsemantic, hadditive⟩
+
+/--
+Cycle 289 presieve-level generated selected-`K` route.
+
+This lowers the Cycle 288 generated-arrow premise by constructing it from a
+compatible local family on the original atom/law cover presieve via
+`FamilyOfElements.sieveExtend`.  The generated-arrow law is then consumed by
+the Cycle 288 theorem, so the generated-sieve local family and overlap
+agreement are not theorem arguments.
+
+The presieve-level compatible family is still a lower material premise; this
+cycle does not construct it from pointwise semantic atom/law inputs.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveLaw_constructs_identityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (hpresieve :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_generatedArrowLaw_constructs_identityRoute_with_generatedSelectedK_withoutBasisArgument
+      coverGeometry coefficientGeometry skeleton
+      (skeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
+        hpresieve)
+
+/--
+Cycle 290 presieve semantic-source generated selected-`K` route.
+
+This lowers the Cycle 289 presieve-family premise.  The theorem no longer
+accepts a raw compatible `Presieve.FamilyOfElements`; instead it takes the
+cover-indexed free semantic atom/law local source, constructs the presieve
+family by `Presieve.Arrows.Compatible.familyOfElements`, and then runs the
+Cycle 289 route.
+
+The cover-indexed source and its arrow-level compatibility law remain visible
+material input-boundary geometry, so this is a proof checkpoint, not a G-06
+completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_identityRoute_with_generatedSelectedK_withoutPresieveLawArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (presieveSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presieveLaw_constructs_identityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument
+      coverGeometry coefficientGeometry skeleton
+      (skeleton.presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        presieveSource)
+
+/--
+Cycle 291 presieve pointwise semantic-source generated selected-`K` route.
+
+This lowers the Cycle 290 source one step further: the route no longer accepts
+an arbitrary presieve-indexed source.  It takes a cover-indexed pointwise
+semantic atom/law basis, generates singleton atom/law support and interpreted
+local sections on each displayed cover arrow, then runs the Cycle 290 route.
+
+The arrow-level compatibility law remains visible in the pointwise basis, so
+this is still a proof checkpoint rather than a G-06 completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPresieveSourceArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (presieveBasis :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_identityRoute_with_generatedSelectedK_withoutPresieveLawArgument
+      coverGeometry coefficientGeometry skeleton
+      presieveBasis.toPresieveFreeSemanticAtomLawInputBoundarySource
+
+end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+
+namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+open CoverRelativeCechGeneratedSemanticCoefficient
+
+/--
+Cycle 237 proof-use checkpoint under the chart/base refinement: the chart/base
+source, together with the canonical generated envelope built from it,
+constructs the explicit degree-wise carrier and face-restriction lower package.
+
+Compared with Cycle 236, the displayed `zeroSimplexToBase` maps are no longer
+accepted as arbitrary fields.  They are generated from the chart incidence
+equality and the selected cover inclusion.  The base section, chart
+assignment/equality, and semantic atom/law supports remain visible material
+lower data, so this is still not a G-06 completion claim.
+-/
+theorem constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (E := canonical.toEnvelope)
+      (additive := canonical.toAdditiveCechH1Data)
+      (coverBridge := surface.coverBridge)
+      (K := surface.K) :=
+  CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_degreewiseCarrierDataAndExplicitFaceRestrictionEquations
+      (surface := surface) family hcover_eq
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      canonical
+
+/--
+Cycle 237 route checkpoint: a chart/base lower source constructs the Cycle 236
+base-restriction source and then runs the generated canonical route.
+
+The theorem removes the arbitrary-overlap-to-base-map input from the route.
+The remaining material lower data are the base section, the chart incidence
+assignment/equality for each selected `0`-simplex, and the semantic atom/law
+local input and support data.
+-/
+theorem constructs_groundedComparisonPackage_and_h1Zero
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              (source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+                |>.toFreeSemanticAtomLawInputBoundarySource))
+            source.c0Order source.c1Order))) :
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedSelectedLowerSource
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := canonical.toEnvelope)
+        (additive := canonical.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      (Exists fun realization :
+        SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data surface.K =>
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+            realization.toH1Comparison)) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.constructs_groundedComparisonPackage_and_h1Zero
+      (surface := surface) family hcover_eq
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      canonical
+
+/--
+Cycle 265 proof-use checkpoint: the selected atom/law-overlap boundary route
+runs with a chart/base-restriction primitive.
+
+This lowers Cycle 264 by removing arbitrary displayed overlap-to-base maps from
+the selected route.  The maps are generated from the chart-incidence equality
+for each selected degree-`0` overlap and the selected cover inclusion.  The
+theorem remains a checkpoint: the base section, chart assignment/equality, local
+semantic atom/law supports, selected orders, and canonical generated envelope
+remain material lower data.
+-/
+theorem atomLawOverlap_chartBaseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex
+            coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex
+          coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        ((CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry source.c0Order source.c1Order
+          source.toPrimitive).toGeneratedCoefficient)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let canonicalGeometry :=
+      coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let cover :=
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob)
+    let boundary :=
+      CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+        coverGeometry coefficientGeometry source.c0Order source.c1Order
+        source.toPrimitive
+    let generated := boundary.toGeneratedCoefficient
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource := source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let realization := canonical.toGeneratedEnvelope.toCochainRealization
+    (forall sigma : cover.simplex 0,
+      boundary.primitive sigma =
+        Ob.carrier.toPresheaf.map
+          (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            cover.inclusion (source.zeroSimplexChart sigma)).op
+          source.sourceSection) /\
+      (forall sigma : cover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            cover.inclusion (source.zeroSimplexChart sigma)) /\
+      Nonempty
+        (CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob K) /\
+      Nonempty
+        (CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob K) /\
+      Nonempty
+        (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
+          semanticSite S cover Ob) /\
+      (forall sigma : cover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      generated.residual = K.d 0 source.toPrimitive /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      Nonempty
+        (FinitePosetAtomLawStandardCechDifferentialCompLaw
+          canonicalGeometry Ob
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+            |>.toSimplicialFaceAction |>.toFaceData)) /\
+      (forall primitive0 : K.Cn 0,
+        generated.toCoefficient.delta0 primitive0 = K.d 0 primitive0) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          canonical.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero canonical.toEnvelope /\
+      SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  dsimp
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  have hroute :=
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.atomLawOverlap_baseRestriction_constructs_boundaryGeneratedRoute_and_h1Zero
+      (coverGeometry := coverGeometry)
+      (coefficientGeometry := coefficientGeometry)
+      baseSource canonical
+  rcases hroute with
+    ⟨hprimitive, hrestriction, hfree, hsupport, hresidual, hcocycle, hdiff,
+      hdelta0, hdelta1, hcarrier, hrealization, hcomparison,
+      hresidualBoundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨(fun sigma => by rfl),
+      (fun sigma => by rfl),
+      ⟨baseSource⟩,
+      hrestriction,
+      hfree,
+      hsupport,
+      hresidual,
+      hcocycle,
+      hdiff,
+      hdelta0,
+      hdelta1,
+      hcarrier,
+      hrealization,
+      hcomparison,
+      hresidualBoundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
 /--
 Cycle 121 transparent direct-differential source below the Cycle 120
@@ -15861,6 +29155,1894 @@ theorem atomSupportedCurrentBoundary_externalLowerProvenance_checkpoint
         no_constructor_from_atomSupportedCurrentG06Boundary_without_d1DirectFromPackage
           (surface := surface) family hcover_eq c2SourceEquiv c2TargetEquiv
           constructor⟩
+
+end SemanticRepairCoverRelativeCochainRealization
+
+namespace SemanticRepairCoverRelativeCochainRealization
+namespace CoverRelativeCechGeneratedSemanticEnvelope
+
+variable {Atom : Type u}
+variable {site : SemanticRepairSite.{u, v} Atom}
+variable {semanticCover : SemanticRepairCover.{u, v, w} site}
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 274 proof-use checkpoint: a generated semantic envelope constructs the
+selected semantic coefficient direct-realization layer.
+
+The layer is not accepted as a theorem argument, and neither are `c0Equiv` nor
+the old `sourceWithoutC0` package.  The proof first constructs the
+atom-supported degreewise/face-restriction source from the generated
+coefficient route, then feeds that transparent source into the selected-layer
+constructor.  The returned identity facts expose that the cochain realization
+is the generated identity realization on `surface.K.Cn 0/1`.
+-/
+theorem constructs_selectedSemanticCoefficientDirectRealizationLayer
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Nonempty
+        (SemanticRepairCoverRelativeCochainRealization.SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      SemanticRepairCoverRelativeCochainRealization.DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          envelope.toCochainRealization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv.symm cochain = cochain) := by
+  let source :
+      SemanticRepairCoverRelativeCochainRealization.AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface :=
+    constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (surface := surface) family hcover_eq generated envelope
+  have hselected :=
+    SemanticRepairCoverRelativeCochainRealization.atomSupportedDegreewiseEquivAndFaceRestrictionSource_constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (E := envelope.toEnvelope)
+      (additive := envelope.toAdditiveCechH1Data)
+      (surface := surface) source
+  exact
+    ⟨hselected.1,
+      hselected.2.1,
+      hselected.2.2.1,
+      hselected.2.2.2,
+      ⟨constructs_degreeZeroCarrierComparisonData
+        (surface := surface) generated envelope⟩,
+      envelope.constructs_groundedComparisonPackage_from_identityCochainRealization,
+      (fun primitive =>
+        toCochainRealization_c0Equiv_apply envelope primitive),
+      (fun primitive =>
+        toCochainRealization_c0Equiv_symm_apply envelope primitive),
+      (fun cochain => by
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        rfl),
+      (fun cochain => by
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        rfl)⟩
+
+end CoverRelativeCechGeneratedSemanticEnvelope
+
+namespace CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 279 proof-use checkpoint: the semantic atom/law input-boundary route
+simultaneously constructs the selected semantic coefficient realization layer
+and the additive Cech residual-boundary route.
+
+This composes the Cycle 274 generated identity realization with the Cycle 278
+input-boundary residual theorem over the same generated coefficient layer.
+The theorem does not accept a `SelectedSemanticCoefficientDirectRealizationLayer`,
+`c0Equiv`, old `sourceWithoutC0`, external comparison package, arbitrary
+residual-cocycle certificate, or residual-boundary witness.  The remaining
+`surface`, selected cover witness, and canonical generated envelope are still
+visible input/provenance layers, so this is not a G-06 completion claim.
+-/
+theorem constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient (K := surface.K) c0Order c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      geometry.semanticAtomLawBoundary sigma
+        (geometry.generator sigma)
+        (geometry.atomSupport sigma (geometry.generator sigma))
+        (geometry.lawSupport sigma (geometry.generator sigma))
+        (geometry.interpret sigma (geometry.generator sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      boundary.primitive = geometry.toPrimitive /\
+      generated.residual = surface.K.d 0 geometry.toPrimitive /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = geometry.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient (K := surface.K) c0Order c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let envelope := canonical.toGeneratedEnvelope
+  let realization := envelope.toCochainRealization
+  have hdirect :=
+    CoverRelativeCechGeneratedSemanticEnvelope.constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (surface := surface) family hcover_eq generated envelope
+  have hadditive :=
+    geometry.constructs_additiveCechCocycleInputLayer_and_residualBoundary_and_h1Zero
+      (K := surface.K) c0Order c1Order canonical
+  rcases hdirect with
+    ⟨hlayer, hdirectSource, hface, hrealization, hc0Carrier, hcomparison,
+      hc0, hc0symm, hc1, hc1symm⟩
+  rcases hadditive with
+    ⟨hvisible, hprimitiveEq, hresidual, hcocycle, hdata, hdelta0,
+      hdelta1, hresidualCocycle, hzeroCocycle, hboundaryCocycle, hzeroIff,
+      hprimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨hvisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hprimitiveEq,
+      hresidual,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundary,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 280 proof-use checkpoint: canonical/free cover-boundary data constructs
+the selected semantic coefficient realization layer and the additive Cech
+residual-boundary route.
+
+This lowers Cycle 279 by removing the top-level input-boundary geometry and
+the external `c0Order`/`c1Order` arguments.  The geometry is generated from
+`data.toFreeSemanticAtomLawInputBoundarySource`, and the Cech ordering and
+degree-`0` primitive are read from `data.boundary`.  The theorem still keeps the
+canonical generated envelope as visible provenance, so this is not a G-06
+completion claim.
+-/
+theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (data :
+      CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K)
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient
+          (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.toBoundaryGeneratedCoefficient
+            (K := surface.K)
+            (CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+              data.toFreeSemanticAtomLawInputBoundarySource)
+            data.boundary.c0Order data.boundary.c1Order))) :
+    let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      boundary.primitive = data.boundary.primitive /\
+      generated.residual = surface.K.d 0 data.boundary.primitive /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = data.boundary.primitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let envelope := canonical.toGeneratedEnvelope
+  let realization := envelope.toCochainRealization
+  have hroute :=
+    constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute
+      (surface := surface) family hcover_eq geometry
+      data.boundary.c0Order data.boundary.c1Order canonical
+  rcases hroute with
+    ⟨hvisible, hlayer, hdirectSource, hface, hrealization, hc0Carrier,
+      hcomparison, hc0, hc0symm, hc1, hc1symm, _hprimitiveEq,
+      _hresidual, hcocycle, hdata, hdelta0, hdelta1, hresidualCocycle,
+      hzeroCocycle, hboundaryCocycle, hzeroIff, _hprimitiveBoundary,
+      hboundary, hsemanticH1, hadditiveH1⟩
+  have hfreeVisible :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma)) := by
+    simpa [geometry, freeSource,
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource]
+      using hvisible
+  have hprimitiveData : boundary.primitive = data.boundary.primitive := by
+    rfl
+  have hresidualData :
+      generated.residual = surface.K.d 0 data.boundary.primitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hprimitiveData]
+  have hprimitiveBoundaryData :
+      exists primitive : surface.K.Cn 0,
+        primitive = data.boundary.primitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨data.boundary.primitive, rfl, hresidualData.symm⟩
+  exact
+    ⟨hfreeVisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hprimitiveData,
+      hresidualData,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundaryData,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 281 proof-use checkpoint: canonical/free cover-boundary data constructs
+the selected semantic coefficient realization layer and additive Cech
+residual-boundary route without accepting a canonical envelope argument.
+
+The canonical generated envelope used by the route is the observation-minimal
+one generated from the boundary coefficient itself.  Its non-H1 observation
+fields are inert defaults and are not claimed as semantic adequacy evidence.
+The selected realization, identity `c0/c1` route, residual boundary, and
+semantic/additive `H1` zero still come only from
+`freeSource -> geometry -> boundary -> generated -> envelope -> realization`.
+-/
+theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (data :
+      CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      boundary.primitive = data.boundary.primitive /\
+      generated.residual = surface.K.d 0 data.boundary.primitive /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = data.boundary.primitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  exact
+    canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute
+      (surface := surface) family hcover_eq data canonical
+
+end CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+
+namespace CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 282 proof-use checkpoint: a restriction-realized semantic atom/law
+input-boundary source constructs the selected semantic coefficient realization
+layer and additive Cech residual-boundary route without accepting a canonical
+envelope or a bare boundary primitive.
+
+Compared with Cycle 281, the `data.boundary.primitive` field is no longer a
+theorem input.  The primitive is `source.toPrimitive`, generated pointwise by
+restricting `source.sourceSection` along `source.sectionToLocal`.  The selected
+orders, source section, restriction maps, local semantic atom/law supports, and
+selected cover witness remain visible lower provenance, so this is not a G-06
+completion claim.
+-/
+theorem restrictionRealized_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let boundarySource :=
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      source.toPrimitive sigma =
+        Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+          source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let boundarySource :=
+    source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq boundarySource
+  rcases hroute with
+    ⟨hvisible, hlayer, hdirectSource, hface, hrealization, hc0Carrier,
+      hcomparison, hc0, hc0symm, hc1, hc1symm, _hprimitiveEq,
+      _hresidual, hcocycle, hdata, hdelta0, hdelta1, hresidualCocycle,
+      hzeroCocycle, hboundaryCocycle, hzeroIff, _hprimitiveBoundary,
+      hboundary, hsemanticH1, hadditiveH1⟩
+  have hprimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 283 proof-use checkpoint: a base-restriction semantic atom/law
+input-boundary source constructs the selected semantic coefficient realization
+layer and additive Cech residual-boundary route without accepting a canonical
+envelope, a bare boundary primitive, or an arbitrary source object.
+
+Compared with Cycle 282, the restriction-realized source object is no longer
+chosen externally: it is definitionally the selected cover-relative base.  The
+local restriction maps are the displayed `zeroSimplexToBase` maps, and the
+degree-`0` primitive is the base section restricted along those maps.  The
+base section, selected Cech orders, overlap-to-base maps, local semantic
+atom/law inputs, and selected cover witness remain visible lower provenance,
+so this is not a G-06 completion claim.
+-/
+theorem baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let restrictionSource :=
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let restrictionSource :=
+    source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq restrictionSource
+  rcases hroute with
+    ⟨_hrestrictionPrimitive, _hrestrictionBoundaryPrimitive,
+      _hrestrictionResidual, hvisible, hlayer, hdirectSource, hface,
+      hrealization, hc0Carrier, hcomparison, hc0, hc0symm, hc1, hc1symm,
+      hcocycle, hdata, hdelta0, hdelta1, hresidualCocycle, hzeroCocycle,
+      hboundaryCocycle, hzeroIff, _hrestrictionPrimitiveBoundary, hboundary,
+      hsemanticH1, hadditiveH1⟩
+  have hsectionSource :
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma := by
+    intro sigma
+    rfl
+  have hbasePrimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hsectionSource,
+      hsectionToLocal,
+      hbasePrimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 284 proof-use checkpoint: a chart/base semantic atom/law input-boundary
+source constructs the selected semantic coefficient realization layer and
+additive Cech residual-boundary route without accepting a canonical envelope,
+a bare boundary primitive, an arbitrary source object, or arbitrary maps from
+selected degree-`0` overlaps to the cover base.
+
+Compared with Cycle 283, `zeroSimplexToBase` is no longer an independent
+source field.  It is generated from zero-simplex chart incidence and the
+displayed cover inclusion.  The base section, selected Cech orders, chart
+incidence, local semantic atom/law inputs, and selected cover witness remain
+visible lower provenance, so this is not a G-06 completion claim.
+-/
+theorem chartBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      baseSource.zeroSimplexToBase sigma =
+        eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+          (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+            (source.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma)) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+              (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+                (source.zeroSimplexChart sigma)).op
+            source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        realization.c1Equiv.symm cochain = cochain) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq baseSource
+  rcases hroute with
+    ⟨_hsectionSource, _hsectionToLocal, _hbasePrimitive,
+      _hbaseBoundaryPrimitive, _hbaseResidual, hvisible, hlayer,
+      hdirectSource, hface, hrealization, hc0Carrier, hcomparison, hc0,
+      hc0symm, hc1, hc1symm, hcocycle, hdata, hdelta0, hdelta1,
+      hresidualCocycle, hzeroCocycle, hboundaryCocycle, hzeroIff,
+      _hbasePrimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  have hbaseMap :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hsectionSource :
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hchartPrimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+              (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+                (source.zeroSimplexChart sigma)).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hbaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hchartPrimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 285 proof-use checkpoint: a chart-indexed zero source feeds the Cycle 284
+selected semantic coefficient realization route without accepting the
+zero-simplex chart assignment or overlap/chart equality as fields.
+
+The current G-06 surface used by the route is built with the displayed
+chart-indexed cover as its `coverBridge.coverRelative`, and the Cech complex is
+the same `K` supplied to the chart-indexed source.  Thus the theorem does not
+replace the selected route by a fresh comparison complex; it only specializes
+the selected route to a chart-indexed cover boundary where the zero-simplex
+incidence is generated by `charted.toZeroSimplexChartIncidence`.
+
+The semantic-cover bridge maps, selected cover membership, `sourceSection`,
+selected orders, and local semantic atom/law support remain visible lower
+inputs, so this is not a G-06 completion claim.
+-/
+theorem chartIndexedZeroBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (chartSimplex :
+      semanticCover.CoverChart -> charted.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          charted.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          charted.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        charted.toCoverRelativeCechCover Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (selectedCover : Sieve charted.base)
+    (selectedCover_mem : selectedCover ∈ S.topology charted.base)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent : AAT.AG.Site.AATDescent S presheaf selectedCover)
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap charted.base)
+    (hcover_eq : selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem := selectedCover_mem
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          envelope.toCochainRealization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv.symm cochain = cochain) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       surface.K.d 1 generated.residual = 0) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      (Exists fun residualCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        residualCocycle.1 = generated.residual) /\
+      (Exists fun zeroCocycle :
+        SemanticRepairAdditiveH1Cocycle envelope.toAdditiveCechH1Data =>
+        letI := surface.K.cochainAddCommGroup 1
+        zeroCocycle.1 = (0 : surface.K.Cn 1)) /\
+      (forall primitive : surface.K.Cn 0,
+        SemanticRepairSheafH1.CechZ1 envelope.toEnvelope
+          (surface.K.d 0 primitive)) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem := selectedCover_mem
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq chartBaseSource
+  rcases hroute with
+    ⟨_hchartBaseMap, hsectionSource, _hsectionToLocal,
+      _hchartPrimitive, _hboundaryPrimitive, _hresidualSource, hvisible,
+      hlayer, hdirectSource, hface, hrealization, hc0Carrier, hcomparison,
+      hc0, hc0symm, hc1, hc1symm, hcocycle, hdata, hdelta0, hdelta1,
+      hresidualCocycle, hzeroCocycle, hboundaryCocycle, hzeroIff,
+      _hprimitiveBoundarySource, hboundary, hsemanticH1, hadditiveH1⟩
+  have hcoverPreserved :
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover := by
+    rfl
+  have hKPreserved : HEq surface.K K := by
+    rfl
+  have hchartGenerated :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma := by
+    intro sigma
+    rfl
+  have hgeneratedBaseMap :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) := by
+    intro sigma
+    exact source.baseRestriction_zeroSimplexToBase_eq_generated_chartInclusion sigma
+  have hsectionSourceGenerated :
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hprimitivePointwise :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive :
+      boundary.primitive = chartBaseSource.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨chartBaseSource.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSourceGenerated,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm,
+      hcocycle,
+      hdata,
+      hdelta0,
+      hdelta1,
+      hresidualCocycle,
+      hzeroCocycle,
+      hboundaryCocycle,
+      hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+
+namespace CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+
+/--
+Cycle 286 proof-use checkpoint: atom/law selected chart-indexed cover geometry
+feeds the Cycle 285 generated semantic coefficient route.
+
+This composes the atom/law cover-provenance layer with the chart-indexed zero
+source theorem.  The selected cover is now the generated sieve
+`Sieve.generate geometry.family.presieve`, and its topology membership,
+degree-`0` nonvacuity, and zero-simplex incidence are produced by
+`geometry`.  The theorem still keeps the semantic-cover bridge maps, selected
+`K`, source section, local atom/law inputs, and generated-cover gluing data as
+visible inputs, so it is a checkpoint and not a G-06 completion claim.
+-/
+theorem atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate geometry.family.presieve))
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S geometry.toChartIndexedZeroCover Ob K) :
+    let charted := geometry.toChartIndexedZeroCover
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate geometry.family.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    Sieve.generate geometry.family.presieve ∈ S.topology geometry.base /\
+      Nonempty charted.Index /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      surface.selectedCover = Sieve.generate geometry.family.presieve /\
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          envelope.toCochainRealization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) /\
+      (SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data <->
+        exists primitive : surface.K.Cn 0,
+          surface.K.d 0 primitive = generated.residual) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let charted := geometry.toChartIndexedZeroCover
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate geometry.family.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (semanticCover := semanticCover)
+      (charted := charted)
+      chartSimplex overlapSimplex tripleSimplex K presheaf selectedCover
+      (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry)
+      sheafCondition descent geometry.family rfl source
+  rcases hroute with
+    ⟨hcoverPreserved, hKPreserved, hchartGenerated, hgeneratedBaseMap,
+      _hsectionSource, _hsectionToLocal, hprimitivePointwise,
+      _hboundaryPrimitive, hresidualSource, hvisible, hlayer,
+      _hdirectSource, hface, hrealization, hc0Carrier, hcomparison, hc0,
+      hc0symm, _hc1, _hc1symm, _hcocycle, _hdata, _hdelta0, _hdelta1,
+      _hresidualCocycle, _hzeroCocycle, _hboundaryCocycle, hzeroIff,
+      hprimitiveBoundarySource, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry,
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.chartIndex_nonempty
+        geometry,
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        charted,
+      rfl,
+      hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hprimitivePointwise,
+      hresidualSource,
+      hvisible,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
 
 end SemanticRepairCoverRelativeCochainRealization
 
