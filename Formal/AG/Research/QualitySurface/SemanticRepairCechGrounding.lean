@@ -17536,6 +17536,112 @@ theorem no_sourceSectionFreeChoices_with_overlapRestrictionEquality_without_arro
     source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
       hmissing hoverlap
 
+/--
+Cycle 301 positive checkpoint: display-preserving base-restriction provenance
+constructs the bare support-only overlap restriction equality.
+
+This is the first positive route below Cycle 300's exposed rock face.  The
+theorem does not accept `arrowCompatibilityLaw`, `commonRestrictionRealization`,
+a presieve-free source, a raw presieve family, or a standalone overlap equality.
+Instead, the displayed support-only interpretations are required to be exactly
+the restrictions of one base section, and the equality follows by presheaf
+functoriality.
+-/
+theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+      (source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+        baseSource hpreserves)
+
+/--
+Cycle 301 exact boundary: the bare overlap restriction equality is equivalent
+to display-preserving base-restriction provenance.
+
+The forward direction is the Cycle 298 descent construction read through the
+Cycle 300 equality boundary.  The reverse direction is the positive Cycle 301
+base-restriction construction above.  Thus the next constructive layer must
+provide an actual displayed base-restriction source; support-only atom/law
+choices still do not generate the equality by themselves.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality <->
+      Exists fun baseSource :
+        GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource := by
+  exact
+    source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw.trans
+      source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+
+/--
+Cycle 301 proof-use checkpoint: display-preserving base-restriction provenance
+runs the full Cycle 300 overlap-equality route.
+
+Once the base-restriction source preserves the displayed support-only local
+sections, it constructs the bare overlap equality, the pointwise semantic
+atom/law overlap law, the isolated arrow compatibility law, the common
+restriction realization, and the presieve section-extension law.  The base
+section remains visible lower provenance, so this is not a completion claim.
+-/
+theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  let hoverlap :=
+    source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      baseSource hpreserves
+  have hpackage :=
+    source.pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hoverlap
+  exact
+    ⟨hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2.1,
+      hpackage.2.2.2.2.2.1⟩
+
 end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
 
 /--

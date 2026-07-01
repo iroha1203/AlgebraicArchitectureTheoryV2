@@ -103,6 +103,104 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 301 -- display-preserving base-restriction route to overlap equality
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- Issue sync:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636#issuecomment-4858093677>
+- date: 2026-07-02 JST
+
+### T1 Selector Result
+
+T1 selected the next strict obligation as constructing Cycle 300's
+`pointwiseSupportOnlyOverlapRestrictionEquality` without accepting
+`arrowCompatibilityLaw`, `commonRestrictionRealization`, a raw presieve
+family, a presieve-free source, a source section, or the equality itself.
+
+The selected positive route is display-preserving base-restriction provenance:
+the support-only local interpretations must be exactly the restrictions of one
+base section.  This is lower than the bare overlap equality, but it still keeps
+the base section visible as material lower provenance.  Therefore this cycle is
+not a completion claim and does not say support-only atom/law choices generate
+the equality by themselves.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation`
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw`
+
+### Proof-Obligation Delta
+
+Fixed as a proof checkpoint:
+
+- display-preserving base-restriction provenance now constructs the bare
+  overlap restriction equality exposed in Cycle 300;
+- the bare equality is equivalent to the existence of such a display-preserving
+  base-restriction source;
+- once the base-restriction source is available, the full Cycle 300 route
+  reconstructs the pointwise semantic atom/law overlap law, the isolated
+  `arrowCompatibilityLaw`, the common-restriction realization, and the presieve
+  section-extension law.
+
+Still remaining:
+
+- construct the display-preserving base-restriction source itself from
+  canonical/free semantic atom/law overlap geometry;
+- connect that source back into the full generated selected-`K` route without
+  reintroducing `arrowCompatibilityLaw`, `sourceSection`, or the old
+  `sourceWithoutC0` as material theorem arguments;
+- this is a composite checkpoint over Cycle 298 and Cycle 300, not an
+  independent discharge from support-only choices.
+
+### Material Premise Ledger
+
+- `pointwiseSupportOnlyOverlapRestrictionEquality`: lowered from a standalone
+  equality to display-preserving base-restriction provenance.
+- `baseRestrictionSourcePreservesDisplayedInterpretation`: now the visible
+  constructive interface for the overlap equality.
+- `sourceSectionFreeChoicesPreserveDisplayedSupport`: unchanged; it accounts
+  only for support witnesses and still cannot construct the equality.
+- `arrowCompatibilityLaw`: reconstructed after the equality/base-restriction
+  provenance is supplied, not accepted as input.
+
+### T3 Audit
+
+T3 verdict: PASS / proof-checkpoint / completion candidate: no.
+
+- The new declarations derive the equality from `baseSource` plus displayed
+  interpretation preservation.
+- They do not take `arrowCompatibilityLaw`, `commonRestrictionRealization`, a
+  raw presieve family, a presieve-free source, or standalone overlap equality
+  as inputs.
+- The equivalence theorem has the equality only in the statement, not as a
+  hidden theorem argument.
+- Main caveat recorded by T3: this is a named corollary/composite of Cycle 298
+  and Cycle 300, not an independent construction of lower provenance from
+  support-only choices.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `lake env lean .tmp/G06Cycle301AxiomAudit.lean` passed.
+- Axiom audit for the new declarations reported only expected standard
+  dependencies:
+  `[propext, Quot.sound]` or `[propext, Classical.choice, Quot.sound]`.
+- `git diff --check` passed.
+- Hidden / bidirectional Unicode scan over the changed Lean file was clean.
+
 ## Cycle 300 -- bare overlap restriction equality boundary
 
 - decision: approve
