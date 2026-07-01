@@ -103,6 +103,131 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 316 -- law-reading is exactly support provenance plus generated sourceC0 Cech-zero
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct material premise left by Cycle 315:
+
+- construct `source.arrowCompatibilityLaw` from a nonvacuous lower semantic
+  atom/law overlap law-generation layer;
+- then obtain `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap`
+  through the Cycle 315 boundary;
+- do not pass `source.arrowCompatibilityLaw`,
+  `pointwiseSupportOnlyOverlapRestrictionEquality`, `sourceC0CechZero`,
+  residual-boundary, `H1` zero, descent/effectivity, global coherence,
+  external `c0Equiv`, old `sourceWithoutC0`, or arbitrary selected `K` as a
+  hidden premise.
+
+Cycle 316 did not discharge `source.arrowCompatibilityLaw` outright.  Instead
+it fixed the generated-Cech version of the Cycle 315 boundary: for the same
+support-only source, full canonical/free overlap-reading is equivalent to
+support-only canonical/free provenance plus the generated Cech-zero equation
+for the canonical `sourceC0`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry`
+  constructs full `AtomLawOverlapCanonicalFreeOverlapReading` from
+  `AtomLawOverlapCanonicalFreeSupportReading` and generated
+  `sourceC0CechZero`, using the atom/law-generated overlap geometry to read
+  Cech-zero as the bare overlap restriction equality.
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_sourceC0CechZero_of_atomLawOverlapGeometry`
+  proves the exact equivalence:
+  `Nonempty AtomLawOverlapCanonicalFreeOverlapReading` iff there exists a
+  support reading together with generated `sourceC0CechZero`.
+
+### Proof-Obligation Delta
+
+Fixed as checkpoint:
+
+- the full law-reading layer is no longer only described as
+  `supportReading + source.arrowCompatibilityLaw`;
+- it is also exactly `supportReading + K.d 0 sourceC0 = 0` for the canonical
+  `sourceC0` in the atom/law-overlap-generated cover-relative Cech complex.
+
+Still remaining:
+
+- construct generated `sourceC0CechZero` from lower semantic atom/law overlap
+  geometry without passing it as a premise;
+- equivalently, construct `source.arrowCompatibilityLaw` /
+  `law_reads_overlap` from a nonvacuous lower law-generation layer;
+- prove that the lower law-generation layer is not a target-fitting wrapper
+  and does not store the overlap equality as a structure/certificate field;
+- downstream G-06 completion gates remain open: residual-boundary, descent /
+  effectivity, cover refinement / naturality, and final `$math-lean-review`.
+
+### Material Premise Ledger
+
+- `AtomLawOverlapCanonicalFreeSupportReading`: proof-used as fixed support
+  provenance.
+- `sourceC0CechZero`: now the exact generated-Cech remaining premise below
+  full overlap-reading; not discharged.
+- `law_reads_overlap` / `source.arrowCompatibilityLaw`: not discharged, but
+  equivalently represented by generated `sourceC0CechZero` in the presence of
+  support provenance.
+- external `c0Equiv`, old `sourceWithoutC0`, arbitrary selected `K`,
+  residual-boundary, semantic/additive `H1` zero, descent/effectivity, and
+  global coherence are not introduced.
+
+### Route Integrity Audit
+
+- The same support-only source is fixed throughout.
+- The construction uses the existing atom/law-overlap-generated
+  cover-relative Cech complex and its canonical `sourceC0`.
+- No new structure or certificate field stores `law_reads_overlap`,
+  `source.arrowCompatibilityLaw`, base-restriction preservation, Cech-zero,
+  coefficient equivalence, boundary membership, or global coherence.
+- This is not the direct T1 discharge: `sourceC0CechZero` remains material.
+- The cycle is classified as `proof-checkpoint`, not target completion.
+
+### Validation
+
+Passed:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle316AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean file and Cycle 316 axiom-audit scratch
+  for `admit`, `sorry`, `unsafe`, and `sorryAx`
+- direct `axiom` scan over the changed Lean file and Cycle 316 axiom-audit
+  scratch file
+- hidden / bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 316 axiom-audit scratch file
+- private/local path scan over the changed Lean/report files and Cycle 316
+  axiom-audit scratch file
+
+The Cycle 316 axiom audit for the two new declarations reports only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 audit approved Cycle 316 as `proof-checkpoint` with
+`completion_candidate: no`.  The audit confirmed that `sourceC0CechZero`
+remains an explicit, unresolved provenance obligation; no external `c0Equiv`,
+old `sourceWithoutC0`, arbitrary selected `K`, residual-boundary, `H1` zero,
+descent/effectivity, or global coherence premise was introduced.  The proof
+uses `supportReading` and the existing generated-Cech-to-overlap-equality
+bridge, and no new structure/certificate field stores the target equality.
+
+### Next Obligation
+
+Construct generated `sourceC0CechZero`, equivalently
+`source.arrowCompatibilityLaw` / `law_reads_overlap`, from a lower semantic
+atom/law overlap law-generation layer that is nonvacuous and does not store
+the target restriction equality as a field.
+
 ## Cycle 315 -- support-only provenance does not generate law-reading
 
 - decision: approve
