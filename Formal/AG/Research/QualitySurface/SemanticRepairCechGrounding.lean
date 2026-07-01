@@ -22960,6 +22960,60 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff
           coverGeometry coefficientGeometry skeleton source supportReading hoverlap⟩
 
 /--
+Cycle 315 exact boundary: the full canonical/free atom/law overlap-reading
+layer is equivalent to support-only canonical/free provenance together with the
+same isolated arrow compatibility law.
+
+This rewrites the Cycle 306 overlap-equality decomposition into the source's
+own compatibility-law vocabulary.  Therefore the missing
+`law_reads_overlap` component is not hidden in coefficient support membership:
+after support provenance is fixed, constructing the full law-reading layer is
+exactly constructing `source.arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        source.arrowCompatibilityLaw := by
+  constructor
+  · rintro ⟨reading⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading,
+        (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+          (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+            coverGeometry coefficientGeometry skeleton source reading)⟩
+  · rintro ⟨supportReading, hcompat⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source supportReading
+          ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+            hcompat)⟩
+
+/--
 Cycle 306 blocker: support-only canonical/free atom/law provenance cannot be
 promoted to the full overlap-reading layer while the isolated arrow
 compatibility law is absent.
@@ -23042,6 +23096,54 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_constructor_w
   exact
     source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
       hmissing (constructor supportReading)
+
+/--
+Cycle 315 no-constructor form: support-only canonical/free atom/law provenance
+cannot uniformly construct the full canonical/free overlap-reading layer while
+the same source lacks the arrow compatibility law.
+
+This is the direct fail-closed form for the unresolved `law_reads_overlap`
+field.  It rules out the route selected by the Cycle 315 obligation unless a
+new lower semantic law layer constructs `source.arrowCompatibilityLaw`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    IsEmpty
+      (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  refine ⟨?_⟩
+  intro constructor
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    no_atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_without_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hmissing
+      ⟨constructor supportReading⟩
 
 /--
 Cycle 313 no-constructor form: support-only canonical/free atom/law

@@ -103,6 +103,128 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 315 -- support-only provenance does not generate law-reading
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct unresolved premise left by Cycle 314:
+
+- construct `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap`
+  from lower canonical/free semantic atom/law input-boundary geometry;
+- reject routes that pass `source.pointwiseSupportOnlyOverlapRestrictionEquality`,
+  `source.arrowCompatibilityLaw`, `sourceC0CechZero`, external `c0Equiv`,
+  old `sourceWithoutC0`, arbitrary selected `K`, residual-boundary,
+  `H1` zero, descent/effectivity, or global coherence as hidden inputs.
+
+Cycle 315 did not find a positive construction from the current
+support/coefficient-support interface.  Instead it fixed the exact current
+boundary: once support-only canonical/free provenance is supplied, the full
+law-reading layer is equivalent to supplying the same isolated
+`source.arrowCompatibilityLaw`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_arrowCompatibilityLaw`
+  rewrites the Cycle 306 decomposition from
+  `supportReading + pointwiseSupportOnlyOverlapRestrictionEquality` to
+  `supportReading + source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw`
+  proves that, under `¬ source.arrowCompatibilityLaw` and an existing
+  support-only reading, the type of constructors
+  `AtomLawOverlapCanonicalFreeSupportReading -> AtomLawOverlapCanonicalFreeOverlapReading`
+  is empty.
+
+### Proof-Obligation Delta
+
+Fixed as blocker:
+
+- coefficient atom/law support membership plus source-section-free support
+  preservation is not enough to generate `law_reads_overlap`;
+- after support provenance is fixed, the remaining mathematical content of
+  `AtomLawOverlapCanonicalFreeOverlapReading` is exactly
+  `source.arrowCompatibilityLaw`;
+- a support-only-to-full-reading constructor would be a structure-field escape
+  unless a lower semantic law layer first constructs that arrow compatibility.
+
+Still remaining:
+
+- construct `source.arrowCompatibilityLaw` / `law_reads_overlap` from a
+  genuinely lower canonical/free semantic atom/law geometry layer;
+- or introduce a new nonvacuous mathematical layer whose laws read overlap
+  restriction equality, then prove it is generated from atom/law input-boundary
+  data rather than target-fitting the conclusion;
+- downstream G-06 completion gates remain open: residual-boundary, descent /
+  effectivity, cover refinement / naturality, and final `$math-lean-review`.
+
+### Material Premise Ledger
+
+- `AtomLawOverlapCanonicalFreeSupportReading`: proof-used as the fixed
+  support-only provenance layer.
+- `AtomLawOverlapCanonicalFreeOverlapReading`: not discharged; now formally
+  equivalent to support provenance plus `source.arrowCompatibilityLaw`.
+- `law_reads_overlap`: still `discharge-required`; Cycle 315 proves it cannot
+  be obtained merely by forgetting and reusing coefficient support lists.
+- external `c0Equiv`, old `sourceWithoutC0`, arbitrary selected `K`,
+  `sourceC0CechZero`, residual-boundary, semantic/additive `H1` zero,
+  descent/effectivity, and global coherence are not introduced.
+
+### Route Integrity Audit
+
+- The same support-only source is fixed throughout.
+- The result does not switch to a base-restriction source or a self-support-only
+  source generated from one.
+- No new structure or certificate field stores `law_reads_overlap`,
+  `source.arrowCompatibilityLaw`, base-restriction preservation, Cech-zero,
+  coefficient equivalence, boundary membership, or global coherence.
+- The no-constructor theorem is stated as `IsEmpty` because the forbidden
+  constructor has `Type`, not `Prop`, as its codomain.
+- The cycle is classified as `blocker-fixed`, not target completion.
+
+### Validation
+
+Passed:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle315AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean file and Cycle 315 axiom-audit scratch
+  file for `admit`, `sorry`, `unsafe`, and `sorryAx`
+- direct `axiom` scan over the changed Lean file and Cycle 315 axiom-audit
+  scratch file
+- hidden/bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 315 axiom-audit scratch file
+- private/local path scan over the changed Lean/report files and Cycle 315
+  axiom-audit scratch file
+
+The Cycle 315 axiom audit for the two new declarations reports only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 audit approved the cycle as `blocker-fixed` with
+`completion_candidate: no`.  It confirmed that the new equivalence is
+existence-level, the no-constructor theorem requires both missing
+`source.arrowCompatibilityLaw` and existing support-reading, and no new
+structure/certificate field stores `law_reads_overlap` or compatibility data.
+
+### Next Obligation
+
+Construct `source.arrowCompatibilityLaw` / `law_reads_overlap` from a lower
+semantic atom/law overlap geometry, or define and prove a new nonvacuous law
+layer that canonically reads overlap restriction equality from atom/law
+input-boundary data.
+
 ## Cycle 314 -- canonical/free law-reading layer reaches base-restriction provenance
 
 - decision: approve
