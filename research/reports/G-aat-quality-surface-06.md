@@ -103,6 +103,122 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 314 -- canonical/free law-reading layer reaches base-restriction provenance
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct discharge-required premise under the Cycle 313 blocker:
+
+- Cycle 312 lowered generated `sourceC0CechZero` to
+  `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`;
+- Cycle 313 showed that support-only canonical/free atom/law provenance cannot
+  construct that same-source base-restriction provenance while
+  `source.arrowCompatibilityLaw` is absent;
+- therefore the next honest move is to proof-use the stronger law-reading
+  layer, not another support-only wrapper.
+
+This cycle is not a target completion claim.  The input
+`AtomLawOverlapCanonicalFreeOverlapReading` still carries the material
+`law_reads_overlap` field, so the remaining lower task is to construct that
+law-reading content from genuine semantic atom/law input-boundary geometry.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation`
+  constructs same-source display-preserving base-restriction provenance from a
+  full `AtomLawOverlapCanonicalFreeOverlapReading`.
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_sourceC0CechZero`
+  proof-uses that constructed base-restriction provenance through the Cycle 312
+  bridge to discharge generated `sourceC0CechZero`.
+
+### Proof-Obligation Delta
+
+Discharged relative to the full law-reading layer:
+
+- `Exists baseSource,
+  source.baseRestrictionSourcePreservesDisplayedInterpretation baseSource`;
+- generated `sourceC0CechZero` for the same support-only source.
+
+Still remaining:
+
+- construct `AtomLawOverlapCanonicalFreeOverlapReading`, especially its
+  `law_reads_overlap` field, from lower canonical/free semantic atom/law
+  input-boundary geometry;
+- show nonvacuity/adequacy of that law-reading construction rather than
+  treating it as a ready-made conclusion-side field;
+- downstream G-06 completion gates remain open: residual-boundary, descent /
+  effectivity, cover refinement / naturality, and final `$math-lean-review`.
+
+### Material Premise Ledger
+
+- `AtomLawOverlapCanonicalFreeOverlapReading`: proof-used, but not discharged.
+  Its `law_reads_overlap` field is the visible material law-reading premise.
+- `source.baseRestrictionSourcePreservesDisplayedInterpretation`: constructed
+  from the full law-reading layer, not passed directly.
+- `sourceC0CechZero`: constructed by consuming the base-restriction provenance,
+  not passed as a premise.
+- external `c0Equiv`, old `sourceWithoutC0`, arbitrary selected `K`, residual
+  boundary witness, semantic/additive `H1` zero, descent/effectivity, and
+  global coherence are not introduced.
+
+### Route Integrity Audit
+
+- The same support-only source is fixed throughout.
+- The theorem does not switch to the self-support-only source generated from a
+  supplied base-restriction source.
+- No new structure or certificate field stores base-restriction preservation,
+  `sourceC0CechZero`, coefficient equivalence, boundary membership, or global
+  coherence.
+- The cycle is classified as `proof-checkpoint`, because the full
+  law-reading input still contains conclusion-relevant semantic overlap
+  content.
+
+### Validation
+
+Passed:
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle314AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder scan over the changed Lean file and Cycle 314 axiom-audit scratch
+  file for `admit`, `sorry`, `unsafe`, and `sorryAx`
+- direct `axiom` scan over the changed Lean file
+- hidden/bidirectional Unicode scan over the changed Lean/report files and
+  Cycle 314 axiom-audit scratch file
+- private/local path scan over the changed Lean/report files and Cycle 314
+  axiom-audit scratch file
+
+The Cycle 314 axiom audit for the two new declarations reports only
+`[propext, Classical.choice, Quot.sound]`.
+
+T3 audit approved the cycle as `proof-checkpoint` with
+`completion_candidate: no`.  It confirmed that the same support-only source is
+fixed throughout, the constructed base source is proof-used to obtain
+`sourceC0CechZero`, and `law_reads_overlap` remains a visible unresolved
+material field rather than being falsely counted as discharged.
+
+### Next Obligation
+
+Construct the `law_reads_overlap` component of
+`AtomLawOverlapCanonicalFreeOverlapReading` from lower semantic atom/law
+geometry, or prove a sharper obstruction showing that the current atom/law
+support and coefficient-support interfaces cannot generate that law without an
+additional mathematical layer.
+
 ## Cycle 313 -- support-only reading does not construct base-restriction provenance
 
 - decision: approve

@@ -23093,6 +23093,54 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_baseRestricti
       (constructor supportReading))
 
 /--
+Cycle 314 positive bridge: the full canonical/free atom/law overlap-reading
+layer constructs the same-source display-preserving base-restriction
+provenance.
+
+This is intentionally stronger than the Cycle 313 support-only blocker:
+`AtomLawOverlapCanonicalFreeOverlapReading` carries the material
+`law_reads_overlap` field.  The theorem proof-uses that law-reading field via
+the Cycle 305 overlap equality theorem, then uses the exact Cycle 298 boundary
+to construct the base-restriction source for the same support-only source.
+It does not accept `arrowCompatibilityLaw`, `sourceC0CechZero`, external
+`c0Equiv`, old `sourceWithoutC0`, selected `K`, residual-boundary, `H1` zero,
+or descent/effectivity data as arguments.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    Exists fun baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).1
+      (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source reading)
+
+/--
 Cycle 307 canonical `0`-cochain displayed by a support-only presieve source.
 
 For each degree-`0` Cech simplex, this restricts the local section on its
@@ -24447,6 +24495,50 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_without_bas
   exact hmissing
     ((atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation_of_atomLawOverlapGeometry
       coverGeometry coefficientGeometry skeleton source).1 hcechZero)
+
+/--
+Cycle 314 proof-use bridge: the same canonical/free overlap-reading layer also
+discharges generated `sourceC0CechZero` under the atom/law-generated overlap
+geometry.
+
+The proof first constructs same-source base-restriction preservation from the
+law-reading layer and then consumes that preservation through the Cycle 312
+Cech-zero bridge.  Thus the constructed base source is not merely packaged; it
+is proof-used in the generated `sourceC0` route.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  rcases
+      atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation
+        coverGeometry coefficientGeometry skeleton source reading with
+    ⟨baseSource, hpreserves⟩
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source baseSource hpreserves
 
 /--
 Cycle 308 no-escape theorem: if arrow compatibility is absent and the
