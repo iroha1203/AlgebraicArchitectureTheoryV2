@@ -103,6 +103,91 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 325 -- evaluator bridge to source-C0 generated route
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the constructive bridge left after Cycle 324:
+
+- do not re-open external `c0Equiv`, `c0Carrier`, or old `sourceWithoutC0`;
+- keep the same support-only source and atom/law-overlap-generated `K`;
+- use the visible `displayedRequiredLawRestrictionEvaluator` as the next
+  material semantic bridge;
+- prove that this evaluator reaches the Cycle 304 same-source generated
+  selected-`K` package and zero of the Cycle 317 source-`C0` generated
+  residual;
+- keep the evaluator itself undischarged, so the next lower task is still to
+  construct restriction semantics from atom/law geometry rather than from the
+  current interpretation-blind `LawUniverse` boundary.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient_constructs_identityRoute_and_residualZeroBoundary`
+  fixes the route-integrity view of the source-`C0` generated coefficient:
+  the residual is `K.d 0 sourceC0`, cocyclehood is `K.d_comp_d_eq_zero`,
+  `delta0/delta1` are the selected `K.d 0/1`, the degree-`0` carrier and
+  `c0Equiv` are identity, and semantic/additive `H1` zero comes from the
+  boundary-generated primitive.  The final conjunct keeps
+  `generated.residual = 0 <-> source.arrowCompatibilityLaw`.
+- `atomLawOverlap_sourceSectionFreeSkeleton_lawfulRestrictionEvaluator_constructs_generatedSelectedKRoutePackage_and_sourceC0ResidualZero`
+  proof-uses lawful local readings plus the visible
+  `displayedRequiredLawRestrictionEvaluator` to construct bare overlap
+  equality, `source.arrowCompatibilityLaw`, the Cycle 304 same-source route
+  package, source-`C0` generated residual-zero, and the residual boundary
+  identity.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The source-`C0` generated coefficient is now explicitly tied to the identity
+  generated semantic coefficient route and boundary-generated H1-zero route for
+  the same atom/law-overlap-generated `K`.
+- A genuine restriction-level evaluator is sufficient to cross from the
+  Cycle 324 no-go boundary into the Cycle 304 route package and Cycle 317
+  residual-zero boundary.
+
+Still open:
+
+- `displayedRequiredLawRestrictionEvaluator` remains a material premise.
+  Cycle 325 does not construct it from current `LawUniverse` / `Law.holds`,
+  support membership, residual-zero, H1-zero, descent/effectivity, or global
+  coherence.
+- Theorem 1 is route-integrity evidence only; theorem 2 is the constructive
+  checkpoint.  Neither is a target-theorem completion candidate.
+
+### Audit
+
+T3 approved the cycle as checkpoint-only:
+
+- no external `c0Equiv`, `c0Carrier`, old `sourceWithoutC0`, arbitrary
+  selected `K`, bare overlap equality, `source.arrowCompatibilityLaw`,
+  `sourceC0CechZero`, residual-zero, H1-zero certificate, `boundaryData`,
+  descent/effectivity, or global coherence is accepted as a theorem premise;
+- the evaluator is a visible Prop argument and remains undischarged material
+  lower data;
+- H1-zero in the route-integrity theorem is constructed from the
+  boundary-generated primitive, not supplied as a certificate.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle325AxiomAudit.lean`
+  reported only `[propext, Classical.choice, Quot.sound]` for the two new
+  declarations.
+
 ## Cycle 324 -- current law boundary is interpretation-blind
 
 - decision: approve
