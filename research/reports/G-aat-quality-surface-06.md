@@ -103,6 +103,99 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 331 -- restriction-realized successor carries identity C0 route
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the first lower successor propagation step after Cycle 330:
+
+- propagate the canonical/free identity-`C0` replacement route into
+  `CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`;
+- keep the restriction-realized source, selected orders, source section,
+  restriction maps, and local semantic atom/law supports as visible lower
+  provenance;
+- do not reconstruct the old `sourceWithoutC0` surface or re-open an arbitrary
+  future `c0Equiv` uniformity law.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
+  composes the Cycle 330 canonical/free identity-`C0` route with
+  `source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`.  It
+  returns the source primitive restriction equality, boundary primitive and
+  residual equalities, visible free semantic atom/law boundary, identity
+  degree-`0` face-law continuation, generated face-restriction source,
+  selected realization layer, explicit face equations, cochain realization,
+  `C0` carrier, comparison package, primitive-boundary witness,
+  residual-boundary, semantic `H1` zero, and additive `H1` zero.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 330 canonical/free identity-`C0` replacement route now reaches the
+  restriction-realized successor layer.
+- The successor theorem ties the boundary primitive and generated residual to
+  `source.toPrimitive` definitionally, rather than carrying a bare primitive
+  argument.
+- The identity continuation, generated source, selected layer, explicit face
+  equations, cochain realization, `C0` carrier, comparison package, and
+  residual / `H1` zero components are proof-used from the predecessor route.
+
+Remaining:
+
+- Construction of the restriction-realized source itself remains a visible
+  lower-provenance obligation.
+- The identity-`C0` route still needs propagation to later successor layers,
+  starting with the base-restriction source.
+- The old arbitrary-`c0Equiv` `sourceWithoutC0` continuation is still not
+  constructed and is intentionally not claimed.
+- The broader G-06 completion criteria and final `$math-lean-review` gate
+  remain open.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- no new hidden material premise was introduced;
+- `source`, `c0Order`, `c1Order`, `sourceSection`, `sectionToLocal`, and local
+  atom/law supports remain explicit lower input boundary;
+- no structure or certificate field asserts old `sourceWithoutC0`, arbitrary
+  `c0Equiv`, selected comparison adequacy, or target completion;
+- route integrity passes for this one-step propagation because it composes a
+  reviewed predecessor theorem with definitional projection from the
+  restriction-realized source.
+
+Next obligation:
+
+- propagate the identity-`C0` replacement route to
+  `CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`,
+  while keeping the lower source provenance visible.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle331AxiomAudit.lean`
+  reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean file
+  were clean.
+
 ## Cycle 330 -- canonical identity C0 replacement route for sourceWithoutC0
 
 - decision: approve
