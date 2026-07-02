@@ -165,7 +165,7 @@ Atoms (axiomatized facts)
 
 The proof of SAGA is a research record worth telling in its own right.
 
-It ran for 352 cycles. An automated AI agent loop discharged small proof obligations in Lean, one per cycle. Every cycle passed adversarial audits designed to reject the classic cheat of formalization: smuggling a conclusion-equivalent premise into the assumptions.
+It ran for 352 cycles of what is now fashionably called **loop engineering**: an automated AI agent loop discharged small proof obligations in Lean, one per cycle. Every cycle passed adversarial audits designed to reject the classic cheat of formalization: smuggling a conclusion-equivalent premise into the assumptions. The design emphasis of loop engineering here was not on making the loop run fast, but on **auditing what the loop can legitimately claim to have proved**.
 
 ### Compression and blockade
 
