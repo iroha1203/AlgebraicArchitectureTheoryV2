@@ -9,11 +9,27 @@ artifacts, proof-obligation deltas, and discharge audits only.
 
 ## Target Proof State
 
-- status: target-proof-checkpoint
-- completion candidate: no
-- tracking Issue: #2636
+- status: target-theorem-proved (accepted by the user on 2026-07-03 JST)
+- completion candidate: accepted
+- tracking Issue: #2636 (closed as COMPLETED)
 - protected boundary: this report does not change math source docs or the
   target theorem statement.
+
+## Completion processing
+
+- date: 2026-07-03 JST
+- decision: the user accepted G-06 as `target-theorem-proved` for the
+  law-equation-realized selected-finite grounding boundary, after the
+  accepted final review following Cycle 352.
+- `research/GOALS.md`: the G-06 card moved from `active` to `completed`, with
+  completion result, completion date, and completion report recorded.
+- `docs/aat/proof_obligations.md`: the research target-theorem ledger gained
+  the G-06 row.
+- tracking Issue #2636: closed as `COMPLETED` with a final ledger comment.
+- boundary carry-over: the accepted final review packet's boundary notes
+  (identity comparison, selected circle nerve, degenerate witness site,
+  law-equation ambient rows) are the standing claim-boundary record; the
+  optional hardening items listed there are not obligations of this GOAL.
 
 ## Initial Scope
 
@@ -107,8 +123,8 @@ Initial axiom audit over representative declarations reported only standard
 
 - Integrated verdict: `No major findings`
 - completion candidate: **yes**
-- `target-theorem-proved`: pending human acceptance (see Completion
-  processing note below)
+- `target-theorem-proved`: accepted by the user on 2026-07-03 JST (see the
+  Completion processing section at the top of this report)
 - date: 2026-07-03 JST
 - review protocol: delta-focused re-review after the rejected Cycle 350
   final review.  Lane structure: math A (the vetoing lane) re-examined the
