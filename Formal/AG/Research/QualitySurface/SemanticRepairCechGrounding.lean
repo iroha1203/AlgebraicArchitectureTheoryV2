@@ -8323,6 +8323,121 @@ theorem constructs_identityC0SpecializedSourceWithoutUniformDegreeZeroEquiv
         (surface := surface)⟩
 
 /--
+Cycle 340 generated-layer checkpoint: the cover-relative generated semantic
+coefficient layer supplies the semantic cochain complex, additive input data,
+identity degree-`0` carrier comparison, and the identity-`C0` specialization of
+the old source-continuation boundary from the same `K`.
+
+This is the positive form of the current rock face.  The semantic coefficient
+is generated with `C0/C1/C2 := K.Cn 0/1/2`, `delta0/delta1 := K.d 0/1`, and
+zero cochains by definition.  The `c0Carrier` and cochain realization are
+therefore identity data, not external comparison fields.  The theorem also
+records the strongest source-continuation consequence currently available:
+the old `sourceWithoutC0` shape is obtained only after fixing the degree-`0`
+comparison to this canonical identity route, not uniformly over arbitrary
+future `c0Equiv`.
+-/
+theorem constructs_generatedSemanticCoefficientLayer_identityC0Carrier_and_identitySourceContinuation
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    envelope.toEnvelope.coefficient.C0 = surface.K.Cn 0 /\
+      envelope.toEnvelope.coefficient.C1 = surface.K.Cn 1 /\
+      envelope.toEnvelope.coefficient.C2 = surface.K.Cn 2 /\
+      (letI := surface.K.cochainAddCommGroup 1
+       envelope.toEnvelope.coefficient.zero1 = (0 : surface.K.Cn 1)) /\
+      (letI := surface.K.cochainAddCommGroup 2
+       envelope.toEnvelope.coefficient.zero2 = (0 : surface.K.Cn 2)) /\
+      (forall primitive : surface.K.Cn 0,
+        envelope.toEnvelope.coefficient.delta0 primitive =
+          surface.K.d 0 primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        envelope.toEnvelope.coefficient.delta1 cochain =
+          surface.K.d 1 cochain) /\
+      Nonempty (SemanticRepairAdditiveCechH1Data envelope.toEnvelope) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) /\
+      Exists fun selectedFamily :
+        AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+        surface.selectedCover = Sieve.generate selectedFamily.presieve /\
+        Exists fun c1Equiv :
+          letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+          letI := surface.K.cochainAddCommGroup 1
+          envelope.toEnvelope.coefficient.C1 ≃+ surface.K.Cn 1 =>
+        Exists fun c2Equiv : envelope.toEnvelope.coefficient.C2 ≃ surface.K.Cn 2 =>
+        Exists fun c2Equiv_zero :
+          letI := surface.K.cochainAddCommGroup 2
+          c2Equiv envelope.toEnvelope.coefficient.zero2 = 0 =>
+        Exists fun c2Equiv_symm_zero :
+          letI := surface.K.cochainAddCommGroup 2
+          c2Equiv.symm 0 = envelope.toEnvelope.coefficient.zero2 =>
+          AtomSupportedDegreeZeroEquivFaceLawContinuation
+            (E := envelope.toEnvelope)
+            (additive := envelope.toAdditiveCechH1Data) surface
+            c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero
+            envelope.toCochainRealization.c0Equiv := by
+  have hinput := envelope.constructs_additiveCechCocycleInputLayer
+  rcases hinput with
+    ⟨hadditive, hdelta0, hdelta1, _hresidualCocycle, _hzeroCocycle,
+      _hboundaryCocycle, _hzeroIff⟩
+  have hc0 :
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) :=
+    generatedSemanticCoefficient_constructs_identityC0Carrier_and_c0Equiv
+      (surface := surface) generated envelope
+  rcases hc0 with ⟨hc0Carrier, hc0_apply, hc0_symm_apply⟩
+  exact
+    ⟨rfl,
+      rfl,
+      rfl,
+      by
+        letI := surface.K.cochainAddCommGroup 1
+        rfl,
+      by
+        letI := surface.K.cochainAddCommGroup 2
+        rfl,
+      hdelta0,
+      hdelta1,
+      hadditive,
+      ⟨envelope.toCochainRealization⟩,
+      hc0Carrier,
+      hc0_apply,
+      hc0_symm_apply,
+      envelope.constructs_identityC0SpecializedSourceWithoutUniformDegreeZeroEquiv
+        (surface := surface) family hcover_eq⟩
+
+/--
 Cycle 219 proof-use checkpoint: the generated semantic envelope immediately
 feeds the existing atom-supported source route and reaches the grounded
 cover-relative comparison package.
@@ -15889,6 +16004,131 @@ theorem constructs_freeSource_and_exposes_singleton_pointwise_support
       baseSource.constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support⟩
 
 /--
+Cycle 340 order-free finite-poset chart-projection atom/law basis.
+
+This is the finite-poset analogue of Cycle 338's order-free chart-indexed
+basis, but it stays directly on the selected finite-poset cover-relative
+complex.  The display orders are not inputs: the conversion below generates
+`c0Order := []` and `c1Order := []`.  The remaining fields are the visible
+input-boundary data still needed by the finite-poset chart-projection source:
+one base section and pointwise trace-visible atom / required law choices.
+-/
+structure CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob) where
+  sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+  atom :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      U.Atom
+  atom_traceVisible :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      S.lawUniverse.Index
+  law_required :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {regime : AAT.AG.Site.FinitePosetAATSiteRegime S}
+variable {C : AAT.AG.Site.FinitePosetCechComplex regime}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  (AAT.AG.Cohomology.finitePosetCoverRelativeCover C) Ob}
+
+/--
+Generate the ordinary finite-poset chart-projection pointwise basis with free
+display orders.
+-/
+def toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) :
+    CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+      semanticSite S regime C Ob K where
+  c0Order := []
+  c1Order := []
+  sourceSection := basis.sourceSection
+  atom := basis.atom
+  atom_traceVisible := basis.atom_traceVisible
+  lawIndex := basis.lawIndex
+  law_required := basis.law_required
+
+/--
+The order-free basis constructs the ordinary pointwise basis and exposes that
+the finite display orders are generated as `[]`.
+-/
+theorem constructs_pointwiseBasis_and_exposes_free_orders
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) :
+    let pointwise :=
+      basis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+    let source :=
+      pointwise.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K) /\
+      pointwise.c0Order = [] /\
+      pointwise.c1Order = [] /\
+      source.c0Order = [] /\
+      source.c1Order = [] /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        pointwise.projectedLocalSection sigma =
+          Ob.carrier.toPresheaf.map
+            (homOfLE (regime.simplexOverlap_le_patch 0 sigma 0) ≫
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion
+                (regime.simplexIndices 0 sigma 0)).op
+            basis.sourceSection) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        exists atom : U.Atom,
+          atom ∈ (source.atomSupport sigma (source.input sigma)) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ (source.lawSupport sigma (source.input sigma)) ∧
+            S.lawUniverse.Required lawIndex) := by
+  dsimp
+  exact
+    ⟨⟨basis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis⟩,
+      rfl,
+      rfl,
+      rfl,
+      rfl,
+      (fun _ => rfl),
+      (fun sigma =>
+        ⟨basis.atom sigma, List.mem_singleton_self (basis.atom sigma),
+          basis.atom_traceVisible sigma⟩),
+      (fun sigma =>
+        ⟨basis.lawIndex sigma,
+          List.mem_singleton_self (basis.lawIndex sigma),
+          basis.law_required sigma⟩)⟩
+
+end CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+
+/--
 Cycle 273 source-section-free skeleton under the finite-poset pointwise
 atom/law basis.
 
@@ -22218,6 +22458,192 @@ theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRo
   exact
     ⟨hdiff, hdelta0, hdelta1, hsource, hidentity, hcarrier, hcomparison,
       hprimitive, hboundary, hsemantic, hadditive⟩
+
+/--
+Named route proposition for the generated selected-`K` finite-poset
+chart-projection identity package.
+
+Cycle 340 uses this only to state the order-free theorem without duplicating
+the long Cycle 287 route conclusion.  The proposition itself is the same
+route already constructed by
+`atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument`.
+-/
+def AtomLawOverlapGeneratedSelectedKIdentityRouteProp
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)) :
+    Prop :=
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let source :=
+    basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundary :=
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+      coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+      baseSource.toPrimitive
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  let realization := canonical.toGeneratedEnvelope.toCochainRealization
+  Nonempty
+      (FinitePosetAtomLawStandardCechDifferentialCompLaw
+        coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+        Ob
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+          |>.toSimplicialFaceAction |>.toFaceData)) /\
+    (forall primitive : K.Cn 0,
+      generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+    (forall cochain : K.Cn 1,
+      generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+    Nonempty
+      (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime Ob)
+        C Ob K) /\
+    (Exists fun identityRealization :
+      SemanticRepairCoverRelativeCochainRealization
+        canonical.toAdditiveCechH1Data K =>
+      identityRealization = realization /\
+        (forall primitive : K.Cn 0,
+          letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          identityRealization.c0Equiv primitive = primitive) /\
+        (forall primitive : K.Cn 0,
+          letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          identityRealization.c0Equiv.symm primitive = primitive) /\
+        (forall cochain : K.Cn 1,
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          identityRealization.c1Equiv cochain = cochain) /\
+        (forall cochain : K.Cn 1,
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          identityRealization.c1Equiv.symm cochain = cochain) /\
+        (forall cochain : K.Cn 2,
+          identityRealization.c2Equiv cochain = cochain) /\
+        (forall cochain : K.Cn 2,
+          identityRealization.c2Equiv.symm cochain = cochain) /\
+        (forall primitive : K.Cn 0,
+          letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          K.d 0 (identityRealization.c0Equiv primitive) =
+            identityRealization.c1Equiv
+              (generated.toCoefficient.delta0 primitive)) /\
+        (forall primitive : K.Cn 0,
+          letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 0
+          letI := K.cochainAddCommGroup 1
+          generated.toCoefficient.delta0
+              (identityRealization.c0Equiv.symm primitive) =
+            identityRealization.c1Equiv.symm (K.d 0 primitive)) /\
+        (forall cochain : K.Cn 1,
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          letI := K.cochainAddCommGroup 2
+          K.d 1 (identityRealization.c1Equiv cochain) =
+            identityRealization.c2Equiv
+              (generated.toCoefficient.delta1 cochain)) /\
+        (forall cochain : K.Cn 1,
+          letI := canonical.toAdditiveCechH1Data.c1AddCommGroup
+          letI := K.cochainAddCommGroup 1
+          letI := K.cochainAddCommGroup 2
+          generated.toCoefficient.delta1
+              (identityRealization.c1Equiv.symm cochain) =
+            identityRealization.c2Equiv.symm (K.d 1 cochain))) /\
+    Nonempty
+      (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+       letI := K.cochainAddCommGroup 0
+       CarrierSpecificAdditiveComparisonData
+        canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+    Nonempty
+      (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
+        realization.toH1Comparison) /\
+    (exists primitive : K.Cn 0,
+      primitive = baseSource.toPrimitive /\
+        K.d 0 primitive = generated.residual) /\
+    canonical.residualBoundary /\
+    SemanticRepairH1Zero canonical.toEnvelope /\
+    SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data
+
+/--
+Cycle 340 proof-obligation discharge: the finite-poset chart-projection
+generated selected-`K` route can be started from an order-free semantic
+atom/law basis.
+
+The theorem removes the display-order arguments from the selected finite-poset
+route by constructing the ordinary pointwise basis with `c0Order := []` and
+`c1Order := []`, then proof-uses the Cycle 287 generated selected-`K` identity
+route.  The remaining basis fields are still genuine input-boundary geometry:
+the source section and pointwise atom/law choices.
+-/
+theorem atomLawOverlap_orderFreeFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutOrderArguments
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (orderFreeBasis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        (atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let basis :=
+      orderFreeBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+    let source :=
+      basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+        (CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+          semanticSite S regime C Ob K) /\
+      basis.c0Order = [] /\
+      basis.c1Order = [] /\
+      source.c0Order = [] /\
+      source.c1Order = [] /\
+      AtomLawOverlapGeneratedSelectedKIdentityRouteProp
+        coverGeometry coefficientGeometry basis := by
+  dsimp [AtomLawOverlapGeneratedSelectedKIdentityRouteProp]
+  let basis :=
+    orderFreeBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+  have horders :=
+    CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis.constructs_pointwiseBasis_and_exposes_free_orders
+      orderFreeBasis
+  rcases horders with
+    ⟨hpointwise, hbasis0, hbasis1, hsource0, hsource1,
+      _hlocalSection, _hatomSupport, _hlawSupport⟩
+  have hroute :=
+    atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutCanonicalArgument
+      coverGeometry coefficientGeometry basis
+  exact
+    ⟨hpointwise, hbasis0, hbasis1, hsource0, hsource1, hroute⟩
 
 /--
 Cycle 288 basis-free generated selected-`K` route.
