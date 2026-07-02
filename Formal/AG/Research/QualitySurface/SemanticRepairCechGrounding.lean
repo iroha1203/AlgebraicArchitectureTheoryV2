@@ -39994,6 +39994,254 @@ theorem atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirec
       hsemanticH1,
       hadditiveH1⟩
 
+/--
+Cycle 335 proof-use checkpoint: atom/law selected chart-indexed cover geometry
+feeds the Cycle 334 identity `C0` replacement route.
+
+This is the identity-`C0` analogue of the Cycle 286 selected-realization
+successor theorem.  The selected cover is still the generated sieve
+`Sieve.generate geometry.family.presieve`, and the cover membership, chart
+index nonvacuity, and zero-simplex incidence are produced by `geometry`.  The
+old `sourceWithoutC0` surface and arbitrary future `c0Equiv` uniformity remain
+closed; the identity continuation is inherited from the reviewed
+chart-indexed predecessor route.  The semantic-cover bridge maps, selected
+`K`, source section, local semantic atom/law inputs, sheaf condition, and
+descent data remain visible lower provenance, so this is not a G-06 completion
+claim.
+-/
+theorem atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate geometry.family.presieve))
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S geometry.toChartIndexedZeroCover Ob K) :
+    let charted := geometry.toChartIndexedZeroCover
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate geometry.family.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    Sieve.generate geometry.family.presieve ∈ S.topology geometry.base /\
+      Nonempty charted.Index /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      surface.selectedCover = Sieve.generate geometry.family.presieve /\
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let charted := geometry.toChartIndexedZeroCover
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate geometry.family.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (semanticCover := semanticCover)
+      (charted := charted)
+      chartSimplex overlapSimplex tripleSimplex K presheaf selectedCover
+      (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry)
+      sheafCondition descent geometry.family rfl source
+  rcases hroute with
+    ⟨hcoverPreserved, hKPreserved, hchartGenerated, hgeneratedBaseMap,
+      hsectionSource, hsectionToLocal, hprimitivePointwise,
+      hboundaryPrimitive, hresidualSource, hvisible, hcontinuation,
+      hsource, hlayer, hface, hrealization, hc0Carrier, hcomparison,
+      hprimitiveBoundarySource, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry,
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.chartIndex_nonempty
+        geometry,
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        charted,
+      rfl,
+      hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
 end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
 
 end SemanticRepairCoverRelativeCochainRealization

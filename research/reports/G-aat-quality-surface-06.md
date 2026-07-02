@@ -103,6 +103,111 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 335 -- atom/law selected geometry carries identity C0 route
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the next proof-DAG propagation step after Cycle 334:
+
+- propagate the identity-`C0` replacement route to
+  `CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry`;
+- compose the reviewed chart-indexed-zero predecessor route with
+  `geometry.toChartIndexedZeroCover`;
+- keep generated selected-cover membership, chart index nonvacuity,
+  zero-simplex incidence, semantic-cover bridge maps, selected `K`,
+  source section, local semantic atom/law inputs, sheaf condition, and descent
+  data visible as lower provenance;
+- reject the old arbitrary-`c0Equiv` `sourceWithoutC0` continuation and any
+  target-fitting selected comparison route.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
+  composes the Cycle 334 chart-indexed identity route with the atom/law
+  selected chart-indexed cover geometry.  It returns generated selected-cover
+  membership, chart-index nonvacuity, zero-simplex chart incidence, selected
+  cover preservation, cover/K preservation, generated chart/base maps,
+  generated restriction maps, pointwise primitive equality, boundary primitive
+  and residual equalities, visible free semantic atom/law boundary, identity
+  degree-`0` face-law continuation, generated face-restriction source,
+  selected realization layer, explicit face equations, cochain realization,
+  `C0` carrier, comparison package, primitive-boundary witness,
+  residual-boundary, semantic `H1` zero, and additive `H1` zero.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 334 identity-`C0` replacement route now reaches the atom/law
+  selected chart-indexed cover geometry layer.
+- The selected cover is the generated sieve
+  `Sieve.generate geometry.family.presieve`, with topology membership supplied
+  by `generatedSelectedCover_mem geometry`.
+- Degree-`0` nonvacuity and zero-simplex incidence are supplied by
+  `chartIndex_nonempty geometry` and
+  `constructs_zeroSimplexChartIncidence geometry.toChartIndexedZeroCover`.
+- The theorem proof-uses the predecessor route's identity continuation,
+  generated source, selected layer, explicit face equations, cochain
+  realization, `C0` carrier, comparison package, residual-boundary, and
+  semantic/additive `H1` zero.
+
+Remaining:
+
+- Construction of the chart-indexed source fields from lower canonical/free
+  input-boundary geometry remains open.
+- The theorem still accepts semantic-cover bridge maps, selected `K`,
+  source section, local atom/law inputs, sheaf condition, and descent data as
+  visible input-boundary provenance.
+- The old arbitrary-`c0Equiv` `sourceWithoutC0` continuation is still not
+  constructed and is intentionally not claimed.
+- The broader G-06 completion criteria and final `$math-lean-review` gate
+  remain open.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- no new hidden material premise was introduced;
+- no structure or certificate field asserts old `sourceWithoutC0`, arbitrary
+  `c0Equiv`, selected comparison adequacy, semantic `H1` zero, or target
+  completion;
+- route integrity passes because the route is the atom/law selected geometry's
+  definitional projection to the reviewed Cycle 334 predecessor theorem;
+- the chart-indexed source, selected `K`, bridge maps, sheaf condition, and
+  descent remain visible lower input boundary, not final semantic adequacy /
+  nonvacuity discharge.
+
+Next obligation:
+
+- propagate the identity-`C0` replacement route to a finite-poset generated
+  cover-geometry specialization or construct the chart-indexed source fields
+  from lower canonical/free input-boundary geometry, while preserving selected
+  cover/K/source provenance.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle335AxiomAudit.lean`
+  reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean file
+  and axiom audit scratch file were clean.
+
 ## Cycle 334 -- chart-indexed successor carries identity C0 route
 
 - decision: approve
