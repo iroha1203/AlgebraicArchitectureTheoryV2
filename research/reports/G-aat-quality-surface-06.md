@@ -103,6 +103,92 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 352 -- nonzero-class transfer through the H1 comparison
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2901 (same branch as Cycle 351)
+- branch: `claude/g06-endtoend-instance`
+- date: 2026-07-03 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Discharge review obligation 2 fixed by the rejected final review after
+Cycle 350: exhibit a finite instance with a nonzero cover-relative residual
+class and show the zero-predicate equivalence transfers nonzero-ness both
+ways.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+(imported by `Formal/AG/Research.lean`):
+
+- `circleNerveCover`, `circleNerveComplex`: the selected circle nerve over the
+  finite-model site — two vertices, two edges with opposite orientations, no
+  selected simplices in degree two or higher — with the law-equation
+  obstruction-quotient coefficient.  The degree-`0` differential is the
+  alternating face combination; its additivity is proved from the
+  obstruction-sheaf `map_add`.
+- `circleResidual`, `circleResidual_not_coboundary`: the residual `1`-cochain
+  carrying the class of the defect `1` on one edge; it is provably not a
+  coboundary, by reduction to the Cycle 349 nondegeneracy witness.
+- `circleEnvelope`, `circleAdditive`, `circleComparison`: the semantic sheaf
+  `H1` envelope with the circle residual, its additive Cech data, and the
+  identity cochain-level comparison to the circle-nerve complex.
+- `circle_semanticAdditiveH1_ne_zero`, `circle_coverRelativeH1_ne_zero`,
+  `circle_nonzeroClass_transfer_packet`: the semantic additive `H1` class of
+  the residual is nonzero, the general cover-relative `H1` class is nonzero,
+  and the zero-predicate equivalence
+  `semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero` holds on the
+  instance, so nonzero-ness transfers in both directions.
+
+### Proof-Obligation Delta
+
+All three review obligations of the rejected Cycle 350 final review are now
+discharged: obligation 1 and 3 in Cycle 351, obligation 2 in this cycle.  The
+`H1` comparison surface is demonstrated on non-boundary content: the class
+exercised is provably nonzero on both the semantic-additive and the
+cover-relative side, and the nonzero-ness lives in the law-equation
+obstruction quotient (the class of the defect `1` from the Cycle 349
+witness).
+
+### Boundary Notes
+
+- The circle nerve is selected simplicial data over the singleton
+  finite-model cover, in the same selected-data position as every
+  `CoverRelativeCechCover` simplex family; it is not claimed to be generated
+  from atom-level chart intersections.  The file docstring states this.
+- The residual is a `1`-cocycle because the selected complex has no
+  degree-`2` simplices; stated, not hidden.
+
+### Anti-Weakening Audit
+
+- The nonzero-ness proofs consume the Cycle 349 ideal-theoretic witness
+  (`finiteModel_defectOne_class_ne_zero`); no nonvanishing is assumed.
+- The comparison is the identity on definitionally equal carriers, so no
+  comparison content is smuggled through opaque maps; the zero-predicate
+  equivalence used is the existing generic theorem, applied, not re-proved.
+- No new structure stores an `H1` zero, nonzero certificate, or comparison
+  conclusion.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationNonzeroClassInstance`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationNonzeroClassAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over the thirteen new declarations reports only existing
+standard foundations.  No `sorryAx` appears.
+
 ## Cycle 351 -- degree-zero boundary theorems and concrete end-to-end instance
 
 - decision: approve (continuation of the Cycle 348 user instruction)

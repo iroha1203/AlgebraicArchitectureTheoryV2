@@ -116,6 +116,7 @@ import Formal.AG.Research.QualitySurface.SemanticRepairLawEquationRealization
 import Formal.AG.Research.QualitySurface.SemanticRepairLawEquationWitnessInstance
 import Formal.AG.Research.QualitySurface.SemanticRepairLawEquationGroundedPacket
 import Formal.AG.Research.QualitySurface.SemanticRepairLawEquationEndToEndInstance
+import Formal.AG.Research.QualitySurface.SemanticRepairLawEquationNonzeroClassInstance
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianTorsor
 import Formal.AG.Research.QualitySurface.SemanticRepairNonabelianH1Universality
 import Formal.AG.Research.QualitySurface.SemanticRepairStackyH2
