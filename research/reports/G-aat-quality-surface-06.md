@@ -103,6 +103,114 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 319 -- required-law support is not yet law-evaluation semantics
+
+- decision: approve
+- result_type: proof-checkpoint / blocker-fixed no-constructor boundary
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the rock face immediately below Cycle 318:
+
+- keep the same support-only source and the same atom/law-overlap-generated
+  `K`;
+- test whether the currently accumulated support data
+  (`lawSupport`, `lawSupport_required`, `S.lawUniverse.Required`, and
+  `AtomLawOverlapCanonicalFreeSupportReading`) can generate source-`C0`
+  residual-zero;
+- reject any route that stores `source.arrowCompatibilityLaw`,
+  `law_reads_overlap`, `pointwiseSupportOnlyOverlapRestrictionEquality`,
+  `sourceC0CechZero`, or residual-zero as a field;
+- identify the missing input as a genuine law-evaluation layer from selected
+  required laws to the displayed overlap restriction equality.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawSupport`
+  names the support-only fact that each displayed local input has a selected
+  law index in `lawSupport` and that the selected law is
+  `S.lawUniverse.Required`.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.constructs_displayedRequiredLawSupport`
+  proves that this required-law support is already constructed from the
+  existing `lawSupport_nonempty` and `lawSupport_required` fields.  It is not
+  new semantic provenance.
+- `atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw`
+  proves that any uniform constructor from displayed required-law support plus
+  canonical/free support-reading to source-`C0` generated residual-zero already
+  constructs `source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw`
+  gives the fail-closed corollary: required-law support plus support-only
+  canonical/free provenance cannot construct residual-zero under
+  `¬ source.arrowCompatibilityLaw`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The current support fields are now separated from the missing semantic law
+  evaluator.  Required-law membership is named and proved available, but it is
+  not counted as overlap-equality provenance.
+- The Cycle 318 residual-zero boundary now also blocks constructors that accept
+  the existing required-law support as an extra argument.
+- The next missing layer is pinned more tightly: it must evaluate selected
+  required laws into the displayed overlap restriction equality for the same
+  support-only source and generated `K`.
+
+Remaining:
+
+- Construct `source.arrowCompatibilityLaw` from a non-field semantic
+  law-evaluation layer.
+- That layer must explain why selected required laws read as the relevant
+  overlap restriction equality, rather than merely exposing membership in
+  support lists.
+
+### Premise-Discharge Audit
+
+- `displayedRequiredLawSupport`: discharged from existing support-only source
+  fields.
+- `source.arrowCompatibilityLaw`: not discharged.  Cycle 319 proves that
+  required-law support plus support-reading still reduces to it.
+- source-`C0` generated residual-zero: not discharged.  Any constructor from
+  required support and support-reading would already prove
+  `source.arrowCompatibilityLaw`.
+- `law_reads_overlap` / `pointwiseSupportOnlyOverlapRestrictionEquality`:
+  not added as theorem arguments or structure fields.
+
+### Anti-Weakening / Certificate Provenance
+
+- No external `c0Equiv`, old `sourceWithoutC0`, arbitrary comparison map,
+  residual-boundary, `H1` zero, descent/effectivity, or global coherence input
+  was introduced.
+- The new support predicate is intentionally a readout of existing fields; it
+  does not contain compatibility, Cech-zero, or residual-zero data.
+- The no-constructor theorem proof-uses the Cycle 318 residual-zero /
+  `source.arrowCompatibilityLaw` boundary.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle319AxiomAudit.lean`
+- `lake build`
+
+Cycle 319 axiom audit reported only the existing standard dependencies
+`propext`, `Quot.sound`, and `Classical.choice` for the new proof-use
+theorems.
+
+### Next Obligation
+
+Define the missing semantic law-evaluation layer without storing the target
+equality: selected required laws must produce the displayed overlap restriction
+law used by `source.arrowCompatibilityLaw`, for the same support-only source
+and the same atom/law-overlap-generated `K`.
+
 ## Cycle 318 -- generated residual-zero is exactly arrow compatibility
 
 - decision: approve
