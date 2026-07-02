@@ -41401,6 +41401,89 @@ theorem finitePosetGeneratedCoverGeometry_orderFreePointwiseBasis_constructs_ide
       hboundary,
       hadditiveH1⟩
 
+/--
+Cycle 339 route-integrity checkpoint: promoting a chart-indexed order-free
+route to the atom/law-overlap generated selected `K` is exactly a cover/complex
+bridge obligation.
+
+The theorem intentionally does not construct that bridge.  It records that the
+data needed to identify a chart-indexed zero-cover route with the selected
+finite-poset atom/law-overlap route is precisely the already named
+`AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`: cover
+equality, heterogeneous equality of the selected complex, and heterogeneous
+transport of all differentials.  An order-free pointwise basis does not by
+itself discharge any of those identification fields.
+-/
+theorem orderFreeChartIndexedGeneratedKPromotion_constructs_selectedFinitePosetCoverComplexBridge
+    (coverGeometry :
+      CoverRelativeCechGeneratedSemanticCoefficient.FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Kcharted :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        charted.toCoverRelativeCechCover Ob)
+    (cover_eq :
+      charted.toCoverRelativeCechCover =
+        AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapStandardFinitePosetCechComplex
+            coverGeometry Ob))
+    (complex_heq :
+      HEq Kcharted
+        (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+          coverGeometry Ob))
+    (differential_transport :
+      forall n : Nat,
+        HEq (Kcharted.d n)
+          ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+            coverGeometry Ob).d n)) :
+    AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+      coverGeometry Ob charted Kcharted :=
+  { cover_eq := cover_eq
+    complex_heq := complex_heq
+    differential_transport := differential_transport }
+
+/--
+Cycle 339 no-escape theorem for the selected-`K` lowering step.
+
+If the selected finite-poset cover/complex bridge is absent, then an
+order-free chart-indexed pointwise basis cannot be used as a silent promotion
+to the atom/law-overlap generated selected `K`.  This fixes the next real
+obligation: construct the bridge from canonical/free atom/law geometry, or
+stay on the finite-poset chart-projection route that already uses the generated
+selected complex directly.
+-/
+theorem no_orderFreeChartIndexedGeneratedKPromotion_without_selectedFinitePosetCoverComplexBridge
+    (coverGeometry :
+      CoverRelativeCechGeneratedSemanticCoefficient.FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Kcharted :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        charted.toCoverRelativeCechCover Ob)
+    (hnoBridge :
+      IsEmpty
+        (AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge
+          coverGeometry Ob charted Kcharted)) :
+    ¬ (Nonempty
+        (CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+          semanticSite S charted Ob Kcharted) ∧
+      charted.toCoverRelativeCechCover =
+          AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapStandardFinitePosetCechComplex
+              coverGeometry Ob) ∧
+        HEq Kcharted
+          (CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+            coverGeometry Ob) ∧
+        (forall n : Nat,
+          HEq (Kcharted.d n)
+            ((CoverRelativeCechGeneratedSemanticCoefficient.atomLawOverlapCoverRelativeCechComplex
+              coverGeometry Ob).d n))) := by
+  rintro ⟨_hbasis, cover_eq, complex_heq, differential_transport⟩
+  exact hnoBridge.false
+    (orderFreeChartIndexedGeneratedKPromotion_constructs_selectedFinitePosetCoverComplexBridge
+      coverGeometry Ob charted Kcharted cover_eq complex_heq
+      differential_transport)
+
 end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
 
 end SemanticRepairCoverRelativeCochainRealization
