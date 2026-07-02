@@ -103,6 +103,99 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 345 -- generated sourceC0 law-generation from restriction evaluator
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2895
+- branch: `codex/g06-cycle345-source-c0-law-generation`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the nearest remaining generated-Cech premise below Cycle 344:
+
+- do not take `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap`
+  as a raw lower field;
+- construct the canonical support-only
+  `atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero` from lower
+  semantic law-generation data;
+- then reconstruct `AtomLawOverlapCanonicalFreeOverlapReading` through the
+  existing Cycle 316 generated-Cech
+  `supportReading + sourceC0CechZero` route.
+
+The accepted lower semantic bridge in this cycle is still
+`source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`.  The
+cycle does not claim that the evaluator is generated from bare
+`Law.holds`/support membership alone.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_constructs_sourceC0CechZero_of_atomLawOverlapGeometry`
+  takes the current-law boundary and a displayed required-law restriction
+  evaluator, constructs the bare overlap equality via the source-level
+  evaluator theorem, turns that into the isolated arrow law, and then consumes
+  the Cycle 311 generated-Cech bridge to obtain canonical `sourceC0CechZero`.
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading_via_sourceC0CechZero`
+  takes support-only canonical/free provenance plus the same evaluator,
+  constructs `sourceC0CechZero`, and reconstructs the full
+  `AtomLawOverlapCanonicalFreeOverlapReading` through the Cycle 316
+  generated-Cech constructor.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- `law_reads_overlap` is no longer the only visible route from the current-law
+  boundary and support-reading into full canonical/free overlap reading.
+- The evaluator route is forced through canonical `sourceC0CechZero` for the
+  same support-only source and the same atom/law-overlap-generated
+  cover-relative Cech complex.
+- No raw `source.arrowCompatibilityLaw`, raw overlap equality,
+  `sourceC0CechZero`, generated residual-zero, `c0Carrier`, `c0Equiv`, old
+  `sourceWithoutC0`, selected `K`, residual-boundary, `H1` zero, descent, or
+  effectivity data is accepted as a theorem argument.
+
+Remaining:
+
+- `displayedRequiredLawRestrictionEvaluator` remains the visible material
+  premise.  It must still be generated from lower semantic atom/law
+  restriction geometry rather than stored as an evaluator field.
+- The theorem still internally uses the known equivalence
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality <->
+  source.arrowCompatibilityLaw`; this is proof-use of the established
+  boundary, not a completion claim.
+- Cycle 344's order-free route can now be fed by the generated-Cech
+  reconstruction theorem, but final G-06 completion remains blocked until the
+  evaluator itself is lowered.
+- Sheaf/descent/effectivity/global adequacy and final `$math-lean-review`
+  remain open.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle345AxiomAudit.lean`
+  - both new declarations depend on `[propext, Classical.choice, Quot.sound]`;
+  - no `sorryAx`.
+- `lake build FormalAGResearch`
+- `lake build`
+  - success; only pre-existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / direct axiom / hidden Unicode / private path scans on the
+  changed Lean file and audit scratch file
+- T3 read-only audit: approve / `proof-obligation-discharged`; no major
+  findings; completion candidate remains `no`.
+- PR / CI sync: PR #2895 created; CI pending at report sync time.
+- Tracking Issue sync is pending.
+
 ## Cycle 344 -- order-free route from canonical/free overlap reading
 
 - decision: approve
