@@ -110,7 +110,7 @@ Initial axiom audit over representative declarations reported only standard
 - target state: target-proof-checkpoint
 - completion candidate: no
 - tracking Issue: #2636
-- PR: pending
+- PR: #2894
 - branch: `codex/g06-cycle344-orderfree-canonical-free-overlap`
 - date: 2026-07-02 JST
 
