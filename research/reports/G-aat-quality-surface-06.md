@@ -103,6 +103,131 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 320 -- local Law.holds is still not restriction-level law evaluation
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the constructive law-evaluation rock face left by Cycle 319:
+
+- define the missing semantic law-evaluation layer without storing target
+  equality;
+- use the same support-only source and the same atom/law-overlap-generated
+  `K`;
+- do not pass `source.arrowCompatibilityLaw`, `law_reads_overlap`,
+  `pointwiseSupportOnlyOverlapRestrictionEquality`, `sourceC0CechZero`, or
+  residual-zero as theorem arguments or certificate fields;
+- show whether selected required laws can produce the displayed overlap
+  restriction law used by `source.arrowCompatibilityLaw`.
+
+Cycle 320 found that the current law universe only gives the next semantic
+reading level: local `Law.holds`.  There is still no restriction-level
+evaluator from local law fulfillment to equality of obstruction-sheaf
+restrictions on common refinements.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn`
+  names the proposition that every law index displayed by the support-only
+  source actually holds on a selected local architecture-object reading.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn`
+  proves this predicate from `AAT.AG.Lawfulness` using
+  `AAT.AG.lawfulness_required_holds`, so the theorem proof-uses the actual
+  `LawUniverse.law` semantics rather than only required-law membership.
+- `atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw`
+  proves that any uniform constructor from displayed required support, local
+  `Law.holds`, and canonical/free support-reading to source-`C0` generated
+  residual-zero already constructs `source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw`
+  gives the no-constructor corollary under `¬ source.arrowCompatibilityLaw`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The missing layer has been lowered past `Required` membership to actual local
+  `Law.holds`.
+- A constructor that uses local lawful architecture-object readings still
+  cannot count as residual-zero provenance unless it constructs the same
+  `source.arrowCompatibilityLaw`.
+- The next missing object is now precisely a restriction-level evaluator from
+  selected required-law fulfillment to displayed overlap equality.
+
+Remaining:
+
+- Construct a non-field semantic law evaluator that turns selected required-law
+  fulfillment into `source.pointwiseSupportOnlyOverlapRestrictionEquality`.
+- Generate or justify the local architecture-object readings themselves if
+  they are to be used as positive provenance in a later cycle.
+- Do not promote this blocker to completion: local `Law.holds` does not yet
+  explain obstruction-sheaf restriction equality.
+
+### Premise-Discharge Audit
+
+- `displayedRequiredLawsHoldOn`: discharged conditionally from explicit
+  `AAT.AG.Lawfulness` of selected local objects.
+- `AAT.AG.Lawfulness` for local objects: not generated from the support-only
+  source in this cycle; it is not claimed as completion provenance.
+- `source.arrowCompatibilityLaw`: not discharged.  Cycle 320 proves any
+  residual-zero constructor using local `Law.holds` would still construct it.
+- source-`C0` generated residual-zero: not discharged.
+
+### Anti-Weakening / Certificate Provenance
+
+- No overlap equality, `law_reads_overlap`, `sourceC0CechZero`, residual-zero,
+  old `sourceWithoutC0`, external `c0Equiv`, arbitrary `K`, descent/effectivity,
+  or `H1` zero field was introduced.
+- `objectOfLocalInput` and `hlawful` are explicit and only produce
+  `Law.holds`; they do not contain restriction equality.
+- The no-constructor theorem proof-uses the Cycle 318 residual-zero /
+  `source.arrowCompatibilityLaw` boundary through the support-reading route.
+
+### T3 Audit
+
+T3 approved Cycle 320 as `blocker-fixed`, with completion candidate `no`.
+
+- anti-weakening: pass for checkpoint
+- certificate provenance: local `Law.holds` is named but not enough for
+  completion
+- proof-use: pass
+- structure-field escape: none found
+- route integrity: same source and same generated `K` preserved
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle320AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder / direct axiom / trivial escape / hidden Unicode / private path scans
+
+Cycle 320 axiom audit reported:
+
+- `displayedRequiredLawsHoldOn` and
+  `lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn`:
+  `[propext, Quot.sound]`
+- proof-use / no-constructor theorems:
+  `[propext, Classical.choice, Quot.sound]`
+
+### Next Obligation
+
+Construct the missing restriction-level semantic law evaluator, without storing
+the target equality as a field: selected required-law fulfillment must generate
+the displayed overlap restriction equality / `source.arrowCompatibilityLaw`
+for the same support-only source and the same atom/law-overlap-generated `K`.
+
 ## Cycle 319 -- required-law support is not yet law-evaluation semantics
 
 - decision: approve

@@ -15996,6 +15996,62 @@ theorem constructs_displayedRequiredLawSupport
       source.lawSupport_required i (source.input i) lawIndex hLawIndex⟩
 
 /--
+Cycle 320 displayed required-law fulfillment on selected local objects.
+
+This is the next lower semantic reading after Cycle 319's support predicate:
+each law index displayed in the support-only source is not only marked
+`Required`, but the corresponding law actually holds on a chosen local
+architecture-object reading of that input.  The predicate still contains no
+overlap equality, arrow compatibility, Cech-zero predicate, residual-zero
+predicate, or `law_reads_overlap` field.
+
+The missing part is the evaluator from such local law fulfillment to equality
+of obstruction-sheaf restrictions on common refinements.
+-/
+def displayedRequiredLawsHoldOn
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) : Prop :=
+  forall (i : regime.cover.Index) (lawIndex : S.lawUniverse.Index),
+    lawIndex ∈ source.lawSupport i (source.input i) ->
+      S.lawUniverse.Required lawIndex ->
+        (S.lawUniverse.law lawIndex).holds
+          (objectOfLocalInput i (source.input i))
+
+/--
+If each selected local architecture-object reading is lawful for the site law
+universe, then all displayed required laws hold on those local readings.
+
+This proof uses the actual `LawUniverse.law` semantics through
+`lawfulness_required_holds`; it is still not an overlap-law evaluator.
+-/
+theorem lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse) :
+    source.displayedRequiredLawsHoldOn objectOfLocalInput := by
+  intro i lawIndex _hLawMem hrequired
+  exact AAT.AG.lawfulness_required_holds (hlawful i) hrequired
+
+/--
 A common base section realizes the support-only local interpretations when
 each interpreted section is obtained by restriction along the displayed
 atom/law cover arrow.
@@ -25224,6 +25280,143 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReadi
   exact hmissing
     (atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
       coverGeometry coefficientGeometry skeleton source hsupport constructor)
+
+/--
+Cycle 320 lawful-local-object constructor reduction.
+
+Even if the support-only source is enriched with local architecture-object
+readings that are lawful for every required law in `S.lawUniverse`, a uniform
+constructor of source-`C0` generated residual-zero still constructs the same
+isolated `source.arrowCompatibilityLaw`.
+
+This is the precise boundary between law fulfillment and law evaluation:
+`Law.holds` on selected local objects is semantic content, but it is not yet an
+evaluator proving equality of obstruction-sheaf restrictions on common
+refinements.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) :
+    source.arrowCompatibilityLaw := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport
+      (fun supportReading =>
+        constructor source.constructs_displayedRequiredLawSupport
+          (source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+            objectOfLocalInput hlawful)
+          supportReading)
+
+/--
+Cycle 320 no-constructor corollary: lawful local architecture-object readings
+plus support-only canonical/free provenance still cannot construct source-`C0`
+generated residual-zero while the same support-only source lacks
+`arrowCompatibilityLaw`.
+
+Thus the missing layer is not merely `Required` membership and not merely
+local `Law.holds`; it is a genuine restriction-level evaluator from those laws
+to the displayed overlap equality for the same generated `K`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) := by
+  intro constructor
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful hsupport constructor)
 
 /--
 Cycle 317 generated-residual constructor: support-only canonical/free atom/law
