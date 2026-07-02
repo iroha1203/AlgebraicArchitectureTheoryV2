@@ -103,6 +103,107 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 330 -- canonical identity C0 replacement route for sourceWithoutC0
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the canonical identity-`C0` replacement route:
+
+- do not chase the old
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`
+  arbitrary-`c0Equiv` uniformity law;
+- instead prove that the generated identity-`C0` route is sufficient for the
+  downstream selected realization / grounded comparison path;
+- then lift that replacement route from generated envelope, to semantic
+  atom/law input-boundary geometry, to canonical/free cover-boundary data.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0ReplacementRoute_without_sourceWithoutC0`
+  packages the generated envelope's identity `C0` continuation, full
+  identity-generated atom-supported source, selected semantic coefficient
+  realization layer, explicit lower data, cochain realization, `C0` carrier,
+  and comparison package without consuming the old `sourceWithoutC0`.
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute`
+  composes that identity replacement route with the semantic atom/law
+  input-boundary residual theorem over the same boundary-generated coefficient
+  and canonical generated envelope.
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.canonicalFreeCoverBoundary_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
+  removes the top-level geometry, `c0Order` / `c1Order`, and canonical-envelope
+  arguments by reading them from canonical/free cover-boundary data and the
+  observation-minimal generated envelope.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The generated identity-`C0` route is now a theorem-level replacement route
+  for the downstream selected realization / grounded comparison path that had
+  previously been shadowed by the old over-strong `sourceWithoutC0` shape.
+- The route is lifted to semantic atom/law input-boundary geometry while
+  simultaneously carrying the residual-boundary / semantic-additive `H1` zero
+  route over the same generated coefficient.
+- The canonical/free cover-boundary theorem removes the top-level geometry,
+  finite order, and canonical envelope arguments; only the selected surface,
+  selected cover witness, and canonical/free boundary data remain visible.
+
+Remaining:
+
+- The old
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`
+  is still not constructed, and its arbitrary future `c0Equiv` uniformity law
+  is intentionally not claimed.
+- Canonical/free boundary data remains an input boundary, not a final semantic
+  adequacy / nonvacuity discharge.
+- The broader G-06 completion criteria and final `$math-lean-review` gate
+  remain open.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- `C0/C1/C2` carriers and `c0/c1` equivalences are generated as identity data
+  from `surface.K`;
+- face laws route through `surface.K.d_eq_alternatingFaceCombination`;
+- the residual is generated as `surface.K.d 0 primitive`, and `H1` zero follows
+  through the generated residual-boundary theorem;
+- no new structure or certificate field asserts old `sourceWithoutC0`,
+  arbitrary-`c0Equiv` continuation, selected comparison adequacy, or target
+  completion;
+- `defaultObservationEnvelope` is used only as the observation-minimal
+  generated envelope for this checkpoint, not as semantic adequacy evidence.
+
+Next obligation:
+
+- propagate the canonical/free identity-`C0` replacement route into the lower
+  successor chain or downstream target route that still expects the old
+  over-strong `sourceWithoutC0` shape.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle330AxiomAudit.lean`
+  reported `[propext, Classical.choice, Quot.sound]` for all three new
+  declarations.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean file
+  were clean.
+
 ## Cycle 329 -- generated identity C0 continuation for the old source boundary
 
 - decision: approve
