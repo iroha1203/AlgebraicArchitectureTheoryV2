@@ -193,7 +193,13 @@ The response was not to weaken the claim but to prove **new theorems**: a positi
 
 This looks like a mathematics story, but SAGA has several CS implications.
 
-**(1) A class of analysis beyond linting.** Detecting local violations (lint, static analysis, contract checking) and detecting global gluing failures are mathematically different classes of problems. After SAGA, AAT owns, for the second class, an obstruction with a *proved-sound detector*: a nonzero `H^1` class certifies which law fails over which observed facts, with traceability back to the displayed law support. It is a principled path toward detecting the failure mode where "no file contains a bug, and yet the system is broken."
+**(1) A class of analysis beyond linting.** Detecting local violations (lint, static analysis, contract checking) and detecting global gluing failures are mathematically different classes of problems. Let us return to the three examples from the opening.
+
+- **"Every team's code passes review, yet integration breaks."** Each team's area of ownership corresponds to a local view of the cover. Among the mismatches along team boundaries (the cocycle), the ones that **no team can eliminate by fixing its own code** — those read as a nonzero `H^1` class. There was a structural reason the cause could never be found inside any single team.
+- **"Every microservice honors its contract, yet the system invariant is violated."** Contracts correspond to local laws; the system-wide invariant corresponds to a global section. All services can be locally lawful while the global section gluing them together simply **does not exist**. That existence is exactly what `H^1` decides.
+- **"Every refactoring step was safe, yet the design intent is gone."** Each step corresponds to a local re-adjustment (a coboundary). But stack a full loop of re-adjustments, and a residue can survive that never cancels. In fact, the concrete nonzero-class instance used in the SAGA proof was literally a construction where **going once around a circle leaves you off by 1**. Every step safe, yet you return changed — that déjà vu now has a mathematical identity.
+
+After SAGA, AAT owns, for this class of failures, an obstruction with a *proved-sound detector*: a nonzero `H^1` class certifies which law fails over which observed facts, with traceability back to the displayed law support. It is a principled path toward detecting the failure mode where "no file contains a bug, and yet the system is broken."
 
 **(2) A methodology for vocabulary evolution in formalization.** Every large formalization eventually hits the "our original definitions were wrong" problem. The SAGA proof demonstrates one pattern: first pin down the limits of the old vocabulary as a family of impossibility theorems, so that the extension becomes a *forced, minimal move* — and afterwards, the old no-go theorems keep serving as audit machinery. Definition change becomes accretion, not restart.
 
