@@ -103,6 +103,95 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 344 -- order-free route from canonical/free overlap reading
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: pending
+- branch: `codex/g06-cycle344-orderfree-canonical-free-overlap`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the nearest source-provenance premise below Cycle 343:
+
+- remove the explicit
+  `GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource`
+  theorem argument from the order-free route;
+- take the same-source
+  `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource`
+  for `orderFreeSkeleton.toSourceSectionFreeSkeleton`;
+- use `AtomLawOverlapCanonicalFreeOverlapReading` to construct the bare
+  overlap equality, the isolated arrow compatibility law, the common
+  restriction realization, and then the presieve-free source consumed by
+  Cycle 343.
+
+This cycle does not construct the canonical/free overlap-reading layer itself.
+Its `law_reads_overlap` field remains visible lower provenance.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_canonicalFreeOverlapReading_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveFreeSourceArgument`
+  takes an order-free skeleton, a same-source support-only semantic atom/law
+  source for the generated older skeleton, and
+  `AtomLawOverlapCanonicalFreeOverlapReading`.  It proof-uses
+  `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`,
+  converts the resulting equality to `source.arrowCompatibilityLaw`,
+  constructs `source.commonRestrictionRealization`, builds
+  `source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction`,
+  and passes that generated source into the Cycle 343 theorem
+  `atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveLawArgument`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The order-free generated selected-`K` route no longer takes a
+  `GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource`
+  directly.
+- `pointwiseSupportOnlyOverlapRestrictionEquality`,
+  `arrowCompatibilityLaw`, `commonRestrictionRealization`, and the
+  presieve-free source are internally constructed from the same support-only
+  source and canonical/free overlap reading.
+- The proof uses Cycle 343 directly and does not bypass it through an older
+  source-section-free route.
+- No raw `arrowCompatibilityLaw`, raw overlap equality,
+  `commonRestrictionRealization`, presieve-free source, `c0Carrier`,
+  `c0Equiv`, old `sourceWithoutC0`, selected `K`, or differential transport
+  is accepted as a theorem argument.
+
+Remaining:
+
+- `AtomLawOverlapCanonicalFreeOverlapReading` remains a visible lower premise.
+- In particular, its `law_reads_overlap` field still needs construction or
+  further lowering from semantic atom/law input-boundary geometry rather than
+  being accepted as a structure field.
+- Sheaf/descent/effectivity/global adequacy and final `$math-lean-review`
+  remain open.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle344AxiomAudit.lean`
+  - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
+  - no `sorryAx`.
+- `lake build FormalAGResearch`
+- `lake build`
+  - success; only pre-existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans on the changed Lean file
+  and audit scratch file
+- T3 read-only audit: approve / `proof-obligation-discharged`; no major
+  findings; completion candidate remains `no`.
+
 ## Cycle 343 -- order-free route from presieve-free semantic source
 
 - decision: approve

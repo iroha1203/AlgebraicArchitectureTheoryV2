@@ -24625,6 +24625,152 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_con
       coverGeometry coefficientGeometry skeleton source).2 hoverlap
 
 /--
+Cycle 344 order-free canonical/free atom/law overlap-reading route.
+
+This lowers the Cycle 343 order-free route below the presieve-free semantic
+source argument.  Starting from the same support-only source on
+`orderFreeSkeleton.toSourceSectionFreeSkeleton`, the canonical/free overlap
+reading constructs the bare overlap equality, then the isolated arrow
+compatibility law, then a common restriction realization and the presieve-free
+source consumed by Cycle 343.
+
+The theorem does not accept `arrowCompatibilityLaw`,
+`pointwiseSupportOnlyOverlapRestrictionEquality`, `commonRestrictionRealization`,
+a presieve-free source, `c0Carrier`, `c0Equiv`, the old `sourceWithoutC0`, or
+selected `K` data as arguments.  The `law_reads_overlap` field of
+`AtomLawOverlapCanonicalFreeOverlapReading` remains visible lower provenance,
+so this is a proof-obligation discharge, not a G-06 completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_canonicalFreeOverlapReading_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveFreeSourceArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (orderFreeSkeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        (SourceSectionFreeOrderFreeSkeleton.toSourceSectionFreeSkeleton
+          (semanticSite := semanticSite) (S := S)
+          (regime :=
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+          (C :=
+            atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (K :=
+            atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          orderFreeSkeleton))
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry
+        (SourceSectionFreeOrderFreeSkeleton.toSourceSectionFreeSkeleton
+          (semanticSite := semanticSite) (S := S)
+          (regime :=
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+          (C :=
+            atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (K :=
+            atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          orderFreeSkeleton)
+        source) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+        orderFreeSkeleton.toSourceSectionFreeSkeleton
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun orderFreeBasis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      let basis :=
+        orderFreeBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      generatedSkeleton.c0Order = [] /\
+        generatedSkeleton.c1Order = [] /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.atom sigma = orderFreeSkeleton.atom sigma) /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.lawIndex sigma = orderFreeSkeleton.lawIndex sigma) /\
+        AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+          selectedCover /\
+        AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData
+          orderFreeBasis.sourceSection /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          basis.projectedLocalSection sigma =
+            gluingData.localSections (generatedSkeleton.zeroSimplexToBase sigma)
+              ((generatedSkeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+                sigma)) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+            semanticSite S regime C Ob K) /\
+        basis.c0Order = [] /\
+        basis.c1Order = [] /\
+        source.c0Order = [] /\
+        source.c1Order = [] /\
+        AtomLawOverlapGeneratedSelectedKIdentityRouteProp
+          coverGeometry coefficientGeometry basis := by
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let regime :=
+    (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      |>.toObstructionCoefficientRegime Ob
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+    orderFreeSkeleton.toSourceSectionFreeSkeleton
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry generatedSkeleton source reading
+  have hcompatible :
+      source.arrowCompatibilityLaw :=
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      hoverlap
+  have hrealized :
+      source.commonRestrictionRealization :=
+    source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible
+  let presieveSource :=
+    source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+      hrealized
+  exact
+    atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveLawArgument
+      coverGeometry coefficientGeometry orderFreeSkeleton presieveSource
+
+/--
 Cycle 305 fail-closed boundary: if the isolated arrow compatibility law is
 absent, no canonical/free atom/law overlap-reading layer can exist for the same
 support-only source.
