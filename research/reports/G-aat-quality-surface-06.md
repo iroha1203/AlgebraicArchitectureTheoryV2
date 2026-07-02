@@ -110,7 +110,7 @@ Initial axiom audit over representative declarations reported only standard
 - target state: target-proof-checkpoint
 - completion candidate: no
 - tracking Issue: #2636
-- PR: pending
+- PR: #2895
 - branch: `codex/g06-cycle345-source-c0-law-generation`
 - date: 2026-07-02 JST
 
@@ -193,7 +193,8 @@ Remaining:
   changed Lean file and audit scratch file
 - T3 read-only audit: approve / `proof-obligation-discharged`; no major
   findings; completion candidate remains `no`.
-- Tracking Issue sync and PR / CI sync are pending.
+- PR / CI sync: PR #2895 created; CI pending at report sync time.
+- Tracking Issue sync is pending.
 
 ## Cycle 344 -- order-free route from canonical/free overlap reading
 
