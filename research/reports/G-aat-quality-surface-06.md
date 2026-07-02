@@ -103,6 +103,134 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 324 -- current law boundary is interpretation-blind
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct bypass left open after Cycle 323:
+
+- keep the same support-only source and the same atom/law-overlap-generated
+  `K`;
+- do not route through a proposed
+  `displayedRequiredLawRestrictionEvaluator`;
+- close the possibility that the current `LawUniverse` / `Law.holds` input
+  boundary directly constructs the bare
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality`;
+- keep `source.arrowCompatibilityLaw`, residual-zero, `sourceC0CechZero`,
+  and `H1` zero out of constructor inputs.
+
+### Lean Artifacts
+
+New source-level declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw`
+  proves that any constructor from the current law boundary to bare overlap
+  equality reconstructs `source.arrowCompatibilityLaw`, so it is impossible
+  under `¬ source.arrowCompatibilityLaw`.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.withDisplayedInterpretation`
+  replaces only the displayed obstruction-sheaf interpretation while keeping
+  the same local input family, selected inputs, atom support, law support, and
+  required-law evidence.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.currentLawUniverseHoldsInputBoundary_withDisplayedInterpretation_iff`
+  proves by `rfl` that `currentLawUniverseHoldsInputBoundary` is invariant
+  under displayed-interpretation replacement.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw`
+  closes an interpretation-blind constructor from the current law boundary to
+  restriction evaluators.
+
+New atom/law-overlap-generated `K` wrappers:
+
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_pointwiseSupportOnlyOverlapRestrictionEquality_without_restrictionSemantics`
+- `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_invariant_under_displayedInterpretationReplacement`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_interpretationBlind_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The current law boundary cannot directly construct bare overlap restriction
+  equality for the same source if `source.arrowCompatibilityLaw` is absent.
+- The current law boundary is definitionally blind to replacement of the
+  displayed obstruction-sheaf local sections.
+- An interpretation-blind current-law constructor cannot uniformly supply the
+  Cycle 322 restriction evaluator.
+- The obstruction is fixed for the same support-only source and the same
+  atom/law-overlap-generated `K`.
+
+Remaining:
+
+- Construct `displayedRequiredLawRestrictionEvaluator` or bare overlap
+  restriction equality from genuine lower restriction semantics.
+- The next positive layer must read `source.interpret` on common refinements,
+  not only required-law support, local `Law.holds`, or law-universe
+  coverage/exactness assumptions.
+- `source.arrowCompatibilityLaw` remains undischarged.
+
+### Premise-Discharge Audit
+
+- `currentLawUniverseHoldsInputBoundary`: discharged from current
+  `LawUniverse` assumptions and lawful local readings.
+- Direct constructor from that boundary to
+  `pointwiseSupportOnlyOverlapRestrictionEquality`: blocked.
+- Interpretation-blind constructor from that boundary to
+  `displayedRequiredLawRestrictionEvaluator`: blocked.
+- `displayedRequiredLawRestrictionEvaluator`: not discharged.
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality`: not discharged.
+- `source.arrowCompatibilityLaw`: not discharged.
+
+### Anti-Weakening / Certificate Provenance
+
+- No restriction semantic map was added as a source field or certificate field.
+- `withDisplayedInterpretation` stores no equality, compatibility,
+  residual-zero, `sourceC0CechZero`, or `H1` zero conclusion; it only replaces
+  the displayed local section map.
+- The generated wrappers preserve the same support-only source and same
+  atom/law-overlap-generated `K`.
+
+### T3 Audit
+
+T3 approved Cycle 324 as `blocker-fixed`, with completion candidate `no`.
+
+- anti-weakening: pass
+- provenance: pass for the blocker boundary
+- proof-use: pass
+- structure-field escape: pass
+- blocking findings: none
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle324AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean diff
+
+Cycle 324 axiom audit reported:
+
+- source-level declarations:
+  `[propext, Quot.sound]`
+- atom/law-overlap-generated `K` wrappers:
+  `[propext, Classical.choice, Quot.sound]`
+
+### Next Obligation
+
+Construct a genuine restriction-semantics layer that reads the displayed local
+sections on common refinements, then use it to construct
+`displayedRequiredLawRestrictionEvaluator` or
+`source.pointwiseSupportOnlyOverlapRestrictionEquality` for the same
+support-only source and generated `K`.
+
 ## Cycle 323 -- current LawUniverse API still lacks restriction semantics
 
 - decision: approve

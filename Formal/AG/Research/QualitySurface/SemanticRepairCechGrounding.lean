@@ -17625,6 +17625,164 @@ theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequired
       objectOfLocalInput hlawful hmissing (constructor hboundary)
 
 /--
+Cycle 324 direct bare-equality obstruction.
+
+Cycle 323 closed the route from the current law-universe boundary to the
+restriction evaluator.  This theorem closes the even more direct bypass:
+the same current boundary cannot be used to construct the bare overlap
+restriction equality while `arrowCompatibilityLaw` is absent.  Any such
+constructor immediately reconstructs `arrowCompatibilityLaw` by the Cycle 300
+exact boundary.
+-/
+theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact hmissing
+    ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (constructor hboundary))
+
+/--
+Cycle 324 interpretation-replacement boundary.
+
+This operation keeps exactly the same local input family, selected inputs,
+atom support, law support, and required-law evidence, but replaces the
+displayed obstruction-sheaf sections.  It is the smallest source-level test
+for whether a proposed law-side boundary actually sees restriction semantics,
+rather than only selected `Law.holds` proofs.
+-/
+def withDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        Ob.carrier.toPresheaf.obj
+          (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))) :
+    GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := interpret'
+
+/--
+Cycle 324 source-level obstruction: the current law-universe boundary is
+blind to the displayed obstruction-sheaf interpretation.
+
+Replacing every displayed local section while keeping the same atom/law
+support and local architecture-object readings leaves
+`currentLawUniverseHoldsInputBoundary` definitionally unchanged.  Thus the
+current boundary cannot by itself explain equality of restrictions between
+the displayed sections; a genuine restriction-semantics layer must observe
+`interpret`.
+-/
+theorem currentLawUniverseHoldsInputBoundary_withDisplayedInterpretation_iff
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        Ob.carrier.toPresheaf.obj
+          (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)))
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) :
+    (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+        objectOfLocalInput <->
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
+  rfl
+
+/--
+Cycle 324 no-constructor corollary: an interpretation-blind current-law
+boundary cannot uniformly supply restriction evaluators for displayed-section
+replacements.
+
+The proof tests the proposed constructor on the original interpretation.  If
+it produced a `displayedRequiredLawRestrictionEvaluator`, Cycle 322 would
+reconstruct `arrowCompatibilityLaw`, contradicting `hmissing`.  Therefore a
+future lower semantic layer must add restriction semantics that actually reads
+the displayed obstruction-sheaf sections, not only the current law-universe
+boundary.
+-/
+theorem no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (forall interpret' :
+        (i : regime.cover.Index) -> source.LocalInput i ->
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)),
+        (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+            objectOfLocalInput ->
+          (source.withDisplayedInterpretation interpret').displayedRequiredLawRestrictionEvaluator
+            objectOfLocalInput) := by
+  intro constructor
+  let replaced := source.withDisplayedInterpretation source.interpret
+  have hlawfulReplaced :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (replaced.input i))
+          S.lawUniverse := by
+    simpa [replaced, withDisplayedInterpretation] using hlawful
+  have hboundary :
+      replaced.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    replaced.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawfulReplaced
+  have hmissingReplaced : ¬ replaced.arrowCompatibilityLaw := by
+    simpa [replaced, withDisplayedInterpretation] using hmissing
+  exact
+    replaced.no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hlawfulReplaced hmissingReplaced
+      (constructor source.interpret hboundary)
+
+/--
 Cycle 299 proof-use checkpoint: once the pointwise support-only overlap law is
 available, it reconstructs `arrowCompatibilityLaw` and feeds the existing
 Cycle 296 common-restriction / presieve-free-source route.
@@ -26021,6 +26179,175 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_displayedReq
         source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) := by
   exact
     source.no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hcoverage hexactness hlawful hmissing
+
+/--
+Cycle 324 generated-`K` direct bare-equality obstruction.
+
+For the same support-only source and actual atom/law-overlap-generated Cech
+complex, the current `LawUniverse` / `Law.holds` boundary cannot directly
+construct the bare overlap restriction equality under
+`¬ source.arrowCompatibilityLaw`.  This closes the direct bypass around the
+Cycle 322 evaluator.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_pointwiseSupportOnlyOverlapRestrictionEquality_without_restrictionSemantics
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  exact
+    source.no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      objectOfLocalInput hcoverage hexactness hlawful hmissing
+
+/--
+Cycle 324 generated-`K` interpretation-blindness boundary.
+
+For the actual atom/law-overlap-generated cover-relative Cech complex, the
+current `LawUniverse` / `Law.holds` input boundary is invariant under arbitrary
+replacement of the displayed obstruction-sheaf interpretation.  This fixes the
+precise API gap left by Cycle 323: the law-side boundary does not observe the
+sections whose restrictions must be compared.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_invariant_under_displayedInterpretationReplacement
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i ->
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)))
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U) :
+    (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+        objectOfLocalInput <->
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
+  exact
+    source.currentLawUniverseHoldsInputBoundary_withDisplayedInterpretation_iff
+      interpret' objectOfLocalInput
+
+/--
+Cycle 324 generated-`K` no-constructor corollary.
+
+Even after fixing the actual atom/law-overlap-generated `K`, an
+interpretation-blind constructor from the current law boundary to restriction
+evaluators cannot exist under `¬ source.arrowCompatibilityLaw`.  The missing
+semantic input must be a restriction semantics that reads the displayed local
+sections.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_interpretationBlind_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (forall interpret' :
+        (i :
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+          source.LocalInput i ->
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.obj
+              (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)),
+        (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+            objectOfLocalInput ->
+          (source.withDisplayedInterpretation interpret').displayedRequiredLawRestrictionEvaluator
+            objectOfLocalInput) := by
+  exact
+    source.no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
       objectOfLocalInput hcoverage hexactness hlawful hmissing
 
 /--
