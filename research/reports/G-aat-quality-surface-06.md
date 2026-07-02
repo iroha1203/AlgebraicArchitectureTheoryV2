@@ -103,6 +103,98 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 329 -- generated identity C0 continuation for the old source boundary
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the identity-`C0` specialization of the old
+`sourceWithoutC0` continuation:
+
+- prove that a generated semantic envelope supplies
+  `AtomSupportedDegreeZeroEquivFaceLawContinuation` for its canonical identity
+  `c0Equiv`;
+- use the generated identity `c1` / `c2` data from `surface.K`;
+- do not claim the full old
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`,
+  because that older surface quantifies over arbitrary future `c0Equiv`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0SpecializedFaceLawContinuation`
+  constructs the four old face-law continuation equations for the generated
+  envelope's identity `c0Equiv`, `c1Equiv`, and `c2Equiv`.
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0SpecializedSourceWithoutUniformDegreeZeroEquiv`
+  packages the selected cover witness, identity degree-`1` and degree-`2`
+  comparisons, zero laws, and the identity-`C0` continuation into the honest
+  generated analogue of the old residual source boundary.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The generated Cech-native coefficient/envelope route now reaches the
+  identity-`C0` specialization of the old `sourceWithoutC0` face-law boundary.
+- The proof uses `surface.K.d_eq_alternatingFaceCombination` in all four face
+  laws, with `C0/C1/C2` and `delta0/delta1` generated from the selected
+  cover-relative Cech complex.
+
+Remaining:
+
+- The full old
+  `AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`
+  is still not constructed.  Its extra strength is the uniformity law over
+  arbitrary future `c0Equiv`.
+- A future cycle must either prove that uniformity law from legitimate
+  semantic atom/law restriction geometry, or keep the generated identity route
+  as the canonical replacement boundary and explicitly retire the old arbitrary
+  `c0Equiv` route as too strong.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- both new declarations use `envelope.toCochainRealization` identity data over
+  `surface.K.Cn 0/1/2`;
+- all four continuation fields proof-use
+  `surface.K.d_eq_alternatingFaceCombination` at degrees `0` and `1`;
+- no external `c0Equiv`, `c0Carrier`, old `sourceWithoutC0`, residual-boundary
+  witness, H1-zero, arbitrary selected comparison data, or ad hoc `K` is
+  supplied as a theorem argument;
+- the identity-only continuation is not presented as equivalent to the full
+  old `sourceWithoutC0`;
+- this is not a target completion candidate.
+
+Next obligation:
+
+- decide whether to prove the arbitrary-`c0Equiv` uniform face-law continuation
+  from a genuine lower semantic restriction layer, or formalize that the
+  generated identity route is the canonical/free replacement for the old
+  over-strong residual source shape.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle329AxiomAudit.lean`
+  reported only `[propext, Quot.sound]` for both new declarations.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean file
+  were clean.
+
 ## Cycle 328 -- displayed evaluator is the exact full-reading boundary
 
 - decision: approve

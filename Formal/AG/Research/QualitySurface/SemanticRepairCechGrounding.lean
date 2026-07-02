@@ -8197,6 +8197,132 @@ theorem constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
         surface.K.d_eq_alternatingFaceCombination 1 cochain
 
 /--
+Cycle 329 identity-`C0` continuation checkpoint.
+
+The generated semantic envelope supplies the old face-law continuation for the
+identity degree-`0` comparison coming from its identity cochain realization.
+This is the part of the old `sourceWithoutC0` boundary that follows naturally
+from the Cech-native generated layer: `C0/C1/C2` are the selected `K` cochains,
+and the four face laws are exactly `surface.K.d_eq_alternatingFaceCombination`.
+
+This is deliberately not the old residual source itself.  The old
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`
+requires the same continuation for every future `c0Equiv`; the generated layer
+only justifies the canonical identity comparison unless an additional
+uniformity law is proved.
+-/
+theorem constructs_identityC0SpecializedFaceLawContinuation
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    AtomSupportedDegreeZeroEquivFaceLawContinuation
+      (E := envelope.toEnvelope)
+      (additive := envelope.toAdditiveCechH1Data) surface
+      envelope.toCochainRealization.c1Equiv
+      envelope.toCochainRealization.c2Equiv
+      envelope.toCochainRealization.c2Equiv_zero
+      envelope.toCochainRealization.c2Equiv_symm_zero
+      envelope.toCochainRealization.c0Equiv := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro primitive
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 0 primitive).symm
+  · intro primitive
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 0 primitive
+  · intro cochain
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 1 cochain).symm
+  · intro cochain
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 1 cochain
+
+/--
+Cycle 329 source-boundary checkpoint for the generated identity route.
+
+This packages the selected cover witness, the generated identity degree-`1`
+and degree-`2` comparisons, the zero laws, and the identity-`C0` face-law
+continuation above.  It is the honest generated analogue of the old
+`sourceWithoutC0` surface with `c0Equiv` fixed to the canonical identity
+comparison.
+
+It is not a construction of
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`,
+because that older proposition quantifies over arbitrary future degree-`0`
+equivalences.  The remaining obstruction is exactly that uniformity law.
+-/
+theorem constructs_identityC0SpecializedSourceWithoutUniformDegreeZeroEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Exists fun selectedFamily :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+      surface.selectedCover = Sieve.generate selectedFamily.presieve /\
+      Exists fun c1Equiv :
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toEnvelope.coefficient.C1 ≃+ surface.K.Cn 1 =>
+      Exists fun c2Equiv : envelope.toEnvelope.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv envelope.toEnvelope.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = envelope.toEnvelope.coefficient.zero2 =>
+        AtomSupportedDegreeZeroEquivFaceLawContinuation
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface
+          c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero
+          envelope.toCochainRealization.c0Equiv := by
+  exact
+    ⟨family, hcover_eq,
+      envelope.toCochainRealization.c1Equiv,
+      envelope.toCochainRealization.c2Equiv,
+      envelope.toCochainRealization.c2Equiv_zero,
+      envelope.toCochainRealization.c2Equiv_symm_zero,
+      envelope.constructs_identityC0SpecializedFaceLawContinuation
+        (surface := surface)⟩
+
+/--
 Cycle 219 proof-use checkpoint: the generated semantic envelope immediately
 feeds the existing atom-supported source route and reaches the grounded
 cover-relative comparison package.
