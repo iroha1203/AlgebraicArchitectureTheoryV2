@@ -98,10 +98,10 @@ Then we add coverings. Cover the architecture with a family of contexts and obse
 
 ## 5. Before SAGA — the lower floors of the tower
 
-The AAT research program has been turning this picture into Lean 4 theorems, one floor at a time.
+I have been turning this picture into Lean 4 theorems, one floor at a time.
 
-- **The finite descent theorem (G-02)**: a family of local repairs glues into a global repair exactly when a finite obstruction class vanishes. The first theorem ever attached to "local-pass / global-fail."
-- **The true H¹ theorem (G-05)**: that obstruction class is not an `H^1` in name only, but a genuine quotient `H^1 = Z^1/B^1` — cocycles modulo coboundaries.
+- **The finite descent theorem**: a family of local repairs glues into a global repair exactly when a finite obstruction class vanishes. The first theorem ever attached to "local-pass / global-fail."
+- **The true H¹ theorem**: that obstruction class is not an `H^1` in name only, but a genuine quotient `H^1 = Z^1/B^1` — cocycles modulo coboundaries.
 
 At this point AAT was a theory that measures architectural gluing failures with `H^1`. But one fundamental weakness remained.
 
@@ -109,7 +109,7 @@ That `H^1` was a **purpose-built finite construction**. The general theory of si
 
 ## 6. The SAGA theorem — two worlds coincide
 
-This is what goal G-06 — later named the **SAGA theorem** — set out to fix. In one sentence:
+This is the gap I set out to close — the goal that would later be named the **SAGA theorem**. In one sentence:
 
 > **The semantic repair `H^1`, grown on the architecture-semantics side, is an instance of the general theory's cover-relative Čech `H^1`, on the site generated from Atoms, with coefficients generated from laws. The two zero-tests are equivalent.**
 
@@ -123,7 +123,7 @@ Atoms (axiomatized facts)
   → obstruction coefficients as the quotient O/I_Ob
   → the site and covers generated from Atoms
   → the general theory's Čech H^1
-  = the semantic repair H^1 (G-05)
+  = the semantic repair H^1 (the one from the true H¹ theorem above)
 ```
 
 **AAT's cohomology grows out of AAT's own axioms.** No grafting.
@@ -144,7 +144,7 @@ Were those 347 cycles wasted? The opposite. **The theory established the limits 
 
 ### The vocabulary decision
 
-At this point a human made the call: **"Laws are equations. That is precisely why AAT can become algebraic geometry."**
+At this point I made the call: **laws are equations. That is precisely why AAT can become algebraic geometry.**
 
 Remarkably, the mathematics needed for the extension already existed in the repository. Part III of the AAT canon (law algebra) had contained the theory of violation coordinates, witness ideals, and the lawful locus all along — the formalized research surface simply had not used it. The decision was not the invention of new mathematics; it was **letting the formalization catch up with the editorial intent of the text**.
 
@@ -164,19 +164,19 @@ This looks like a mathematics story, but SAGA has several CS implications.
 
 **(2) A methodology for vocabulary evolution in formalization.** Every large formalization eventually hits the "our original definitions were wrong" problem. The SAGA proof demonstrates one pattern: first pin down the limits of the old vocabulary as a family of impossibility theorems, so that the extension becomes a *forced, minimal move* — and afterwards, the old no-go theorems keep serving as audit machinery. Definition change becomes accretion, not restart.
 
-**(3) A working example of human–AI division of labor.** 347 cycles of automated exploration and blockade; one human vocabulary decision; adversarial multi-agent review with a veto and a re-review. Remove any one of the three and this theorem does not exist in this form. As a template for doing mathematics with AI, the record is arguably as valuable as the theorem.
+**(3) A working example of human–AI division of labor.** 347 cycles of automated exploration and blockade by AI agents; one vocabulary decision made by me, the human in the loop; adversarial multi-agent review with a veto and a re-review. Remove any one of the three and this theorem does not exist in this form. As a template for doing mathematics with AI, the record is arguably as valuable as the theorem.
 
 **(4) Everything is machine-checked.** Every theorem in this story — the comparison, the impossibility boundaries, the nonzero-class instance — compiles in Lean 4 and depends only on Lean's standard axioms (`propext`, `Classical.choice`, `Quot.sound`). There are no `sorry`s.
 
 ## 9. Honest boundaries
 
-Following AAT's own discipline, here is what the SAGA theorem does **not** claim.
+Finally, in keeping with AAT's own discipline, here is what the SAGA theorem does **not** claim.
 
 - The theorem is relativized to finite or small sites, selected covers, and vocabularies equipped with an equational realization of their laws. No unconditional generalization to arbitrary Grothendieck sites is claimed.
 - No unconditional identification of cover-relative Čech `H^1` with full sheaf cohomology is claimed — in fact, "this cannot be said unconditionally" is itself a boundary theorem with a counterexample.
 - The completeness of extracting Atoms from a codebase, and "quality judgments about real code as a whole," are outside the theory. AAT does mathematics relative to observed Atoms and selected laws.
 
-Not saying what cannot be said is a design principle of the theory, so an outreach article should honor it too.
+Not saying what cannot be said. Making the boundary explicit is itself part of the theory.
 
 ## 10. Closing
 
@@ -189,5 +189,5 @@ That old phenomenon — locally correct, globally broken — now has mathematics
 - Repository: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) (MIT license)
 - Proof record of the SAGA theorem: `docs/note/aat_saga_theorem_proof_record.md`
 - The AAT mathematical canon: `docs/aat/algebraic_geometric_theory/`
-- Research goal ledger: `research/GOALS.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md`
+- Research goal ledger: `research/GOALS.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md` (inside the repository, the SAGA theorem is tracked under the research-goal ID `G-aat-quality-surface-06`)
 - Lean artifacts: `Formal/AG/Research/QualitySurface/` (for SAGA, see `SemanticRepairCechGrounding.lean` and `SemanticRepairLawEquation*.lean`)
