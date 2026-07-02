@@ -101,11 +101,9 @@ A5 is quietly crucial. It separates "what should be" (laws) from "what was obser
 
 On top of Atom families we impose **laws**: "no dependency cycles," "every compensation handler must be paired," and so on.
 
-Naively, a law is a predicate — it holds or it does not. And indeed, Part I of AAT first defines laws exactly that way.
+Naively, a law is a predicate — it holds or it does not. And indeed, that is how AAT first defined laws, too.
 
-But algebraic geometry discovered a better viewpoint 150 years ago: treat constraints not as *predicates* but as **equations**.
-
-The basic dictionary of algebraic geometry:
+But algebraic geometry discovered a better viewpoint 150 years ago: treat constraints not as *predicates* but as **equations**. This is where the glossary from Section 2 goes to work:
 
 ```text
 a set of equations        →  an ideal (the algebraic object the equations generate)
@@ -127,7 +125,7 @@ the law holds              ⟺  pulling the reading back kills the ideal (s*I_Ob
 
 Note that the last line has exactly the shape of Hilbert's Nullstellensatz: the semantic fact "the law holds" becomes equivalent to the algebraic fact "the ideal vanishes." This is why AAT is algebraic geometry, not merely algebraic-geometry-*flavored*.
 
-Then we add coverings. Cover the architecture with a family of contexts and observe locally in each. A Grothendieck topology is generated from the Atoms on the category of contexts, giving a **site**. Sheaves live on it, and Čech cohomology. The obstruction to gluing a family of local repair certificates into a global one appears as a class in `H^1`.
+Then we add coverings. Cover the architecture with a family of contexts and observe locally in each. A Grothendieck topology is generated from the Atoms on the category of contexts, giving a **site**. Sheaves live on it, and Čech cohomology. The obstruction to gluing the local readings into a global one appears as a class in `H^1`.
 
 ## 6. Before SAGA — the lower floors of the tower
 
@@ -144,7 +142,7 @@ That `H^1` was a **purpose-built finite construction**. The general theory of si
 
 This is the gap I set out to close — the goal that would later be named the **SAGA theorem**. In one sentence:
 
-> **The semantic repair `H^1`, grown on the architecture-semantics side, is an instance of the general theory's cover-relative Čech `H^1`, on the site generated from Atoms, with coefficients generated from laws. The two zero-tests are equivalent.**
+> **The semantic repair `H^1`, grown on the architecture-semantics side, is an instance of the general theory's Čech `H^1` (the computable version relative to a chosen cover), on the site generated from Atoms, with coefficients generated from laws. The two zero-tests are equivalent.**
 
 The name honors Serre's **GAGA** (*Géométrie Algébrique et Géométrie Analytique*), the landmark comparison theorem showing that the cohomologies of two worlds — algebraic and analytic geometry — coincide. SAGA (**S**émantique **A**rchitecturale, **G**éométrie **A**lgébrique) is a comparison theorem in that tradition, for architectural semantics and algebraic geometry. And the name carries a second meaning: the proof was, quite literally, a *saga*.
 
@@ -165,7 +163,7 @@ Atoms (axiomatized facts)
 
 The proof of SAGA is a research record worth telling in its own right.
 
-It ran for 352 cycles of what is now fashionably called **loop engineering**: an automated AI agent loop discharged small proof obligations in Lean, one per cycle. Every cycle passed adversarial audits designed to reject the classic cheat of formalization: smuggling a conclusion-equivalent premise into the assumptions. The design emphasis of loop engineering here was not on making the loop run fast, but on **auditing what the loop can legitimately claim to have proved**.
+It ran for 352 cycles of what is now fashionably called **loop engineering**: an automated AI agent loop discharged small proof obligations in Lean, one per cycle. Every cycle passed adversarial audits designed to reject the classic cheat of formalization: smuggling a conclusion-equivalent premise into the assumptions. The design emphasis was not on making the loop run fast, but on **auditing what the loop can legitimately claim to have proved**.
 
 ### Compression and blockade
 
@@ -179,7 +177,7 @@ Were those 347 cycles wasted? The opposite. **The theory established the limits 
 
 At this point I made the call: **laws are equations. That is precisely why AAT can become algebraic geometry.**
 
-Remarkably, the mathematics needed for the extension already existed in the repository. Part III of the AAT canon (law algebra) had contained the theory of violation coordinates, witness ideals, and the lawful locus all along — the formalized research surface simply had not used it. The decision was not the invention of new mathematics; it was **letting the formalization catch up with the editorial intent of the text**.
+Remarkably, the mathematics needed for the extension already existed in the repository. The AAT canon had contained the toolkit for treating laws as equations — violation coordinates, witness ideals, the lawful locus — all along; the formalization simply had not used it yet. The decision was not the invention of new mathematics; it was **letting the formalization catch up with the editorial intent of the text**.
 
 Once the vocabulary changed, things moved fast. Generate the obstruction coefficients as the quotient by the ideal; generate each local reading as the quotient class of its defect. Then the proposition that had been sealed for 347 cycles — *if the required laws hold locally, the restrictions of the readings agree on common refinements* — **fell as a theorem**. Five cycles later, everything was in place: the comparison, the equivalence of zero-tests, and a concrete instance where a nonzero class demonstrably lives on both sides.
 
