@@ -103,6 +103,143 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 348 -- law-as-equation realization layer
+
+- decision: approve (human-approved input-vocabulary extension)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2898
+- branch: `claude/g06-law-equation-realization`
+- date: 2026-07-02 JST
+- author: Claude under direct user instruction; the vocabulary extension and
+  the GOAL-card ambient-ledger revision were explicitly approved by the user.
+
+### Vocabulary Extension
+
+The Cycle 320-347 no-go family proved that the predicate-law vocabulary
+(`Law.holds : ArchitectureObject U -> Prop`, free `interpret` field) cannot
+generate the restriction evaluator.  The user approved the reviewed extension
+anticipated by Cycle 323: laws are realized as equations.  The extension
+reuses the canonical Part III LawAlgebra semantics
+(`Formal/AG/LawAlgebra/ObstructionIdeal.lean`: III.定義5.2 witness ideals,
+III.定義6.1 `I_Ob = Σ I_L`, III.定義6.2 `RestrictionCompatible`) rather than
+inventing a new semantics.  `research/GOALS.md` G-06 card: the claim boundary
+and the material premise ledger now name the law-equation witness-ideal
+realization as `ambient-boundary` input geometry, restricted to pointwise /
+chart-local fields.
+
+### T1 Selection
+
+Construct the positive lower layer left open by Cycle 346/347:
+
+- realize each law index as an atom-indexed violation-coordinate family inside
+  a ring-valued observable presheaf, with coordinate-level restriction
+  compatibility as the lower restriction geometry;
+- generate the obstruction coefficient as the ideal-quotient presheaf
+  `Observable / I_Ob`, with restriction functoriality proved via
+  `Ideal.quotientMap` and the LawAlgebra `map_localObstructionIdeal_le`;
+- generate `interpret` as the obstruction-quotient class of a displayed defect
+  observable, with the single pointwise semantic tie
+  `holds -> defect ∈ I_L` (the law-as-equation reading);
+- prove that displayed required-law fulfillment constructs interpretation
+  vanishing, `commonRestrictionRealization`, a display-preserving
+  base-restriction source, `displayedRequiredLawRestrictionEvaluator`,
+  `arrowCompatibilityLaw`, and the generated-Cech `sourceC0CechZero`.
+
+### Lean Artifacts
+
+New file `Formal/AG/Research/QualitySurface/SemanticRepairLawEquationRealization.lean`
+(imported by `Formal/AG/Research.lean`), inside the existing
+`SemanticRepairCechGrounding` namespaces:
+
+- `...CoverRelativeCechGeneratedSemanticCoefficient.SemanticLawEquationWitnessIdealCore`
+  with `lawWitnessIdeal`, `selectedLawWitnessIdealFamily`, `obstructionIdeal`,
+  `map_lawWitnessIdeal_le`, `restrictionCompatible`, `map_obstructionIdeal_le`,
+  `obstructionQuotientRestrict`, `obstructionQuotientCoefficient`
+- `...SemanticLawEquationWitnessIdealGeometry` with
+  `toSemanticAtomLawAdditiveCoefficientGeometry`,
+  `lawEquationObstructionSheaf`, `toObstructionSection`
+- `...PointwiseAtomLawInputBoundaryBasis.LawEquationDefectSemanticAtomLawInputBoundarySource`
+  with `toSupportOnlySemanticAtomLawInputBoundarySource` (generated
+  `interpret`), `toBaseRestrictionSource`, and the theorems
+  - `displayedRequiredLawsHoldOn_constructs_interpret_eq_zero`
+  - `interpret_eq_zero_iff_defect_mem_obstructionIdeal`
+  - `interpret_ne_zero_of_defect_notMem_obstructionIdeal`
+  - `interpret_ne_zero_detects_displayed_required_law_failure`
+  - `displayedRequiredLawsHoldOn_constructs_commonRestrictionRealization`
+  - `displayedRequiredLawsHoldOn_constructs_baseRestrictionSource_preservingDisplayedInterpretation`
+  - `displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator`
+  - `displayedRequiredLawsHoldOn_constructs_sourceC0CechZero`
+  - `currentLawUniverseHoldsInputBoundary_constructs_displayedRequiredLawRestrictionEvaluator`
+  - `lawEquation_grounding_packet`
+
+### Proof-Obligation Delta
+
+The Cycle 346 material lower witness is now generated on the law-equation
+realization.  `required law holds on the displayed local reading` constructs
+`obstruction-sheaf restriction equality on common refinements`: lawful defects
+vanish in the atom-generated ideal quotient, the zero base section realizes
+every displayed interpretation, and the Cycle 346 constructor turns that into
+the evaluator.  The evaluator is a theorem on this realization, not an
+external premise.  The generated route is proof-used through the Cycle 296
+descent bridge and the Cycle 311 generated-complex route into
+`sourceC0CechZero`.
+
+The Cycle 347 no-go boundary is intact: the construction requires the
+law-equation defect source (defect observable plus pointwise holds-defect
+tie), not support-only canonical/free provenance, so no uniform constructor
+for arbitrary support-only sources is claimed.
+
+### Anti-Weakening Audit
+
+- No new theorem accepts `displayedRequiredLawRestrictionEvaluator`,
+  `arrowCompatibilityLaw`, raw overlap equality, `commonRestrictionRealization`,
+  `law_reads_overlap`, `sourceC0CechZero`, residual-zero, `H1` zero,
+  `c0Equiv`, or old `sourceWithoutC0` as an input premise; each is a proved
+  conclusion on the generated realization.
+- The semantic tie `holds_defect_mem` is pointwise and chart-local; it
+  mentions one law, one chart, and one displayed reading.  Witness ideals are
+  spans of atom-indexed coordinate ranges, so no overlap-difference generator
+  can be inserted.
+- Vanishing is ideal membership, not definitional collapse:
+  `interpret_eq_zero_iff_defect_mem_obstructionIdeal` and
+  `interpret_ne_zero_of_defect_notMem_obstructionIdeal` keep the quotient
+  faithful, and `interpret_ne_zero_detects_displayed_required_law_failure`
+  gives the detector-soundness reading.
+- `quotientIsSheaf` is an input field in the same ambient position as the
+  existing `SemanticAtomLawAdditiveCoefficientGeometry.isSheaf`; it mentions
+  no source, interpretation, or conclusion predicate.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationRealization.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationRealization`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over all fifteen new declarations reports only existing
+standard foundations: `[propext, Quot.sound]` for the ideal-restriction
+theorems and `[propext, Classical.choice, Quot.sound]` for the quotient
+functor and the generated-source theorems.  No `sorryAx` appears.
+
+### Remaining Work
+
+- Discharge `quotientIsSheaf` for a selected concrete finite instance and fix
+  a nondegenerate finite witness instance (a site with a non-lawful defect of
+  nonzero class), so the ambient sheaf-condition input is backed by a
+  constructed example.
+- Route the generated evaluator through the full Cycle 345/346 canonical/free
+  reconstruction packet and re-audit the target comparison packet on the
+  law-equation realization.
+- G-06 remains `target-proof-checkpoint` until the completion criteria
+  packet (comparison, refinement/naturality boundary, final review) is
+  reassembled on top of this layer.
+
 ## Cycle 347 -- no-go for support-only base-restriction constructor
 
 - decision: approve
