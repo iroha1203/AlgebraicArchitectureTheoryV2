@@ -110,6 +110,7 @@ Initial axiom audit over representative declarations reported only standard
 - target state: target-proof-checkpoint
 - completion candidate: no
 - tracking Issue: #2636
+- PR: #2889
 - branch: `codex/g06-cycle339-generated-k-bridge`
 - date: 2026-07-02 JST
 
