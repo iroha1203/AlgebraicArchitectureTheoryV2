@@ -103,6 +103,281 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Final review after Cycle 352 -- accepted (completion candidate)
+
+- Integrated verdict: `No major findings`
+- completion candidate: **yes**
+- `target-theorem-proved`: pending human acceptance (see Completion
+  processing note below)
+- date: 2026-07-03 JST
+- review protocol: delta-focused re-review after the rejected Cycle 350
+  final review.  Lane structure: math A (the vetoing lane) re-examined the
+  veto resolution and the full Cycle 348-352 package; a combined Lean
+  soundness + ledger-sync lane re-examined the two new files and the report.
+  The Cycle 350 verdicts of math B and Lean B (`No major findings`) stand for
+  the unchanged artifacts; the delta since then is additive only.
+
+### Reviewer lanes
+
+- math A (re-review of the veto): `No major findings`.  Both Cycle 350 major
+  findings are resolved exactly along the remedies the original review
+  prescribed: the law-independence of the grounded-route conjuncts is now a
+  Lean boundary theorem (`lawEquation_groundedRoute_isLawIndependent`), the
+  degree-`0` contribution of the law semantics is a positive theorem
+  (`displayedRequiredLawsHoldOn_constructs_sourceC0_pointwise_zero`), the
+  packet hypothesis class is inhabited and fired on the finite model
+  (`finiteModel_lawEquation_endToEnd_packet_fires`), and the `H1` comparison
+  is exercised on a provably nonzero class on both sides
+  (`circle_nonzeroClass_transfer_packet`).  Completion candidacy endorsed.
+- Lean A + ledger sync (combined): `No major findings`.  Both new files
+  compile clean; independent axiom audit over all new declarations (including
+  helpers omitted from the cycle audit scripts) reports standard axioms only,
+  no `sorryAx`; the `rfl` and defeq steps are content-honest; the rcases
+  extractions match the source-theorem conjunct order; all declarations named
+  in the Cycle 351/352 report sections exist with matching conclusions.
+
+### Accepted target theorem package (law-equation grounding layer)
+
+- Vocabulary: laws as equations — `SemanticLawEquationWitnessIdealCore` /
+  `SemanticLawEquationWitnessIdealGeometry` (Cycle 348), ambient rows recorded
+  in the G-06 GOAL card claim boundary and material premise ledger
+  (human-approved revision).
+- Evaluator as theorem:
+  `displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator`
+  with the generated-Cech proof-use chain to `sourceC0CechZero` (Cycle 348).
+- Concrete discharge: `finiteModelSite_AATSheafCondition`,
+  `finiteModelLawEquationGeometry`, nondegeneracy ledger (Cycle 349).
+- End-to-end composition: `lawEquation_constructs_groundedComparisonPacket`
+  joining the two proof tracks on the generated cover, gate layer inhabited
+  (Cycle 350).
+- Degree-`0` boundary theorems and concrete instance (Cycle 351); nonzero
+  `H1`-class transfer through the generic zero-predicate equivalence
+  (Cycle 352).
+
+### Boundary notes (recorded minor findings, non-blocking)
+
+- The circle comparison is the identity comparison on definitionally equal
+  carriers; nonzero transfer through a non-identity comparison map is not
+  exercised.  The generic equivalence theorem itself is proved for arbitrary
+  comparisons.
+- The circle residual's cocycle property comes from the absence of selected
+  degree-`2` simplices; the nonzero content lives in coboundary-avoidance,
+  which is a genuine arithmetic fact of the law-equation quotient.
+- `circleEnvelope`'s semantic fields (`primitiveSemanticallyClosed`,
+  obstruction flags, finite shadow) are trivial; the envelope functions as an
+  additive `H1` carrier only and must not be cited as semantic-faithfulness
+  evidence.
+- The end-to-end packet fires on the lawful class, where the defect class is
+  necessarily zero (this is the degree-`0` boundary theorem itself); the
+  nonzero-class exercise is a separate witness, and the two must not be
+  conflated.
+- The finite-model witness site remains degenerate (singleton contexts,
+  trivial generated topology) and the circle structure is selected simplicial
+  data; a richer atom-generated nonzero instance remains optional future
+  hardening, inside the GOAL card's selected-data boundary.
+- Cycle-audit scripts undercount trivial helpers; the re-review audited the
+  omitted declarations (all standard axioms only).
+
+### Material premise discharge (law-equation layer)
+
+- `quotientIsSheaf` (`AATSheafCondition` row): discharged on the concrete
+  instance by `finiteModelSite_AATSheafCondition`; ambient discharge-required
+  in general, as the ledger states.
+- holds-to-vanishing tie: consumed as the chart-local input-vocabulary row
+  (`holds_defect_mem`), with faithfulness fixed by
+  `interpret_eq_zero_iff_defect_mem_obstructionIdeal` and the nondegeneracy
+  witnesses.
+- Restriction functoriality: proved (`map_obstructionIdeal_le`,
+  `obstructionQuotientCoefficient` functor laws), not supplied.
+- Descent/effective gluing proof-use, coverage/topology bridge, comparison
+  and zero-predicate equivalence, refinement/naturality and full-sheaf
+  boundaries, nerve provenance: existing declarations confirmed by the
+  Cycle 350 Lean B ledger sync.
+
+### Completion processing note
+
+Completion processing (moving the G-06 card to `completed` in
+`research/GOALS.md`, closing tracking Issue #2636, and recording the final
+`target-theorem-proved` state) is deliberately left to the user's acceptance
+decision, per the project's role split.  The reviewers' recommendation is:
+accept as `target-theorem-proved` for the law-equation-realized,
+selected-finite boundary stated in the revised GOAL card, with the boundary
+notes above carried into the completion summary.
+
+## Cycle 352 -- nonzero-class transfer through the H1 comparison
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2901 (same branch as Cycle 351)
+- branch: `claude/g06-endtoend-instance`
+- date: 2026-07-03 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Discharge review obligation 2 fixed by the rejected final review after
+Cycle 350: exhibit a finite instance with a nonzero cover-relative residual
+class and show the zero-predicate equivalence transfers nonzero-ness both
+ways.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+(imported by `Formal/AG/Research.lean`):
+
+- `circleNerveCover`, `circleNerveComplex`: the selected circle nerve over the
+  finite-model site — two vertices, two edges with opposite orientations, no
+  selected simplices in degree two or higher — with the law-equation
+  obstruction-quotient coefficient.  The degree-`0` differential is the
+  alternating face combination; its additivity is proved from the
+  obstruction-sheaf `map_add`.
+- `circleResidual`, `circleResidual_not_coboundary`: the residual `1`-cochain
+  carrying the class of the defect `1` on one edge; it is provably not a
+  coboundary, by reduction to the Cycle 349 nondegeneracy witness.
+- `circleEnvelope`, `circleAdditive`, `circleComparison`: the semantic sheaf
+  `H1` envelope with the circle residual, its additive Cech data, and the
+  identity cochain-level comparison to the circle-nerve complex.
+- `circle_semanticAdditiveH1_ne_zero`, `circle_coverRelativeH1_ne_zero`,
+  `circle_nonzeroClass_transfer_packet`: the semantic additive `H1` class of
+  the residual is nonzero, the general cover-relative `H1` class is nonzero,
+  and the zero-predicate equivalence
+  `semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero` holds on the
+  instance, so nonzero-ness transfers in both directions.
+
+### Proof-Obligation Delta
+
+All three review obligations of the rejected Cycle 350 final review are now
+discharged: obligation 1 and 3 in Cycle 351, obligation 2 in this cycle.  The
+`H1` comparison surface is demonstrated on non-boundary content: the class
+exercised is provably nonzero on both the semantic-additive and the
+cover-relative side, and the nonzero-ness lives in the law-equation
+obstruction quotient (the class of the defect `1` from the Cycle 349
+witness).
+
+### Boundary Notes
+
+- The circle nerve is selected simplicial data over the singleton
+  finite-model cover, in the same selected-data position as every
+  `CoverRelativeCechCover` simplex family; it is not claimed to be generated
+  from atom-level chart intersections.  The file docstring states this.
+- The residual is a `1`-cocycle because the selected complex has no
+  degree-`2` simplices; stated, not hidden.
+
+### Anti-Weakening Audit
+
+- The nonzero-ness proofs consume the Cycle 349 ideal-theoretic witness
+  (`finiteModel_defectOne_class_ne_zero`); no nonvanishing is assumed.
+- The comparison is the identity on definitionally equal carriers, so no
+  comparison content is smuggled through opaque maps; the zero-predicate
+  equivalence used is the existing generic theorem, applied, not re-proved.
+- No new structure stores an `H1` zero, nonzero certificate, or comparison
+  conclusion.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationNonzeroClassInstance`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationNonzeroClassAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over the thirteen new declarations reports only existing
+standard foundations.  No `sorryAx` appears.
+
+## Cycle 351 -- degree-zero boundary theorems and concrete end-to-end instance
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2901
+- branch: `claude/g06-endtoend-instance`
+- date: 2026-07-03 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Discharge review obligations 1 and 3 fixed by the rejected final review after
+Cycle 350:
+
+- obligation 3: state the exact boundary theorem for the law-equation layer's
+  degree-`0` contribution, and fix as a theorem that the grounded-route
+  conjuncts are law-independent;
+- obligation 1: construct a concrete end-to-end instance and fire
+  `lawEquation_constructs_groundedComparisonPacket` on it.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+(imported by `Formal/AG/Research.lean`):
+
+- `displayedRequiredLawsHoldOn_constructs_sourceC0_pointwise_zero`
+  (obligation 3, positive side): under displayed required-law fulfillment the
+  generated support-only `0`-cochain is pointwise zero.  This is the exact
+  Cech-side content of the law semantics: it acts at degree `0`, and
+  `sourceC0CechZero` is its differential shadow.
+- `lawEquation_groundedRoute_isLawIndependent` (obligation 3, negative side):
+  the gate layer, degree-wise carrier data, cochain realization, comparison
+  package, residual boundary, and semantic / additive `H1` zero conjuncts are
+  proved with no law premise, fixing the Cycle 350 review finding as a Lean
+  boundary theorem rather than a docstring remark.
+- `finiteModelAtomLawCoverGeometry`, `finiteModelLawfulConfiguration`,
+  `finiteModelLawfulObject`, `noCycleLaw_holds_finiteModelLawfulObject`,
+  `finiteModelLawEquationSkeleton`, `finiteModelLawEquationDefectSource`,
+  `finiteModelLawEquationDefectSource_displayedRequiredLawsHoldOn`,
+  `finiteModelSemanticCover` (obligation 1): the concrete end-to-end bundle on
+  the Part I/II finite model.  The displayed reading is the relation-free
+  lawful object, on which the required NoCycle law provably holds; the defect
+  observable is the violation coordinate `2` of the realized NoCycle equation.
+- `finiteModel_lawEquation_endToEnd_packet_fires` (obligation 1): the packet
+  hypothesis class is inhabited and
+  `lawEquation_constructs_groundedComparisonPacket` fires on the concrete
+  bundle, re-exposing the evaluator, the generated-Cech `sourceC0CechZero`,
+  the gate realization layer, the comparison package, and the additive `H1`
+  zero reading.
+
+### Proof-Obligation Delta
+
+Review obligations 1 and 3 are discharged.  The remaining review obligation is
+obligation 2: exercise the `H1` comparison on a nontrivial class over a finite
+site with nontrivial covers, so the zero-predicate equivalence is demonstrated
+on non-boundary content.
+
+### Anti-Weakening Audit
+
+- The law-independence of the grounded-route conjuncts is now itself a
+  theorem; the packet cannot be over-read as law-grounded `H1` descent
+  content.
+- The concrete instance uses the existing finite model without modification;
+  no bespoke site or law was tuned.  The lawful object is relation-free by
+  construction and the NoCycle law's holding on it is proved, not assumed.
+- `holds_defect_mem` of the concrete defect source is discharged by
+  `Ideal.subset_span` on the realized violation coordinate; no conclusion
+  field is introduced.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationEndToEndInstance`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationEndToEndAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over the eleven new declarations reports only existing
+standard foundations (`[propext, Classical.choice, Quot.sound]` for the seven
+proof-carrying declarations, no axioms for the four data-only definitions).
+No `sorryAx` appears.
+
 ## Final review after Cycle 350 -- rejected
 
 - Integrated verdict: `MAJOR findings (math lane A veto)`
