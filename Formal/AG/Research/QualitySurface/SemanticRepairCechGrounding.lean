@@ -38496,6 +38496,181 @@ theorem baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationL
       hsemanticH1,
       hadditiveH1⟩
 
+/--
+Cycle 332 proof-use checkpoint: a base-restriction semantic atom/law
+input-boundary source carries the identity `C0` replacement route one more
+successor step downward.
+
+Compared with Cycle 331, the restriction-realized source is no longer an
+arbitrary lower input.  It is definitionally generated from the displayed base
+section and the maps from selected `0`-simplex overlaps to the cover base.  The
+old `sourceWithoutC0` surface and arbitrary future `c0Equiv` uniformity remain
+closed; the identity continuation is inherited from the reviewed predecessor
+route.  The base section, selected Cech orders, overlap-to-base maps, local
+semantic atom/law inputs, and selected cover witness remain visible lower
+provenance, so this is not a G-06 completion claim.
+-/
+theorem baseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let restrictionSource :=
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let restrictionSource :=
+    source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq restrictionSource
+  rcases hroute with
+    ⟨_hrestrictionPrimitive, _hrestrictionBoundaryPrimitive,
+      _hrestrictionResidual, hvisible, hcontinuation, hsource, hlayer, hface,
+      hrealization, hc0Carrier, hcomparison, _hrestrictionPrimitiveBoundary,
+      hboundary, hsemanticH1, hadditiveH1⟩
+  have hsectionSource :
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma := by
+    intro sigma
+    rfl
+  have hbasePrimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hsectionSource,
+      hsectionToLocal,
+      hbasePrimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
 end CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
 namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
