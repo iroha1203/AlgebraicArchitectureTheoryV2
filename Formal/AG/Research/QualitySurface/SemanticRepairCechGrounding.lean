@@ -28838,6 +28838,70 @@ def atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_b
       hboundary baseSource hpreserves)
 
 /--
+Cycle 347 exact no-go boundary below Cycle 346.
+
+Support-only canonical/free provenance together with the current law-universe
+boundary cannot uniformly construct same-source display-preserving
+base-restriction provenance while the displayed required-law restriction
+evaluator is absent.  Any such constructor would feed Cycle 346's
+base-restriction route and immediately produce the missing evaluator.
+
+This is blocker evidence only: it does not construct the base source,
+`commonRestrictionRealization`, raw overlap equality, `sourceC0CechZero`,
+external `c0Equiv`, or `sourceWithoutC0`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_baseRestrictionSource_constructor_without_displayedRequiredLawRestrictionEvaluator
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (hmissing :
+      ¬ source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        Exists fun baseSource :
+          SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+            skeleton =>
+          source.baseRestrictionSourcePreservesDisplayedInterpretation
+            baseSource) := by
+  intro constructor
+  rcases hsupport with ⟨supportReading⟩
+  rcases constructor hboundary supportReading with ⟨baseSource, hpreserves⟩
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_baseRestrictionSource_preservingDisplayedInterpretation_constructs_displayedRequiredLawRestrictionEvaluator
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hboundary baseSource hpreserves)
+
+/--
 Cycle 328 coefficient-law-support evaluator reduction.
 
 This lowers Cycle 327 below the support-reading record.  If the current
