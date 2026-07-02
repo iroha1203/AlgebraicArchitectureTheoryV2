@@ -103,6 +103,192 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Final review after Cycle 350 -- rejected
+
+- Integrated verdict: `MAJOR findings (math lane A veto)`
+- `target-theorem-proved`: no
+- completion candidate: no
+- target state: target-proof-checkpoint
+- date: 2026-07-02 JST
+- review protocol: four independent adversarial reviewer lanes over the
+  Cycle 348-350 law-equation layer, the GOAL-card revision, and the
+  completion-criteria ledger, following the `$math-lean-review` lane
+  structure (math A/B, Lean A/B with ledger sync).
+
+### Reviewer lanes
+
+- math A (claim substance / vacuity): **MAJOR — veto** (two findings below).
+- math B (anti-weakening / material premise): `No major findings`
+  (5 minor findings; ledger wording clarified in `research/GOALS.md`, the
+  degenerate-site and zero-section caveats are recorded below).
+- Lean A (proof soundness): `No major findings` (defeq bridges, instance
+  paths, sieve-generation membership, and axiom audit all verified sound;
+  4 minor findings).
+- Lean B (ledger sync): `No major findings` (all ten completion-criteria
+  items map to existing declarations with matching conclusions; audit-file
+  off-by-one fixed in place).
+
+### Major findings (math A)
+
+1. **Constructive triviality of the packet's `H1`-level conjuncts.**
+   In `lawEquation_constructs_groundedComparisonPacket`, the conjuncts from
+   the gate layer downward — including `residualBoundary`,
+   `SemanticRepairH1Zero`, and `SemanticRepairAdditiveH1Zero` — do not depend
+   on the law premise: the generated boundary coefficient defines
+   `residual := K.d 0 primitive`, and with the zero base section the residual
+   is literally zero.  The law semantics reaches the Cech surface only through
+   the degree-`0` vanishing equalities (conjuncts 1-3).  No `D`-specific `H1`
+   class appears anywhere in the composition, so the zero-predicate
+   equivalence is exercised only on constructively trivial classes.  The
+   packet is therefore a valid composition checkpoint but not a completion
+   candidate.  The originally misleading docstring has been corrected in this
+   cycle to state the per-conjunct `hholds` dependence explicitly.
+2. **Non-emptiness of the end-to-end hypothesis class is unproved and the
+   witness site is degenerate.**  No concrete instance of the packet
+   hypothesis bundle (law-equation defect source + `FinitePosetAtomLawCoverGeometry`
+   + skeleton + semantic cover provenance) exists in the repository.  The
+   Cycle 349 witness discharges the sheaf condition on a site whose generated
+   topology is trivial (every presheaf is a sheaf), so sheaf/descent proof-use
+   and the Cech geometry are not yet exercised nontrivially at instance level.
+
+### Resulting proof obligations (next cycles)
+
+- Construct a concrete end-to-end instance: a `FinitePosetAtomLawCoverGeometry`
+  over the finite model (or a richer finite site with nontrivial covers), a
+  skeleton, and a law-equation defect source, and instantiate
+  `lawEquation_constructs_groundedComparisonPacket` on it.
+- Exercise the `H1` comparison on a nontrivial class: exhibit a finite
+  instance with a nonzero cover-relative residual class and show the
+  zero-predicate equivalence transfers nonzero-ness both ways, so the
+  comparison surface is demonstrated on non-boundary content.
+- Identify law-driven Cech content above degree `0`, or state the exact
+  boundary theorem explaining why the law-equation layer's contribution is
+  degree-`0` vanishing (and route the `H1`-level grounding claim through the
+  generic comparison theorems only).
+
+### Minor findings (recorded, non-blocking)
+
+- The Cycle 349 witness site is degenerate (singleton contexts, trivial
+  topology, constant trace token); the discharge there is formally valid but
+  content-free for descent.  A richer finite witness is preferred.
+- The derived cross-chart equalities under `hholds` are zero-section
+  equalities; this is the intended lawful-locus semantics (IV.定義2.4) but
+  must not be cited as nontrivial gluing of distinct lawful readings.
+- `hholds` (all displayed required laws hold) is stronger than what the
+  vanishing proof consumes (one displayed required law suffices).
+- The coefficient-geometry-level `atomSupport` / `lawSupport` of the
+  generated realization are constant singletons; the semantic support
+  richness lives in the defect source, not the coefficient geometry.
+- Bridge provenance maps are propositionally inert inputs; cover-nerve
+  faithfulness of the semantic cover correspondence remains an inherited
+  boundary of the general bridge.
+
+### Ledger sync
+
+- `research/GOALS.md` G-06 card: ambient ledger wording refined during
+  review (chart-local tie + arrow-level restriction compatibility; quotient
+  sheaf condition assigned to the existing `AATSheafCondition`
+  discharge-required item).
+- Lean declarations, report cycles 348-350, and tracking Issue #2636 are
+  synchronized; axiom audits cover all new declarations, standard axioms
+  only, no `sorryAx`.
+
+## Cycle 350 -- end-to-end grounded comparison packet
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint (final review above: rejected)
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2900
+- branch: `claude/g06-grounded-packet-final-review`
+- date: 2026-07-02 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Compose the Cycle 348/349 law-equation route with the Cycle 332
+canonical-argument-free grounded-packet route into one end-to-end theorem, so
+that the selected comparison packet fires from the law-equation defect source
+and displayed required-law fulfillment alone.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
+(imported by `Formal/AG/Research.lean`):
+
+- `lawEquationCoverBridge`: the semantic cover bridge landing exactly on the
+  generated law-equation cover-relative cover; provenance maps are input
+  geometry.
+- `lawEquationCurrentG06InputSurface`: the current G-06 input surface
+  generated by the law-equation realization.  `K` is the generated law-equation
+  Cech complex, `presheaf` is the generated obstruction-quotient carrier,
+  `selectedCover` is the sieve generated by the displayed atom/law coverage
+  family with membership by `AATGrothendieckTopology.generate_mem`,
+  `sheafCondition` is the *proved* `G.quotientIsSheaf`, and `descent` is
+  derived from that sheaf condition; no field is supplied as an opaque
+  certificate.
+- `LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource`:
+  the Cycle 236 base-restriction packet source generated from the defect
+  source, with the zero base section and generated overlap-to-base maps.
+- `...displayedRequiredLawsHoldOn_constructs_primitive_realizes_displayedInterpretations`:
+  the displayed-interpretation realization; under `hholds` the base-restricted
+  primitive realizes exactly the law-equation source's displayed
+  interpretations on each selected `0`-simplex overlap.  This conjunct is
+  where the law semantics is consumed.
+- `...lawEquation_constructs_groundedComparisonPacket`: the end-to-end
+  composition.  From the defect source and `hholds` alone it concludes, on the
+  generated input surface: the displayed-interpretation realization, the
+  displayed required-law restriction evaluator, the generated-Cech
+  `sourceC0CechZero`, `Nonempty SelectedSemanticCoefficientDirectRealizationLayer`
+  (the GOAL-card gate layer), `DegreewiseCarrierDataAndExplicitFaceRestrictionEquations`,
+  `Nonempty SemanticRepairCoverRelativeCochainRealization`,
+  `Nonempty SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage`,
+  `canonical.residualBoundary`, `SemanticRepairH1Zero`, and
+  `SemanticRepairAdditiveH1Zero`.
+
+### Proof-Obligation Delta
+
+The missing end-to-end composition identified after Cycle 349 is closed.  The
+two previously disconnected tracks — the carrier-specific comparison
+provenance track (Cycle 236/331/332) and the atom/law-generated track
+(Cycle 290-347 plus the law-equation layer) — are joined on the generated
+cover by instantiating the free `coverBridge.coverRelative` field with the
+generated law-equation cover.  The GOAL-card gate layer
+(`SelectedSemanticCoefficientDirectRealizationLayer`) is now inhabited on the
+law-equation realization through the reviewed Cycle 332 route, with the sheaf
+condition and descent of the underlying surface proved rather than supplied.
+
+### Anti-Weakening Audit
+
+- The composition accepts no evaluator, arrow compatibility law, overlap
+  equality, `sourceC0CechZero`, residual-zero, `H1` zero, `c0Equiv`, or
+  comparison certificate as input; each appears only as a conclusion.
+- The zero base section is not an unexplained choice: the
+  displayed-interpretation realization conjunct, which consumes `hholds`
+  through the Cycle 348 vanishing theorem, proves that this base section's
+  primitive is exactly the law-equation source's own displayed reading.
+- The packet conjuncts that do not depend on `hholds` (gate layer downward)
+  are exactly the conjuncts of the reviewed Cycle 332 route; the composition
+  does not claim they need law fulfillment, and the docstring states the
+  division explicitly.
+- The Cycle 347 no-go boundary is untouched: the composition requires the
+  law-equation defect source, not support-only data.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationGroundedPacket`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationGroundedPacketAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over the five new declarations reports only
+`[propext, Classical.choice, Quot.sound]`.  No `sorryAx` appears.
+
 ## Cycle 349 -- concrete witness instance and sheaf-condition discharge
 
 - decision: approve (continuation of the Cycle 348 user instruction)
@@ -185,9 +371,11 @@ non-lawful readings on a concrete finite instance.
 - Lean placeholder scan and hidden / bidirectional Unicode scan on changed
   files
 
-The axiom audit over all eleven new declarations reports only existing
-standard foundations (`[propext]`, `[propext, Quot.sound]`, or
-`[propext, Classical.choice, Quot.sound]`).  No `sorryAx` appears.
+The axiom audit over the twelve new declarations (including the data-only
+`finiteModelSemanticRepairSite`, added to the audit file after the Lean B
+ledger-sync review) reports only existing standard foundations (`[propext]`,
+`[propext, Quot.sound]`, or `[propext, Classical.choice, Quot.sound]`).
+No `sorryAx` appears.
 
 ### Remaining Work
 
