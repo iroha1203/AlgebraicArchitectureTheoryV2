@@ -16159,6 +16159,119 @@ structure SourceSectionFreeSkeleton where
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
       S.lawUniverse.Required (lawIndex sigma)
 
+/--
+Cycle 341 source-section-free and order-free skeleton.
+
+This is the source-section-free skeleton with the finite display orders removed
+as inputs.  The only fields left are the pointwise trace-visible atom and
+required-law choices on the finite-poset cover-relative degree-`0` simplices.
+The ordinary `SourceSectionFreeSkeleton` is generated below with
+`c0Order := []` and `c1Order := []`.
+-/
+structure SourceSectionFreeOrderFreeSkeleton where
+  atom :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      U.Atom
+  atom_traceVisible :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    (sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
+      S.lawUniverse.Index
+  law_required :
+    forall
+      (sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace SourceSectionFreeOrderFreeSkeleton
+
+/--
+Generate the ordinary source-section-free skeleton with free finite display
+orders.
+-/
+def toSourceSectionFreeSkeleton
+    (skeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C)) :
+    SourceSectionFreeSkeleton
+      (semanticSite := semanticSite) (S := S) (regime := regime)
+      (C := C) (Ob := Ob) (K := K) where
+  c0Order := []
+  c1Order := []
+  atom := skeleton.atom
+  atom_traceVisible := skeleton.atom_traceVisible
+  lawIndex := skeleton.lawIndex
+  law_required := skeleton.law_required
+
+/--
+Cycle 341 skeleton-generation checkpoint: the order-free skeleton constructs
+the older source-section-free skeleton while exposing that both display orders
+are generated as empty lists.
+-/
+theorem constructs_sourceSectionFreeSkeleton_and_exposes_free_orders
+    (skeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C)) :
+    let generated :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+        skeleton.toSourceSectionFreeSkeleton
+    Nonempty
+        (SourceSectionFreeSkeleton
+          (semanticSite := semanticSite) (S := S) (regime := regime)
+          (C := C) (Ob := Ob) (K := K)) /\
+      generated.c0Order = [] /\
+      generated.c1Order = [] /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        exists atom : U.Atom,
+          atom = generated.atom sigma ∧
+            semanticSite.sourceTraceToken atom = true) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        exists lawIndex : S.lawUniverse.Index,
+          lawIndex = generated.lawIndex sigma ∧
+            S.lawUniverse.Required lawIndex) := by
+  dsimp [toSourceSectionFreeSkeleton]
+  exact
+    ⟨⟨skeleton.toSourceSectionFreeSkeleton⟩,
+      rfl,
+      rfl,
+      (fun sigma =>
+        ⟨skeleton.atom sigma, rfl, skeleton.atom_traceVisible sigma⟩),
+      (fun sigma =>
+        ⟨skeleton.lawIndex sigma, rfl, skeleton.law_required sigma⟩)⟩
+
+/--
+Attach a generated global source section to form the Cycle 340 order-free
+finite-poset pointwise basis.
+-/
+def withSourceSection
+    (skeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C))
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+      semanticSite S regime C Ob K where
+  sourceSection := sourceSection
+  atom := skeleton.atom
+  atom_traceVisible := skeleton.atom_traceVisible
+  lawIndex := skeleton.lawIndex
+  law_required := skeleton.law_required
+
+end SourceSectionFreeOrderFreeSkeleton
+
 namespace SourceSectionFreeSkeleton
 
 /--
@@ -22794,6 +22907,148 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_generatedArrowLaw_constructs_id
     ⟨hdiff, hdelta0, hdelta1, hsource,
       ⟨identityRealization, hrealization, hc0Apply, hc0Symm⟩,
       hcarrier, hcomparison, hprimitive, hboundary, hsemantic, hadditive⟩
+
+/--
+Cycle 341 source-section-free/order-free generated selected-`K` route.
+
+Starting from the order-free skeleton and the same named generated-arrow
+section-extension/overlap law as Cycle 288, this theorem constructs the
+generated-cover gluing datum, obtains the global source section by effective
+gluing, packages it as the Cycle 340 order-free pointwise basis, and then
+proof-uses the Cycle 340 route.
+
+The theorem does not accept `sourceSection`, `AATGluingData`, a source-bearing
+pointwise `basis`, `c0Order`, `c1Order`, selected `K`, `HEq K ...`, or
+differential transport as arguments.  The named generated-arrow law remains a
+visible lower material premise.
+-/
+theorem atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_generatedArrowLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutSourceSectionOrOrderArguments
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (orderFreeSkeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (hlaw :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw
+        (SourceSectionFreeOrderFreeSkeleton.toSourceSectionFreeSkeleton
+          (semanticSite := semanticSite) (S := S)
+          (regime :=
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+          (C :=
+            atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (K :=
+            atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          orderFreeSkeleton)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+        orderFreeSkeleton.toSourceSectionFreeSkeleton
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun orderFreeBasis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      let basis :=
+        orderFreeBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      generatedSkeleton.c0Order = [] /\
+        generatedSkeleton.c1Order = [] /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.atom sigma = orderFreeSkeleton.atom sigma) /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.lawIndex sigma = orderFreeSkeleton.lawIndex sigma) /\
+        AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+          selectedCover /\
+        AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData
+          orderFreeBasis.sourceSection /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          basis.projectedLocalSection sigma =
+            gluingData.localSections (generatedSkeleton.zeroSimplexToBase sigma)
+              ((generatedSkeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+                sigma)) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+            semanticSite S regime C Ob K) /\
+        basis.c0Order = [] /\
+        basis.c1Order = [] /\
+        source.c0Order = [] /\
+        source.c1Order = [] /\
+        AtomLawOverlapGeneratedSelectedKIdentityRouteProp
+          coverGeometry coefficientGeometry basis := by
+  dsimp
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let regime :=
+    (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      |>.toObstructionCoefficientRegime Ob
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+    orderFreeSkeleton.toSourceSectionFreeSkeleton
+  have hconstructed :=
+    generatedSkeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      hlaw
+  rcases hconstructed with
+    ⟨gluingData, pointwiseBasis, _hc0, _hc1, _hatom, _hlawIndex,
+      hFor, hDescent, hglobal, hlocal, _hsourceFromGluing⟩
+  let orderFreeBasis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K :=
+    SourceSectionFreeOrderFreeSkeleton.withSourceSection
+      (semanticSite := semanticSite) (S := S) (regime := regime)
+      (C := C) (Ob := Ob) (K := K)
+      orderFreeSkeleton pointwiseBasis.sourceSection
+  have hroute :=
+    atomLawOverlap_orderFreeFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutOrderArguments
+      coverGeometry coefficientGeometry orderFreeBasis
+  rcases hroute with
+    ⟨hpointwise, hbasis0, hbasis1, hsource0, hsource1, hidentityRoute⟩
+  refine
+    ⟨gluingData, orderFreeBasis, rfl, rfl, ?_, ?_, hFor, hDescent,
+      ?_, ?_, hpointwise, hbasis0, hbasis1, hsource0, hsource1,
+      hidentityRoute⟩
+  · intro sigma
+    rfl
+  · intro sigma
+    rfl
+  · simpa [orderFreeBasis, SourceSectionFreeOrderFreeSkeleton.withSourceSection]
+      using hglobal
+  · intro sigma
+    simpa [
+      orderFreeBasis,
+      SourceSectionFreeOrderFreeSkeleton.withSourceSection,
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+    ] using hlocal sigma
 
 /--
 Cycle 289 presieve-level generated selected-`K` route.

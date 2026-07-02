@@ -103,6 +103,96 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 341 -- source-section-free and order-free generated selected-K route
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: pending
+- branch: `codex/g06-cycle341-source-section-free-order-free`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct constructive lift left by Cycle 340:
+
+- keep the generated selected finite-poset `K` route;
+- remove `sourceSection`, `c0Order`, and `c1Order` from the semantic
+  skeleton arguments at the same time;
+- obtain the missing global source section only through the existing
+  generated-cover effective-gluing theorem;
+- proof-use Cycle 340's order-free finite-poset theorem, rather than calling
+  the older Cycle 288 pointwise route directly.
+
+This cycle does not construct the generated-arrow section-extension and
+overlap law.  That law remains the visible lower material premise.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...PointwiseAtomLawInputBoundaryBasis.SourceSectionFreeOrderFreeSkeleton`
+  records only pointwise trace-visible atom choices and required-law choices
+  on finite-poset degree-`0` simplices.  It has no `sourceSection`,
+  `c0Order`, `c1Order`, `c0Equiv`, selected `K`, `HEq`, or differential
+  transport field.
+- `...SourceSectionFreeOrderFreeSkeleton.toSourceSectionFreeSkeleton`
+  generates the older source-section-free skeleton with `c0Order := []` and
+  `c1Order := []`.
+- `...SourceSectionFreeOrderFreeSkeleton.constructs_sourceSectionFreeSkeleton_and_exposes_free_orders`
+  proves that the generated older skeleton has empty display orders and keeps
+  nonvacuous atom/law witnesses visible.
+- `...SourceSectionFreeOrderFreeSkeleton.withSourceSection`
+  packages an already-generated global source section as the Cycle 340
+  order-free pointwise basis.  It is a helper used after effective gluing, not
+  a new theorem premise.
+- `...atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_generatedArrowLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutSourceSectionOrOrderArguments`
+  constructs the generated-cover gluing datum and source section from
+  `SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw`,
+  wraps the result in the order-free finite-poset basis, and proof-uses
+  `atomLawOverlap_orderFreeFinitePosetChartProjection_constructs_identityRoute_with_generatedSelectedK_withoutOrderArguments`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The generated selected finite-poset route no longer accepts
+  `sourceSection`, `c0Order`, or `c1Order` as theorem arguments.
+- The order-free semantic skeleton is genuinely source-section-free and
+  order-free: it contains only pointwise atom/law choices.
+- The source section is obtained by generated-cover effective gluing before
+  being wrapped into the Cycle 340 order-free basis.
+- Cycle 341 proof-uses the Cycle 340 order-free theorem directly; it does not
+  bypass it by calling the older pointwise route in the new theorem.
+
+Remaining:
+
+- `SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw`
+  remains a visible lower material premise.
+- Pointwise atom/law choices, `coverGeometry`, `coefficientGeometry`, and
+  `semanticSite` remain ambient/input-boundary data.
+- The old uniform `sourceWithoutC0` shape over arbitrary future `c0Equiv` is
+  still not constructed.
+- sheaf/descent/effectivity/global adequacy and final `$math-lean-review` are
+  not discharged.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `#print axioms` on the four new declarations:
+  - helper declarations depend on `[propext, Quot.sound]`;
+  - the main theorem depends on `[propext, Classical.choice, Quot.sound]`;
+  - no `sorryAx`.
+- `git diff --check`
+- hidden/bidirectional Unicode scan on
+  `Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- T3 read-only audit: no major findings; no protected docs or `GOALS.md`
+  edits; no completion claim.
+
 ## Cycle 340 -- order-free finite-poset chart-projection generated selected-K route
 
 - decision: approve
