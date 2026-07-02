@@ -103,6 +103,105 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 339 -- order-free selected-K promotion requires the finite-poset bridge
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2889
+- branch: `codex/g06-cycle339-generated-k-bridge`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected selected-`K` provenance as the next proof-distance reducer:
+
+- remove the visible selected `K` from the Cycle 338 order-free route;
+- fix the complex to the atom/law-generated finite-poset Cech complex
+  `atomLawOverlapCoverRelativeCechComplex`;
+- avoid treating `HEq K ...` or differential transport as discharged
+  provenance if those fields are merely theorem arguments.
+
+The implementation attempt found the expected rock face: the chart-indexed
+zero route and the selected atom/law-overlap finite-poset route do not have the
+same cover shape.  Promoting an order-free chart-indexed route to the generated
+selected `K` therefore requires the already named
+`AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.orderFreeChartIndexedGeneratedKPromotion_constructs_selectedFinitePosetCoverComplexBridge`
+  records that the promotion data is exactly the explicit cover equality,
+  heterogeneous complex equality, and differential transport required by
+  `AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`.
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.no_orderFreeChartIndexedGeneratedKPromotion_without_selectedFinitePosetCoverComplexBridge`
+  prevents an order-free chart-indexed pointwise basis from being read as a
+  silent promotion to the atom/law-overlap generated selected `K` when that
+  bridge is absent.
+
+### Proof-Obligation Delta
+
+Fixed as blocker evidence:
+
+- The order-free chart-indexed basis alone does not supply the selected
+  finite-poset cover/complex bridge.
+- A route that adds `cover_eq`, `complex_heq`, and `differential_transport`
+  only as theorem arguments is now explicitly classified as the bridge
+  obligation, not as selected-`K` discharge.
+- The no-escape theorem rules out using `Nonempty` order-free basis plus the
+  hidden bridge fields as an untracked generated-`K` promotion.
+
+Remaining:
+
+- Construct `AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`
+  from canonical/free atom/law geometry, or stay on the finite-poset
+  chart-projection route that already uses the generated selected complex
+  directly.
+- selected `K` provenance is not positively discharged in this cycle.
+- semantic-cover bridge maps, `presheaf`, sheaf condition, descent, and final
+  adequacy remain visible lower data.
+
+### Audit
+
+T3 approved the cycle as `blocker-fixed`:
+
+- no target statement is weakened;
+- no `sourceWithoutC0`, arbitrary `c0Equiv`, global coherence, descent
+  conclusion, or `H1` zero is hidden in a new field;
+- the first declaration would be premise relocation if counted as positive
+  selected-`K` discharge, so it is only accepted as bridge-field exposure;
+- the no-escape theorem proof-uses `hnoBridge` and the bridge fields to block
+  the silent promotion route;
+- completion candidate remains `no`.
+
+Next obligation:
+
+- construct `AtomLawOverlapChartIndexedSelectedFinitePosetCoverComplexBridge`
+  from canonical/free atom/law geometry, or replace the chart-indexed route by
+  a finite-poset chart-projection route that uses the generated selected
+  complex directly.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+  passed.
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+  passed.
+- `lake env lean .tmp/G06Cycle339AxiomAudit.lean` passed.
+- Axiom audit for both new declarations reported only expected standard axioms:
+  `[propext, Classical.choice, Quot.sound]`.
+- `lake build FormalAGResearch` passed.
+- `lake build` passed with pre-existing linter warnings in
+  `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check` passed.
+- placeholder / hidden Unicode / private path scans over the changed target set
+  were clean.
+
 ## Cycle 338 -- chart-indexed pointwise basis made order-free
 
 - decision: approve
