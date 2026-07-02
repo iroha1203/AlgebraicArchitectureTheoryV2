@@ -201,13 +201,18 @@ This looks like a mathematics story, but SAGA has several CS implications.
 
 **(4) Everything is machine-checked.** Every theorem in this story — the comparison, the impossibility boundaries, the nonzero-class instance — compiles in Lean 4 and depends only on Lean's standard axioms (`propext`, `Classical.choice`, `Quot.sound`). There are no `sorry`s.
 
-## 10. Honest boundaries
+## 10. Honest boundaries — not everything, but enough to stand on
 
-Finally, in keeping with AAT's own discipline, here is what the SAGA theorem does **not** claim.
+Finally, in keeping with AAT's own discipline, here is what the SAGA theorem does **not** claim. The bullet points are unavoidably technical, so each comes with a plain-language gloss.
 
 - The theorem is relativized to finite or small sites, selected covers, and vocabularies equipped with an equational realization of their laws. No unconditional generalization to arbitrary Grothendieck sites is claimed.
+  - In plain terms: the theorem holds for **finitely many parts, an explicitly chosen decomposition, and laws you can write as equations**. It does not claim to cover every infinitely complex situation mathematics can imagine.
 - No unconditional identification of cover-relative Čech `H^1` with full sheaf cohomology is claimed — in fact, "this cannot be said unconditionally" is itself a boundary theorem with a counterexample.
+  - In plain terms: cohomology comes in a **computable version relative to your chosen decomposition** and a decomposition-independent theoretical version; SAGA works with the former. That the two cannot be unconditionally identified is itself pinned down as a theorem, with a counterexample.
 - The completeness of extracting Atoms from a codebase, and "quality judgments about real code as a whole," are outside the theory. AAT does mathematics relative to observed Atoms and selected laws.
+  - In plain terms: **whether you extracted every fact from the code** is the observation tool's job; mathematics does not guarantee it. What AAT guarantees is the correctness of everything **downstream** of the facts you gathered and the laws you imposed.
+
+Is this boundary a weakness of the theory? I do not think so. Analyzing software architecture is an inherently finite activity: finitely many modules, finitely many observable facts, finitely many rules imposed in review. **The "finite, explicitly-voiced" world in which the SAGA theorem holds is exactly the world architecture analysis actually lives in.** It is not a theory of everything. But as a foothold for analyzing software architecture, it is more than wide enough.
 
 Not saying what cannot be said. Making the boundary explicit is itself part of the theory.
 
