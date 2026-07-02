@@ -110,7 +110,7 @@ Initial axiom audit over representative declarations reported only standard
 - target state: target-proof-checkpoint
 - completion candidate: no
 - tracking Issue: #2636
-- PR: #TBD
+- PR: #2893
 - branch: `codex/g06-cycle343-orderfree-presieve-source`
 - date: 2026-07-02 JST
 
