@@ -103,6 +103,94 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 351 -- degree-zero boundary theorems and concrete end-to-end instance
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2901
+- branch: `claude/g06-endtoend-instance`
+- date: 2026-07-03 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Discharge review obligations 1 and 3 fixed by the rejected final review after
+Cycle 350:
+
+- obligation 3: state the exact boundary theorem for the law-equation layer's
+  degree-`0` contribution, and fix as a theorem that the grounded-route
+  conjuncts are law-independent;
+- obligation 1: construct a concrete end-to-end instance and fire
+  `lawEquation_constructs_groundedComparisonPacket` on it.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+(imported by `Formal/AG/Research.lean`):
+
+- `displayedRequiredLawsHoldOn_constructs_sourceC0_pointwise_zero`
+  (obligation 3, positive side): under displayed required-law fulfillment the
+  generated support-only `0`-cochain is pointwise zero.  This is the exact
+  Cech-side content of the law semantics: it acts at degree `0`, and
+  `sourceC0CechZero` is its differential shadow.
+- `lawEquation_groundedRoute_isLawIndependent` (obligation 3, negative side):
+  the gate layer, degree-wise carrier data, cochain realization, comparison
+  package, residual boundary, and semantic / additive `H1` zero conjuncts are
+  proved with no law premise, fixing the Cycle 350 review finding as a Lean
+  boundary theorem rather than a docstring remark.
+- `finiteModelAtomLawCoverGeometry`, `finiteModelLawfulConfiguration`,
+  `finiteModelLawfulObject`, `noCycleLaw_holds_finiteModelLawfulObject`,
+  `finiteModelLawEquationSkeleton`, `finiteModelLawEquationDefectSource`,
+  `finiteModelLawEquationDefectSource_displayedRequiredLawsHoldOn`,
+  `finiteModelSemanticCover` (obligation 1): the concrete end-to-end bundle on
+  the Part I/II finite model.  The displayed reading is the relation-free
+  lawful object, on which the required NoCycle law provably holds; the defect
+  observable is the violation coordinate `2` of the realized NoCycle equation.
+- `finiteModel_lawEquation_endToEnd_packet_fires` (obligation 1): the packet
+  hypothesis class is inhabited and
+  `lawEquation_constructs_groundedComparisonPacket` fires on the concrete
+  bundle, re-exposing the evaluator, the generated-Cech `sourceC0CechZero`,
+  the gate realization layer, the comparison package, and the additive `H1`
+  zero reading.
+
+### Proof-Obligation Delta
+
+Review obligations 1 and 3 are discharged.  The remaining review obligation is
+obligation 2: exercise the `H1` comparison on a nontrivial class over a finite
+site with nontrivial covers, so the zero-predicate equivalence is demonstrated
+on non-boundary content.
+
+### Anti-Weakening Audit
+
+- The law-independence of the grounded-route conjuncts is now itself a
+  theorem; the packet cannot be over-read as law-grounded `H1` descent
+  content.
+- The concrete instance uses the existing finite model without modification;
+  no bespoke site or law was tuned.  The lawful object is relation-free by
+  construction and the NoCycle law's holding on it is proved, not assumed.
+- `holds_defect_mem` of the concrete defect source is discharged by
+  `Ideal.subset_span` on the realized violation coordinate; no conclusion
+  field is introduced.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationEndToEndInstance`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationEndToEndAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over the eleven new declarations reports only existing
+standard foundations (`[propext, Classical.choice, Quot.sound]` for the seven
+proof-carrying declarations, no axioms for the four data-only definitions).
+No `sorryAx` appears.
+
 ## Final review after Cycle 350 -- rejected
 
 - Integrated verdict: `MAJOR findings (math lane A veto)`
