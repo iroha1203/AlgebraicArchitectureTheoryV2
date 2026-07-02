@@ -103,6 +103,101 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 349 -- concrete witness instance and sheaf-condition discharge
+
+- decision: approve (continuation of the Cycle 348 user instruction)
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2899
+- branch: `claude/g06-law-equation-witness-instance`
+- date: 2026-07-02 JST
+- author: Claude under direct user instruction.
+
+### T1 Selection
+
+Discharge the two obligations recorded by Cycle 348's remaining work:
+
+- discharge `quotientIsSheaf` for a selected concrete finite instance rather
+  than leaving the ambient sheaf-condition input example-free;
+- fix a nondegenerate finite witness: a non-lawful defect with nonzero
+  obstruction-quotient class, next to lawful readings with zero class.
+
+### Lean Artifacts
+
+New file
+`Formal/AG/Research/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
+(imported by `Formal/AG/Research.lean`), built on the Part I/II finite model
+(`Formal/AG/Examples/FiniteModel.lean`):
+
+- `finiteModelSite_generate_pullback_eq_top`: on the finite-model singleton
+  site, every admissible cover family generates a sieve whose pullback is the
+  top sieve; admissibility forces a nonempty patch index through required
+  atom-support coverage.
+- `finiteModelSite_AATSheafCondition`: every presheaf on the finite-model
+  site satisfies the AAT sheaf condition, proved through
+  `Precoverage.isSheaf_toGrothendieck_iff`; no subsingleton assumption on the
+  coefficient values is used.
+- `finiteModelSemanticRepairSite`, `finiteModelLawEquationCore`: the concrete
+  law-equation core with observable ring `ℤ`, identity restrictions, and the
+  constant violation coordinate `2` for the single required NoCycle law.
+- `finiteModel_lawWitnessIdeal_le`, `finiteModel_obstructionIdeal_le`,
+  `finiteModel_one_notMem_obstructionIdeal`,
+  `finiteModel_defectOne_class_ne_zero`,
+  `finiteModel_obstructionQuotient_nontrivial`,
+  `finiteModel_violationWitness_class_eq_zero`: the nondegeneracy ledger; the
+  defect `1` has nonzero class while every violation coordinate has zero
+  class.
+- `finiteModelLawEquationGeometry`: the concrete
+  `SemanticLawEquationWitnessIdealGeometry` whose `quotientIsSheaf` field is
+  discharged by `finiteModelSite_AATSheafCondition`.
+- `finiteModel_lawEquation_witness_packet`: the bundled witness packet.
+
+### Proof-Obligation Delta
+
+The `quotientIsSheaf` ambient input of Cycle 348 is now backed by a concrete
+constructed instance: on the finite-model site the generated
+obstruction-quotient coefficient provably satisfies the sheaf condition.  The
+quotient realization is provably nondegenerate: vanishing is exactly ideal
+membership, a non-lawful defect has nonzero class, and lawful violation
+coordinates have zero class, so the law-equation layer separates lawful from
+non-lawful readings on a concrete finite instance.
+
+### Anti-Weakening Audit
+
+- The sheaf condition is proved from the generated topology of the concrete
+  site, not supplied as a field or assumption; the proof works for every
+  presheaf, so it cannot smuggle coefficient-specific conclusions.
+- The nondegeneracy witnesses contain no overlap equality, evaluator,
+  `sourceC0CechZero`, residual-zero, or `H1` zero; they are ring-level facts
+  about the atom-generated ideal.
+- The finite-model site is the existing Part I/II example; no bespoke site
+  was tuned to make the theorems pass.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairLawEquationWitnessInstance`
+- `lake build`
+- `lake env lean .tmp/G06LawEquationWitnessAxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan and hidden / bidirectional Unicode scan on changed
+  files
+
+The axiom audit over all eleven new declarations reports only existing
+standard foundations (`[propext]`, `[propext, Quot.sound]`, or
+`[propext, Classical.choice, Quot.sound]`).  No `sorryAx` appears.
+
+### Remaining Work
+
+- Optionally assemble a full end-to-end concrete defect source (concrete
+  `FinitePosetAtomLawCoverGeometry` over the finite model plus a skeleton) so
+  the evaluator and `sourceC0CechZero` theorems fire on a fully concrete
+  instance.
+- Reassemble the target comparison packet and final review on top of the
+  law-equation layer.  G-06 remains `target-proof-checkpoint`.
+
 ## Cycle 348 -- law-as-equation realization layer
 
 - decision: approve (human-approved input-vocabulary extension)
