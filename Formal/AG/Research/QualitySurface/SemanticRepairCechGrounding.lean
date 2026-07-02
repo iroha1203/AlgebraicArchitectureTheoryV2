@@ -26729,6 +26729,136 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_con
       (reading.coefficient_law_support j)
 
 /--
+Cycle 327 constructor-reduction for the remaining `law_reads_overlap` field.
+
+If the current law-universe boundary and support-only canonical/free
+provenance could construct the full overlap-reading layer, then the same data
+would already construct the isolated arrow-compatibility law.  Thus the
+remaining `law_reads_overlap` field cannot be discharged by merely combining
+Cycle 323's interpretation-blind law boundary with Cycle 306's support-reading
+shadow.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) :
+    source.arrowCompatibilityLaw := by
+  rcases hsupport with ⟨supportReading⟩
+  have hreading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source :=
+    constructor hboundary supportReading
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source hreading)
+
+/--
+Cycle 327 blocker: the current law-universe boundary plus support-only
+canonical/free provenance cannot uniformly generate the full
+`AtomLawOverlapCanonicalFreeOverlapReading` layer while the same support-only
+source lacks `arrowCompatibilityLaw`.
+
+This targets the exact Cycle 326 residual premise.  It does not accept bare
+overlap equality, `source.arrowCompatibilityLaw`, `sourceC0CechZero`,
+residual-zero, H1-zero, external `c0Equiv`, old `sourceWithoutC0`, or selected
+comparison data; it says that the current non-restriction law boundary is still
+too weak to construct `law_reads_overlap`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    IsEmpty
+      (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  refine ⟨?_⟩
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hboundary hsupport constructor)
+
+/--
 Cycle 308 no-escape theorem: if arrow compatibility is absent and the
 generated `sourceC0` is Cech-zero, then the selected degree-`1` face equality
 law and the arbitrary common-refinement factorization law cannot both hold.

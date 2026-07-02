@@ -103,6 +103,95 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 327 -- current-law plus support-reading still cannot generate law-reading
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the Cycle 326 residual premise itself:
+
+- discharge or precisely block construction of
+  `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap`;
+- keep the same support-only source and same atom/law-overlap-generated `K`;
+- do not use bare overlap equality, `source.arrowCompatibilityLaw`,
+  `sourceC0CechZero`, residual-zero, H1-zero, external `c0Equiv`, old
+  `sourceWithoutC0`, or arbitrary selected comparison data;
+- do not treat `law_reads_overlap` as ambient boundary or as a completed
+  structure-field certificate.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw`
+  shows that any constructor from the current law-universe boundary plus
+  support-only canonical/free reading to the full overlap-reading layer already
+  constructs `source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw`
+  turns that reduction into an `IsEmpty` blocker under
+  `¬ source.arrowCompatibilityLaw`, with the current law boundary constructed
+  from coverage, exactness, and lawful local objects.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The attempted route
+  `currentLawUniverseHoldsInputBoundary + AtomLawOverlapCanonicalFreeSupportReading
+  -> AtomLawOverlapCanonicalFreeOverlapReading` is now closed unless it
+  genuinely constructs the isolated arrow-compatibility law.
+- This narrows the Cycle 326 residual premise: adding Cycle 323's current-law
+  boundary to Cycle 306's support-only shadow still does not generate
+  `law_reads_overlap`.
+
+Still open:
+
+- `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap` remains the
+  material law-reading field.
+- `source.arrowCompatibilityLaw` remains the same lower semantic overlap law.
+- A positive lower restriction-semantics layer must actually read the displayed
+  obstruction-sheaf sections and generate the overlap restriction equality.
+
+### Audit
+
+T3 approved the cycle as `blocker-fixed`:
+
+- the constructor-reduction proof uses the hypothetical full overlap reading
+  through the existing overlap-equality theorem and then through the
+  arrow-compatibility equivalence;
+- no theorem accepts bare overlap equality, `source.arrowCompatibilityLaw`,
+  residual-zero, H1-zero, external `c0Equiv`, old `sourceWithoutC0`, or
+  arbitrary comparison data as completion evidence;
+- `law_reads_overlap` is not discharged and remains explicitly unresolved;
+- this is not `proof-obligation-discharged` and not a target completion
+  candidate.
+
+Next obligation:
+
+- construct a genuine lower restriction-semantics/evaluator layer that reads
+  displayed local sections and generates `law_reads_overlap` /
+  `source.arrowCompatibilityLaw`, or fix the next narrower Lean blocker for
+  why the existing atom/law boundary cannot do so.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle327AxiomAudit.lean`
+  reported only `[propext, Classical.choice, Quot.sound]` for both new
+  declarations.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
 ## Cycle 326 -- evaluator provenance from canonical/free overlap reading
 
 - decision: approve
