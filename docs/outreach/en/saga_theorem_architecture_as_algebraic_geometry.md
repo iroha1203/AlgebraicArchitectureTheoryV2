@@ -6,7 +6,7 @@
 - AAT (Algebraic Architecture Theory) treats software architecture as a geometric object: generated from axiomatized facts called Atoms, cut out by laws, with obstructions appearing as cohomology classes.
 - Within AAT, the **SAGA theorem** (SAGA Grounding Theorem) has now been proved in Lean 4. It is a comparison theorem: the `H^1` grown on the architecture-semantics side coincides with the genuine Čech `H^1` of the site generated from Atoms.
 - The proof took 352 cycles. For 347 of them, an automated AI loop accumulated impossibility theorems saying "this vocabulary cannot prove it" — until a single vocabulary shift, **laws are equations, not predicates**, broke the rock face in the final 5 cycles.
-- This article assumes no prior knowledge of AAT. We start from what AAT is, walk through the Atom axioms and the algebraic-geometry dictionary, and end with what the SAGA theorem says, how it was proved, and why it matters for computer science.
+- This article assumes no prior knowledge of AAT — or of algebraic geometry. We start from a minimal map of algebraic geometry and the Atom axioms, and end with what the SAGA theorem says, how it was proved, and why it matters for computer science.
 
 ## 1. Locally correct, globally broken
 
@@ -22,7 +22,40 @@ Mathematics has studied exactly this phenomenon — locally consistent data that
 
 AAT is a theory that takes this mathematics and runs it, seriously, on software architecture.
 
-## 2. What is AAT? Architecture as relative geometry
+## 2. A minimal map of algebraic geometry for engineers
+
+Before the main story, let me lay out the algebraic-geometry ideas this article relies on. Algebraic geometry is advanced mathematics, but to read this article you do not need rigorous definitions — just **three ways of seeing, and a small glossary**.
+
+### Way of seeing 1: equations and shapes are two faces of the same thing
+
+In one sentence, algebraic geometry is **the study of the shapes formed by solutions of equations, through the algebra of the equations themselves**. The equation `x² + y² = 1` and the circle in the plane are two faces of one object. Operations on the equation side correspond to operations on the shape side — this "algebra ⇄ geometry" dictionary is the heart of the subject.
+
+### Way of seeing 2: not "is it satisfied?" but "how is it imposed?"
+
+As solution sets, `x = 0` and `x² = 0` are indistinguishable — both are "just the origin." But as equations they differ: `x² = 0` carries the extra information of being "zero twice over." Modern algebraic geometry took off precisely by studying not the *predicate-level* information (satisfied / not satisfied) but the *structural* information of the equations themselves. In engineering terms: instead of only checking whether the tests pass, you carry around *by what margin and for what reason* they pass. This distinction becomes decisive later in the article.
+
+### Way of seeing 3: study locally, then glue
+
+You cannot map the whole Earth onto one flat sheet, but you can make an atlas — a family of local maps. Algebraic geometry covers a shape with a family of local views, studies each view, and glues the results back into a global understanding. And sometimes **everything works locally, yet the gluing fails**. The tool that measures that failure is cohomology.
+
+### A small glossary
+
+| Term | Rough meaning | An engineer's mental image |
+| --- | --- | --- |
+| ideal | a container holding a set of equations, closed under derivation | a rule set together with every rule derivable from it |
+| quotient `O/I` | how the world looks after imposing the constraints `I` | the view through an interface after the constraints identify things |
+| zero locus `V(I)` | the set of points satisfying all the constraints | the space of configurations passing every rule |
+| cover and site | a way of covering the whole with local views, plus the rules for what counts as a valid covering | module / scope decomposition |
+| sheaf | an assignment of data to each local view that stays consistent as views shrink | configuration values inherited without contradiction as scope narrows |
+| cocycle | a consistent record of the mismatches along the boundaries between views | a diff log per view boundary |
+| coboundary | a mismatch that disappears if you re-adjust the individual views | a diff you can eliminate by local re-tuning |
+| `H^1` | cocycles ÷ coboundaries = the classes of mismatch that cannot be removed | the system-wide inconsistency that survives every local fix |
+| Nullstellensatz | the theorem making precise the correspondence between predicates (solution sets) and equations (ideals) | a guaranteed correspondence between observed behavior and imposed constraints |
+| GAGA | the landmark comparison theorem: two differently built cohomologies coincide | a proof that two implementations satisfy the same specification |
+
+You do not need to memorize any of this. Keep the map at hand and read on. Now, the main story.
+
+## 3. What is AAT? Architecture as relative geometry
 
 The starting point of AAT (Algebraic Architecture Theory) is its choice of object. AAT does not study the raw codebase itself.
 
@@ -38,7 +71,7 @@ X_C^{V,U,J,k} : AAT geometry   (this is the object of the theory)
 
 Instead of asking "is this codebase good?", AAT asks: **given this observation vocabulary, these laws, and this way of covering the system with local views, what geometry arises?** The vocabulary and the laws are explicit, and all mathematics is relative to them. This relativization is also where AAT's discipline of boundaries comes from — internally the project calls it "silence about what cannot be spoken": the theory does not make claims outside its declared inputs.
 
-## 3. The Atom axioms — the minimal facts of architecture
+## 4. The Atom axioms — the minimal facts of architecture
 
 The smallest unit of AAT is the **Atom**: a typed architectural fact that we choose not to decompose further. An Atom has five components:
 
@@ -64,7 +97,7 @@ Atoms are governed by an axiom system (A0–A8). The most important ones:
 
 A5 is quietly crucial. It separates "what should be" (laws) from "what was observed" (Atoms) at the axiom level, so wishful thinking can never leak into observation.
 
-## 4. Making laws into equations — the algebraic-geometry dictionary
+## 5. Making laws into equations — the algebraic-geometry dictionary
 
 On top of Atom families we impose **laws**: "no dependency cycles," "every compensation handler must be paired," and so on.
 
@@ -96,7 +129,7 @@ Note that the last line has exactly the shape of Hilbert's Nullstellensatz: the 
 
 Then we add coverings. Cover the architecture with a family of contexts and observe locally in each. A Grothendieck topology is generated from the Atoms on the category of contexts, giving a **site**. Sheaves live on it, and Čech cohomology. The obstruction to gluing a family of local repair certificates into a global one appears as a class in `H^1`.
 
-## 5. Before SAGA — the lower floors of the tower
+## 6. Before SAGA — the lower floors of the tower
 
 I have been turning this picture into Lean 4 theorems, one floor at a time.
 
@@ -107,7 +140,7 @@ At this point AAT was a theory that measures architectural gluing failures with 
 
 That `H^1` was a **purpose-built finite construction**. The general theory of sites and sheaves was formalized in the very same repository — yet the semantic-repair `H^1` stood next to it as a separately grafted tower. The claim "AAT is doing algebraic geometry" rested on "AAT owns a construction shaped like algebraic geometry." In principle, that is indistinguishable from calling any ad hoc finite quotient an `H^1`.
 
-## 6. The SAGA theorem — two worlds coincide
+## 7. The SAGA theorem — two worlds coincide
 
 This is the gap I set out to close — the goal that would later be named the **SAGA theorem**. In one sentence:
 
@@ -128,7 +161,7 @@ Atoms (axiomatized facts)
 
 **AAT's cohomology grows out of AAT's own axioms.** No grafting.
 
-## 7. The story of the proof — 347 impossibility theorems and one decision
+## 8. The story of the proof — 347 impossibility theorems and one decision
 
 The proof of SAGA is a research record worth telling in its own right.
 
@@ -138,7 +171,7 @@ It ran for 352 cycles. An automated AI agent loop discharged small proof obligat
 
 The first hundred or so cycles built the comparison skeleton. Then, for roughly 250 cycles, something strange happened: instead of advancing, the loop began **sealing off every detour, with counterexamples**. "This input surface cannot prove it." "Adding this auxiliary data does not help either." Thirty-six families of impossibility boundaries accumulated as theorems, until the entire goal had been compressed into a single proposition. And in cycles 320–347, the loop proved that this one point was **underivable, in principle, from the current vocabulary**.
 
-The cause was fundamental. Laws had been formalized as `holds : Prop` — an opaque predicate. Predicates do not determine equations. Cohomology does not grow where there are no coefficients. The algebraic-geometry lesson of Section 4 had come back as a family of impossibility theorems in Lean.
+The cause was fundamental. Laws had been formalized as `holds : Prop` — an opaque predicate. Predicates do not determine equations. Cohomology does not grow where there are no coefficients. "Way of seeing 2" from Section 2, and the lesson of Section 5, had come back as a family of impossibility theorems in Lean.
 
 Were those 347 cycles wasted? The opposite. **The theory established the limits of its own vocabulary, as theorems, before extending it.** The fix was narrowed from "somewhere" to "exactly here." There are not many formalization projects that have done this.
 
@@ -156,7 +189,7 @@ The final act was the review. Just before completion, one of the four adversaria
 
 The response was not to weaken the claim but to prove **new theorems**: a positive boundary theorem ("the law semantics contributes exactly degree-0 vanishing") and a negative one ("the higher conclusions hold independently of the laws"). The theory deepened its knowledge of itself through the review. The re-review lifted the veto, and the theorem was accepted.
 
-## 8. Why this matters for computer science
+## 9. Why this matters for computer science
 
 This looks like a mathematics story, but SAGA has several CS implications.
 
@@ -168,7 +201,7 @@ This looks like a mathematics story, but SAGA has several CS implications.
 
 **(4) Everything is machine-checked.** Every theorem in this story — the comparison, the impossibility boundaries, the nonzero-class instance — compiles in Lean 4 and depends only on Lean's standard axioms (`propext`, `Classical.choice`, `Quot.sound`). There are no `sorry`s.
 
-## 9. Honest boundaries
+## 10. Honest boundaries
 
 Finally, in keeping with AAT's own discipline, here is what the SAGA theorem does **not** claim.
 
@@ -178,7 +211,7 @@ Finally, in keeping with AAT's own discipline, here is what the SAGA theorem doe
 
 Not saying what cannot be said. Making the boundary explicit is itself part of the theory.
 
-## 10. Closing
+## 11. Closing
 
 Anyone can say "let's apply algebraic geometry to software architecture" as a metaphor. What the SAGA theorem did was stop it being a metaphor. From the Atom axioms, through laws as equations, obstruction coefficients as quotients, sites, sheaves, and up to `H^1` — everything is connected by a single chain of machine-checked theorems.
 
