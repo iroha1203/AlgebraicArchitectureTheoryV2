@@ -26678,6 +26678,57 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulRestrictionEvaluator_cons
   exact ⟨hoverlap, harrow, hpackage, hresidualZero, hresidualBoundary⟩
 
 /--
+Cycle 326 canonical/free evaluator provenance checkpoint.
+
+The canonical/free overlap-reading layer supplies the restriction evaluator
+used by Cycle 325.  The proof consumes the existing `law_reads_overlap` field
+for the same displayed local sections and common refinement; it does not accept
+`source.arrowCompatibilityLaw`, bare overlap equality, residual-zero,
+`sourceC0CechZero`, external `c0Equiv`, external `c0Carrier`, or the old
+`sourceWithoutC0`.
+
+This is still not completion evidence: `law_reads_overlap` remains the material
+semantic restriction law carried by the canonical/free reading layer.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_displayedRequiredLawRestrictionEvaluator
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U) :
+    source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
+  intro i j Z gi gj hcomm _lawIndexI _lawIndexJ _hLawMemI _hLawMemJ
+    _hrequiredI _hrequiredJ _hholdsI _hholdsJ
+  exact
+    reading.law_reads_overlap i j gi gj hcomm
+      (reading.coefficient_law_support i)
+      (reading.coefficient_law_support j)
+
+/--
 Cycle 308 no-escape theorem: if arrow compatibility is absent and the
 generated `sourceC0` is Cech-zero, then the selected degree-`1` face equality
 law and the arbitrary common-refinement factorization law cannot both hold.

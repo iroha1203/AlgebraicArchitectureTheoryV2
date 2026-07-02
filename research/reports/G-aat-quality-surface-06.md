@@ -103,6 +103,99 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 326 -- evaluator provenance from canonical/free overlap reading
+
+- decision: approve
+- result_type: proof-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the next lower provenance step after Cycle 325:
+
+- remove the explicit
+  `source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`
+  premise from the theorem boundary;
+- construct that evaluator from the same support-only source's
+  `AtomLawOverlapCanonicalFreeOverlapReading`;
+- do not route through `source.arrowCompatibilityLaw`, bare
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality`, `sourceC0CechZero`,
+  generated residual-zero, residual boundary, H1-zero, external `c0Carrier`,
+  external `c0Equiv`, the old `sourceWithoutC0`, or an arbitrary selected
+  comparison/cochain package;
+- keep `law_reads_overlap` as unresolved material semantic restriction data,
+  so this cycle must not be reported as target completion.
+
+### Lean Artifact
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_displayedRequiredLawRestrictionEvaluator`
+  constructs `source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`
+  from `AtomLawOverlapCanonicalFreeOverlapReading` by proof-using
+  `reading.law_reads_overlap` together with the two
+  `reading.coefficient_law_support` witnesses for the displayed local
+  sections.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The explicit evaluator premise used by Cycle 325 is no longer a theorem
+  argument at this layer.  Its provenance has been lowered to the
+  canonical/free overlap-reading structure for the same support-only source.
+- The proof does not consume `Law.holds`, current law-universe membership,
+  arrow compatibility, bare overlap equality, residual-zero, H1-zero,
+  external `c0Carrier` / `c0Equiv`, old `sourceWithoutC0`, or arbitrary
+  selected comparison data.
+
+Still open:
+
+- `reading.law_reads_overlap` is a structure field carrying the displayed
+  restriction equality itself.  It is the remaining material semantic law and
+  is not yet constructed from the support-only semantic atom/law input
+  boundary.
+- Cycle 326 is therefore a provenance checkpoint only.  It does not discharge
+  the G-06 target theorem, and it does not change the completion candidate
+  status.
+
+### Audit
+
+T3 approved the cycle as checkpoint-only:
+
+- the new theorem proof-uses `reading.law_reads_overlap` and
+  `reading.coefficient_law_support` directly;
+- no forbidden premise listed in T1 appears in the proof route;
+- the unused evaluator arguments for law indices, required-law membership, and
+  `Law.holds` confirm that the theorem is not constructing semantic
+  restriction from the current law universe;
+- `law_reads_overlap` remains an unresolved structure-field premise, so the
+  result is not `proof-obligation-discharged` and not a target-theorem
+  completion candidate.
+
+Next obligation:
+
+- construct `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap` from
+  support-only semantic atom/law input-boundary data without falling back to
+  bare overlap equality, arrow compatibility, residual-zero/H1-zero,
+  `sourceWithoutC0`, or arbitrary selected comparison packages.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle326AxiomAudit.lean`
+  reported only `[propext, Classical.choice, Quot.sound]` for the new
+  declaration.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
 ## Cycle 325 -- evaluator bridge to source-C0 generated route
 
 - decision: approve
