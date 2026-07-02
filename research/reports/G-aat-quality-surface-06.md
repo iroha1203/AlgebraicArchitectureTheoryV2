@@ -103,6 +103,102 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 346 -- evaluator generated from restriction geometry
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2896
+- branch: `codex/g06-cycle346-evaluator-restriction-geometry`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the evaluator layer exposed by Cycle 345:
+
+- construct `source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`
+  from lower restriction geometry that reads `source.interpret` over common
+  refinements;
+- do not accept `displayedRequiredLawRestrictionEvaluator`, raw overlap
+  equality, `source.arrowCompatibilityLaw`, `sourceC0CechZero`,
+  `law_reads_overlap`, residual-zero, `H1` zero, external `c0Equiv`, old
+  `sourceWithoutC0`, or a selected coefficient package as input;
+- proof-use the generated evaluator through the Cycle 345 generated-Cech
+  `sourceC0CechZero` route, rather than leaving it as an unused package field.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization_constructs_displayedRequiredLawRestrictionEvaluator`
+- `...SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.baseRestrictionSource_preservingDisplayedInterpretation_constructs_displayedRequiredLawRestrictionEvaluator`
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_baseRestrictionSource_preservingDisplayedInterpretation_constructs_displayedRequiredLawRestrictionEvaluator`
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero_via_displayedRequiredLawRestrictionEvaluator`
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_baseRestrictionSource_preservingDisplayedInterpretation_constructs_canonicalFreeOverlapReading_via_sourceC0CechZero`
+
+### Proof-Obligation Delta
+
+Cycle 346 lowers the Cycle 345 visible material premise.  The evaluator is no
+longer only an external argument when the source is realized by one common
+base section or by a display-preserving finite base-restriction source.  The
+proof constructs evaluator output by restricting the same displayed base
+section to both sides of a common-refinement square.
+
+The generated evaluator is then consumed by the existing Cycle 345
+`currentLawBoundary + evaluator -> sourceC0CechZero` theorem and by the
+generated-Cech canonical/free reconstruction route.  This fixes proof-use:
+the new lower restriction geometry is routed through the semantic coefficient
+Cech complex rather than being recorded as a standalone certificate.
+
+### Anti-Weakening Audit
+
+- No new theorem accepts raw `displayedRequiredLawRestrictionEvaluator`,
+  `source.arrowCompatibilityLaw`, raw overlap equality, `law_reads_overlap`,
+  residual-zero, `H1` zero, `c0Equiv`, old `sourceWithoutC0`, descent, or
+  effectivity as completion evidence.
+- `currentLawUniverseHoldsInputBoundary` remains the selected law/hold
+  context; bare `Law.holds` and support membership are still not claimed to
+  generate restriction equality.
+- The remaining material lower witness is now explicit:
+  `source.commonRestrictionRealization` or a display-preserving
+  `GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource`.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake build`
+- `lake env lean .tmp/G06Cycle346AxiomAudit.lean`
+- `git diff --check`
+- Lean placeholder scan, hidden / bidirectional Unicode scan, and local
+  absolute-path scan on changed files
+
+The Cycle 346 axiom audit reports only existing standard foundations:
+`[propext, Quot.sound]` for the direct evaluator constructors and
+`[propext, Classical.choice, Quot.sound]` for the generated-Cech proof-use
+theorem.  No `sorryAx` appears.
+
+T3 returned `approve`: the evaluator is generated from common/base restriction
+geometry, the generated evaluator is proof-used through the Cycle 345
+`sourceC0CechZero` route, and the remaining base/common restriction witness
+is correctly recorded as material lower geometry rather than final G-06
+completion.
+
+### Remaining Work
+
+- The base/common restriction witness is still material lower geometry, not
+  final target completion.
+- A later cycle must generate the display-preserving base-restriction/common
+  source itself from canonical/free/input-boundary semantic atom/law geometry,
+  or state the exact no-go boundary if that construction is impossible from
+  the current atoms/laws.
+- G-06 remains blocked from final completion until the generated lower witness
+  is tied to the atom/law input boundary without moving the premise into a new
+  structure field.
+
 ## Cycle 345 -- generated sourceC0 law-generation from restriction evaluator
 
 - decision: approve
