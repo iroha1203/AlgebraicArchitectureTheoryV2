@@ -103,6 +103,106 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 328 -- displayed evaluator is the exact full-reading boundary
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the exact boundary around the remaining evaluator:
+
+- show that
+  `currentLawUniverseHoldsInputBoundary +
+  AtomLawOverlapCanonicalFreeSupportReading +
+  displayedRequiredLawRestrictionEvaluator`
+  constructs `AtomLawOverlapCanonicalFreeOverlapReading`;
+- record the corresponding decomposition of the full reading into support-only
+  provenance plus the displayed restriction evaluator, relative to the
+  current-law boundary;
+- keep `displayedRequiredLawRestrictionEvaluator` as material lower provenance,
+  not as discharged data.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading`
+  constructs the full canonical/free overlap-reading layer from the current
+  law boundary, support-only canonical/free reading, and the displayed
+  required-law restriction evaluator.
+- `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_canonicalFreeOverlapReading_iff_supportReading_and_displayedRequiredLawRestrictionEvaluator`
+  proves the exact decomposition: relative to current-law boundary, a full
+  overlap reading is equivalent to support-only reading plus the displayed
+  restriction evaluator.
+- `atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_constructs_arrowCompatibilityLaw`
+  shows that a constructor from current-law boundary and pointwise coefficient
+  law-support membership to a `law_reads_overlap`-shaped overlap reader already
+  constructs `source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_without_arrowCompatibilityLaw`
+  turns that coefficient-support-only route into an `IsEmpty` blocker under
+  `¬ source.arrowCompatibilityLaw`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The exact consumer boundary is now formalized: once the displayed evaluator
+  is genuinely constructed, support-only canonical/free provenance is enough
+  to build the full `AtomLawOverlapCanonicalFreeOverlapReading`.
+- A narrower coefficient-law-support-only bypass is closed: support membership
+  for the selected law indices is not a substitute for the evaluator.
+
+Still open:
+
+- `displayedRequiredLawRestrictionEvaluator` remains material lower semantic
+  provenance.
+- `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap` is not
+  discharged from atom/law support lists alone.
+- The next positive layer must construct the evaluator from canonical/free
+  semantic atom/law restriction geometry that actually reads displayed local
+  sections.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- the four new declarations fix `supportReading +
+  displayedRequiredLawRestrictionEvaluator` as the exact full-reading boundary;
+- coefficient `lawSupport` membership alone is not enough to generate the
+  `law_reads_overlap`-shaped reader unless it reconstructs
+  `source.arrowCompatibilityLaw`;
+- no new declaration accepts bare overlap equality, `source.arrowCompatibilityLaw`,
+  residual-zero, H1-zero, external `c0Equiv`, old `sourceWithoutC0`, or
+  arbitrary selected comparison data as completion evidence;
+- the evaluator is proof-used into the full reading but is still listed as a
+  material remaining premise;
+- this is not a target completion candidate.
+
+Next obligation:
+
+- construct `displayedRequiredLawRestrictionEvaluator` from a genuine lower
+  restriction-semantics layer over canonical/free semantic atom/law geometry,
+  or prove the next narrower blocker showing which part of the existing
+  support/current-law boundary is still blind to displayed restrictions.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle328AxiomAudit.lean`
+  reported only `[propext, Classical.choice, Quot.sound]` for all four new
+  declarations.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
 ## Cycle 327 -- current-law plus support-reading still cannot generate law-reading
 
 - decision: approve
