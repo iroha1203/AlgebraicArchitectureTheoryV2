@@ -103,6 +103,97 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 347 -- no-go for support-only base-restriction constructor
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2897
+- branch: `codex/g06-cycle347-support-base-no-go`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the exact no-go boundary below Cycle 346:
+
+- assume the same support-only source lacks
+  `source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput`;
+- show that `currentLawUniverseHoldsInputBoundary` plus support-only
+  canonical/free provenance cannot uniformly construct a same-source
+  display-preserving base-restriction source;
+- use Cycle 346 as the contradiction route: any such constructor would produce
+  the missing evaluator from the constructed base-restriction source.
+
+This is `blocker-fixed`, not `proof-obligation-discharged`: it does not
+construct `commonRestrictionRealization` or a display-preserving
+base-restriction source from atom/law geometry.
+
+### Lean Artifact
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...PointwiseAtomLawInputBoundaryBasis.no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_baseRestrictionSource_constructor_without_displayedRequiredLawRestrictionEvaluator`
+
+### Proof-Obligation Delta
+
+Cycle 347 fixes the exact negative boundary for the remaining rock face.  A
+proof cannot claim that support-only canonical/free provenance and the current
+law-universe boundary generate same-source display-preserving
+base-restriction provenance unless it also generates the restriction evaluator
+isolated by Cycle 346.
+
+Equivalently, the next positive construction must really produce the evaluator
+or the display-preserving base/common restriction witness from lower semantic
+restriction geometry.  It cannot be obtained from support-only canonical/free
+data alone while the evaluator is absent.
+
+### Anti-Weakening Audit
+
+- The theorem does not accept `displayedRequiredLawRestrictionEvaluator`,
+  `baseSource`, `commonRestrictionRealization`, raw overlap equality,
+  `sourceC0CechZero`, `law_reads_overlap`, residual-zero, `H1` zero,
+  external `c0Equiv`, or old `sourceWithoutC0` as completion evidence.
+- `hmissing` is a blocker premise for a no-go theorem, not a completion
+  premise.
+- The support-reading input is only used to instantiate the hypothetical
+  constructor; it is not promoted to a proof of overlap compatibility.
+- No new structure field or certificate package was introduced.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle347AxiomAudit.lean`
+- `lake build`
+- `git diff --check`
+- Lean placeholder scan, hidden / bidirectional Unicode scan, and local
+  absolute-path scan on changed files
+
+The Cycle 347 axiom audit reports only existing standard foundations:
+`[propext, Classical.choice, Quot.sound]`.  No `sorryAx` appears.
+Full `lake build` passed with only the existing replayed linter warning in
+`Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+
+T3 returned `approve`: the no-go theorem uses `hmissing` only as a blocker
+premise, the hypothetical base source is not a theorem input or completion
+evidence, and the report correctly keeps Cycle 347 at `blocker-fixed` /
+`completion candidate: no`.
+
+### Remaining Work
+
+- The positive lower construction is still open: generate
+  `displayedRequiredLawRestrictionEvaluator`, `commonRestrictionRealization`,
+  or a display-preserving base-restriction source from canonical/free/input-
+  boundary semantic atom/law restriction geometry.
+- Current-law boundary plus support-only canonical/free provenance is now
+  ruled out as sufficient by itself.
+- G-06 remains blocked from final completion until that positive lower
+  restriction-semantics layer is constructed or an even tighter impossibility
+  boundary is fixed.
+
 ## Cycle 346 -- evaluator generated from restriction geometry
 
 - decision: approve
