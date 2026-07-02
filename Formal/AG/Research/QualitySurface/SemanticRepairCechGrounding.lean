@@ -8197,6 +8197,132 @@ theorem constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
         surface.K.d_eq_alternatingFaceCombination 1 cochain
 
 /--
+Cycle 329 identity-`C0` continuation checkpoint.
+
+The generated semantic envelope supplies the old face-law continuation for the
+identity degree-`0` comparison coming from its identity cochain realization.
+This is the part of the old `sourceWithoutC0` boundary that follows naturally
+from the Cech-native generated layer: `C0/C1/C2` are the selected `K` cochains,
+and the four face laws are exactly `surface.K.d_eq_alternatingFaceCombination`.
+
+This is deliberately not the old residual source itself.  The old
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`
+requires the same continuation for every future `c0Equiv`; the generated layer
+only justifies the canonical identity comparison unless an additional
+uniformity law is proved.
+-/
+theorem constructs_identityC0SpecializedFaceLawContinuation
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    AtomSupportedDegreeZeroEquivFaceLawContinuation
+      (E := envelope.toEnvelope)
+      (additive := envelope.toAdditiveCechH1Data) surface
+      envelope.toCochainRealization.c1Equiv
+      envelope.toCochainRealization.c2Equiv
+      envelope.toCochainRealization.c2Equiv_zero
+      envelope.toCochainRealization.c2Equiv_symm_zero
+      envelope.toCochainRealization.c0Equiv := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro primitive
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 0 primitive).symm
+  · intro primitive
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c0SectionEquiv,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 0 primitive
+  · intro cochain
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        (surface.K.d_eq_alternatingFaceCombination 1 cochain).symm
+  · intro cochain
+    simpa [
+      toEnvelope, toCochainRealization,
+      CoverRelativeCechGeneratedSemanticCoefficient.toCoefficient,
+      SelectedSectionFamilyCarrierModel.of_degreewise_carrier_data_and_c2_zero_equivalence,
+      SemanticRepairCoverRelativeSectionFamilyWitness.of_selectedSectionFamilyCarrierModel,
+      SelectedSectionFamilyCarrierModel.c1SectionEquiv,
+      CarrierSpecificAdditiveComparisonData.ofAddEquiv,
+      CarrierSpecificAdditiveComparisonData.toAddEquiv] using
+        surface.K.d_eq_alternatingFaceCombination 1 cochain
+
+/--
+Cycle 329 source-boundary checkpoint for the generated identity route.
+
+This packages the selected cover witness, the generated identity degree-`1`
+and degree-`2` comparisons, the zero laws, and the identity-`C0` face-law
+continuation above.  It is the honest generated analogue of the old
+`sourceWithoutC0` surface with `c0Equiv` fixed to the canonical identity
+comparison.
+
+It is not a construction of
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`,
+because that older proposition quantifies over arbitrary future degree-`0`
+equivalences.  The remaining obstruction is exactly that uniformity law.
+-/
+theorem constructs_identityC0SpecializedSourceWithoutUniformDegreeZeroEquiv
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    Exists fun selectedFamily :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase =>
+      surface.selectedCover = Sieve.generate selectedFamily.presieve /\
+      Exists fun c1Equiv :
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toEnvelope.coefficient.C1 ≃+ surface.K.Cn 1 =>
+      Exists fun c2Equiv : envelope.toEnvelope.coefficient.C2 ≃ surface.K.Cn 2 =>
+      Exists fun c2Equiv_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv envelope.toEnvelope.coefficient.zero2 = 0 =>
+      Exists fun c2Equiv_symm_zero :
+        letI := surface.K.cochainAddCommGroup 2
+        c2Equiv.symm 0 = envelope.toEnvelope.coefficient.zero2 =>
+        AtomSupportedDegreeZeroEquivFaceLawContinuation
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface
+          c1Equiv c2Equiv c2Equiv_zero c2Equiv_symm_zero
+          envelope.toCochainRealization.c0Equiv := by
+  exact
+    ⟨family, hcover_eq,
+      envelope.toCochainRealization.c1Equiv,
+      envelope.toCochainRealization.c2Equiv,
+      envelope.toCochainRealization.c2Equiv_zero,
+      envelope.toCochainRealization.c2Equiv_symm_zero,
+      envelope.constructs_identityC0SpecializedFaceLawContinuation
+        (surface := surface)⟩
+
+/--
 Cycle 219 proof-use checkpoint: the generated semantic envelope immediately
 feeds the existing atom-supported source route and reaches the grounded
 cover-relative comparison package.
@@ -10256,6 +10382,45 @@ theorem standardAlternatingFaceCombination_map_add
   · simp [h, neg_add_rev, add_comm]
 
 /--
+Cycle 309 degree-`0` eliminator for the generated standard alternating sum.
+
+In degree `0`, the selected alternating combination over the two face
+restrictions is zero exactly when the two selected face terms are equal.  This
+is a theorem about the standard finite-poset Cech operator generated from the
+obstruction-sheaf additive structure; it is not a new field of a Cech complex
+or a certificate attached to a source.
+-/
+theorem standardAlternatingFaceCombination_degreeZero_eq_zero_iff
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    (geometry : FinitePosetAtomLawCoverGeometry S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) 1)
+    (terms :
+      Fin 2 ->
+        AAT.AG.Site.FinitePosetCechSection
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+    standardAlternatingFaceCombination geometry Ob 0 simplex terms = 0 <->
+      terms (0 : Fin 2) = terms (1 : Fin 2) := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+  constructor
+  · intro hsum
+    have hsum' : terms (0 : Fin 2) + -terms (1 : Fin 2) = 0 := by
+      simpa [standardAlternatingFaceCombination] using hsum
+    exact sub_eq_zero.mp (by simpa [sub_eq_add_neg] using hsum')
+  · intro hterm
+    simp [standardAlternatingFaceCombination, Fin.sum_univ_two, hterm]
+
+/--
 Cycle 250 canonical finite-poset Cech additive data.
 
 The zero section and face-combination operator are built from the generated
@@ -10481,6 +10646,53 @@ theorem standardCechDifferential_eq_restrictions
         (fun i =>
           AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i) :=
   rfl
+
+/--
+Cycle 309 standard-differential degree-`0` eliminator.
+
+For the generated standard finite-poset Cech differential, a degree-`0`
+cochain has zero differential on a selected degree-`1` simplex exactly when the
+two selected face restrictions agree on that simplex.
+-/
+theorem standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    {S : AAT.AG.Site.AATSite A}
+    {geometry : FinitePosetAtomLawCoverGeometry S}
+    {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+    (faces : AAT.AG.Site.FinitePosetCechFaceData
+      (geometry.toObstructionCoefficientRegime Ob))
+    (cochain :
+      AAT.AG.Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) 0)
+    (simplex :
+      AAT.AG.Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) 1) :
+    letI :=
+      (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+        (AAT.AG.Site.FinitePosetCechOverlapObject
+          (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+    standardCechDifferential faces 0 cochain simplex = 0 <->
+      AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (1 : Fin 2) := by
+  letI :=
+    (geometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (geometry.toObstructionCoefficientRegime Ob) 1 simplex)
+  change
+    standardAlternatingFaceCombination geometry Ob 0 simplex
+        (fun i =>
+          AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i) = 0 <->
+      AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex
+          (1 : Fin 2)
+  exact
+    standardAlternatingFaceCombination_degreeZero_eq_zero_iff
+      geometry Ob simplex
+      (fun i =>
+        AAT.AG.Site.FinitePosetCechFaceRestriction faces cochain simplex i)
 
 /--
 The standard differential sends the standard zero cochain to the standard zero
@@ -15145,6 +15357,341 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
 end CoverRelativeCechPointwiseSemanticAtomLawInputBoundaryBasis
 
 /--
+Cycle 337 chart-indexed pointwise atom/law basis.
+
+This is the pointwise input layer under the Cycle 239 chart-indexed source.
+It removes the arbitrary `LocalInput`, selected input, atom-support list, and
+law-support list fields from
+`CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`.
+For each generated degree-`0` chart index, it keeps exactly one trace-visible
+semantic atom and one required law.  The local section recorded in the
+pointwise input is generated by restricting the displayed base section along
+the chart-indexed overlap-to-base map.
+
+The base section, selected Cech orders, pointwise atom/law choices, selected
+`K`, semantic-cover bridge maps, sheaf condition, and descent data remain
+visible lower input-boundary data.  The basis contains no `c0Equiv`,
+`c0Carrier`, old `sourceWithoutC0`, residual-boundary proof, `H1` zero,
+descent/effectivity conclusion, or global coherence certificate.
+-/
+structure CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob) where
+  c0Order : List (K.Cn 0)
+  c1Order : List (K.Cn 1)
+  sourceSection : Ob.carrier.toPresheaf.obj (op charted.base)
+  atom :
+    charted.toCoverRelativeCechCover.simplex 0 -> U.Atom
+  atom_traceVisible :
+    forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    charted.toCoverRelativeCechCover.simplex 0 -> S.lawUniverse.Index
+  law_required :
+    forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {charted : CoverRelativeCechChartIndexedZeroCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  charted.toCoverRelativeCechCover Ob}
+
+/--
+The chart-indexed overlap-to-base map generated by zero-simplex incidence.
+-/
+def zeroSimplexToBase
+    (_basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K)
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) :
+    charted.toCoverRelativeCechCover.overlap 0 sigma ⟶
+      charted.toCoverRelativeCechCover.base :=
+  eqToHom
+      (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+        sigma) ≫
+    charted.toCoverRelativeCechCover.inclusion
+      (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)
+
+/--
+The local pointwise section generated by restricting the displayed base section
+along the chart-indexed overlap-to-base map.
+-/
+def projectedLocalSection
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K)
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) :
+    Ob.carrier.toPresheaf.obj
+      (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) :=
+  Ob.carrier.toPresheaf.map (basis.zeroSimplexToBase sigma).op
+    basis.sourceSection
+
+/--
+Read the chart-indexed pointwise basis as the Cycle 239 chart-indexed source.
+The generated source has singleton atom/law supports and its pointwise local
+section is the restriction of the base section along the generated
+chart-indexed overlap-to-base map.
+-/
+def toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) :
+    CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      semanticSite S charted Ob K where
+  c0Order := basis.c0Order
+  c1Order := basis.c1Order
+  sourceSection := basis.sourceSection
+  LocalInput :=
+    CoverRelativeCechPointwiseSemanticAtomLawLocalInput
+      semanticSite S charted.toCoverRelativeCechCover Ob
+  input := fun sigma =>
+    { atom := basis.atom sigma
+      atom_traceVisible := basis.atom_traceVisible sigma
+      lawIndex := basis.lawIndex sigma
+      law_required := basis.law_required sigma
+      localSection := basis.projectedLocalSection sigma }
+  atomSupport := fun _ localInput => [localInput.atom]
+  atomSupport_traceVisible := by
+    intro _ localInput
+    exact ⟨localInput.atom, by simp, localInput.atom_traceVisible⟩
+  lawSupport := fun _ localInput => [localInput.lawIndex]
+  lawSupport_nonempty := by
+    intro _ localInput
+    exact ⟨localInput.lawIndex, by simp⟩
+  lawSupport_required := by
+    intro _ localInput lawIndex hmem
+    have hEq : lawIndex = localInput.lawIndex := by
+      simpa using hmem
+    simpa [hEq] using localInput.law_required
+
+/--
+The generated pointwise input local section is exactly the base section
+restricted along the chart-indexed overlap-to-base map.
+-/
+theorem selectedInput_localSection_eq_projectedLocalSection
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K)
+    (sigma : charted.toCoverRelativeCechCover.simplex 0) :
+    ((basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource).input
+        sigma).localSection =
+      basis.projectedLocalSection sigma := by
+  rfl
+
+/--
+Cycle 337 positive construction checkpoint: chart-indexed pointwise atom/law
+data constructs the Cycle 239 chart-indexed source.  This removes arbitrary
+local input and support-list fields from the source premise; the base section,
+selected orders, pointwise atom/law choices, and selected `K` remain visible
+input-boundary data.
+-/
+theorem constructs_chartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) :
+    Nonempty
+      (CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :=
+  ⟨basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource⟩
+
+/--
+Cycle 337 proof-use checkpoint: the source generated from a chart-indexed
+pointwise basis exposes singleton semantic atom/law support and still reaches
+the canonical free source route.
+-/
+theorem constructs_source_and_exposes_singleton_pointwise_support
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) :
+    let source :=
+      basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (source.input sigma).localSection =
+          basis.projectedLocalSection sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        localInput = source.input sigma /\
+        freeSource.atomSupport sigma localInput = [basis.atom sigma] /\
+        freeSource.lawSupport sigma localInput = [basis.lawIndex sigma] /\
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) := by
+  dsimp
+  let source :=
+    basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  refine
+    ⟨⟨source⟩, (fun _ => rfl), ?_⟩
+  intro sigma
+  refine
+    ⟨source.input sigma, rfl, rfl, rfl, ?_, ?_,
+      freeSource.interpret sigma (source.input sigma), rfl, ?_⟩
+  · exact
+      ⟨basis.atom sigma, List.mem_singleton_self (basis.atom sigma),
+        basis.atom_traceVisible sigma⟩
+  · exact
+      ⟨basis.lawIndex sigma, List.mem_singleton_self (basis.lawIndex sigma),
+        basis.law_required sigma⟩
+  · exact
+      CoverRelativeCechFreeSemanticAtomLawBoundary.generated
+        (source := freeSource) sigma (source.input sigma)
+
+end CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+
+/--
+Cycle 338 chart-indexed order-free pointwise atom/law basis.
+
+This is the Cycle 337 basis with the selected display orders removed as
+external inputs.  The generated pointwise basis uses the canonical free order
+lists `[]` in degrees `0` and `1`.  The remaining fields are the real lower
+input-boundary data: a displayed base section and one trace-visible semantic
+atom / required law choice at each generated degree-`0` chart.
+
+The empty lists are not a finite coverage or enumeration adequacy theorem.
+They only discharge the standalone `c0Order` / `c1Order` list arguments for
+the current generated semantic coefficient route, where the carrier and
+differential content is already generated by the selected `K`.
+-/
+structure CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+    {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+    (semanticSite : SemanticRepairSite.{r, v} U.Atom)
+    (S : AAT.AG.Site.AATSite A)
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (Ob : AAT.AG.Cohomology.ObstructionSheaf S)
+    (K : AAT.AG.Cohomology.CoverRelativeCechComplex
+      charted.toCoverRelativeCechCover Ob) where
+  sourceSection : Ob.carrier.toPresheaf.obj (op charted.base)
+  atom :
+    charted.toCoverRelativeCechCover.simplex 0 -> U.Atom
+  atom_traceVisible :
+    forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+      semanticSite.sourceTraceToken (atom sigma) = true
+  lawIndex :
+    charted.toCoverRelativeCechCover.simplex 0 -> S.lawUniverse.Index
+  law_required :
+    forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+      S.lawUniverse.Required (lawIndex sigma)
+
+namespace CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+
+variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
+variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
+variable {S : AAT.AG.Site.AATSite A}
+variable {charted : CoverRelativeCechChartIndexedZeroCover S}
+variable {Ob : AAT.AG.Cohomology.ObstructionSheaf S}
+variable {K : AAT.AG.Cohomology.CoverRelativeCechComplex
+  charted.toCoverRelativeCechCover Ob}
+
+/--
+Read the order-free basis as the Cycle 337 pointwise basis using canonical
+free display orders.
+-/
+def toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+    (basis :
+      CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) :
+    CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+      semanticSite S charted Ob K where
+  c0Order := []
+  c1Order := []
+  sourceSection := basis.sourceSection
+  atom := basis.atom
+  atom_traceVisible := basis.atom_traceVisible
+  lawIndex := basis.lawIndex
+  law_required := basis.law_required
+
+/--
+Cycle 338 positive construction checkpoint: order-free pointwise atom/law data
+constructs the Cycle 337 pointwise basis and exposes that both selected order
+lists are generated canonically.
+-/
+theorem constructs_pointwiseBasis_and_exposes_free_orders
+    (basis :
+      CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) :
+    let pointwiseBasis :=
+      basis.toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+    let source :=
+      pointwiseBasis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+      (CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S charted Ob K) /\
+      pointwiseBasis.c0Order = [] /\
+      pointwiseBasis.c1Order = [] /\
+      source.c0Order = [] /\
+      source.c1Order = [] /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (source.input sigma).localSection =
+          pointwiseBasis.projectedLocalSection sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        exists atom : U.Atom,
+          atom ∈ [basis.atom sigma] ∧
+            semanticSite.sourceTraceToken atom = true) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ [basis.lawIndex sigma] ∧
+            S.lawUniverse.Required lawIndex) := by
+  dsimp
+  exact
+    ⟨⟨basis.toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis⟩,
+      rfl,
+      rfl,
+      rfl,
+      rfl,
+      (fun _ => rfl),
+      (fun sigma =>
+        ⟨basis.atom sigma, List.mem_singleton_self (basis.atom sigma),
+          basis.atom_traceVisible sigma⟩),
+      (fun sigma =>
+        ⟨basis.lawIndex sigma,
+          List.mem_singleton_self (basis.lawIndex sigma),
+          basis.law_required sigma⟩)⟩
+
+end CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+
+/--
 Cycle 268 finite-poset chart-projection pointwise atom/law basis.
 
 This is the pointwise/free input-boundary layer under the Cycle 267 selected
@@ -15805,6 +16352,662 @@ theorem exposes_pointwise_nonvacuity_support_and_presieve_evaluation
 end GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
 
 /--
+Cycle 295 support-only presieve-indexed semantic atom/law local source.
+
+This is the Cycle 290 source with the arrow-level compatibility law removed.
+It records the local semantic inputs, support witnesses, and interpreted local
+sections on the displayed atom/law cover arrows.  It intentionally does not
+claim that those local sections glue; the exact remaining law is
+`arrowCompatibilityLaw` below.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  LocalInput : regime.cover.Index -> Type r
+  input : (i : regime.cover.Index) -> LocalInput i
+  atomSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List U.Atom
+  atomSupport_traceVisible :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists atom : U.Atom,
+        atom ∈ atomSupport i localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport i localInput
+  lawSupport_required :
+    forall (i : regime.cover.Index) (localInput : LocalInput i)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+  interpret :
+    (i : regime.cover.Index) -> LocalInput i ->
+      Ob.carrier.toPresheaf.obj
+        (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+The exact arrow-level overlap law missing from support-only semantic atom/law
+data.
+
+This is the former `compatible` field of the Cycle 290 source, isolated as a
+named law rather than hidden inside the source record.
+-/
+def arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  CategoryTheory.Presieve.Arrows.Compatible Ob.carrier.toPresheaf
+    (fun i : regime.cover.Index =>
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+    (fun i : regime.cover.Index => source.interpret i (source.input i))
+
+/--
+Cycle 319 displayed required-law support.
+
+This predicate isolates the support content that is already present in the
+support-only semantic atom/law source: every displayed local input has a law
+index in its `lawSupport`, and every such selected index is required by the
+site law universe.  It deliberately contains no overlap equality,
+compatibility law, Cech-zero predicate, or residual-zero conclusion.
+-/
+def displayedRequiredLawSupport
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall i : regime.cover.Index,
+    exists lawIndex : S.lawUniverse.Index,
+      lawIndex ∈ source.lawSupport i (source.input i) ∧
+        S.lawUniverse.Required lawIndex
+
+/--
+The support-only source itself constructs the displayed required-law support.
+
+This confirms that `displayedRequiredLawSupport` is not new mathematical
+provenance; it is only a named reading of the existing `lawSupport_nonempty`
+and `lawSupport_required` fields.
+-/
+theorem constructs_displayedRequiredLawSupport
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.displayedRequiredLawSupport := by
+  intro i
+  rcases source.lawSupport_nonempty i (source.input i) with
+    ⟨lawIndex, hLawIndex⟩
+  exact
+    ⟨lawIndex, hLawIndex,
+      source.lawSupport_required i (source.input i) lawIndex hLawIndex⟩
+
+/--
+Cycle 320 displayed required-law fulfillment on selected local objects.
+
+This is the next lower semantic reading after Cycle 319's support predicate:
+each law index displayed in the support-only source is not only marked
+`Required`, but the corresponding law actually holds on a chosen local
+architecture-object reading of that input.  The predicate still contains no
+overlap equality, arrow compatibility, Cech-zero predicate, residual-zero
+predicate, or `law_reads_overlap` field.
+
+The missing part is the evaluator from such local law fulfillment to equality
+of obstruction-sheaf restrictions on common refinements.
+-/
+def displayedRequiredLawsHoldOn
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) : Prop :=
+  forall (i : regime.cover.Index) (lawIndex : S.lawUniverse.Index),
+    lawIndex ∈ source.lawSupport i (source.input i) ->
+      S.lawUniverse.Required lawIndex ->
+        (S.lawUniverse.law lawIndex).holds
+          (objectOfLocalInput i (source.input i))
+
+/--
+If each selected local architecture-object reading is lawful for the site law
+universe, then all displayed required laws hold on those local readings.
+
+This proof uses the actual `LawUniverse.law` semantics through
+`lawfulness_required_holds`; it is still not an overlap-law evaluator.
+-/
+theorem lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse) :
+    source.displayedRequiredLawsHoldOn objectOfLocalInput := by
+  intro i lawIndex _hLawMem hrequired
+  exact AAT.AG.lawfulness_required_holds (hlawful i) hrequired
+
+/--
+A common base section realizes the support-only local interpretations when
+each interpreted section is obtained by restriction along the displayed
+atom/law cover arrow.
+-/
+def commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  Exists fun sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base) =>
+    forall i : regime.cover.Index,
+      source.interpret i (source.input i) =
+        Ob.carrier.toPresheaf.map
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+          sourceSection
+
+/--
+Construct the Cycle 290 presieve-free source once the isolated arrow
+compatibility law is supplied.
+-/
+def toPresieveFreeSemanticAtomLawInputBoundarySource
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := source.interpret
+  compatible := hcompatible
+
+/-- The displayed atom/law cover arrow belongs to the generated presieve. -/
+def coverArrowPresieveMem
+    (i : regime.cover.Index) :
+    regime.cover.presieve
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i) := by
+  change
+    Presieve.ofArrows
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+  exact Presieve.ofArrows.mk i
+
+/--
+The isolated compatibility law is exactly the existence of a compatible
+Mathlib presieve family that evaluates to the support-only interpretations on
+the displayed atom/law cover arrows.
+-/
+theorem arrowCompatibilityLaw_iff_presieveFamilyCompatible
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.arrowCompatibilityLaw <->
+      Exists fun presieveSections :
+        Presieve.FamilyOfElements Ob.carrier.toPresheaf
+          regime.cover.presieve =>
+        presieveSections.Compatible /\
+          (forall i : regime.cover.Index,
+            presieveSections
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) =
+              source.interpret i (source.input i)) := by
+  constructor
+  · intro hcompatible
+    let presieveSections :
+        Presieve.FamilyOfElements Ob.carrier.toPresheaf
+          regime.cover.presieve := by
+      let family :
+          Presieve.FamilyOfElements Ob.carrier.toPresheaf
+            (Presieve.ofArrows
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+              (fun i : regime.cover.Index =>
+                (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)) :=
+        hcompatible.familyOfElements
+      simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        AAT.AG.Site.AATCoverageFamily.presieve] using family
+    refine ⟨presieveSections, ?_, ?_⟩
+    · dsimp [presieveSections]
+      simpa [AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        AAT.AG.Site.AATCoverageFamily.presieve] using
+        hcompatible.familyOfElements_compatible
+    · intro i
+      dsimp [presieveSections]
+      simp [AAT.AG.Cohomology.finitePosetCoverRelativeCover]
+  · rintro ⟨presieveSections, hcompatible, heval⟩
+    intro i j Z gi gj hcomm
+    have hcompat :=
+      hcompatible gi gj
+        (coverArrowPresieveMem i)
+        (coverArrowPresieveMem j)
+        hcomm
+    change
+      Ob.carrier.toPresheaf.map gi.op
+          (presieveSections
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+            (coverArrowPresieveMem i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (presieveSections
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j)
+            (coverArrowPresieveMem j)) at hcompat
+    rw [heval i, heval j] at hcompat
+    exact hcompat
+
+/--
+Cycle 297 fail-closed boundary: if the isolated arrow law is absent, then no
+compatible presieve family can preserve the displayed support-only
+interpretations.
+
+This prevents a proof from bypassing `arrowCompatibilityLaw` by introducing a
+raw `Presieve.FamilyOfElements` whose evaluations are silently identified with
+the support-only semantic atom/law sections.
+-/
+theorem no_presieveFamilyCompatible_preservingDisplayedInterpretation_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun presieveSections :
+        Presieve.FamilyOfElements Ob.carrier.toPresheaf
+          regime.cover.presieve =>
+        presieveSections.Compatible /\
+          (forall i : regime.cover.Index,
+            presieveSections
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) =
+              source.interpret i (source.input i)) := by
+  intro hpresieve
+  exact hmissing
+    ((source.arrowCompatibilityLaw_iff_presieveFamilyCompatible).2 hpresieve)
+
+/--
+A presieve-free source preserves a support-only source when it has the same
+displayed local interpretation on each atom/law cover arrow.
+
+Only the interpreted local sections are compared here.  Atom/law support lists
+may be generated by a different lower presentation, but the downstream route is
+not allowed to change the displayed local sections it claims to realize.
+-/
+def presieveFreeSourcePreservesDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (presieveSource :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall i : regime.cover.Index,
+    presieveSource.interpret i (presieveSource.input i) =
+      source.interpret i (source.input i)
+
+/--
+Any presieve-free source that preserves the displayed support-only
+interpretations reconstructs the isolated arrow law.
+
+Thus a downstream `GeneratedFinitePosetSelectedCoverPresieveFree...` source
+cannot be used as a lower premise unless its own compatibility law is counted:
+preserving the same displayed interpretations immediately proves
+`arrowCompatibilityLaw` for the support-only source.
+-/
+theorem presieveFreeSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (presieveSource :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.presieveFreeSourcePreservesDisplayedInterpretation
+        presieveSource) :
+    source.arrowCompatibilityLaw := by
+  intro i j Z gi gj hcomm
+  have hcompat := presieveSource.compatible i j Z gi gj hcomm
+  change
+    Ob.carrier.toPresheaf.map gi.op
+        (presieveSource.interpret i (presieveSource.input i)) =
+      Ob.carrier.toPresheaf.map gj.op
+        (presieveSource.interpret j (presieveSource.input j)) at hcompat
+  rw [hpreserves i, hpreserves j] at hcompat
+  exact hcompat
+
+/--
+Cycle 297 blocker package: without `arrowCompatibilityLaw`, there is no
+presieve-free semantic atom/law source that preserves the displayed
+support-only interpretations.
+
+This is the exact no-escape statement for the remaining rock face.  A
+presieve-free source may exist for some other local sections, but it cannot be
+used to close this support-only source while keeping the same semantic local
+interpretations unless the arrow law has already been constructed.
+-/
+theorem no_presieveFreeSource_preservingDisplayedInterpretation_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun presieveSource :
+        GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.presieveFreeSourcePreservesDisplayedInterpretation
+          presieveSource := by
+  rintro ⟨presieveSource, hpreserves⟩
+  exact hmissing
+    (source.presieveFreeSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+      presieveSource hpreserves)
+
+/--
+Restriction from one common base section constructs the isolated arrow
+compatibility law by Mathlib's canonical `Presieve.Arrows.toCompatible`.
+-/
+theorem commonRestrictionRealization_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    source.arrowCompatibilityLaw := by
+  rcases hrealized with ⟨sourceSection, hsection⟩
+  have hcompatible :=
+    (CategoryTheory.Presieve.Arrows.toCompatible
+      Ob.carrier.toPresheaf
+      (fun i : regime.cover.Index =>
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+      sourceSection).property
+  intro i j Z gi gj hcomm
+  change
+    Ob.carrier.toPresheaf.map gi.op
+        (source.interpret i (source.input i)) =
+      Ob.carrier.toPresheaf.map gj.op
+        (source.interpret j (source.input j))
+  rw [hsection i, hsection j]
+  exact hcompatible i j Z gi gj hcomm
+
+/--
+Cycle 296 sheaf-descent provenance checkpoint: the isolated arrow
+compatibility law constructs the common base-section realization.
+
+The construction does not assume a `sourceSection` or
+`commonRestrictionRealization`.  It reads the arrow-compatible displayed
+cover family as a Mathlib presieve family, extends it to the atom-generated
+selected cover, applies the obstruction sheaf's descent, and then uses
+`extend_agrees` to identify the glued section's displayed-cover restrictions
+with the original support-only interpretations.
+
+This still leaves `arrowCompatibilityLaw` as material lower data; it only
+removes `commonRestrictionRealization` as an independent premise once that
+arrow law is available.
+-/
+theorem arrowCompatibilityLaw_constructs_commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    source.commonRestrictionRealization := by
+  rcases (source.arrowCompatibilityLaw_iff_presieveFamilyCompatible).1
+      hcompatible with
+    ⟨presieveSections, hpresieveCompatible, heval⟩
+  let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+  let localSections :
+      AAT.AG.Site.AATLocalSectionFamily S Ob.carrier.toPresheaf
+        selectedCover :=
+    presieveSections.sieveExtend
+  let gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf
+        selectedCover :=
+    { localSections := localSections
+      overlapAgreement := hpresieveCompatible.sieveExtend }
+  have hgenerated :=
+    skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem
+  let hFor :
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover :=
+    AAT.AG.Site.AATSheafCondition.cover Ob.carrier.isSheaf
+      selectedCover hgenerated.1
+  let hDescent :
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover :=
+    AAT.AG.Site.AATSheafConditionFor.descent hFor
+  rcases AAT.AG.Site.AATDescent.exists_global hDescent gluingData with
+    ⟨sourceSection, hglobal⟩
+  refine ⟨sourceSection, ?_⟩
+  intro i
+  let coverArrow :=
+    (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i
+  have hglobal_i :
+      Ob.carrier.toPresheaf.map coverArrow.op sourceSection =
+        gluingData.localSections coverArrow
+          (Sieve.le_generate regime.cover.presieve
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+            (coverArrowPresieveMem i)) :=
+    hglobal coverArrow
+      (Sieve.le_generate regime.cover.presieve
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+        (coverArrowPresieveMem i))
+  have hagree :
+      gluingData.localSections coverArrow
+          (Sieve.le_generate regime.cover.presieve
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+            (coverArrowPresieveMem i)) =
+        presieveSections coverArrow (coverArrowPresieveMem i) := by
+    dsimp [gluingData, localSections, coverArrow]
+    simpa [selectedCover] using
+      (CategoryTheory.Presieve.extend_agrees
+        (P := Ob.carrier.toPresheaf)
+        hpresieveCompatible
+        (coverArrowPresieveMem i))
+  exact (hglobal_i.trans (hagree.trans (heval i))).symm
+
+/--
+On the atom-generated selected cover, the support-only arrow compatibility law
+and the common-restriction realization carry the same sheaf-theoretic content.
+
+The forward direction is the Cycle 296 sheaf-descent construction; the reverse
+direction is the Cycle 295 canonical restriction compatibility construction.
+-/
+theorem arrowCompatibilityLaw_iff_commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.arrowCompatibilityLaw <-> source.commonRestrictionRealization := by
+  exact
+    ⟨source.arrowCompatibilityLaw_constructs_commonRestrictionRealization,
+      source.commonRestrictionRealization_constructs_arrowCompatibilityLaw⟩
+
+/--
+Construct the Cycle 290 presieve-free source from support-only data once the
+local interpretations are realized as restrictions of one common base section.
+-/
+def toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+      skeleton :=
+  source.toPresieveFreeSemanticAtomLawInputBoundarySource
+    (source.commonRestrictionRealization_constructs_arrowCompatibilityLaw
+      hrealized)
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 297 base-restriction semantic atom/law source on the displayed presieve.
+
+This is a positive sufficient input shape for the remaining arrow law.  The
+support-only interpretations are not arbitrary: every displayed local section
+is generated by restricting one base section along the atom/law cover arrow.
+The record still keeps that base section as visible lower provenance, so this
+is a checkpoint rather than a final G-06 completion claim.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+  LocalInput : regime.cover.Index -> Type r
+  input : (i : regime.cover.Index) -> LocalInput i
+  atomSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List U.Atom
+  atomSupport_traceVisible :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists atom : U.Atom,
+        atom ∈ atomSupport i localInput ∧
+          semanticSite.sourceTraceToken atom = true
+  lawSupport :
+    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+  lawSupport_nonempty :
+    forall (i : regime.cover.Index) (localInput : LocalInput i),
+      exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ lawSupport i localInput
+  lawSupport_required :
+    forall (i : regime.cover.Index) (localInput : LocalInput i)
+      (lawIndex : S.lawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+
+namespace GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
+Read the base-restriction source as support-only data.  The generated
+`interpret` map is definitionally restriction of `sourceSection` along the
+displayed atom/law cover inclusion.
+-/
+def toSupportOnlySemanticAtomLawInputBoundarySource
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := fun i _localInput =>
+    Ob.carrier.toPresheaf.map
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+      source.sourceSection
+
+/--
+The support-only source generated from base-restriction data has a common
+restriction realization by construction.
+-/
+theorem toSupportOnly_commonRestrictionRealization
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization := by
+  exact ⟨source.sourceSection, fun _ => rfl⟩
+
+/--
+Base-restriction semantic atom/law data constructs the isolated support-only
+arrow law by presheaf functoriality.
+-/
+theorem toSupportOnly_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw := by
+  exact
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.commonRestrictionRealization_constructs_arrowCompatibilityLaw
+        source.toSupportOnly_commonRestrictionRealization
+
+end GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
 Cycle 291 presieve pointwise semantic atom/law local input.
 
 This is the cover-indexed analogue of the finite-poset pointwise
@@ -15989,6 +17192,1789 @@ theorem presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_presieveFr
     ⟨⟨source⟩,
       presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
         skeleton source,
+      source.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 295 provenance checkpoint: common-restriction support-only data
+constructs the old presieve-free source and the presieve section-extension law.
+
+The theorem does not count support-only data as enough.  It proof-uses the
+common-restriction realization to construct the isolated arrow compatibility
+law, then feeds that law into the Cycle 290 source and presieve-family route.
+-/
+theorem commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hrealized : source.commonRestrictionRealization) :
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.arrowCompatibilityLaw /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hcompatible :=
+    source.commonRestrictionRealization_constructs_arrowCompatibilityLaw
+      hrealized
+  let presieveSource :=
+    source.toPresieveFreeSemanticAtomLawInputBoundarySource hcompatible
+  exact
+    ⟨hcompatible,
+      ⟨presieveSource⟩,
+      presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        skeleton presieveSource,
+      presieveSource.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
+
+/--
+Cycle 296 proof-use checkpoint: an arrow-compatible support-only source now
+constructs the common-restriction realization and then feeds that realization
+through the existing Cycle 295 presieve source/law route.
+
+This theorem does not construct the arrow law from atom/law choices alone.
+Its role is to remove `commonRestrictionRealization` as a separate theorem
+argument once the displayed-cover arrow law has been proved from lower
+semantic geometry.
+-/
+theorem arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.commonRestrictionRealization /\
+      source.arrowCompatibilityLaw /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hrealized :=
+    source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible
+  have hpackage :=
+    source.commonRestrictionRealization_constructs_presieveFreeSource_and_presieveLaw
+      hrealized
+  exact
+    ⟨hrealized,
+      hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+namespace GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 297 proof-use checkpoint: once local interpretations are generated as
+base restrictions, the support-only source reaches the Cycle 296
+common-restriction and presieve-free-source route without passing
+`arrowCompatibilityLaw`, a compatible presieve family, or a downstream descent
+output as a theorem argument.
+
+The visible remaining lower datum is the base section itself; it is not hidden
+in a certificate field.
+-/
+theorem baseRestriction_constructs_supportOnly_arrowCompatibility_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let supportOnly :=
+      source.toSupportOnlySemanticAtomLawInputBoundarySource
+    let hcompatible :=
+      source.toSupportOnly_constructs_arrowCompatibilityLaw
+    let hrealized :=
+      supportOnly.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      supportOnly.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    supportOnly.arrowCompatibilityLaw /\
+      supportOnly.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        presieveSource.interpret i (presieveSource.input i) =
+          Ob.carrier.toPresheaf.map
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+            source.sourceSection) := by
+  dsimp
+  let supportOnly :=
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+  let hcompatible :=
+    source.toSupportOnly_constructs_arrowCompatibilityLaw
+  let hrealized :=
+    supportOnly.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible
+  have hpackage :=
+    supportOnly.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hcompatible
+  refine
+    ⟨hcompatible,
+      hrealized,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      ?_⟩
+  intro i
+  rfl
+
+end GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 298 display-preserving base-restriction comparison.
+
+A base-restriction source preserves a support-only source when the local
+sections generated by restricting its base section are exactly the displayed
+support-only interpretations.  This is the comparison needed to prevent a
+base-restriction presentation from changing the semantic local sections while
+claiming to close the same source.
+-/
+def baseRestrictionSourcePreservesDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall i : regime.cover.Index,
+    baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.interpret i
+        (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.input i) =
+      source.interpret i (source.input i)
+
+/--
+Cycle 298 positive boundary: once the isolated arrow law is available, the
+base-restriction source preserving the displayed support-only interpretations
+is generated by the same sheaf-descent construction as the common restriction
+realization.
+
+This does not construct the arrow law from atom/law choices.  It removes the
+base-restriction record itself as an independent premise below that law.
+-/
+theorem arrowCompatibilityLaw_constructs_baseRestrictionSource_preservingDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    Exists fun baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource /\
+      baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.arrowCompatibilityLaw /\
+      baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.commonRestrictionRealization := by
+  rcases source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible with
+    ⟨sourceSection, hsection⟩
+  let baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton :=
+    { sourceSection := sourceSection
+      LocalInput := source.LocalInput
+      input := source.input
+      atomSupport := source.atomSupport
+      atomSupport_traceVisible := source.atomSupport_traceVisible
+      lawSupport := source.lawSupport
+      lawSupport_nonempty := source.lawSupport_nonempty
+      lawSupport_required := source.lawSupport_required }
+  refine ⟨baseSource, ?_, ?_, ?_⟩
+  · intro i
+    dsimp [baseRestrictionSourcePreservesDisplayedInterpretation, baseSource,
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource.toSupportOnlySemanticAtomLawInputBoundarySource]
+    exact (hsection i).symm
+  · exact baseSource.toSupportOnly_constructs_arrowCompatibilityLaw
+  · exact baseSource.toSupportOnly_commonRestrictionRealization
+
+/--
+Cycle 298 reverse boundary: a display-preserving base-restriction source
+reconstructs the isolated arrow compatibility law for the original
+support-only source.
+
+Thus the base-restriction record cannot be used as a lower provenance escape:
+if it preserves the displayed interpretations, it already carries exactly the
+arrow law needed by Cycle 296/297.
+-/
+theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    source.arrowCompatibilityLaw := by
+  intro i j Z gi gj hcomm
+  have hcompat :=
+    baseSource.toSupportOnly_constructs_arrowCompatibilityLaw i j Z gi gj
+      hcomm
+  change
+    Ob.carrier.toPresheaf.map gi.op
+        (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.interpret i
+          (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.input i)) =
+      Ob.carrier.toPresheaf.map gj.op
+        (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.interpret j
+          (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource.input j))
+      at hcompat
+  rw [hpreserves i, hpreserves j] at hcompat
+  exact hcompat
+
+/--
+Cycle 298 exact boundary: display-preserving base-restriction provenance is
+equivalent to the isolated arrow compatibility law.
+
+The forward direction packages Cycle 296 descent into a base-restriction source.
+The reverse direction unfolds Cycle 297 base-restriction compatibility and
+transports it across the displayed-interpretation preservation equations.
+-/
+theorem arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.arrowCompatibilityLaw <->
+      Exists fun baseSource :
+        GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource := by
+  constructor
+  · intro hcompatible
+    rcases
+        source.arrowCompatibilityLaw_constructs_baseRestrictionSource_preservingDisplayedInterpretation
+          hcompatible with
+      ⟨baseSource, hpreserves, _hbaseCompatible, _hbaseRealized⟩
+    exact ⟨baseSource, hpreserves⟩
+  · rintro ⟨baseSource, hpreserves⟩
+    exact
+      source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+        baseSource hpreserves
+
+/--
+Cycle 298 no-escape theorem: without the isolated arrow law, no
+base-restriction source can preserve the displayed support-only semantic local
+interpretations.
+
+The result keeps the remaining rock face precise: a base section may be useful
+as sufficient input, but it cannot count as atom/law provenance for this source
+unless it also reconstructs the same arrow-level overlap law.
+-/
+theorem no_baseRestrictionSource_preservingDisplayedInterpretation_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun baseSource :
+        GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource := by
+  intro hbase
+  exact hmissing
+    ((source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).2
+      hbase)
+
+/--
+Cycle 299 pointwise support-only semantic atom/law overlap law.
+
+This is the fully unfolded displayed-cover law below
+`arrowCompatibilityLaw`.  For any two displayed atom/law cover arrows and any
+common refinement square, the two interpreted local obstruction sections have
+the same restriction to the refinement.  The statement also re-exposes the
+trace-visible atom and required-law support already carried by the support-only
+source, so the next constructive layer has a precise semantic atom/law target
+to hit.
+
+No base section, common-restriction realization, raw presieve family,
+presieve-free source, or base-restriction source is accepted here.
+-/
+def pointwiseSupportOnlySemanticAtomLawOverlapLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall (i j : regime.cover.Index) {Z : S.category}
+      (gi :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (gj :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
+    gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
+        gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport i (source.input i) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport i (source.input i) ∧
+          S.lawUniverse.Required lawIndex) /\
+      (exists atom : U.Atom,
+        atom ∈ source.atomSupport j (source.input j) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ source.lawSupport j (source.input j) ∧
+          S.lawUniverse.Required lawIndex) /\
+      Ob.carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 299 exact boundary: the pointwise support-only semantic atom/law overlap
+law is exactly the isolated `arrowCompatibilityLaw`.
+
+The forward direction forgets the support witnesses and keeps the displayed
+restriction equality.  The reverse direction combines the isolated arrow law
+with the support-only source's visible atom and law support witnesses.  Thus
+adding trace-visible atom support and required-law support around the overlap
+law does not by itself construct the missing compatibility; the restriction
+equality remains the same material premise.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.arrowCompatibilityLaw := by
+  constructor
+  · intro hlaw i j Z gi gj hcomm
+    rcases hlaw i j gi gj hcomm with
+      ⟨_hAtomI, _hLawI, _hAtomJ, _hLawJ, hoverlap⟩
+    exact hoverlap
+  · intro hcompatible i j Z gi gj hcomm
+    rcases source.lawSupport_nonempty i (source.input i) with
+      ⟨lawIndexI, hLawIndexI⟩
+    rcases source.lawSupport_nonempty j (source.input j) with
+      ⟨lawIndexJ, hLawIndexJ⟩
+    exact
+      ⟨source.atomSupport_traceVisible i (source.input i),
+        ⟨lawIndexI, hLawIndexI,
+          source.lawSupport_required i (source.input i)
+            lawIndexI hLawIndexI⟩,
+        source.atomSupport_traceVisible j (source.input j),
+        ⟨lawIndexJ, hLawIndexJ,
+          source.lawSupport_required j (source.input j)
+            lawIndexJ hLawIndexJ⟩,
+        hcompatible i j Z gi gj hcomm⟩
+
+/--
+Cycle 300 bare support-only overlap restriction equality.
+
+This removes the semantic atom and required-law witnesses from the Cycle 299
+pointwise law.  The result is the exact remaining restriction equality: for
+every common refinement of two displayed atom/law cover arrows, the two
+interpreted local obstruction sections restrict to the same section.
+
+The support witnesses are intentionally absent here.  They are already carried
+by the support-only source and by source-section-free atom/law choices; they
+do not generate this equality.
+-/
+def pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  forall (i j : regime.cover.Index) {Z : S.category}
+      (gi :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (gj :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
+    gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
+        gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
+      Ob.carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        Ob.carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 300 exact boundary: the bare overlap restriction equality is exactly
+`arrowCompatibilityLaw`.
+
+This theorem identifies the rock face below Cycle 299.  Any future
+canonical/free semantic atom/law geometry that claims to construct the
+pointwise overlap law must construct this equality; support witnesses alone
+cannot lower it.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality <->
+      source.arrowCompatibilityLaw := by
+  rfl
+
+/--
+Cycle 300 decomposition of the Cycle 299 pointwise semantic atom/law law.
+
+The forward direction forgets support witnesses.  The reverse direction adds
+only trace-visible atom support and required-law support already available
+from the support-only source.  Thus the support part is not a separate
+provenance problem; the material premise is precisely
+`pointwiseSupportOnlyOverlapRestrictionEquality`.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw.trans
+      source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw.symm
+
+/--
+Cycle 300 proof-use checkpoint: the bare overlap restriction equality is
+already enough to run the Cycle 299 route.
+
+This does not construct the equality.  It removes semantic support witnesses
+as a possible explanation of the remaining gap and leaves the next positive
+obligation as a genuine construction of the restriction equality from
+canonical/free atom/law overlap geometry.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    let hlaw :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).2
+        hoverlap
+    let hcompatible :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+        hlaw
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hlaw :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).2
+      hoverlap
+  let hcompatible :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+      hlaw
+  have hpackage :=
+    source.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hcompatible
+  exact
+    ⟨hoverlap,
+      hlaw,
+      hpackage.2.1,
+      hpackage.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2⟩
+
+/--
+Cycle 300 no-escape theorem: without `arrowCompatibilityLaw`, the bare
+overlap restriction equality is absent as well.
+
+This is the fail-closed form of the decomposition: a future construction may
+target `pointwiseSupportOnlyOverlapRestrictionEquality`, but it cannot be
+counted as lower provenance unless it really reconstructs the same
+compatibility law.
+-/
+theorem no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  intro hoverlap
+  exact hmissing
+    ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      hoverlap)
+
+/--
+Cycle 322 restriction-level semantic law evaluator boundary.
+
+This is the smallest named shape of the missing law-semantics bridge: for any
+displayed common refinement, supported required laws that hold on the selected
+local architecture-object readings evaluate to equality of the two restricted
+obstruction sections.
+
+The predicate is not stored on the support-only source, and it is not counted
+as completion evidence by itself.  It names exactly the non-field semantic
+evaluator that a future lower atom/law geometry must construct.
+-/
+def displayedRequiredLawRestrictionEvaluator
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) : Prop :=
+  forall (i j : regime.cover.Index) {Z : S.category}
+      (gi :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+      (gj :
+        Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
+    gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
+        gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
+      forall (lawIndexI lawIndexJ : S.lawUniverse.Index),
+        lawIndexI ∈ source.lawSupport i (source.input i) ->
+          lawIndexJ ∈ source.lawSupport j (source.input j) ->
+            S.lawUniverse.Required lawIndexI ->
+              S.lawUniverse.Required lawIndexJ ->
+                (S.lawUniverse.law lawIndexI).holds
+                    (objectOfLocalInput i (source.input i)) ->
+                  (S.lawUniverse.law lawIndexJ).holds
+                      (objectOfLocalInput j (source.input j)) ->
+                    Ob.carrier.toPresheaf.map gi.op
+                        (source.interpret i (source.input i)) =
+                      Ob.carrier.toPresheaf.map gj.op
+                        (source.interpret j (source.input j))
+
+/--
+Cycle 322 positive checkpoint: the named restriction-level law evaluator,
+combined with displayed required-law fulfillment, constructs the bare overlap
+restriction equality.
+
+The proof deliberately chooses law indices only from the support-only source's
+existing `lawSupport_nonempty` / `lawSupport_required` evidence.  It does not
+pass `arrowCompatibilityLaw`, residual-zero, `sourceC0CechZero`, or an `H1`
+zero predicate.
+-/
+theorem displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hholds :
+      source.displayedRequiredLawsHoldOn objectOfLocalInput)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  intro i j Z gi gj hcomm
+  rcases source.lawSupport_nonempty i (source.input i) with
+    ⟨lawIndexI, hLawIndexI⟩
+  rcases source.lawSupport_nonempty j (source.input j) with
+    ⟨lawIndexJ, hLawIndexJ⟩
+  have hrequiredI :
+      S.lawUniverse.Required lawIndexI :=
+    source.lawSupport_required i (source.input i) lawIndexI hLawIndexI
+  have hrequiredJ :
+      S.lawUniverse.Required lawIndexJ :=
+    source.lawSupport_required j (source.input j) lawIndexJ hLawIndexJ
+  exact
+    evaluator i j gi gj hcomm lawIndexI lawIndexJ hLawIndexI hLawIndexJ
+      hrequiredI hrequiredJ
+      (hholds i lawIndexI hLawIndexI hrequiredI)
+      (hholds j lawIndexJ hLawIndexJ hrequiredJ)
+
+/--
+Cycle 322 proof-use checkpoint: displayed required-law fulfillment plus the
+restriction evaluator reconstructs the isolated arrow compatibility law.
+
+This is still not target completion, because the evaluator remains a material
+premise.  It fixes the exact semantic map that has to be generated by a lower
+atom/law geometry layer.
+-/
+theorem displayedRequiredLawsHoldOn_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hholds :
+      source.displayedRequiredLawsHoldOn objectOfLocalInput)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    source.arrowCompatibilityLaw := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        objectOfLocalInput hholds evaluator)
+
+/--
+Cycle 322 lawful-local-object route: local `AAT.AG.Lawfulness` supplies the
+displayed `Law.holds` proofs, but the restriction-level evaluator is still the
+separate material bridge to overlap equality.
+-/
+theorem lawfulLocalObjects_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    source.arrowCompatibilityLaw := by
+  exact
+    source.displayedRequiredLawsHoldOn_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+      objectOfLocalInput
+      (source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+        objectOfLocalInput hlawful)
+      evaluator
+
+/--
+Cycle 322 no-constructor corollary: if the isolated arrow law is absent, then
+no restriction-level evaluator of displayed required laws can exist for lawful
+local architecture-object readings.
+
+This prevents treating `Law.holds` itself as the missing overlap evaluator.
+-/
+theorem no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
+  intro evaluator
+  exact hmissing
+    (source.lawfulLocalObjects_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+      objectOfLocalInput hlawful evaluator)
+
+/--
+Cycle 323 current-law API boundary.
+
+This is exactly the law-side information currently exposed by `LawUniverse`
+and the support-only source for the selected local object readings:
+law-universe coverage and exactness assumptions as bare propositions,
+displayed required-law support, and displayed `Law.holds` proofs.
+
+It intentionally contains no common-refinement arrows, no restriction map
+equality, no `arrowCompatibilityLaw`, no residual-zero, and no `H1` zero.
+-/
+def currentLawUniverseHoldsInputBoundary
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) : Prop :=
+  S.lawUniverse.coverageAssumptions /\
+    S.lawUniverse.exactnessAssumptions /\
+    source.displayedRequiredLawSupport /\
+    source.displayedRequiredLawsHoldOn objectOfLocalInput
+
+/--
+The current law-universe assumptions and lawful local object readings construct
+the current-law API boundary.
+
+This proof uses `Lawfulness` only to obtain displayed `Law.holds`; it does not
+produce a restriction-level semantic evaluator.
+-/
+theorem lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse) :
+    source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
+  exact
+    ⟨hcoverage,
+      hexactness,
+      source.constructs_displayedRequiredLawSupport,
+      source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+        objectOfLocalInput hlawful⟩
+
+/--
+Cycle 323 source-level obstruction: the current `LawUniverse` / `Law.holds`
+API boundary cannot uniformly construct the restriction-level evaluator while
+the same support-only source lacks `arrowCompatibilityLaw`.
+
+Any such constructor would turn the law-only boundary into
+`displayedRequiredLawRestrictionEvaluator`; Cycle 322 then reconstructs
+`source.arrowCompatibilityLaw`, contradicting `hmissing`.
+-/
+theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) := by
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact
+    source.no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hlawful hmissing (constructor hboundary)
+
+/--
+Cycle 324 direct bare-equality obstruction.
+
+Cycle 323 closed the route from the current law-universe boundary to the
+restriction evaluator.  This theorem closes the even more direct bypass:
+the same current boundary cannot be used to construct the bare overlap
+restriction equality while `arrowCompatibilityLaw` is absent.  Any such
+constructor immediately reconstructs `arrowCompatibilityLaw` by the Cycle 300
+exact boundary.
+-/
+theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact hmissing
+    ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (constructor hboundary))
+
+/--
+Cycle 324 interpretation-replacement boundary.
+
+This operation keeps exactly the same local input family, selected inputs,
+atom support, law support, and required-law evidence, but replaces the
+displayed obstruction-sheaf sections.  It is the smallest source-level test
+for whether a proposed law-side boundary actually sees restriction semantics,
+rather than only selected `Law.holds` proofs.
+-/
+def withDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        Ob.carrier.toPresheaf.obj
+          (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))) :
+    GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+      skeleton where
+  LocalInput := source.LocalInput
+  input := source.input
+  atomSupport := source.atomSupport
+  atomSupport_traceVisible := source.atomSupport_traceVisible
+  lawSupport := source.lawSupport
+  lawSupport_nonempty := source.lawSupport_nonempty
+  lawSupport_required := source.lawSupport_required
+  interpret := interpret'
+
+/--
+Cycle 324 source-level obstruction: the current law-universe boundary is
+blind to the displayed obstruction-sheaf interpretation.
+
+Replacing every displayed local section while keeping the same atom/law
+support and local architecture-object readings leaves
+`currentLawUniverseHoldsInputBoundary` definitionally unchanged.  Thus the
+current boundary cannot by itself explain equality of restrictions between
+the displayed sections; a genuine restriction-semantics layer must observe
+`interpret`.
+-/
+theorem currentLawUniverseHoldsInputBoundary_withDisplayedInterpretation_iff
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        Ob.carrier.toPresheaf.obj
+          (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)))
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U) :
+    (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+        objectOfLocalInput <->
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
+  rfl
+
+/--
+Cycle 324 no-constructor corollary: an interpretation-blind current-law
+boundary cannot uniformly supply restriction evaluators for displayed-section
+replacements.
+
+The proof tests the proposed constructor on the original interpretation.  If
+it produced a `displayedRequiredLawRestrictionEvaluator`, Cycle 322 would
+reconstruct `arrowCompatibilityLaw`, contradicting `hmissing`.  Therefore a
+future lower semantic layer must add restriction semantics that actually reads
+the displayed obstruction-sheaf sections, not only the current law-universe
+boundary.
+-/
+theorem no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i : regime.cover.Index) -> source.LocalInput i ->
+        AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (forall interpret' :
+        (i : regime.cover.Index) -> source.LocalInput i ->
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)),
+        (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+            objectOfLocalInput ->
+          (source.withDisplayedInterpretation interpret').displayedRequiredLawRestrictionEvaluator
+            objectOfLocalInput) := by
+  intro constructor
+  let replaced := source.withDisplayedInterpretation source.interpret
+  have hlawfulReplaced :
+      forall i : regime.cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (replaced.input i))
+          S.lawUniverse := by
+    simpa [replaced, withDisplayedInterpretation] using hlawful
+  have hboundary :
+      replaced.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    replaced.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawfulReplaced
+  have hmissingReplaced : ¬ replaced.arrowCompatibilityLaw := by
+    simpa [replaced, withDisplayedInterpretation] using hmissing
+  exact
+    replaced.no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hlawfulReplaced hmissingReplaced
+      (constructor source.interpret hboundary)
+
+/--
+Cycle 299 proof-use checkpoint: once the pointwise support-only overlap law is
+available, it reconstructs `arrowCompatibilityLaw` and feeds the existing
+Cycle 296 common-restriction / presieve-free-source route.
+
+This theorem does not construct the pointwise law from atom/law choices alone.
+It fixes the exact law future cycles must generate from canonical/free
+semantic atom/law overlap geometry.
+-/
+theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hlaw : source.pointwiseSupportOnlySemanticAtomLawOverlapLaw) :
+    let hcompatible :=
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+        hlaw
+    let hrealized :=
+      source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+        hcompatible
+    let presieveSource :=
+      source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+        hrealized
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : presieveSource.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ presieveSource.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ presieveSource.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = presieveSource.interpret i localInput /\
+            presieveSource.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (coverArrowPresieveMem i) = localSection) := by
+  dsimp
+  let hcompatible :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+      hlaw
+  have hpackage :=
+    source.arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hcompatible
+  exact
+    ⟨hlaw,
+      hpackage.2.1,
+      hpackage.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 292 restriction-realized presieve pointwise semantic atom/law basis.
+
+This lowers the Cycle 291 `compatible` field.  The local section on each
+displayed cover arrow is not arbitrary: it is the restriction of one base
+section along that cover arrow.  Hence the arrow-level compatibility is the
+canonical `Presieve.Arrows.toCompatible` law for a presheaf, not an extra
+overlap certificate.
+
+The basis still keeps the base section and the cover-indexed semantic atom/law
+choices as visible input-boundary data.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  sourceSection :
+    Ob.carrier.toPresheaf.obj
+      (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)
+  atom : regime.cover.Index -> U.Atom
+  atom_traceVisible :
+    forall i : regime.cover.Index,
+      semanticSite.sourceTraceToken (atom i) = true
+  lawIndex : regime.cover.Index -> S.lawUniverse.Index
+  law_required :
+    forall i : regime.cover.Index,
+      S.lawUniverse.Required (lawIndex i)
+
+namespace GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+
+/--
+The local input generated by restricting the common base section along the
+displayed atom/law cover arrow.
+-/
+def localInput
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (i : regime.cover.Index) :
+    GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocalInput
+      skeleton i where
+  atom := basis.atom i
+  atom_traceVisible := basis.atom_traceVisible i
+  lawIndex := basis.lawIndex i
+  law_required := basis.law_required i
+  localSection :=
+    Ob.carrier.toPresheaf.map
+      ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+      basis.sourceSection
+
+/--
+Read the restriction-realized basis as the Cycle 291 pointwise basis.
+
+The `compatible` proof is generated by Mathlib's canonical arrow-family
+construction for restrictions of a single base section.
+-/
+def toPresievePointwiseSemanticAtomLawInputBoundaryBasis
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+      skeleton where
+  input := fun i => basis.localInput i
+  compatible := by
+    simpa [localInput] using
+      (CategoryTheory.Presieve.Arrows.toCompatible
+        Ob.carrier.toPresheaf
+        (fun i : regime.cover.Index =>
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+        basis.sourceSection).property
+
+@[simp]
+theorem localInput_localSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (i : regime.cover.Index) :
+    (basis.localInput i).localSection =
+      Ob.carrier.toPresheaf.map
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+        basis.sourceSection := by
+  rfl
+
+end GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+
+/--
+Cycle 293 source-section-free presieve semantic atom/law choices.
+
+This is the part of the Cycle 292 restriction-realized presieve basis that is
+genuinely cover-indexed semantic atom/law input.  It intentionally omits the
+common base `sourceSection`; that section must be produced by the generated
+selected-cover effective-gluing/descent route before the Cycle 292
+restriction-realized basis can be formed.
+-/
+structure GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)) where
+  atom : regime.cover.Index -> U.Atom
+  atom_traceVisible :
+    forall i : regime.cover.Index,
+      semanticSite.sourceTraceToken (atom i) = true
+  lawIndex : regime.cover.Index -> S.lawUniverse.Index
+  law_required :
+    forall i : regime.cover.Index,
+      S.lawUniverse.Required (lawIndex i)
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+
+/--
+Form the Cycle 292 restriction-realized presieve basis once effective gluing
+has produced the common base section.
+-/
+def withSourceSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+      skeleton where
+  sourceSection := sourceSection
+  atom := choices.atom
+  atom_traceVisible := choices.atom_traceVisible
+  lawIndex := choices.lawIndex
+  law_required := choices.law_required
+
+@[simp]
+theorem withSourceSection_sourceSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base)) :
+    (choices.withSourceSection sourceSection).sourceSection = sourceSection := by
+  rfl
+
+@[simp]
+theorem withSourceSection_localInput_localSection
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (sourceSection :
+      Ob.carrier.toPresheaf.obj
+        (op (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base))
+    (i : regime.cover.Index) :
+    ((choices.withSourceSection sourceSection).localInput i).localSection =
+      Ob.carrier.toPresheaf.map
+        ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+        sourceSection := by
+  rfl
+
+end GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+
+namespace GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+/--
+Cycle 300 comparison between source-section-free atom/law choices and a
+support-only source.
+
+This comparison records only that the chosen atoms and laws are drawn from the
+support-only source's displayed support lists.  It does not mention local
+sections, a base section, presieve compatibility, or overlap restriction
+equality.
+-/
+def sourceSectionFreeChoicesPreserveDisplayedSupport
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton) : Prop :=
+  forall i : regime.cover.Index,
+    choices.atom i ∈ source.atomSupport i (source.input i) ∧
+      choices.lawIndex i ∈ source.lawSupport i (source.input i)
+
+/--
+Cycle 300 support/equality split for source-section-free choices.
+
+Source-section-free atom/law choices can supply the trace-visible atom and
+required-law witnesses around each overlap, provided they preserve the
+support-only source's displayed support lists.  The overlap restriction
+equality itself remains a separate input.
+-/
+theorem sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpreserves :
+      source.sourceSectionFreeChoicesPreserveDisplayedSupport choices)
+    (hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw := by
+  intro i j Z gi gj hcomm
+  have hpreserves_i := hpreserves i
+  have hpreserves_j := hpreserves j
+  exact
+    ⟨⟨choices.atom i, hpreserves_i.1, choices.atom_traceVisible i⟩,
+      ⟨choices.lawIndex i, hpreserves_i.2, choices.law_required i⟩,
+      ⟨choices.atom j, hpreserves_j.1, choices.atom_traceVisible j⟩,
+      ⟨choices.lawIndex j, hpreserves_j.2, choices.law_required j⟩,
+      hoverlap i j gi gj hcomm⟩
+
+/--
+Cycle 300 exact reduction under support-preserving source-section-free choices.
+
+Once the choices are known to preserve the displayed support lists, the
+Cycle 299 pointwise semantic atom/law law is equivalent to the bare overlap
+restriction equality.  Therefore source-section-free choices are not the
+missing provenance for compatibility; they only account for the semantic
+support witnesses around the equality.
+-/
+theorem sourceSectionFreeChoices_reduce_pointwiseSupportOnlySemanticAtomLawOverlapLaw_to_overlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpreserves :
+      source.sourceSectionFreeChoicesPreserveDisplayedSupport choices) :
+    source.pointwiseSupportOnlySemanticAtomLawOverlapLaw <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  constructor
+  · intro hlaw
+    exact
+      (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).1
+        hlaw
+  · intro hoverlap
+    exact
+      source.sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+        choices hpreserves hoverlap
+
+/--
+Cycle 300 no-escape theorem for source-section-free choices.
+
+If the isolated arrow compatibility law is missing, there is no
+support-preserving source-section-free atom/law choice package together with
+the bare overlap restriction equality.  The choices may still be valid
+semantic input-boundary data, but they cannot close the compatibility gap
+without the equality.
+-/
+theorem no_sourceSectionFreeChoices_with_overlapRestrictionEquality_without_arrowCompatibilityLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun choices :
+        GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+          skeleton =>
+        source.sourceSectionFreeChoicesPreserveDisplayedSupport choices /\
+          source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  rintro ⟨_choices, _hpreserves, hoverlap⟩
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+/--
+Cycle 301 positive checkpoint: display-preserving base-restriction provenance
+constructs the bare support-only overlap restriction equality.
+
+This is the first positive route below Cycle 300's exposed rock face.  The
+theorem does not accept `arrowCompatibilityLaw`, `commonRestrictionRealization`,
+a presieve-free source, a raw presieve family, or a standalone overlap equality.
+Instead, the displayed support-only interpretations are required to be exactly
+the restrictions of one base section, and the equality follows by presheaf
+functoriality.
+-/
+theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+      (source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+        baseSource hpreserves)
+
+/--
+Cycle 301 exact boundary: the bare overlap restriction equality is equivalent
+to display-preserving base-restriction provenance.
+
+The forward direction is the Cycle 298 descent construction read through the
+Cycle 300 equality boundary.  The reverse direction is the positive Cycle 301
+base-restriction construction above.  Thus the next constructive layer must
+provide an actual displayed base-restriction source; support-only atom/law
+choices still do not generate the equality by themselves.
+-/
+theorem pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality <->
+      Exists fun baseSource :
+        GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource := by
+  exact
+    source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw.trans
+      source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+
+/--
+Cycle 301 proof-use checkpoint: display-preserving base-restriction provenance
+runs the full Cycle 300 overlap-equality route.
+
+Once the base-restriction source preserves the displayed support-only local
+sections, it constructs the bare overlap equality, the pointwise semantic
+atom/law overlap law, the isolated arrow compatibility law, the common
+restriction realization, and the presieve section-extension law.  The base
+section remains visible lower provenance, so this is not a completion claim.
+-/
+theorem baseRestrictionSource_preservingDisplayedInterpretation_constructs_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      source.arrowCompatibilityLaw /\
+      source.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  let hoverlap :=
+    source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      baseSource hpreserves
+  have hpackage :=
+    source.pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestriction_presieveFreeSource_and_presieveLaw
+      hoverlap
+  exact
+    ⟨hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2.1,
+      hpackage.2.2.2.2.2.1⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+
+namespace GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 302 self-preservation checkpoint: a base-restriction source preserves
+the displayed interpretation of the support-only source it generates.
+
+This does not construct the base section from lower semantic atom/law geometry.
+It removes only the separate display-preservation proof when the support-only
+source is the canonical one read from the same base-restriction source.
+-/
+theorem toSupportOnly_selfPreservesDisplayedInterpretation
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.baseRestrictionSourcePreservesDisplayedInterpretation source := by
+  intro _i
+  rfl
+
+/--
+Cycle 302 proof-use checkpoint: a base-restriction source, read as its own
+support-only source, constructs the bare overlap equality exposed in Cycle 300.
+
+Compared with Cycle 301, this theorem no longer needs an external support-only
+source or a separate display-preservation premise.  The base section itself is
+still visible lower provenance, so this is not a final G-06 discharge.
+-/
+theorem toSupportOnly_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    (source.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+        source.toSupportOnly_constructs_arrowCompatibilityLaw
+
+/--
+Cycle 302 route checkpoint: the self-preserving base-restriction source runs
+the full Cycle 300 overlap-equality route for its generated support-only source.
+
+The theorem exposes the generated display-preservation proof, the bare overlap
+equality, the pointwise semantic atom/law overlap law, the isolated arrow law,
+common restriction, and the presieve section-extension law.  It deliberately
+keeps the base-restriction source as theorem input.
+-/
+theorem baseRestriction_constructs_selfPreservingSupportOnly_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let supportOnly :=
+      source.toSupportOnlySemanticAtomLawInputBoundarySource
+    supportOnly.baseRestrictionSourcePreservesDisplayedInterpretation source /\
+      supportOnly.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      supportOnly.pointwiseSupportOnlySemanticAtomLawOverlapLaw /\
+      supportOnly.arrowCompatibilityLaw /\
+      supportOnly.commonRestrictionRealization /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  dsimp
+  let supportOnly :=
+    source.toSupportOnlySemanticAtomLawInputBoundarySource
+  have hpreserves :
+      supportOnly.baseRestrictionSourcePreservesDisplayedInterpretation source :=
+    source.toSupportOnly_selfPreservesDisplayedInterpretation
+  have hpackage :=
+    supportOnly.baseRestrictionSource_preservingDisplayedInterpretation_constructs_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+      source hpreserves
+  exact
+    ⟨hpreserves,
+      hpackage.1,
+      hpackage.2.1,
+      hpackage.2.2.1,
+      hpackage.2.2.2.1,
+      hpackage.2.2.2.2.1,
+      hpackage.2.2.2.2.2⟩
+
+end GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 294 source-to-choices bridge: a presieve-free semantic atom/law source
+constructs the source-section-free atom/law choices required by Cycle 293.
+
+The selected atom and law are chosen from the source's displayed support
+witnesses for each cover arrow.  This does not construct the source itself or
+its arrow-level compatibility law; it only prevents the Cycle 293 choices from
+remaining a separate theorem argument once such a source is available.
+-/
+def GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource.toSourceSectionFreeChoices
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+      skeleton where
+  atom := fun i =>
+    Classical.choose
+      (source.atomSupport_traceVisible i (source.input i))
+  atom_traceVisible := by
+    intro i
+    exact
+      (Classical.choose_spec
+        (source.atomSupport_traceVisible i (source.input i))).2
+  lawIndex := fun i =>
+    Classical.choose
+      (source.lawSupport_nonempty i (source.input i))
+  law_required := by
+    intro i
+    exact
+      source.lawSupport_required i (source.input i)
+        (Classical.choose
+          (source.lawSupport_nonempty i (source.input i)))
+        (Classical.choose_spec
+          (source.lawSupport_nonempty i (source.input i)))
+
+/--
+Cycle 294 effective-gluing input checkpoint: a single presieve-free
+semantic atom/law source derives both Cycle 293 inputs.
+
+The resulting choices are extracted from atom/law support witnesses, and the
+presieve law is generated by the existing `toPresieveFamily` compatibility
+route.  The source's own compatibility field remains material lower data, so
+this is not a completion claim.
+-/
+theorem presieveFreeSemanticAtomLawInputBoundarySource_constructs_sourceSectionFreeChoices_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (source :
+      GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let choices := source.toSourceSectionFreeChoices
+    Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        choices.atom i ∈ source.atomSupport i (source.input i) ∧
+          semanticSite.sourceTraceToken (choices.atom i) = true) /\
+      (forall i : regime.cover.Index,
+        choices.lawIndex i ∈ source.lawSupport i (source.input i) ∧
+          S.lawUniverse.Required (choices.lawIndex i)) := by
+  dsimp
+  let choices := source.toSourceSectionFreeChoices
+  refine
+    ⟨⟨choices⟩,
+      presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        skeleton source,
+      ?_,
+      ?_⟩
+  · intro i
+    exact
+      Classical.choose_spec
+        (source.atomSupport_traceVisible i (source.input i))
+  · intro i
+    have hmem :
+        choices.lawIndex i ∈ source.lawSupport i (source.input i) := by
+      exact
+        Classical.choose_spec
+          (source.lawSupport_nonempty i (source.input i))
+    exact
+      ⟨hmem, choices.law_required i⟩
+
+/--
+Cycle 292 positive checkpoint: a restriction-realized presieve basis constructs
+the Cycle 291 pointwise basis, the Cycle 290 presieve source, and the presieve
+section-extension law without accepting a separate pointwise compatibility
+field.
+
+This discharges the local `compatible` premise as presheaf functoriality from a
+common input-boundary source section.  The base section and cover-indexed
+semantic atom/law choices remain visible lower data.
+-/
+theorem presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_pointwiseBasis_presieveSource_and_presieveLaw
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (basis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    let pointwise :=
+      basis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis
+    let source :=
+      pointwise.toPresieveFreeSemanticAtomLawInputBoundarySource
+    Nonempty
+        (GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      (forall i : regime.cover.Index,
+        (pointwise.input i).localSection =
+          Ob.carrier.toPresheaf.map
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+            basis.sourceSection) /\
+      (forall i : regime.cover.Index,
+        Exists fun localInput : source.LocalInput i =>
+        (exists atom : U.Atom,
+          atom ∈ source.atomSupport i localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ source.lawSupport i localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
+          localSection = source.interpret i localInput /\
+            source.toPresieveFamily
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+              (by
+                change
+                  Presieve.ofArrows
+                    (fun i : regime.cover.Index =>
+                      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)
+                    (fun i : regime.cover.Index =>
+                      (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+                    ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i)
+                exact Presieve.ofArrows.mk i) = localSection) := by
+  dsimp
+  let pointwise :=
+    basis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis
+  let source := pointwise.toPresieveFreeSemanticAtomLawInputBoundarySource
+  exact
+    ⟨⟨pointwise⟩,
+      ⟨source⟩,
+      presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+        skeleton source,
+      (fun i => by simp [
+        GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis]),
       source.exposes_pointwise_nonvacuity_support_and_presieve_evaluation⟩
 
 /--
@@ -16226,6 +19212,80 @@ theorem presieveSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceS
     skeleton.generatedArrowSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
       (skeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
         hpresieve)
+
+/--
+Cycle 293 effective-gluing checkpoint: a presieve-level local-section and
+overlap law produces the common base section needed by the Cycle 292
+restriction-realized presieve basis.
+
+The theorem does not accept `sourceSection`, a source-bearing pointwise basis,
+`c0Equiv`, `c0Carrier`, the old `sourceWithoutC0`, or a selected `K` as an
+argument.  The base section is obtained by the existing generated-cover
+effective-gluing/descent theorem from the visible presieve law; the
+cover-indexed atom/law choices remain visible lower data.
+-/
+theorem presieveSectionExtensionAndOverlapLaw_constructs_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_withoutSourceSectionArgument
+    {skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K)}
+    (choices :
+      GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpresieve :
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun pointwiseBasis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+    Exists fun presieveBasis :
+      GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton =>
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData
+        pointwiseBasis.sourceSection /\
+      presieveBasis.sourceSection = pointwiseBasis.sourceSection /\
+      (forall i : regime.cover.Index,
+        (presieveBasis.localInput i).localSection =
+          Ob.carrier.toPresheaf.map
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i).op
+            pointwiseBasis.sourceSection) /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      Nonempty
+        (GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawInputBoundaryBasis
+          skeleton) /\
+      GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton := by
+  dsimp
+  have hconstructed :=
+    presieveSectionExtensionAndOverlapLaw_effectiveGluing_constructs_sourceSection_and_pointwiseBasis
+      skeleton hpresieve
+  rcases hconstructed with
+    ⟨gluingData, pointwiseBasis, _hc0, _hc1, _hatom, _hlawIndex,
+      hFor, hDescent, hglobal, _hlocal, _hsource⟩
+  let presieveBasis :=
+    choices.withSourceSection pointwiseBasis.sourceSection
+  exact
+    ⟨gluingData, pointwiseBasis, presieveBasis,
+      hFor,
+      hDescent,
+      hglobal,
+      rfl,
+      (fun i => by
+        simp [presieveBasis,
+          GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis.withSourceSection]),
+      ⟨presieveBasis⟩,
+      ⟨presieveBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis⟩,
+      hpresieve⟩
 
 /--
 Cycle 276 blocker: generated cover membership and zero-simplex arrow
@@ -19270,7 +22330,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_generatedArrowLaw_constructs_id
            CarrierSpecificAdditiveComparisonData
             canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
         Nonempty
-          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
             realization.toH1Comparison) /\
         (exists primitive : K.Cn 0,
           primitive = baseSource.toPrimitive /\
@@ -19418,7 +22478,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveLaw_constructs_identity
            CarrierSpecificAdditiveComparisonData
             canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
         Nonempty
-          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
             realization.toH1Comparison) /\
         (exists primitive : K.Cn 0,
           primitive = baseSource.toPrimitive /\
@@ -19542,7 +22602,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInpu
            CarrierSpecificAdditiveComparisonData
             canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
         Nonempty
-          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
             realization.toH1Comparison) /\
         (exists primitive : K.Cn 0,
           primitive = baseSource.toPrimitive /\
@@ -19664,7 +22724,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_presievePointwiseSemanticAtomLa
            CarrierSpecificAdditiveComparisonData
             canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
         Nonempty
-          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
             realization.toH1Comparison) /\
         (exists primitive : K.Cn 0,
           primitive = baseSource.toPrimitive /\
@@ -19676,6 +22736,5039 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_presievePointwiseSemanticAtomLa
     atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_identityRoute_with_generatedSelectedK_withoutPresieveLawArgument
       coverGeometry coefficientGeometry skeleton
       presieveBasis.toPresieveFreeSemanticAtomLawInputBoundarySource
+
+/--
+Cycle 292 restriction-realized presieve semantic-source generated selected-`K`
+route.
+
+This lowers the Cycle 291 pointwise-basis premise: the route no longer accepts
+a standalone arrow-level compatibility proof.  It takes local sections
+restricted from one base section along the displayed atom/law cover arrows, so
+the presieve compatibility is generated by `Presieve.Arrows.toCompatible`.
+
+The theorem remains a checkpoint, not a G-06 completion claim: the common base
+section and cover-indexed semantic atom/law choices are still visible
+input-boundary data.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPointwiseCompatibilityArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (presieveBasis :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPresieveSourceArgument
+      coverGeometry coefficientGeometry skeleton
+      presieveBasis.toPresievePointwiseSemanticAtomLawInputBoundaryBasis
+
+/--
+Cycle 293 presieve/effective-gluing generated selected-`K` route.
+
+This lowers the Cycle 292 route input one step further: the route no longer
+accepts a restriction-realized presieve basis carrying a standalone
+`sourceSection`.  It takes cover-indexed semantic atom/law choices and a visible
+presieve local-section/overlap law.  Effective gluing/descent constructs the
+common base section; that section is then used to form the Cycle 292
+restriction-realized basis and run the generated selected-`K` identity route.
+
+The presieve law and cover-indexed atom/law choices remain material lower data,
+so this is still a checkpoint rather than a G-06 completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveEffectiveGluing_constructs_identityRoute_with_generatedSelectedK_withoutSourceSectionArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (choices :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (hpresieve :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  have hbasis :=
+    skeleton.presieveSectionExtensionAndOverlapLaw_constructs_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_withoutSourceSectionArgument
+      choices hpresieve
+  rcases hbasis with
+    ⟨_gluingData, _pointwiseBasis, presieveBasis,
+      _hFor, _hDescent, _hglobal, _hsourceSection, _hlocal,
+      _hpresieveBasis, _hpointwiseBasis, _hpresieve⟩
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_identityRoute_with_generatedSelectedK_withoutPointwiseCompatibilityArgument
+      coverGeometry coefficientGeometry skeleton presieveBasis
+
+/--
+Cycle 294 presieve-free source route through Cycle 293 effective gluing.
+
+This theorem removes the two Cycle 293 top-route inputs `choices` and
+`hpresieve` as separate arguments.  Both are derived from the same
+presieve-free semantic atom/law source: atom/law choices are extracted from the
+source support witnesses, and the presieve law is generated by
+`toPresieveFamily_compatible`.
+
+The presieve-free source itself, including its arrow-level compatibility law,
+remains material lower data.  This is therefore a proof checkpoint, not a
+completion claim.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_identityRoute_via_presieveEffectiveGluing_withoutChoicesOrHpresieveArguments
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (presieveSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data := by
+  let choices := presieveSource.toSourceSectionFreeChoices
+  have hpresieve :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton :=
+    skeleton.presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw
+      presieveSource
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_presieveEffectiveGluing_constructs_identityRoute_with_generatedSelectedK_withoutSourceSectionArgument
+      coverGeometry coefficientGeometry skeleton choices hpresieve
+
+/--
+Cycle 303 route-result abbreviation for the generated selected-`K` identity
+route.
+
+The proposition is the common conclusion of the Cycle 288-294 generated
+selected-`K` route: effective gluing produces a basis, the atom/law-overlap
+standard Cech complex supplies `K`, and the generated semantic coefficient
+realization is the identity one.  The abbreviation lets the next theorem say
+explicitly that the newly constructed base-restriction source is proof-used all
+the way into this route, without duplicating the long conclusion again.
+-/
+def AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)) :
+    Prop :=
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun basis :
+      CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      basis.c0Order = skeleton.c0Order /\
+      basis.c1Order = skeleton.c1Order /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.atom sigma = skeleton.atom sigma) /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.lawIndex sigma = skeleton.lawIndex sigma) /\
+      AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+        selectedCover /\
+      AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+      AAT.AG.Site.AATGlobalSectionRealizes gluingData basis.sourceSection /\
+      (forall sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+        basis.projectedLocalSection sigma =
+          gluingData.localSections (skeleton.zeroSimplexToBase sigma)
+            ((skeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+              sigma)) /\
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let baseSource :=
+        source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      let boundary :=
+        CoverRelativeCechBoundaryGeneratedSemanticCoefficient.ofAtomLawOverlapBoundaryCechComplex
+          coverGeometry coefficientGeometry basis.c0Order basis.c1Order
+          baseSource.toPrimitive
+      let generated := boundary.toGeneratedCoefficient
+      let canonical :=
+        CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+          (site := semanticSite) generated
+      let realization := canonical.toGeneratedEnvelope.toCochainRealization
+      Nonempty
+          (FinitePosetAtomLawStandardCechDifferentialCompLaw
+            coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+            Ob
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleNerveSource Ob)
+              |>.toSimplicialFaceAction |>.toFaceData)) /\
+        (forall primitive : K.Cn 0,
+          generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+        (forall cochain : K.Cn 1,
+          generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+            semanticSite S regime C Ob K) /\
+        (Exists fun identityRealization :
+          SemanticRepairCoverRelativeCochainRealization
+            canonical.toAdditiveCechH1Data K =>
+          identityRealization = realization /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv primitive = primitive) /\
+            (forall primitive : K.Cn 0,
+              letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+              letI := K.cochainAddCommGroup 0
+              identityRealization.c0Equiv.symm primitive = primitive)) /\
+        Nonempty
+          (letI := canonical.toAdditiveCechH1Data.c0AddCommGroup
+           letI := K.cochainAddCommGroup 0
+           CarrierSpecificAdditiveComparisonData
+            canonical.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+        Nonempty
+          (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage.{r, v, w, r, r, r, r}
+            realization.toH1Comparison) /\
+        (exists primitive : K.Cn 0,
+          primitive = baseSource.toPrimitive /\
+            K.d 0 primitive = generated.residual) /\
+        canonical.residualBoundary /\
+        SemanticRepairH1Zero canonical.toEnvelope /\
+        SemanticRepairAdditiveH1Zero canonical.toAdditiveCechH1Data
+
+/--
+Cycle 303 proof-use checkpoint: the bare support-only overlap restriction law
+constructs the base-restriction source carrying the common `sourceSection` and
+then proof-uses the resulting presieve-free source in the generated
+selected-`K` identity route.
+
+This lowers Cycle 302: the theorem no longer accepts
+`GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource`,
+`sourceSection`, `baseSource`, `arrowCompatibilityLaw`,
+`commonRestrictionRealization`, a raw presieve family, a presieve-free source,
+`c0Equiv`, `c0Carrier`, old `sourceWithoutC0`, or selected `K` as an argument.
+The remaining visible material premise is the genuine cover-arrow overlap
+restriction equality for the support-only semantic local sections.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_supportOnlyOverlapEquality_constructs_baseRestrictionSource_and_identityRoute_with_generatedSelectedK_withoutBaseSourceArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    Exists fun baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource /\
+      (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+        |>.baseRestrictionSourcePreservesDisplayedInterpretation baseSource) /\
+      (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+        |>.pointwiseSupportOnlyOverlapRestrictionEquality) /\
+      (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+        |>.arrowCompatibilityLaw) /\
+      (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+        |>.commonRestrictionRealization) /\
+      Nonempty
+        (SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+          skeleton) /\
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        skeleton /\
+      AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult
+        coverGeometry coefficientGeometry skeleton := by
+  rcases
+      (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).1
+        hoverlap with
+    ⟨baseSource, hpreserves⟩
+  have hself :=
+    baseSource.baseRestriction_constructs_selfPreservingSupportOnly_overlapEquality_commonRestriction_presieveFreeSource_and_presieveLaw
+  rcases hself with
+    ⟨hselfPreserves, hselfOverlap, _hselfSemanticLaw, hselfArrow,
+      hselfCommon, hselfPresieveSource, hselfPresieveLaw⟩
+  let hlaw :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).2
+      hoverlap
+  let hcompatible :=
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_arrowCompatibilityLaw).1
+      hlaw
+  let hrealized :=
+    source.arrowCompatibilityLaw_constructs_commonRestrictionRealization
+      hcompatible
+  let presieveSource :=
+    source.toPresieveFreeSemanticAtomLawInputBoundarySourceOfCommonRestriction
+      hrealized
+  have hroute :
+      AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult
+        coverGeometry coefficientGeometry skeleton := by
+    dsimp [AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult]
+    exact
+      atomLawOverlap_sourceSectionFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_identityRoute_via_presieveEffectiveGluing_withoutChoicesOrHpresieveArguments
+        coverGeometry coefficientGeometry skeleton presieveSource
+  exact
+    ⟨baseSource,
+      hpreserves,
+      hselfPreserves,
+      hselfOverlap,
+      hselfArrow,
+      hselfCommon,
+      hselfPresieveSource,
+      hselfPresieveLaw,
+      hroute⟩
+
+/--
+Cycle 304 exact package for the same-source generated selected-`K` route below
+the support-only semantic atom/law source.
+
+The package is intentionally the conclusion of Cycle 303, factored as a named
+`Prop`.  It still contains the display-preservation comparison between the
+constructed base-restriction source and the original support-only source, so it
+cannot be satisfied by changing the local semantic sections while claiming to
+close the same source.
+-/
+def AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) : Prop :=
+  Exists fun baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+    source.baseRestrictionSourcePreservesDisplayedInterpretation
+      baseSource /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.baseRestrictionSourcePreservesDisplayedInterpretation baseSource) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.pointwiseSupportOnlyOverlapRestrictionEquality) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.arrowCompatibilityLaw) /\
+    (baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      |>.commonRestrictionRealization) /\
+    Nonempty
+      (SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource
+        skeleton) /\
+    SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+      skeleton /\
+    AtomLawOverlapSourceSectionFreeSkeletonGeneratedSelectedKIdentityRouteResult.{v, w, r}
+      coverGeometry coefficientGeometry skeleton
+
+/--
+Cycle 304 exact boundary: the same-source generated selected-`K` route package
+is equivalent to the bare support-only overlap restriction equality.
+
+The forward direction reconstructs the missing equality from the displayed
+base-restriction preservation comparison.  The reverse direction is precisely
+the Cycle 303 route.  Therefore a future theorem cannot honestly remove the
+`hoverlap` argument while preserving the same source and conclusion package
+unless it constructs the same overlap equality from a genuinely lower semantic
+atom/law layer.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source <->
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  constructor
+  · rintro ⟨baseSource, hpreserves, _hselfPreserves, _hselfOverlap,
+      _hselfArrow, _hselfCommon, _hselfPresieveSource, _hselfPresieveLaw,
+      _hroute⟩
+    exact
+      source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        baseSource hpreserves
+  · intro hoverlap
+    exact
+      atomLawOverlap_sourceSectionFreeSkeleton_supportOnlyOverlapEquality_constructs_baseRestrictionSource_and_identityRoute_with_generatedSelectedK_withoutBaseSourceArgument
+        coverGeometry coefficientGeometry skeleton source hoverlap
+
+/--
+Cycle 304 no-escape corollary: if the isolated arrow compatibility law is
+absent, the same-source generated selected-`K` route package is absent as well.
+
+This pins down the current rock face.  Source-section-free atom/law support
+data, generated selected `K`, and the route package cannot bypass the overlap
+restriction law; the next constructive layer must generate that law rather than
+rename it.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hpackage
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    (atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+      coverGeometry coefficientGeometry skeleton source).1 hpackage
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+/--
+Cycle 305 canonical/free atom/law overlap-reading layer for the support-only
+source.
+
+This record is deliberately below the Cycle 304 generated selected-`K` route.
+It stores no `sourceSection`, no base-restriction source, no presieve-free
+source, no raw `arrowCompatibilityLaw`, no `commonRestrictionRealization`, no
+`c0Carrier`, no `c0Equiv`, and no selected `K` data.  Instead it connects a
+source-section-free atom/law choice to the additive coefficient geometry and
+requires the selected laws to read the restriction equality on every displayed
+common refinement.
+
+The last field is still material lower data: it is the law-reading content that
+was absent from support-only lists.  The following theorems proof-use it into
+the exact Cycle 304 boundary rather than treating it as a completion claim.
+-/
+structure AtomLawOverlapCanonicalFreeOverlapReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) where
+  choices :
+    SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+      skeleton
+  source_support :
+    source.sourceSectionFreeChoicesPreserveDisplayedSupport choices
+  coefficient_atom_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.atom i ∈
+        coefficientGeometry.atomSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+  coefficient_law_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.lawIndex i ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+  law_reads_overlap :
+    forall
+      (i j :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index)
+      {Z : S.category}
+      (gi :
+        Z ⟶
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+      (gj :
+        Z ⟶
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j),
+      gi ≫
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion i =
+        gj ≫
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion j ->
+      choices.lawIndex i ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i)) ->
+      choices.lawIndex j ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j)
+          (source.interpret j (source.input j)) ->
+      (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i)) =
+        (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+
+/--
+Cycle 305 audit view: the canonical/free overlap-reading layer exposes both
+the support-only source support and the coefficient-geometry support for the
+same source-section-free atom/law choices.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_exposes_support
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    source.sourceSectionFreeChoicesPreserveDisplayedSupport reading.choices /\
+      (forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        reading.choices.atom i ∈
+          coefficientGeometry.atomSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i)) /\
+        reading.choices.lawIndex i ∈
+          coefficientGeometry.lawSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i))) := by
+  exact
+    ⟨reading.source_support,
+      fun i =>
+        ⟨reading.coefficient_atom_support i,
+          reading.coefficient_law_support i⟩⟩
+
+/--
+Cycle 305 positive checkpoint: a canonical/free atom/law overlap-reading layer
+constructs the bare support-only overlap restriction equality.
+
+The proof consumes the selected law-reading field on each common refinement and
+then rebuilds the semantic atom/law overlap law using the source-section-free
+support choices.  Thus the equality is not imported as `hoverlap`, and the
+support witnesses are proof-used rather than left inert.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+    intro i j Z gi gj hcomm
+    exact
+      reading.law_reads_overlap i j gi gj hcomm
+        (reading.coefficient_law_support i)
+        (reading.coefficient_law_support j)
+  have hsemantic :
+      source.pointwiseSupportOnlySemanticAtomLawOverlapLaw :=
+    source.sourceSectionFreeChoices_and_overlapRestrictionEquality_constructs_pointwiseSupportOnlySemanticAtomLawOverlapLaw
+      reading.choices reading.source_support hoverlap
+  exact
+    (source.pointwiseSupportOnlySemanticAtomLawOverlapLaw_iff_pointwiseSupportOnlyOverlapRestrictionEquality).1
+      hsemantic
+
+/--
+Cycle 305 proof-use checkpoint: the canonical/free atom/law overlap-reading
+layer feeds the exact Cycle 304 generated selected-`K` route package.
+
+The route still passes through the Cycle 304 equivalence, so the generated
+selected-`K` package is not a substitute for overlap provenance; it is the
+consumer of the overlap equality constructed above.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_generatedSelectedKRoutePackage
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source := by
+  have hoverlap :=
+    atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source reading
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+      coverGeometry coefficientGeometry skeleton source).2 hoverlap
+
+/--
+Cycle 305 fail-closed boundary: if the isolated arrow compatibility law is
+absent, no canonical/free atom/law overlap-reading layer can exist for the same
+support-only source.
+
+This prevents the new layer from becoming a structure-field escape.  Its
+law-reading field is exactly the still-material lower provenance needed to
+construct the Cycle 304 package.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  rintro ⟨reading⟩
+  have hoverlap :=
+    atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source reading
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+/--
+Cycle 306 support-only part of the canonical/free atom/law overlap-reading
+layer.
+
+This is exactly Cycle 305's support provenance with the equality-producing
+`law_reads_overlap` field removed.  It records the source-section-free choices,
+their preservation of the support-only source, and their membership in the
+coefficient geometry's atom/law supports for the same displayed local sections.
+
+The record intentionally does not contain a source section, base-restriction
+source, presieve-free source, raw compatibility law, common restriction
+realization, selected `K`, or any overlap restriction equality.
+-/
+structure AtomLawOverlapCanonicalFreeSupportReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) where
+  choices :
+    SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+      skeleton
+  source_support :
+    source.sourceSectionFreeChoicesPreserveDisplayedSupport choices
+  coefficient_atom_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.atom i ∈
+        coefficientGeometry.atomSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+  coefficient_law_support :
+    forall i :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+      choices.lawIndex i ∈
+        coefficientGeometry.lawSupport
+          ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+            (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (source.interpret i (source.input i))
+
+/--
+Cycle 306 projection: the full Cycle 305 overlap-reading layer has a
+support-only shadow once `law_reads_overlap` is forgotten.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    AtomLawOverlapCanonicalFreeSupportReading
+      coverGeometry coefficientGeometry skeleton source where
+  choices := reading.choices
+  source_support := reading.source_support
+  coefficient_atom_support := reading.coefficient_atom_support
+  coefficient_law_support := reading.coefficient_law_support
+
+/--
+Cycle 306 constructor boundary: support-only atom/law provenance plus the bare
+overlap restriction equality reconstructs the full Cycle 305 reading.
+
+This theorem is intentionally not a discharge of the equality.  It identifies
+the exact missing component: after support provenance is fixed, the full
+reading is obtained precisely by supplying the same bare overlap equality.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source where
+  choices := supportReading.choices
+  source_support := supportReading.source_support
+  coefficient_atom_support := supportReading.coefficient_atom_support
+  coefficient_law_support := supportReading.coefficient_law_support
+  law_reads_overlap := by
+    intro i j Z gi gj hcomm _hLawI _hLawJ
+    exact hoverlap i j gi gj hcomm
+
+/--
+Cycle 306 exact decomposition: the Cycle 305 full overlap-reading layer is
+equivalent to a support-only reading together with the bare overlap restriction
+equality.
+
+Consequently, the support side of the semantic atom/law coefficient geometry is
+not the remaining gap.  The only material component not present in
+`AtomLawOverlapCanonicalFreeSupportReading` is the same overlap equality that
+Cycle 300 identified with `arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_overlapEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  constructor
+  · rintro ⟨reading⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading,
+        atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+          coverGeometry coefficientGeometry skeleton source reading⟩
+  · rintro ⟨supportReading, hoverlap⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source supportReading hoverlap⟩
+
+/--
+Cycle 315 exact boundary: the full canonical/free atom/law overlap-reading
+layer is equivalent to support-only canonical/free provenance together with the
+same isolated arrow compatibility law.
+
+This rewrites the Cycle 306 overlap-equality decomposition into the source's
+own compatibility-law vocabulary.  Therefore the missing
+`law_reads_overlap` component is not hidden in coefficient support membership:
+after support provenance is fixed, constructing the full law-reading layer is
+exactly constructing `source.arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        source.arrowCompatibilityLaw := by
+  constructor
+  · rintro ⟨reading⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading,
+        (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+          (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+            coverGeometry coefficientGeometry skeleton source reading)⟩
+  · rintro ⟨supportReading, hcompat⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source supportReading
+          ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+            hcompat)⟩
+
+/--
+Cycle 306 blocker: support-only canonical/free atom/law provenance cannot be
+promoted to the full overlap-reading layer while the isolated arrow
+compatibility law is absent.
+
+This is the precise current blocker for constructing `law_reads_overlap` from
+the existing support geometry.  The law universe and coefficient support lists
+expose required law support, but they do not by themselves supply the
+restriction equality.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_with_overlapEquality_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  rintro ⟨_supportReading, hoverlap⟩
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+/--
+Cycle 306 no-constructor form: even if the support-only canonical/free
+atom/law provenance exists, it cannot uniformly construct the missing overlap
+equality under `¬ source.arrowCompatibilityLaw`.
+
+This is a fail-closed guard against treating support membership in the
+coefficient geometry as if it were already the semantic law-reading equality.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  intro constructor
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing (constructor supportReading)
+
+/--
+Cycle 315 no-constructor form: support-only canonical/free atom/law provenance
+cannot uniformly construct the full canonical/free overlap-reading layer while
+the same source lacks the arrow compatibility law.
+
+This is the direct fail-closed form for the unresolved `law_reads_overlap`
+field.  It rules out the route selected by the Cycle 315 obligation unless a
+new lower semantic law layer constructs `source.arrowCompatibilityLaw`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    IsEmpty
+      (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  refine ⟨?_⟩
+  intro constructor
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    no_atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_without_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hmissing
+      ⟨constructor supportReading⟩
+
+/--
+Cycle 313 no-constructor form: support-only canonical/free atom/law
+provenance cannot uniformly construct a display-preserving base-restriction
+source while the same support-only source lacks the arrow compatibility law.
+
+This fixes the Cycle 312 remaining boundary at the same source, rather than
+switching to the self-support-only source generated from a supplied
+base-restriction source.  The theorem is blocker evidence only: it does not
+construct the missing base-restriction/law-reading layer.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_baseRestrictionSource_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        Exists fun baseSource :
+          SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+            skeleton =>
+          source.baseRestrictionSourcePreservesDisplayedInterpretation
+            baseSource) := by
+  intro constructor
+  rcases hsupport with ⟨supportReading⟩
+  exact hmissing
+    ((source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).2
+      (constructor supportReading))
+
+/--
+Cycle 314 positive bridge: the full canonical/free atom/law overlap-reading
+layer constructs the same-source display-preserving base-restriction
+provenance.
+
+This is intentionally stronger than the Cycle 313 support-only blocker:
+`AtomLawOverlapCanonicalFreeOverlapReading` carries the material
+`law_reads_overlap` field.  The theorem proof-uses that law-reading field via
+the Cycle 305 overlap equality theorem, then uses the exact Cycle 298 boundary
+to construct the base-restriction source for the same support-only source.
+It does not accept `arrowCompatibilityLaw`, `sourceC0CechZero`, external
+`c0Equiv`, old `sourceWithoutC0`, selected `K`, residual-boundary, `H1` zero,
+or descent/effectivity data as arguments.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    Exists fun baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton =>
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation).1
+      (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source reading)
+
+/--
+Cycle 307 canonical `0`-cochain displayed by a support-only presieve source.
+
+For each degree-`0` Cech simplex, this restricts the local section on its
+selected chart back along the generated overlap-to-chart projection.  Thus the
+cochain is built from the same cover-relative Cech complex and the same
+source-section-free atom/law boundary data; it is not an external comparison
+carrier.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    (atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0 :=
+  fun sigma =>
+    coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+        (skeleton.zeroSimplexToChart sigma).op
+      (source.interpret (skeleton.zeroSimplexChart sigma)
+        (source.input (skeleton.zeroSimplexChart sigma)))
+
+/--
+Cycle 307 display law for the canonical support-only `0`-cochain.
+
+The statement is deliberately only a reading law for the generated `C0`
+cochain.  It does not assert Cech closedness and does not produce the
+presieve overlap equality.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0ReadsDisplayedInterpretations
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (sourceC0 :
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).Cn 0) :
+    Prop :=
+  forall sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).simplex 0,
+    sourceC0 sigma =
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+          (skeleton.zeroSimplexToChart sigma).op
+        (source.interpret (skeleton.zeroSimplexChart sigma)
+          (source.input (skeleton.zeroSimplexChart sigma)))
+
+/-- The generated support-only `sourceC0` reads exactly the displayed sections. -/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reads_displayedInterpretations
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0ReadsDisplayedInterpretations
+      coverGeometry coefficientGeometry skeleton source
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+        coverGeometry coefficientGeometry skeleton source) := by
+  intro sigma
+  rfl
+
+/--
+Cycle 307 Cech-zero predicate for the canonical support-only `0`-cochain.
+
+This uses the generated cover-relative differential `K.d 0`.  It is the
+strongest Cech-side datum available from the current layer before introducing
+an additional common-refinement factorization principle.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Prop :=
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+  K.d 0
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+        coverGeometry coefficientGeometry skeleton source) =
+    0
+
+/--
+Cycle 307 no-constructor form before adding a factorization law.
+
+Even the generated display law for `sourceC0` together with its Cech-zero
+equation cannot be used as a uniform constructor for the presieve overlap
+equality while `arrowCompatibilityLaw` is absent.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reading_cechZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source) :
+    ¬ (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0ReadsDisplayedInterpretations
+          coverGeometry coefficientGeometry skeleton source
+          (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+            coverGeometry coefficientGeometry skeleton source) ->
+        atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+          coverGeometry coefficientGeometry skeleton source ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  intro constructor
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing
+      (constructor
+        (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0_reads_displayedInterpretations
+          coverGeometry coefficientGeometry skeleton source)
+        hcechZero)
+
+/--
+Cycle 307 named missing factorization law.
+
+It is the extra step that would read the Cech-zero equation of the generated
+support-only `sourceC0` as the arbitrary common-refinement overlap equality
+required by the presieve source.  Naming it separately prevents the proof from
+hiding the old `arrowCompatibilityLaw` inside support membership.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Prop :=
+  atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source ->
+    source.pointwiseSupportOnlyOverlapRestrictionEquality
+
+/--
+If the missing common-refinement factorization law is supplied, the Cech-zero
+canonical `sourceC0` constructs the exact overlap equality isolated in
+Cycle 306.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+  hfactor hcechZero
+
+/--
+Cycle 307 support reconstruction through the generated `sourceC0` route.
+
+This theorem marks the exact shape of the remaining positive path: support
+membership plus Cech-zero plus the common-refinement factorization law suffices
+to rebuild the full canonical/free overlap reading.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0Factorization_constructs_canonicalFreeOverlapReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+        coverGeometry coefficientGeometry skeleton source) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source :=
+  atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+    coverGeometry coefficientGeometry skeleton source supportReading
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hfactor)
+
+/--
+Cycle 307 no-escape theorem: if `arrowCompatibilityLaw` is absent and the
+canonical support-only `sourceC0` is Cech-zero, then no
+common-refinement factorization law of this shape can be available.
+
+This is the hard-rock boundary exposed by the generated Cech route: `K.d 0`
+alone does not discharge the presieve compatibility equality unless a genuine
+geometric factorization principle connects the Cech face equation to arbitrary
+common refinements.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hfactor
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source hcechZero hfactor)
+
+/--
+Cycle 308 selected degree-`1` face equality law for the generated `sourceC0`.
+
+This is the first half of the common-refinement bridge exposed in Cycle 307.
+It says that the generated Cech-zero equation can be read on each selected
+degree-`1` simplex as equality of the two degree-`0` face restrictions.
+
+The law is kept separate because the current `CoverRelativeCechComplex` API
+only identifies `K.d 0` with an abstract `alternatingFaceCombination`; it does
+not by itself expose the degree-`0` two-face subtraction/equality eliminator.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Prop :=
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source ->
+    forall sigma :
+      (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+        (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).simplex 1,
+      K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma =
+        K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma
+
+/--
+Cycle 309 positive bridge: the generated Cech-zero equation of `sourceC0`
+constructs the selected degree-`1` face equality.
+
+The proof uses the overlap-generated cover-relative Cech complex, unfolds its
+standard finite-poset differential at degree `0`, and applies the degree-`0`
+alternating-sum eliminator.  Thus the first half of the Cycle 308
+common-refinement bridge is no longer a material premise: it is generated from
+`K.d 0 sourceC0 = 0`.  The arbitrary common-refinement factorization remains
+separate.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+      coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero sigma
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let canonicalGeometry :=
+    coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  have hpoint : K.d 0 sourceC0 sigma = 0 := by
+    have h := congrArg (fun cochain => cochain sigma) hcechZero
+    simpa [
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero,
+      K, sourceC0, Ob] using h
+  have hfinite :
+      AAT.AG.Site.FinitePosetCechFaceRestriction C.faces sourceC0 sigma
+          (0 : Fin 2) =
+        AAT.AG.Site.FinitePosetCechFaceRestriction C.faces sourceC0 sigma
+          (1 : Fin 2) := by
+    exact
+      (standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+        (geometry := canonicalGeometry) (Ob := Ob)
+        C.faces sourceC0 sigma).1 (by
+          simpa [
+            K, C, atomLawOverlapCoverRelativeCechComplex,
+            atomLawOverlapSelectedCechComplexAdditiveLaw,
+            atomLawOverlapStandardFinitePosetCechComplex,
+            standardFinitePosetCechComplex,
+            FinitePosetAtomLawSelectedCechComplexAdditiveLaw.toCoverRelativeCechComplex,
+            AAT.AG.Cohomology.CoverRelativeCechComplex.d] using hpoint)
+  simpa [
+    K, C, sourceC0,
+    AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+    AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+    AAT.AG.Site.FinitePosetCechFaceRestriction] using hfinite
+
+/--
+Cycle 308 common-refinement factorization through selected degree-`1` faces.
+
+For every presieve common refinement of two displayed cover arrows, this asks
+for a selected degree-`1` Cech simplex and a map from the arbitrary refinement
+object to that selected overlap such that the two selected face-restriction
+terms of the generated `sourceC0` read the two displayed restrictions.
+
+This is intentionally weaker than the overlap equality itself: the two
+displayed restrictions are not asserted equal here.  Equality is obtained only
+after combining this factorization with the selected degree-`1` face equality
+law above.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Prop :=
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  forall
+    (i j :
+      ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index)
+    {Z : S.category}
+    (gi :
+      Z ⟶
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+    (gj :
+      Z ⟶
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j),
+    gi ≫
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion i =
+      gj ≫
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion j ->
+      Exists fun sigma :
+        (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+          (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).simplex 1 =>
+        Exists fun zToOverlap :
+          Z ⟶
+            (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).overlap
+              1 sigma =>
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+              zToOverlap.op
+              (K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma) =
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+              gi.op
+              (source.interpret i (source.input i)) /\
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+              zToOverlap.op
+              (K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma) =
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+              gj.op
+              (source.interpret j (source.input j))
+
+/--
+Cycle 310 positive discharge: the overlap-generated canonical tuple geometry
+constructs the arbitrary common-refinement factorization through selected
+degree-`1` Cech faces.
+
+The selected simplex is the canonical tuple `(j,i)`.  With the standard coface
+convention, face `0` then reads the displayed chart `i` and face `1` reads
+`j`.  The map from the arbitrary common refinement into the selected overlap is
+generated by the AAT site overlap lifting law.  No `arrowCompatibilityLaw`,
+overlap equality, external `c0Equiv`, or selected realization certificate is
+used.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+      coverGeometry coefficientGeometry skeleton source := by
+  intro i j Z gi gj _hcomm
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let canonicalGeometry :=
+    coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+  let sigma : cover.simplex 1 := fun k =>
+    if k = (0 : Fin 2) then j else i
+  have hZi : S.contextPreorder.le Z.ctx (coverGeometry.cover.patch i) := by
+    simpa [cover, C, canonicalGeometry,
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+      FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+      using gi.down.down
+  have hZj : S.contextPreorder.le Z.ctx (coverGeometry.cover.patch j) := by
+    simpa [cover, C, canonicalGeometry,
+      AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+      FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+      using gj.down.down
+  have hZtoOverlapCtx :
+      S.contextPreorder.le Z.ctx
+        (coverGeometry.canonicalTupleOverlapFromOverlap 1 sigma) := by
+    simpa [sigma, FinitePosetAtomLawCoverGeometry.canonicalTupleOverlapFromOverlap]
+      using
+        S.overlap.overlap_lift
+          (coverGeometry.cover.inclusion j)
+          (coverGeometry.cover.inclusion i)
+          hZj hZi
+  let zToOverlap : Z ⟶ cover.overlap 1 sigma :=
+    homOfLE (by
+      simpa [cover, C, canonicalGeometry,
+        AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        AAT.AG.Site.FinitePosetCechOverlapObject,
+        FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+        FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry,
+        FinitePosetAtomLawCoverGeometry.canonicalTupleOverlapGeometryFromOverlap,
+        FinitePosetAtomLawCanonicalTupleOverlapBasis.toCanonicalTupleOverlapGeometry,
+        FinitePosetAtomLawCoverGeometry.canonicalTupleOverlapBasisFromOverlap]
+        using hZtoOverlapCtx)
+  refine ⟨sigma, zToOverlap, ?_, ?_⟩
+  · let vertexI : cover.simplex 0 := fun _ => i
+    have hface :
+        cover.face 0 (0 : Fin 2) sigma = vertexI := by
+      funext k
+      fin_cases k
+      simp [vertexI, cover, C, sigma,
+        AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        atomLawOverlapStandardFinitePosetCechComplex,
+        standardFinitePosetCechComplex,
+        FinitePosetCechSimplicialFaceAction.toFaceData,
+        FinitePosetCechCanonicalTupleNerveSource.toSimplicialFaceAction,
+        FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleNerveSource,
+        FinitePosetCechCanonicalTupleSimplex.simplexMap,
+        SimplexCategory.δ_zero_eq_const,
+        FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+        FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+      intro h
+      cases h
+    have hroute :
+        zToOverlap ≫ cover.faceRestriction 0 (0 : Fin 2) sigma ≫
+            skeleton.zeroSimplexToChart vertexI =
+          gi := by
+      exact Subsingleton.elim _ _
+    have hrouteOp :
+        (zToOverlap ≫ cover.faceRestriction 0 (0 : Fin 2) sigma ≫
+            skeleton.zeroSimplexToChart vertexI).op =
+          gi.op := by
+      exact congrArg (fun f => f.op) hroute
+    dsimp [AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0]
+    rw [← CategoryTheory.FunctorToTypes.map_comp_apply,
+      ← CategoryTheory.FunctorToTypes.map_comp_apply]
+    change
+      Ob.carrier.toPresheaf.map
+          ((zToOverlap ≫ cover.faceRestriction 0 (0 : Fin 2) sigma ≫
+              skeleton.zeroSimplexToChart vertexI).op)
+          (source.interpret
+            (skeleton.zeroSimplexChart vertexI)
+            (source.input
+              (skeleton.zeroSimplexChart vertexI))) =
+        Ob.carrier.toPresheaf.map gi.op
+          (source.interpret i (source.input i))
+    rw [hrouteOp]
+    simp [vertexI, SourceSectionFreeSkeleton.zeroSimplexChart,
+      FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+  · let vertexJ : cover.simplex 0 := fun _ => j
+    have hface :
+        cover.face 0 (1 : Fin 2) sigma = vertexJ := by
+      funext k
+      fin_cases k
+      simp [vertexJ, cover, C, sigma,
+        AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+        atomLawOverlapStandardFinitePosetCechComplex,
+        standardFinitePosetCechComplex,
+        FinitePosetCechSimplicialFaceAction.toFaceData,
+        FinitePosetCechCanonicalTupleNerveSource.toSimplicialFaceAction,
+        FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleNerveSource,
+        FinitePosetCechCanonicalTupleSimplex.simplexMap,
+        SimplexCategory.δ_one_eq_const,
+        FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+        FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+      intro h
+      exact False.elim (h rfl)
+    have hroute :
+        zToOverlap ≫ cover.faceRestriction 0 (1 : Fin 2) sigma ≫
+            skeleton.zeroSimplexToChart vertexJ =
+          gj := by
+      exact Subsingleton.elim _ _
+    have hrouteOp :
+        (zToOverlap ≫ cover.faceRestriction 0 (1 : Fin 2) sigma ≫
+            skeleton.zeroSimplexToChart vertexJ).op =
+          gj.op := by
+      exact congrArg (fun f => f.op) hroute
+    dsimp [AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0]
+    rw [← CategoryTheory.FunctorToTypes.map_comp_apply,
+      ← CategoryTheory.FunctorToTypes.map_comp_apply]
+    change
+      Ob.carrier.toPresheaf.map
+          ((zToOverlap ≫ cover.faceRestriction 0 (1 : Fin 2) sigma ≫
+              skeleton.zeroSimplexToChart vertexJ).op)
+          (source.interpret
+            (skeleton.zeroSimplexChart vertexJ)
+            (source.input
+              (skeleton.zeroSimplexChart vertexJ))) =
+        Ob.carrier.toPresheaf.map gj.op
+          (source.interpret j (source.input j))
+    rw [hrouteOp]
+    simp [vertexJ, SourceSectionFreeSkeleton.zeroSimplexChart,
+      FinitePosetAtomLawCoverGeometry.toObstructionCoefficientRegime,
+      FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
+
+/--
+Cycle 308 positive decomposition: selected degree-`1` face equality plus
+common-refinement factorization constructs the bare overlap equality.
+
+This is not a completion theorem because both new laws remain material
+premises.  It is a sharper proof-use decomposition of the Cycle 307 missing
+bridge.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hselectedFace :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  intro i j Z gi gj hcomm
+  rcases hfactor i j gi gj hcomm with
+    ⟨sigma, zToOverlap, hleft, hright⟩
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  have hface :
+      K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma =
+        K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma :=
+    hselectedFace hcechZero sigma
+  calc
+    coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+        gi.op
+        (source.interpret i (source.input i))
+        =
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+        zToOverlap.op
+        (K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma) := hleft.symm
+    _ =
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+        zToOverlap.op
+        (K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma) := by
+        rw [hface]
+    _ =
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.map
+        gj.op
+        (source.interpret j (source.input j)) := hright
+
+/--
+Cycle 308 refinement of the Cycle 307 bridge: the decomposed selected-face
+equality and common-refinement factorization laws construct the named
+common-refinement factorization law from Cycle 307.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_sourceC0CommonRefinementFactorizationLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hselectedFace :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+      coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
+      hfactor
+
+/--
+Cycle 309 stronger bridge: Cech-zero plus the selected-face factorization
+constructs the bare overlap equality.
+
+Compared with Cycle 308, the selected degree-`1` face equality is no longer an
+input.  It is generated from `sourceC0CechZero` by
+`atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality`.
+The only remaining bridge premise is the genuine common-refinement
+factorization through selected degree-`1` Cech faces.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  let hselectedFace :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_constructs_selectedDegreeOneFaceEquality
+      coverGeometry coefficientGeometry skeleton source
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
+      hfactor
+
+/--
+Cycle 309 refinement of the named Cycle 307 bridge: the common-refinement
+factorization through selected degree-`1` faces now constructs the whole
+`sourceC0CommonRefinementFactorizationLaw`.
+
+The law still expects `sourceC0CechZero`, but it no longer expects the selected
+face equality as an independent material premise.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_commonRefinementFactorization_constructs_sourceC0CommonRefinementFactorizationLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+      coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero hfactor
+
+/--
+Cycle 310 proof-use bridge: the atom/law overlap geometry generated
+common-refinement factorization now constructs the whole Cycle 307 named
+factorization law.
+
+After Cycle 309, the selected-face equality is already generated from
+`sourceC0CechZero`; after Cycle 310, the arbitrary common-refinement
+factorization is generated from the canonical tuple overlap geometry.  The
+remaining visible premise of this named law is exactly the Cech-zero equation
+for the generated `sourceC0`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_atomLawOverlapGeometry_constructs_sourceC0CommonRefinementFactorizationLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorizationLaw
+      coverGeometry coefficientGeometry skeleton source := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_commonRefinementFactorization_constructs_sourceC0CommonRefinementFactorizationLaw
+      coverGeometry coefficientGeometry skeleton source
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces_of_atomLawOverlapGeometry
+        coverGeometry coefficientGeometry skeleton source)
+
+/--
+Cycle 310 combined positive theorem: once the generated support-only `sourceC0`
+is Cech-zero, the atom/law overlap geometry constructs the bare overlap
+restriction equality.  No separate common-refinement factorization premise
+remains.
+
+This is still not a G-06 completion theorem: `sourceC0CechZero` remains a
+visible material premise.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOverlapGeometry_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces_of_atomLawOverlapGeometry
+        coverGeometry coefficientGeometry skeleton source)
+
+/--
+Cycle 311 reverse bridge: the isolated arrow-compatibility law constructs the
+Cech-zero equation for the generated support-only `sourceC0`.
+
+This is not a completion theorem because `arrowCompatibilityLaw` is exactly the
+support-only semantic overlap law isolated in Cycle 300.  The point is that
+`sourceC0CechZero` is no longer an opaque Cech-side premise: for the
+atom/law-generated cover-relative complex it is the degree-`0` differential
+reading of the same arrow-level compatibility.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hcompatible : source.arrowCompatibilityLaw) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let canonicalGeometry :=
+    coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  let cover := AAT.AG.Cohomology.finitePosetCoverRelativeCover C
+  have hoverlap : source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).2
+      hcompatible
+  letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+  change K.d 0 sourceC0 = 0
+  funext sigma
+  letI :=
+    (canonicalGeometry.toAdditiveCoefficientRealization Ob).sectionAddCommGroup
+      (AAT.AG.Site.FinitePosetCechOverlapObject
+        (canonicalGeometry.toObstructionCoefficientRegime Ob) 1 sigma)
+  have hface :
+      K.faceRestrictionTerm 0 (0 : Fin 2) sourceC0 sigma =
+        K.faceRestrictionTerm 0 (1 : Fin 2) sourceC0 sigma := by
+    let vertex0 : cover.simplex 0 := cover.face 0 (0 : Fin 2) sigma
+    let vertex1 : cover.simplex 0 := cover.face 0 (1 : Fin 2) sigma
+    let i : cover.Index := skeleton.zeroSimplexChart vertex0
+    let j : cover.Index := skeleton.zeroSimplexChart vertex1
+    let gi : cover.overlap 1 sigma ⟶ cover.chart i :=
+      cover.faceRestriction 0 (0 : Fin 2) sigma ≫
+        skeleton.zeroSimplexToChart vertex0
+    let gj : cover.overlap 1 sigma ⟶ cover.chart j :=
+      cover.faceRestriction 0 (1 : Fin 2) sigma ≫
+        skeleton.zeroSimplexToChart vertex1
+    have hcomm : gi ≫ cover.inclusion i = gj ≫ cover.inclusion j := by
+      exact Subsingleton.elim _ _
+    have h := hoverlap i j gi gj hcomm
+    dsimp [
+      sourceC0,
+      AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0]
+    rw [← CategoryTheory.FunctorToTypes.map_comp_apply,
+      ← CategoryTheory.FunctorToTypes.map_comp_apply]
+    simpa [gi, gj, i, j, vertex0, vertex1] using h
+  have hstd :
+      standardCechDifferential C.faces 0 sourceC0 sigma = 0 := by
+    exact
+      (standardCechDifferential_degreeZero_eq_zero_iff_faceRestrictions_eq
+        (geometry := canonicalGeometry) (Ob := Ob)
+        C.faces sourceC0 sigma).2 (by
+          simpa [
+            K, C,
+            AAT.AG.Cohomology.CoverRelativeCechComplex.faceRestrictionTerm,
+            AAT.AG.Cohomology.finitePosetCoverRelativeCover,
+            AAT.AG.Site.FinitePosetCechFaceRestriction] using hface)
+  simpa [
+    K, C, atomLawOverlapCoverRelativeCechComplex,
+    atomLawOverlapSelectedCechComplexAdditiveLaw,
+    atomLawOverlapStandardFinitePosetCechComplex,
+    standardFinitePosetCechComplex,
+    FinitePosetAtomLawSelectedCechComplexAdditiveLaw.toCoverRelativeCechComplex,
+    AAT.AG.Cohomology.CoverRelativeCechComplex.d] using hstd
+
+/--
+Cycle 311 exact boundary: under the atom/law-generated common-refinement
+geometry, the generated support-only `sourceC0` is Cech-zero exactly when the
+support-only source satisfies the isolated arrow-compatibility law.
+
+The forward direction uses the Cycle 310 geometry-generated bridge from
+`sourceC0CechZero` to the bare overlap equality; the reverse direction is the
+Cycle 311 differential reading of `arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source <->
+      source.arrowCompatibilityLaw := by
+  constructor
+  · intro hcechZero
+    exact
+      (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+        (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOverlapGeometry_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+          coverGeometry coefficientGeometry skeleton source hcechZero)
+  · intro hcompatible
+    exact
+      atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source hcompatible
+
+/--
+Cycle 311 no-escape theorem: after the common-refinement side is generated by
+atom/law overlap geometry, missing `arrowCompatibilityLaw` rules out the
+generated `sourceC0CechZero` equation itself.
+
+Thus the remaining rock is no longer a Cech-complex artifact or a hidden
+`c0Equiv`/`sourceWithoutC0` gap.  It is exactly the lower semantic overlap law
+for the support-only source.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_without_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact hmissing
+    ((atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).1 hcechZero)
+
+/--
+Cycle 312 positive lowering: display-preserving base-restriction provenance
+constructs the generated support-only `sourceC0` Cech-zero equation.
+
+This theorem does not accept `arrowCompatibilityLaw` or `sourceC0CechZero` as
+input.  The proof uses the existing base-restriction preservation theorem to
+reconstruct the isolated arrow law, then applies the Cycle 311 differential
+reading of that law.  The base section and its display-preservation comparison
+remain visible lower provenance.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton)
+    (hpreserves :
+      source.baseRestrictionSourcePreservesDisplayedInterpretation
+        baseSource) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source
+      (source.baseRestrictionSource_preservingDisplayedInterpretation_constructs_arrowCompatibilityLaw
+        baseSource hpreserves)
+
+/--
+Cycle 312 self-base-source constructor: a base-restriction source constructs
+`sourceC0CechZero` for the support-only source it generates.
+
+The display-preservation proof is generated definitionally by
+`toSupportOnly_selfPreservesDisplayedInterpretation`; no separate
+`arrowCompatibilityLaw`, overlap equality, `c0Equiv`, or selected comparison
+package is supplied.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_constructs_selfSupportOnly_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (baseSource :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton
+      baseSource.toSupportOnlySemanticAtomLawInputBoundarySource := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton
+      baseSource.toSupportOnlySemanticAtomLawInputBoundarySource
+      baseSource
+      baseSource.toSupportOnly_selfPreservesDisplayedInterpretation
+
+/--
+Cycle 312 exact boundary: under atom/law-generated overlap geometry,
+`sourceC0CechZero` is equivalent to display-preserving base-restriction
+provenance.
+
+This is the Cycle 311 exact boundary composed with the Cycle 298
+base-restriction exact boundary.  It narrows the next constructive obligation:
+a future positive theorem must generate such a base-restriction source and its
+display-preservation law from lower semantic atom/law input-boundary geometry,
+rather than supplying `sourceC0CechZero` or `arrowCompatibilityLaw` directly.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source <->
+      Exists fun baseSource :
+        SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource := by
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).trans
+      source.arrowCompatibilityLaw_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation
+
+/--
+Cycle 312 no-escape theorem: if no display-preserving base-restriction source
+exists for the support-only source, then the generated `sourceC0` cannot be
+Cech-zero under atom/law-generated overlap geometry.
+
+This moves the remaining obstruction below `arrowCompatibilityLaw` without
+hiding it in a structure field: the next lower layer must produce a genuine
+base section whose restrictions preserve the displayed semantic local
+sections.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_without_baseRestrictionSource_preservingDisplayedInterpretation_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing :
+      ¬ Exists fun baseSource :
+        SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
+          skeleton =>
+        source.baseRestrictionSourcePreservesDisplayedInterpretation
+          baseSource) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hcechZero
+  exact hmissing
+    ((atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_exists_baseRestrictionSource_preservingDisplayedInterpretation_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).1 hcechZero)
+
+/--
+Cycle 314 proof-use bridge: the same canonical/free overlap-reading layer also
+discharges generated `sourceC0CechZero` under the atom/law-generated overlap
+geometry.
+
+The proof first constructs same-source base-restriction preservation from the
+law-reading layer and then consumes that preservation through the Cycle 312
+Cech-zero bridge.  Thus the constructed base source is not merely packaged; it
+is proof-used in the generated `sourceC0` route.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  rcases
+      atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_exists_baseRestrictionSource_preservingDisplayedInterpretation
+        coverGeometry coefficientGeometry skeleton source reading with
+    ⟨baseSource, hpreserves⟩
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_baseRestrictionSource_preservingDisplayedInterpretation_constructs_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source baseSource hpreserves
+
+/--
+Cycle 316 generated-Cech constructor: support-only canonical/free atom/law
+provenance plus the generated `sourceC0` Cech-zero equation constructs the
+full canonical/free overlap-reading layer.
+
+The overlap law is not supplied as `source.arrowCompatibilityLaw` or as a bare
+restriction equality.  It is read from the atom/law-generated cover-relative
+Cech complex by the Cycle 310 bridge from generated `sourceC0CechZero` to the
+support-only overlap equality, then proof-used through the Cycle 306
+support/equality decomposition.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source :=
+  atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+    coverGeometry coefficientGeometry skeleton source supportReading
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOverlapGeometry_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero)
+
+/--
+Cycle 316 exact generated-Cech boundary: for the same support-only source, the
+full canonical/free overlap-reading layer is equivalent to support-only
+canonical/free provenance together with generated `sourceC0CechZero`.
+
+This is the generated-Cech version of Cycle 315.  It does not discharge
+`law_reads_overlap`; instead it says precisely what the next lower semantic
+law layer must generate from atom/law input-boundary geometry: the Cech-zero
+equation of the canonical `sourceC0` in the overlap-generated cover-relative
+complex.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_sourceC0CechZero_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+          coverGeometry coefficientGeometry skeleton source := by
+  constructor
+  · rintro ⟨reading⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading,
+        atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_sourceC0CechZero
+          coverGeometry coefficientGeometry skeleton source reading⟩
+  · rintro ⟨supportReading, hcechZero⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+          coverGeometry coefficientGeometry skeleton source supportReading hcechZero⟩
+
+/--
+Cycle 317 source-`C0` generated coefficient: the boundary-generated semantic
+coefficient obtained from the same support-only canonical `sourceC0`.
+
+The order lists are not external data: the degree-`0` list contains the displayed
+`sourceC0`, and the degree-`1` list contains its generated Cech residual
+`K.d 0 sourceC0`.  Thus this layer is tied to the same atom/law-overlap-generated
+`K` and cannot choose a separate residual, carrier, or comparison map.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0BoundaryGeneratedSemanticCoefficient
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    CoverRelativeCechBoundaryGeneratedSemanticCoefficient semanticSite
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf) where
+  c0Order :=
+    [atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source]
+  c1Order :=
+    [(atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).d 0
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+        coverGeometry coefficientGeometry skeleton source)]
+  primitive :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+
+/-- The Cycle 317 source-`C0` boundary layer read as a generated coefficient. -/
+def atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    CoverRelativeCechGeneratedSemanticCoefficient semanticSite
+      (atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf) :=
+  (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0BoundaryGeneratedSemanticCoefficient
+    coverGeometry coefficientGeometry skeleton source).toGeneratedCoefficient
+
+/--
+Cycle 317 route-integrity identity: the source-`C0` generated residual is
+definitionally the Cech boundary of the same canonical `sourceC0`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_eq_sourceC0Boundary
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source).residual =
+      K.d 0
+        (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+          coverGeometry coefficientGeometry skeleton source) := by
+  rfl
+
+/--
+Cycle 317 exact residual-zero boundary: the source-`C0` generated residual is
+zero exactly when the same support-only canonical `sourceC0` is Cech-zero.
+
+This prevents the generated identity/cochain-realization layer from being used as
+a substitute for the missing lower overlap-law source: residual cocyclehood and
+boundary-generated H1-zero do not discharge this residual-zero equation.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    (let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+     letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+     (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source).residual = 0) <->
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source := by
+  rfl
+
+/--
+Cycle 317 no-escape theorem: for the same support-only source and the same
+atom/law-overlap-generated `K`, generated residual-zero cannot bypass missing
+arrow compatibility.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidualZero_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (let K :=
+        atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+       letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+       (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+        coverGeometry coefficientGeometry skeleton source).residual = 0) := by
+  intro hresidualZero
+  have hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source :=
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source).1 hresidualZero
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_and_atomLawOverlapGeometry_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source hcechZero
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing hoverlap
+
+/--
+Cycle 318 exact boundary: zero of the Cycle 317 source-`C0` generated
+residual is exactly the isolated support-only arrow-compatibility law.
+
+Thus a future lower semantic atom/law layer cannot merely construct a generated
+coefficient, a Cech-side zero predicate, or support membership.  To close this
+route for the same support-only source and the same atom/law-overlap-generated
+`K`, it must construct the same arrow-level overlap law.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    (let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+     letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+     (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source).residual = 0) <->
+      source.arrowCompatibilityLaw := by
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source).trans
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+        coverGeometry coefficientGeometry skeleton source)
+
+/--
+Cycle 318 constructor-reduction: any uniform construction of the Cycle 317
+source-`C0` generated residual-zero from support-only canonical/free
+provenance already constructs the isolated arrow-compatibility law.
+
+This is the proof-use form of the Cycle 318 boundary.  It prevents the
+support-only side of the canonical/free atom/law layer from being counted as a
+residual-zero generator unless the missing lower overlap law has actually been
+constructed.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) :
+    source.arrowCompatibilityLaw := by
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).1
+      (constructor supportReading)
+
+/--
+Cycle 318 no-constructor corollary: support-only canonical/free atom/law
+provenance cannot uniformly construct zero of the source-`C0` generated
+residual while the same support-only source lacks the arrow-compatibility law.
+
+The corollary is residual-specific: it closes the apparent loophole left after
+Cycle 317 by showing that support-only provenance plus generated coefficient
+machinery still has exactly the same missing lower semantic overlap law.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) := by
+  intro constructor
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport constructor)
+
+/--
+Cycle 319 required-support constructor reduction.
+
+Even after naming the existing required-law support carried by the support-only
+source, any uniform construction of the Cycle 317 source-`C0` residual-zero
+from that support and the canonical/free support-reading layer already
+constructs the isolated arrow-compatibility law.
+
+Thus the current `lawSupport` / `lawSupport_required` / `Required` data are not
+a lower semantic law evaluator.  A genuine next layer must explain how required
+laws evaluate to the displayed overlap restriction equality; otherwise it only
+repackages the Cycle 318 premise.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      source.displayedRequiredLawSupport ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) :
+    source.arrowCompatibilityLaw := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport
+      (fun supportReading =>
+        constructor source.constructs_displayedRequiredLawSupport supportReading)
+
+/--
+Cycle 319 no-constructor corollary: required-law support plus support-only
+canonical/free provenance still cannot construct source-`C0` generated
+residual-zero while the same support-only source lacks `arrowCompatibilityLaw`.
+
+This is the fail-closed boundary for the current rock face.  The existing
+support data name which laws are required, but they do not yet provide the
+law-evaluation semantics that turns those laws into overlap restriction
+equality for the same atom/law-overlap-generated `K`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (source.displayedRequiredLawSupport ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) := by
+  intro constructor
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport constructor)
+
+/--
+Cycle 320 lawful-local-object constructor reduction.
+
+Even if the support-only source is enriched with local architecture-object
+readings that are lawful for every required law in `S.lawUniverse`, a uniform
+constructor of source-`C0` generated residual-zero still constructs the same
+isolated `source.arrowCompatibilityLaw`.
+
+This is the precise boundary between law fulfillment and law evaluation:
+`Law.holds` on selected local objects is semantic content, but it is not yet an
+evaluator proving equality of obstruction-sheaf restrictions on common
+refinements.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) :
+    source.arrowCompatibilityLaw := by
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source hsupport
+      (fun supportReading =>
+        constructor source.constructs_displayedRequiredLawSupport
+          (source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+            objectOfLocalInput hlawful)
+          supportReading)
+
+/--
+Cycle 320 no-constructor corollary: lawful local architecture-object readings
+plus support-only canonical/free provenance still cannot construct source-`C0`
+generated residual-zero while the same support-only source lacks
+`arrowCompatibilityLaw`.
+
+Thus the missing layer is not merely `Required` membership and not merely
+local `Law.holds`; it is a genuine restriction-level evaluator from those laws
+to the displayed overlap equality for the same generated `K`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        (let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+         letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+         (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0)) := by
+  intro constructor
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_sourceC0GeneratedResidualZero_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful hsupport constructor)
+
+/--
+Cycle 321 direct restriction-evaluator reduction.
+
+This removes the Cycle 320 generated-residual detour: if local `Law.holds`,
+displayed required-law support, and the support-only canonical/free reading can
+directly construct the bare overlap restriction equality, then they already
+construct the same isolated `source.arrowCompatibilityLaw`.
+
+Thus a genuine law evaluator must be a theorem producing this equality from
+semantic law/restriction content; it cannot be counted as lower provenance
+while merely being supplied as a constructor.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (evaluator :
+      source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) :
+    source.arrowCompatibilityLaw := by
+  rcases hsupport with ⟨supportReading⟩
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (evaluator source.constructs_displayedRequiredLawSupport
+        (source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+          objectOfLocalInput hlawful)
+        supportReading)
+
+/--
+Cycle 321 no-constructor corollary: local `Law.holds` plus support-only
+canonical/free provenance cannot uniformly construct the bare overlap
+restriction equality while the same support-only source lacks
+`arrowCompatibilityLaw`.
+
+This is the fail-closed boundary for the direct evaluator route.  Any positive
+next layer must construct the restriction equality itself from accepted
+semantic atom/law geometry for the same source and same generated `K`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    ¬ (source.displayedRequiredLawSupport ->
+        source.displayedRequiredLawsHoldOn objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  intro evaluator
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful hsupport evaluator)
+
+/--
+Cycle 322 generated-`K` positive checkpoint.
+
+For the actual atom/law-overlap-generated cover-relative Cech complex, a
+restriction-level evaluator from displayed required `Law.holds` evidence
+constructs the bare overlap restriction equality for the same support-only
+source.
+
+This does not use support-reading, residual-zero, `sourceC0CechZero`, or
+`H1` zero; the evaluator is the remaining material semantic bridge.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+  exact
+    source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      objectOfLocalInput
+      (source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
+        objectOfLocalInput hlawful)
+      evaluator
+
+/--
+Cycle 322 generated-`K` proof-use checkpoint: the same evaluator immediately
+reconstructs the isolated arrow compatibility law.
+
+This records why the evaluator cannot be treated as already-lower provenance
+unless it is itself generated from atom/law/restriction geometry.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    source.arrowCompatibilityLaw := by
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+        hlawful evaluator)
+
+/--
+Cycle 322 generated-`K` no-constructor corollary: if the same support-only
+source lacks `arrowCompatibilityLaw`, no restriction-level evaluator of this
+shape can exist for lawful local readings.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
+  intro evaluator
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful evaluator)
+
+/--
+Cycle 323 generated-`K` obstruction: the current `LawUniverse` / `Law.holds`
+API boundary cannot uniformly construct the Cycle 322 restriction evaluator
+for the same support-only source and atom/law-overlap-generated Cech complex
+unless the missing restriction semantics is supplied.
+
+The current boundary includes the law universe's bare coverage/exactness
+assumptions, displayed required-law support, and displayed `Law.holds` proofs.
+It still contains no common-refinement restriction equality.  A constructor
+from that boundary to `displayedRequiredLawRestrictionEvaluator` would
+reconstruct `source.arrowCompatibilityLaw`, so it is impossible under
+`¬ source.arrowCompatibilityLaw`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_displayedRequiredLawRestrictionEvaluator_without_restrictionSemantics
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) := by
+  exact
+    source.no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hcoverage hexactness hlawful hmissing
+
+/--
+Cycle 324 generated-`K` direct bare-equality obstruction.
+
+For the same support-only source and actual atom/law-overlap-generated Cech
+complex, the current `LawUniverse` / `Law.holds` boundary cannot directly
+construct the bare overlap restriction equality under
+`¬ source.arrowCompatibilityLaw`.  This closes the direct bypass around the
+Cycle 322 evaluator.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_pointwiseSupportOnlyOverlapRestrictionEquality_without_restrictionSemantics
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
+  exact
+    source.no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      objectOfLocalInput hcoverage hexactness hlawful hmissing
+
+/--
+Cycle 324 generated-`K` interpretation-blindness boundary.
+
+For the actual atom/law-overlap-generated cover-relative Cech complex, the
+current `LawUniverse` / `Law.holds` input boundary is invariant under arbitrary
+replacement of the displayed obstruction-sheaf interpretation.  This fixes the
+precise API gap left by Cycle 323: the law-side boundary does not observe the
+sections whose restrictions must be compared.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_invariant_under_displayedInterpretationReplacement
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (interpret' :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i ->
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.obj
+            (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)))
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U) :
+    (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+        objectOfLocalInput <->
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
+  exact
+    source.currentLawUniverseHoldsInputBoundary_withDisplayedInterpretation_iff
+      interpret' objectOfLocalInput
+
+/--
+Cycle 324 generated-`K` no-constructor corollary.
+
+Even after fixing the actual atom/law-overlap-generated `K`, an
+interpretation-blind constructor from the current law boundary to restriction
+evaluators cannot exist under `¬ source.arrowCompatibilityLaw`.  The missing
+semantic input must be a restriction semantics that reads the displayed local
+sections.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_interpretationBlind_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw) :
+    ¬ (forall interpret' :
+        (i :
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+          source.LocalInput i ->
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf.carrier.toPresheaf.obj
+              (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)),
+        (source.withDisplayedInterpretation interpret').currentLawUniverseHoldsInputBoundary
+            objectOfLocalInput ->
+          (source.withDisplayedInterpretation interpret').displayedRequiredLawRestrictionEvaluator
+            objectOfLocalInput) := by
+  exact
+    source.no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
+      objectOfLocalInput hcoverage hexactness hlawful hmissing
+
+/--
+Cycle 317 generated-residual constructor: support-only canonical/free atom/law
+provenance plus zero of the source-`C0` generated residual constructs the full
+canonical/free overlap-reading layer.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0GeneratedResidualZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (hresidualZero :
+      let K :=
+        atomLawOverlapCoverRelativeCechComplex coverGeometry
+          coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+      letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+        coverGeometry coefficientGeometry skeleton source).residual = 0) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source :=
+  atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+    coverGeometry coefficientGeometry skeleton source supportReading
+    ((atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source).1 hresidualZero)
+
+/--
+Cycle 317 exact generated-residual boundary: full canonical/free overlap-reading
+is equivalent to support-only canonical/free provenance plus zero of the
+source-`C0` generated residual.
+
+This restates Cycle 316 through the generated coefficient layer without weakening
+the premise: the remaining material datum is still exactly `K.d 0 sourceC0 = 0`
+for the same support-only source.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_iff_supportReading_and_sourceC0GeneratedResidualZero_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        let K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+        letI : AddCommGroup (K.Cn 1) := K.cochainAddCommGroup 1
+        (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+          coverGeometry coefficientGeometry skeleton source).residual = 0 := by
+  constructor
+  · rintro ⟨reading⟩
+    refine
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading, ?_⟩
+    exact
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source).2
+        (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeInputBoundary_constructs_sourceC0CechZero
+          coverGeometry coefficientGeometry skeleton source reading)
+  · rintro ⟨supportReading, hresidualZero⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0GeneratedResidualZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+          coverGeometry coefficientGeometry skeleton source supportReading hresidualZero⟩
+
+/--
+Cycle 325 source-`C0` generated-coefficient route.
+
+For the same support-only canonical/free atom/law source, the generated
+semantic coefficient built from `sourceC0` already supplies the identity
+degree-`0` carrier comparison, identity `c0Equiv`, cochain realization,
+comparison package, and boundary-generated semantic/additive `H1` zero route.
+These are produced from the atom/law-overlap-generated `K` and the displayed
+primitive `sourceC0`; no external `c0Equiv`, `c0Carrier`, old
+`sourceWithoutC0`, selected residual cocycle, residual-boundary witness, or
+semantic `H1` certificate is accepted.
+
+The final conjunct keeps the remaining rock face explicit: zero of this
+generated residual is still equivalent to the same isolated
+`source.arrowCompatibilityLaw`.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient_constructs_identityRoute_and_residualZeroBoundary
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton) :
+    let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let sourceC0 :=
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+        coverGeometry coefficientGeometry skeleton source
+    let generated :=
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+        coverGeometry coefficientGeometry skeleton source
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    generated.residual = K.d 0 sourceC0 /\
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 generated.residual = 0) /\
+      (forall primitive : K.Cn 0,
+        generated.toCoefficient.delta0 primitive = K.d 0 primitive) /\
+      (forall cochain : K.Cn 1,
+        generated.toCoefficient.delta1 cochain = K.d 1 cochain) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (K.Cn 0)) /\
+      (forall primitive : K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        realization.c0Equiv primitive = primitive) /\
+      (forall primitive : K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := K.cochainAddCommGroup 0
+        realization.c0Equiv.symm primitive = primitive) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data /\
+      ((letI := K.cochainAddCommGroup 1
+        generated.residual = 0) <-> source.arrowCompatibilityLaw) := by
+  dsimp
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  let boundary :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0BoundaryGeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source
+  let generated :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  let envelope := canonical.toGeneratedEnvelope
+  let realization := envelope.toCochainRealization
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rfl
+  · letI := K.cochainAddCommGroup 2
+    change K.d 1 (K.d 0 sourceC0) = 0
+    exact K.d_comp_d_eq_zero 0 sourceC0
+  · intro primitive
+    rfl
+  · intro cochain
+    rfl
+  · letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    exact
+      ⟨CarrierSpecificAdditiveComparisonData.ofAddEquiv
+        realization.c0Equiv⟩
+  · intro primitive
+    rfl
+  · intro primitive
+    letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := K.cochainAddCommGroup 0
+    rfl
+  · exact ⟨realization⟩
+  · exact envelope.constructs_groundedComparisonPackage_from_identityCochainRealization
+  · exact boundary.constructs_residualBoundary canonical
+  · exact boundary.constructs_semanticH1Zero canonical
+  · exact boundary.constructs_additiveH1Zero canonical
+  · exact
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+        coverGeometry coefficientGeometry skeleton source
+
+/--
+Cycle 325 evaluator bridge: a genuine restriction-level evaluator reaches the
+same-source generated selected-`K` route package and zero of the source-`C0`
+generated residual.
+
+This is the constructive counterpart to the Cycle 323/324 no-go results.  The
+theorem does not accept `source.arrowCompatibilityLaw`, bare overlap equality,
+`sourceC0CechZero`, residual-zero, `sourceWithoutC0`, external `c0Carrier`, or
+external `c0Equiv`; it consumes only lawful local readings plus the named
+restriction evaluator.  The evaluator remains the material lower semantic
+bridge to be generated in a later cycle.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulRestrictionEvaluator_constructs_generatedSelectedKRoutePackage_and_sourceC0ResidualZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    let K :=
+      atomLawOverlapCoverRelativeCechComplex coverGeometry
+        coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let sourceC0 :=
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+        coverGeometry coefficientGeometry skeleton source
+    let generated :=
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+        coverGeometry coefficientGeometry skeleton source
+    source.pointwiseSupportOnlyOverlapRestrictionEquality /\
+      source.arrowCompatibilityLaw /\
+      AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source /\
+      (letI := K.cochainAddCommGroup 1
+       generated.residual = 0) /\
+      generated.residual = K.d 0 sourceC0 := by
+  dsimp
+  let K :=
+    atomLawOverlapCoverRelativeCechComplex coverGeometry
+      coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0
+      coverGeometry coefficientGeometry skeleton source
+  let generated :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedSemanticCoefficient
+      coverGeometry coefficientGeometry skeleton source
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful evaluator
+  have harrow : source.arrowCompatibilityLaw :=
+    atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hlawful evaluator
+  have hpackage :
+      AtomLawOverlapSupportOnlyOverlapEqualityGeneratedSelectedKRoutePackage
+        coverGeometry coefficientGeometry skeleton source :=
+    (atomLawOverlap_sourceSectionFreeSkeleton_generatedSelectedKRoutePackage_iff_supportOnlyOverlapEquality
+      coverGeometry coefficientGeometry skeleton source).2 hoverlap
+  have hresidualZero :
+      (letI := K.cochainAddCommGroup 1
+       generated.residual = 0) :=
+    (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_zero_iff_arrowCompatibilityLaw_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source).2 harrow
+  have hresidualBoundary : generated.residual = K.d 0 sourceC0 :=
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0GeneratedResidual_eq_sourceC0Boundary
+      coverGeometry coefficientGeometry skeleton source
+  exact ⟨hoverlap, harrow, hpackage, hresidualZero, hresidualBoundary⟩
+
+/--
+Cycle 326 canonical/free evaluator provenance checkpoint.
+
+The canonical/free overlap-reading layer supplies the restriction evaluator
+used by Cycle 325.  The proof consumes the existing `law_reads_overlap` field
+for the same displayed local sections and common refinement; it does not accept
+`source.arrowCompatibilityLaw`, bare overlap equality, residual-zero,
+`sourceC0CechZero`, external `c0Equiv`, external `c0Carrier`, or the old
+`sourceWithoutC0`.
+
+This is still not completion evidence: `law_reads_overlap` remains the material
+semantic restriction law carried by the canonical/free reading layer.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_displayedRequiredLawRestrictionEvaluator
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (reading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U) :
+    source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
+  intro i j Z gi gj hcomm _lawIndexI _lawIndexJ _hLawMemI _hLawMemJ
+    _hrequiredI _hrequiredJ _hholdsI _hholdsJ
+  exact
+    reading.law_reads_overlap i j gi gj hcomm
+      (reading.coefficient_law_support i)
+      (reading.coefficient_law_support j)
+
+/--
+Cycle 327 constructor-reduction for the remaining `law_reads_overlap` field.
+
+If the current law-universe boundary and support-only canonical/free
+provenance could construct the full overlap-reading layer, then the same data
+would already construct the isolated arrow-compatibility law.  Thus the
+remaining `law_reads_overlap` field cannot be discharged by merely combining
+Cycle 323's interpretation-blind law boundary with Cycle 306's support-reading
+shadow.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source))
+    (constructor :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) :
+    source.arrowCompatibilityLaw := by
+  rcases hsupport with ⟨supportReading⟩
+  have hreading :
+      AtomLawOverlapCanonicalFreeOverlapReading
+        coverGeometry coefficientGeometry skeleton source :=
+    constructor hboundary supportReading
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      (atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source hreading)
+
+/--
+Cycle 327 blocker: the current law-universe boundary plus support-only
+canonical/free provenance cannot uniformly generate the full
+`AtomLawOverlapCanonicalFreeOverlapReading` layer while the same support-only
+source lacks `arrowCompatibilityLaw`.
+
+This targets the exact Cycle 326 residual premise.  It does not accept bare
+overlap equality, `source.arrowCompatibilityLaw`, `sourceC0CechZero`,
+residual-zero, H1-zero, external `c0Equiv`, old `sourceWithoutC0`, or selected
+comparison data; it says that the current non-restriction law boundary is still
+too weak to construct `law_reads_overlap`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hsupport :
+      Nonempty
+        (AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source)) :
+    IsEmpty
+      (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source ->
+        AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) := by
+  refine ⟨?_⟩
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hboundary hsupport constructor)
+
+/--
+Cycle 328 exact evaluator boundary.
+
+The current-law boundary does not by itself construct `law_reads_overlap`
+(Cycle 327), but a genuine restriction-level evaluator is exactly strong
+enough to promote support-only canonical/free provenance to the full
+canonical/free overlap-reading layer.
+
+This theorem still does not discharge the evaluator: it proof-uses the named
+`displayedRequiredLawRestrictionEvaluator` into the overlap equality and then
+reconstructs `AtomLawOverlapCanonicalFreeOverlapReading` through the Cycle 306
+support/equality constructor.  No bare overlap equality,
+`source.arrowCompatibilityLaw`, residual-zero, `H1` zero, external `c0Equiv`,
+old `sourceWithoutC0`, or selected comparison data is supplied.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source := by
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      objectOfLocalInput hboundary.2.2.2 evaluator
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source supportReading hoverlap
+
+/--
+Cycle 328 exact decomposition: relative to the current-law boundary, the full
+canonical/free overlap-reading layer is equivalent to support-only
+canonical/free provenance plus the displayed required-law restriction
+evaluator.
+
+The forward direction extracts support provenance and the evaluator from the
+full reading.  The reverse direction is the Cycle 328 constructor above.  This
+marks the true remaining layer: `displayedRequiredLawRestrictionEvaluator`
+must be constructed from lower semantic atom/law restriction geometry, not
+moved into a structure field and counted as discharged.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_canonicalFreeOverlapReading_iff_supportReading_and_displayedRequiredLawRestrictionEvaluator
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput) :
+    Nonempty
+        (AtomLawOverlapCanonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source) <->
+      Exists fun _supportReading :
+        AtomLawOverlapCanonicalFreeSupportReading
+          coverGeometry coefficientGeometry skeleton source =>
+        source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
+  constructor
+  · rintro ⟨reading⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_to_supportReading
+          coverGeometry coefficientGeometry skeleton source reading,
+        atomLawOverlap_sourceSectionFreeSkeleton_canonicalFreeOverlapReading_constructs_displayedRequiredLawRestrictionEvaluator
+          coverGeometry coefficientGeometry skeleton source reading
+          objectOfLocalInput⟩
+  · rintro ⟨supportReading, evaluator⟩
+    exact
+      ⟨atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading
+          coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+          hboundary supportReading evaluator⟩
+
+/--
+Cycle 328 coefficient-law-support evaluator reduction.
+
+This lowers Cycle 327 below the support-reading record.  If the current
+law-universe boundary and the pointwise coefficient `lawSupport` membership of
+the selected source-section-free laws could construct the same restriction
+equality that `AtomLawOverlapCanonicalFreeOverlapReading.law_reads_overlap`
+stores, then they would already construct the isolated
+`source.arrowCompatibilityLaw`.
+
+Thus coefficient law-support membership is not itself the missing lower
+restriction-semantics layer; a positive construction must explain why those
+supported laws evaluate to equality of the displayed obstruction-sheaf
+restrictions.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_constructs_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (hlawSupport :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        choices.lawIndex i ∈
+          coefficientGeometry.lawSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i)))
+    (constructor :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        (forall i :
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+          choices.lawIndex i ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+              (source.interpret i (source.input i))) ->
+        forall
+          (i j :
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index)
+          {Z : S.category}
+          (gi :
+            Z ⟶
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (gj :
+            Z ⟶
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j),
+          gi ≫
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion i =
+            gj ≫
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion j ->
+          choices.lawIndex i ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+              (source.interpret i (source.input i)) ->
+          choices.lawIndex j ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j)
+              (source.interpret j (source.input j)) ->
+          (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gi.op
+              (source.interpret i (source.input i)) =
+            (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gj.op
+              (source.interpret j (source.input j))) :
+    source.arrowCompatibilityLaw := by
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality := by
+    intro i j Z gi gj hcomm
+    exact constructor hboundary hlawSupport i j gi gj hcomm
+      (hlawSupport i) (hlawSupport j)
+  exact
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      hoverlap
+
+/--
+Cycle 328 blocker: current-law boundary plus coefficient law-support
+membership cannot uniformly generate the `law_reads_overlap`-shape evaluator
+while the same support-only source lacks `arrowCompatibilityLaw`.
+
+This is the coefficient-support-only version of the Cycle 327 boundary.  It
+does not take a support-reading record, bare overlap equality,
+`source.arrowCompatibilityLaw`, residual-zero, `H1` zero, external `c0Equiv`,
+old `sourceWithoutC0`, or selected comparison data as completion evidence.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (choices :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hcoverage : S.lawUniverse.coverageAssumptions)
+    (hexactness : S.lawUniverse.exactnessAssumptions)
+    (hlawful :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
+          S.lawUniverse)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hlawSupport :
+      forall i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+        choices.lawIndex i ∈
+          coefficientGeometry.lawSupport
+            ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+              (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+            (source.interpret i (source.input i))) :
+    IsEmpty
+      (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
+        (forall i :
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
+          choices.lawIndex i ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+              (source.interpret i (source.input i))) ->
+        forall
+          (i j :
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index)
+          {Z : S.category}
+          (gi :
+            Z ⟶
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+          (gj :
+            Z ⟶
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j),
+          gi ≫
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion i =
+            gj ≫
+              (AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).inclusion j ->
+          choices.lawIndex i ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart i)
+              (source.interpret i (source.input i)) ->
+          choices.lawIndex j ∈
+            coefficientGeometry.lawSupport
+              ((AAT.AG.Cohomology.finitePosetCoverRelativeCover
+                (atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+                  coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)).chart j)
+              (source.interpret j (source.input j)) ->
+          (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gi.op
+              (source.interpret i (source.input i)) =
+            (coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).carrier.toPresheaf.map gj.op
+              (source.interpret j (source.input j))) := by
+  refine ⟨?_⟩
+  intro constructor
+  have hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
+    source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
+      objectOfLocalInput hcoverage hexactness hlawful
+  exact hmissing
+    (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_constructs_arrowCompatibilityLaw
+      coverGeometry coefficientGeometry skeleton source choices objectOfLocalInput
+      hboundary hlawSupport constructor)
+
+/--
+Cycle 308 no-escape theorem: if arrow compatibility is absent and the
+generated `sourceC0` is Cech-zero, then the selected degree-`1` face equality
+law and the arbitrary common-refinement factorization law cannot both hold.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_without_arrowCompatibilityLaw
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hselectedFace :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+        coverGeometry coefficientGeometry skeleton source) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hfactor
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
+        hfactor)
+
+/--
+Cycle 308 dual no-escape theorem: under a supplied arbitrary common-refinement
+factorization, missing arrow compatibility rules out the selected degree-`1`
+face equality law for Cech-zero `sourceC0`.
+-/
+theorem no_atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_without_arrowCompatibilityLaw_of_commonRefinementFactorization
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (hmissing : ¬ source.arrowCompatibilityLaw)
+    (hcechZero :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+        coverGeometry coefficientGeometry skeleton source)
+    (hfactor :
+      atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CommonRefinementFactorsThroughSelectedDegreeOneFaces
+        coverGeometry coefficientGeometry skeleton source) :
+    ¬ atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedDegreeOneFaceEquality
+        coverGeometry coefficientGeometry skeleton source := by
+  intro hselectedFace
+  exact
+    source.no_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
+      hmissing
+      (atomLawOverlap_sourceSectionFreeSkeleton_sourceC0SelectedFaceEquality_and_commonRefinementFactorization_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+        coverGeometry coefficientGeometry skeleton source hcechZero hselectedFace
+        hfactor)
 
 end CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
 
@@ -29260,6 +37353,118 @@ theorem constructs_selectedSemanticCoefficientDirectRealizationLayer
         letI := surface.K.cochainAddCommGroup 1
         rfl)⟩
 
+/--
+Cycle 330 canonical identity-source replacement checkpoint.
+
+The generated envelope does not need the old `sourceWithoutC0` route to reach
+the selected realization and grounded comparison path.  Its canonical identity
+`C0` continuation, full identity-generated atom-supported source, selected
+semantic coefficient realization layer, explicit lower data, cochain
+realization, carrier comparison, and comparison package are all constructed
+from the same generated `K`-native coefficient layer.
+
+This is deliberately a replacement route theorem, not a construction of
+`AtomSupportedDegreewiseEquivAndFaceRestrictionSourceWithoutDegreeZeroEquiv`:
+the latter still asks for uniform face-law continuations over arbitrary future
+degree-`0` equivalences.
+-/
+theorem constructs_identityC0ReplacementRoute_without_sourceWithoutC0
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (generated :
+      CoverRelativeCechGeneratedSemanticCoefficient site surface.K)
+    (envelope : CoverRelativeCechGeneratedSemanticEnvelope generated) :
+    AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        envelope.toCochainRealization.c1Equiv
+        envelope.toCochainRealization.c2Equiv
+        envelope.toCochainRealization.c2Equiv_zero
+        envelope.toCochainRealization.c2Equiv_symm_zero
+        envelope.toCochainRealization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      AtomSupportedDegreewiseEquivAndDirectDifferentialSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          envelope.toCochainRealization.toH1Comparison) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv primitive = primitive) /\
+      (forall primitive : surface.K.Cn 0,
+        letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+        letI := surface.K.cochainAddCommGroup 0
+        envelope.toCochainRealization.c0Equiv.symm primitive = primitive) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv cochain = cochain) /\
+      (forall cochain : surface.K.Cn 1,
+        letI := envelope.toAdditiveCechH1Data.c1AddCommGroup
+        letI := surface.K.cochainAddCommGroup 1
+        envelope.toCochainRealization.c1Equiv.symm cochain = cochain) := by
+  have hcontinuation :
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        envelope.toCochainRealization.c1Equiv
+        envelope.toCochainRealization.c2Equiv
+        envelope.toCochainRealization.c2Equiv_zero
+        envelope.toCochainRealization.c2Equiv_symm_zero
+        envelope.toCochainRealization.c0Equiv :=
+    envelope.constructs_identityC0SpecializedFaceLawContinuation
+      (surface := surface)
+  have hsource :
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface :=
+    constructs_atomSupportedDegreewiseEquivAndFaceRestrictionSource
+      (surface := surface) family hcover_eq generated envelope
+  have hroute :=
+    constructs_selectedSemanticCoefficientDirectRealizationLayer
+      (surface := surface) family hcover_eq generated envelope
+  rcases hroute with
+    ⟨hlayer, hdirectSource, hface, hrealization, hc0Carrier, hcomparison,
+      hc0, hc0symm, hc1, hc1symm⟩
+  exact
+    ⟨hcontinuation,
+      hsource,
+      hlayer,
+      hdirectSource,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hc0,
+      hc0symm,
+      hc1,
+      hc1symm⟩
+
 end CoverRelativeCechGeneratedSemanticEnvelope
 
 namespace CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
@@ -29427,6 +37632,126 @@ theorem constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiv
       hzeroCocycle,
       hboundaryCocycle,
       hzeroIff,
+      hprimitiveBoundary,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 330 semantic atom/law input-boundary lift for the canonical identity
+replacement route.
+
+This composes the generated-envelope identity replacement theorem with the
+input-boundary residual theorem over the same boundary-generated coefficient
+layer.  The result says that the semantic atom/law input-boundary geometry
+reaches the identity `C0` replacement route and the additive Cech boundary
+route simultaneously, without constructing or consuming the old
+`sourceWithoutC0` proposition.
+
+Remaining provenance is still visible: the selected cover witness, the
+input-boundary geometry, the finite orders, and the canonical generated
+envelope are inputs.  Therefore this is a proof checkpoint, not target theorem
+completion.
+-/
+theorem constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (geometry :
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob)
+    (c0Order : List (surface.K.Cn 0)) (c1Order : List (surface.K.Cn 1))
+    (canonical :
+      CoverRelativeCechGeneratedCanonicalH1Envelope
+        (geometry.toBoundaryGeneratedCoefficient
+          (K := surface.K) c0Order c1Order).toGeneratedCoefficient) :
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient (K := surface.K) c0Order c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      geometry.semanticAtomLawBoundary sigma
+        (geometry.generator sigma)
+        (geometry.atomSupport sigma (geometry.generator sigma))
+        (geometry.lawSupport sigma (geometry.generator sigma))
+        (geometry.interpret sigma (geometry.generator sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      boundary.primitive = geometry.toPrimitive /\
+      generated.residual = surface.K.d 0 geometry.toPrimitive /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = geometry.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient (K := surface.K) c0Order c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let envelope := canonical.toGeneratedEnvelope
+  have hreplacement :=
+    CoverRelativeCechGeneratedSemanticEnvelope.constructs_identityC0ReplacementRoute_without_sourceWithoutC0
+      (surface := surface) family hcover_eq generated envelope
+  have hadditive :=
+    geometry.constructs_additiveCechCocycleInputLayer_and_residualBoundary_and_h1Zero
+      (K := surface.K) c0Order c1Order canonical
+  rcases hreplacement with
+    ⟨hcontinuation, hsource, hlayer, _hdirectSource, hface, hrealization,
+      hc0Carrier, hcomparison, _hc0, _hc0symm, _hc1, _hc1symm⟩
+  rcases hadditive with
+    ⟨hvisible, hprimitiveEq, hresidual, _hcocycle, _hdata, _hdelta0,
+      _hdelta1, _hresidualCocycle, _hzeroCocycle, _hboundaryCocycle,
+      _hzeroIff, hprimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveEq,
+      hresidual,
       hprimitiveBoundary,
       hboundary,
       hsemanticH1,
@@ -29767,6 +38092,156 @@ theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectR
     canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiveCechBoundaryRoute
       (surface := surface) family hcover_eq data canonical
 
+/--
+Cycle 330 canonical/free cover-boundary lift for the identity `C0`
+replacement route.
+
+This removes the top-level input-boundary geometry, finite order arguments, and
+canonical-envelope argument from the Cycle 330 identity replacement route.  The
+geometry and orders are read from
+`CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData`, and the
+canonical envelope is the observation-minimal generated one.  The theorem still
+does not construct the old `sourceWithoutC0` surface or arbitrary future
+`c0Equiv` uniformity.
+-/
+theorem canonicalFreeCoverBoundary_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (data :
+      CoverRelativeCechCanonicalFreeSemanticAtomLawCoverBoundaryData
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      (exists atom : U.Atom,
+        atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+          semanticSite.sourceTraceToken atom = true) /\
+      (exists lawIndex : S.lawUniverse.Index,
+        lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+          S.lawUniverse.Required lawIndex) /\
+      CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+        (freeSource.input sigma)
+        (freeSource.atomSupport sigma (freeSource.input sigma))
+        (freeSource.lawSupport sigma (freeSource.input sigma))
+        (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      boundary.primitive = data.boundary.primitive /\
+      generated.residual = surface.K.d 0 data.boundary.primitive /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = data.boundary.primitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let freeSource := data.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) data.boundary.c0Order data.boundary.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute
+      (surface := surface) family hcover_eq geometry
+      data.boundary.c0Order data.boundary.c1Order canonical
+  rcases hroute with
+    ⟨hvisible, hcontinuation, hsource, hlayer, hface, hrealization,
+      hc0Carrier, hcomparison, _hprimitiveEq, _hresidual,
+      _hprimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  have hfreeVisible :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma)) := by
+    simpa [geometry, freeSource,
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource]
+      using hvisible
+  have hprimitiveData : boundary.primitive = data.boundary.primitive := by
+    rfl
+  have hresidualData :
+      generated.residual = surface.K.d 0 data.boundary.primitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hprimitiveData]
+  have hprimitiveBoundaryData :
+      exists primitive : surface.K.Cn 0,
+        primitive = data.boundary.primitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨data.boundary.primitive, rfl, hresidualData.symm⟩
+  exact
+    ⟨hfreeVisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveData,
+      hresidualData,
+      hprimitiveBoundaryData,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
 end CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
 
 namespace CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
@@ -29969,6 +38444,158 @@ theorem restrictionRealized_constructs_selectedSemanticCoefficientDirectRealizat
       hzeroCocycle,
       hboundaryCocycle,
       hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 331 proof-use checkpoint: a restriction-realized semantic atom/law
+input-boundary source carries the Cycle 330 identity `C0` replacement route
+one successor step downward.
+
+The theorem composes the restriction-realized source with the canonical/free
+cover-boundary identity route.  The old `sourceWithoutC0` surface and arbitrary
+future `c0Equiv` uniformity are not reconstructed; the only `C0` continuation
+is the generated identity continuation exposed by the Cycle 330 route.  The
+source section, restriction maps, selected orders, and local semantic atom/law
+supports remain visible lower provenance, so this is not a G-06 completion
+claim.
+-/
+theorem restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let boundarySource :=
+      source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      source.toPrimitive sigma =
+        Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+          source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let boundarySource :=
+    source.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.canonicalFreeCoverBoundary_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq boundarySource
+  rcases hroute with
+    ⟨hvisible, hcontinuation, hsource, hlayer, hface, hrealization,
+      hc0Carrier, hcomparison, _hprimitiveEq, _hresidual,
+      _hprimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  have hprimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.sectionToLocal sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
       hprimitiveBoundarySource,
       hboundary,
       hsemanticH1,
@@ -30199,6 +38826,181 @@ theorem baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationL
       hzeroCocycle,
       hboundaryCocycle,
       hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 332 proof-use checkpoint: a base-restriction semantic atom/law
+input-boundary source carries the identity `C0` replacement route one more
+successor step downward.
+
+Compared with Cycle 331, the restriction-realized source is no longer an
+arbitrary lower input.  It is definitionally generated from the displayed base
+section and the maps from selected `0`-simplex overlaps to the cover base.  The
+old `sourceWithoutC0` surface and arbitrary future `c0Equiv` uniformity remain
+closed; the identity continuation is inherited from the reviewed predecessor
+route.  The base section, selected Cech orders, overlap-to-base maps, local
+semantic atom/law inputs, and selected cover witness remain visible lower
+provenance, so this is not a G-06 completion claim.
+-/
+theorem baseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let restrictionSource :=
+      source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let restrictionSource :=
+    source.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq restrictionSource
+  rcases hroute with
+    ⟨_hrestrictionPrimitive, _hrestrictionBoundaryPrimitive,
+      _hrestrictionResidual, hvisible, hcontinuation, hsource, hlayer, hface,
+      hrealization, hc0Carrier, hcomparison, _hrestrictionPrimitiveBoundary,
+      hboundary, hsemanticH1, hadditiveH1⟩
+  have hsectionSource :
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma = source.zeroSimplexToBase sigma := by
+    intro sigma
+    rfl
+  have hbasePrimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map (source.zeroSimplexToBase sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hsectionSource,
+      hsectionToLocal,
+      hbasePrimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
       hprimitiveBoundarySource,
       hboundary,
       hsemanticH1,
@@ -30460,6 +39262,214 @@ theorem chartBaseRestriction_constructs_selectedSemanticCoefficientDirectRealiza
       hzeroCocycle,
       hboundaryCocycle,
       hzeroIff,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 333 proof-use checkpoint: a chart/base semantic atom/law
+input-boundary source carries the identity `C0` replacement route one more
+successor step downward.
+
+Compared with Cycle 332, the base-restriction source is no longer supplied
+directly.  It is definitionally generated from the chart/base source, whose
+maps from selected degree-`0` overlaps to the cover base are the displayed
+chart incidence maps followed by the cover inclusion.  The old
+`sourceWithoutC0` surface and arbitrary future `c0Equiv` uniformity remain
+closed; the identity continuation is inherited from the reviewed base
+predecessor route.  The base section, selected Cech orders, chart incidence,
+local semantic atom/law inputs, and selected cover witness remain visible
+lower provenance, so this is not a G-06 completion claim.
+-/
+theorem chartBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob))
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap surface.coverBase)
+    (hcover_eq : surface.selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge) Ob
+        surface.K) :
+    let baseSource :=
+      source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    (forall sigma :
+      (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+      baseSource.zeroSimplexToBase sigma =
+        eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+          (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+            (source.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma)) /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+              (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+                (source.zeroSimplexChart sigma)).op
+            source.sourceSection) /\
+      boundary.primitive = source.toPrimitive /\
+      generated.residual = surface.K.d 0 source.toPrimitive /\
+      (forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let baseSource :=
+    source.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.baseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq baseSource
+  rcases hroute with
+    ⟨_hsectionSource, _hsectionToLocal, _hbasePrimitive,
+      _hbaseBoundaryPrimitive, _hbaseResidual, hvisible, hcontinuation,
+      hsource, hlayer, hface, hrealization, hc0Carrier, hcomparison,
+      _hbasePrimitiveBoundary, hboundary, hsemanticH1, hadditiveH1⟩
+  have hbaseMap :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hsectionSource :
+      restrictionSource.sectionSource =
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+            (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+              (source.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hchartPrimitivePointwise :
+      forall sigma :
+        (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).simplex 0,
+        source.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (eqToHom (source.zeroSimplexOverlap_eq_chart sigma) ≫
+              (SemanticRepairCover.toCoverRelativeCechCover surface.coverBridge).inclusion
+                (source.zeroSimplexChart sigma)).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive : boundary.primitive = source.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 source.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = source.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨source.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hbaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hchartPrimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
       hprimitiveBoundarySource,
       hboundary,
       hsemanticH1,
@@ -30795,6 +39805,283 @@ theorem chartIndexedZeroBaseRestriction_constructs_selectedSemanticCoefficientDi
       hsemanticH1,
       hadditiveH1⟩
 
+/--
+Cycle 334 proof-use checkpoint: a chart-indexed zero semantic atom/law
+input-boundary source carries the identity `C0` replacement route one more
+successor step downward.
+
+Compared with Cycle 333, the chart/base source is no longer supplied directly.
+It is definitionally generated from the chart-indexed zero cover's
+`toZeroSimplexChartIncidence`.  The theorem exposes preservation of the
+chart-indexed cover and `K`, the generated chart assignment, and the generated
+overlap-to-base maps.  The old `sourceWithoutC0` surface and arbitrary future
+`c0Equiv` uniformity remain closed; the identity continuation is inherited
+from the reviewed chart/base predecessor route.  The semantic-cover bridge
+maps, selected cover membership, base section, selected Cech orders, local
+semantic atom/law inputs, and selected cover witness remain visible lower
+provenance, so this is not a G-06 completion claim.
+-/
+theorem chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (charted : CoverRelativeCechChartIndexedZeroCover S)
+    (chartSimplex :
+      semanticCover.CoverChart -> charted.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          charted.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          charted.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        charted.toCoverRelativeCechCover Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (selectedCover : Sieve charted.base)
+    (selectedCover_mem : selectedCover ∈ S.topology charted.base)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent : AAT.AG.Site.AATDescent S presheaf selectedCover)
+    (family :
+      AAT.AG.Site.AATCoverageFamily S.requirements S.overlap charted.base)
+    (hcover_eq : selectedCover = Sieve.generate family.presieve)
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) :
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem := selectedCover_mem
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometry :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometry.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem := selectedCover_mem
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometry :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometry.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (surface := surface) family hcover_eq chartBaseSource
+  rcases hroute with
+    ⟨_hchartBaseMap, hsectionSource, _hsectionToLocal,
+      _hchartPrimitive, _hboundaryPrimitive, _hresidualSource, hvisible,
+      hcontinuation, hsource, hlayer, hface, hrealization, hc0Carrier,
+      hcomparison, _hprimitiveBoundarySource, hboundary, hsemanticH1,
+      hadditiveH1⟩
+  have hcoverPreserved :
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover := by
+    rfl
+  have hKPreserved : HEq surface.K K := by
+    rfl
+  have hchartGenerated :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma := by
+    intro sigma
+    rfl
+  have hgeneratedBaseMap :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) := by
+    intro sigma
+    exact source.baseRestriction_zeroSimplexToBase_eq_generated_chartInclusion sigma
+  have hsectionSourceGenerated :
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base := by
+    rfl
+  have hsectionToLocal :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) := by
+    intro sigma
+    rfl
+  have hprimitivePointwise :
+      forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection := by
+    intro sigma
+    rfl
+  have hboundaryPrimitive :
+      boundary.primitive = chartBaseSource.toPrimitive := by
+    rfl
+  have hresidualSource :
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive := by
+    rw [show generated.residual = surface.K.d 0 boundary.primitive by rfl]
+    rw [hboundaryPrimitive]
+  have hprimitiveBoundarySource :
+      exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual :=
+    ⟨chartBaseSource.toPrimitive, rfl, hresidualSource.symm⟩
+  exact
+    ⟨hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSourceGenerated,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
 end CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
 namespace CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
@@ -31040,6 +40327,1078 @@ theorem atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirec
       hprimitiveBoundarySource,
       hboundary,
       hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 335 proof-use checkpoint: atom/law selected chart-indexed cover geometry
+feeds the Cycle 334 identity `C0` replacement route.
+
+This is the identity-`C0` analogue of the Cycle 286 selected-realization
+successor theorem.  The selected cover is still the generated sieve
+`Sieve.generate geometry.family.presieve`, and the cover membership, chart
+index nonvacuity, and zero-simplex incidence are produced by `geometry`.  The
+old `sourceWithoutC0` surface and arbitrary future `c0Equiv` uniformity remain
+closed; the identity continuation is inherited from the reviewed
+chart-indexed predecessor route.  The semantic-cover bridge maps, selected
+`K`, source section, local semantic atom/law inputs, sheaf condition, and
+descent data remain visible lower provenance, so this is not a G-06 completion
+claim.
+-/
+theorem atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (geometry : CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry S)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          geometry.toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        geometry.toChartIndexedZeroCover.toCoverRelativeCechCover Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate geometry.family.presieve))
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S geometry.toChartIndexedZeroCover Ob K) :
+    let charted := geometry.toChartIndexedZeroCover
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate geometry.family.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    Sieve.generate geometry.family.presieve ∈ S.topology geometry.base /\
+      Nonempty charted.Index /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      surface.selectedCover = Sieve.generate geometry.family.presieve /\
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let charted := geometry.toChartIndexedZeroCover
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate geometry.family.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hroute :=
+    CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (semanticCover := semanticCover)
+      (charted := charted)
+      chartSimplex overlapSimplex tripleSimplex K presheaf selectedCover
+      (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry)
+      sheafCondition descent geometry.family rfl source
+  rcases hroute with
+    ⟨hcoverPreserved, hKPreserved, hchartGenerated, hgeneratedBaseMap,
+      hsectionSource, hsectionToLocal, hprimitivePointwise,
+      hboundaryPrimitive, hresidualSource, hvisible, hcontinuation,
+      hsource, hlayer, hface, hrealization, hc0Carrier, hcomparison,
+      hprimitiveBoundarySource, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+        geometry,
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.chartIndex_nonempty
+        geometry,
+      CoverRelativeCechChartIndexedZeroCover.constructs_zeroSimplexChartIncidence
+        charted,
+      rfl,
+      hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 336 proof-use checkpoint: finite-poset generated cover geometry carries
+the Cycle 335 atom/law selected identity `C0` route.
+
+This specializes the atom/law selected chart-indexed cover theorem to the
+finite-poset cover geometry produced by `ofFinitePosetCechComplex`.  The
+positive Cech simplices and faces are no longer selected independently: they
+are the shifted finite-poset Cech simplices and face maps.  The theorem still
+keeps the semantic-cover bridge maps, selected `K`, chart-indexed source,
+source section, local semantic atom/law inputs, sheaf condition, and descent
+data as visible lower provenance.  It does not construct the old
+`sourceWithoutC0` surface, arbitrary future `c0Equiv` uniformity, or final
+G-06 adequacy.
+-/
+theorem finitePosetGeneratedCoverGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        ((CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover
+            |>.toCoverRelativeCechCover) Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate regime.cover.presieve))
+    (source :
+      CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover Ob K) :
+    let geometry :=
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness
+    let charted := geometry.toChartIndexedZeroCover
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate regime.cover.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    Sieve.generate regime.cover.presieve ∈ S.topology regime.base /\
+      Nonempty charted.Index /\
+      (forall n : Nat,
+        charted.positiveSimplex n =
+          AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) /\
+      (forall (i : Fin 2)
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime 1),
+        charted.faceZero i sigma =
+          regime.simplexIndices 0 (C.faces.face 0 sigma i) 0) /\
+      (forall (n : Nat) (i : Fin (n + 3))
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 2)),
+        charted.faceSucc n i sigma =
+          C.faces.face (n + 1) sigma i) /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      surface.selectedCover = Sieve.generate regime.cover.presieve /\
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let geometry :=
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+      (S := S) regime C familyIndexWitness
+  let charted := geometry.toChartIndexedZeroCover
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate regime.cover.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  have hgeometry :=
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.constructs_atomLawGeneratedPositiveCechCoverGeometry
+      (S := S) regime C familyIndexWitness
+  have hroute :=
+    atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (semanticCover := semanticCover)
+      (geometry := geometry)
+      chartSimplex overlapSimplex tripleSimplex K presheaf sheafCondition
+      descent source
+  rcases hgeometry with
+    ⟨hcoverMem, hnonempty, hpositiveSimplex, hfaceZero, hfaceSucc,
+      hincidence⟩
+  rcases hroute with
+    ⟨_hrouteCoverMem, _hrouteNonempty, _hrouteIncidence, _hselectedCover,
+      hcoverPreserved, hKPreserved, hchartGenerated, hgeneratedBaseMap,
+      hsectionSource, hsectionToLocal, hprimitivePointwise,
+      hboundaryPrimitive, hresidualSource, hvisible, hcontinuation,
+      hsource, hlayer, hface, hrealization, hc0Carrier, hcomparison,
+      hprimitiveBoundarySource, hboundary, hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨hcoverMem,
+      hnonempty,
+      hpositiveSimplex,
+      hfaceZero,
+      hfaceSucc,
+      hincidence,
+      rfl,
+      hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hsource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 337 proof-use checkpoint: finite-poset generated cover geometry reaches
+the Cycle 336 identity `C0` route from a chart-indexed pointwise atom/law
+basis, rather than from an arbitrary chart-indexed source.
+
+The theorem generates the Cycle 239 source from singleton pointwise semantic
+atom/law data and then feeds that generated source into the Cycle 336
+finite-poset generated route.  The source section, selected Cech orders,
+pointwise atom/law choices, selected `K`, semantic-cover bridge maps, sheaf
+condition, and descent data remain visible input-boundary geometry.  It does
+not construct `sourceWithoutC0`, arbitrary future `c0Equiv` uniformity,
+residual-boundary vanishing, or final G-06 adequacy.
+-/
+theorem finitePosetGeneratedCoverGeometry_pointwiseBasis_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutSourceArgument
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        ((CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover
+            |>.toCoverRelativeCechCover) Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate regime.cover.presieve))
+    (basis :
+      CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover Ob K) :
+    let geometry :=
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness
+    let charted := geometry.toChartIndexedZeroCover
+    let source :=
+      basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate regime.cover.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    let realization := envelope.toCochainRealization
+    Nonempty
+      (CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+        semanticSite S charted Ob K) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (source.input sigma).localSection =
+          basis.projectedLocalSection sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        localInput = source.input sigma /\
+        freeSource.atomSupport sigma localInput = [basis.atom sigma] /\
+        freeSource.lawSupport sigma localInput = [basis.lawIndex sigma] /\
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      Sieve.generate regime.cover.presieve ∈ S.topology regime.base /\
+      Nonempty charted.Index /\
+      (forall n : Nat,
+        charted.positiveSimplex n =
+          AAT.AG.Site.FinitePosetCechSimplex regime (n + 1)) /\
+      (forall (i : Fin 2)
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime 1),
+        charted.faceZero i sigma =
+          regime.simplexIndices 0 (C.faces.face 0 sigma i) 0) /\
+      (forall (n : Nat) (i : Fin (n + 3))
+        (sigma : AAT.AG.Site.FinitePosetCechSimplex regime (n + 2)),
+        charted.faceSucc n i sigma =
+          C.faces.face (n + 1) sigma i) /\
+      Nonempty
+        (CoverRelativeCechZeroSimplexChartIncidence
+          charted.toCoverRelativeCechCover) /\
+      surface.selectedCover = Sieve.generate regime.cover.presieve /\
+      surface.coverBridge.coverRelative = charted.toCoverRelativeCechCover /\
+      HEq surface.K K /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.zeroSimplexChart sigma =
+          charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        baseSource.zeroSimplexToBase sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      restrictionSource.sectionSource = charted.toCoverRelativeCechCover.base /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        restrictionSource.sectionToLocal sigma =
+          eqToHom
+              (charted.toZeroSimplexChartIncidence.zeroSimplexOverlap_eq_chart
+                sigma) ≫
+            charted.toCoverRelativeCechCover.inclusion
+              (charted.toZeroSimplexChartIncidence.zeroSimplexChart sigma)) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        chartBaseSource.toPrimitive sigma =
+          Ob.carrier.toPresheaf.map
+            (baseSource.zeroSimplexToBase sigma).op
+            source.sourceSection) /\
+      boundary.primitive = chartBaseSource.toPrimitive /\
+      generated.residual = surface.K.d 0 chartBaseSource.toPrimitive /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
+            S.lawUniverse.Required lawIndex) /\
+        CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+          (freeSource.input sigma)
+          (freeSource.atomSupport sigma (freeSource.input sigma))
+          (freeSource.lawSupport sigma (freeSource.input sigma))
+          (freeSource.interpret sigma (freeSource.input sigma))) /\
+      AtomSupportedDegreeZeroEquivFaceLawContinuation
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface
+        realization.c1Equiv realization.c2Equiv realization.c2Equiv_zero
+        realization.c2Equiv_symm_zero realization.c0Equiv /\
+      AtomSupportedDegreewiseEquivAndFaceRestrictionSource
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data) surface /\
+      Nonempty
+        (SelectedSemanticCoefficientDirectRealizationLayer
+          (E := envelope.toEnvelope)
+          (additive := envelope.toAdditiveCechH1Data) surface) /\
+      DegreewiseCarrierDataAndExplicitFaceRestrictionEquations
+        (E := envelope.toEnvelope)
+        (additive := envelope.toAdditiveCechH1Data)
+        (coverBridge := surface.coverBridge)
+        (K := surface.K) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      Nonempty
+        (SemanticRepairCoverRelativeH1Comparison.SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
+          realization.toH1Comparison) /\
+      (exists primitive : surface.K.Cn 0,
+        primitive = chartBaseSource.toPrimitive /\
+          surface.K.d 0 primitive = generated.residual) /\
+      canonical.residualBoundary /\
+      SemanticRepairH1Zero envelope.toEnvelope /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let geometry :=
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+      (S := S) regime C familyIndexWitness
+  let charted := geometry.toChartIndexedZeroCover
+  let source :=
+    basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate regime.cover.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  let envelope := canonical.toGeneratedEnvelope
+  let realization := envelope.toCochainRealization
+  have hsource :=
+    CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis.constructs_source_and_exposes_singleton_pointwise_support
+      (basis := basis)
+  dsimp at hsource
+  rcases hsource with ⟨hsourceNonempty, hlocal, hsupport⟩
+  have hroute :=
+    finitePosetGeneratedCoverGeometry_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument
+      (semanticCover := semanticCover) regime C familyIndexWitness
+      chartSimplex overlapSimplex tripleSimplex K presheaf sheafCondition
+      descent source
+  rcases hroute with
+    ⟨hcoverMem, hnonempty, hpositiveSimplex, hfaceZero, hfaceSucc,
+      hincidence, hselectedCover, hcoverPreserved, hKPreserved,
+      hchartGenerated, hgeneratedBaseMap, hsectionSource, hsectionToLocal,
+      hprimitivePointwise, hboundaryPrimitive, hresidualSource, hvisible,
+      hcontinuation, hdegreewiseSource, hlayer, hface, hrealization,
+      hc0Carrier, hcomparison, hprimitiveBoundarySource, hboundary,
+      hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨hsourceNonempty,
+      hlocal,
+      hsupport,
+      hcoverMem,
+      hnonempty,
+      hpositiveSimplex,
+      hfaceZero,
+      hfaceSucc,
+      hincidence,
+      hselectedCover,
+      hcoverPreserved,
+      hKPreserved,
+      hchartGenerated,
+      hgeneratedBaseMap,
+      hsectionSource,
+      hsectionToLocal,
+      hprimitivePointwise,
+      hboundaryPrimitive,
+      hresidualSource,
+      hvisible,
+      hcontinuation,
+      hdegreewiseSource,
+      hlayer,
+      hface,
+      hrealization,
+      hc0Carrier,
+      hcomparison,
+      hprimitiveBoundarySource,
+      hboundary,
+      hsemanticH1,
+      hadditiveH1⟩
+
+/--
+Cycle 338 proof-use checkpoint: the finite-poset generated cover route uses
+an order-free chart-indexed pointwise basis.
+
+Compared with Cycle 337, the top route no longer accepts selected `c0Order` /
+`c1Order` lists in the pointwise basis.  They are generated as canonical free
+display orders `[]`, then the resulting Cycle 337 pointwise basis is fed into
+the existing finite-poset identity-`C0` and additive Cech boundary route.
+
+This discharges only the standalone order-list inputs for this generated
+coefficient route.  The base `sourceSection`, pointwise semantic atom/law
+choices, selected `K`, semantic-cover bridge maps, presheaf, sheaf condition,
+descent, and final adequacy remain visible lower data.
+-/
+theorem finitePosetGeneratedCoverGeometry_orderFreePointwiseBasis_constructs_identityC0ReplacementRoute_with_freeOrders_withoutOrderArguments
+    {semanticCover : SemanticRepairCover.{r, v, w} semanticSite}
+    (regime : AAT.AG.Site.FinitePosetAATSiteRegime S)
+    (C : AAT.AG.Site.FinitePosetCechComplex regime)
+    (familyIndexWitness : regime.cover.Index)
+    (chartSimplex :
+      semanticCover.CoverChart ->
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 0)
+    (overlapSimplex :
+      (Sigma fun pair : semanticCover.CoverChart × semanticCover.CoverChart =>
+        semanticCover.Overlap pair.1 pair.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 1)
+    (tripleSimplex :
+      (Sigma fun triple :
+          semanticCover.CoverChart × semanticCover.CoverChart ×
+            semanticCover.CoverChart =>
+        semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
+          (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+            (S := S) regime C familyIndexWitness).toChartIndexedZeroCover.toCoverRelativeCechCover.simplex 2)
+    (K :
+      AAT.AG.Cohomology.CoverRelativeCechComplex
+        ((CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover
+            |>.toCoverRelativeCechCover) Ob)
+    (presheaf : AAT.AG.Site.AATPresheaf S)
+    (sheafCondition : AAT.AG.Site.AATSheafCondition S presheaf)
+    (descent :
+      AAT.AG.Site.AATDescent S presheaf
+        (Sieve.generate regime.cover.presieve))
+    (orderFreeBasis :
+      CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S
+        (CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+          (S := S) regime C familyIndexWitness).toChartIndexedZeroCover Ob K) :
+    let geometry :=
+      CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+        (S := S) regime C familyIndexWitness
+    let charted := geometry.toChartIndexedZeroCover
+    let basis :=
+      orderFreeBasis.toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+    let source :=
+      basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let chartBaseSource :=
+      source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let baseSource :=
+      chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let restrictionSource :=
+      baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let boundarySource :=
+      restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+    let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+    let selectedCover : Sieve charted.base :=
+      Sieve.generate regime.cover.presieve
+    let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+      { coverRelative := charted.toCoverRelativeCechCover
+        chartSimplex := chartSimplex
+        overlapSimplex := overlapSimplex
+        tripleSimplex := tripleSimplex }
+    let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+      { coverBridge := coverBridge
+        K := K
+        presheaf := presheaf
+        coverBase := charted.base
+        selectedCover := selectedCover
+        selectedCover_mem :=
+          CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+            geometry
+        sheafCondition := sheafCondition
+        descent := descent }
+    let geometryInput :=
+      CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+        freeSource
+    let boundary :=
+      geometryInput.toBoundaryGeneratedCoefficient
+        (K := surface.K) source.c0Order source.c1Order
+    let generated := boundary.toGeneratedCoefficient
+    let canonical :=
+      CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+        (site := semanticSite) generated
+    let envelope := canonical.toGeneratedEnvelope
+    basis.c0Order = [] /\
+      basis.c1Order = [] /\
+      source.c0Order = [] /\
+      source.c1Order = [] /\
+      Nonempty
+        (CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+          semanticSite S charted Ob K) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        (source.input sigma).localSection =
+          basis.projectedLocalSection sigma) /\
+      (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
+        Exists fun localInput : freeSource.LocalInput sigma =>
+        localInput = source.input sigma /\
+        freeSource.atomSupport sigma localInput = [orderFreeBasis.atom sigma] /\
+        freeSource.lawSupport sigma localInput = [orderFreeBasis.lawIndex sigma] /\
+        (exists atom : U.Atom,
+          atom ∈ freeSource.atomSupport sigma localInput ∧
+            semanticSite.sourceTraceToken atom = true) /\
+        (exists lawIndex : S.lawUniverse.Index,
+          lawIndex ∈ freeSource.lawSupport sigma localInput ∧
+            S.lawUniverse.Required lawIndex) /\
+        Exists fun localSection :
+          Ob.carrier.toPresheaf.obj
+            (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
+          localSection = freeSource.interpret sigma localInput /\
+            CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
+              localInput
+              (freeSource.atomSupport sigma localInput)
+              (freeSource.lawSupport sigma localInput)
+              localSection) /\
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) /\
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) /\
+      canonical.residualBoundary /\
+      SemanticRepairAdditiveH1Zero envelope.toAdditiveCechH1Data := by
+  dsimp
+  let geometry :=
+    CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.ofFinitePosetCechComplex
+      (S := S) regime C familyIndexWitness
+  let charted := geometry.toChartIndexedZeroCover
+  let basis :=
+    orderFreeBasis.toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
+  let source :=
+    basis.toChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let chartBaseSource :=
+    source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let baseSource :=
+    chartBaseSource.toBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let restrictionSource :=
+    baseSource.toRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let boundarySource :=
+    restrictionSource.toBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+  let freeSource := boundarySource.toFreeSemanticAtomLawInputBoundarySource
+  let selectedCover : Sieve charted.base :=
+    Sieve.generate regime.cover.presieve
+  let coverBridge : SemanticRepairCoverRelativeCoverBridge semanticCover S :=
+    { coverRelative := charted.toCoverRelativeCechCover
+      chartSimplex := chartSimplex
+      overlapSimplex := overlapSimplex
+      tripleSimplex := tripleSimplex }
+  let surface :
+      SemanticRepairCarrierSpecificComparisonProvenance.CurrentG06InputSurface
+        (semanticCover := semanticCover) (S := S) (Ob := Ob) :=
+    { coverBridge := coverBridge
+      K := K
+      presheaf := presheaf
+      coverBase := charted.base
+      selectedCover := selectedCover
+      selectedCover_mem :=
+        CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry.generatedSelectedCover_mem
+          geometry
+      sheafCondition := sheafCondition
+      descent := descent }
+  let geometryInput :=
+    CoverRelativeCechSemanticAtomLawInputBoundaryGeometry.ofFreeSemanticAtomLawInputBoundarySource
+      freeSource
+  let boundary :=
+    geometryInput.toBoundaryGeneratedCoefficient
+      (K := surface.K) source.c0Order source.c1Order
+  let generated := boundary.toGeneratedCoefficient
+  let canonical :=
+    CoverRelativeCechGeneratedCanonicalH1Envelope.defaultObservationEnvelope
+      (site := semanticSite) generated
+  let envelope := canonical.toGeneratedEnvelope
+  have horders :=
+    orderFreeBasis.constructs_pointwiseBasis_and_exposes_free_orders
+  dsimp at horders
+  rcases horders with
+    ⟨_hbasisNonempty, hc0Order, hc1Order, hsourceC0Order,
+      hsourceC1Order, _horderLocal, _horderAtom, _horderLaw⟩
+  have hsource :=
+    CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis.constructs_source_and_exposes_singleton_pointwise_support
+      (basis := basis)
+  dsimp at hsource
+  rcases hsource with ⟨hsourceNonempty, hlocal, hsupport⟩
+  have hrealization :
+      Nonempty
+        (SemanticRepairCoverRelativeCochainRealization
+          envelope.toAdditiveCechH1Data surface.K) :=
+    ⟨envelope.toCochainRealization⟩
+  have hc0Carrier :
+      Nonempty
+        (letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+         letI := surface.K.cochainAddCommGroup 0
+         CarrierSpecificAdditiveComparisonData
+          envelope.toEnvelope.coefficient.C0 (surface.K.Cn 0)) := by
+    letI := envelope.toAdditiveCechH1Data.c0AddCommGroup
+    letI := surface.K.cochainAddCommGroup 0
+    exact
+      ⟨CoverRelativeCechGeneratedSemanticEnvelope.constructs_degreeZeroCarrierComparisonData
+        (surface := surface) generated envelope⟩
+  have hboundaryRoute :=
+    boundary.constructs_additiveCechCocycleInputLayer_and_residualBoundary
+      canonical
+  dsimp at hboundaryRoute
+  rcases hboundaryRoute with
+    ⟨_hresidual, _hcocycle, _hdata, _hdelta0, _hdelta1,
+      _hresidualCocycle, _hzeroCocycle, _hboundaryCocycle, _hzeroIff,
+      _hprimitiveBoundarySource, hboundary, _hsemanticH1, hadditiveH1⟩
+  exact
+    ⟨hc0Order,
+      hc1Order,
+      hsourceC0Order,
+      hsourceC1Order,
+      hsourceNonempty,
+      hlocal,
+      hsupport,
+      hrealization,
+      hc0Carrier,
+      hboundary,
       hadditiveH1⟩
 
 end CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry
