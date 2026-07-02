@@ -103,6 +103,125 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 321 -- local Law.holds still does not generate overlap equality
+
+- decision: approve
+- result_type: blocker-fixed
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the direct restriction-level evaluator obligation left by Cycle
+320:
+
+- keep the same support-only source and the same atom/law-overlap-generated
+  `K`;
+- do not pass `source.arrowCompatibilityLaw`,
+  `pointwiseSupportOnlyOverlapRestrictionEquality`, `law_reads_overlap`,
+  `sourceC0CechZero`, residual-zero, or `H1` zero as inputs;
+- test whether displayed required-law support, local `Law.holds`, and
+  support-only canonical/free provenance can directly generate the bare overlap
+  restriction equality.
+
+Cycle 321 fixed the direct no-constructor boundary.  It removes the generated
+residual-zero detour used in Cycle 320: any such direct evaluator to
+`source.pointwiseSupportOnlyOverlapRestrictionEquality` already constructs the
+same isolated `source.arrowCompatibilityLaw`.
+
+### Lean Artifacts
+
+New declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_constructs_arrowCompatibilityLaw`
+  proves that a direct evaluator from displayed required-law support, local
+  `Law.holds`, and support-only canonical/free provenance to bare overlap
+  equality already constructs `source.arrowCompatibilityLaw`.
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReading_overlapEquality_evaluator_without_arrowCompatibilityLaw`
+  gives the no-constructor corollary under `¬ source.arrowCompatibilityLaw`.
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The Cycle 320 blocker was strengthened from residual-zero constructors to
+  the direct overlap-equality evaluator route.
+- Local `Law.holds` cannot be treated as restriction-level semantic law
+  evaluation unless it produces the bare overlap equality itself.
+- The direct evaluator route is now fail-closed: under missing
+  `arrowCompatibilityLaw`, no uniform evaluator of this shape can exist.
+
+Remaining:
+
+- Construct a genuine non-field semantic law evaluator from accepted
+  atom/law/restriction geometry to
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality`.
+- Explain how `Law.holds` on architecture objects is connected to equality of
+  obstruction-sheaf restrictions on common refinements.  The current
+  `Law.holds : ArchitectureObject -> Prop` surface does not contain this map.
+- Generate or justify the selected local architecture-object readings if they
+  remain part of the positive route.
+
+### Premise-Discharge Audit
+
+- `displayedRequiredLawSupport`: still constructed from the support-only
+  source.
+- `displayedRequiredLawsHoldOn`: still constructed only conditionally from
+  explicit local `AAT.AG.Lawfulness`; this is not overlap equality.
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality`: not discharged.
+  Cycle 321 proves that a constructor for it already constructs
+  `source.arrowCompatibilityLaw`.
+- `source.arrowCompatibilityLaw`: not discharged.
+
+### Anti-Weakening / Certificate Provenance
+
+- No overlap equality, `law_reads_overlap`, `sourceC0CechZero`, residual-zero,
+  old `sourceWithoutC0`, external `c0Equiv`, arbitrary `K`, descent/effectivity,
+  or `H1` zero field was introduced.
+- The new declarations preserve the same support-only source and the same
+  atom/law-overlap-generated `K`.
+- The proof uses `displayedRequiredLawsHoldOn` only to feed the hypothetical
+  evaluator; it does not rebrand local `Law.holds` as restriction equality.
+
+### T3 Audit
+
+T3 approved Cycle 321 as `blocker-fixed`, with completion candidate `no`.
+
+- anti-weakening: pass for checkpoint
+- certificate provenance: unresolved for the missing evaluator
+- proof-use: pass for the no-constructor boundary
+- structure-field escape: none found
+- route integrity: same support-only source and same generated `K` preserved
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle321AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder / direct axiom / trivial escape / hidden Unicode / private path
+  scans
+
+Cycle 321 axiom audit reported:
+
+- both new declarations:
+  `[propext, Classical.choice, Quot.sound]`
+
+### Next Obligation
+
+Construct the positive restriction-level semantic law evaluator, not merely a
+constructor premise: selected required-law fulfillment must generate the bare
+overlap restriction equality for the same support-only source and same
+atom/law-overlap-generated `K`, or the law universe must be extended with a
+reviewed restriction-semantics bridge that supplies exactly that map without
+storing the target equality as a field.
+
 ## Cycle 320 -- local Law.holds is still not restriction-level law evaluation
 
 - decision: approve
