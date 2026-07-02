@@ -81,8 +81,10 @@ GOAL とは、研究で成し遂げたい能力や到達像である。通常は
 - `status`: `completed`
 - `completion result`: `target-theorem-proved` for the law-equation-realized selected-finite grounding boundary stated in this card. laws-as-equations 入力語彙(witness-ideal realization、ユーザー承認済みのカード改訂)の上で、restriction evaluator の定理化、生成 obstruction-quotient 係数の realization、gate layer(`SelectedSemanticCoefficientDirectRealizationLayer`)の inhabit、comparison / zero-predicate equivalence、非零 `H1` class の双方向転送、具体有限 instance での end-to-end 発火までを Lean theorem package として固定。boundary notes(identity comparison、selected 円 nerve、witness site の退化等)は completion report の accepted final review packet に記録。
 - `completed at`: `2026-07-03 JST`
+- `theorem name`: この定理を **SAGA 定理**(SAGA Grounding Theorem; *Sémantique Architecturale, Géométrie Algébrique*)と呼ぶ。Serre の GAGA 比較定理の伝統に連なる命名であり、アーキテクチャ意味論側の semantic repair `H1` と代数幾何側の atom-generated site 上の cover-relative Cech `H1` が一致するという比較定理としての性格、および 352 サイクルの登攀(saga)を同時に表す。命名は 2026-07-03 のユーザー判断による。
 - `tracking issue`: [#2636](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2636) closed as `COMPLETED`.
 - `completion report`: [research/reports/G-aat-quality-surface-06.md](reports/G-aat-quality-surface-06.md)
+- `proof record`: [docs/note/aat_saga_theorem_proof_record.md](../docs/note/aat_saga_theorem_proof_record.md)
 - `research mode`: `target-theorem`
 - `predecessor`: `G-aat-quality-surface-05` は selected finite/small true-sheaf boundary-relation additive package の範囲で `target-theorem-proved` として読む。ただし G-05 の `SemanticRepairSheafH1Envelope` / `SemanticRepairAdditiveH1Class` は、一般 `AATSite`、`AATSheaf`、`CoverRelativeCechComplex` の地盤とまだ完全には接続されていない。`G-aat-quality-surface-04` の universal obstruction tower へ進む前に、この差分を小さな地盤補強 GOAL として閉じる。
 - `source report`: [research/reports/G-aat-quality-surface-05.md](reports/G-aat-quality-surface-05.md)
