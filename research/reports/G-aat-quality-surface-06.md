@@ -103,6 +103,91 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 342 -- order-free route from presieve-level overlap law
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2892
+- branch: `codex/g06-cycle342-orderfree-presieve-law`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the nearest remaining premise below Cycle 341:
+
+- remove the direct
+  `SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverGeneratedArrowSectionExtensionAndOverlapLaw`
+  theorem argument from the order-free/source-section-free route;
+- use the existing presieve-to-generated-sieve extension theorem
+  `SourceSectionFreeSkeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw`;
+- proof-use Cycle 341's order-free/source-section-free theorem rather than
+  calling the older Cycle 288 pointwise route directly.
+
+This cycle only lowers the generated-sieve local-family/overlap premise to the
+presieve-level compatible family on the original atom/law cover.  It does not
+construct that presieve law from canonical/free/input-boundary semantic
+atom/law geometry.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument`
+  takes the order-free skeleton and a
+  `GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw` for
+  its generated older skeleton, constructs the generated-arrow law by
+  `presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw`,
+  and passes that result into the Cycle 341 theorem
+  `atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_generatedArrowLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutSourceSectionOrOrderArguments`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The order-free/source-section-free generated selected-`K` route no longer
+  takes the generated-sieve `localSections` / `overlapAgreement` law as its
+  theorem argument.
+- The generated-arrow law is constructed from the presieve-level compatible
+  family by the already-proved `sieveExtend` route.
+- The new theorem proof-uses Cycle 341 directly and does not bypass it by
+  calling the older Cycle 288 pointwise theorem.
+- No new structure or certificate field is introduced; no `sourceSection`,
+  `AATGluingData`, generated-sieve `localSections`, generated-sieve
+  `overlapAgreement`, `c0Order`, `c1Order`, selected `K`, `HEq`, `c0Equiv`,
+  `sourceWithoutC0`, or differential transport is accepted as an input.
+
+Remaining:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw`
+  remains a visible lower material premise.
+- The presieve-level `Presieve.FamilyOfElements` and `Compatible` proof still
+  need canonical/free/input-boundary provenance from semantic atom/law local
+  source geometry.
+- Pointwise atom/law lower provenance, ambient geometry, old uniform
+  `sourceWithoutC0` over arbitrary future `c0Equiv`,
+  sheaf/descent/effectivity/global adequacy, and final `$math-lean-review`
+  remain open.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle342AxiomAudit.lean`
+  - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
+  - no `sorryAx`.
+- `lake build FormalAGResearch`
+- `lake build`
+  - success; only pre-existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans on the changed Lean file
+- T3 read-only audit: approve / `proof-obligation-discharged`; no major
+  findings; completion candidate remains `no`.
+
 ## Cycle 341 -- source-section-free and order-free generated selected-K route
 
 - decision: approve

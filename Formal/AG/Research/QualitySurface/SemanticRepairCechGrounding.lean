@@ -23051,6 +23051,120 @@ theorem atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_generatedArrowLaw_cons
     ] using hlocal sigma
 
 /--
+Cycle 342 presieve-level source-section-free/order-free generated selected-`K`
+route.
+
+This removes the generated-sieve local-family/overlap law from the Cycle 341
+theorem arguments.  The remaining lower premise is the presieve-level
+compatible local family on the original atom/law cover.  Mathlib's
+`sieveExtend` route, already fixed by
+`presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw`,
+constructs the generated-arrow law consumed by Cycle 341.
+
+The theorem does not accept `sourceSection`, `AATGluingData`, generated-sieve
+`localSections`, generated-sieve `overlapAgreement`, `c0Order`, `c1Order`,
+selected `K`, `HEq K ...`, `c0Equiv`, `sourceWithoutC0`, or differential
+transport as arguments.
+-/
+theorem atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (orderFreeSkeleton :
+      SourceSectionFreeOrderFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (hpresieve :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw
+        (SourceSectionFreeOrderFreeSkeleton.toSourceSectionFreeSkeleton
+          (semanticSite := semanticSite) (S := S)
+          (regime :=
+            ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+              |>.toObstructionCoefficientRegime
+                coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+          (C :=
+            atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          (K :=
+            atomLawOverlapCoverRelativeCechComplex coverGeometry
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+          orderFreeSkeleton)) :
+    let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+    let regime :=
+      (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+        |>.toObstructionCoefficientRegime Ob
+    let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+    let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+    let selectedCover :
+      Sieve (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).base :=
+        Sieve.generate regime.cover.presieve
+    let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+        orderFreeSkeleton.toSourceSectionFreeSkeleton
+    Exists fun gluingData :
+      AAT.AG.Site.AATGluingData S Ob.carrier.toPresheaf selectedCover =>
+    Exists fun orderFreeBasis :
+      CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
+        semanticSite S regime C Ob K =>
+      let basis :=
+        orderFreeBasis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+      let source :=
+        basis.toFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
+      generatedSkeleton.c0Order = [] /\
+        generatedSkeleton.c1Order = [] /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.atom sigma = orderFreeSkeleton.atom sigma) /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          orderFreeBasis.lawIndex sigma = orderFreeSkeleton.lawIndex sigma) /\
+        AAT.AG.Site.AATSheafConditionFor S Ob.carrier.toPresheaf
+          selectedCover /\
+        AAT.AG.Site.AATDescent S Ob.carrier.toPresheaf selectedCover /\
+        AAT.AG.Site.AATGlobalSectionRealizes gluingData
+          orderFreeBasis.sourceSection /\
+        (forall sigma :
+          (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
+          basis.projectedLocalSection sigma =
+            gluingData.localSections (generatedSkeleton.zeroSimplexToBase sigma)
+              ((generatedSkeleton.generatedFinitePosetSelectedCover_constructs_hcover_and_zeroSimplexToBase_mem).2
+                sigma)) /\
+        Nonempty
+          (CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
+            semanticSite S regime C Ob K) /\
+        basis.c0Order = [] /\
+        basis.c1Order = [] /\
+        source.c0Order = [] /\
+        source.c1Order = [] /\
+        AtomLawOverlapGeneratedSelectedKIdentityRouteProp
+          coverGeometry coefficientGeometry basis := by
+  let Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf
+  let regime :=
+    (coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+      |>.toObstructionCoefficientRegime Ob
+  let C := atomLawOverlapStandardFinitePosetCechComplex coverGeometry Ob
+  let K := atomLawOverlapCoverRelativeCechComplex coverGeometry Ob
+  let generatedSkeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S) (regime := regime)
+        (C := C) (Ob := Ob) (K := K) :=
+    orderFreeSkeleton.toSourceSectionFreeSkeleton
+  exact
+    atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_generatedArrowLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutSourceSectionOrOrderArguments
+      coverGeometry coefficientGeometry orderFreeSkeleton
+      (generatedSkeleton.presieveSectionExtensionAndOverlapLaw_constructs_generatedArrowSectionExtensionAndOverlapLaw
+        hpresieve)
+
+/--
 Cycle 289 presieve-level generated selected-`K` route.
 
 This lowers the Cycle 288 generated-arrow premise by constructing it from a
