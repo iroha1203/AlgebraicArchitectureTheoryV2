@@ -103,6 +103,142 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 322 -- restriction semantic evaluator boundary
+
+- decision: approve
+- result_type: positive-checkpoint
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the restriction-level semantic law evaluator boundary left by
+Cycle 321:
+
+- keep the same support-only source and the same atom/law-overlap-generated
+  `K`;
+- do not pass `source.arrowCompatibilityLaw`,
+  `source.pointwiseSupportOnlyOverlapRestrictionEquality`, residual-zero,
+  `sourceC0CechZero`, or `H1` zero as stored certificate fields;
+- name the missing semantic bridge from displayed required `Law.holds` on
+  selected local architecture-object readings to equality of the corresponding
+  obstruction-sheaf restrictions on common refinements;
+- keep the cycle as a positive checkpoint, not as completion evidence.
+
+### Lean Artifacts
+
+New source-level declarations in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawRestrictionEvaluator`
+  names the required non-field restriction semantic evaluator.  It takes
+  supported required laws, their `Law.holds` proofs on selected local object
+  readings, and a common-refinement square, and returns the corresponding
+  restriction equality.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+  proves that displayed required-law fulfillment plus this evaluator constructs
+  the bare overlap restriction equality.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw`
+  proves the same route reconstructs `source.arrowCompatibilityLaw`.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.lawfulLocalObjects_and_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw`
+  proof-uses `AAT.AG.Lawfulness` only to supply the displayed `Law.holds`
+  proofs.
+- `GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource.no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw`
+  gives the fail-closed no-constructor corollary under missing
+  `source.arrowCompatibilityLaw`.
+
+New atom/law-overlap-generated `K` wrappers:
+
+- `atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality`
+- `atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_constructs_arrowCompatibilityLaw`
+- `no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw`
+
+### Proof-Obligation Delta
+
+Fixed:
+
+- The missing evaluator is now a precise Lean predicate rather than an informal
+  phrase.
+- The route from local `Law.holds` to overlap equality has a proof-use shape:
+  law support and requiredness come from the support-only source, `Law.holds`
+  comes from displayed fulfillment or local `AAT.AG.Lawfulness`, and the
+  remaining material map is exactly the restriction semantic evaluator.
+- The same support-only source and same atom/law-overlap-generated `K` are
+  preserved by the generated wrappers.
+- Under `¬ source.arrowCompatibilityLaw`, no evaluator of this shape can exist
+  for lawful local readings.
+
+Remaining:
+
+- Construct `displayedRequiredLawRestrictionEvaluator` itself from lower
+  atom/law/restriction geometry, rather than passing it as a material premise.
+- Alternatively, show that the current law universe cannot construct such an
+  evaluator without extending `Law.holds` or adding a reviewed
+  restriction-semantics bridge.
+- The current `Law.holds : ArchitectureObject -> Prop` surface still does not
+  supply a map to obstruction-sheaf restriction equality.
+
+### Premise-Discharge Audit
+
+- `displayedRequiredLawSupport`: already constructed from the support-only
+  source.
+- `displayedRequiredLawsHoldOn`: still conditional on selected lawful local
+  object readings.
+- `displayedRequiredLawRestrictionEvaluator`: newly isolated as the remaining
+  material premise.  It is not stored as a source field.
+- `source.pointwiseSupportOnlyOverlapRestrictionEquality`: constructed only
+  when the evaluator is supplied.
+- `source.arrowCompatibilityLaw`: reconstructed from the bare overlap equality,
+  but not discharged unconditionally.
+
+### Anti-Weakening / Certificate Provenance
+
+- No overlap equality, `arrowCompatibilityLaw`, residual-zero,
+  `sourceC0CechZero`, `H1` zero, support-reading, external `c0Equiv`, or
+  arbitrary `K` field was added to the source.
+- The evaluator is a theorem-level material premise, not completion evidence.
+- The generated wrappers fix the same atom/law-overlap cover-relative Cech
+  complex used in Cycles 292-321.
+
+### T3 Audit
+
+T3 approved Cycle 322 as `positive-checkpoint`, with completion candidate
+`no`.
+
+- anti-weakening: pass
+- provenance: pass
+- proof-use: pass
+- structure-field escape: pass
+- required changes: none
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle322AxiomAudit.lean`
+- `lake build FormalAGResearch`
+- `lake build`
+- `git diff --check`
+- placeholder / direct axiom / hidden Unicode / private path scans over the
+  changed Lean diff
+
+Cycle 322 axiom audit reported:
+
+- source-level declarations:
+  `[propext, Quot.sound]`
+- atom/law-overlap-generated `K` wrappers:
+  `[propext, Classical.choice, Quot.sound]`
+
+### Next Obligation
+
+Construct `displayedRequiredLawRestrictionEvaluator` itself from the same
+atom/law-overlap-generated `K` and support-only source input boundary, or fix a
+Lean obstruction showing that the current `Law.holds` / `LawUniverse` API lacks
+the restriction-semantics map needed to build it.
+
 ## Cycle 321 -- local Law.holds still does not generate overlap equality
 
 - decision: approve
