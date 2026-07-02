@@ -103,6 +103,105 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 334 -- chart-indexed successor carries identity C0 route
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2888
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the next successor propagation step after Cycle 333:
+
+- propagate the identity-`C0` replacement route into
+  `CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`;
+- use the chart-indexed source's definitional projection to the chart/base
+  source, rather than accepting an arbitrary chart/base source;
+- expose the generated chart incidence, cover/K preservation, and
+  overlap-to-base maps while keeping semantic-cover bridge maps, selected
+  cover membership, source section, selected Cech orders, local semantic
+  atom/law inputs, and selected cover witness as visible lower provenance.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `SemanticRepairCoverRelativeCochainRealization.CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource.chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute_withoutCanonicalArgument`
+  composes the Cycle 333 chart/base identity route with
+  `source.toChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource`.
+  It returns chart-indexed cover preservation, `K` preservation, generated
+  zero-simplex chart incidence, generated overlap-to-base equality,
+  restriction source base equality, generated `sectionToLocal`, pointwise
+  primitive equality, boundary primitive and residual equalities, visible free
+  semantic atom/law boundary, identity degree-`0` face-law continuation,
+  generated face-restriction source, selected realization layer, explicit face
+  equations, cochain realization, `C0` carrier, comparison package,
+  primitive-boundary witness, residual-boundary, semantic `H1` zero, and
+  additive `H1` zero.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The Cycle 333 identity-`C0` replacement route now reaches the chart-indexed
+  zero successor layer.
+- Cover preservation, `K` preservation, generated chart assignment, generated
+  base map, primitive equality, boundary primitive equality, and generated
+  residual equality are exposed by definitional projection and the existing
+  chart-indexed helper theorem.
+- The successor theorem proof-uses the predecessor's identity continuation,
+  generated source, selected layer, explicit face equations, cochain
+  realization, `C0` carrier, comparison package, residual-boundary, and
+  semantic/additive `H1` zero.
+
+Remaining:
+
+- Construction of the chart-indexed source fields from lower canonical/free
+  input-boundary geometry remains open.
+- The identity-`C0` route still needs propagation to the atom/law selected
+  chart-indexed cover geometry layer.
+- The old arbitrary-`c0Equiv` `sourceWithoutC0` continuation is still not
+  constructed and is intentionally not claimed.
+- The broader G-06 completion criteria and final `$math-lean-review` gate
+  remain open.
+
+### Audit
+
+T3 approved the cycle as `proof-obligation-discharged`:
+
+- no new hidden material premise was introduced;
+- no structure or certificate field asserts old `sourceWithoutC0`, arbitrary
+  `c0Equiv`, selected comparison adequacy, semantic `H1` zero, or target
+  completion;
+- route integrity passes because the route is the chart-indexed source's
+  definitional projection to the reviewed Cycle 333 predecessor theorem;
+- the chart-indexed source remains visible lower input boundary, not final
+  semantic adequacy / nonvacuity discharge.
+
+Next obligation:
+
+- propagate the identity-`C0` replacement route to
+  `CoverRelativeCechAtomLawSelectedChartIndexedCoverGeometry`, while keeping
+  selected cover membership and chart-indexed cover provenance visible.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `.tmp/G06Cycle334AxiomAudit.lean`
+  reported `[propext, Classical.choice, Quot.sound]` for the new declaration.
+- `lake build FormalAGResearch`
+- `lake build` succeeded; the only emitted warnings were pre-existing linter
+  warnings replayed from `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans over the changed Lean file
+  were clean.
+
 ## Cycle 333 -- chart/base successor carries identity C0 route
 
 - decision: approve
