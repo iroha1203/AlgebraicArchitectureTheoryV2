@@ -103,6 +103,89 @@ Before creating the GOAL, the following focused checks passed:
 Initial axiom audit over representative declarations reported only standard
 `[propext]` / `[propext, Quot.sound]` dependencies.
 
+## Cycle 343 -- order-free route from presieve-free semantic source
+
+- decision: approve
+- result_type: proof-obligation-discharged
+- target state: target-proof-checkpoint
+- completion candidate: no
+- tracking Issue: #2636
+- PR: #2893
+- branch: `codex/g06-cycle343-orderfree-presieve-source`
+- date: 2026-07-02 JST
+
+### T1 Selection
+
+T1 selected the nearest remaining premise below Cycle 342:
+
+- remove the direct
+  `GeneratedFinitePosetSelectedCoverPresieveSectionExtensionAndOverlapLaw`
+  theorem argument from the order-free route;
+- construct that presieve law from
+  `GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource`
+  for `orderFreeSkeleton.toSourceSectionFreeSkeleton`;
+- proof-use Cycle 342's order-free/presieve-law theorem rather than calling an
+  older source-section-free route directly.
+
+This cycle only lowers the raw presieve law to the visible presieve-free
+semantic atom/law source.  It does not construct that source, and it does not
+discharge the source's arrow-level `compatible` field.
+
+### Lean Artifacts
+
+New declaration in
+`Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`:
+
+- `...PointwiseAtomLawInputBoundaryBasis.atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveFreeSemanticAtomLawInputBoundarySource_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutPresieveLawArgument`
+  takes a presieve-free semantic atom/law source for the generated older
+  skeleton, constructs the presieve section-extension law by
+  `presieveFreeSemanticAtomLawInputBoundarySource_constructs_presieveSectionExtensionAndOverlapLaw`,
+  and passes that result into the Cycle 342 theorem
+  `atomLawOverlap_sourceSectionFreeOrderFreeSkeleton_presieveLaw_constructs_orderFreeIdentityRoute_with_generatedSelectedK_withoutGeneratedArrowLawArgument`.
+
+### Proof-Obligation Delta
+
+Discharged:
+
+- The order-free generated selected-`K` route no longer takes the raw presieve
+  `FamilyOfElements` / `Compatible` law as a direct theorem input.
+- The presieve law is constructed from the visible presieve-free semantic
+  atom/law source tied to `orderFreeSkeleton.toSourceSectionFreeSkeleton`.
+- The proof uses the Cycle 342 theorem directly and does not bypass it through
+  an older pointwise or generated-arrow route.
+- No `sourceSection`, `AATGluingData`, generated-arrow law, generated-sieve
+  `localSections`, generated-sieve `overlapAgreement`, `c0Order`, `c1Order`,
+  selected `K`, `HEq`, `c0Equiv`, `sourceWithoutC0`, or differential transport
+  is accepted as an input.
+
+Remaining:
+
+- `GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBoundarySource`
+  remains a visible material lower premise.
+- In particular, the source's arrow-level `compatible` field still needs
+  canonical/free/input-boundary provenance from lower atom/law overlap,
+  restriction, or common-refinement geometry.
+- Pointwise / restriction-realized lower provenance, old arbitrary-`c0Equiv`
+  `sourceWithoutC0`, sheaf/descent/effectivity/global adequacy, and final
+  `$math-lean-review` remain open.
+
+### Validation
+
+- `lake env lean Formal/AG/Research/QualitySurface/SemanticRepairCechGrounding.lean`
+- `lake build Formal.AG.Research.QualitySurface.SemanticRepairCechGrounding`
+- `lake env lean .tmp/G06Cycle343AxiomAudit.lean`
+  - new theorem depends on `[propext, Classical.choice, Quot.sound]`;
+  - no `sorryAx`.
+- `lake build FormalAGResearch`
+- `lake build`
+  - success; only pre-existing linter warnings in
+    `Formal/Arch/Extension/FeatureExtensionExamples.lean`.
+- `git diff --check`
+- placeholder / hidden Unicode / private path scans on the changed Lean file
+  and audit scratch file
+- T3 read-only audit: approve / `proof-obligation-discharged`; no major
+  findings; completion candidate remains `no`.
+
 ## Cycle 342 -- order-free route from presieve-level overlap law
 
 - decision: approve
