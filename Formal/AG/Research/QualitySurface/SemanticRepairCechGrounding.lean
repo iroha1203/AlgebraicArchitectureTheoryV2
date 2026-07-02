@@ -28492,6 +28492,114 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_canonicalFre
           hboundary supportReading evaluator⟩
 
 /--
+Cycle 345 generated-Cech law-generation checkpoint.
+
+The current-law boundary plus a genuine displayed required-law restriction
+evaluator first generates the Cech-zero equation of the canonical support-only
+`sourceC0`.  The theorem deliberately does not accept
+`source.arrowCompatibilityLaw`, bare overlap equality, residual-zero, external
+`c0Equiv`, `sourceWithoutC0`, selected comparison data, or a full
+canonical/free overlap-reading layer as inputs.
+
+This keeps the remaining material premise at the evaluator layer while forcing
+the proof path through the atom/law-overlap-generated cover-relative Cech
+complex.
+-/
+theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_constructs_sourceC0CechZero_of_atomLawOverlapGeometry
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source := by
+  have hoverlap :
+      source.pointwiseSupportOnlyOverlapRestrictionEquality :=
+    source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
+      objectOfLocalInput hboundary.2.2.2 evaluator
+  have harrow : source.arrowCompatibilityLaw :=
+    (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
+      hoverlap
+  exact
+    atomLawOverlap_sourceSectionFreeSkeleton_arrowCompatibilityLaw_constructs_sourceC0CechZero
+      coverGeometry coefficientGeometry skeleton source harrow
+
+/--
+Cycle 345 generated-Cech reconstruction route.
+
+After the evaluator constructs canonical `sourceC0` Cech-zero, the full
+canonical/free overlap-reading layer is reconstructed through the Cycle 316
+generated-Cech support/`sourceC0CechZero` equivalence rather than by directly
+passing a `law_reads_overlap` field or bare overlap equality.
+-/
+def atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_displayedRequiredLawRestrictionEvaluator_constructs_canonicalFreeOverlapReading_via_sourceC0CechZero
+    (coverGeometry : FinitePosetAtomLawCoverGeometry S)
+    (coefficientGeometry :
+      SemanticAtomLawAdditiveCoefficientGeometry semanticSite S)
+    (skeleton :
+      SourceSectionFreeSkeleton
+        (semanticSite := semanticSite) (S := S)
+        (regime :=
+          ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+            |>.toObstructionCoefficientRegime
+              coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+        (C :=
+          atomLawOverlapStandardFinitePosetCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (Ob := coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf)
+        (K :=
+          atomLawOverlapCoverRelativeCechComplex coverGeometry
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf))
+    (source :
+      SourceSectionFreeSkeleton.GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
+        skeleton)
+    (objectOfLocalInput :
+      (i :
+        ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
+          |>.toObstructionCoefficientRegime
+            coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
+        source.LocalInput i -> AAT.AG.ArchitectureObject U)
+    (hboundary :
+      source.currentLawUniverseHoldsInputBoundary objectOfLocalInput)
+    (supportReading :
+      AtomLawOverlapCanonicalFreeSupportReading
+        coverGeometry coefficientGeometry skeleton source)
+    (evaluator :
+      source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
+    AtomLawOverlapCanonicalFreeOverlapReading
+      coverGeometry coefficientGeometry skeleton source :=
+  atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_sourceC0CechZero_constructs_canonicalFreeOverlapReading_of_atomLawOverlapGeometry
+    coverGeometry coefficientGeometry skeleton source supportReading
+    (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_displayedRequiredLawRestrictionEvaluator_constructs_sourceC0CechZero_of_atomLawOverlapGeometry
+      coverGeometry coefficientGeometry skeleton source objectOfLocalInput
+      hboundary evaluator)
+
+/--
 Cycle 328 coefficient-law-support evaluator reduction.
 
 This lowers Cycle 327 below the support-reading record.  If the current
