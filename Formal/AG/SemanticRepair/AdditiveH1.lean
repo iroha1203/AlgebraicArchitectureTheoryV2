@@ -295,6 +295,15 @@ theorem h1Zero_iff_boundary
 
 end SemanticRepairAdditiveCechH1Data
 
+/-- X.補題4.5: public quotient-zero reading for semantic repair additive H1. -/
+theorem semanticRepairAdditiveH1Zero_iff_boundary
+    {P : SemanticAtomProjection.{u, v}}
+    {cover : SemanticRepairCover.{u, v, w, x} P}
+    {cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover}
+    (data : SemanticRepairAdditiveCechH1Data cech) :
+    data.H1Zero <-> CechB1 cech cech.residual :=
+  data.h1Zero_iff_boundary
+
 /-- X.定義4.6: boundary-relation faithfulness data without a global selector. -/
 structure SemanticRepairCoverH1BoundaryRelationAbelianData
     (P : SemanticAtomProjection.{u, v}) where
@@ -468,6 +477,212 @@ theorem globalRepairCoherent_iff_additiveH1Zero
     exact hquot.mpr (hfinite.mp hglobal)
   · intro hzero
     exact hfinite.mpr (hquot.mp hzero)
+
+/-! ## X.命題4.9 finite complex shadow -/
+
+/--
+X.命題4.9: comparison data from the additive cover H1 surface to a selected
+§3 finite gluing complex.
+
+The comparison records only the primitive/cochain equivalences and their
+compatibility with `delta0` and the selected residual.  It does not store H1
+zero, obstruction vanishing, or global semantic repair coherence.
+-/
+structure SemanticRepairAdditiveFiniteComparison
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y}) where
+  c0Equiv : data.boundaryRelation.cech.C0 ≃ K.C0
+  c1Equiv : data.boundaryRelation.cech.C1 ≃ K.C1
+  delta0_compat :
+    forall primitive,
+      c1Equiv (data.boundaryRelation.cech.delta0 primitive) =
+        K.delta0 (c0Equiv primitive)
+  residual_compat :
+    c1Equiv data.boundaryRelation.cech.residual = K.residual
+
+/-- X.命題4.9: cover boundary membership maps to the selected finite obstruction boundary. -/
+theorem finiteShadow_obstructionVanishes_of_coverBoundary
+    {P : SemanticAtomProjection.{u, v}}
+    {data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    {K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y}}
+    (comparison : SemanticRepairAdditiveFiniteComparison data K) :
+    CechB1 data.boundaryRelation.cech data.boundaryRelation.cech.residual ->
+      ObstructionClassVanishes K := by
+  intro hboundary
+  rcases hboundary with ⟨primitive, hprimitive⟩
+  refine ⟨comparison.c0Equiv primitive, ?_⟩
+  calc
+    K.delta0 (comparison.c0Equiv primitive) =
+        comparison.c1Equiv (data.boundaryRelation.cech.delta0 primitive) := by
+      exact (comparison.delta0_compat primitive).symm
+    _ = comparison.c1Equiv data.boundaryRelation.cech.residual := by
+      rw [hprimitive]
+    _ = K.residual := comparison.residual_compat
+
+/-- X.命題4.9: selected finite obstruction vanishing maps back to cover boundary membership. -/
+theorem coverBoundary_of_finiteShadow_obstructionVanishes
+    {P : SemanticAtomProjection.{u, v}}
+    {data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    {K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y}}
+    (comparison : SemanticRepairAdditiveFiniteComparison data K) :
+    ObstructionClassVanishes K ->
+      CechB1 data.boundaryRelation.cech data.boundaryRelation.cech.residual := by
+  intro hvanishes
+  rcases hvanishes with ⟨primitive, hprimitive⟩
+  refine ⟨comparison.c0Equiv.symm primitive, ?_⟩
+  apply comparison.c1Equiv.injective
+  rw [comparison.delta0_compat, comparison.residual_compat]
+  simpa using hprimitive
+
+/-- X.命題4.9: additive H1 zero is the selected finite complex shadow. -/
+theorem additiveH1Zero_iff_finiteShadow_obstructionVanishes
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (comparison : SemanticRepairAdditiveFiniteComparison data K) :
+    data.toAdditiveCechH1Data.H1Zero <-> ObstructionClassVanishes K := by
+  constructor
+  · intro hzero
+    exact
+      finiteShadow_obstructionVanishes_of_coverBoundary comparison
+        ((semanticRepairAdditiveH1Zero_iff_boundary
+          data.toAdditiveCechH1Data).1 hzero)
+  · intro hvanishes
+    exact
+      (semanticRepairAdditiveH1Zero_iff_boundary
+        data.toAdditiveCechH1Data).2
+        (coverBoundary_of_finiteShadow_obstructionVanishes
+          comparison hvanishes)
+
+/-- X.命題4.9 package: finite complex shadow for additive semantic repair H1. -/
+theorem finiteShadowComparison_package
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (K : FiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (comparison : SemanticRepairAdditiveFiniteComparison data K) :
+    (data.toAdditiveCechH1Data.H1Zero <-> ObstructionClassVanishes K) /\
+      (CechB1 data.boundaryRelation.cech
+          data.boundaryRelation.cech.residual ->
+        ObstructionClassVanishes K) /\
+      (ObstructionClassVanishes K ->
+        CechB1 data.boundaryRelation.cech
+          data.boundaryRelation.cech.residual) := by
+  exact
+    ⟨additiveH1Zero_iff_finiteShadow_obstructionVanishes data K comparison,
+      finiteShadow_obstructionVanishes_of_coverBoundary comparison,
+      coverBoundary_of_finiteShadow_obstructionVanishes comparison⟩
+
+/-! ## X.命題4.10 refinement pullback -/
+
+/--
+X.命題4.10: selected finite refinement from a fine semantic repair cover to a
+coarse one.
+
+This is cover geometry only.  It does not carry boundary membership, H1 zero,
+global coherence, or any converse-refinement assertion.
+-/
+structure SemanticRepairCoverRefinement
+    {P : SemanticAtomProjection.{u, v}}
+    (coarse fine : SemanticRepairCover.{u, v, w, x} P) where
+  chartMap : fine.CoverChart -> coarse.CoverChart
+  overlapMap :
+    forall {left right},
+      fine.Overlap left right ->
+        coarse.Overlap (chartMap left) (chartMap right)
+  tripleMap :
+    forall {i j k},
+      fine.TripleOverlap i j k ->
+        coarse.TripleOverlap (chartMap i) (chartMap j) (chartMap k)
+
+/--
+X.命題4.10: Cech-level comparison data for pulling a coarse additive H1
+surface back to a fine one.
+
+The comparison records only primitive/cochain pullback and compatibility with
+`delta0` and residual.  It does not include a reverse map.
+-/
+structure SemanticRepairAdditiveRefinementComparison
+    {P : SemanticAtomProjection.{u, v}}
+    (coarse fine :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) where
+  refinement :
+    SemanticRepairCoverRefinement coarse.boundaryRelation.cover
+      fine.boundaryRelation.cover
+  primitivePullback :
+    coarse.boundaryRelation.cech.C0 -> fine.boundaryRelation.cech.C0
+  cochainPullback :
+    coarse.boundaryRelation.cech.C1 -> fine.boundaryRelation.cech.C1
+  delta0_naturality :
+    forall primitive,
+      cochainPullback (coarse.boundaryRelation.cech.delta0 primitive) =
+        fine.boundaryRelation.cech.delta0 (primitivePullback primitive)
+  residual_naturality :
+    cochainPullback coarse.boundaryRelation.cech.residual =
+      fine.boundaryRelation.cech.residual
+
+/-- X.命題4.10: a coarse boundary pulls back to a fine boundary. -/
+theorem refinement_boundary_pullback
+    {P : SemanticAtomProjection.{u, v}}
+    {coarse fine :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
+    (comparison :
+      SemanticRepairAdditiveRefinementComparison coarse fine) :
+    CechB1 coarse.boundaryRelation.cech
+        coarse.boundaryRelation.cech.residual ->
+      CechB1 fine.boundaryRelation.cech
+        fine.boundaryRelation.cech.residual := by
+  intro hboundary
+  rcases hboundary with ⟨primitive, hprimitive⟩
+  refine ⟨comparison.primitivePullback primitive, ?_⟩
+  calc
+    fine.boundaryRelation.cech.delta0
+        (comparison.primitivePullback primitive) =
+        comparison.cochainPullback
+          (coarse.boundaryRelation.cech.delta0 primitive) := by
+      exact (comparison.delta0_naturality primitive).symm
+    _ = comparison.cochainPullback coarse.boundaryRelation.cech.residual := by
+      rw [hprimitive]
+    _ = fine.boundaryRelation.cech.residual := comparison.residual_naturality
+
+/-- X.命題4.10: additive H1 zero pulls back along the selected cover refinement. -/
+theorem refinement_additiveH1Zero_pullback
+    {P : SemanticAtomProjection.{u, v}}
+    (coarse fine :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (comparison :
+      SemanticRepairAdditiveRefinementComparison coarse fine) :
+    coarse.toAdditiveCechH1Data.H1Zero ->
+      fine.toAdditiveCechH1Data.H1Zero := by
+  intro hzero
+  exact
+    (semanticRepairAdditiveH1Zero_iff_boundary
+      fine.toAdditiveCechH1Data).2
+      (refinement_boundary_pullback comparison
+        ((semanticRepairAdditiveH1Zero_iff_boundary
+          coarse.toAdditiveCechH1Data).1 hzero))
+
+/-- X.命題4.10 package: selected refinement preserves boundary and H1-zero forward. -/
+theorem refinementPullback_package
+    {P : SemanticAtomProjection.{u, v}}
+    (coarse fine :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (comparison :
+      SemanticRepairAdditiveRefinementComparison coarse fine) :
+    (CechB1 coarse.boundaryRelation.cech
+        coarse.boundaryRelation.cech.residual ->
+      CechB1 fine.boundaryRelation.cech
+        fine.boundaryRelation.cech.residual) /\
+      (coarse.toAdditiveCechH1Data.H1Zero ->
+        fine.toAdditiveCechH1Data.H1Zero) := by
+  exact
+    ⟨refinement_boundary_pullback comparison,
+      refinement_additiveH1Zero_pullback coarse fine comparison⟩
 
 /--
 X.定理4.8 [CBI]: true-sheaf H1 semantic repair-gluing, boundary-relation
