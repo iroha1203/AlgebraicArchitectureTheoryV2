@@ -1,5 +1,6 @@
 import Formal.AG.Cohomology.Basic
 import Formal.AG.LawAlgebra.LawfulLocus
+import Mathlib.Algebra.Category.Grp.Basic
 import Mathlib.RingTheory.Ideal.Cotangent
 
 noncomputable section
@@ -37,6 +38,78 @@ structure ObstructionSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
         carrier.toPresheaf.map f.op x + carrier.toPresheaf.map f.op y
 
 attribute [instance] ObstructionSheaf.addCommGroup
+
+namespace ObstructionSheaf
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+
+/--
+Build an obstruction coefficient sheaf from an `AddCommGrpCat`-valued
+presheaf whose underlying Type-valued presheaf satisfies the AAT sheaf
+condition.
+
+This keeps the existing `ObstructionSheaf` surface unchanged: the bundled
+abelian-group values provide the objectwise groups and the presheaf morphisms
+provide the additive-map laws.
+-/
+def ofAddCommGrpValued
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u})
+    (isSheaf : Site.AATSheafCondition S (F ⋙ forget AddCommGrpCat.{u})) :
+    ObstructionSheaf S where
+  carrier := {
+    carrier := F ⋙ forget AddCommGrpCat.{u}
+    isSheaf := isSheaf
+  }
+  addCommGroup W := inferInstanceAs (AddCommGroup (F.obj (op W)))
+  map_zero {source target} f := by
+    letI := inferInstanceAs (AddCommGroup (F.obj (op target)))
+    letI := inferInstanceAs (AddCommGroup (F.obj (op source)))
+    exact (F.map f.op).hom.map_zero
+  map_add {source target} f x y := by
+    letI := inferInstanceAs (AddCommGroup (F.obj (op target)))
+    letI := inferInstanceAs (AddCommGroup (F.obj (op source)))
+    exact (F.map f.op).hom.map_add x y
+
+@[simp]
+theorem ofAddCommGrpValued_toPresheaf
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u})
+    (isSheaf : Site.AATSheafCondition S (F ⋙ forget AddCommGrpCat.{u})) :
+    (ofAddCommGrpValued F isSheaf).carrier.toPresheaf =
+      F ⋙ forget AddCommGrpCat.{u} :=
+  rfl
+
+/--
+Accessor for the zero-preserving law supplied by `ofAddCommGrpValued`.
+-/
+@[simp]
+theorem ofAddCommGrpValued_map_zero
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u})
+    (isSheaf : Site.AATSheafCondition S (F ⋙ forget AddCommGrpCat.{u}))
+    {source target : S.category} (f : source ⟶ target) :
+    letI := (ofAddCommGrpValued F isSheaf).addCommGroup target
+    letI := (ofAddCommGrpValued F isSheaf).addCommGroup source
+    (ofAddCommGrpValued F isSheaf).carrier.toPresheaf.map f.op 0 = 0 :=
+  (ofAddCommGrpValued F isSheaf).map_zero f
+
+/--
+Accessor for the addition-preserving law supplied by `ofAddCommGrpValued`.
+-/
+@[simp]
+theorem ofAddCommGrpValued_map_add
+    (F : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u})
+    (isSheaf : Site.AATSheafCondition S (F ⋙ forget AddCommGrpCat.{u}))
+    {source target : S.category} (f : source ⟶ target)
+    (x y :
+      (ofAddCommGrpValued F isSheaf).carrier.toPresheaf.obj (op target)) :
+    letI := (ofAddCommGrpValued F isSheaf).addCommGroup target
+    letI := (ofAddCommGrpValued F isSheaf).addCommGroup source
+    (ofAddCommGrpValued F isSheaf).carrier.toPresheaf.map f.op (x + y) =
+      (ofAddCommGrpValued F isSheaf).carrier.toPresheaf.map f.op x +
+        (ofAddCommGrpValued F isSheaf).carrier.toPresheaf.map f.op y :=
+  (ofAddCommGrpValued F isSheaf).map_add f x y
+
+end ObstructionSheaf
 
 /-- IV.定義2.1: PRD notation `Ob_U` for an obstruction coefficient sheaf. -/
 abbrev Ob_U {U : AtomCarrier.{u}} {A : ArchitectureObject U}
