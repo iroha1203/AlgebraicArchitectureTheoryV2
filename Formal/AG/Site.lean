@@ -8,4 +8,5 @@ import Formal.AG.Site.Geometry
 import Formal.AG.Site.Sheaf
 import Formal.AG.Site.Descent
 import Formal.AG.Site.FinitePoset
+import Formal.AG.Site.FinitePosetGeometry
 import Formal.AG.Site.SheafCategory
