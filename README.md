@@ -50,14 +50,16 @@ To answer these questions, the project keeps the following layers separate:
 | AAT / SFT Interface | The interface explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
 | ArchSig / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
-| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
-| Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
+| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md), split into classical / AG / research indexes. |
+| Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md), split into classical / AG / research ledgers. |
 | Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build Cloudflare Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
 
 The README does not duplicate detailed theorem lists or progress ledgers.
-Current Lean status, non-conclusions, and open proof obligations are
-tracked in [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
-and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
+Current Lean status, non-conclusions, and open proof obligations are tracked
+through [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
+and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md). Those
+entrypoints route to separate classical AAT, algebraic-geometric AAT, and
+research-loop ledgers.
 
 Most detailed research notes are currently written in Japanese; English
 summaries will be added as the theory and Lean formalization stabilize.
@@ -151,7 +153,8 @@ MathJax, and local assets under `website/assets`.
 
 See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
 main definitions and theorems currently present on the Lean side. Theorem names,
-assumption-relative readings, and non-conclusions are tracked in
+assumption-relative readings, and non-conclusions are tracked through the
+split proof / theorem ledgers linked from
 [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) and
 [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
@@ -207,12 +210,14 @@ Algebraic Architecture Theory V2
 ## Proof And Documentation Policy
 
 - Do not introduce `axiom`, `admit`, `sorry`, or `unsafe` into Lean sources.
-- Record unproved claims in `docs/aat/proof_obligations.md` or GitHub Issues.
+- Record unproved claims in the appropriate split ledger linked from
+  `docs/aat/proof_obligations.md`, or in GitHub Issues.
 - Keep Lean-proved claims, definition-only concepts, future proof obligations,
   and empirical hypotheses distinct.
 - Do not identify AAT theorems, tooling output, SFT forecasts, and empirical
   hypotheses with each other.
-- `docs/aat/proof_obligations.md` also serves as an index to GitHub Issues.
+- `docs/aat/proof_obligations.md` is an entrypoint to split ledgers that also
+  index the relevant GitHub Issues.
 
 ## Task Management
 

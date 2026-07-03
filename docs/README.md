@@ -29,8 +29,8 @@ source of truth として扱わない。
 - [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): AAT 数学本文の正典。Atom 公理系から architecture object を構成し、AAT site、sheaf、ringed topos、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、derived / stacky geometry、measurement、evolution geometry へ進む。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
-- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の台帳。
-- [Lean 定義・定理索引](aat/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
+- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumption、未解決課題、empirical hypothesis の入口。古典 AAT、代数幾何 AAT、研究ループの分割台帳へ導く。
+- [Lean 定義・定理索引](aat/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の入口。古典 AAT、代数幾何 AAT、研究ループの分割索引へ導く。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
@@ -61,8 +61,8 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## Lean 形式化
 
-- [Lean 定義・定理索引](aat/lean_theorem_index.md): 実装済み Lean API の入口。
-- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumptions、未解決課題、empirical hypothesis の台帳。
+- [Lean 定義・定理索引](aat/lean_theorem_index.md): 実装済み Lean API の入口。詳細は古典 AAT、代数幾何 AAT、研究ループの分割索引で管理する。
+- [証明義務と実証仮説](aat/proof_obligations.md): theorem assumptions、未解決課題、empirical hypothesis の入口。詳細は古典 AAT、代数幾何 AAT、研究ループの分割台帳で管理する。
 
 ## Tooling
 
