@@ -6,6 +6,7 @@ import Formal.AG.LawAlgebra.WitnessIdeal
 import Formal.AG.LawAlgebra.IdempotentCollapse
 import Formal.AG.LawAlgebra.StanleyReisner
 import Formal.AG.LawAlgebra.ObstructionIdeal
+import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.LawfulLocus
 import Formal.AG.LawAlgebra.Nullstellensatz
 import Formal.AG.LawAlgebra.AffineChart
