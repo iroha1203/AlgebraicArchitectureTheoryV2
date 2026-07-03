@@ -1,4 +1,4 @@
-import Formal.AG.Cohomology.CechComplex
+import Formal.AG.Cohomology.CochainComparison
 import Formal.AG.Site.FinitePoset
 
 noncomputable section
@@ -193,6 +193,143 @@ theorem cohomology_from_to (D : FinitePosetCechComparisonData C Ob)
     D.comparisonTarget.fromFinitePosetCohomology n
       (D.comparisonTarget.toFinitePosetCohomology n h) = h :=
   D.from_to_finitePosetCohomology n D.generalComplex h
+
+/--
+X.R1(c): generate the degree-one comparison map from cochain-level additive
+comparison data, instead of supplying it as a cohomology-level assumption.
+The equality hypotheses pin the generated H¹ quotient to the finite-poset
+cochain and differential fields already recorded by this comparison data.
+-/
+def generatedH1To (D : FinitePosetCechComparisonData C Ob)
+    [AddCommGroup (Site.FinitePosetCechCochain K 0)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 1)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 2)]
+    (L : AdditiveThreeTermComplex
+      (Site.FinitePosetCechCochain K 0)
+      (Site.FinitePosetCechCochain K 1)
+      (Site.FinitePosetCechCochain K 2))
+    (E : AdditiveThreeTermComplex.Equivalence D.generalComplex.degreeOneThreeTerm L)
+    (_to0_eq_data : ∀ c : D.generalComplex.Cn 0, E.to0 c = D.toFinitePosetCochain 0 c)
+    (_to1_eq_data : ∀ c : D.generalComplex.Cn 1, E.to1 c = D.toFinitePosetCochain 1 c)
+    (_from0_eq_data : ∀ c : Site.FinitePosetCechCochain K 0,
+      E.from0 c = D.fromFinitePosetCochain 0 c)
+    (_from1_eq_data : ∀ c : Site.FinitePosetCechCochain K 1,
+      E.from1 c = D.fromFinitePosetCochain 1 c)
+    (_d0_eq_data : ∀ c : Site.FinitePosetCechCochain K 0,
+      L.d0 c = C.differential 0 c)
+    (_d1_eq_data : ∀ c : Site.FinitePosetCechCochain K 1,
+      L.d1 c = C.differential 1 c) :
+    D.generalComplex.CoverRelativeHn 1 -> L.H1 :=
+  E.toH1
+
+/--
+X.R1(c): generate the inverse degree-one comparison map from cochain-level
+additive comparison data.
+-/
+def generatedH1From (D : FinitePosetCechComparisonData C Ob)
+    [AddCommGroup (Site.FinitePosetCechCochain K 0)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 1)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 2)]
+    (L : AdditiveThreeTermComplex
+      (Site.FinitePosetCechCochain K 0)
+      (Site.FinitePosetCechCochain K 1)
+      (Site.FinitePosetCechCochain K 2))
+    (E : AdditiveThreeTermComplex.Equivalence D.generalComplex.degreeOneThreeTerm L)
+    (_to0_eq_data : ∀ c : D.generalComplex.Cn 0, E.to0 c = D.toFinitePosetCochain 0 c)
+    (_to1_eq_data : ∀ c : D.generalComplex.Cn 1, E.to1 c = D.toFinitePosetCochain 1 c)
+    (_from0_eq_data : ∀ c : Site.FinitePosetCechCochain K 0,
+      E.from0 c = D.fromFinitePosetCochain 0 c)
+    (_from1_eq_data : ∀ c : Site.FinitePosetCechCochain K 1,
+      E.from1 c = D.fromFinitePosetCochain 1 c)
+    (_d0_eq_data : ∀ c : Site.FinitePosetCechCochain K 0,
+      L.d0 c = C.differential 0 c)
+    (_d1_eq_data : ∀ c : Site.FinitePosetCechCochain K 1,
+      L.d1 c = C.differential 1 c) :
+    L.H1 -> D.generalComplex.CoverRelativeHn 1 :=
+  E.fromH1
+
+/--
+X.R1(c): the generated H¹ maps for `FinitePosetCechComparisonData` are inverse
+on the finite-poset side.
+-/
+theorem generatedH1_to_from (D : FinitePosetCechComparisonData C Ob)
+    [AddCommGroup (Site.FinitePosetCechCochain K 0)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 1)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 2)]
+    (L : AdditiveThreeTermComplex
+      (Site.FinitePosetCechCochain K 0)
+      (Site.FinitePosetCechCochain K 1)
+      (Site.FinitePosetCechCochain K 2))
+    (E : AdditiveThreeTermComplex.Equivalence D.generalComplex.degreeOneThreeTerm L)
+    (hto0 : ∀ c : D.generalComplex.Cn 0, E.to0 c = D.toFinitePosetCochain 0 c)
+    (hto1 : ∀ c : D.generalComplex.Cn 1, E.to1 c = D.toFinitePosetCochain 1 c)
+    (hfrom0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      E.from0 c = D.fromFinitePosetCochain 0 c)
+    (hfrom1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      E.from1 c = D.fromFinitePosetCochain 1 c)
+    (hd0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      L.d0 c = C.differential 0 c)
+    (hd1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      L.d1 c = C.differential 1 c)
+    (h : L.H1) :
+    D.generatedH1To L E hto0 hto1 hfrom0 hfrom1 hd0 hd1
+      (D.generatedH1From L E hto0 hto1 hfrom0 hfrom1 hd0 hd1 h) = h :=
+  E.to_from_H1 h
+
+/--
+X.R1(c): the generated H¹ maps for `FinitePosetCechComparisonData` are inverse
+on the cover-relative side.
+-/
+theorem generatedH1_from_to (D : FinitePosetCechComparisonData C Ob)
+    [AddCommGroup (Site.FinitePosetCechCochain K 0)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 1)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 2)]
+    (L : AdditiveThreeTermComplex
+      (Site.FinitePosetCechCochain K 0)
+      (Site.FinitePosetCechCochain K 1)
+      (Site.FinitePosetCechCochain K 2))
+    (E : AdditiveThreeTermComplex.Equivalence D.generalComplex.degreeOneThreeTerm L)
+    (hto0 : ∀ c : D.generalComplex.Cn 0, E.to0 c = D.toFinitePosetCochain 0 c)
+    (hto1 : ∀ c : D.generalComplex.Cn 1, E.to1 c = D.toFinitePosetCochain 1 c)
+    (hfrom0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      E.from0 c = D.fromFinitePosetCochain 0 c)
+    (hfrom1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      E.from1 c = D.fromFinitePosetCochain 1 c)
+    (hd0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      L.d0 c = C.differential 0 c)
+    (hd1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      L.d1 c = C.differential 1 c)
+    (h : D.generalComplex.CoverRelativeHn 1) :
+    D.generatedH1From L E hto0 hto1 hfrom0 hfrom1 hd0 hd1
+      (D.generatedH1To L E hto0 hto1 hfrom0 hfrom1 hd0 hd1 h) = h :=
+  E.from_to_H1 h
+
+/--
+X.R1(c): generated H¹ comparison preserves and reflects the zero predicate.
+-/
+theorem generatedH1_zero_iff (D : FinitePosetCechComparisonData C Ob)
+    [AddCommGroup (Site.FinitePosetCechCochain K 0)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 1)]
+    [AddCommGroup (Site.FinitePosetCechCochain K 2)]
+    (L : AdditiveThreeTermComplex
+      (Site.FinitePosetCechCochain K 0)
+      (Site.FinitePosetCechCochain K 1)
+      (Site.FinitePosetCechCochain K 2))
+    (E : AdditiveThreeTermComplex.Equivalence D.generalComplex.degreeOneThreeTerm L)
+    (hto0 : ∀ c : D.generalComplex.Cn 0, E.to0 c = D.toFinitePosetCochain 0 c)
+    (hto1 : ∀ c : D.generalComplex.Cn 1, E.to1 c = D.toFinitePosetCochain 1 c)
+    (hfrom0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      E.from0 c = D.fromFinitePosetCochain 0 c)
+    (hfrom1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      E.from1 c = D.fromFinitePosetCochain 1 c)
+    (hd0 : ∀ c : Site.FinitePosetCechCochain K 0,
+      L.d0 c = C.differential 0 c)
+    (hd1 : ∀ c : Site.FinitePosetCechCochain K 1,
+      L.d1 c = C.differential 1 c)
+    (h : D.generalComplex.CoverRelativeHn 1) :
+    L.H1IsZero (D.generatedH1To L E hto0 hto1 hfrom0 hfrom1 hd0 hd1 h) ↔
+      D.generalComplex.degreeOneThreeTerm.H1IsZero h :=
+  E.toH1_zero_iff h
 
 end FinitePosetCechComparisonData
 
