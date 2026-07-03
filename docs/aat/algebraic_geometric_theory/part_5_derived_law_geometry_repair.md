@@ -667,6 +667,9 @@ nonzero derived conflict
 repair theorem は、必ず固定された profile と、それが section 比較なのか geometry 比較なのかに
 相対化して読む。
 
+また、local repair が大域 repair へ貼り合うかという descent の問いは、
+選ばれた有限 cover 上の同値定理として第X部で扱う。
+
 ### 定義 8.1 Repair Comparison Profile
 
 repair の改善を述べるには、比較構造を固定する。

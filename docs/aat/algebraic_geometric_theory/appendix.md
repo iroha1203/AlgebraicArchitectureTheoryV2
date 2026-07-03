@@ -477,6 +477,15 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `Force Integrability Obstruction` | theorem candidate | force に付随する temporal mismatch class が定義され、descent 検出性が固定された場合の non-integrability criterion。 |
 | `dissipative policy` | certified bounded inference when finite | selected evolution functional を非増加にする operation family。未選択の future state や外部成功条件ではない。 |
 | `witness exactness` | certified assumption | selected witness family が selected obstruction reading に対して sound / complete であること。 |
+| `semantic repair-gluing complex` | defined object | 完全列挙付き有限の chart・overlap・repair primitive・residual cochain と、restriction-difference 微分からなる有限複体。 |
+| `semantic closure` | defined predicate | repair support が selected residual atom をすべて含むこと。residual component coverage と residual component faithfulness に分解される。 |
+| `Finite Semantic Repair-Gluing Descent` | certified bounded inference | 有限複体と semantic faithfulness hypothesis の下で、global semantic repair coherence と residual の境界所属の同値を読む主張。必要方向は仮定なしに成立する。 |
+| `semantic repair additive H^1` | defined object | 選ばれた有限 repair cover に付随する additive Čech 型係数データの Z^1/B^1 商。selected residual class の零性を読む。 |
+| `True Sheaf H^1 Semantic Repair-Gluing` | certified bounded inference | cover membership、global sheaf condition、boundary-relation faithfulness data、additive regime の下で、global semantic repair coherence と H^1 零 class の同値を読む主張。 |
+| `law equation realization` | defined object | law を方程式族として与える supplied データ。observable presheaf、制限互換な violation coordinates、非空 required law support 付きの displayed reading、chart-local law-defect tie(第III部 定義 11.3)。 |
+| `Generated Obstruction Quotient and Restriction Evaluator` | certified bounded inference | law equation realization から obstruction quotient presheaf と restriction evaluator を構成する主張(第III部 定理 11.4)。 |
+| `SAGA comparison` | certified bounded inference | 明示された comparison data の下で、semantic repair additive H^1 と cover-relative Čech H^1 の比較同値と zero-predicate equivalence を読む主張。full sheaf cohomology との無条件同一視は主張しない。 |
+| `degree-zero law contribution` | certified bounded inference | displayed required laws の充足の Čech 複体への寄与が、次数 0 の pointwise 消滅であることを読む主張。grounded route の H^1 側の結論群は law 前提に依存しない。 |
 
 ## B.2 Label Discipline
 
@@ -505,6 +514,8 @@ Analytic reading:
 したがって、たとえば `Lawfulness-Zero Obstruction` は zero-reflecting aggregation と
 soundness / completeness に相対化された certified bounded inference であり、
 選ばれていない law universe や metric aggregation についての絶対 claim ではない。
+同様に、`SAGA comparison` は、選ばれた有限 cover、係数データ、comparison data に
+相対化された certified bounded inference であり、無条件の cohomology 同一視ではない。
 
 ## B.3 Finite Square-Free Worked Example
 
@@ -829,3 +840,108 @@ given selected Atom family
 
 これは、未選択の trace completeness や外部 authority model の正しさを主張しない。
 本文内で構成済みの Atom family を入力にした、finite AAT geometry の worked example である。
+
+## B.9 Law-Equation Coefficient and Circle Nerve Worked Example
+
+第X部の SAGA 比較定理(第X部 定理 7.2)の最小の非零例を、
+第I部・第II部の語彙で構成した、context がただ一つの有限モデルの上で固定する。
+
+### B.9.1 Generated Coefficient
+
+有限モデルの context はただ一つであり、これを `W` と書く。
+observable ring を `O(W) = Z`、restriction を恒等とし、
+required law をただ一つ、その violation coordinate をすべての Atom で `2` とする。
+第III部 定理 11.4 の構成により、
+
+```text
+I_L(W) = I_Ob(W) = (2) subset Z
+
+Q(W) = Z/(2) ≅ F_2
+```
+
+である。非退化の台帳は次である。
+
+```text
+[1] != 0(1 not in (2))
+[2] = 0
+```
+
+商は lawful な読みと非 lawful な読みを実際に分離する。
+
+### B.9.2 Circle Nerve
+
+選ばれた単体データ(第X部 定義 6.2)として、次の circle nerve を固定する。
+
+```text
+vertices: v_-, v_+
+
+edges:
+  e_+ : v_- -> v_+
+  e_- : v_+ -> v_-
+
+no simplices in degree >= 2
+```
+
+すべての chart と overlap は `W` である。
+この nerve は chart 交叉から生成されたものではなく、
+単元 cover 上の選ばれた単体データである。
+
+### B.9.3 Complex and Residual
+
+```text
+C^0 = Map({v_-, v_+}, F_2) ≅ F_2^2
+C^1 = Map({e_+, e_-}, F_2) ≅ F_2^2
+C^2 = 0
+
+(d^0 p)(e) = p(target e) - p(source e)
+d^1 = 0
+```
+
+residual を次で置く。
+
+```text
+r(e_+) = [1]
+r(e_-) = 0
+```
+
+`r` は 1-cocycle である。
+これは選ばれた複体に次数 2 の単体が存在しないためであり、cocycle 条件は自明に成り立つ。
+
+### B.9.4 Nonzero Class and Transfer
+
+`r = d^0 p` と仮定する。
+辺 `e_+` から `p(v_+) - p(v_-) = [1]`、辺 `e_-` から `p(v_-) - p(v_+) = 0`。
+後者から `p(v_-) = p(v_+)`、前者へ代入して `[1] = 0` となり、`[1] != 0` に矛盾する。
+したがって `r` は coboundary ではない。
+
+不変量として読むなら、この向き付けでは任意の coboundary の二辺の値の和は `0` だが、
+`r` の二辺の値の和は `[1] != 0` である。
+非零性は law-equation 商の算術的事実 `1 not in (2)` に帰着する。
+
+この複体を担体とする semantic 係数データ、additive regime のデータ、恒等 comparison の下で、
+
+```text
+semantic additive H^1 の residual class != 0
+cover-relative Čech H^1 の class != 0
+zero-predicate equivalence が非零性を双方向に転送する
+```
+
+が成り立つ(第X部 定理 7.4)。
+
+### B.9.5 Example Data Summary
+
+この例の site は単元 context であり、生成位相は自明である。
+したがって任意の presheaf が sheaf 条件を満たし、
+商係数の sheaf 条件は定理として成立し、仮定として供給する必要がない。
+comparison は、定義的に等しい担体の上の恒等写像である。
+
+この worked example は、次の経路を一つの有限モデルで通す。
+
+```text
+witness ideal (2) subset Z
+  -> generated quotient F_2
+  -> circle nerve residual
+  -> non-coboundary computation
+  -> nonzero class on both sides
+  -> transfer through the comparison
+```

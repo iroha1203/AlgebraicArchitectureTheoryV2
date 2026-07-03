@@ -292,3 +292,6 @@ global temporal obstruction remains
 
 第IX部は、未選択の trace、未構成の transition、任意の将来 path について主張しない。
 第IX部の結論は、固定された temporal / evolution geometry の内部でだけ読む。
+
+次の第X部では、第III部の law equation、第IV部の cover-relative Čech `H^1`、第V部の repair を、
+選ばれた有限データの内部で一つの定理連鎖として接続する。
