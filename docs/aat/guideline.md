@@ -43,7 +43,9 @@
   AAT theorem package のスコープに入れない。
 - `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
 - `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。ユーザーの明示的な指示なしに更新しない。
-- Lean status と Issue との対応は `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` で管理する。
+- Lean status と Issue との対応は `docs/aat/proof_obligations.md` と
+  `docs/aat/lean_theorem_index.md` を入口に、古典 AAT、代数幾何 AAT、
+  研究ループの分割台帳 / 分割索引で管理する。
 
 ## Lean 形式化方針
 
@@ -73,7 +75,9 @@
   レビュー報告や残タスク欄を、一般的に証明不能な巨大 claim の一覧にしない。
 - 語れることだけを確かに語る。AAT / Lean docs では、語れない外部領域を `non-conclusion` 一覧として
   主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
-- theorem や定義を追加した場合は、必要に応じて `docs/aat/proof_obligations.md` と `docs/aat/lean_theorem_index.md` を更新する。
+- theorem や定義を追加した場合は、必要に応じて
+  `docs/aat/proof_obligations.md` / `docs/aat/lean_theorem_index.md` から辿れる
+  対応する分割台帳 / 分割索引を更新する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 - SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
