@@ -4,9 +4,11 @@
 
 - **Every module passes review, yet the system as a whole is broken.** This "locally correct, globally inconsistent" phenomenon has a name in mathematics: cohomology, specifically `H^1`.
 - AAT (Algebraic Architecture Theory) treats software architecture as a geometric object: generated from axiomatized facts called Atoms, cut out by laws, with obstructions appearing as cohomology classes.
-- Within AAT, the **SAGA theorem** (SAGA Grounding Theorem) has now been proved in Lean 4. It is a comparison theorem: the `H^1` grown on the architecture-semantics side coincides with the genuine Čech `H^1` of the site generated from Atoms.
+- Within AAT, I proved in Lean 4 a theorem that I call the **SAGA theorem** (SAGA Grounding Theorem). It is a comparison theorem: the `H^1` grown on the architecture-semantics side coincides with the genuine Čech `H^1` of the site generated from Atoms.
 - The proof took 352 cycles. For 347 of them, an automated AI loop accumulated impossibility theorems saying "this vocabulary cannot prove it" — until a single vocabulary shift, **laws are equations, not predicates**, broke the rock face in the final 5 cycles.
-- This article assumes no prior knowledge of AAT — or of algebraic geometry. We start from a minimal map of algebraic geometry and the Atom axioms, and end with what the SAGA theorem says, how it was proved, and why it matters for computer science.
+- This article starts from a minimal map of algebraic geometry, then explains what the SAGA theorem says and why it matters for computer science.
+
+![A hand-drawn map of algebraic geometry](../assets/aat_ag_saga_en.png)
 
 ## 1. Locally correct, globally broken
 
