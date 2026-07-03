@@ -47,6 +47,7 @@ Atom
   -> Representation / periods / analysis
   -> Measurement theory
   -> Evolution geometry
+  -> Semantic repair descent / SAGA comparison
   -> Claim status / finite worked example
 ```
 
@@ -54,7 +55,7 @@ Atom
 
 このディレクトリの本文では、AAT を純粋な数学理論として扱う。
 本文の内部対象は、Atom、architecture object、law universe、site、sheaf、cohomology、
-representation、measurement profile、trace category である。
+representation、measurement profile、trace category、semantic repair-gluing complex である。
 未選択の観測過程、外部過程、応用上の判定手続きについて、本文は主張しない。
 
 従来の Atom / law / obstruction / flatness / signature による AAT は、
@@ -72,7 +73,8 @@ representation、measurement profile、trace category である。
 7. [第VII部 Representation・Periods・Analysis](part_7_representation_periods_analysis.md)
 8. [第VIII部 Measurement Theory](part_8_measurement_theory.md)
 9. [第IX部 Evolution Geometry](part_9_evolution_geometry.md)
-10. [付録 Mathematical Ambient, Claim Status, and Finite Worked Example](appendix.md)
+10. [第X部 Semantic Repair Descent と SAGA 比較定理](part_10_semantic_repair_descent_saga.md)
+11. [付録 Mathematical Ambient, Claim Status, and Finite Worked Example](appendix.md)
 
 ## 主張の読み方
 
@@ -154,6 +156,12 @@ Finite measurement geometry:
 Evolution geometry:
   trace category、state transition presheaf、temporal coefficient、dissipative policy、Lyapunov reading を、
   AAT geometry の時間方向の構造として扱う。
+
+Semantic repair descent geometry:
+  選ばれた有限 cover の上で、repair の貼り合わせを descent として読み、
+  その障害を semantic repair additive H^1 として構成し、
+  law equation が生成する係数を持つ AAT site 上の
+  cover-relative Čech H^1 と比較する(SAGA)。
 ```
 
 したがって、`ringed AAT topos` は architecture scheme を作るための基礎階である。
