@@ -2383,6 +2383,7 @@ P3(第IX部 §51–55・第X部 §56–59・付録 D.14–D.16)も
 敵対レビュー 2 方向(MAJOR 8 件・MINOR 12 件)を、同日に経て全件反映した。
 第V/VII/VIII部は予告であり、規範的主張を置かない。
 Lean 最初の的 L1–L3(有限トレース site・遠隔可換・merge residue)は
-Formal/AG/Research sandbox で並行着手する。
+`Formal/AG/Research/SFTDynamics/`(TraceSite / ForceSchema / MergeResidue)として
+着手済みである(遠隔可換 = 定理 14.3 と D.5 の非零衝突類は Lean proved)。
 aat_interface.md の v2 化・README / guideline の書き換え・台帳の分別は P5 で行う。
 ```
