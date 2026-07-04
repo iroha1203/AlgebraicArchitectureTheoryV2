@@ -136,6 +136,27 @@ GOAL とは、研究で成し遂げたい能力や到達像である。通常は
 - `frontier`: atom-supported quality geometry、semantic atom support、semantic obstruction、semantic repair frontier、semantic repair coherence、semantic atom nonfaithfulness、projection nonfaithfulness theorem、AI-agent-rival separation、profile-indexed certificate space、Grothendieck construction、quality surface as 2D profile slice、certificate sheaf / certificate diagram、quality trajectory、regular cell、ridge edge、curvature cell、fold pair、obstruction locus、repair basin、minimal atom support family、chosen support vs minimal support family、hitting-set repair theorem、source-ref trace certificate、finite codebase trace example、loss-aware visualization、finite product poset `P_law x P_cover` 上の 3x3 profile grid、semantic obstruction class、global repair gluing criterion。
 - `spine`: profile 圏 `Prof_A` と certificate space `C_A(p)` を定める。次に certificate tuple、atom support / semantic atom support / trace field を定める。続いて profile change の comparison map と coherence を定め、Grothendieck construction とその二次元 slice として Quality Surface を定義する。有限 `P_law x P_cover` grid 上で scalar-collapse counterexample、semantic atom support nonfaithfulness theorem、atom-support repair theorem、semantic repair coherence theorem、profile ridge theorem、profile curvature example を狙う。次フェーズでは、ADL / 静的解析 / 無限コンテキスト AI code-review agent が同一視しうる visible reading を、semantic atom support と obstruction / repair gluing class で分離する主定理候補を優先する。最後に finite codebase trace example と related-work / rival separation を report にまとめる。この spine は固定計画ではなく、強い反例や新しい不変量が出たら置き換える。
 
+### G-sft-conway-01 — 二位相の不整合としての Conway 障害の幾何化
+
+- `id`: `G-sft-conway-01`
+- `status`: `active`
+- `research mode`: `score-phase`
+- `source note`: [SFT v2 本文 第V部予告](../docs/sft/software_field_theory.md)、[SFT v2 理論骨格ノート §5 第V部・§10 台帳](../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: SFT v2 第V部(Conway 対応)の前提数学を立ち上げる。開発系の組織側 communication cover と幾何側 ownership 由来被覆という、**独立に宣言された二つの被覆データ**の適合・不整合を、refinement / common refinement / nerve map の有限組合せ論から定式化し、Conway 障害を数学的対象(二位相比較の障害 witness、受け皿を宣言した障害類)として固定する。SFT 骨格の採否条件を継承する: 正準有限実例で適合例(障害零)と障害非零例の**両方**を構成し、Lean 検証可能な finite witness にする。あわせて reorg / refactor 双対(障害を消す二方向)を操作として定義する。
+- `core tension`: 組織の会話構造とコードの所有構造という独立に観測される二つの被覆は、いつ同じ幾何を見ていて、いつ像がずれるのか。ずれはどの受け皿(nerve のどこ)に住む類として測れるのか。最大の罠は定義循環である: ownership を architecture cover の index として定義すると比較が定義から従い自明化する(SFT 骨格が明示的に禁じた退化)。二位相を独立データとして立てたうえで、非自明な適合定理と障害の非零有限例を同時に作れるか。Conway の法則(mirroring)を、経験則の言い換えではなく「模型内定理 + 経験仮説(SFT 台帳 D7 行)」へ分離できるか。
+- `rival`: primary rival は組織設計フレームワーク(Team Topologies 等)と mirroring 経験研究(MacCormack、Colfer & Baldwin 系)である。これらは組織と構造の対応を語れるが、対応の失敗を受け皿つきの障害類として定理化しない。secondary rivals は CODEOWNERS / 依存解析 / org-network 分析ツールであり、所有と依存の集合比較や可視化を返す。strong rival は無限コンテキスト AI agent であり、org chart とコードベースを読んで不一致を自然言語で指摘できる。この GOAL は、指摘や相関ではなく、二位相の comparison / refinement / nerve map の不整合を Lean 検証可能な finite witness と定理候補として固定することで差分を作る。
+- `novelty hypothesis`: 組織構造とソフトウェア構造の対応は 50 年語られてきたが、両者を同じ幾何の上の二つの被覆データとして置き、その適合を refinement / nerve の言葉で測り、不整合を有限 witness として計算する枠組みは薄い。AAT は site / cover / nerve / Čech を既に持つため(第II部・第IV部・第X部)、Conway 対応はその自然な適用面であり、SFT v2 は組織側の圏(第IV部)を既に定義済みである。
+- `research lift`: 組織設計の議論を「対応しているか(感想)」から「二位相の common refinement が存在するか、しないならどの類が障害か、reorg と refactor のどちらの操作で消えるか」へ移す。
+- `claim boundary`: 有限組織圏、宣言された communication cover(選択データ)、宣言された ownership 対応、有限 fiber の context 族、selected 係数と nerve、Lean 検証された finite witness に相対化する。SFT v2 の規律(D1′–D8)を継承し、実在の組織・会話の観測完全性、組織文化・意図、組織と構造の因果方向(どちらが原因か)は主張しない。実在対応は SFT 付録 A の解釈境界に従う。mirroring の経験的成立は SFT 台帳の Empirical hypothesis(事前固定 profile・棄却条件つき)として扱い、定理と混同しない。
+- `capability categories`: two-topology-comparison、conway-obstruction、nerve-map-mismatch、org-geometry、refinement-order、mirroring-separation、reorg-refactor-duality、projection-nonfaithfulness、finite-witness、computability、rival-separation。
+- `threshold policy`: active SCORE threshold は GOAL カードに固定せず、GitHub tracking Issue の threshold state で管理する。`$research-loop G-sft-conway-01 threshold <N>` の起動時引数で設定し、Issue に threshold 設定コメントとして正本化する。threshold は、二位相の基礎語彙・適合例と障害例の Lean witness・障害類の受け皿候補・SFT 第V部の statement 集合が連動して立ち上がる水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE を持つこと。少なくとも 1 件は `proved-in-research`(Lean finite witness)、少なくとも 1 件は適合例(障害零)と障害非零例の**対**を主成果に含むこと、少なくとも 1 件は定義循環の回避(ownership-index 化すると自明化するが独立データでは非自明、という分離)を明示する結果、少なくとも 1 件は reorg / refactor 双対の操作化を含むこと。最終 SCORE の 50% 以上を語彙整備・可視化・既存 mirroring 指標の言い換えだけで占めてはならない。
+- `phase boundary criteria`: `research/reports/G-sft-conway-01.md` が coherent な report として読めること。tracking Issue の threshold に到達していること。二位相(communication cover / ownership 被覆)の独立な定義、refinement / common refinement / nerve map の基礎語彙、適合例と障害非零例の Lean witness 対、障害類の受け皿候補(何の H^1 か、または比較 functor のどの失敗か)の明示、定義循環回避の非自明性、rival 分離、SFT v2 第V部の本文化(§33–35)に足りる statement 集合、次 frontier が揃っていること。
+- `reward rubric`: base score は Conway 対応を「感想」から「計算可能な比較幾何」へ動かした能力増分で決める。`0`: org chart / 依存グラフ解析の言い換え、既存 mirroring 指標・共変更分析の再記述、所有率 metric。`10-20`: 二位相の記法・補助定義・可視化。`30-40`: refinement 半順序、nerve 比較の基礎補題、片側だけの例(適合例のみ / 障害例のみ)。`50-70`: 条件つき適合定理、障害 witness の Lean 化、reorg / refactor 双対の操作化、第IV部(レビュー = 降下選択)との接続。`80-100`: 受け皿を宣言した障害類の定式化 + 適合例と非零例の対 + 定義循環回避の非自明性定理 + mirroring の模型内定理化(D6 両相非空)を同時に満たす結果。`genius` 候補は、二位相不整合が第III部の衝突類・第IV部のレビュー盲点・第IX部の可観測性と一つの比較定理で接続される場合だけ検討する。penalty は、`-30`: ownership を architecture cover の index から導いて比較を自明化した、`-40`: 障害を単一スコアに潰した、`-40`: nerve を書くだけで比較・障害に接続しない、`-40`: 経験的 mirroring 主張を模型内定理と混同した、`-50`: claim boundary を越えて実組織の因果を断定した。
+- `dullness filter`: org chart の可視化・共変更行列・所有率・コミュニケーションパスと依存辺の集合差分だけの候補、nerve / cover の定義展開だけの候補、SFT 第IV部の定義の言い換え、mirroring 文献の要約、「対応が大事」という結論の再記述を弾く。
+- `frontier`: 二位相の refinement 半順序と common refinement の存在 / 不存在、nerve map の比較(同倫型・成分数・穴)、障害の受け皿候補(相対 nerve の H^1、比較 functor の余核、descent failure)、共有所有(重なる ownership)と可視性割り当ての干渉、review 経路(第IV部)との整合条件、mirroring force(障害を減らす力)の型付け、reorg 軌道の力学(第VI部接続)、時間発展する 𝒪_t 上の二位相の追跡。
+- `spine`: まず有限の二位相 record(組織圏 + communication cover + ownership 対応 + fiber context 族)を独立データとして置く。次に refinement / common refinement / nerve 比較を定義し、適合述語の候補を 2–3 案並べる。正準有限実例(SFT 付録 D の系を拡張)で適合と不整合を分離し、障害 witness を Lean 化する。障害類の受け皿を決定し、reorg / refactor 双対を操作として定義する。最後に SFT 第V部の statement 集合(定理候補と採否条件)を report にまとめる。この spine は固定計画ではなく、強い反例や より良い受け皿が出たら置き換える。
+
 ### G-aat-quality-surface-04 — universal semantic repair obstruction tower theorem の証明
 
 - `id`: `G-aat-quality-surface-04`
@@ -201,6 +222,72 @@ GOAL とは、研究で成し遂げたい能力や到達像である。通常は
 - `dullness filter`: 既存 dependency graph / call graph / import graph の可視化、cycle detection、topological order、reachability、layer violation、unused dependency、DAG metric を AAT 語彙で言い換えただけの候補を弾く。relation atom を単なる edge label として使い、lawful locus、path law、incidence obstruction、mixed-atom certificate、semantic / law / trace projection のいずれにも接続しない候補を弾く。ADL の connector / view / constraint や AI review の依存指摘を AAT 語彙に翻訳しただけの候補を弾く。
 - `frontier`: relation atom family、finite DAG atlas、path law、path ideal、incidence algebra、quiver-style representation、poset sheaf、relation cover、relation lawful locus、relation obstruction class、edge deletion / edge contraction / reordering repair、relation-semantic obstruction、relation-law obstruction、relation-trace nonfaithfulness、mixed-atom certificate space、DAG projection faithfulness theorem、relation repair basin、source-ref relation trace witness、ADL / static analyzer / AI rival separation。
 - `spine`: まず relation atom vocabulary と finite DAG profile を定め、edge、path、incidence、reachability、order relation を AAT の relation certificate として置く。次に relation law の lawful locus と projection を定め、既存 DAG 解析が faithful に読める fragment を切り出す。続いて semantic atom、law atom、trace atomを加え、同じ relation DAG でも mixed certificate が分離される finite nonfaithfulness witness を作る。最後に relation repair operation が semantic / law / trace obstruction を hit する条件を定理または finite witness として固定し、relation atom と他 atom を組み合わせた品質サーフェイスとして report にまとめる。
+
+### G-sft-law-transport-01 — law universe 輸送と動く lawful locus
+
+- `id`: `G-sft-law-transport-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 の U 定数 regime(P1–P3)を第一段として読む。この GOAL はその凍結を解くための前提数学であり、SFT 第VI部の目標移動(T0 の v の目標項)・第X部の終焉判定の目標方向項・第I部の U-transport データを activate する。
+- `source note`: [SFT v2 本文 §8.1・§36・§57](../docs/sft/software_field_theory.md)、[骨格ノート §10 台帳「law universe 輸送」](../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: トレース辺ごとの selected law 対応(U-transport)を定義し、動く lawful locus を「同じ目標の運動」と読むための輸送の数学を立ち上げる。輸送された obstruction / ギャップ値の比較補題(ギャップ輸送補題)を、AAT 第V部 §8(repair comparison profile)・§10(transferred obstruction、定理10.5/10.6)の同一 site 版先行機械と、AAT 第VIII部 定義6.1(Witness Perturbation Distance)・定理候補6.5(Monotone Witness Stability)を anchor に構成する。目標編集の力(spec capitulation; SFT 定義 11.3 の一類)を輸送の言葉で型付ける。
+- `core tension`: 異なる fiber 上の異なる law universe の lawful loci を同一視する輸送は、何を保存し何を保存しないか(AAT 原則2.2「Law Universes Are Distinct Readings」を破らずに「動く目標」を語れるか)。輸送でギャップ値はどれだけ動くか(摂動上界)。U 変化(要求)と A 変化(コード)の二重の運動は可換か、交換子は何に住むか。目標を点の方へ動かしてギャップを消す目標編集を、修復と区別する不変量は何か。
+- `rival`: requirements traceability ツール、spec 差分・影響分析、AI による要求-実装整合チェック。これらは差分と指摘を返すが、輸送されたギャップの上界・保存則、目標移動下の追跡可能性の前提補題を定理として返さない。
+- `novelty hypothesis`: 「要求が変わる」を、law universe の path とその輸送として扱い、追跡力学(T0)の v 項に数学的実現子を与える枠組みは薄い。AAT は同一 site 上の law 比較機械を既に持つため、時間方向への拡張は自然な次の一歩である。
+- `research lift`: 要求変更の影響を「差分の列挙」から「輸送されたギャップの上界と、追跡可能性条件(r vs v)の入力」へ移す。
+- `claim boundary`: 有限トレース、辺ごとの selected law 対応、選ばれた距離・質量読み(AAT 第VII部 §8–12・第VIII部)、U 定数 regime との比較に相対化する。要求の意味論的正しさ・価値(SFT 序 §5 の非主張)、要求抽出の完全性は主張しない。
+- `capability categories`: law-transport、moving-lawful-locus、gap-transport-bound、transferred-obstruction、pursuit-activation、target-edit-typing、commutation-of-motions、finite-witness、computability。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-law-transport-01 threshold <N>`)。threshold は、U-transport record・ギャップ輸送上界・U 可変 T0 の前提補題・目標編集の型付けが連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(輸送の有限 witness)、少なくとも 1 件はギャップ輸送の上界または反例(輸送で任意に壊れる例)、少なくとも 1 件は目標編集と修復を分離する不変量、少なくとも 1 件は U 定数 regime への退化(transport 恒等で SFT P1–P3 の定理群が回収される)を含むこと。
+- `phase boundary criteria`: `research/reports/G-sft-law-transport-01.md` が読めること。U-transport の基礎語彙、ギャップ輸送補題(上界と、上界が破れる反例境界)、U 可変 regime の T0 の前提(v の目標項の実現子)、目標編集の型付け、U 定数への退化定理、SFT 第I・VI・X部の改訂に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: spec 差分ツールの言い換え、「要求は変わる」の再記述。`10-20`: 記法・record 整備。`30-40`: 辺上 law 対応の定義、輸送された locus の基礎補題、片側の例。`50-70`: ギャップ輸送上界(AAT VIII 6.1/6.5 anchor)、二重運動の交換子の定式化、目標編集の不変量。`80-100`: 輸送補題 + 反例境界 + U 可変 T0 前提 + U 定数退化を同時に満たす theorem package。penalty は、`-30`: 輸送を恒等にして自明化、`-40`: AAT 原則2.2 を破って law universe を無条件同一視、`-40`: 目標編集と修復の混同、`-50`: 要求の価値・正しさへの越境。
+- `dullness filter`: U-transport を全単射ラベル替えに限定した自明例だけの候補、AAT V §8/§10 の言い換え、差分列挙、輸送の定義展開だけの候補を弾く。
+- `frontier`: 辺ごとの law 対応の合成と path 依存性、輸送された obstruction の単調性、perturbation distance の時間版、目標速度 v の測度化、目標編集の holonomy(目標を往復させると何が残るか)、U と A の同時変形(第VII部接続)。
+- `spine`: U-transport record → 輸送された lawful locus / mass の比較補題 → ギャップ輸送上界と反例境界 → U 可変 T0 の前提補題(v の実現子)→ 目標編集の型付けと不変量 → 正準実例で目標移動一回分の輸送を手計算 → SFT 改訂 statement 集合。
+
+### G-sft-deformation-01 — アーキテクチャ配置と law 構造の変形理論(骨化・進化容量)
+
+- `id`: `G-sft-deformation-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 第X部の力ベース枯渇(定義 57.1、P3 版)を外在的近似として読む。この GOAL は第VII部(変形と可能性)の内在版を立ち上げ、骨化(有効変形空間の単調減少)と終焉の Ext 版精密化を支える。
+- `source note`: [SFT v2 本文 第VII部予告・§56–57](../docs/sft/software_field_theory.md)、[骨格ノート §5 第VII部・§10 台帳](../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: AAT 第VI部 §3(cotangent / tangent complex)・§6(Square-Zero Lifting Obstruction、Kuranishi)は**固定幾何内の stratum / test object の変形**を扱う。この GOAL は、配置(architecture configuration)そのもの・law 構造そのものの変形空間を SFT 側の新規数学として定式化し、Ext 次数規約(automorphism = Ext^{-1}、一次変形 = Ext^0、拡張障害 = Ext^1)に揃えた「進化容量」の内在量を作る。剛性・骨化の単調性定理候補と、P3 の力ベース枯渇との比較定理(外在 = 内在の shadow)を狙う。
+- `core tension`: 添字となる幾何自体が動く変形を、どの ambient(配置の族、モジュライの芽)で語るか。剛性の単調性はどの力の類(剛性化方針)で成り立ち、どの refactor で破れるか。力ベースの有効変形(予算内で strict 減少を実現し得る力の存在)と Ext ベースの一次変形は、どの regime で一致し、どこでずれるか(ずれ自体が定理)。変形空間上のコスト(operation cost からの誘導)は well-defined か。
+- `rival`: 変更容易性・modularity メトリクス、リファクタ難易度の AI 評価、evolvability 研究。これらは指標と感想を返すが、変形空間の次元・障害という内在量と、その単調性・比較定理を返さない。
+- `novelty hypothesis`: 「このシステムはなぜ動けないのか」を、変形空間の縮小(骨化)として Ext の言葉で語る枠組みは薄い。AAT は導来側の装備(第V・VI部)を持ち、SFT は力と予算の外在記述(P3)を持つため、両者の比較が可能な稀な場所にいる。
+- `research lift`: レガシー・進化容量の議論を「難しそう」から「一次変形の空間がこの操作で単調に縮む / 枯渇の外在判定は内在判定の shadow である」へ移す。
+- `claim boundary`: 有限配置、selected な変形の ambient(宣言された配置の族)、Ext 次数規約、選ばれたコスト読み、SFT 第X部の力ベース定義との比較に相対化する。無限次元モジュライの一般論、任意 refactoring の正しさ、実コードの変更可能性の断定は主張しない。
+- `capability categories`: configuration-deformation、law-deformation、ext-grading、rigidity、ossification-monotonicity、effective-deformation-comparison、deformation-cost、moduli-germ、finite-witness、computability。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-deformation-01 threshold <N>`)。threshold は、変形 record・Ext 次数の SFT 読み・剛性単調性候補・力ベース比較が連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(有限配置の変形空間の手計算 witness の Lean 化)、少なくとも 1 件は剛性の単調性(またはその反例境界)、少なくとも 1 件は P3 枯渇との比較(一致 regime と分離例)、少なくとも 1 件は AAT 第VI部の固定幾何内変形との関係(何が流用でき何が新規か)の明示を含むこと。
+- `phase boundary criteria`: `research/reports/G-sft-deformation-01.md` が読めること。配置変形の ambient の宣言、Ext 次数の SFT 側読み、剛性・骨化の定義と単調性候補、力ベース枯渇との比較定理(shadow 方向)、正準有限実例での変形空間の手計算、SFT 第VII部の本文化(§43–46)に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: 変更容易性メトリクスの言い換え、「レガシーは硬い」の再記述。`10-20`: record・記法。`30-40`: 有限配置の square-zero 型変形の定義、片側の例。`50-70`: 剛性の定義と単調性候補、変形コストの誘導、AAT VI との境界画定。`80-100`: 変形空間の手計算 witness + 単調性定理(または鋭い反例境界)+ 力ベース比較(shadow 定理)を同時に満たす package。penalty は、`-30`: AAT 第VI部の固定幾何内変形の言い換え、`-40`: Ext の名前だけで受け皿・次数を持たない、`-40`: 骨化を感想として記述、`-50`: 実コードの変更可能性への越境。
+- `dullness filter`: メトリクス比較、依存グラフの次数勘定、「変更コストが高い」の定性記述、AAT VI の定理の再掲、変形の定義展開だけの候補を弾く。
+- `frontier`: 配置の族の芽(モジュライの局所)、law 構造の変形と witness ideal の変形、剛性化方針の類、骨化の速度(第VI部の力学との結合)、変形空間上のコスト幾何、終焉の Ext 版(有効変形の内在判定)、U 変形との同時変形(G-sft-law-transport-01 接続)。
+- `spine`: 有限配置の変形 record(square-zero 型)→ Ext 次数の SFT 読みと受け皿宣言 → 正準実例で変形空間の手計算 → 剛性の定義と単調性定理候補(反例探索と往復)→ P3 枯渇との比較定理 → SFT 第VII部 statement 集合。
+
+### G-sft-ensemble-01 — 力のアンサンブルと開発の統計力学
+
+- `id`: `G-sft-ensemble-01`
+- `status`: `draft`
+- `research mode`: `score-phase`
+- `predecessor`: SFT v2 第VI部の内生コスト吸収域(定理 40.2)と第IV部の delegator 相関(定義 30.1)を単一方針・単一源の先行結果として読む。この GOAL は第VIII部(開発の統計力学)の前提模型群を立ち上げる。
+- `source note`: [SFT v2 本文 第VIII部予告・§30・§40・付録 B(H4)](../docs/sft/software_field_theory.md)、[骨格ノート §5 第VIII部・§10 台帳](../docs/note/sft_development_spacetime_dynamics_skeleton.md)
+- `research aim`: delegator 相関つきの力の生成核(アンサンブル)を定義し、SFT 第VIII部の中心命題群を Model theorem 規律(D6: 両相非空)で立ち上げる: (a) アーキテクチャエントロピー(measurement packet 繊維計数)の比較可能性条件つき定義、(b) 第二法則の実体としての計数補題(低質量配置の指数的希少性)、(c) regime 境界の族化(誘導連鎖の再帰 / 推移境界と、系サイズ n → ∞ の sharp threshold)、(d) 台の重なり分布と review 帯域から throughput 上界(USL 型)を**導出**する定理、(e) diversity premium(混成 delegator 群の優位; SFT 台帳 H4 の模型内対応物)。
+- `core tension`: 有限決定系でエントロピーは平気で減少する — 単調性の機構(確率的混合・粗視化・計数)をどの最小模型で明示すれば第二法則が定理になり、どの模型では偽のままか(D6 の両相)。相関 ρ の site 論的定義(共通 delegator 経由の分解)から、hotspot 重なり確率の下界を導けるか、それとも相関の型がもっと要るか。「相転移」を名乗れるのは n → ∞ の族の sharp threshold だけである(SFT 付録 C)— 有限 regime 境界との区別を保てるか。
+- `rival`: DORA 系メトリクス・開発生産性研究、キュー理論的 delivery 分析、モンテカルロ的シミュレーション、AI による組織スループット予測。これらは測定・当てはめ・予測を返すが、幾何的不変量(質量・衝突類)に接続された模型定理と反証条件を返さない。
+- `novelty hypothesis`: Lehman の進化法則群は経験則として 50 年立っているが、その数学的実体(何を仮定した模型でどれが定理になるか)は薄い。SFT v2 は質量・衝突類・相関の担い手を既に定義済みであり、統計力学の言葉を比喩でなく計数と drift の定理として置ける。
+- `research lift`: 生産性・負債の議論を「観測と相関」から「宣言された模型の内部での計数補題・regime 境界・上界の導出 + 台帳の反証条件」へ移す。
+- `claim boundary`: 宣言された有限または可算の確率模型、delegator 構造つき生成核、選ばれた粗視化(packet)、選ばれた質量・衝突読みに相対化する。現実の組織の生産性の断定、Lehman の法則の経験的成立(それは SFT 台帳 H5 の仮説)、AI モデルの能力比較は主張しない。SFT の Model theorem 規律(D6)と反証規律(D7)を継承する。
+- `capability categories`: force-ensemble、delegator-correlation、architecture-entropy、entropy-comparability、second-law-counting、regime-boundary-family、sharp-threshold、throughput-derivation、diversity-premium、model-nontriviality、finite-witness。
+- `threshold policy`: tracking Issue の threshold state で管理(`$research-loop G-sft-ensemble-01 threshold <N>`)。threshold は、相関つき生成核・エントロピー定義・計数補題・regime 族・throughput 導出のうち複数が連動する水準に置く。
+- `portfolio constraint`: 4 カテゴリ以上で正の SCORE。少なくとも 1 件は `proved-in-research`(有限模型の計数補題または drift 定理の Lean 化)、少なくとも 1 件は D6 の両相非空を明示する相境界、少なくとも 1 件はエントロピーの比較可能性条件(fiber が動く場合の固定サイズ族・固定測度・輸送写像のいずれか)、少なくとも 1 件は相関 ρ から衝突確率への下界(または不可能性)、を含むこと。最終 SCORE の 50% 以上をシミュレーション報告・パラメータ当てはめで占めてはならない。
+- `phase boundary criteria`: `research/reports/G-sft-ensemble-01.md` が読めること。相関つき生成核の定義、エントロピーの主候補と比較可能性条件、計数補題(有限クラスでの証明と、単調性が破れる相)、regime 境界の族化と sharp threshold の区別、throughput 上界の導出(仮定の明示)、diversity premium の模型内定理(または反例境界)、SFT 第VIII部の本文化(§47–50)に足りる statement 集合が揃っていること。
+- `reward rubric`: `0`: メトリクスの言い換え、シミュレーション観察の報告、「並列は難しい」の再記述。`10-20`: 模型 record・記法。`30-40`: 生成核・エントロピー・regime の定義と片側の例。`50-70`: 計数補題の有限証明、相関→重なり確率の下界、有限 regime 境界の族化。`80-100`: 第二法則の模型定理(単調機構明示 + 両相非空)、sharp threshold、throughput 導出、diversity premium のいずれか複数を theorem package として固定。penalty は、`-30`: 模型に結論を書き込んで定理と呼ぶ(D6 違反)、`-40`: 有限系の閾値を相転移と呼ぶ、`-40`: エントロピーの比較可能性条件なしの時間比較、`-40`: 相関を分布の仮定だけで置き site 論的担い手に接続しない、`-50`: 現実の組織生産性への越境。
+- `dullness filter`: シミュレーションの数値報告だけの候補、既存キュー理論の定理の言い換え、パラメータを増やして当てはめただけの模型、定理 40.2 の再掲、粗視化を宣言しないエントロピー、を弾く。
+- `frontier`: 相関の型(delegator 木の深さ・共有プロンプトの部分共有)、混合時間と review 帯域、注入過程の非定常化、質量と衝突類の結合模型(第III部接続)、実効分離容量(レビューのラバースタンプ; 第IV部)を組み込んだ相図、Foster–Lyapunov 族の一般化、SFT 台帳 H1–H5 との対応表。
+- `spine`: 相関つき生成核 record → packet 繊維計数エントロピーと比較可能性条件 → 計数補題の有限クラス証明(単調性が破れる相と対で)→ regime 境界の族化と n → ∞ sharp threshold → 台重なり → 衝突確率 → throughput 上界の導出 → diversity premium(D6 両相)→ SFT 第VIII部 statement 集合。
 
 ## inactive
 
