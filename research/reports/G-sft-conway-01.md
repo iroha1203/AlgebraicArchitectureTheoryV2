@@ -357,3 +357,55 @@ G2 / G3 audit summary:
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure と
   classical Prop branching 由来。
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
+
+## Cycle 7 — Local owner-potential boundary weakness
+
+candidate: `research/ideas/g-sft-conway-01-local-owner-potential-boundary-weakness.md`
+candidate_type: `negative-bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `owner-potential-boundary`, `finite-coefficient`, `local-exactness`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 6 後の open frontier だった additive boundary 候補を、local finite
+  `OwnerPotential : OwnerIdx -> ConwayZ2` と endpoint-difference boundary として置いた。canonical
+  mismatched fork はこの local additive boundary で吸収される一方、owner-choice/support receiver と global
+  zero-cochain receiver はなお mismatch を検出することを Lean theorem として固定した。
+project_value_delta: Conway 対応に必要な制約を sharpen した。単なる local additive exactness は
+  support/global compatibility に非忠実であり、次 frontier では common-refinement / global compatibility
+  constraint が必要になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、naive local additive
+  boundary が mismatch を消してしまう failure mode を theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerPotentialBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+  `#print axioms` では主要 theorem が `propext`, `Classical.choice`, `Quot.sound` に依存する。
+open_questions: constrained additive `C0 -> C1` complex、common-refinement exactness、true quotient object、
+  true sheaf `H^1`、comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerPotentialBoundary.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkOwnerPotentialBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloOwnerPotentialBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerPotentialBoundary_absorbs_of_endpointDifference`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedOwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedOwnerPotential_boundary_eq_defect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_ownerPotentialBoundaryVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_ownerChoiceReceiver_detects`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalBoundary_detects`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerPotentialBoundaryPackage`
+
+G2 / G3 audit summary:
+
+- G2 A rigor: revise, base 60。bounded claim として blocking finding はないが、
+  true `C0 -> C1` complex ではなく canonical finite fork 上の negative bridge。
+- G2 B research value: accept, base 65 recommendation。ただし 65 は上限寄りで、一般 theorem ではない。
+- G2 C repo value: accept/revise, base 60。次 frontier の support/global/common-refinement constraint を明確にする価値がある。
+- G2 D adversarial: revise, base 55-60。local additive exactness と support/global compatibility の非忠実性は示すが、
+  finite theorem package に留まる。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure 由来。
+- G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
