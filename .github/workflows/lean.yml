@@ -20,6 +20,12 @@ jobs:
       - name: Build
         run: lake build
 
+      - name: Build AG research evidence
+        run: lake build FormalAGResearch
+
+      - name: Kernel axiom audit
+        run: lake env lean Formal/AG/AxiomAudit.lean
+
   archsig:
     name: archsig cargo test
     runs-on: ubuntu-latest

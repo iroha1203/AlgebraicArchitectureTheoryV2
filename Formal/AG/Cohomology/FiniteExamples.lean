@@ -104,7 +104,10 @@ def boundaryCocycle : BoundaryEdge -> BoundaryMismatchValue
 /-- IV.R10 / AC13: the selected finite boundary cocycle is visibly nonzero. -/
 theorem boundaryCocycle_AB_nonzero :
     boundaryCocycle BoundaryEdge.AB ≠ 0 := by
-  native_decide
+  intro h
+  have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+  rw [ZMod.val_one] at hv
+  simp at hv
 
 /--
 IV.R10 / AC13: cover-relative H1 witness for the pseudo-circle golden example.
