@@ -2,6 +2,12 @@
 
 このディレクトリは、Software Field Theory, SFT を整理する。
 
+> 注記(2026-07-04): SFT v2 全面改訂が進行中である。
+> [software_field_theory.md](software_field_theory.md) は v2 本文(開発時空の力学系)に
+> 置き換わった。本 README・`aat_interface.md`・`guideline.md` の旧語彙
+> (ForecastCone / ConsequenceEnvelope 等)は P5 で v2 化するまで v1 の記述として読む。
+> 旧本文は `docs/archive/2026-07-04-sft-v1-computational-theory/` にある。
+
 SFT は、field-shaped software evolution の計算理論である。
 要求、artifact、実践、ツール、AI agent、レビュー、CI/CD、運用 feedback、
 lifecycle decision が、コードベースの到達可能なアーキテクチャ未来をどう変えるかを扱う。

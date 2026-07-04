@@ -2,6 +2,13 @@
 
 この文書は `docs/sft` と SFT 関連 Lean / tooling 境界を編集するときの作業方針をまとめる。
 
+> 注記(2026-07-04): SFT v2 全面改訂が進行中である。`software_field_theory.md` は v2
+> (P1: 序・第I〜III部・第VI部最小版・付録が完全。他部は予告)であり、
+> `aat_interface.md`・本ガイドライン・README は P5 で v2 化する。
+> 設計の正典は [SFT v2 理論骨格ノート](../note/sft_development_spacetime_dynamics_skeleton.md)。
+> 以下の記述のうち ForecastCone / ConsequenceEnvelope 等の旧語彙に関する規律は、
+> v1 資産(archive、凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
+
 ## 位置づけ
 
 - SFT は field-shaped software evolution の計算理論である。
