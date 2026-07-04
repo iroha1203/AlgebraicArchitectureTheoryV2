@@ -707,3 +707,50 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。`pullbackSupport`、support pullback、vanishing pullback、naturality failure theorem、
   package theorem はすべて axiom-free。
 - G4 score confirmation: base 35、evidence multiplier 2.0、penalty 0、final +70。
+
+## Cycle 14 — Coherent family local exactness
+
+candidate: `research/ideas/g-sft-conway-01-coherent-family-local-exactness.md`
+candidate_type: `negative-bridge`
+evidence_stage: `proved-in-research`
+base_score: 50
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 100
+category: `common-refinement`, `coherent-family`, `local-global-boundary`,
+  `conway-obstruction`
+goal_delta: Cycle 12/13 の frontier だった「各 fork に local support はあるが shared span がない」
+  failure mode を検証し、現 `CommonRefinementSpan` interface では起こらないことを Lean theorem として固定した。
+  forkwise local common-refinement support は Sigma-indexed shared span として coherent family support に assemble できる。
+project_value_delta: common-refinement family interface の exactness boundary を明示した。次に非自明な
+  obstruction を得るには、non-selected refinement span family、restricted span vocabulary、または
+  arbitrary-cover naturality blocker が必要になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、local/shared common-refinement
+  obstruction が現 vocabulary では潰れるという境界を theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayCoherentFamilyExactness`、`lake build FormalAGResearch`、
+  full `lake build` が通過。`#print axioms` は `Classical.choice` のみ。
+open_questions: restricted common-refinement span vocabulary、non-selected refinement span family、arbitrary cover
+  naturality blocker、true quotient object、true sheaf `H^1` は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayCoherentFamilyExactness.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ForkFamilyHasLocalCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport.ofEachForkSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_iff_eachForkSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ForkFamilyLocalButNotCoherent`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.no_forkFamilyLocalButNotCoherent`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentGlobalCommonRefinementVanishes_implies_localSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.localSupport_and_globalZeroCochain_implies_coherentVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCoherentFamilyExactnessPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。二審判とも base 50 / multiplier 2.0 / penalty 0 を推奨。
+  Sigma assembly theorem は candidate claim を証明しており、overclaim はない。ただし one shared span は
+  current selected interface の Sigma-indexed shared span に限定して読む。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass。主要 theorem は `Classical.choice` のみに依存し、local support witnesses を
+  Sigma-indexed shared span へ束ねる witness choice 由来。
+- G4 score confirmation: base 50、evidence multiplier 2.0、penalty 0、final +100。
