@@ -566,3 +566,44 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
 - G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; global-boundary / quotient infrastructure 由来。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
+
+## Cycle 11 — Local vs global/common-refinement separation
+
+candidate: `research/ideas/g-sft-conway-01-local-vs-global-common-refinement.md`
+candidate_type: `negative-bridge`
+evidence_stage: `proved-in-research`
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+category: `local-potential`, `global-boundary`, `common-refinement`,
+  `conway-obstruction`
+goal_delta: Cycle 7 の local owner-potential absorption と Cycle 10 の global/common-refinement receiver を分離した。
+  canonical mismatched fork は local owner-potential boundary で吸収されるが、combined global/common-refinement
+  vanishing と common-refinement constrained owner-potential vanishing では消えないことを Lean theorem として固定した。
+project_value_delta: local additive exactness を Conway compatibility と誤読してはいけない境界を明示した。
+  新 receiver ではないが、support/common/global constraints の必要性を finite theorem package として保存する。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、local additive absorption が
+  global/common-refinement compatibility を含意しないことを theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayLocalVsGlobalCommonRefinement`、`lake build FormalAGResearch`、
+  full `lake build` が通過。`#print axioms` は `Classical.choice` / `propext` / `Quot.sound` に収まる。
+open_questions: arbitrary cover naturality、non-selected refinement span family、true quotient object、
+  true sheaf `H^1`、comparison functor failure は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayLocalVsGlobalCommonRefinement.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_globalCommonRefinement_detects`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.localOwnerPotential_absorbs_but_commonRefinementOwnerPotential_detects`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedLocalPotential_separatedBySupportAndGlobalCommonReceivers`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_noLocalGlobalCommonSeparationReceivers`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedLocalVsGlobalCommonRefinementPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。ただし二審判の推奨は base 50 と base 40。既存 theorem の conjunction package に近いため、
+  保守的に base 40 を採用。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; inherited receiver infrastructure 由来。
+- G4 score confirmation: base 40、evidence multiplier 2.0、penalty 0、final +80。
