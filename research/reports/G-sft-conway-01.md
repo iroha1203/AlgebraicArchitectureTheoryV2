@@ -231,3 +231,67 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。selected finite receiver 上の explicit boundary generator provenance に限定する限り blocking finding なし。
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ofSingleOwnerSupport` の choice と subgroup closure infrastructure 由来。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。Cycle 4 は single-owner support witness の explicit provenance 化として扱う。
+
+## Cycle 5 — Global boundary map exactness
+
+candidate: `research/ideas/g-sft-conway-01-global-boundary-map-exactness.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `global-boundary-map`, `finite-coefficient`, `support-receiver`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 4 の fork-local explicit boundary generator を、atlas 全体の
+  `CommunicationZeroCochain` と selected `SupportForkGlobalBoundaryMap` へ持ち上げた。
+  support-fork defect が global boundary map で吸収されることと
+  `CommunicationCoverCompatible` が同値であること、mismatched atlas には global zero-cochain がなく
+  canonical fork が global boundary map で消えないこと、compatible/repaired examples の zero receiver を
+  Lean theorem として固定した。
+project_value_delta: SFT 第V部 Conway 対応を、局所 generator provenance から selected
+  `C0 -> C1` exactness statement へ進めた。true chain complex / sheaf `H^1` / functorial comparison ではない。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、
+  global owner-support cochain の存在が selected defect absorption と同値であることを theorem package として
+  保存する点に限定する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayBoundaryMap.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayBoundaryMap`、`lake build FormalAGResearch` が通過。
+  `#print axioms` では `communicationZeroCochain_nonempty_iff_compatible` が `Classical.choice`、
+  selected boundary theorem package が `propext`, `Classical.choice`, `Quot.sound` に依存する。
+open_questions: independent additive boundary on a nontrivial `C0` carrier, full quotient object、
+  true sheaf `H^1`、common-refinement exactness、comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayBoundaryMap.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationZeroCochain`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationZeroCochain_nonempty_iff_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkGlobalBoundaryMap`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloGlobalBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalBoundary_vanishes_iff_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalBoundary_absorbs_defect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalBoundary_absorbs_into_generatorBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.GlobalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_globalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_noCommunicationZeroCochain`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notGlobalBoundaryVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_globalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroGlobalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroGlobalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroGlobalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedGlobalBoundaryMapPackage`
+
+G2 / G3 audit summary:
+
+- G2 A rigor: revise, base 60。bounded selected theorem として blocking finding はないが、
+  `SupportForkGlobalBoundaryMap` は zero-cochain を使わず constant selected defect を返す。
+- G2 B research value: revise, base 60。global owner-support cochain exactness は Cycle 4 からの実在する前進だが、
+  independent additive boundary / true quotient / sheaf `H^1` には未到達。
+- G2 C repo value: accept/revise, base 60。SFT research surface として PR に載せる価値はあるが、
+  claim boundary を selected finite receiver に保つ必要がある。
+- G2 D adversarial: revise, base 55-60。rival separation は local mismatch から global cochain gate へ進むが、
+  theorem packaging 寄りである。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch` が通過。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; compatibility witness choice と
+  existing `ZMod` / quotient infrastructure 由来。
+- G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
