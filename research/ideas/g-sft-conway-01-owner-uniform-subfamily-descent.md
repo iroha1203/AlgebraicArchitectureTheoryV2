@@ -109,6 +109,16 @@ Lean で次を固定した。
 - repo 全体価値: revise, base 50。subfamily cover / descent receiver を明示すれば通せる。
 - ライバル比較: accept, base 60。local owner support と family-level owner-uniform gluing failure の分離に価値あり。
 
+## 監査メモ
+
+- G3 axiom audit: pass。`SupportForkFamilySubcover` と `OwnerUniformSubfamilyDescentFailure` は axiom-free。
+  reported finite package は `propext` のみに依存し、`sorryAx`、`Classical.choice`、`Quot.sound` はない。
+- G3 formalization quality: pass。`selectedOwnerUniformSubfamilyDescentPackage` は、selected singleton
+  subfamily cover、各 singleton の owner-uniform support、full `restrictedTwoForkFamily` の
+  owner-uniform support 不存在を固定しており、修正後 claim boundary と一致する。
+- G3.5 sync audit: synced。候補カード、Lean evidence、report、G2/G3/G4 の score と claim boundary は一致する。
+- G4 SCORE audit: confirm。base 45、evidence multiplier 2.0、penalty 0、final +90。
+
 ## 関連
 
 - `research/ideas/g-sft-conway-01-owner-uniform-restricted-family.md`
