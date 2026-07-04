@@ -25,3 +25,4 @@ import Formal.AG.Measurement
 import Formal.AG.Evolution
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.SemanticRepair
+import Formal.AG.Examples.SemanticRepairPart10
