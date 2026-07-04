@@ -705,7 +705,8 @@ R8 [#2939](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/293
 R9 [#2941](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2941),
 [#2943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2943);
 R10 [#2946](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2946);
-R11 [#2948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2948).
+R11 [#2948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2948),
+[#2950](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2950).
 
 | 本文ラベル | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- | --- |
@@ -721,8 +722,9 @@ R11 [#2948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/29
 
 Non-conclusions: この Part X surface は selected semantic repair cover、selected additive coefficient surface、
 selected true-sheaf certificate、selected cover-relative comparison、supplied law-equation grounding に相対化される。
-任意 artifact からの semantic atom extraction、certificate-free sheaf condition、full sheaf cohomology comparison、
-unselected repair operation semantics、law-equation grounding から全 descent 結論への直接依存は主張しない。
-例9.1 は lawful zero firing instance であり、例9.2 は selected circle nerve / degenerate witness site /
-identity comparison 上の非零 class transfer に限られる。chart 交叉から生成された nerve、
-非恒等 comparison、atom-generated nonzero instance はここでは主張しない。
+任意 Grothendieck site への無条件一般化、full sheaf cohomology との無条件同一視、
+unbounded derived / infinity-stack / nonabelian / stacky universality、
+無条件 refinement naturality は主張しない。SAGA は AAT-GAGA の適用でも一般化でもない。
+Boundary notes: theorem 7.2 の example transfer は identity comparison、例9.2 は selected circle nerve、
+finite witness site は degenerate singleton-context site、law-equation surface の ambient rows は supplied data
+に限られる。意味8.3 の conormal coefficient reading は open question として残る。
