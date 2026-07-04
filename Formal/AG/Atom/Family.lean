@@ -14,6 +14,16 @@ namespace AtomFamily
 def Subset {U : AtomCarrier.{u}} (F G : AtomFamily U) : Prop :=
   ∀ {atom}, F.mem atom -> G.mem atom
 
+/--
+I.定義3.1 / PRD-R I-3: concrete finite-support reading for an Atom family.
+
+Unlike the legacy `finite : Prop` markers on packages that consume families,
+this predicate is load-bearing: it supplies an explicit list that covers every
+selected atom.
+-/
+def ListFinite {U : AtomCarrier.{u}} (F : AtomFamily U) : Prop :=
+  ∃ atoms : List U.Atom, ∀ atom, F.mem atom -> atom ∈ atoms
+
 /-- I.定義3.2: the subject support of an Atom family. -/
 def support {U : AtomCarrier.{u}} (F : AtomFamily U) (subject : U.Subject) :
     Prop :=

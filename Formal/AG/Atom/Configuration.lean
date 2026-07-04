@@ -72,6 +72,11 @@ end Subconfiguration
 
 namespace Molecule
 
+/-- PRD-R I-3: a molecule is concretely finite when its selected family has a list cover. -/
+def ListFinite {U : AtomCarrier.{u}} {C : AtomConfiguration U}
+    (M : Molecule C) : Prop :=
+  M.configuration.family.ListFinite
+
 /-- I.定義4.2: a molecule inherits the family subset of its parent configuration. -/
 theorem family_subset_parent {U : AtomCarrier.{u}} {C : AtomConfiguration U}
     (M : Molecule C) :
@@ -83,6 +88,16 @@ theorem finite_marker {U : AtomCarrier.{u}} {C : AtomConfiguration U}
     (M : Molecule C) :
     M.finite :=
   M.finite_holds
+
+/--
+PRD-R I-3: explicit list-finite evidence is the preferred finite reading for
+new molecules; the legacy marker remains available for frozen declarations.
+-/
+theorem listFinite_has_cover {U : AtomCarrier.{u}} {C : AtomConfiguration U}
+    (M : Molecule C) (h : M.ListFinite) :
+    ∃ atoms : List U.Atom,
+      ∀ atom, M.configuration.family.mem atom -> atom ∈ atoms :=
+  h
 
 end Molecule
 

@@ -36,6 +36,40 @@ structure AATCorePackage (U : AtomCarrier.{u}) where
 
 namespace AATCorePackage
 
+/--
+PRD-R I-2: a realization tying the abstract `AtomAxiomSystem` tower to the
+actual Part I Lean tower. The maps are explicit, so later examples can show how
+`S.configurationOf` feeds an `AtomConfiguration` without changing the frozen
+`AtomAxiomSystem` record.
+-/
+structure AtomTowerRealization {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) where
+  familyToken : S.Family
+  configurationToken : S.Configuration
+  familyOf : S.Family -> AtomFamily U
+  configurationOf : S.Configuration -> AtomConfiguration U
+  family : AtomFamily U
+  configuration : AtomConfiguration U
+  family_eq : familyOf familyToken = family
+  configuration_eq : configurationOf configurationToken = configuration
+  configurationToken_eq : S.configurationOf familyToken = configurationToken
+  configuration_family_eq : configuration.family = family
+
+namespace AtomTowerRealization
+
+/-- PRD-R I-2: the selected configuration is obtained from the selected axiom family token. -/
+theorem realized_configuration_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
+    (R : AtomTowerRealization S) :
+    R.configurationOf (S.configurationOf R.familyToken) = R.configuration := by
+  rw [R.configurationToken_eq, R.configuration_eq]
+
+/-- PRD-R I-2: the selected family is obtained from the selected axiom family token. -/
+theorem realized_family_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}
+    (R : AtomTowerRealization S) :
+    R.familyOf R.familyToken = R.family :=
+  R.family_eq
+
+end AtomTowerRealization
+
 /-- I.定理10.5: the identity operation used by the singleton core algebra. -/
 def identityOperation {U : AtomCarrier.{u}} (A : ArchitectureObject U) :
     Operation U where
@@ -109,6 +143,22 @@ def ofComponents {U : AtomCarrier.{u}}
   algebra_lawUniverse_eq := rfl
   algebra_signature_eq := rfl
 
+/--
+PRD-R I-2: construct the core package from an explicit realization of the
+`AtomAxiomSystem` tower. This additive constructor makes the use of `S` visible
+through `AtomTowerRealization`, while preserving the original constructor for
+Research imports.
+-/
+def ofAxiomRealization {U : AtomCarrier.{u}} (S : AtomAxiomSystem U)
+    (R : AtomTowerRealization S)
+    (A : ArchitectureObject U)
+    (hobject : A.configuration = R.configuration)
+    (Inv : InvariantFamily U) (LU : LawUniverse U)
+    (L : Law U) (O : ObstructionCircuit L A)
+    (Sig : ArchitectureSignature U) : AATCorePackage U :=
+  ofComponents S R.family R.configuration A R.configuration_family_eq hobject
+    Inv LU L O Sig
+
 /-- I.定理10.5: an AAT Core package exists for any selected Part I tower. -/
 theorem exists_ofComponents {U : AtomCarrier.{u}}
     (S : AtomAxiomSystem U) (F : AtomFamily U)
@@ -131,6 +181,57 @@ theorem exists_ofComponents {U : AtomCarrier.{u}}
                         core.signature = Sig :=
   ⟨ofComponents S F C A hconfiguration hobject Inv LU L O Sig,
     rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, HEq.rfl, rfl⟩
+
+/--
+PRD-R I-2: HEq-free existence statement for the selected Part I tower. The
+dependent obstruction-circuit equality remains available through the frozen
+`exists_ofComponents`; reviewers can use this theorem when they only need the
+core tower components.
+-/
+theorem exists_ofComponents_noHEq {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (F : AtomFamily U)
+    (C : AtomConfiguration U) (A : ArchitectureObject U)
+    (hconfiguration : C.family = F)
+    (hobject : A.configuration = C)
+    (Inv : InvariantFamily U) (LU : LawUniverse U)
+    (L : Law U) (O : ObstructionCircuit L A)
+    (Sig : ArchitectureSignature U) :
+    ∃ core : AATCorePackage U,
+      core.axioms = S ∧
+        core.family = F ∧
+          core.configuration = C ∧
+            core.object = A ∧
+              core.configuration.family = core.family ∧
+                core.object.configuration = core.configuration ∧
+                  core.lawUniverse = LU ∧
+                    core.obstructionLaw = L ∧
+                      core.signature = Sig :=
+  ⟨ofComponents S F C A hconfiguration hobject Inv LU L O Sig,
+    rfl, rfl, rfl, rfl, hconfiguration, hobject, rfl, rfl, rfl⟩
+
+/--
+PRD-R I-2: HEq-free existence statement from an explicit axiom-system
+realization.
+-/
+theorem exists_ofAxiomRealization_noHEq {U : AtomCarrier.{u}}
+    (S : AtomAxiomSystem U) (R : AtomTowerRealization S)
+    (A : ArchitectureObject U)
+    (hobject : A.configuration = R.configuration)
+    (Inv : InvariantFamily U) (LU : LawUniverse U)
+    (L : Law U) (O : ObstructionCircuit L A)
+    (Sig : ArchitectureSignature U) :
+    ∃ core : AATCorePackage U,
+      core.axioms = S ∧
+        core.family = R.family ∧
+          core.configuration = R.configuration ∧
+            core.object = A ∧
+              core.configuration.family = core.family ∧
+                core.object.configuration = core.configuration ∧
+                  core.lawUniverse = LU ∧
+                    core.obstructionLaw = L ∧
+                      core.signature = Sig :=
+  exists_ofComponents_noHEq S R.family R.configuration A R.configuration_family_eq
+    hobject Inv LU L O Sig
 
 /-- I.定理10.5: read the selected Atom A0-A8 system. -/
 theorem axioms_eq {U : AtomCarrier.{u}} {S : AtomAxiomSystem U}

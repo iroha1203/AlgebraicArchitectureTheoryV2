@@ -37,6 +37,51 @@ theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
   Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero
 
+theorem concreteThreeReadingAgreementRequiredLaw {U : AtomCarrier}
+    (A : ArchitectureObject U) (LU : LawUniverse U) :
+    (SemanticLawful A LU ↔
+        NoRequiredObstruction A (requiredLawWitnessFamily LU)) ∧
+      (NoRequiredObstruction A (requiredLawWitnessFamily LU) ↔
+        RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) ∧
+        (SemanticLawful A LU ↔
+          RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) :=
+  AAT.AG.concreteThreeReadingAgreement A LU
+
+theorem finiteAcyclicConcreteThreeReadingAgreement :
+    (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
+        NoRequiredObstruction FiniteModel.acyclicObject
+          FiniteModel.concreteNoCycleWitnessFamily) ∧
+      (NoRequiredObstruction FiniteModel.acyclicObject
+          FiniteModel.concreteNoCycleWitnessFamily ↔
+        RequiredSignatureAxesZero FiniteModel.acyclicObject
+          FiniteModel.concreteNoCycleSignatureAxes) ∧
+        (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
+          RequiredSignatureAxesZero FiniteModel.acyclicObject
+            FiniteModel.concreteNoCycleSignatureAxes) :=
+  FiniteModel.acyclic_concreteThreeReadingAgreement
+
+theorem finiteCyclicConcreteThreeReadingFires :
+    (¬ SemanticLawful FiniteModel.object FiniteModel.lawUniverse) ∧
+      (∃ witness : FiniteModel.concreteNoCycleWitnessFamily.Witness,
+        FiniteModel.concreteNoCycleWitnessFamily.badWitness FiniteModel.object
+          witness) ∧
+        ¬ RequiredSignatureAxesZero FiniteModel.object
+          FiniteModel.concreteNoCycleSignatureAxes :=
+  FiniteModel.object_concreteThreeReadingAgreement_fires
+
+theorem finiteCorePackageFromAxiomRealizationNoHEq :
+    ∃ core : AATCorePackage FiniteModel.carrier,
+      core.axioms = FiniteModel.axiomSystem ∧
+        core.family = FiniteModel.allFamily ∧
+          core.configuration = FiniteModel.configuration ∧
+            core.object = FiniteModel.object ∧
+              core.configuration.family = core.family ∧
+                core.object.configuration = core.configuration ∧
+                  core.lawUniverse = FiniteModel.lawUniverse ∧
+                    core.obstructionLaw = FiniteModel.noCycleLaw ∧
+                      core.signature = FiniteModel.signature :=
+  FiniteModel.corePackageFromAxiomRealization_exists_noHEq
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -60,5 +105,31 @@ info: 'AAT.AG.AxiomAudit.forceCandidateConcreteNonzero' depends on axioms: [prop
 -/
 #guard_msgs in
 #print axioms forceCandidateConcreteNonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.concreteThreeReadingAgreementRequiredLaw' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms concreteThreeReadingAgreementRequiredLaw
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteAcyclicConcreteThreeReadingAgreement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteAcyclicConcreteThreeReadingAgreement
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteCyclicConcreteThreeReadingFires' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms finiteCyclicConcreteThreeReadingFires
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteCorePackageFromAxiomRealizationNoHEq' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms finiteCorePackageFromAxiomRealizationNoHEq
 
 end AAT.AG.AxiomAudit
