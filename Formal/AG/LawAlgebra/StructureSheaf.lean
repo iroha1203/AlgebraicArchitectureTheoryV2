@@ -1,6 +1,7 @@
 import Formal.AG.LawAlgebra.StructuralRelation
 import Formal.AG.Site.Descent
 import Mathlib.Algebra.Category.Ring.Under.Basic
+import Mathlib.CategoryTheory.Sites.Sheafification
 
 namespace AAT.AG
 namespace LawAlgebra
@@ -155,6 +156,80 @@ theorem sheafification_lift_unique {U : AtomCarrier.{u}}
     (F : LawAlgebraSheaf S k) (η : B.raw ⟶ F.val) :
     ∃! lift : B.OXPresheaf ⟶ F.val, B.canonical ≫ lift = η :=
   B.isSheafification F η
+
+/--
+III.R4: Mathlib sheafification gives the universal property for the
+`k`-algebra-valued raw presheaf whenever the selected codomain has a
+`HasSheafify` instance.
+
+This is the Mathlib-facing bridge theorem: it uses `CategoryTheory.toSheafify`,
+`CategoryTheory.sheafifyLift`, and `CategoryTheory.sheafifyLift_unique`
+directly, rather than consuming a selected `LawAlgebraSheafificationBridge`
+field as the conclusion.
+-/
+theorem mathlib_sheafification_lift_unique {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k)
+    (F : LawAlgebraSheaf S k) (η : raw ⟶ F.val) :
+    ∃! lift : CategoryTheory.sheafify S.topology raw ⟶ F.val,
+      CategoryTheory.toSheafify S.topology raw ≫ lift = η := by
+  refine ⟨CategoryTheory.sheafifyLift S.topology η F.cond, ?_, ?_⟩
+  · exact CategoryTheory.toSheafify_sheafifyLift S.topology η F.cond
+  · intro lift hlift
+    exact CategoryTheory.sheafifyLift_unique S.topology η F.cond lift hlift
+
+/--
+III.R4: construct the selected AAT sheafification bridge from Mathlib's
+`HasSheafify` surface.
+
+The hypothesis is explicit: this does not assert that every
+`AATCommAlgCat`-valued presheaf has an available sheafification instance in the
+current imports. When such an instance is supplied, the selected bridge is the
+Mathlib sheafification object with its canonical unit map and universal
+property.
+-/
+noncomputable def ofMathlibSheafification {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k) :
+    LawAlgebraSheafificationBridge S k where
+  raw := raw
+  plus := CategoryTheory.presheafToSheaf S.topology (AATCommAlgCat k) |>.obj raw
+  canonical := CategoryTheory.toSheafify S.topology raw
+  isSheafification := fun F η =>
+    mathlib_sheafification_lift_unique raw F η
+
+@[simp]
+theorem ofMathlibSheafification_raw {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k) :
+    (ofMathlibSheafification (S := S) raw).raw = raw :=
+  rfl
+
+@[simp]
+theorem ofMathlibSheafification_OXPresheaf {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k) :
+    (ofMathlibSheafification (S := S) raw).OXPresheaf =
+      CategoryTheory.sheafify S.topology raw :=
+  rfl
+
+@[simp]
+theorem ofMathlibSheafification_canonical {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (raw : AlgebraValuedAATPresheaf S k) :
+    (ofMathlibSheafification (S := S) raw).canonical =
+      CategoryTheory.toSheafify S.topology raw :=
+  rfl
 
 end LawAlgebraSheafificationBridge
 

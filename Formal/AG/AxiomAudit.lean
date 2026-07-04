@@ -16,6 +16,8 @@ tactic removal. Later PRD-R hardening PRs can extend this list additively.
 
 namespace AAT.AG.AxiomAudit
 
+open CategoryTheory
+
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
         Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠ 0 :=
@@ -148,6 +150,16 @@ theorem finiteAcyclicSectionPrimeMapMemLocalLawfulLocus
         AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.CycleRing
         AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cycleWitnessIdealFamily :=
   AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus p
+
+theorem structureSheafMathlibSheafificationLiftUnique
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (raw : LawAlgebra.AlgebraValuedAATPresheaf S k)
+    (F : LawAlgebra.LawAlgebraSheaf S k) (η : raw ⟶ F.val) :
+    ∃! lift : (sheafify S.topology raw ⟶ F.val),
+      toSheafify S.topology raw ≫ lift = η :=
+  LawAlgebra.LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique raw F η
 
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
@@ -289,6 +301,14 @@ info: 'AAT.AG.AxiomAudit.finiteAcyclicSectionPrimeMapMemLocalLawfulLocus' depend
 -/
 #guard_msgs in
 #print axioms finiteAcyclicSectionPrimeMapMemLocalLawfulLocus
+
+/--
+info: 'AAT.AG.AxiomAudit.structureSheafMathlibSheafificationLiftUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms structureSheafMathlibSheafificationLiftUnique
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
