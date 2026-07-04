@@ -188,6 +188,17 @@ theorem finiteConcreteGeneratorNSdepthEqOne :
       1 :=
   LawAlgebra.FiniteExamples.NSdepthExample.concreteGeneratorNSdepth_eq_one
 
+theorem coverRelativeCohomologyClassSuccEqIffAdditiveH1ClassEq
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob)
+    (x y : K.CechCocycle 1) :
+    K.cohomologyClassSucc 0 x = K.cohomologyClassSucc 0 y ↔
+      K.additiveH1Class x = K.additiveH1Class y :=
+  Cohomology.CoverRelativeCechComplex.cohomologyClassSucc_eq_iff_additiveH1Class_eq
+    K x y
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -358,6 +369,14 @@ info: 'AAT.AG.AxiomAudit.finiteConcreteGeneratorNSdepthEqOne' depends on axioms:
 -/
 #guard_msgs in
 #print axioms finiteConcreteGeneratorNSdepthEqOne
+
+/--
+info: 'AAT.AG.AxiomAudit.coverRelativeCohomologyClassSuccEqIffAdditiveH1ClassEq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms coverRelativeCohomologyClassSuccEqIffAdditiveH1ClassEq
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
