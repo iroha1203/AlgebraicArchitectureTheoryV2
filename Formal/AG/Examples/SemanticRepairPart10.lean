@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.Cohomology.FiniteExamples
 import Formal.AG.SemanticRepair.Boundary
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.ZMod.Basic
@@ -767,6 +768,45 @@ theorem circleNerve_nonzeroClassTransfer_packet :
       SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
         circleH1Comparison
   }⟩
+
+/--
+R5 / IV-2: PRD-10 circle-nerve nonzero H1 instance fired as a Part IV
+pseudo-circle golden example.
+-/
+def circlePartIVPseudoCircleFiring :
+    Cohomology.FiniteExamples.PseudoCircleGolden.PartIVCircleNonzeroH1Firing
+      circleCoverRelativeComplex where
+  residualCocycle := circleCoverRelativeResidualCocycle
+  zeroCocycle := circleCoverRelativeZeroCocycle
+  h0WitnessCountingZero :=
+    Cohomology.FiniteExamples.PseudoCircleGolden.h0_witness_counting_sees_no_obstruction
+  coverRelativeResidualClass_nonzero := circleCoverRelativeH1_nonzero
+
+/--
+R5 / IV-2: the PRD-10 circle instance gives the Part IV reading "H0 sees no
+obstruction, H1 is nonzero".
+-/
+theorem circlePartIV_h0_invisible_coverRelativeH1_nonzero :
+    Cohomology.FiniteExamples.PseudoCircleGolden.witnessCountingObstruction = 0 ∧
+      circleCoverRelativeComplex.cohomologyClassSucc 0
+          circleCoverRelativeResidualCocycle ≠
+        circleCoverRelativeComplex.cohomologyClassSucc 0
+          circleCoverRelativeZeroCocycle :=
+  Cohomology.FiniteExamples.PseudoCircleGolden.PartIVCircleNonzeroH1Firing.h0_invisible_and_coverRelativeH1_nonzero
+    circlePartIVPseudoCircleFiring
+
+/--
+R5 / IV-2: the same circle instance read through the additive H1 quotient
+surface introduced in IV-1.
+-/
+theorem circlePartIV_h0_invisible_additiveH1_nonzero :
+    Cohomology.FiniteExamples.PseudoCircleGolden.witnessCountingObstruction = 0 ∧
+      circleCoverRelativeComplex.additiveH1Class
+          circleCoverRelativeResidualCocycle ≠
+        circleCoverRelativeComplex.additiveH1Class
+          circleCoverRelativeZeroCocycle :=
+  Cohomology.FiniteExamples.PseudoCircleGolden.PartIVCircleNonzeroH1Firing.h0_invisible_and_additiveH1_nonzero
+    circlePartIVPseudoCircleFiring
 
 end SemanticRepairPart10
 end Examples

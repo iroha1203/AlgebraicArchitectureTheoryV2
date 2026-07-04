@@ -189,6 +189,70 @@ theorem pseudoCircle_h0_invisible_h1_obstructed
     W.hiddenCouplingClass_nonzero,
     no_global_lawful_section_by_localFlatnessGap W Hyp⟩
 
+/--
+R5 / IV-2: Part IV firing package for a selected pseudo-circle nonzero
+cover-relative `H^1` instance.
+
+This package is independent of the `HiddenCouplingData` interface above.  It is
+the direct Part IV reading consumed by PRD-10 circle-nerve examples: H0-style
+witness counting is zero, but a selected degree-one cover-relative class is
+nonzero.
+-/
+structure PartIVCircleNonzeroH1Firing {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {𝒰 : CoverRelativeCechCover S} {Ob : ObstructionSheaf S}
+    (K : CoverRelativeCechComplex 𝒰 Ob) where
+  residualCocycle : K.CechCocycle 1
+  zeroCocycle : K.CechCocycle 1
+  h0WitnessCountingZero : witnessCountingObstruction = 0
+  coverRelativeResidualClass_nonzero :
+    K.cohomologyClassSucc 0 residualCocycle ≠
+      K.cohomologyClassSucc 0 zeroCocycle
+
+namespace PartIVCircleNonzeroH1Firing
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {𝒰 : CoverRelativeCechCover S}
+variable {Ob : ObstructionSheaf S}
+variable {K : CoverRelativeCechComplex 𝒰 Ob}
+
+/--
+R5 / IV-2: the selected pseudo-circle firing records the PRD distinction:
+local H0 witness counting is zero while degree-one cover-relative cohomology is
+nonzero.
+-/
+theorem h0_invisible_and_coverRelativeH1_nonzero
+    (P : PartIVCircleNonzeroH1Firing K) :
+    witnessCountingObstruction = 0 ∧
+      K.cohomologyClassSucc 0 P.residualCocycle ≠
+        K.cohomologyClassSucc 0 P.zeroCocycle :=
+  ⟨P.h0WitnessCountingZero, P.coverRelativeResidualClass_nonzero⟩
+
+/--
+R5 / IV-2: the same pseudo-circle nonzero class read through the additive H1
+quotient surface added in IV-1.
+-/
+theorem additiveResidualClass_nonzero
+    (P : PartIVCircleNonzeroH1Firing K) :
+    K.additiveH1Class P.residualCocycle ≠
+      K.additiveH1Class P.zeroCocycle := by
+  intro h
+  exact P.coverRelativeResidualClass_nonzero
+    ((K.cohomologyClassSucc_eq_iff_additiveH1Class_eq
+      P.residualCocycle P.zeroCocycle).2 h)
+
+/--
+R5 / IV-2: combined H0-invisible and additive-H1-nonzero reading.
+-/
+theorem h0_invisible_and_additiveH1_nonzero
+    (P : PartIVCircleNonzeroH1Firing K) :
+    witnessCountingObstruction = 0 ∧
+      K.additiveH1Class P.residualCocycle ≠
+        K.additiveH1Class P.zeroCocycle :=
+  ⟨P.h0WitnessCountingZero, P.additiveResidualClass_nonzero⟩
+
+end PartIVCircleNonzeroH1Firing
+
 end PseudoCircleGolden
 
 namespace BoundaryResidueGolden
