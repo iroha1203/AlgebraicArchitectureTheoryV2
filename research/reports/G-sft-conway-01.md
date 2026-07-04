@@ -516,3 +516,53 @@ G2 / G3 audit summary:
 - G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; singleton common-refinement construction /
   owner-potential quotient infrastructure 由来。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
+
+## Cycle 10 — Global/common-refinement comparison
+
+candidate: `research/ideas/g-sft-conway-01-global-common-refinement-comparison.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: `global-boundary`, `common-refinement`, `finite-coefficient`,
+  `conway-obstruction`
+goal_delta: Cycle 5 の global zero-cochain boundary と Cycle 9 の common-refinement support provenance を比較した。
+  global zero-cochain が every selected fork に common-refinement support を供給すること、combined vanishing が
+  communication-cover compatibility と同値であること、combined receiver が global-boundary receiver と同値であることを
+  Lean theorem として固定した。
+project_value_delta: global exactness と common-refinement provenance の比較層を追加した。新 obstruction ではないが、
+  arbitrary cover naturality / comparison map failure を探す次 frontier の基準になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、global compatibility が
+  common-refinement support provenance を every selected fork へ供給するという theorem package を保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayGlobalCommonRefinementComparison`、`lake build FormalAGResearch`、
+  full `lake build` が通過。`#print axioms` は `Classical.choice` / `propext` / `Quot.sound` に収まる。
+open_questions: common-refinement exactness failure beyond global compatibility、arbitrary cover naturality、
+  true quotient object、true sheaf `H^1`、comparison functor failure は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayGlobalCommonRefinementComparison.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationZeroCochain_commonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloGlobalCommonRefinement`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinement_vanishes_iff_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinement_implies_commonRefinementOwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.GlobalCommonRefinementReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.globalCommonRefinementReceiver_iff_globalBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notGlobalCommonRefinementVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_globalCommonRefinementReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroGlobalCommonRefinementReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroGlobalCommonRefinementReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroGlobalCommonRefinementReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedGlobalCommonRefinementComparisonPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。二審判とも base 55 / multiplier 2.0 / penalty 0 を推奨。
+  combined receiver は `GlobalBoundaryReceiver` と同値で検出力を増やさないため、base 60 以上は過大。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; global-boundary / quotient infrastructure 由来。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
