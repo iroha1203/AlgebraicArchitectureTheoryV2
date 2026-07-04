@@ -138,6 +138,17 @@ theorem finiteAcyclicLocalSectionLawfulFromWitnessIdeals :
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSectionData.Lawful :=
   AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals
 
+theorem finiteAcyclicSectionPrimeMapMemLocalLawfulLocus
+    (p : PrimeSpectrum Int) :
+    AAT.AG.LawAlgebra.LawfulLocus.localSectionPrimeMap
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.CycleRing
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cycleWitnessIdealFamily
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSectionData p ∈
+      AAT.AG.LawAlgebra.LawfulLocus.localLawfulLocus
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.CycleRing
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cycleWitnessIdealFamily :=
+  AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus p
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -270,6 +281,14 @@ info: 'AAT.AG.AxiomAudit.finiteAcyclicLocalSectionLawfulFromWitnessIdeals' depen
 -/
 #guard_msgs in
 #print axioms finiteAcyclicLocalSectionLawfulFromWitnessIdeals
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteAcyclicSectionPrimeMapMemLocalLawfulLocus' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteAcyclicSectionPrimeMapMemLocalLawfulLocus
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,

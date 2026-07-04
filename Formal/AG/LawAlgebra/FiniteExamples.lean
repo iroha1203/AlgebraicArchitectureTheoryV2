@@ -245,6 +245,17 @@ theorem acyclicLocalSection_lawful_from_witnessIdeals :
       intro index _hselected
       exact acyclic_cycleWitnessIdeal_le_ker index)
 
+/--
+III.R4 / III-2: the acyclic finite section's induced prime map lands in the
+selected local lawful zero locus.
+-/
+theorem acyclic_sectionPrimeMap_mem_localLawfulLocus (p : PrimeSpectrum Int) :
+    LawfulLocus.localSectionPrimeMap CycleRing cycleWitnessIdealFamily acyclicLocalSectionData p ∈
+      LawfulLocus.localLawfulLocus CycleRing cycleWitnessIdealFamily :=
+  LawfulLocus.localSectionPrimeMap_mem_localLawfulLocus_of_lawful
+    CycleRing cycleWitnessIdealFamily acyclicLocalSectionData
+    acyclicLocalSection_lawful_from_witnessIdeals p
+
 /-- III.R13: the cyclic witness section pulls `I_cycle` back to the unit ideal. -/
 theorem cyclic_pulledObstructionIdeal_eq_top :
     cyclicSectionData.pulledObstructionIdeal = ⊤ := by
