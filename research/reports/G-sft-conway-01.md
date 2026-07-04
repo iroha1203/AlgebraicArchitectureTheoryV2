@@ -754,3 +754,52 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。主要 theorem は `Classical.choice` のみに依存し、local support witnesses を
   Sigma-indexed shared span へ束ねる witness choice 由来。
 - G4 score confirmation: base 50、evidence multiplier 2.0、penalty 0、final +100。
+
+## Cycle 15 — Owner-uniform restricted family
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-restricted-family.md`
+candidate_type: `negative-bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `common-refinement`, `coherent-family`, `restricted-span`,
+  `conway-obstruction`
+goal_delta: Cycle 14 の unrestricted Sigma assembly で潰れた local/shared gap を、
+  owner-uniform coherent family support という restricted span vocabulary で復活させた。
+  finite two-fork family で forkwise local support はあるが owner-uniform coherent support はないことを
+  Lean theorem として固定した。
+project_value_delta: common-refinement family interface に restricted local/shared separation witness を追加した。
+  local fork support が family-level owner-uniform coherence を保証しない境界を明示する。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、local support と
+  owner-uniform family coherence の分離を theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayRestrictedCoherentFamily`、`lake build FormalAGResearch`、
+  full `lake build` が通過。core owner-uniform support theorem は axiom-free、finite package は
+  `propext` / `Classical.choice` に依存。
+open_questions: arbitrary cover naturality、non-selected refinement span family、true quotient object、
+  true sheaf `H^1` は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayRestrictedCoherentFamily.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformCoherentCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformCoherentCommonRefinementSupport.sharedOwner_supports`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSupport_implies_coherentSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_localSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_notOwnerUniformCoherent`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformLocalButNotCoherentReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_ownerUniformReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedRestrictedCoherentFamilyPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。二審判とも base 60 / multiplier 2.0 / penalty 0 を推奨。
+  finite two-fork family で forkwise local support と owner-uniform family coherence の分離が Lean で固定されている。
+  ただし arbitrary cover naturality、non-selected span family、true quotient / sheaf `H^1` には未到達なので
+  base 60 を上限として扱う。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass。`ownerUniformSupport_implies_coherentSupport` は axiom-free。finite package は
+  `propext`, `Classical.choice` に依存し、既存 local witness choice / Prop extensionality 由来。
+- G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
