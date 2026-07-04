@@ -175,6 +175,19 @@ theorem schemeSingleAffineSpecCompatibilityAllConditions
   LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec_compatibility_allConditions
     S k T C hT i j
 
+theorem finiteConcreteGeneratorUnitCertificateOneMemSpan :
+    (1 :
+      MvPolynomial
+        LawAlgebra.FiniteExamples.NSdepthExample.Coord Int) ∈
+      Ideal.span
+        (Set.range LawAlgebra.FiniteExamples.NSdepthExample.unitGenerator) :=
+  LawAlgebra.FiniteExamples.NSdepthExample.concreteGeneratorUnitCertificate_one_mem_span
+
+theorem finiteConcreteGeneratorNSdepthEqOne :
+    LawAlgebra.FiniteExamples.NSdepthExample.concreteGeneratorNSdepthProfile.toNSdepthProfile.NSdepth =
+      1 :=
+  LawAlgebra.FiniteExamples.NSdepthExample.concreteGeneratorNSdepth_eq_one
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -331,6 +344,20 @@ info: 'AAT.AG.AxiomAudit.schemeSingleAffineSpecCompatibilityAllConditions' depen
 -/
 #guard_msgs in
 #print axioms schemeSingleAffineSpecCompatibilityAllConditions
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteConcreteGeneratorUnitCertificateOneMemSpan' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteConcreteGeneratorUnitCertificateOneMemSpan
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteConcreteGeneratorNSdepthEqOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteConcreteGeneratorNSdepthEqOne
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
