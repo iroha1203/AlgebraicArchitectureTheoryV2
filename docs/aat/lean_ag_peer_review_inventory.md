@@ -229,7 +229,7 @@ docs/aat/proof_obligations_ag_aat.md
 | II-4 | `FinitePoset.lean` 命題7.2C | 昇格 | R3 で PRD-10 標準複体 route を II-4 evidence へ接続済み。旧 selected data 版は packaged compatibility surface として明示。 |
 | II-5 | `Examples/FiniteModel.lean` Part II examples | 発火 | singleton / True 例から 2 patch + overlap finite site へ進める。 |
 | II-6 | `Topology.lean` Mathlib coverage bridge | 発火 | R3 で singleton finite equality-thin site の `HasPullbacks` / `IsStableUnderBaseChange` instance と bridge firing theorem を追加済み。 |
-| III-1 | `Correspondence.lean` 定理11.1 | 昇格 | witnessCoverage field 依存を witness ideal family へ接続する。 |
+| III-1 | `Correspondence.lean` 定理11.1 | 昇格 | R4 で `SelectedLawWitnessIdealFamily.localObstructionIdeal` / selected witness ideals / PRD-10 R5 `LawEquation` への片方向 bridge と finite firing theorem を追加済み。旧 `witnessCoverage` package は compatibility surface として残る。 |
 | III-2 | `LawfulLocus.lean` factorization | 昇格 | B項目。消滅から zeroLocus への片方向を theorem 化し、逆向き radical gap は非主張へ。 |
 | III-3 | `StructureSheaf.lean` sheafification bridge | 昇格 | B項目。Mathlib `HasSheafify` 製造補題が未実装。 |
 | III-4 | `Scheme.lean` chart compatibility | 実質化 | 3成分無関係 / freedom Prop を affine `Spec` 例または整合条件へ接続する。 |
@@ -334,6 +334,7 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteTwoPatchSheafificationGap` | `AAT.AG.FiniteModel.twoPatchSheafificationGap` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteTwoPatchCechDifferentialNonzero` | `AAT.AG.FiniteModel.twoPatchSeparatedCochain_differential_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSiteTopologyEqCoverageToGrothendieck` | `AAT.AG.FiniteModel.siteTopology_eq_coverage_toGrothendieck` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteAcyclicLocalSectionLawfulFromWitnessIdeals` | `AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp` | `AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
@@ -377,3 +378,16 @@ support and axis assumptions live only on the seed index.
 | II-5 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteTwoPatchCoverUAdequate`, `finiteTwoPatchUnitDescent`, `finiteTwoPatchSheafificationGap`, and `finiteTwoPatchCechDifferentialNonzero`, all guarded at `propext`, `Classical.choice`, `Quot.sound`. |
 | II-6 | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteAdmissiblePrecoverage_hasPullbacks` and `siteAdmissiblePrecoverage_stableUnderBaseChange` for the singleton finite equality-thin site. The concrete theorem `siteTopology_eq_coverage_toGrothendieck` fires `AATGrothendieckTopology.eq_coverage_toGrothendieck` on that selected finite instance. |
 | II-6 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteSiteTopologyEqCoverageToGrothendieck`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+
+## R4 Law algebra correspondence hardening
+
+R4 starts the Part III PRD-R items additively. It preserves the existing
+`LawfulnessIdealCorrespondenceAssumptions` package while adding theorem
+counterparts whose load-bearing premises are selected witness ideals and the
+generated local obstruction ideal.
+
+| ID | Disposition | New evidence |
+| --- | --- | --- |
+| III-1 | 昇格 | `Formal/AG/LawAlgebra/Correspondence.lean` adds `localObstructionIdeal_le_ker_iff_lawful`, `lawful_of_selectedWitnessIdeals_le_ker`, `lawful_of_generatedLawWitnessIdeals_le_ker`, and `displayedRequiredLawsHoldOn_defect_mem_localObstructionIdeal`. These connect section lawfulness to `SelectedLawWitnessIdealFamily.localObstructionIdeal` and PRD-10 R5 generated law-equation defects rather than consuming `witnessCoverage` as the conclusion. |
+| III-1 firing | 発火 | `Formal/AG/LawAlgebra/FiniteExamples.lean` adds `acyclicLocalSectionData`, `acyclic_cycleWitnessIdeal_le_ker`, and `acyclicLocalSection_lawful_from_witnessIdeals` for the selected finite cycle witness example. |
+| III-1 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteAcyclicLocalSectionLawfulFromWitnessIdeals`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
