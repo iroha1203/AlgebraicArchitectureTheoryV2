@@ -235,7 +235,7 @@ docs/aat/proof_obligations_ag_aat.md
 | III-4 | `Scheme.lean` chart compatibility | 実質化 | R4 で単一 affine chart の Mathlib `Spec` locally ringed space reading、identity self-chart compatibility witness、single-affine `ArchitectureScheme` constructor を追加済み。一般 atlas gluing / Mathlib open immersion theorem は非主張として残す。 |
 | III-5 | `Nullstellensatz.lean` NSdepth | 実質化 | R4 で selected generator family、finite linear-combination unit certificate、display degree、generator-backed `NSdepthProfile` への forgetful bridge、concrete `NSdepth = 1` firing を追加済み。一般 Nullstellensatz 証明・radical algorithm completeness は非主張として残す。 |
 | IV-1 | `CechComplex.lean` | 昇格 | R5 で `d ∘ d = 0` を使う additive cocycle / coboundary subgroup、additive `H^1 = Z^1/B^1` surface、class vanishing iff coboundary、legacy quotient relation との bridge theorem を追加済み。 |
-| IV-2 | `FiniteExamples.lean` pseudo circle | 発火 | PRD-10 circle nonzero H1 を Part IV 語彙で発火させる。 |
+| IV-2 | `FiniteExamples.lean` pseudo circle | 発火 | R5 で Part IV pseudo-circle 用 `PartIVCircleNonzeroH1Firing` package と、PRD-10 circle nonzero H1 instance からの firing theorem を追加済み。 |
 | IV-3 | `LocalFlatnessGap.lean` 定理7.1 | 昇格 | lawful section / coboundary soundness を具体化する。 |
 | IV-4 | `FlatnessCriterion.lean` 定理11.1 | 昇格 | C0 torsor と vanishing equivalence を finite regime で証明する。 |
 | IV-5 | `CoverNerve.lean` 12.* | 昇格 | rank-nullity / nerve chain complex / forest induction を実装する。 |
@@ -419,3 +419,4 @@ surfaces and bridge theorems.
 | --- | --- | --- |
 | IV-1 | 昇格 | `Formal/AG/Cohomology/CechComplex.lean` adds `AdditiveCochain`, `CechCocycleSubgroup`, `coboundaryCocycle`, `CechCoboundarySubgroupSucc`, `AdditiveCechH1`, `additiveH1Class`, `additiveH1Class_eq_zero_iff`, `additiveH1Class_eq_iff_legacy_setoid`, and `cohomologyClassSucc_eq_iff_additiveH1Class_eq`. The selected `d ∘ d = 0` field is used to put coboundaries inside the cocycle subgroup. |
 | IV-1 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `coverRelativeCohomologyClassSuccEqIffAdditiveH1ClassEq`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| IV-2 | 発火 | `Formal/AG/Cohomology/FiniteExamples.lean` adds `PartIVCircleNonzeroH1Firing` and its cover-relative / additive H1 nonzero readings. `Formal/AG/Examples/SemanticRepairPart10.lean` adds `circlePartIVPseudoCircleFiring`, `circlePartIV_h0_invisible_coverRelativeH1_nonzero`, and `circlePartIV_h0_invisible_additiveH1_nonzero`, connecting the PRD-10 circle nonzero H1 instance to Part IV pseudo-circle vocabulary. |
