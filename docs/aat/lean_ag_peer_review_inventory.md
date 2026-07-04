@@ -225,7 +225,7 @@ docs/aat/proof_obligations_ag_aat.md
 | I-4 | `Law.lean` unused assumptions | 宣言 | R2 で Research 参照が確認されたため削除せず、selected 公理スロットとして凍結する。必要な load-bearing reading は I-1 の concrete required-law API へ移す。 |
 | II-1 | `Adequate.lean` 補題7.2A | 昇格 | R3 で seed-side support / axis assumptions から witness support と seed overlap を閉じる additive theorem を追加済み。 |
 | II-2 | `ContextCategory.lean` 命題4.2 | 昇格 | R3 で restriction-morphism preorder、componentwise product meet、readable-equivalence quotient finite-meet poset construction を追加済み。 |
-| II-3 | `Context.lean` morphism roles | 実質化 | phantom parameter と自由 Prop role を support/restriction predicate に接続する。 |
+| II-3 | `Context.lean` morphism roles | 実質化 | R3 で `MinimalContext` の support reading を `A.configuration.family` に接続し、旧 free Prop role slots を `ContextMorphism` 外部の support / axis / observable / non-generation concrete predicate へ置換済み。 |
 | II-4 | `FinitePoset.lean` 命題7.2C | 昇格 | PRD-10 標準複体へ接続し、旧 selected data 版は packaged 明示。 |
 | II-5 | `Examples/FiniteModel.lean` Part II examples | 発火 | singleton / True 例から 2 patch + overlap finite site へ進める。 |
 | II-6 | `Topology.lean` Mathlib coverage bridge | 発火 | meet 付き thin site instance で bridge theorem を発火させる。 |
@@ -328,6 +328,7 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteSeedWitnessClosureAdmissible` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_admissible` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSeedWitnessClosureUAdequate` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_uAdequate` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteRestrictionQuotientFiniteMeetPoset` | `AAT.AG.FiniteModel.siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteContextMorphismRolesConcrete` | `AAT.AG.FiniteModel.siteContextIdentityMorphism_rolesConcrete` | `propext` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
 new wrappers when they promote theorem-package or firing-instance declarations
@@ -361,3 +362,6 @@ support and axis assumptions live only on the seed index.
 | II-2 | 昇格 | `Formal/AG/Site/ContextCategory.lean` adds `contextMorphismPreorderCategory`, `productContextFiniteMeet`, `quotientLe`, `quotientMeet`, `quotientLe_wellDefined`, `quotientMeet_wellDefined`, `quotientFiniteMeetPosetCategoryOf`, and `minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet`. The quotient poset is now constructed from preorder + finite-meet data, while the old `minimalContextQuotientFiniteMeetPosetCategory` remains a packaged compatibility surface. |
 | II-2 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteRestrictionQuotientFiniteMeetPosetCategory` and `siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet` for the finite model's canonical restriction preorder. |
 | II-2 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteRestrictionQuotientFiniteMeetPoset`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| II-3 | 実質化 | `Formal/AG/Site/Context.lean` makes `MinimalContext.supportReads_objectFamily` load-bearing and replaces the old free Prop role slots with external concrete predicates: `SupportMapPreservesReads`, `AxisMapPreservesReads`, `ObservableRestrictionFunctorial`, `SupportMapNonGenerating`, `AxisMapForgetsOnlyReadableAxes`, `SupportMapReflectsReads`, `AxisMapReflectsReads`, `SupportMapRefinesReads`, `AxisMapRefinesReads`, `BaseChangeCompatibleReads`, and `ContextMorphism.ConcreteRestriction` / `ConcreteProjection` / `ConcreteRefinement` / `ConcreteBaseChange`. |
+| II-3 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteContext_supportReads_objectFamily` and `siteContextIdentityMorphism_rolesConcrete`, showing the finite singleton context and its identity morphism satisfy the concrete restriction / projection / refinement / base-change roles. |
+| II-3 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteContextMorphismRolesConcrete`, guarded at `propext`. |

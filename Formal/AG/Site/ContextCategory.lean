@@ -87,14 +87,6 @@ def identityContextMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   supportMap := id
   axisMap := id
   observableRestrict := id
-  supportReadable := True
-  axisReadable := True
-  observableFunctorial := True
-  nonGenerating := True
-  axisForgetting := False
-  supportRefinement := True
-  axisRefinement := True
-  baseChangeCompatible := True
 
 /-- II.命題4.2: composition of selected restriction context morphisms. -/
 def contextMorphismComp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -103,14 +95,6 @@ def contextMorphismComp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   supportMap := g.supportMap ∘ f.supportMap
   axisMap := g.axisMap ∘ f.axisMap
   observableRestrict := f.observableRestrict ∘ g.observableRestrict
-  supportReadable := f.supportReadable ∧ g.supportReadable
-  axisReadable := f.axisReadable ∧ g.axisReadable
-  observableFunctorial := f.observableFunctorial ∧ g.observableFunctorial
-  nonGenerating := f.nonGenerating ∧ g.nonGenerating
-  axisForgetting := f.axisForgetting ∨ g.axisForgetting
-  supportRefinement := f.supportRefinement ∧ g.supportRefinement
-  axisRefinement := f.axisRefinement ∧ g.axisRefinement
-  baseChangeCompatible := f.baseChangeCompatible ∧ g.baseChangeCompatible
 
 /-- II.命題4.2: composition preserves the selected restriction role. -/
 theorem contextMorphismComp_isRestriction {U : AtomCarrier.{u}}
@@ -118,8 +102,10 @@ theorem contextMorphismComp_isRestriction {U : AtomCarrier.{u}}
     {f : ContextMorphism W V} {g : ContextMorphism V X}
     (hf : f.IsRestriction) (hg : g.IsRestriction) :
     (contextMorphismComp f g).IsRestriction :=
-  ⟨⟨hf.1, hg.1⟩, ⟨⟨hf.2.1, hg.2.1⟩,
-    ⟨⟨hf.2.2.1, hg.2.2.1⟩, ⟨hf.2.2.2, hg.2.2.2⟩⟩⟩⟩
+  ⟨fun h => hg.1 (hf.1 h),
+    fun h => hg.2.1 (hf.2.1 h),
+    fun h => hf.2.2.1 (hg.2.2.1 h),
+    fun h => X.supportReads_objectFamily h⟩
 
 /-- II.命題4.2: componentwise product context used as a concrete meet. -/
 def productContext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -130,6 +116,8 @@ def productContext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     Observable := W.Observable ⊕ V.Observable
     supportReads := fun support atom =>
       W.minimal.supportReads support.1 atom ∧ V.minimal.supportReads support.2 atom
+    supportReads_objectFamily := fun h =>
+      W.supportReads_objectFamily h.1
     axisReads := fun axis =>
       W.minimal.axisReads axis.1 ∧ V.minimal.axisReads axis.2
     observableReads := fun
@@ -145,14 +133,6 @@ def productContextLeftMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   supportMap := Prod.fst
   axisMap := Prod.fst
   observableRestrict := Sum.inl
-  supportReadable := True
-  axisReadable := True
-  observableFunctorial := True
-  nonGenerating := True
-  axisForgetting := False
-  supportRefinement := True
-  axisRefinement := True
-  baseChangeCompatible := True
 
 /-- II.命題4.2: product context projection to the right component. -/
 def productContextRightMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -160,26 +140,20 @@ def productContextRightMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   supportMap := Prod.snd
   axisMap := Prod.snd
   observableRestrict := Sum.inr
-  supportReadable := True
-  axisReadable := True
-  observableFunctorial := True
-  nonGenerating := True
-  axisForgetting := False
-  supportRefinement := True
-  axisRefinement := True
-  baseChangeCompatible := True
 
 /-- II.命題4.2: product context projections are selected restrictions. -/
 theorem productContextLeft_isRestriction {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} (W V : ArchCtx A) :
     (productContextLeftMorphism W V).IsRestriction :=
-  ⟨trivial, trivial, trivial, trivial⟩
+  ⟨fun h => h.1, fun h => h.1, fun h => h,
+    fun h => W.supportReads_objectFamily h⟩
 
 /-- II.命題4.2: product context projections are selected restrictions. -/
 theorem productContextRight_isRestriction {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} (W V : ArchCtx A) :
     (productContextRightMorphism W V).IsRestriction :=
-  ⟨trivial, trivial, trivial, trivial⟩
+  ⟨fun h => h.2, fun h => h.2, fun h => h,
+    fun h => V.supportReads_objectFamily h⟩
 
 /-- II.命題4.2: lift a pair of readable restrictions into the product context. -/
 def productContextLiftMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -190,14 +164,6 @@ def productContextLiftMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   observableRestrict := fun
     | Sum.inl observable => f.observableRestrict observable
     | Sum.inr observable => g.observableRestrict observable
-  supportReadable := f.supportReadable ∧ g.supportReadable
-  axisReadable := f.axisReadable ∧ g.axisReadable
-  observableFunctorial := f.observableFunctorial ∧ g.observableFunctorial
-  nonGenerating := f.nonGenerating ∧ g.nonGenerating
-  axisForgetting := f.axisForgetting ∨ g.axisForgetting
-  supportRefinement := f.supportRefinement ∧ g.supportRefinement
-  axisRefinement := f.axisRefinement ∧ g.axisRefinement
-  baseChangeCompatible := f.baseChangeCompatible ∧ g.baseChangeCompatible
 
 /-- II.命題4.2: product-context lifts preserve the selected restriction role. -/
 theorem productContextLift_isRestriction {U : AtomCarrier.{u}}
@@ -205,8 +171,13 @@ theorem productContextLift_isRestriction {U : AtomCarrier.{u}}
     {f : ContextMorphism X W} {g : ContextMorphism X V}
     (hf : f.IsRestriction) (hg : g.IsRestriction) :
     (productContextLiftMorphism f g).IsRestriction :=
-  ⟨⟨hf.1, hg.1⟩, ⟨⟨hf.2.1, hg.2.1⟩,
-    ⟨⟨hf.2.2.1, hg.2.2.1⟩, ⟨hf.2.2.2, hg.2.2.2⟩⟩⟩⟩
+  ⟨fun h => ⟨hf.1 h, hg.1 h⟩,
+    fun h => ⟨hf.2.1 h, hg.2.1 h⟩,
+    fun {observable} h =>
+      match observable with
+      | Sum.inl _observable => hf.2.2.1 h
+      | Sum.inr _observable => hg.2.2.1 h,
+    fun h => (productContext W V).supportReads_objectFamily h⟩
 
 /--
 II.命題4.2: canonical preorder whose arrows are selected restriction
@@ -215,7 +186,9 @@ context morphisms.
 noncomputable def contextMorphismPreorderCategory {U : AtomCarrier.{u}}
     (A : ArchitectureObject U) : ContextPreorderCategory A where
   le source target := ∃ f : ContextMorphism source target, f.IsRestriction
-  refl W := ⟨identityContextMorphism W, ⟨trivial, trivial, trivial, trivial⟩⟩
+  refl W := ⟨identityContextMorphism W,
+    ⟨fun h => h, fun h => h, fun h => h,
+      fun h => W.supportReads_objectFamily h⟩⟩
   trans := by
     intro W V X hWV hVX
     rcases hWV with ⟨f, hf⟩
