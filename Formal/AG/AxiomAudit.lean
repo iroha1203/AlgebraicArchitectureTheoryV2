@@ -161,6 +161,20 @@ theorem structureSheafMathlibSheafificationLiftUnique
       toSheafify S.topology raw ≫ lift = η :=
   LawAlgebra.LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique raw F η
 
+theorem schemeSingleAffineSpecCompatibilityAllConditions
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type} [CommRing k]
+    (T : LawAlgebra.Scheme.RingedAATTopos S k)
+    (C : LawAlgebra.AffineChart.AffineAATChart k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        LawAlgebra.Scheme.affineChartMathlibSpecLocallyRingedSpace k C)
+    (i j : (LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec S k T C hT).ChartIndex) :
+    LawAlgebra.Scheme.ChartCompatibility.allConditions k
+      ((LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec S k T C hT).compatibility i j) :=
+  LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec_compatibility_allConditions
+    S k T C hT i j
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -309,6 +323,14 @@ info: 'AAT.AG.AxiomAudit.structureSheafMathlibSheafificationLiftUnique' depends 
 -/
 #guard_msgs in
 #print axioms structureSheafMathlibSheafificationLiftUnique
+
+/--
+info: 'AAT.AG.AxiomAudit.schemeSingleAffineSpecCompatibilityAllConditions' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms schemeSingleAffineSpecCompatibilityAllConditions
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
