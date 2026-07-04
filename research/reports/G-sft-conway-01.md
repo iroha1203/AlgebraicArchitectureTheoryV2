@@ -67,10 +67,10 @@ Next frontier:
 candidate: `research/ideas/g-sft-conway-01-relative-nerve-support-receiver.md`
 candidate_type: `bridge`
 evidence_stage: `proved-in-research`
-base_score: 60
+base_score: 55
 evidence_multiplier: 2.0
 penalty: 0
-final_score: 120
+final_score: 110
 category: `refinement-order`, `support-receiver`,
   `conway-obstruction`, `finite-witness`, `receiver`
 goal_delta: Cycle 1 の `TwoCoverAtlas` 上に `CoverRefines`、`CommonRefinementSpan`,
@@ -117,3 +117,62 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。blocking な健全性問題なし。
 - G3 axiom check: pass with `propext` only on finite example receiver declarations; receiver equivalence itself is axiom-free.
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。Cycle 2 は高得点 discovery ではなく、Cycle 1 の selected obstruction を receiver vocabulary へ保守的に移す bridge として扱う。
+
+## Cycle 3 — Support fork Z2 boundary receiver
+
+candidate: `research/ideas/g-sft-conway-01-support-fork-z2-boundary-receiver.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `boundary-quotient-receiver`, `finite-coefficient`, `support-receiver`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 2 の `SupportNerveFork` を selected degree-one cochain として読み、
+  `SupportForkDefect : ZMod 2` と `SupportForkBoundarySubgroup : AddSubgroup ConwayZ2` を置いた。
+  selected defect の boundary subgroup membership が単一 owner support と同値であること、functional ownership
+  が canonical mismatched fork の non-boundary class を導くことを Lean theorem として固定した。ただし
+  boundary subgroup は receiver predicate-driven であり、Cycle 2 receiver の selected finite coefficient
+  rephrasing として扱う。
+project_value_delta: SFT 第V部 Conway 対応の receiver を、full cohomology へ急がず selected `ZMod 2`
+  membership vocabulary と functional non-boundary certificate に移した。true quotient object / boundary map /
+  sheaf `H^1` ではない。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、selected `1 : ZMod 2`
+  defect が predicate-driven boundary subgroup に吸収されるかを theorem package として保存する点に限定する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayBoundaryQuotient.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayBoundaryQuotient` が通過。`#print axioms` では主要 theorem が
+  `propext`, `Classical.choice`, `Quot.sound` に依存する。G3 formalization quality は pass。
+open_questions: true sheaf `H^1`、full quotient object、common-refinement exactness、comparison functor failure、
+  arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayBoundaryQuotient.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkBoundarySubgroup`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.supportForkDefect_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.supportForkDefect_vanishes_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.supportForkNonzeroClass_iff_noSingleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.boundaryQuotientReceiver_iff_supportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_nonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_boundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_ownershipFunctional`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_nonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_boundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_boundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroBoundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroBoundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroBoundaryQuotientReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedBoundaryQuotientReceiverPackage`
+
+G2 / G3 audit summary:
+
+- G2 B: revise, base 60. `ZMod 2` defect と boundary subgroup は単なる Prop wrapper を部分的に越えるが、defect は定数で boundary subgroup は predicate-driven。
+- G2 C: accept, base 65. Cycle 2 の receiver を selected finite `C^1/B^1`-style receiver に進める repo value はあるが、full quotient object / true `H^1` / common-refinement exactness は未到達。
+- G2 D adversarial: revise, base 45-50. `SupportForkBoundarySubgroup` は `ForkHasSingleOwnerSupport` で `⊤/⊥` 分岐するため、receiver 条件を boundary subgroup 定義にほぼ直接埋め込んでいる。
+- G3 formalization quality: pass。claim を selected finite receiver に限定する限り blocking finding なし。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `SupportForkBoundarySubgroup` の Prop 分岐と `ZMod` / quotient infrastructure 由来。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。Cycle 3 は Cycle 2 receiver を selected finite coefficient boundary membership vocabulary へ移す low bridge として扱う。
