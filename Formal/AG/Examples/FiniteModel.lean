@@ -12,6 +12,8 @@ open Opposite
 
 namespace FiniteModel
 
+universe v
+
 /-- R10: a small finite Atom universe for AG AAT Part I examples. -/
 inductive FiniteAtom where
   | componentA
@@ -641,6 +643,117 @@ theorem siteSingletonCover_uAdequate :
   requiredAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
   boundaryWitnessesVisible := fun _i _j => trivial
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
+
+/-- PRD-R II-6: every morphism in the singleton finite context site is an isomorphism. -/
+theorem siteContextCategoryObject_eq_of_hom {X Y : site.category} (_f : X ⟶ Y) :
+    X = Y := by
+  cases X
+  cases Y
+  simp [Site.ContextCategoryObject.instPreorder] at _f
+  cases _f.down.down
+  rfl
+
+private theorem siteAdmissiblePrecoverage_index_nonempty
+    {ι : Type v} {S : site.category} {X : ι -> site.category}
+    {f : ∀ i, X i ⟶ S}
+    (hR : Presieve.ofArrows X f ∈
+      Site.admissiblePrecoverage siteCoverageRequirements siteOverlap S) :
+    Nonempty ι := by
+  rcases hR with ⟨F, hF⟩
+  rcases F.admissible.atomSupportCoverage FiniteAtom.componentA trivial with ⟨i, _hi⟩
+  have hmemF : F.presieve (homOfLE (F.inclusion i)) := by
+    exact Presieve.ofArrows.mk i
+  have hmem :
+      Presieve.ofArrows X f (homOfLE (F.inclusion i)) := by
+    simpa [hF] using hmemF
+  exact ⟨hmem.idx⟩
+
+private theorem siteContextPresieve_ofArrows_eta
+    {ι : Type v} {S : site.category} (P : ι -> site.category)
+    (p : ∀ i, P i ⟶ S) :
+    Presieve.ofArrows P p =
+      Presieve.ofArrows
+        (fun i => Site.ContextCategoryObject.of siteContextPreorder (P i).ctx)
+        (fun i => homOfLE (p i).le) := rfl
+
+private theorem siteContextPresieve_ofArrows_eq_unit
+    {ι : Type v} {S : site.category} (P : ι -> site.category)
+    (p : ∀ i, P i ⟶ S) [Nonempty ι] :
+    Presieve.ofArrows P p =
+      Presieve.ofArrows (fun _ : PUnit => S) (fun _ => 𝟙 S) := by
+  funext Z h
+  apply propext
+  constructor
+  · intro _hz
+    exact Presieve.ofArrows.mk' PUnit.unit
+      (siteContextCategoryObject_eq_of_hom h) (Subsingleton.elim _ _)
+  · intro _hz
+    let i0 : ι := Classical.choice inferInstance
+    exact Presieve.ofArrows.mk' i0
+      ((siteContextCategoryObject_eq_of_hom h).trans
+        (siteContextCategoryObject_eq_of_hom (p i0)).symm)
+      (Subsingleton.elim _ _)
+
+/--
+PRD-R II-6: the singleton finite AAT admissible precoverage has pullbacks.
+
+This is a concrete finite firing instance for the Mathlib `Coverage` bridge:
+the selected context category is equality-thin, so every arrow in a covering
+presieve is an isomorphism and hence has pullbacks along every base change.
+-/
+noncomputable instance siteAdmissiblePrecoverage_hasPullbacks :
+    Precoverage.HasPullbacks
+      (Site.admissiblePrecoverage siteCoverageRequirements siteOverlap) where
+  hasPullbacks_of_mem := by
+    intro X Y R f _hR
+    refine ⟨?_⟩
+    intro Z h _hh
+    have hIso : IsIso h := by
+      have heq : Z = Y := siteContextCategoryObject_eq_of_hom h
+      subst Z
+      rw [Subsingleton.elim h (𝟙 Y)]
+      infer_instance
+    exact Limits.hasPullback_of_left_iso h f
+
+/--
+PRD-R II-6: the singleton finite AAT admissible precoverage is stable under
+base change.
+
+The base-changed family uses the pulled-back objects supplied by Mathlib's
+`IsPullback` witness.  The finite singleton requirements make admissibility
+load-bearing enough to produce a real `AATCoverageFamily`, while still staying
+within this selected finite fixture rather than claiming arbitrary
+precoverage stability.
+-/
+noncomputable instance siteAdmissiblePrecoverage_stableUnderBaseChange :
+    Precoverage.IsStableUnderBaseChange
+      (Site.admissiblePrecoverage siteCoverageRequirements siteOverlap) where
+  mem_coverings_of_isPullback := by
+    intro ι S X f hR Y _g P p₁ _p₂ _h
+    have hNonempty : Nonempty ι := siteAdmissiblePrecoverage_index_nonempty hR
+    refine ⟨{
+      Index := PUnit
+      patch := fun _ => Y.ctx
+      inclusion := fun _ => (siteContextPreorder.refl Y.ctx)
+      admissible := {
+        atomSupportCoverage := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+        lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+        signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+        boundaryCoverage := fun _i _j => trivial
+        nonGeneration := fun _i {_support} {_atom} _h => trivial
+      }
+    }, ?_⟩
+    exact siteContextPresieve_ofArrows_eq_unit P p₁
+
+/--
+PRD-R II-6: the Mathlib `Coverage.toGrothendieck` bridge fires on the
+selected finite singleton site.
+-/
+theorem siteTopology_eq_coverage_toGrothendieck :
+    site.topology =
+      (Site.admissiblePrecoverage siteCoverageRequirements siteOverlap).toCoverage.toGrothendieck :=
+  Site.AATGrothendieckTopology.eq_coverage_toGrothendieck
+    siteCoverageRequirements siteOverlap
 
 /-- R11 / II.AC16: the finite model has finitely many required witnesses. -/
 theorem site_requiredWitnessSubtype_finite :
