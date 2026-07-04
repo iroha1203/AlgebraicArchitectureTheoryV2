@@ -607,3 +607,51 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
 - G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; inherited receiver infrastructure 由来。
 - G4 score confirmation: base 40、evidence multiplier 2.0、penalty 0、final +80。
+
+## Cycle 12 — Coherent common-refinement family
+
+candidate: `research/ideas/g-sft-conway-01-coherent-common-refinement-family.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 50
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 100
+category: `common-refinement`, `coherent-family`, `global-boundary`,
+  `conway-obstruction`
+goal_delta: fork ごとの singleton support ではなく、one shared `CommonRefinementSpan` から fork family 全体へ
+  support block を選ぶ coherent interface を追加した。global zero-cochain が communication-indexed shared span を作り、
+  任意の selected fork family に coherent common-refinement support を供給することを Lean theorem として固定した。
+project_value_delta: common-refinement provenance を single fork から family-level coherence へ上げた。
+  新 obstruction ではないが、arbitrary cover naturality / comparison map failure の前段 interface になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、support provenance が one shared
+  refinement span から fork family へ coherent に選ばれるかを theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayCoherentCommonRefinementFamily`、`lake build FormalAGResearch`、
+  full `lake build` が通過。`#print axioms` は family construction では axiom-free、
+  compatibility package で `Classical.choice` / `propext` に収まる。
+open_questions: local support はあるが shared span が存在しない finite family、arbitrary cover naturality、
+  non-selected refinement span family、true quotient object、true sheaf `H^1` は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayCoherentCommonRefinementFamily.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CoherentCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_implies_eachForkSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationZeroCochain.toCoherentCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationZeroCochain_coherentCommonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilyVanishesModuloCoherentGlobalCommonRefinement`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.familyCoherentGlobalCommonRefinement_vanishes_iff_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSingletonForkFamily_notCoherentGlobalCommonRefinementVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleEmptyForkFamily_coherentGlobalCommonRefinementVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCoherentCommonRefinementFamilyPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。ただし二審判の推奨は base 55 と base 50。新 family-level structure はあるが、
+  global zero-cochain からの構成が直接的で新 obstruction ではないため、保守的に base 50 を採用。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass。core family support construction は axiom-free。compatibility equivalence/package は
+  `Classical.choice`, `propext` に依存。
+- G4 score confirmation: base 50、evidence multiplier 2.0、penalty 0、final +100。
