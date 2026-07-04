@@ -81,6 +81,167 @@ structure ContextFiniteMeet {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   le_meet :
     ∀ {X W V : ArchCtx A}, C.le X W -> C.le X V -> C.le X (meet W V)
 
+/-- II.命題4.2: identity context morphism for the minimal context model. -/
+def identityContextMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (W : ArchCtx A) : ContextMorphism W W where
+  supportMap := id
+  axisMap := id
+  observableRestrict := id
+  supportReadable := True
+  axisReadable := True
+  observableFunctorial := True
+  nonGenerating := True
+  axisForgetting := False
+  supportRefinement := True
+  axisRefinement := True
+  baseChangeCompatible := True
+
+/-- II.命題4.2: composition of selected restriction context morphisms. -/
+def contextMorphismComp {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {W V X : ArchCtx A} (f : ContextMorphism W V) (g : ContextMorphism V X) :
+    ContextMorphism W X where
+  supportMap := g.supportMap ∘ f.supportMap
+  axisMap := g.axisMap ∘ f.axisMap
+  observableRestrict := f.observableRestrict ∘ g.observableRestrict
+  supportReadable := f.supportReadable ∧ g.supportReadable
+  axisReadable := f.axisReadable ∧ g.axisReadable
+  observableFunctorial := f.observableFunctorial ∧ g.observableFunctorial
+  nonGenerating := f.nonGenerating ∧ g.nonGenerating
+  axisForgetting := f.axisForgetting ∨ g.axisForgetting
+  supportRefinement := f.supportRefinement ∧ g.supportRefinement
+  axisRefinement := f.axisRefinement ∧ g.axisRefinement
+  baseChangeCompatible := f.baseChangeCompatible ∧ g.baseChangeCompatible
+
+/-- II.命題4.2: composition preserves the selected restriction role. -/
+theorem contextMorphismComp_isRestriction {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {W V X : ArchCtx A}
+    {f : ContextMorphism W V} {g : ContextMorphism V X}
+    (hf : f.IsRestriction) (hg : g.IsRestriction) :
+    (contextMorphismComp f g).IsRestriction :=
+  ⟨⟨hf.1, hg.1⟩, ⟨⟨hf.2.1, hg.2.1⟩,
+    ⟨⟨hf.2.2.1, hg.2.2.1⟩, ⟨hf.2.2.2, hg.2.2.2⟩⟩⟩⟩
+
+/-- II.命題4.2: componentwise product context used as a concrete meet. -/
+def productContext {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (W V : ArchCtx A) : ArchCtx A where
+  minimal := {
+    Support := W.Support × V.Support
+    Axis := W.Axis × V.Axis
+    Observable := W.Observable ⊕ V.Observable
+    supportReads := fun support atom =>
+      W.minimal.supportReads support.1 atom ∧ V.minimal.supportReads support.2 atom
+    axisReads := fun axis =>
+      W.minimal.axisReads axis.1 ∧ V.minimal.axisReads axis.2
+    observableReads := fun
+      | Sum.inl observable => W.minimal.observableReads observable
+      | Sum.inr observable => V.minimal.observableReads observable
+  }
+  Extension := W.Extension × V.Extension
+  extension := (W.extension, V.extension)
+
+/-- II.命題4.2: product context projection to the left component. -/
+def productContextLeftMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (W V : ArchCtx A) : ContextMorphism (productContext W V) W where
+  supportMap := Prod.fst
+  axisMap := Prod.fst
+  observableRestrict := Sum.inl
+  supportReadable := True
+  axisReadable := True
+  observableFunctorial := True
+  nonGenerating := True
+  axisForgetting := False
+  supportRefinement := True
+  axisRefinement := True
+  baseChangeCompatible := True
+
+/-- II.命題4.2: product context projection to the right component. -/
+def productContextRightMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (W V : ArchCtx A) : ContextMorphism (productContext W V) V where
+  supportMap := Prod.snd
+  axisMap := Prod.snd
+  observableRestrict := Sum.inr
+  supportReadable := True
+  axisReadable := True
+  observableFunctorial := True
+  nonGenerating := True
+  axisForgetting := False
+  supportRefinement := True
+  axisRefinement := True
+  baseChangeCompatible := True
+
+/-- II.命題4.2: product context projections are selected restrictions. -/
+theorem productContextLeft_isRestriction {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (W V : ArchCtx A) :
+    (productContextLeftMorphism W V).IsRestriction :=
+  ⟨trivial, trivial, trivial, trivial⟩
+
+/-- II.命題4.2: product context projections are selected restrictions. -/
+theorem productContextRight_isRestriction {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (W V : ArchCtx A) :
+    (productContextRightMorphism W V).IsRestriction :=
+  ⟨trivial, trivial, trivial, trivial⟩
+
+/-- II.命題4.2: lift a pair of readable restrictions into the product context. -/
+def productContextLiftMorphism {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {X W V : ArchCtx A} (f : ContextMorphism X W) (g : ContextMorphism X V) :
+    ContextMorphism X (productContext W V) where
+  supportMap := fun support => (f.supportMap support, g.supportMap support)
+  axisMap := fun axis => (f.axisMap axis, g.axisMap axis)
+  observableRestrict := fun
+    | Sum.inl observable => f.observableRestrict observable
+    | Sum.inr observable => g.observableRestrict observable
+  supportReadable := f.supportReadable ∧ g.supportReadable
+  axisReadable := f.axisReadable ∧ g.axisReadable
+  observableFunctorial := f.observableFunctorial ∧ g.observableFunctorial
+  nonGenerating := f.nonGenerating ∧ g.nonGenerating
+  axisForgetting := f.axisForgetting ∨ g.axisForgetting
+  supportRefinement := f.supportRefinement ∧ g.supportRefinement
+  axisRefinement := f.axisRefinement ∧ g.axisRefinement
+  baseChangeCompatible := f.baseChangeCompatible ∧ g.baseChangeCompatible
+
+/-- II.命題4.2: product-context lifts preserve the selected restriction role. -/
+theorem productContextLift_isRestriction {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {X W V : ArchCtx A}
+    {f : ContextMorphism X W} {g : ContextMorphism X V}
+    (hf : f.IsRestriction) (hg : g.IsRestriction) :
+    (productContextLiftMorphism f g).IsRestriction :=
+  ⟨⟨hf.1, hg.1⟩, ⟨⟨hf.2.1, hg.2.1⟩,
+    ⟨⟨hf.2.2.1, hg.2.2.1⟩, ⟨hf.2.2.2, hg.2.2.2⟩⟩⟩⟩
+
+/--
+II.命題4.2: canonical preorder whose arrows are selected restriction
+context morphisms.
+-/
+noncomputable def contextMorphismPreorderCategory {U : AtomCarrier.{u}}
+    (A : ArchitectureObject U) : ContextPreorderCategory A where
+  le source target := ∃ f : ContextMorphism source target, f.IsRestriction
+  refl W := ⟨identityContextMorphism W, ⟨trivial, trivial, trivial, trivial⟩⟩
+  trans := by
+    intro W V X hWV hVX
+    rcases hWV with ⟨f, hf⟩
+    rcases hVX with ⟨g, hg⟩
+    exact ⟨contextMorphismComp f g, contextMorphismComp_isRestriction hf hg⟩
+  readableMorphism := fun h => Classical.choose h
+  readableMorphism_isRestriction := fun h => Classical.choose_spec h
+
+/--
+II.命題4.2: componentwise product context gives a finite-meet structure for
+the restriction-morphism preorder.
+-/
+noncomputable def productContextFiniteMeet {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} :
+    ContextFiniteMeet (contextMorphismPreorderCategory A) where
+  meet := productContext
+  meet_le_left := fun W V =>
+    ⟨productContextLeftMorphism W V, productContextLeft_isRestriction W V⟩
+  meet_le_right := fun W V =>
+    ⟨productContextRightMorphism W V, productContextRight_isRestriction W V⟩
+  le_meet := by
+    intro X W V hXW hXV
+    rcases hXW with ⟨f, hf⟩
+    rcases hXV with ⟨g, hg⟩
+    exact ⟨productContextLiftMorphism f g, productContextLift_isRestriction hf hg⟩
+
 /--
 II.命題4.2: readable equivalence before quotienting.
 
@@ -173,6 +334,123 @@ structure QuotientFiniteMeetPosetCategory {U : AtomCarrier.{u}}
     ∀ {W V : ArchCtx A}, C.le W V -> le (Quotient.mk (readableSetoid C) W)
       (Quotient.mk (readableSetoid C) V)
 
+/-- II.命題4.2: readable order descends to readable-equivalence quotients. -/
+def quotientLe {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) :
+    QuotientArchCtx C -> QuotientArchCtx C -> Prop :=
+  Quotient.lift₂ (fun W V : ArchCtx A => C.le W V) (by
+    intro W V W' V' hW hV
+    apply propext
+    constructor
+    · intro h
+      exact C.trans (C.trans hW.2 h) hV.1
+    · intro h
+      exact C.trans (C.trans hW.1 h) hV.2)
+
+/--
+II.命題4.2: quotient order is independent of readable-equivalent
+representatives.
+-/
+theorem quotientLe_wellDefined {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) {W W' V V' : ArchCtx A}
+    (hW : ReadableEquivalent C W W') (hV : ReadableEquivalent C V V') :
+    quotientLe C (Quotient.mk (readableSetoid C) W)
+      (Quotient.mk (readableSetoid C) V) ->
+      quotientLe C (Quotient.mk (readableSetoid C) W')
+        (Quotient.mk (readableSetoid C) V') := by
+  intro h
+  exact C.trans (C.trans hW.2 h) hV.1
+
+/-- II.命題4.2: finite meet descends to readable-equivalence quotients. -/
+def quotientMeet {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} (M : ContextFiniteMeet C) :
+    QuotientArchCtx C -> QuotientArchCtx C -> QuotientArchCtx C :=
+  Quotient.lift₂
+    (fun W V : ArchCtx A => Quotient.mk (readableSetoid C) (M.meet W V)) (by
+    intro W V W' V' hW hV
+    exact Quotient.sound ⟨
+      M.le_meet
+        (C.trans (M.meet_le_left W V) hW.1)
+        (C.trans (M.meet_le_right W V) hV.1),
+      M.le_meet
+        (C.trans (M.meet_le_left W' V') hW.2)
+        (C.trans (M.meet_le_right W' V') hV.2)⟩)
+
+/--
+II.命題4.2: quotient meet is independent of readable-equivalent
+representatives.
+-/
+theorem quotientMeet_wellDefined {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} (M : ContextFiniteMeet C)
+    {W W' V V' : ArchCtx A}
+    (hW : ReadableEquivalent C W W') (hV : ReadableEquivalent C V V') :
+    ReadableEquivalent C (M.meet W V) (M.meet W' V') :=
+  ⟨
+    M.le_meet
+      (C.trans (M.meet_le_left W V) hW.1)
+      (C.trans (M.meet_le_right W V) hV.1),
+    M.le_meet
+      (C.trans (M.meet_le_left W' V') hW.2)
+      (C.trans (M.meet_le_right W' V') hV.2)⟩
+
+/--
+II.命題4.2: build the readable-equivalence quotient finite-meet poset from the
+preorder and finite-meet data.
+-/
+def quotientFiniteMeetPosetCategoryOf {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) (M : ContextFiniteMeet C) :
+    QuotientFiniteMeetPosetCategory C where
+  le := quotientLe C
+  refl := by
+    intro W
+    refine Quotient.inductionOn W ?_
+    intro W
+    exact C.refl W
+  trans := by
+    intro W V X
+    refine Quotient.inductionOn W ?_ V X
+    intro W V X
+    refine Quotient.inductionOn V ?_ X
+    intro V X
+    refine Quotient.inductionOn X ?_
+    intro X hWV hVX
+    exact C.trans hWV hVX
+  antisymm := by
+    intro W V
+    refine Quotient.inductionOn W ?_ V
+    intro W V
+    refine Quotient.inductionOn V ?_
+    intro V hWV hVW
+    exact Quotient.sound ⟨hWV, hVW⟩
+  meet := quotientMeet M
+  meet_le_left := by
+    intro W V
+    refine Quotient.inductionOn W ?_ V
+    intro W V
+    refine Quotient.inductionOn V ?_
+    intro V
+    exact M.meet_le_left W V
+  meet_le_right := by
+    intro W V
+    refine Quotient.inductionOn W ?_ V
+    intro W V
+    refine Quotient.inductionOn V ?_
+    intro V
+    exact M.meet_le_right W V
+  le_meet := by
+    intro X W V
+    refine Quotient.inductionOn X ?_ W V
+    intro X W V
+    refine Quotient.inductionOn W ?_ V
+    intro W V
+    refine Quotient.inductionOn V ?_
+    intro V hXW hXV
+    exact M.le_meet hXW hXV
+  raw_le_to_quotient := by
+    intro W V h
+    exact h
+
 /-- II.命題4.2: build the finite-meet preorder category from explicit assumptions. -/
 def finiteMeetPreorderCategoryOf {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
@@ -225,6 +503,17 @@ theorem minimalContextQuotientFiniteMeetPosetCategory {U : AtomCarrier.{u}}
     (Q : QuotientFiniteMeetPosetCategory C) :
     ∃ site : QuotientFiniteMeetPosetCategory C, site = Q :=
   ⟨Q, rfl⟩
+
+/--
+II.命題4.2: the readable-equivalence quotient of a finite-meet context
+preorder carries the quotient finite-meet poset structure.
+-/
+theorem minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) (M : ContextFiniteMeet C) :
+    ∃ site : QuotientFiniteMeetPosetCategory C,
+      site = quotientFiniteMeetPosetCategoryOf C M :=
+  ⟨quotientFiniteMeetPosetCategoryOf C M, rfl⟩
 
 /--
 II.仮定4.3: pullback / overlap package for context covers.

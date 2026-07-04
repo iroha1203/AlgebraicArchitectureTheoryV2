@@ -92,6 +92,15 @@ theorem finiteSeedWitnessClosureUAdequate :
       FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily :=
   FiniteModel.siteSeedWitnessClosureCover_uAdequate
 
+theorem finiteRestrictionQuotientFiniteMeetPoset :
+    ∃ site : Site.QuotientFiniteMeetPosetCategory
+        (Site.contextMorphismPreorderCategory FiniteModel.object),
+      site =
+        Site.quotientFiniteMeetPosetCategoryOf
+          (Site.contextMorphismPreorderCategory FiniteModel.object)
+          (Site.productContextFiniteMeet (A := FiniteModel.object)) :=
+  FiniteModel.siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -153,5 +162,11 @@ info: 'AAT.AG.AxiomAudit.finiteSeedWitnessClosureUAdequate' depends on axioms: [
 -/
 #guard_msgs in
 #print axioms finiteSeedWitnessClosureUAdequate
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteRestrictionQuotientFiniteMeetPoset' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteRestrictionQuotientFiniteMeetPoset
 
 end AAT.AG.AxiomAudit
