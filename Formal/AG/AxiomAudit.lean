@@ -108,6 +108,25 @@ theorem finiteContextMorphismRolesConcrete :
           (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsBaseChange :=
   FiniteModel.siteContextIdentityMorphism_rolesConcrete
 
+theorem finiteTwoPatchCoverUAdequate :
+    Site.UAdequateCover FiniteModel.twoPatchAdequacyRequirements
+      FiniteModel.twoPatchCover :=
+  FiniteModel.twoPatchCover_uAdequate
+
+theorem finiteTwoPatchUnitDescent :
+    Site.AATDescent FiniteModel.twoPatchSite FiniteModel.twoPatchUnitPresheaf
+      (CategoryTheory.Sieve.generate FiniteModel.twoPatchCover.presieve) :=
+  FiniteModel.twoPatchUnit_descent
+
+theorem finiteTwoPatchSheafificationGap :
+    Site.AATSheafificationGap FiniteModel.twoPatchSheafificationComparison :=
+  FiniteModel.twoPatchSheafificationGap
+
+theorem finiteTwoPatchCechDifferentialNonzero :
+    FiniteModel.twoPatchCechComplex.differential 0
+      FiniteModel.twoPatchSeparatedCochain PUnit.unit = true :=
+  FiniteModel.twoPatchSeparatedCochain_differential_nonzero
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -200,6 +219,30 @@ info: 'AAT.AG.AxiomAudit.finiteContextMorphismRolesConcrete' depends on axioms: 
 -/
 #guard_msgs in
 #print axioms finiteContextMorphismRolesConcrete
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteTwoPatchCoverUAdequate' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteTwoPatchCoverUAdequate
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteTwoPatchUnitDescent' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteTwoPatchUnitDescent
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteTwoPatchSheafificationGap' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteTwoPatchSheafificationGap
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteTwoPatchCechDifferentialNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteTwoPatchCechDifferentialNonzero
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,

@@ -3,10 +3,12 @@ import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
 import Formal.AG.Site.FinitePoset
 import Formal.AG.Site.SheafCategory
+import Mathlib.Data.Fintype.Basic
 
 namespace AAT.AG
 
 open CategoryTheory
+open Opposite
 
 namespace FiniteModel
 
@@ -896,6 +898,604 @@ theorem finitePosetRegime_cech_vanishes_above_dimension {n : Nat} (hn : 0 < n) :
   Site.finitePosetCechCohomology_vanishes_above_nerveDimension
     finitePosetCechComplex (finitePosetCechCoboundaryRelation n)
     finitePosetRegime_nerveDimension_zero hn
+
+/-!
+## PRD-R II-5: two-patch finite site firing example
+
+The singleton site above remains as the small compatibility fixture used by
+earlier examples.  The following selected finite regime has two patches, an
+explicit overlap context, nonempty degree-one nerve data, a concrete descent
+success, a sheafification-gap witness, and a nonzero degree-zero Čech
+differential calculation.
+-/
+
+/-- PRD-R II-5: selected contexts for the two-patch finite site. -/
+inductive TwoPatchContextIndex where
+  | overlap
+  | left
+  | right
+  | base
+  deriving DecidableEq
+
+namespace TwoPatchContextIndex
+
+/-- PRD-R II-5: explicit finite enumeration of the selected two-patch contexts. -/
+def all : List TwoPatchContextIndex :=
+  [overlap, left, right, base]
+
+/-- PRD-R II-5: the enumeration covers every selected two-patch context. -/
+theorem mem_all (i : TwoPatchContextIndex) : i ∈ all := by
+  cases i <;> simp [all]
+
+end TwoPatchContextIndex
+
+instance : Fintype TwoPatchContextIndex where
+  elems := {TwoPatchContextIndex.overlap, TwoPatchContextIndex.left,
+    TwoPatchContextIndex.right, TwoPatchContextIndex.base}
+  complete := by
+    intro i
+    cases i <;> simp
+
+/--
+PRD-R II-5: selected finite poset order.
+
+`overlap` refines both patches, each patch refines `base`, and `base` is the
+selected top context.
+-/
+def twoPatchContextIndexLe : TwoPatchContextIndex -> TwoPatchContextIndex -> Prop
+  | TwoPatchContextIndex.overlap, _ => True
+  | TwoPatchContextIndex.left, TwoPatchContextIndex.left => True
+  | TwoPatchContextIndex.left, TwoPatchContextIndex.base => True
+  | TwoPatchContextIndex.right, TwoPatchContextIndex.right => True
+  | TwoPatchContextIndex.right, TwoPatchContextIndex.base => True
+  | TwoPatchContextIndex.base, TwoPatchContextIndex.base => True
+  | _, _ => False
+
+/-- PRD-R II-5: reflexivity of the selected two-patch context order. -/
+theorem twoPatchContextIndexLe_refl (i : TwoPatchContextIndex) :
+    twoPatchContextIndexLe i i := by
+  cases i <;> simp [twoPatchContextIndexLe]
+
+/-- PRD-R II-5: transitivity of the selected two-patch context order. -/
+theorem twoPatchContextIndexLe_trans {i j k : TwoPatchContextIndex}
+    (hij : twoPatchContextIndexLe i j) (hjk : twoPatchContextIndexLe j k) :
+    twoPatchContextIndexLe i k := by
+  cases i <;> cases j <;> cases k <;>
+    simp [twoPatchContextIndexLe] at hij hjk ⊢
+
+/-- PRD-R II-5: antisymmetry of the selected two-patch context order. -/
+theorem twoPatchContextIndexLe_antisymm {i j : TwoPatchContextIndex}
+    (hij : twoPatchContextIndexLe i j) (hji : twoPatchContextIndexLe j i) :
+    i = j := by
+  cases i <;> cases j <;> simp [twoPatchContextIndexLe] at hij hji ⊢
+
+/-- PRD-R II-5: selected meet in the two-patch finite context poset. -/
+def twoPatchContextMeet : TwoPatchContextIndex -> TwoPatchContextIndex ->
+    TwoPatchContextIndex
+  | TwoPatchContextIndex.base, j => j
+  | i, TwoPatchContextIndex.base => i
+  | TwoPatchContextIndex.left, TwoPatchContextIndex.left => TwoPatchContextIndex.left
+  | TwoPatchContextIndex.right, TwoPatchContextIndex.right => TwoPatchContextIndex.right
+  | _, _ => TwoPatchContextIndex.overlap
+
+/-- PRD-R II-5: the selected meet maps to its left factor. -/
+theorem twoPatchContextMeet_le_left (i j : TwoPatchContextIndex) :
+    twoPatchContextIndexLe (twoPatchContextMeet i j) i := by
+  cases i <;> cases j <;> simp [twoPatchContextMeet, twoPatchContextIndexLe]
+
+/-- PRD-R II-5: the selected meet maps to its right factor. -/
+theorem twoPatchContextMeet_le_right (i j : TwoPatchContextIndex) :
+    twoPatchContextIndexLe (twoPatchContextMeet i j) j := by
+  cases i <;> cases j <;> simp [twoPatchContextMeet, twoPatchContextIndexLe]
+
+/-- PRD-R II-5: universal property of the selected two-patch meet. -/
+theorem twoPatchContext_le_meet {i j k : TwoPatchContextIndex}
+    (hik : twoPatchContextIndexLe k i) (hjk : twoPatchContextIndexLe k j) :
+    twoPatchContextIndexLe k (twoPatchContextMeet i j) := by
+  cases i <;> cases j <;> cases k <;>
+    simp [twoPatchContextMeet, twoPatchContextIndexLe] at hik hjk ⊢
+
+/-- PRD-R II-5: concrete context over the finite object indexed by the two-patch poset. -/
+def twoPatchContext (i : TwoPatchContextIndex) : Site.ArchCtx object where
+  minimal := {
+    Support := PUnit
+    Axis := PUnit
+    Observable := PUnit
+    supportReads := fun _ _ => True
+    supportReads_objectFamily := fun _h => trivial
+    axisReads := fun _ => True
+    observableReads := fun _ => True
+  }
+  Extension := TwoPatchContextIndex
+  extension := i
+
+/-- PRD-R II-5: readable morphism between selected two-patch contexts. -/
+def twoPatchContextMorphism (i j : TwoPatchContextIndex) :
+    Site.ContextMorphism (twoPatchContext i) (twoPatchContext j) where
+  supportMap := id
+  axisMap := id
+  observableRestrict := id
+
+/-- PRD-R II-5: selected two-patch morphisms satisfy the concrete restriction role. -/
+theorem twoPatchContextMorphism_isRestriction (i j : TwoPatchContextIndex) :
+    (twoPatchContextMorphism i j).IsRestriction :=
+  ⟨fun h => h, fun h => h, fun h => h,
+    fun h => (twoPatchContext j).supportReads_objectFamily h⟩
+
+/-- PRD-R II-5: canonical restriction preorder used by the two-patch selected site. -/
+noncomputable abbrev twoPatchContextPreorder : Site.ContextPreorderCategory object :=
+  Site.contextMorphismPreorderCategory object
+
+/-- PRD-R II-5: selected order maps into the canonical restriction preorder. -/
+theorem twoPatchContextLe_sound {i j : TwoPatchContextIndex}
+    (_h : twoPatchContextIndexLe i j) :
+    twoPatchContextPreorder.le (twoPatchContext i) (twoPatchContext j) :=
+  ⟨twoPatchContextMorphism i j, twoPatchContextMorphism_isRestriction i j⟩
+
+private theorem twoPatchContext_le_any (i j : TwoPatchContextIndex) :
+    twoPatchContextPreorder.le (twoPatchContext i) (twoPatchContext j) :=
+  ⟨twoPatchContextMorphism i j, twoPatchContextMorphism_isRestriction i j⟩
+
+/-- PRD-R II-5: overlap package inherited from the canonical product meet. -/
+noncomputable def twoPatchOverlap :
+    Site.ContextOverlapPullback twoPatchContextPreorder :=
+  Site.meetOverlapPullback twoPatchContextPreorder Site.productContextFiniteMeet
+
+/-- PRD-R II-5: selected cover index with two patches. -/
+inductive TwoPatchCoverIndex where
+  | left
+  | right
+  deriving DecidableEq
+
+namespace TwoPatchCoverIndex
+
+/-- PRD-R II-5: explicit finite enumeration of the selected two-patch cover. -/
+def all : List TwoPatchCoverIndex :=
+  [left, right]
+
+/-- PRD-R II-5: the enumeration covers both selected patches. -/
+theorem mem_all (i : TwoPatchCoverIndex) : i ∈ all := by
+  cases i <;> simp [all]
+
+end TwoPatchCoverIndex
+
+instance : Fintype TwoPatchCoverIndex where
+  elems := {TwoPatchCoverIndex.left, TwoPatchCoverIndex.right}
+  complete := by
+    intro i
+    cases i <;> simp
+
+/-- PRD-R II-5: map cover indices to their selected context indices. -/
+def twoPatchCoverContextIndex : TwoPatchCoverIndex -> TwoPatchContextIndex
+  | TwoPatchCoverIndex.left => TwoPatchContextIndex.left
+  | TwoPatchCoverIndex.right => TwoPatchContextIndex.right
+
+/-- PRD-R II-5: selected context carried by each cover patch. -/
+def twoPatchCoverPatch (i : TwoPatchCoverIndex) : Site.ArchCtx object :=
+  twoPatchContext (twoPatchCoverContextIndex i)
+
+/-- PRD-R II-5: the left patch visibly reads `componentA`. -/
+def twoPatchSupportVisibleOn (W : Site.ArchCtx object) (atom : carrier.Atom) : Prop :=
+  (W = twoPatchContext TwoPatchContextIndex.left ∧
+      atom = FiniteAtom.componentA) ∨
+    (W = twoPatchContext TwoPatchContextIndex.right ∧
+      atom = FiniteAtom.componentB) ∨
+      (W = twoPatchContext TwoPatchContextIndex.overlap ∧
+        atom = FiniteAtom.dependsAB)
+
+/-- PRD-R II-5: selected requirements for the two-patch cover. -/
+def twoPatchCoverageRequirements :
+    Site.CoverageRequirements object lawUniverse signature where
+  selectedReading := lawUniverse.selectedReading
+  requiredSupport := fun _ atom =>
+    atom = FiniteAtom.componentA ∨ atom = FiniteAtom.componentB
+  requiredWitness := fun _ _ => True
+  requiredAxis := fun _ _ => True
+  supportVisibleOn := twoPatchSupportVisibleOn
+  witnessVisibleOn := fun _ _ => True
+  axisReadableOn := fun W _ =>
+    W = twoPatchContext TwoPatchContextIndex.left ∨
+      W = twoPatchContext TwoPatchContextIndex.right
+  boundaryVisibleOn := fun _ _ => True
+
+/-- PRD-R II-5: the two-patch AAT site over the finite model. -/
+noncomputable def twoPatchSite : Site.AATSite object where
+  contextPreorder := twoPatchContextPreorder
+  lawUniverse := lawUniverse
+  signature := signature
+  requirements := twoPatchCoverageRequirements
+  overlap := twoPatchOverlap
+
+/-- PRD-R II-5: base object of the two-patch finite site. -/
+def twoPatchBase : twoPatchSite.category :=
+  Site.ContextCategoryObject.of twoPatchContextPreorder
+    (twoPatchContext TwoPatchContextIndex.base)
+
+/-- PRD-R II-5: admissible cover with two selected patches. -/
+noncomputable def twoPatchCover :
+    Site.AATCoverageFamily twoPatchCoverageRequirements twoPatchOverlap
+      twoPatchBase where
+  Index := TwoPatchCoverIndex
+  patch := twoPatchCoverPatch
+  inclusion := by
+    intro i
+    cases i
+    · exact twoPatchContext_le_any TwoPatchContextIndex.left TwoPatchContextIndex.base
+    · exact twoPatchContext_le_any TwoPatchContextIndex.right TwoPatchContextIndex.base
+  admissible := {
+    atomSupportCoverage := by
+      intro atom hreq
+      rcases hreq with rfl | rfl
+      · exact ⟨TwoPatchCoverIndex.left, by
+          simp [twoPatchCoverPatch, twoPatchCoverContextIndex,
+            twoPatchCoverageRequirements, twoPatchSupportVisibleOn]⟩
+      · exact ⟨TwoPatchCoverIndex.right, by
+          simp [twoPatchCoverPatch, twoPatchCoverContextIndex,
+            twoPatchCoverageRequirements, twoPatchSupportVisibleOn]⟩
+    lawWitnessCoverage := by
+      intro _witness _hreq
+      exact Or.inl ⟨TwoPatchCoverIndex.left, trivial⟩
+    signatureAxisCoverage := by
+      intro _axis _hreq
+      exact ⟨TwoPatchCoverIndex.left, by
+        simp [twoPatchCoverPatch, twoPatchCoverContextIndex,
+          twoPatchCoverageRequirements]⟩
+    boundaryCoverage := fun _i _j => trivial
+    nonGeneration := by
+      intro _i _support _atom _h
+      exact trivial
+  }
+
+/-- PRD-R II-5: the generated two-patch cover is a topology cover. -/
+theorem twoPatchCover_topologyCover :
+    Sieve.generate twoPatchCover.presieve ∈ twoPatchSite.topology twoPatchBase :=
+  Site.AATGrothendieckTopology.generate_mem twoPatchCover
+
+/-- PRD-R II-5: selected adequacy requirements for the two-patch site. -/
+def twoPatchAdequacyRequirements :
+    Site.UAdequacyRequirements twoPatchContextPreorder
+      twoPatchCoverageRequirements where
+  selectedWitnessIdeal := fun _ _ => True
+  witnessIdealPreservedBy := fun _h _hideal => trivial
+
+/-- PRD-R II-5: direct `U`-adequacy for the two-patch finite cover. -/
+theorem twoPatchCover_uAdequate :
+    Site.UAdequateCover twoPatchAdequacyRequirements twoPatchCover where
+  topologyCover := twoPatchCover_topologyCover
+  requiredSupportCovered := twoPatchCover.admissible.atomSupportCoverage
+  requiredWitnessesVisible := twoPatchCover.admissible.lawWitnessCoverage
+  requiredAxesReadable := twoPatchCover.admissible.signatureAxisCoverage
+  boundaryWitnessesVisible := twoPatchCover.admissible.boundaryCoverage
+  restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
+
+/-- PRD-R II-5: the selected overlap context maps to the left patch. -/
+theorem twoPatch_overlap_le_left :
+    twoPatchContextPreorder.le
+      (twoPatchContext TwoPatchContextIndex.overlap)
+      (twoPatchContext TwoPatchContextIndex.left) :=
+  twoPatchContext_le_any TwoPatchContextIndex.overlap TwoPatchContextIndex.left
+
+/-- PRD-R II-5: the selected overlap context maps to the right patch. -/
+theorem twoPatch_overlap_le_right :
+    twoPatchContextPreorder.le
+      (twoPatchContext TwoPatchContextIndex.overlap)
+      (twoPatchContext TwoPatchContextIndex.right) :=
+  twoPatchContext_le_any TwoPatchContextIndex.overlap TwoPatchContextIndex.right
+
+/-- PRD-R II-5: the selected overlap visibly reads the boundary atom. -/
+theorem twoPatch_overlap_reads_boundary :
+    twoPatchSupportVisibleOn
+      (twoPatchContext TwoPatchContextIndex.overlap) FiniteAtom.dependsAB := by
+  simp [twoPatchSupportVisibleOn]
+
+/-- PRD-R II-5: coefficient presheaf with nontrivial Boolean sections. -/
+def twoPatchBoolCoefficient : Site.AATPresheaf twoPatchSite where
+  obj _ := Bool
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- PRD-R II-5: unit-valued sheaf used for the concrete descent success. -/
+def twoPatchUnitPresheaf : Site.AATPresheaf twoPatchSite where
+  obj _ := PUnit
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- PRD-R II-5: the unit presheaf satisfies the AAT sheaf condition. -/
+theorem twoPatchUnit_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchUnitPresheaf := by
+  intro _base _cover _hcover family _compatible
+  refine ⟨PUnit.unit, ?_, ?_⟩
+  · intro _Y f hf
+    cases family f hf
+    rfl
+  · intro y _hy
+    cases y
+    rfl
+
+/-- PRD-R II-5: packaged unit sheaf on the two-patch finite site. -/
+def twoPatchUnitSheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchUnitPresheaf
+  isSheaf := twoPatchUnit_isSheaf
+
+/-- PRD-R II-5: the two-patch cover satisfies descent for the unit sheaf. -/
+theorem twoPatchUnit_descent :
+    Site.AATDescent twoPatchSite twoPatchUnitPresheaf
+      (Sieve.generate twoPatchCover.presieve) :=
+  Site.AATSheafCondition.descent twoPatchUnit_isSheaf
+    (Sieve.generate twoPatchCover.presieve) twoPatchCover_topologyCover
+
+/-- PRD-R II-5: canonical comparison from raw Boolean data to the unit sheaf. -/
+def twoPatchBoolToUnit :
+    twoPatchBoolCoefficient ⟶ twoPatchUnitPresheaf where
+  app _ _ := PUnit.unit
+  naturality _ _ _ := rfl
+
+/--
+PRD-R II-5: selected sheafification comparison whose canonical map forgets
+the Boolean distinction.
+-/
+def twoPatchSheafificationComparison :
+    Site.AATSheafificationComparison twoPatchSite where
+  raw := twoPatchBoolCoefficient
+  plus := twoPatchUnitSheaf
+  canonical := twoPatchBoolToUnit
+
+/-- PRD-R II-5: the selected comparison has a concrete sheafification gap. -/
+theorem twoPatchSheafificationGap :
+    Site.AATSheafificationGap twoPatchSheafificationComparison := by
+  refine ⟨twoPatchBase, ?_⟩
+  intro hbij
+  have htf : true = false := hbij.1 (by rfl)
+  cases htf
+
+/-- PRD-R II-5: selected nerve simplices for the two-patch cover. -/
+def twoPatchNerveSimplex : Nat -> Type
+  | 0 => TwoPatchCoverIndex
+  | 1 => PUnit
+  | _ + 2 => Empty
+
+/-- PRD-R II-5: selected cover indices of the two-patch nerve. -/
+def twoPatchSimplexIndices :
+    ∀ n : Nat, twoPatchNerveSimplex n -> Fin (n + 1) -> TwoPatchCoverIndex
+  | 0, simplex, _ => simplex
+  | 1, _simplex, k => if k.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right
+  | _ + 2, simplex, _ => Empty.elim simplex
+
+/-- PRD-R II-5: selected overlap context of each two-patch nerve simplex. -/
+def twoPatchSimplexOverlap :
+    ∀ n : Nat, twoPatchNerveSimplex n -> Site.ArchCtx object
+  | 0, simplex => twoPatchCoverPatch simplex
+  | 1, _simplex => twoPatchContext TwoPatchContextIndex.overlap
+  | _ + 2, simplex => Empty.elim simplex
+
+/-- PRD-R II-5: finite-poset regime for the non-singleton two-patch site. -/
+noncomputable def twoPatchFinitePosetRegime :
+    Site.FinitePosetAATSiteRegime twoPatchSite where
+  ContextIndex := TwoPatchContextIndex
+  finiteContextIndex := inferInstance
+  context := twoPatchContext
+  contextLe := twoPatchContextIndexLe
+  contextLe_refl := twoPatchContextIndexLe_refl
+  contextLe_trans := fun hij hjk => twoPatchContextIndexLe_trans hij hjk
+  contextLe_antisymm := fun hij hji => twoPatchContextIndexLe_antisymm hij hji
+  contextLe_sound := fun h => twoPatchContextLe_sound h
+  contextMeet := twoPatchContextMeet
+  contextMeet_le_left := twoPatchContextMeet_le_left
+  contextMeet_le_right := twoPatchContextMeet_le_right
+  context_le_meet := fun hik hjk => twoPatchContext_le_meet hik hjk
+  base := twoPatchBase
+  cover := twoPatchCover
+  finiteCoverIndex := by
+    change Finite TwoPatchCoverIndex
+    infer_instance
+  nerveSimplex := twoPatchNerveSimplex
+  finiteNerveSimplex := by
+    intro n
+    cases n with
+    | zero =>
+        change Finite TwoPatchCoverIndex
+        infer_instance
+    | succ n =>
+        cases n with
+        | zero =>
+            change Finite PUnit
+            infer_instance
+        | succ _ =>
+            change Finite Empty
+            infer_instance
+  simplexIndices := twoPatchSimplexIndices
+  simplexOverlap := twoPatchSimplexOverlap
+  simplexOverlap_le_patch := by
+    intro n simplex k
+    cases n with
+    | zero =>
+        cases simplex
+        · exact twoPatchContext_le_any TwoPatchContextIndex.left TwoPatchContextIndex.left
+        · exact twoPatchContext_le_any TwoPatchContextIndex.right TwoPatchContextIndex.right
+    | succ n =>
+        cases n with
+        | zero =>
+            change twoPatchContextPreorder.le
+              (twoPatchContext TwoPatchContextIndex.overlap)
+              (twoPatchCoverPatch (twoPatchSimplexIndices 1 simplex k))
+            unfold twoPatchCoverPatch
+            exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+        | succ _ =>
+            exact Empty.elim simplex
+  adequacyRequirements := twoPatchAdequacyRequirements
+  coverAdequate := twoPatchCover_uAdequate
+  coefficient := twoPatchBoolCoefficient
+
+/-- PRD-R II-5: the two-patch selected context poset has four finite contexts. -/
+theorem twoPatchFinitePosetRegime_context_finite :
+    Finite twoPatchFinitePosetRegime.ContextIndex :=
+  twoPatchFinitePosetRegime.context_index_finite
+
+/-- PRD-R II-5: the two-patch selected cover has two finite patches. -/
+theorem twoPatchFinitePosetRegime_cover_finite :
+    Finite twoPatchFinitePosetRegime.cover.Index :=
+  twoPatchFinitePosetRegime.cover_index_finite
+
+/-- PRD-R II-5: the two-patch nerve has dimension one. -/
+theorem twoPatchFinitePosetRegime_nerveDimension_one :
+    Site.FinitePosetNerveDimension twoPatchFinitePosetRegime 1 := by
+  intro n hn
+  cases n with
+  | zero =>
+      exact False.elim ((Nat.not_succ_le_zero 1) hn)
+  | succ n =>
+      cases n with
+      | zero =>
+          exact False.elim ((Nat.lt_irrefl 1) hn)
+      | succ _ =>
+          change IsEmpty Empty
+          infer_instance
+
+/-- PRD-R II-5: selected additive data for the Boolean two-patch Čech surface. -/
+def twoPatchCechAdditiveData :
+    Site.FinitePosetCechAdditiveData twoPatchFinitePosetRegime where
+  zeroSection := by
+    intro _n _simplex
+    change Bool
+    exact false
+  combineFaces := by
+    intro n _simplex faces
+    cases n with
+    | zero =>
+        change Bool
+        exact (show Bool from faces ⟨0, by decide⟩) !=
+          (show Bool from faces ⟨1, by decide⟩)
+    | succ _ =>
+        change Bool
+        exact false
+  combineFaces_zero := by
+    intro n simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ =>
+            exact Empty.elim simplex
+
+/-- PRD-R II-5: selected face maps for the two-patch nerve. -/
+def twoPatchCechFaceData :
+    Site.FinitePosetCechFaceData twoPatchFinitePosetRegime where
+  face := by
+    intro n simplex i
+    cases n with
+    | zero =>
+        exact if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  faceOverlap_le := by
+    intro n simplex i
+    cases n with
+    | zero =>
+        change twoPatchContextPreorder.le
+          (twoPatchContext TwoPatchContextIndex.overlap)
+          (twoPatchSimplexOverlap 0
+            (if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right))
+        exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+
+/-- PRD-R II-5: degree-zero Boolean Čech differential for the two-patch cover. -/
+def twoPatchCechDifferential :
+    ∀ n : Nat,
+      Site.FinitePosetCechCochain twoPatchFinitePosetRegime n ->
+        Site.FinitePosetCechCochain twoPatchFinitePosetRegime (n + 1)
+  | 0, cochain, _simplex =>
+      (show Bool from cochain TwoPatchCoverIndex.left) !=
+        (show Bool from cochain TwoPatchCoverIndex.right)
+  | _ + 1, _cochain, simplex => Empty.elim simplex
+
+/-- PRD-R II-5: selected Boolean Čech complex on the two-patch finite site. -/
+def twoPatchCechComplex :
+    Site.FinitePosetCechComplex twoPatchFinitePosetRegime where
+  additive := twoPatchCechAdditiveData
+  faces := twoPatchCechFaceData
+  differential := twoPatchCechDifferential
+  differential_eq_restrictions := by
+    intro n cochain simplex
+    cases n with
+    | zero =>
+        cases simplex
+        change
+          ((show Bool from cochain TwoPatchCoverIndex.left) !=
+              (show Bool from cochain TwoPatchCoverIndex.right)) =
+            ((show Bool from cochain TwoPatchCoverIndex.left) !=
+              (show Bool from cochain TwoPatchCoverIndex.right))
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_zero := by
+    intro n
+    funext simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_comp_zero := by
+    intro n _cochain
+    funext simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+
+/--
+PRD-R II-5: universal selected image-killing quotient relation for the
+two-patch cohomology surface.
+
+The nonzero calculation below is the degree-zero differential value.  This
+relation is the selected quotient surface required by the Type-valued finite
+Čech API: it kills all differential images rather than claiming an equality
+quotient computation.
+-/
+def twoPatchCechCoboundaryRelation (n : Nat) :
+    Site.FinitePosetCechCoboundaryRelation twoPatchCechComplex n where
+  related := fun _left _right => True
+  refl := fun _ => trivial
+  symm := fun _h => trivial
+  trans := fun _hleft _hright => trivial
+  kills_image := fun _himage => trivial
+
+/-- PRD-R II-5: positive degrees above one vanish for the selected two-patch nerve. -/
+theorem twoPatchFinitePosetRegime_cech_vanishes_above_one {n : Nat} (hn : 1 < n) :
+    Site.FinitePosetCechCohomologyVanishes twoPatchCechComplex n
+      (twoPatchCechCoboundaryRelation n) :=
+  Site.finitePosetCechCohomology_vanishes_above_nerveDimension
+    twoPatchCechComplex (twoPatchCechCoboundaryRelation n)
+    twoPatchFinitePosetRegime_nerveDimension_one hn
+
+/-- PRD-R II-5: degree-zero cochain separating the two selected patches. -/
+def twoPatchSeparatedCochain :
+    Site.FinitePosetCechCochain twoPatchFinitePosetRegime 0
+  | TwoPatchCoverIndex.left => by
+      change Bool
+      exact true
+  | TwoPatchCoverIndex.right => by
+      change Bool
+      exact false
+
+/-- PRD-R II-5: the separated cochain has nonzero degree-one Čech differential. -/
+theorem twoPatchSeparatedCochain_differential_nonzero :
+    twoPatchCechComplex.differential 0 twoPatchSeparatedCochain PUnit.unit = true :=
+  rfl
 
 end FiniteModel
 
