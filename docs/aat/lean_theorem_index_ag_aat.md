@@ -8,6 +8,16 @@ downstream 索引や研究ループ索引から分離して管理する。分割
 `proof_obligations_ag_aat.md` は代数幾何 AAT 側の proof obligation 詳細台帳として扱い、
 この文書は同じ範囲の実装済み Lean API を確認する詳細索引として扱う。
 
+PRD-R R0 の査読耐性棚卸し以降、この索引の theorem 系 status は
+[`lean_ag_peer_review_inventory.md`](lean_ag_peer_review_inventory.md) の
+`proved` / `packaged (assumption-relative)` / `statement-only` 三分化語彙で正規化して読む。
+既存の限定句は残し、`proved accessor` や explicit assumption package 由来の theorem は
+査読上の無条件 `proved` ではなく `packaged (assumption-relative)` に分類する。
+`statement-only candidate` は `statement-only` として数え、`defined only` と
+future proof obligation / explicit non-goal は三分化対象外である。
+個別行の R0 再分類はこの索引本文を重複更新せず、同 inventory の review layer 表と
+old PRD AC 再判定表を row-level overlay として読む。
+
 ## AG版AAT Lean形式化 PRD-1 bootstrap
 
 File: `Formal/AG.lean`, `Formal/AG/Atom/Atom.lean`, `Formal/AG/Atom/Axioms.lean`,
