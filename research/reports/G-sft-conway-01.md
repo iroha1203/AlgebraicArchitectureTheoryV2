@@ -854,3 +854,64 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。`SupportForkFamilySubcover` と `OwnerUniformSubfamilyDescentFailure` は axiom-free。
   reported finite witness package は `propext` のみに依存し、`sorryAx`、`Classical.choice`、`Quot.sound` はない。
 - G4 score confirmation: base 45、evidence multiplier 2.0、penalty 0、final +90。
+
+## Cycle 17 — Owner-uniform family quotient receiver
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-family-quotient.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: `restricted-span`, `finite-quotient-shadow`, `quotient-style-receiver`,
+  `conway-obstruction`
+goal_delta: Cycle 15/16 の owner-uniform local/global gap を、selected finite quotient-style
+  receiver へ上げた。API singleton subfamily と DB singleton subfamily は同じ
+  owner-uniform family receiver 上で vanish するが、full restricted two-fork family は
+  explicit owner-uniform boundary generator が存在しないため nonzero class を持つ。
+project_value_delta: owner-uniform support witness を explicit boundary-generator provenance として記録し、
+  `AddSubgroup.closure` で boundary subgroup を生成する finite receiver を追加した。
+  これは support predicate の `if/top/bot` 化ではなく、Cycle 4 の generator provenance pattern を
+  Cycle 15/16 の family support に持ち上げる。
+rival_delta: 既存 rival は owner mismatch や local owner support の可視化はできる。この cycle の差分は、
+  local singleton zero と full-family nonzero を同一 `ZMod 2` finite receiver 上の theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformFamilyQuotient`、
+  `lake build FormalAGResearch`、full `lake build` が通過。
+  full build は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。true sheaf `H^1`、arbitrary-cover naturality、
+  functorial quotient は主張しない。
+open_questions: arbitrary cover naturality、non-selected refinement span selector、true quotient object、
+  true sheaf `H^1` は未固定。Issue #2962 の active threshold 2000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformFamilyQuotient.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformFamilyDefect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyDefect_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformFamilyBoundaryGenerator`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyBoundaryGenerator_nonempty_iff_support`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformFamilyBoundarySubgroup`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformFamilyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformFamilyNonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyBoundary_absorbs_defect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyBoundarySubgroup_le_bot_of_noSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyClass_nonzero_of_noSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyClass_vanishes_iff_support`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_ownerUniformFamilyClass_vanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_ownerUniformFamilyClass_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformFamilyQuotientPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: revise/accept mix。1審判は base 60 / final 120 を許容したが、3審判は
+  `true-quotient-object` label が強すぎることと Prop-wrapper risk を理由に base 55 / final 110 を推奨。
+  カードは `finite-quotient-shadow` / `quotient-style-receiver` に修正し、保守的に base 55 を採用。
+- G3 formalization quality: pass。`OwnerUniformFamilyBoundarySubgroup` は
+  support predicate の `if/top/bot` ではなく、explicit generator 由来の `AddSubgroup.closure` で定義した。
+  singleton zero / full-family nonzero は同じ receiver 上で証明している。
+- G3 axiom check: pass。`OwnerUniformFamilyBoundaryGenerator` と
+  `ownerUniformFamilyBoundaryGenerator_nonempty_iff_support` は axiom-free。
+  `ZMod` / `AddSubgroup.closure` を含む receiver theorem は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
+  `sorryAx` はない。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
