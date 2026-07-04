@@ -463,3 +463,56 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure 由来。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
+
+## Cycle 9 — Common-refinement constrained boundary
+
+candidate: `research/ideas/g-sft-conway-01-common-refinement-constrained-boundary.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: `common-refinement-boundary`, `finite-coefficient`, `support-receiver`,
+  `conway-obstruction`
+goal_delta: Cycle 8 の support constraint を `CommonRefinementSpan` vocabulary に移した。
+  common-refinement block が fork の communication block 全体を覆い one ownership block へ refine することと
+  `ForkHasSingleOwnerSupport` の同値、common-refinement constrained owner-potential receiver と support receiver の
+  同値、finite examples の zero/nonzero package を Lean theorem として固定した。
+project_value_delta: direct support predicate を common-refinement provenance 付きの selected data に移した。
+  新 obstruction ではないが、後続の comparison theorem / common-refinement exactness の足場になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、support condition が
+  common-refinement data で witness されるかを theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean`、
+  `lake build FormalAGResearch`、full `lake build` が通過。`#print axioms` は
+  `Classical.choice` / `propext` / `Quot.sound` に収まる。
+open_questions: common-refinement exactness beyond support equivalence、global compatibility constrained potential、
+  true quotient object、true sheaf `H^1`、comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayCommonRefinementBoundary.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementSupportsFork`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.toSingleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementSupportsFork.ofSingleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementSupportsFork_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloCommonRefinementOwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementOwnerPotential_vanishes_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommonRefinementOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.commonRefinementOwnerPotentialReceiver_iff_supportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notCommonRefinementOwnerPotentialVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_commonRefinementOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroCommonRefinementOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroCommonRefinementOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroCommonRefinementOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCommonRefinementOwnerPotentialPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。二審判とも base 55 / multiplier 2.0 / penalty 0 を推奨。
+  `CommonRefinementSupportsFork` は `ForkHasSingleOwnerSupport` の common-refinement provenance 化であり、
+  新 obstruction ではないため base 60 以上は過大。
+- G3 formalization quality: pass。`lake env lean`、`lake build FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `Classical.choice`, `propext`, `Quot.sound`; singleton common-refinement construction /
+  owner-potential quotient infrastructure 由来。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
