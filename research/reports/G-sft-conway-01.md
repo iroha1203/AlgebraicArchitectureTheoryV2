@@ -971,3 +971,59 @@ G2 / G3 audit summary:
   generic local-support-to-selector iff は `Classical.choice` のみに依存し、restricted finite witness package は
   `propext` のみに依存する。`sorryAx` はない。
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
+
+## Cycle 19 — Owner-uniform selector / quotient bridge
+
+candidate: `research/ideas/g-sft-conway-01-selector-quotient-bridge.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 60
+category: `selector-obstruction`, `finite-quotient-shadow`, `presentation-comparison`,
+  `conway-obstruction`
+goal_delta: Cycle 17 の owner-uniform family quotient-style receiver と Cycle 18 の
+  owner-uniform span-selector obstruction を、selected finite presentation comparison として接続した。
+  `OwnerUniformSpanSelector` の存在は `OwnerUniformFamilyClassVanishes` と同値であり、
+  `OwnerUniformSpanSelectorObstruction` は forkwise selectability と nonzero family class の conjunction
+  と同値である。
+project_value_delta: selector obstruction と quotient-style nonzero class を同じ finite boundary の二表示として
+  移動できるようにした。これは true quotient object、canonical selector、arbitrary-cover naturality、
+  true sheaf `H^1` ではなく、Cycle 17/18 の selected finite presentation bridge である。
+rival_delta: 既存 rival は local owner choices や mismatch を列挙できる。この cycle の差分は、
+  selected span-selector obstruction と quotient-style nonzero class が同じ finite obstruction を読んでいることを
+  theorem として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformSelectorQuotientBridge`、`lake build FormalAGResearch`、
+  full `lake build` が通過。full build は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の
+  linter warning のみ。
+open_questions: arbitrary cover naturality、true quotient object、true sheaf `H^1` は未固定。
+  Issue #2962 の active threshold 2000 にはこの cycle で到達見込み。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformSelectorQuotientBridge.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSpanSelector_nonempty_iff_familyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyClassVanishes_of_spanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSpanSelector_of_familyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyNonzeroClass_iff_noSpanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSpanSelectorObstruction_iff_forkwiseSelectable_and_nonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformFamilyNonzeroClass_of_spanSelectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSpanSelectorObstruction_of_forkwiseSelectable_nonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_spanSelectorObstruction_iff_familyClassNonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_spanSelectorObstruction_implies_familyClassNonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_familyClassNonzero_implies_spanSelectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_spanSelector_and_familyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformSelectorQuotientBridgePackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: candidate generation は closer / obstruction / unifier / wildcard の4観点が同じ bridge を推奨。
+  G2 A/B/C/D は全員 accept で base 30 / final 60 を推奨。既存 iff の比較に近いため、
+  保守的に base 30 / final +60 を採用。
+- G3 formalization quality: pass。selector existence と quotient-style class vanishing の exact bridge に限定し、
+  arbitrary cover naturality、true quotient object、true sheaf `H^1` へ overclaim していない。
+- G3 axiom check: pass。reported declarations は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
+  `sorryAx` はない。
+- G4 score confirmation: base 30、evidence multiplier 2.0、penalty 0、final +60。
