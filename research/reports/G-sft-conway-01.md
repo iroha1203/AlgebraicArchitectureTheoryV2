@@ -295,3 +295,65 @@ G2 / G3 audit summary:
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; compatibility witness choice と
   existing `ZMod` / quotient infrastructure 由来。
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
+
+## Cycle 6 — Owner-choice boundary evaluation
+
+candidate: `research/ideas/g-sft-conway-01-owner-choice-boundary-evaluation.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `owner-choice-boundary`, `finite-coefficient`, `support-receiver`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 5 の selected global boundary map が zero-cochain value を使わない弱点を受け、
+  任意の `CommunicationOwnerChoice` を degree-zero data として置いた。selected boundary evaluation が
+  chosen owner の support predicate を実際に読み、defect absorption と chosen-owner support の同値、
+  absorption existence と `ForkHasSingleOwnerSupport` の同値、support receiver との同値、finite examples の
+  zero/nonzero package を Lean theorem として固定した。
+project_value_delta: Conway 対応の receiver を、ただの global compatibility gate から
+  degree-zero owner-choice value を参照する selected boundary evaluation へ進めた。full additive complex /
+  sheaf `H^1` / functorial comparison ではない。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、選ばれた owner value が
+  selected fork defect を吸収するかを Lean theorem package として保存する点に限定する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerChoiceBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+  `#print axioms` では主要 theorem が `propext`, `Classical.choice`, `Quot.sound` に依存する。
+open_questions: global additive `C0 -> C1` carrier、common-refinement exactness、true quotient object、
+  true sheaf `H^1`、comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerChoiceBoundary.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationOwnerChoice`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerChoiceSupportsFork`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkOwnerChoiceBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloOwnerChoiceBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundary_absorbs_iff_supportsFork`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundary_vanishes_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.zeroCochain_ownerChoiceBoundary_absorbs`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerChoiceBoundaryReceiver_iff_supportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_ownerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notOwnerChoiceBoundaryVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_ownerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroOwnerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroOwnerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroOwnerChoiceBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerChoiceBoundaryPackage`
+
+G2 / G3 audit summary:
+
+- G2 A rigor: revise, base 60。bounded finite theorem として blocking finding はないが、
+  existence-level absorption は `ForkHasSingleOwnerSupport` と完全同値で、新しい obstruction 条件ではない。
+- G2 B research value: revise, base 60。Cycle 5 の value-insensitivity は改善するが、
+  true `C0 -> C1` / common-refinement exactness には未到達。
+- G2 C repo value: accept/revise, base 60。次 frontier への finite selected layer として妥当だが、
+  claim boundary を selected receiver に保つ必要がある。
+- G2 D adversarial: revise, base 55-60。chosen owner value の吸収判定は保存するが、
+  rival separation はまだ theorem packaging 寄りである。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure と
+  classical Prop branching 由来。
+- G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
