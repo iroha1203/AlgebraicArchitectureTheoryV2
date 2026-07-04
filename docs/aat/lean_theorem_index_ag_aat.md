@@ -1,7 +1,7 @@
 # 代数幾何 AAT Lean API 索引
 
 この文書は、現行 AAT 数学本文と `Formal/AG` に存在する Lean declaration の対応を
-追跡する分割索引である。PRD-1〜9 の本文ラベル、Lean 名、status を古典 AAT /
+追跡する分割索引である。PRD-1〜10 の本文ラベル、Lean 名、status を古典 AAT /
 downstream 索引や研究ループ索引から分離して管理する。分割全体の入口は
 [Lean 定義・定理索引](lean_theorem_index.md) を参照する。
 
@@ -671,3 +671,31 @@ dissipative policy / selected path predicates、R7 の Finite Dissipation Stoppi
 AAT Lyapunov reading / selected path monotonicity、R9 の Force / Integrability obstruction candidate
 surface、R10 の finite temporal examples までを実装する。
 未選択 event、外部 runtime、実時間、任意 future path への zero / lawful / safe / forecast theorem は結論しない。
+
+## AAT Algebraic-Geometric Part X Semantic Repair Descent SAGA
+
+Files: `Formal/AG/SemanticRepair.lean`,
+`Formal/AG/SemanticRepair/Bootstrap.lean`,
+`Formal/AG/SemanticRepair/Projection.lean`,
+`Formal/AG/SemanticRepair/GluingComplex.lean`,
+`Formal/AG/SemanticRepair/Examples.lean`,
+`Formal/AG/SemanticRepair/AdditiveH1.lean`,
+`Formal/AG/SemanticRepair/SiteCech.lean`,
+`Formal/AG/SemanticRepair/H1Comparison.lean`,
+`Formal/AG/SemanticRepair/SagaComparison.lean`.
+
+Tracking Issue: [#2910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2910).
+AC14 implementation Issue: [#2937](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2937).
+
+| 本文ラベル | Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- | --- |
+| `X.R0` | `Formal.AG.SemanticRepair`, `Formal.AG.SemanticRepair.Bootstrap`, `AAT.AG.SemanticRepair.SemanticAtomProjection`, `FiniteSemanticRepairCoverDatum`, `FiniteSemanticRepairGluingComplex`, `SemanticFaithfulnessHypotheses`, `GlobalSemanticRepairCoherent` | `import` / `structure` / `def` / `theorem` | semantic atom projection、finite cover / gluing complex、semantic faithfulness、global semantic repair coherence の基礎 surface を定義する。 | `defined only` / `proved accessor` |
+| `X.§4 additive H1` | `SemanticRepairCover`, `SemanticRepairCover.toCoverNerve`, `SemanticRepairCoverCechData`, `CechZ1`, `CechB1`, `SemanticRepairAdditiveCechH1Data`, `SemanticRepairAdditiveCechH1Data.H1`, `SemanticRepairAdditiveCechH1Data.H1Zero`, `semanticRepairAdditiveH1Zero_iff_boundary`, `SemanticRepairCoverH1BoundaryRelationAbelianData`, `SemanticRepairCoverH1BoundaryRelationAdditiveData`, `SemanticRepairCoverH1BoundaryRelationAdditiveData.TrueSheafConditionCertificate`, `globalRepairCoherent_iff_additiveH1Zero` | `structure` / `def` / `theorem` | selected finite semantic repair cover 上の bounded Čech data、additive `Z^1/B^1` quotient、boundary-relation faithfulness、true-sheaf certificate、global semantic repair coherence と additive H1 zero の同値を定義・証明する。 | `defined only` / `proved theorem package construction` |
+| `X.§6 Atom-generated site / Čech bridge` | `atomGeneratedCoverage_generates_AATGrothendieckTopology`, `selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology`, `SemanticRepairCoverRelativeCoverBridge`, `SemanticRepairCover.toCoverRelativeCechCover`, `EmptyIndexZeroSimplexIncidenceNoGo`, `no_constructor_from_coverBridge_without_zeroSimplexChartIncidence`, `chartIndexedZeroCover_constructs_zeroSimplexChartIncidence`, `coverNerve_typedComponent_adequacy`, `aatSheafCondition_coverMembership_descent_effectiveGluing` | `structure` / `def` / `theorem` | atom-generated coverage と selected AAT topology の一致、semantic repair cover から cover-relative Čech cover への bridge、zero-simplex incidence の no-go / constructive boundary、cover membership から descent と effective gluing を読む theorem を持つ。 | `proved theorem package construction` |
+| `X.定義7.1 / 定理7.2` | `SemanticRepairAdditiveH1Surface`, `SemanticRepairAdditiveH1Surface.Cocycle`, `Cohomologous`, `H1`, `H1Zero`, `SemanticRepairCoverRelativeH1Comparison`, `SemanticRepairCoverRelativeCochainRealization`, `SemanticRepairCoverRelativeCochainRealization.toH1Comparison`, `SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1`, `semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`, `SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage`, `semanticRepairAdditiveH1_coverRelativeH1_comparison_package` | `structure` / `def` / `theorem` | finite-free semantic additive H1 surface と cover-relative Čech H1 の cochain-level comparison を定義し、same-class、H1 equivalence、selected residual zero predicate の同値を証明する。comparison data は結論や descent を保持しない。 | `proved theorem package construction` |
+| `X.定理7.3 / 定理7.5` | `SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveH1Surface`, `boundedAdditiveH1Zero_iff_surfaceH1Zero`, `SemanticRepairGroundedGlobalGluingPackage`, `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package`, `SemanticRepairGeneratedLawDependentConclusions`, `SemanticRepairGeneratedLawIndependentConclusions`, `SemanticRepairGeneratedEndToEndSAGAPacket`, `lawEquation_constructs_groundedComparisonPacket` | `structure` / `def` / `theorem` | theorem 7.3 は §4 true-sheaf certificate、gluing data、theorem 7.2 comparison から sheaf condition、descent、unique global section、global coherence iff cover-relative H1 zero、bounded additive H1 zero iff cover-relative H1 zero、later obstruction vanishings を束ねる。theorem 7.5 は law-equation grounding と theorem 7.3 を合成し、10結論を law-dependent conclusions 1〜3 と law-independent conclusions 4〜10 に分割した SAGA packet として構成する。 | `proved theorem package construction` |
+
+Non-conclusions: この Part X surface は selected semantic repair cover、selected additive coefficient surface、
+selected true-sheaf certificate、selected cover-relative comparison、supplied law-equation grounding に相対化される。
+任意 artifact からの semantic atom extraction、certificate-free sheaf condition、full sheaf cohomology comparison、
+unselected repair operation semantics、law-equation grounding から全 descent 結論への直接依存は主張しない。

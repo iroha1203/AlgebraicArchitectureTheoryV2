@@ -1,7 +1,7 @@
 # 代数幾何 AAT Lean proof obligation 台帳
 
 この文書は、現行 AAT 数学本文と `Formal/AG` の対応を追跡する分割台帳である。
-PRD-1〜9 の本文ラベル、Lean status、future proof obligation、explicit non-goal を
+PRD-1〜10 の本文ラベル、Lean status、future proof obligation、explicit non-goal を
 古典 AAT / downstream 台帳や研究ループ台帳から分離して管理する。分割全体の入口は
 [証明義務と実証仮説](proof_obligations.md) を参照する。
 
@@ -804,3 +804,31 @@ R11 final ledger / no-sorry scan Issue: [#2326](https://github.com/iroha1203/Alg
 | `UnselectedEventCompleteness` | `future proof obligation` / explicit non-goal for PRD-9 |
 | `TerminalStateImpliesLawfulWithoutObstructionAssumptions` | `future proof obligation` / explicit non-goal for PRD-9 |
 | `GeneralForceIntegrabilityTheorem` | `future proof obligation` / explicit non-goal for PRD-9 |
+
+## AAT Algebraic-Geometric Part X Semantic Repair Descent SAGA Lean status
+
+Tracking Issue: [#2910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2910).
+AC14 implementation Issue: [#2937](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2937).
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| `X.R0` Semantic Repair entrypoint / bootstrap | `defined only` / `proved accessor`. `Formal/AG/SemanticRepair.lean` が `Bootstrap.lean`、`Projection.lean`、`GluingComplex.lean`、`Examples.lean`、`AdditiveH1.lean`、`SiteCech.lean`、`H1Comparison.lean`、`SagaComparison.lean` を束ね、`Formal/AG.lean` が `Formal.AG.SemanticRepair` を import する。 | semantic repair は selected semantic atom projection と selected finite cover surface に相対化される。 |
+| `X.§4` Additive Cech H1 and true-sheaf boundary relation | `defined only` / `proved theorem package construction`. `SemanticRepairCoverCechData`、`SemanticRepairAdditiveCechH1Data`、`SemanticRepairCoverH1BoundaryRelationAbelianData`、`SemanticRepairCoverH1BoundaryRelationAdditiveData`、`TrueSheafConditionCertificate`、`semanticRepairAdditiveH1Zero_iff_boundary`、`globalRepairCoherent_iff_additiveH1Zero` が selected bounded cover data 上の additive H1 zero と global semantic repair coherence の同値を証明する。 | true-sheaf certificate は cover membership と ambient sheaf condition を保持する明示 data であり、certificate-free に生成しない。 |
+| `X.§6` Atom-generated site / cover-relative Čech bridge | `proved theorem package construction`. `atomGeneratedCoverage_generates_AATGrothendieckTopology`、`selectedAATSiteTopology_eq_atomGeneratedGrothendieckTopology`、`SemanticRepairCoverRelativeCoverBridge`、`SemanticRepairCover.toCoverRelativeCechCover`、zero-simplex incidence no-go / constructive boundary、`coverNerve_typedComponent_adequacy`、`aatSheafCondition_coverMembership_descent_effectiveGluing` を持つ。 | cover-relative Čech cover への bridge は selected zero-simplex incidence と selected cover membership に相対化され、bare cover bridge だけから incidence は作らない。 |
+| `X.定義7.1 / 定理7.2` H1 comparison | `proved theorem package construction`. `SemanticRepairAdditiveH1Surface` は finite-free semantic additive H1 surface として定義され、`SemanticRepairCoverRelativeH1Comparison` と `SemanticRepairCoverRelativeCochainRealization.toH1Comparison` から `semanticRepairAdditiveH1_equiv_coverRelativeH1`、`semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero`、`semanticRepairAdditiveH1_coverRelativeH1_comparison_package` を証明する。 | comparison structure は degree-wise equivalence と differential compatibility だけを保持し、zero conclusion、global coherence、descent、law-grounded conclusion を field として持たない。 |
+| `X.定理7.3` Grounded Global Gluing | `proved theorem package construction`. `SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveH1Surface` と `boundedAdditiveH1Zero_iff_surfaceH1Zero` で §4 bounded additive H1 と theorem-7.2 finite-free H1 surface を接続し、`SemanticRepairGroundedGlobalGluingPackage` / `trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package` が sheaf condition、descent、unique global section、H1 comparison package、`GlobalSemanticRepairCoherent ↔ CoverRelativeResidualH1Zero`、bounded additive H1 zero equivalence、later obstruction vanishings を返す。 | theorem は selected true-sheaf certificate、selected gluing data、selected cochain comparisonを前提にする。full sheaf cohomology comparison や refinement/naturality は主張しない。 |
+| `X.定理7.5` Generated End-to-End SAGA packet | `proved theorem package construction`. `SemanticRepairGeneratedLawDependentConclusions` が law-equation grounding 由来の結論1〜3を保持し、`SemanticRepairGeneratedLawIndependentConclusions` が theorem 7.3 由来の結論4〜10を保持する。`SemanticRepairGeneratedEndToEndSAGAPacket` と `lawEquation_constructs_groundedComparisonPacket` は `LawEquationDefectSource.lawEquation_grounding_packet` と theorem 7.3 package を合成し、law 依存境界を statement 構造で分離する。 | law-equation grounding は degree-zero conclusion group だけに依存し、descent / H1 / global coherence / higher vanishing は theorem 7.3 側の selected certificate と comparison から出る。Cycle 332 の巨大 route は本体へそのまま移植しない。 |
+
+第X部 PRD-10 の証明対象ラベルは次の現在状態である。
+
+| 証明対象ラベル | Lean status |
+| --- | --- |
+| `X.R0` Semantic Repair entrypoint / bootstrap | `defined only` / `proved accessor` |
+| `X.§4` additive Cech H1 / true-sheaf boundary relation | `defined only` / `proved theorem package construction` |
+| `X.§6` atom-generated site / cover-relative Čech bridge | `proved theorem package construction` |
+| `X.定義7.1 / 定理7.2` semantic additive H1 / cover-relative H1 comparison | `proved theorem package construction` |
+| `X.定理7.3` Grounded Global Gluing | `proved theorem package construction` |
+| `X.定理7.5` Generated End-to-End SAGA packet | `proved theorem package construction` |
+| `CertificateFreeSemanticAtomExtraction` | `future proof obligation` / explicit non-goal for PRD-10 |
+| `FullSheafCohomologyComparisonWithoutSelectedCochainData` | `future proof obligation` / explicit non-goal for PRD-10 |
+| `LawGroundingImpliesAllDescentConclusionsDirectly` | `future proof obligation` / explicit non-goal for PRD-10 |
