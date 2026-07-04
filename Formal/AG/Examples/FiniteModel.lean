@@ -618,6 +618,43 @@ theorem siteWitnessClosureCover_uAdequate :
       siteWitnessClosureCover.toAATCoverageFamily :=
   Site.witnessClosureCover_uAdequate siteWitnessClosureCover
 
+/-- R11 / II.AC16: seed-driven witness-closure cover package for the finite model. -/
+def siteSeedWitnessClosureCover :
+    Site.SeedWitnessClosureCover siteAdequacyRequirements siteOverlap siteBase where
+  SeedIndex := PUnit
+  seedPatch := fun _ => siteContext
+  seedInclusion := fun _ => rfl
+  localFiniteRequiredWitnesses := site_requiredWitnessSubtype_finite
+  RequiredWitnessSupport := fun _ => siteContext
+  requiredWitnessSupport_inclusion := fun _ => rfl
+  requiredWitnessSupport_visible := fun _ => trivial
+  seedSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+  seedAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+  boundary_seed_seed := fun _i _j => trivial
+  boundary_seed_witness := fun _i _witness => trivial
+  boundary_seed_overlap := fun _i _pair => trivial
+  boundary_witness_seed := fun _witness _i => trivial
+  boundary_witness_witness := fun _witness1 _witness2 => trivial
+  boundary_witness_overlap := fun _witness _pair => trivial
+  boundary_overlap_seed := fun _pair _i => trivial
+  boundary_overlap_witness := fun _pair _witness => trivial
+  boundary_overlap_overlap := fun _pair1 _pair2 => trivial
+
+/--
+R11 / II.AC16: the seed-driven finite witness closure yields an admissible AAT
+coverage family.
+-/
+theorem siteSeedWitnessClosureCover_admissible :
+    Site.AdmissibleCover siteCoverageRequirements siteOverlap
+      siteSeedWitnessClosureCover.toAATCoverageFamily.toCoverageFamily :=
+  Site.SeedWitnessClosureCover.toAATCoverageFamily_admissible siteSeedWitnessClosureCover
+
+/-- R11 / II.AC16: example theorem reading the seed-driven lemma 7.2A variant. -/
+theorem siteSeedWitnessClosureCover_uAdequate :
+    Site.UAdequateCover siteAdequacyRequirements
+      siteSeedWitnessClosureCover.toAATCoverageFamily :=
+  Site.SeedWitnessClosureCover.uAdequate siteSeedWitnessClosureCover
+
 /-- R11 / II.AC16: small coefficient presheaf on the finite site. -/
 def siteCoefficient : Site.AATPresheaf site where
   obj _ := PUnit

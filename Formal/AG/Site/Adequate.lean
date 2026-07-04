@@ -264,6 +264,183 @@ def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 end WitnessClosureCover
 
 /--
+PRD-R II-1: seed-driven witness-closure cover input.
+
+Unlike `WitnessClosureCover`, support and axis visibility are stated only on
+seed patches. Required witnesses are made visible by the generated witness
+support branch. Boundary visibility is split by the constructors of the closed
+index, so the closure theorem shows exactly which generated contexts are used.
+The older `WitnessClosureCover` remains as the Research-compatible packaged
+surface.
+-/
+structure SeedWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    (Q : UAdequacyRequirements C R) (P : ContextOverlapPullback C)
+    (base : ContextCategoryObject C) where
+  SeedIndex : Type u
+  seedPatch : SeedIndex -> ArchCtx A
+  seedInclusion : ∀ i : SeedIndex, C.Hom (seedPatch i) base.ctx
+  localFiniteRequiredWitnesses :
+    Finite (RequiredWitnessSubtype R)
+  RequiredWitnessSupport :
+    RequiredWitnessSubtype R -> ArchCtx A
+  requiredWitnessSupport_inclusion :
+    ∀ witness, C.Hom (RequiredWitnessSupport witness) base.ctx
+  requiredWitnessSupport_visible :
+    ∀ witness, R.witnessVisibleOn (RequiredWitnessSupport witness) witness.1
+  seedSupportCovered :
+    ∀ atom : U.Atom, R.requiredSupport R.selectedReading atom ->
+      ∃ i : SeedIndex, R.supportVisibleOn (seedPatch i) atom
+  seedAxesReadable :
+    ∀ axis : Sig.Axis, R.requiredAxis R.selectedReading axis ->
+      ∃ i : SeedIndex, R.axisReadableOn (seedPatch i) axis
+  boundary_seed_seed :
+    ∀ i j : SeedIndex,
+      R.boundaryVisibleOn (P.overlap base.ctx (seedPatch i) (seedPatch j)) base.ctx
+  boundary_seed_witness :
+    ∀ i witness,
+      R.boundaryVisibleOn
+        (P.overlap base.ctx (seedPatch i) (RequiredWitnessSupport witness)) base.ctx
+  boundary_seed_overlap :
+    ∀ i (pair : SeedIndex × SeedIndex),
+      R.boundaryVisibleOn
+        (P.overlap base.ctx (seedPatch i)
+          (P.overlap base.ctx (seedPatch pair.1) (seedPatch pair.2))) base.ctx
+  boundary_witness_seed :
+    ∀ witness i,
+      R.boundaryVisibleOn
+        (P.overlap base.ctx (RequiredWitnessSupport witness) (seedPatch i)) base.ctx
+  boundary_witness_witness :
+    ∀ witness1 witness2,
+      R.boundaryVisibleOn
+        (P.overlap base.ctx
+          (RequiredWitnessSupport witness1) (RequiredWitnessSupport witness2)) base.ctx
+  boundary_witness_overlap :
+    ∀ witness (pair : SeedIndex × SeedIndex),
+      R.boundaryVisibleOn
+        (P.overlap base.ctx (RequiredWitnessSupport witness)
+          (P.overlap base.ctx (seedPatch pair.1) (seedPatch pair.2))) base.ctx
+  boundary_overlap_seed :
+    ∀ (pair : SeedIndex × SeedIndex) i,
+      R.boundaryVisibleOn
+        (P.overlap base.ctx
+          (P.overlap base.ctx (seedPatch pair.1) (seedPatch pair.2)) (seedPatch i))
+          base.ctx
+  boundary_overlap_witness :
+    ∀ (pair : SeedIndex × SeedIndex) witness,
+      R.boundaryVisibleOn
+        (P.overlap base.ctx
+          (P.overlap base.ctx (seedPatch pair.1) (seedPatch pair.2))
+          (RequiredWitnessSupport witness)) base.ctx
+  boundary_overlap_overlap :
+    ∀ (pair1 pair2 : SeedIndex × SeedIndex),
+      R.boundaryVisibleOn
+        (P.overlap base.ctx
+          (P.overlap base.ctx (seedPatch pair1.1) (seedPatch pair1.2))
+          (P.overlap base.ctx (seedPatch pair2.1) (seedPatch pair2.2))) base.ctx
+
+namespace SeedWitnessClosureCover
+
+/-- PRD-R II-1: index set generated from seeds, required witnesses, and seed overlaps. -/
+abbrev ClosedIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :=
+  WitnessClosureIndex R K.SeedIndex
+
+/-- PRD-R II-1: context selected by a generated closed index. -/
+def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
+    K.ClosedIndex -> ArchCtx A :=
+  WitnessClosureIndex.patch P base K.seedPatch K.RequiredWitnessSupport
+
+/-- PRD-R II-1: each generated context reads into the base context. -/
+def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
+    ∀ i : K.ClosedIndex, C.Hom (K.patch i) base.ctx
+  | Sum.inl seed => K.seedInclusion seed
+  | Sum.inr (Sum.inl witness) => K.requiredWitnessSupport_inclusion witness
+  | Sum.inr (Sum.inr pair) =>
+      P.overlap_le_base (K.seedInclusion pair.1) (K.seedInclusion pair.2)
+
+/-- PRD-R II-1: generated boundary visibility, by closed-index constructor. -/
+def closedBoundaryVisible {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
+    ∀ i j : K.ClosedIndex,
+      R.boundaryVisibleOn (P.overlap base.ctx (K.patch i) (K.patch j)) base.ctx
+  | Sum.inl i, Sum.inl j => K.boundary_seed_seed i j
+  | Sum.inl i, Sum.inr (Sum.inl witness) => K.boundary_seed_witness i witness
+  | Sum.inl i, Sum.inr (Sum.inr pair) => K.boundary_seed_overlap i pair
+  | Sum.inr (Sum.inl witness), Sum.inl i => K.boundary_witness_seed witness i
+  | Sum.inr (Sum.inl witness1), Sum.inr (Sum.inl witness2) =>
+      K.boundary_witness_witness witness1 witness2
+  | Sum.inr (Sum.inl witness), Sum.inr (Sum.inr pair) =>
+      K.boundary_witness_overlap witness pair
+  | Sum.inr (Sum.inr pair), Sum.inl i => K.boundary_overlap_seed pair i
+  | Sum.inr (Sum.inr pair), Sum.inr (Sum.inl witness) =>
+      K.boundary_overlap_witness pair witness
+  | Sum.inr (Sum.inr pair1), Sum.inr (Sum.inr pair2) =>
+      K.boundary_overlap_overlap pair1 pair2
+
+/-- PRD-R II-1: convert the seed-driven input to the frozen witness-closure package. -/
+def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
+    WitnessClosureCover Q P base where
+  SeedIndex := K.SeedIndex
+  seedPatch := K.seedPatch
+  seedInclusion := K.seedInclusion
+  localFiniteRequiredWitnesses := K.localFiniteRequiredWitnesses
+  RequiredWitnessSupport := K.RequiredWitnessSupport
+  requiredWitnessSupport_inclusion := K.requiredWitnessSupport_inclusion
+  requiredWitnessSupport_visible := K.requiredWitnessSupport_visible
+  requiredSupportCovered := fun atom hreq =>
+    let ⟨i, hi⟩ := K.seedSupportCovered atom hreq
+    ⟨Sum.inl i, hi⟩
+  readableRequiredAxes := fun axis hreq =>
+    let ⟨i, hi⟩ := K.seedAxesReadable axis hreq
+    ⟨Sum.inl i, hi⟩
+  visibleBoundaryWitnesses := K.closedBoundaryVisible
+
+/-- PRD-R II-1: the generated closed cover as an admissible AAT coverage family. -/
+def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {LU : LawUniverse U}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
+    AATCoverageFamily R P base :=
+  K.toWitnessClosureCover.toAATCoverageFamily
+
+/--
+PRD-R II-1: the seed-driven closed cover is admissible. Support and axis
+coverage come from seed patches, required witnesses from generated support
+contexts, and boundary coverage from the closed-index constructor cases.
+-/
+theorem toAATCoverageFamily_admissible {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : ContextPreorderCategory A}
+    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
+    {R : CoverageRequirements A LU Sig} {Q : UAdequacyRequirements C R}
+    {P : ContextOverlapPullback C} {base : ContextCategoryObject C}
+    (K : SeedWitnessClosureCover Q P base) :
+    AdmissibleCover R P K.toAATCoverageFamily.toCoverageFamily :=
+  K.toAATCoverageFamily.admissible
+
+end SeedWitnessClosureCover
+
+/--
 II.補題7.2A: under the explicit witness-closure assumptions, the closed cover
 is `U`-adequate.
 -/
@@ -296,6 +473,20 @@ theorem witnessClosureCover_uAdequate {U : AtomCarrier.{u}}
     simpa [WitnessClosureCover.patch] using K.visibleBoundaryWitnesses i j
   restrictionMapsPreserveWitnessIdeals := fun i hbase =>
     Q.witnessIdealPreservedBy (K.inclusion i) hbase
+
+namespace SeedWitnessClosureCover
+
+/-- PRD-R II-1: the seed-driven closed cover is `U`-adequate. -/
+theorem uAdequate {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : ContextPreorderCategory A}
+    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
+    {R : CoverageRequirements A LU Sig} {Q : UAdequacyRequirements C R}
+    {P : ContextOverlapPullback C} {base : ContextCategoryObject C}
+    (K : SeedWitnessClosureCover Q P base) :
+    UAdequateCover Q K.toAATCoverageFamily :=
+  witnessClosureCover_uAdequate K.toWitnessClosureCover
+
+end SeedWitnessClosureCover
 
 end Site
 end AAT.AG
