@@ -230,7 +230,7 @@ docs/aat/proof_obligations_ag_aat.md
 | II-5 | `Examples/FiniteModel.lean` Part II examples | 発火 | singleton / True 例から 2 patch + overlap finite site へ進める。 |
 | II-6 | `Topology.lean` Mathlib coverage bridge | 発火 | R3 で singleton finite equality-thin site の `HasPullbacks` / `IsStableUnderBaseChange` instance と bridge firing theorem を追加済み。 |
 | III-1 | `Correspondence.lean` 定理11.1 | 昇格 | R4 で `SelectedLawWitnessIdealFamily.localObstructionIdeal` / selected witness ideals / PRD-10 R5 `LawEquation` への片方向 bridge と finite firing theorem を追加済み。旧 `witnessCoverage` package は compatibility surface として残る。 |
-| III-2 | `LawfulLocus.lean` factorization | 昇格 | B項目。消滅から zeroLocus への片方向を theorem 化し、逆向き radical gap は非主張へ。 |
+| III-2 | `LawfulLocus.lean` factorization | 昇格 | R4 で `PrimeSpectrum.comap` による section prime map と、消滅から zeroLocus image containment への片方向 theorem を追加済み。逆向き radical gap は非主張として台帳化。 |
 | III-3 | `StructureSheaf.lean` sheafification bridge | 昇格 | B項目。Mathlib `HasSheafify` 製造補題が未実装。 |
 | III-4 | `Scheme.lean` chart compatibility | 実質化 | 3成分無関係 / freedom Prop を affine `Spec` 例または整合条件へ接続する。 |
 | III-5 | `Nullstellensatz.lean` NSdepth | 実質化 | B項目。任意 Nat predicate から生成系表示次数へ。 |
@@ -335,6 +335,7 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteTwoPatchCechDifferentialNonzero` | `AAT.AG.FiniteModel.twoPatchSeparatedCochain_differential_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSiteTopologyEqCoverageToGrothendieck` | `AAT.AG.FiniteModel.siteTopology_eq_coverage_toGrothendieck` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteAcyclicLocalSectionLawfulFromWitnessIdeals` | `AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteAcyclicSectionPrimeMapMemLocalLawfulLocus` | `AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp` | `AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
@@ -391,3 +392,6 @@ generated local obstruction ideal.
 | III-1 | 昇格 | `Formal/AG/LawAlgebra/Correspondence.lean` adds `localObstructionIdeal_le_ker_iff_lawful`, `lawful_of_selectedWitnessIdeals_le_ker`, `lawful_of_generatedLawWitnessIdeals_le_ker`, and `displayedRequiredLawsHoldOn_defect_mem_localObstructionIdeal`. These connect section lawfulness to `SelectedLawWitnessIdealFamily.localObstructionIdeal` and PRD-10 R5 generated law-equation defects rather than consuming `witnessCoverage` as the conclusion. |
 | III-1 firing | 発火 | `Formal/AG/LawAlgebra/FiniteExamples.lean` adds `acyclicLocalSectionData`, `acyclic_cycleWitnessIdeal_le_ker`, and `acyclicLocalSection_lawful_from_witnessIdeals` for the selected finite cycle witness example. |
 | III-1 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteAcyclicLocalSectionLawfulFromWitnessIdeals`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| III-2 | 昇格 | `Formal/AG/LawAlgebra/LawfulLocus.lean` adds `LawfulSectionData.sectionPrimeMap`, `sectionPrimeMap_mem_lawfulLocus_of_le_ker`, `sectionPrimeMap_mem_lawfulLocus_of_pulledObstructionIdeal_eq_bot`, `sectionPrimeMap_mem_lawfulLocus_of_lawful`, `localSectionPrimeMap`, and `localSectionPrimeMap_mem_localLawfulLocus_of_lawful`. These expose the affine prime map induced by the section pullback and prove only the vanishing-to-zeroLocus containment direction. |
+| III-2 firing | 発火 | `Formal/AG/LawAlgebra/FiniteExamples.lean` adds `acyclic_sectionPrimeMap_mem_localLawfulLocus`, firing the zeroLocus containment bridge on the selected finite cycle witness example. |
+| III-2 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteAcyclicSectionPrimeMapMemLocalLawfulLocus`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
