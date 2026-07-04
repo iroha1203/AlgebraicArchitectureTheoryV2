@@ -803,3 +803,54 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。`ownerUniformSupport_implies_coherentSupport` は axiom-free。finite package は
   `propext`, `Classical.choice` に依存し、既存 local witness choice / Prop extensionality 由来。
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
+
+## Cycle 16 — Owner-uniform subfamily descent receiver
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-subfamily-descent.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 45
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 90
+category: `restricted-span`, `local-global-boundary`, `conway-obstruction`,
+  `projection-nonfaithfulness`
+goal_delta: Cycle 15 の owner-uniform restricted two-fork separation を、
+  selected finite subfamily-cover receiver として固定した。API singleton subfamily と DB singleton subfamily は
+  それぞれ owner-uniform coherent support を持つが、それらを cover として見る full family には
+  owner-uniform coherent support がない。
+project_value_delta: restricted common-refinement family の local/global boundary を、
+  forkwise local support から selected subfamily support へ一段上げた。これは arbitrary-cover naturality、
+  overlap descent datum、quotient object、true sheaf `H^1` ではなく、finite selected receiver である。
+rival_delta: 既存 rival は local owner や owner mismatch を可視化できる。この cycle の差分は、
+  local singleton subfamily support と full-family owner-uniform gluing failure の分離を theorem package として
+  保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformSubfamilyDescent`、`lake build FormalAGResearch`、
+  full `lake build` が通過。新 receiver 定義は axiom-free、finite package は `propext` のみに依存。
+open_questions: arbitrary cover naturality、non-selected refinement span family、owner-uniform quotient object、
+  true sheaf `H^1` は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformSubfamilyDescent.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilySubcover`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformSubfamilyDescentFailure`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedApiSingletonFamily`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedDbSingletonFamily`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedApiSingletonFamily_ownerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedDbSingletonFamily_ownerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_cover`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_ownerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_ownerUniformSubfamilyDescentFailure`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformSubfamilyDescentPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: revise/accept mix。審判 A は base 45、B/C は base 50、D は base 60。
+  `descent` を selected finite subfamily-cover receiver に限定する必要があるため、保守的に base 45 を採用。
+- G3 formalization quality: pass。statement は修正後の限定 claim と一致し、true sheaf descent、
+  arbitrary cover naturality、quotient object へ overclaim していない。
+- G3 axiom check: pass。`SupportForkFamilySubcover` と `OwnerUniformSubfamilyDescentFailure` は axiom-free。
+  reported finite witness package は `propext` のみに依存し、`sorryAx`、`Classical.choice`、`Quot.sound` はない。
+- G4 score confirmation: base 45、evidence multiplier 2.0、penalty 0、final +90。
