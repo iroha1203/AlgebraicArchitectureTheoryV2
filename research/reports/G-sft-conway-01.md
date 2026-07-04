@@ -237,10 +237,10 @@ G2 / G3 audit summary:
 candidate: `research/ideas/g-sft-conway-01-global-boundary-map-exactness.md`
 candidate_type: `bridge`
 evidence_stage: `proved-in-research`
-base_score: 60
+base_score: 55
 evidence_multiplier: 2.0
 penalty: 0
-final_score: 120
+final_score: 110
 category: `global-boundary-map`, `finite-coefficient`, `support-receiver`,
   `conway-obstruction`, `finite-witness`
 goal_delta: Cycle 4 の fork-local explicit boundary generator を、atlas 全体の
@@ -409,3 +409,57 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure 由来。
 - G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
+
+## Cycle 8 — Support-constrained owner-potential boundary
+
+candidate: `research/ideas/g-sft-conway-01-support-constrained-owner-potential.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `constrained-owner-potential`, `finite-coefficient`, `support-receiver`,
+  `local-exactness`, `conway-obstruction`
+goal_delta: Cycle 7 の unconstrained local owner-potential boundary の弱さを受け、
+  single-owner support constraint を戻した。decidable owner equality の下で endpoint-separating potential が
+  local additive absorption を与えること、support-constrained vanishing が `ForkHasSingleOwnerSupport` と
+  同値であること、support-constrained receiver が support receiver と同値であること、finite examples の
+  zero/nonzero package を Lean theorem として固定した。
+project_value_delta: local additive endpoint boundary と support compatibility の関係を整理した。
+  unconstrained exactness は弱すぎるが、support-constrained exactness は Conway support receiver を回復する。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、additive endpoint exactness が
+  support constraint を伴うかどうかを theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayConstrainedOwnerPotentialBoundary.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayConstrainedOwnerPotentialBoundary`、`lake build FormalAGResearch`、full `lake build` が通過。
+  `#print axioms` では主要 theorem が `propext`, `Classical.choice`, `Quot.sound` に依存する。
+open_questions: common-refinement constrained boundary、global compatibility constrained potential、
+  true quotient object、true sheaf `H^1`、comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayConstrainedOwnerPotentialBoundary.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloSupportConstrainedOwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.endpointSeparatingOwnerPotential`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.endpointSeparatingOwnerPotential_boundary_eq_defect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerPotentialBoundary_vanishes_of_decidableOwners`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.supportConstrainedOwnerPotential_vanishes_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportConstrainedOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.supportConstrainedOwnerPotentialReceiver_iff_supportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notSupportConstrainedOwnerPotentialVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_supportConstrainedOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroSupportConstrainedOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroSupportConstrainedOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroSupportConstrainedOwnerPotentialReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedSupportConstrainedOwnerPotentialPackage`
+
+G2 / G3 audit summary:
+
+- G2 A rigor: accept, base 60。bounded selected theorem として blocking finding はないが、60 が上限。
+- G2 B research value: revise, base 55。Cycle 7 failure の最小修復条件として有用だが、
+  new obstruction ではなく existing support receiver へ戻る。
+- G2 C repo value: accept/revise, base 55。next frontier の common-refinement constraint へ渡す bridge として扱う。
+- G2 D adversarial: revise, base 55。support constraint の有無は保存するが、rival separation は限定的。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ZMod` / quotient infrastructure 由来。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
