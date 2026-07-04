@@ -915,3 +915,59 @@ G2 / G3 audit summary:
   `ZMod` / `AddSubgroup.closure` を含む receiver theorem は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
   `sorryAx` はない。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。
+
+## Cycle 18 — Owner-uniform span selector obstruction
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-span-selector.md`
+candidate_type: `obstruction`
+evidence_stage: `proved-in-research`
+base_score: 60
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 120
+category: `non-selected-span-family`, `selector-obstruction`, `restricted-span`,
+  `conway-obstruction`
+goal_delta: Cycle 14 の unrestricted Sigma assembly と Cycle 15/16 の owner-uniform failure の差を、
+  selected finite span-selector obstruction として固定した。restricted two-fork family では、
+  explicit forkwise common-refinement span selector は存在するが、shared owner に揃う
+  owner-uniform selector は存在しない。
+project_value_delta: local span choices と owner-uniform global selector を別 interface として分離した。
+  `ForkwiseCommonRefinementSpanSelector` は各 fork の concrete span choice を保持し、
+  `OwnerUniformSpanSelector` は shared owner と selected refinement block の owner compatibility を追加要求する。
+rival_delta: 既存 rival は local owner choices を列挙できる。この cycle の差分は、local span selections が
+  owner-uniform shared-owner selector に glue しないことを finite theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformSpanSelector`、
+  `lake build FormalAGResearch`、full `lake build` が通過。
+  full build は既存 `Formal/Arch/Extension/FeatureExtensionExamples.lean` の linter warning のみ。
+  canonical selector、arbitrary non-selected span functoriality、arbitrary-cover naturality、true sheaf `H^1` は主張しない。
+open_questions: arbitrary cover naturality、true quotient object、true sheaf `H^1` は未固定。
+  Issue #2962 の active threshold 2000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformSpanSelector.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ForkwiseCommonRefinementSpanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.forkwiseSpanSelector_nonempty_iff_localSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformSpanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformSpanSelector.toOwnerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformSpanSelector_nonempty_iff_support`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformSpanSelectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedApiFork_commonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedDbFork_commonRefinementSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_forkwiseSpanSelectable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_noOwnerUniformSpanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_ownerUniformSpanSelectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_ownerUniformSpanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformSpanSelectorObstructionPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: revise accept。審判は base 55 / 60 / 60。selector が owner-uniform support の薄い別名に見える risk を指摘したため、
+  concrete forkwise support witness と shared-owner selector field を明示し、保守的に base 60 を採用。
+- G3 formalization quality: pass。restricted two-fork forkwise selector は
+  `Classical.choice` 経由ではなく、API/DB fork の concrete common-refinement support から構成した。
+- G3 axiom check: pass。core selector structures と `OwnerUniformSpanSelector.toOwnerUniformSupport` は axiom-free。
+  generic local-support-to-selector iff は `Classical.choice` のみに依存し、restricted finite witness package は
+  `propext` のみに依存する。`sorryAx` はない。
+- G4 score confirmation: base 60、evidence multiplier 2.0、penalty 0、final +120。
