@@ -1,6 +1,7 @@
 import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.StructureSheaf
 import Formal.AG.Site.SheafCategory
+import Mathlib.AlgebraicGeometry.Spec
 import Mathlib.Geometry.RingedSpace.LocallyRingedSpace
 
 noncomputable section
@@ -20,6 +21,31 @@ open Opposite
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable (S : Site.AATSite A) (k : Type v) [CommRing k]
+
+/--
+III.R4: the Mathlib locally ringed space read by an affine AAT chart.
+
+This is the ordinary `Spec` of the selected chart algebra. The AAT decoration
+and obstruction ideal stay in `SpecAAT`; the Mathlib-facing affine surface is
+the locally ringed space attached to the carrier ring.
+-/
+abbrev affineChartMathlibSpecLocallyRingedSpace
+    (C : AffineChart.AffineAATChart.{v, w, x} k) :
+    LocallyRingedSpace.{w} :=
+  AlgebraicGeometry.Spec.toLocallyRingedSpace.obj
+    (op (CommRingCat.of C.AlgebraCarrier))
+
+/-- III.R4: the affine chart point space is the ordinary prime spectrum. -/
+theorem affineChart_pointSpace_eq_primeSpectrum
+    (C : AffineChart.AffineAATChart.{v, w, x} k) :
+    C.spec.pointSpace = PrimeSpectrum C.AlgebraCarrier :=
+  rfl
+
+/-- III.R4: the chart has a selected decoration witness. -/
+theorem affineChart_decoration_nonempty
+    (C : AffineChart.AffineAATChart.{v, w, x} k) :
+    Nonempty C.spec.Decoration :=
+  ⟨C.spec.decoration⟩
 
 /--
 III.定義9.1: ringed AAT topos package.
@@ -77,6 +103,49 @@ def allConditions {C D : AffineChart.AffineAATChart.{v, w, x} k}
     H.obstructionIdealCompatible ∧ H.decorationCompatible ∧ H.cocycle ∧
       H.locallyRingedCompatible
 
+/--
+III.R4: selected self-compatibility for a single affine AAT chart.
+
+The legacy compatibility slots are no longer supplied as unrelated arbitrary
+facts in this constructor: the self-chart case records the identity morphism
+on the chart's ordinary Mathlib `Spec` locally ringed space, the prime-spectrum
+point-space reading, the identity equivalence on selected hom surfaces, the
+obstruction ideal, and the selected decoration. This is still a single-chart
+identity witness, not a Mathlib open-immersion theorem or a general atlas
+gluing theorem.
+-/
+def selfAffineSpec (C : AffineChart.AffineAATChart.{v, w, x} k) :
+    ChartCompatibility k C C where
+  openImmersion :=
+    ∃ f : affineChartMathlibSpecLocallyRingedSpace k C ⟶
+        affineChartMathlibSpecLocallyRingedSpace k C,
+      f = 𝟙 _
+  overlapRepresentability :=
+    C.spec.pointSpace = PrimeSpectrum C.AlgebraCarrier
+  restrictionCompatible :=
+    ∀ (R : Type w) [CommRing R] [Algebra k R],
+      Nonempty
+        (AffineChart.AffineAATChart.hWU k C R ≃
+          AffineChart.AffineAATChart.hWU k C R)
+  obstructionIdealCompatible :=
+    C.spec.obstructionIdeal = C.spec.obstructionIdeal
+  decorationCompatible :=
+    Nonempty C.spec.Decoration
+  cocycle :=
+    True
+  locallyRingedCompatible :=
+    affineChartMathlibSpecLocallyRingedSpace k C =
+      affineChartMathlibSpecLocallyRingedSpace k C
+
+/-- III.R4: the affine self-compatibility constructor supplies all legacy slots. -/
+theorem selfAffineSpec_allConditions
+    (C : AffineChart.AffineAATChart.{v, w, x} k) :
+    (selfAffineSpec k C).allConditions := by
+  refine ⟨⟨𝟙 _, rfl⟩, ?_, ?_, rfl, affineChart_decoration_nonempty k C, trivial, rfl⟩
+  · exact affineChart_pointSpace_eq_primeSpectrum k C
+  · intro R _ _
+    exact ⟨Equiv.refl _⟩
+
 end ChartCompatibility
 
 /--
@@ -116,6 +185,79 @@ theorem ringedTopos_forgetful_eq_underlying
     (X : ArchitectureScheme.{u, v, w, x, y} S k) :
     X.ringedTopos.forgetfulLocallyRingedSpace = X.underlying :=
   X.forgetful_agrees
+
+/--
+III.R4: build an architecture scheme from a single affine AAT chart whose
+selected ringed topos reads the same Mathlib affine `Spec` locally ringed
+space.
+
+This realizes the PRD-R III-4 affine alternative additively: the atlas has one
+chart, its compatibility is the selected affine self-chart constructor, and the
+underlying locally ringed space is the chart's Mathlib `Spec` reading.
+-/
+def singleAffineSpec
+    (T : RingedAATTopos.{u, v, w} S k)
+    (C : AffineChart.AffineAATChart.{v, w, x} k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        affineChartMathlibSpecLocallyRingedSpace k C) :
+    ArchitectureScheme.{u, v, w, x, w} S k where
+  ChartIndex := PUnit
+  chart _ := C
+  compatibility _ _ := ChartCompatibility.selfAffineSpec k C
+  ringedTopos := T
+  underlying := affineChartMathlibSpecLocallyRingedSpace k C
+  forgetful_agrees := hT
+
+@[simp]
+theorem singleAffineSpec_underlying
+    (T : RingedAATTopos.{u, v, w} S k)
+    (C : AffineChart.AffineAATChart.{v, w, x} k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        affineChartMathlibSpecLocallyRingedSpace k C) :
+    (singleAffineSpec S k T C hT).underlying =
+      affineChartMathlibSpecLocallyRingedSpace k C :=
+  rfl
+
+@[simp]
+theorem singleAffineSpec_chart
+    (T : RingedAATTopos.{u, v, w} S k)
+    (C : AffineChart.AffineAATChart.{v, w, x} k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        affineChartMathlibSpecLocallyRingedSpace k C)
+    (i : (singleAffineSpec S k T C hT).ChartIndex) :
+    (singleAffineSpec S k T C hT).chart i = C := by
+  cases i
+  rfl
+
+/-- III.R4: the single affine scheme supplies the selected self-chart compatibility. -/
+theorem singleAffineSpec_compatibility_allConditions
+    (T : RingedAATTopos.{u, v, w} S k)
+    (C : AffineChart.AffineAATChart.{v, w, x} k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        affineChartMathlibSpecLocallyRingedSpace k C)
+    (i j : (singleAffineSpec S k T C hT).ChartIndex) :
+    ((singleAffineSpec S k T C hT).compatibility i j).allConditions := by
+  cases i
+  cases j
+  exact ChartCompatibility.selfAffineSpec_allConditions k C
+
+/--
+III.R4: the single affine constructor ties the topos-side locally ringed
+reading to the chart's Mathlib affine `Spec`.
+-/
+theorem singleAffineSpec_ringedTopos_forgetful_eq_chartSpec
+    (T : RingedAATTopos.{u, v, w} S k)
+    (C : AffineChart.AffineAATChart.{v, w, x} k)
+    (hT :
+      T.forgetfulLocallyRingedSpace =
+        affineChartMathlibSpecLocallyRingedSpace k C) :
+    (singleAffineSpec S k T C hT).ringedTopos.forgetfulLocallyRingedSpace =
+      affineChartMathlibSpecLocallyRingedSpace k C :=
+  hT
 
 end ArchitectureScheme
 

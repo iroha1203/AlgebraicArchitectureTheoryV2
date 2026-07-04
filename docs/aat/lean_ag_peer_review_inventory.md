@@ -232,7 +232,7 @@ docs/aat/proof_obligations_ag_aat.md
 | III-1 | `Correspondence.lean` 定理11.1 | 昇格 | R4 で `SelectedLawWitnessIdealFamily.localObstructionIdeal` / selected witness ideals / PRD-10 R5 `LawEquation` への片方向 bridge と finite firing theorem を追加済み。旧 `witnessCoverage` package は compatibility surface として残る。 |
 | III-2 | `LawfulLocus.lean` factorization | 昇格 | R4 で `PrimeSpectrum.comap` による section prime map と、消滅から zeroLocus image containment への片方向 theorem を追加済み。逆向き radical gap は非主張として台帳化。 |
 | III-3 | `StructureSheaf.lean` sheafification bridge | 昇格 | R4 で明示 `HasSheafify` 仮定下の Mathlib sheafification universal property theorem と `LawAlgebraSheafificationBridge` constructor を追加済み。`AATCommAlgCat` の無条件 instance は非主張として残す。 |
-| III-4 | `Scheme.lean` chart compatibility | 実質化 | 3成分無関係 / freedom Prop を affine `Spec` 例または整合条件へ接続する。 |
+| III-4 | `Scheme.lean` chart compatibility | 実質化 | R4 で単一 affine chart の Mathlib `Spec` locally ringed space reading、identity self-chart compatibility witness、single-affine `ArchitectureScheme` constructor を追加済み。一般 atlas gluing / Mathlib open immersion theorem は非主張として残す。 |
 | III-5 | `Nullstellensatz.lean` NSdepth | 実質化 | B項目。任意 Nat predicate から生成系表示次数へ。 |
 | IV-1 | `CechComplex.lean` | 昇格 | differential / d^2=0 field と Type-valued Hn を additive quotient H1 へ接続する。 |
 | IV-2 | `FiniteExamples.lean` pseudo circle | 発火 | PRD-10 circle nonzero H1 を Part IV 語彙で発火させる。 |
@@ -337,6 +337,7 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteAcyclicLocalSectionLawfulFromWitnessIdeals` | `AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteAcyclicSectionPrimeMapMemLocalLawfulLocus` | `AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.structureSheafMathlibSheafificationLiftUnique` | `AAT.AG.LawAlgebra.LawAlgebraSheafificationBridge.mathlib_sheafification_lift_unique` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.schemeSingleAffineSpecCompatibilityAllConditions` | `AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec_compatibility_allConditions` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp` | `AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
@@ -398,3 +399,5 @@ generated local obstruction ideal.
 | III-2 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteAcyclicSectionPrimeMapMemLocalLawfulLocus`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
 | III-3 | 昇格 | `Formal/AG/LawAlgebra/StructureSheaf.lean` adds `mathlib_sheafification_lift_unique` and `ofMathlibSheafification`, deriving the selected bridge from Mathlib `toSheafify` / `sheafifyLift` / `sheafifyLift_unique` under explicit `HasSheafify S.topology (AATCommAlgCat k)`. |
 | III-3 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `structureSheafMathlibSheafificationLiftUnique`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| III-4 | 実質化 | `Formal/AG/LawAlgebra/Scheme.lean` adds `affineChartMathlibSpecLocallyRingedSpace`, `ChartCompatibility.selfAffineSpec`, and `ArchitectureScheme.singleAffineSpec`, tying a selected affine AAT chart to Mathlib `Spec.toLocallyRingedSpace` and supplying the legacy compatibility slots for the single-chart identity atlas. |
+| III-4 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `schemeSingleAffineSpecCompatibilityAllConditions`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |
