@@ -223,7 +223,7 @@ docs/aat/proof_obligations_ag_aat.md
 | I-2 | `AATCore.lean` 定理10.5 | 昇格 | selected components を束ねる package で、S から標準塔を構成していない。 |
 | I-3 | `Configuration.lean` / `Obstruction.lean` finite marker | 実質化 | `finite : Prop` 系を `Set.Finite` / `Finite` へ接続する。 |
 | I-4 | `Law.lean` unused assumptions | 宣言 | R2 で Research 参照が確認されたため削除せず、selected 公理スロットとして凍結する。必要な load-bearing reading は I-1 の concrete required-law API へ移す。 |
-| II-1 | `Adequate.lean` 補題7.2A | 昇格 | closure construction が load-bearing になる additive theorem が必要。 |
+| II-1 | `Adequate.lean` 補題7.2A | 昇格 | R3 で seed-side support / axis assumptions から witness support と seed overlap を閉じる additive theorem を追加済み。 |
 | II-2 | `ContextCategory.lean` 命題4.2 | 昇格 | quotient poset / meet construction を実 theorem にする。 |
 | II-3 | `Context.lean` morphism roles | 実質化 | phantom parameter と自由 Prop role を support/restriction predicate に接続する。 |
 | II-4 | `FinitePoset.lean` 命題7.2C | 昇格 | PRD-10 標準複体へ接続し、旧 selected data 版は packaged 明示。 |
@@ -279,7 +279,7 @@ docs/aat/proof_obligations_ag_aat.md
 | --- | --- | --- | --- | --- |
 | PRD-1 | AC11 | 旧 `ThreeReadingAgreementAssumptions` 版は explicit package field 由来。PRD-R R2 で required-law concrete counterpart が証明済み。 | `proved` / `packaged (assumption-relative)` | `Formal/AG/Atom/ThreeReading.lean`, `concreteThreeReadingAgreement`, `ThreeReadingAgreementAssumptions.*` |
 | PRD-1 | AC13 | 旧 `exists_ofComponents` は selected components を束ねる theorem package。PRD-R R2 で `AtomTowerRealization` と HEq-free counterpart が証明済み。 | `proved` / `packaged (assumption-relative)` | `Formal/AG/Atom/AATCore.lean`, `exists_ofAxiomRealization_noHEq`, `AATCorePackage.*` |
-| PRD-2 | AC5 | 補題7.2A は `WitnessClosureCover` package assumptions に相対化される。 | `packaged (assumption-relative)` | `Formal/AG/Site/Adequate.lean`, `witnessClosureCover_uAdequate` |
+| PRD-2 | AC5 | PRD-R R3 で seed-side support / axis coverage、required witness support、seed-overlap boundary visibility から closed admissible cover と `U`-adequacy を構成する additive counterpart を証明済み。旧 `WitnessClosureCover` 版は Research-compatible packaged surface として残る。 | `proved` / `packaged (assumption-relative)` | `Formal/AG/Site/Adequate.lean`, `SeedWitnessClosureCover.toAATCoverageFamily_admissible`, `SeedWitnessClosureCover.uAdequate`, `witnessClosureCover_uAdequate` |
 | PRD-2 | AC11 | finite model examples は singleton / selected finite-poset fixture に相対化される。 | `packaged (assumption-relative)` | `Formal/AG/Examples/FiniteModel.lean`, `siteSingletonCover_uAdequate` |
 | PRD-3 | AC12 | Nullstellensatz candidate は statement surface に留まり、証明済み theorem ではない。 | `statement-only` | `Formal/AG/LawAlgebra/Nullstellensatz.lean`, `ArchitectureNullstellensatzCandidate` |
 | PRD-3 | AC18 | 定理11.1 Lawfulness-Ideal Correspondence は selected witness / coverage package に相対化される。 | `packaged (assumption-relative)` | `Formal/AG/LawAlgebra/Correspondence.lean` |
@@ -325,6 +325,8 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteAcyclicConcreteThreeReadingAgreement` | `AAT.AG.FiniteModel.acyclic_concreteThreeReadingAgreement` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteCyclicConcreteThreeReadingFires` | `AAT.AG.FiniteModel.object_concreteThreeReadingAgreement_fires` | `propext` |
 | `AAT.AG.AxiomAudit.finiteCorePackageFromAxiomRealizationNoHEq` | `AAT.AG.FiniteModel.corePackageFromAxiomRealization_exists_noHEq` | `propext` |
+| `AAT.AG.AxiomAudit.finiteSeedWitnessClosureAdmissible` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_admissible` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteSeedWitnessClosureUAdequate` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_uAdequate` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
 new wrappers when they promote theorem-package or firing-instance declarations
@@ -343,3 +345,15 @@ surfaces while adding concrete theorem counterparts.
 | I-2 firing | 発火 | `FiniteModel.atomTowerRealization`, `corePackageFromAxiomRealization`, and `corePackageFromAxiomRealization_exists_noHEq` instantiate the bridge on the finite Part I model. |
 | I-3 | 実質化 | `AtomFamily.ListFinite`, `AtomConfiguration.Molecule.ListFinite`, and `ObstructionCircuit.ListFinite` provide explicit list-cover finite-support predicates. `FiniteModel.allFamily_listFinite`, `cycleObstructionCircuit_listFinite`, and `substitutionObstructionCircuit_listFinite` provide concrete finite support. |
 | I-4 | 宣言 | `LawUniverse.coverageAssumptions` and `LawUniverse.exactnessAssumptions` remain frozen because `Formal/AG/Research` imports them directly. R2 does not use them for the concrete three-reading theorem; they remain selected assumption slots for the legacy packaged surface. |
+
+## R3 Site adequacy hardening
+
+R3 closes PRD-R II-1 additively. It preserves the existing
+`WitnessClosureCover` surface and adds a seed-driven construction layer whose
+support and axis assumptions live only on the seed index.
+
+| ID | Disposition | New evidence |
+| --- | --- | --- |
+| II-1 | 昇格 | `Formal/AG/Site/Adequate.lean` adds `SeedWitnessClosureCover`, `SeedWitnessClosureCover.toWitnessClosureCover`, `SeedWitnessClosureCover.toAATCoverageFamily`, `SeedWitnessClosureCover.toAATCoverageFamily_admissible`, and `SeedWitnessClosureCover.uAdequate`. Required witness support and seed overlaps generate the closed index; the legacy `WitnessClosureCover` theorem remains the packaged compatibility surface. |
+| II-1 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteSeedWitnessClosureCover`, `siteSeedWitnessClosureCover_admissible`, and `siteSeedWitnessClosureCover_uAdequate` on the finite singleton site. |
+| II-1 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteSeedWitnessClosureAdmissible` and `finiteSeedWitnessClosureUAdequate`, both guarded at `propext`, `Classical.choice`, `Quot.sound`. |

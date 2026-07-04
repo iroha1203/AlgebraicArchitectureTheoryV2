@@ -82,6 +82,16 @@ theorem finiteCorePackageFromAxiomRealizationNoHEq :
                       core.signature = FiniteModel.signature :=
   FiniteModel.corePackageFromAxiomRealization_exists_noHEq
 
+theorem finiteSeedWitnessClosureAdmissible :
+    Site.AdmissibleCover FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap
+      FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily.toCoverageFamily :=
+  FiniteModel.siteSeedWitnessClosureCover_admissible
+
+theorem finiteSeedWitnessClosureUAdequate :
+    Site.UAdequateCover FiniteModel.siteAdequacyRequirements
+      FiniteModel.siteSeedWitnessClosureCover.toAATCoverageFamily :=
+  FiniteModel.siteSeedWitnessClosureCover_uAdequate
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -131,5 +141,17 @@ info: 'AAT.AG.AxiomAudit.finiteCorePackageFromAxiomRealizationNoHEq' depends on 
 -/
 #guard_msgs in
 #print axioms finiteCorePackageFromAxiomRealizationNoHEq
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteSeedWitnessClosureAdmissible' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteSeedWitnessClosureAdmissible
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteSeedWitnessClosureUAdequate' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteSeedWitnessClosureUAdequate
 
 end AAT.AG.AxiomAudit
