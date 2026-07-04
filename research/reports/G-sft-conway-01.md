@@ -123,10 +123,10 @@ G2 / G3 audit summary:
 candidate: `research/ideas/g-sft-conway-01-support-fork-z2-boundary-receiver.md`
 candidate_type: `bridge`
 evidence_stage: `proved-in-research`
-base_score: 60
+base_score: 55
 evidence_multiplier: 2.0
 penalty: 0
-final_score: 120
+final_score: 110
 category: `boundary-quotient-receiver`, `finite-coefficient`, `support-receiver`,
   `conway-obstruction`, `finite-witness`
 goal_delta: Cycle 2 の `SupportNerveFork` を selected degree-one cochain として読み、
@@ -176,3 +176,58 @@ G2 / G3 audit summary:
 - G3 formalization quality: pass。claim を selected finite receiver に限定する限り blocking finding なし。
 - G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `SupportForkBoundarySubgroup` の Prop 分岐と `ZMod` / quotient infrastructure 由来。
 - G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。Cycle 3 は Cycle 2 receiver を selected finite coefficient boundary membership vocabulary へ移す low bridge として扱う。
+
+## Cycle 4 — Explicit boundary generator provenance
+
+candidate: `research/ideas/g-sft-conway-01-explicit-boundary-generator-provenance.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: `boundary-generator-provenance`, `finite-coefficient`, `support-receiver`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 3 の predicate-driven boundary subgroup を、explicit
+  `SupportForkBoundaryGenerator` 由来の selected generator subgroup membership へ移した。
+  generator が selected defect を吸収する theorem、functional ownership が mismatched fork の generator
+  existence を排除する theorem、compatible/repaired examples の zero generator receiver を Lean theorem として固定した。
+project_value_delta: Cycle 3 adversarial finding の主要点だった「boundary subgroup が receiver predicate-driven」を、
+  full boundary map までは進まずに single-owner support witness の explicit provenance 化として弱く改善した。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、selected owner-support generator を
+  Lean 内の witness として保存し、後続 boundary-map 候補へ渡せる形にした点に限定する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean` が通過。
+  `lake build Formal.AG.Research.SFT.ConwayBoundaryGenerator` も通過。`#print axioms` では
+  `SupportForkBoundaryGenerator.ofSingleOwnerSupport` と `boundaryGenerator_nonempty_iff_singleOwnerSupport` が
+  `Classical.choice` に依存し、subgroup / closure 系 theorem は `propext`, `Classical.choice`,
+  `Quot.sound` に依存する。G3 formalization quality は pass。
+open_questions: independent global boundary map、full quotient object、true sheaf `H^1`、common-refinement exactness、
+  comparison functor failure、arbitrary cover naturality は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayBoundaryGenerator.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.boundaryGenerator_nonempty_iff_singleOwnerSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkGeneratorBoundarySubgroup`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkDefectVanishesModuloGeneratorBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.generatorBoundary_absorbs_defect`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.generatorBoundarySubgroup_le_predicateBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_noBoundaryGenerator`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.functionalFork_not_generatorBoundaryVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.GeneratorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.generatorBoundaryReceiver_of_functionalFork`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedSupportFork_notGeneratorBoundaryVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_generatorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_generatorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_zeroGeneratorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_zeroGeneratorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_zeroGeneratorBoundaryReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedGeneratorBoundaryReceiverPackage`
+
+G2 / G3 audit summary:
+
+- G2 A: revise, base 60. Cycle 3 の predicate-driven boundary subgroup から explicit generator / closure へ分離できているが、generator は single-owner support と同値で、full boundary map ではない。
+- G2 D adversarial: revise, base 55. `SupportForkGeneratorBoundarySubgroup` は generator があれば constant defect を closure に入れるだけで、rival separation もまだ theorem packaging 寄り。
+- G3 formalization quality: pass。selected finite receiver 上の explicit boundary generator provenance に限定する限り blocking finding なし。
+- G3 axiom check: pass with `propext`, `Classical.choice`, `Quot.sound`; `ofSingleOwnerSupport` の choice と subgroup closure infrastructure 由来。
+- G4 score confirmation: base 55、evidence multiplier 2.0、penalty 0、final +110。Cycle 4 は single-owner support witness の explicit provenance 化として扱う。
