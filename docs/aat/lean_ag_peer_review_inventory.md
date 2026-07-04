@@ -224,7 +224,7 @@ docs/aat/proof_obligations_ag_aat.md
 | I-3 | `Configuration.lean` / `Obstruction.lean` finite marker | 実質化 | `finite : Prop` 系を `Set.Finite` / `Finite` へ接続する。 |
 | I-4 | `Law.lean` unused assumptions | 宣言 | R2 で Research 参照が確認されたため削除せず、selected 公理スロットとして凍結する。必要な load-bearing reading は I-1 の concrete required-law API へ移す。 |
 | II-1 | `Adequate.lean` 補題7.2A | 昇格 | R3 で seed-side support / axis assumptions から witness support と seed overlap を閉じる additive theorem を追加済み。 |
-| II-2 | `ContextCategory.lean` 命題4.2 | 昇格 | quotient poset / meet construction を実 theorem にする。 |
+| II-2 | `ContextCategory.lean` 命題4.2 | 昇格 | R3 で restriction-morphism preorder、componentwise product meet、readable-equivalence quotient finite-meet poset construction を追加済み。 |
 | II-3 | `Context.lean` morphism roles | 実質化 | phantom parameter と自由 Prop role を support/restriction predicate に接続する。 |
 | II-4 | `FinitePoset.lean` 命題7.2C | 昇格 | PRD-10 標準複体へ接続し、旧 selected data 版は packaged 明示。 |
 | II-5 | `Examples/FiniteModel.lean` Part II examples | 発火 | singleton / True 例から 2 patch + overlap finite site へ進める。 |
@@ -327,6 +327,7 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteCorePackageFromAxiomRealizationNoHEq` | `AAT.AG.FiniteModel.corePackageFromAxiomRealization_exists_noHEq` | `propext` |
 | `AAT.AG.AxiomAudit.finiteSeedWitnessClosureAdmissible` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_admissible` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSeedWitnessClosureUAdequate` | `AAT.AG.FiniteModel.siteSeedWitnessClosureCover_uAdequate` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteRestrictionQuotientFiniteMeetPoset` | `AAT.AG.FiniteModel.siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
 new wrappers when they promote theorem-package or firing-instance declarations
@@ -357,3 +358,6 @@ support and axis assumptions live only on the seed index.
 | II-1 | 昇格 | `Formal/AG/Site/Adequate.lean` adds `SeedWitnessClosureCover`, `SeedWitnessClosureCover.toWitnessClosureCover`, `SeedWitnessClosureCover.toAATCoverageFamily`, `SeedWitnessClosureCover.toAATCoverageFamily_admissible`, and `SeedWitnessClosureCover.uAdequate`. Required witness support and seed overlaps generate the closed index; the legacy `WitnessClosureCover` theorem remains the packaged compatibility surface. |
 | II-1 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteSeedWitnessClosureCover`, `siteSeedWitnessClosureCover_admissible`, and `siteSeedWitnessClosureCover_uAdequate` on the finite singleton site. |
 | II-1 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteSeedWitnessClosureAdmissible` and `finiteSeedWitnessClosureUAdequate`, both guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| II-2 | 昇格 | `Formal/AG/Site/ContextCategory.lean` adds `contextMorphismPreorderCategory`, `productContextFiniteMeet`, `quotientLe`, `quotientMeet`, `quotientLe_wellDefined`, `quotientMeet_wellDefined`, `quotientFiniteMeetPosetCategoryOf`, and `minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet`. The quotient poset is now constructed from preorder + finite-meet data, while the old `minimalContextQuotientFiniteMeetPosetCategory` remains a packaged compatibility surface. |
+| II-2 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `siteRestrictionQuotientFiniteMeetPosetCategory` and `siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet` for the finite model's canonical restriction preorder. |
+| II-2 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `finiteRestrictionQuotientFiniteMeetPoset`, guarded at `propext`, `Classical.choice`, `Quot.sound`. |

@@ -522,6 +522,32 @@ theorem siteContextLe_sound {i j : SiteContextIndex} (_h : True) :
     siteContextPreorder.le (siteContextOf i) (siteContextOf j) :=
   rfl
 
+/--
+R11 / II.AC16: proposition 4.2 quotient finite-meet poset construction fires
+for the finite architecture object using the canonical restriction preorder.
+-/
+noncomputable def siteRestrictionQuotientFiniteMeetPosetCategory :
+    Site.QuotientFiniteMeetPosetCategory
+      (Site.contextMorphismPreorderCategory object) :=
+  Site.quotientFiniteMeetPosetCategoryOf
+    (Site.contextMorphismPreorderCategory object)
+    (Site.productContextFiniteMeet (A := object))
+
+/--
+R11 / II.AC16: example theorem reading proposition 4.2 on the finite model's
+canonical restriction preorder.
+-/
+theorem siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet :
+    ∃ site : Site.QuotientFiniteMeetPosetCategory
+        (Site.contextMorphismPreorderCategory object),
+      site =
+        Site.quotientFiniteMeetPosetCategoryOf
+          (Site.contextMorphismPreorderCategory object)
+          (Site.productContextFiniteMeet (A := object)) :=
+  Site.minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet
+    (Site.contextMorphismPreorderCategory object)
+    (Site.productContextFiniteMeet (A := object))
+
 /-- R11 / II.AC16: explicit pullback / overlap package for the equality context preorder. -/
 def siteOverlap : Site.ContextOverlapPullback siteContextPreorder where
   overlap base _left _right := base
