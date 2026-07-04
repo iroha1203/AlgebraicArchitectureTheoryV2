@@ -805,13 +805,28 @@ R11 final ledger / no-sorry scan Issue: [#2326](https://github.com/iroha1203/Alg
 | `TerminalStateImpliesLawfulWithoutObstructionAssumptions` | `future proof obligation` / explicit non-goal for PRD-9 |
 | `GeneralForceIntegrabilityTheorem` | `future proof obligation` / explicit non-goal for PRD-9 |
 
-## AAT Algebraic-Geometric Part X Semantic Repair Descent SAGA Lean status
+## AAT Algebraic-Geometric Part X Semantic Repair Descent (SAGA) Lean status
 
 Tracking Issue: [#2910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2910).
-AC14 implementation Issue: [#2937](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2937).
-AC16 implementation Issue: [#2941](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2941).
-AC17 implementation Issue: [#2943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2943).
-AC18 final scan Issue: [#2946](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2946).
+Implementation Issues: R0 [#2911](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2911);
+R1 [#2913](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2913),
+[#2915](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2915),
+[#2917](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2917),
+[#2919](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2919);
+R2 [#2921](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2921);
+R3 [#2923](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2923),
+[#2925](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2925);
+R4 [#2927](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2927),
+[#2929](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2929);
+R5 [#2931](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2931);
+R6 [#2933](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2933);
+R7 [#2935](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2935),
+[#2937](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2937);
+R8 [#2939](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2939);
+R9 [#2941](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2941),
+[#2943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2943);
+R10 [#2946](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2946);
+R11 [#2948](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2948).
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
