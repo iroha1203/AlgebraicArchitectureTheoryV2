@@ -1,6 +1,7 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.SemanticRepair.Boundary
 import Mathlib.Data.Int.Basic
+import Mathlib.Data.ZMod.Basic
 
 noncomputable section
 
@@ -362,6 +363,410 @@ theorem lawfulFiring_generatedSourceC0Zero :
     Nonempty (GeneratedSourceC0ZeroPackage defectSource) :=
   displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
     defectSource displayedRequiredLawsHoldOn
+
+/-! ## Circle-nerve nonzero transfer witness -/
+
+/--
+X.例9.2: degenerate witness-site coverage requirements used by the selected
+circle nerve.
+
+The selected nerve below is supplied simplicial data, not generated from chart
+intersections.  These requirements deliberately have no admissible cover, so
+the generated topology is the top-only witness topology used for the concrete
+`F₂` coefficient sheaf.
+-/
+def circleCoverageRequirements :
+    Site.CoverageRequirements FiniteModel.object
+      FiniteModel.lawUniverse FiniteModel.signature where
+  selectedReading := FiniteModel.lawUniverse.selectedReading
+  requiredSupport := fun _ _ => True
+  requiredWitness := fun _ _ => False
+  requiredAxis := fun _ _ => False
+  supportVisibleOn := fun _ _ => False
+  witnessVisibleOn := fun _ _ => False
+  axisReadableOn := fun _ _ => False
+  boundaryVisibleOn := fun _ _ => False
+
+/-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
+def circleSite : Site.AATSite FiniteModel.object where
+  contextPreorder := FiniteModel.siteContextPreorder
+  lawUniverse := FiniteModel.lawUniverse
+  signature := FiniteModel.signature
+  requirements := circleCoverageRequirements
+  overlap := FiniteModel.siteOverlap
+
+/-- X.例9.2: base object for the selected circle witness site. -/
+def circleSiteBase : circleSite.category :=
+  Site.ContextCategoryObject.of FiniteModel.siteContextPreorder
+    FiniteModel.siteContext
+
+/-- X.例9.2: no admissible cover exists for the selected witness topology. -/
+theorem circleCoverageFamily_impossible {base : circleSite.category}
+    (F : Site.AATCoverageFamily circleCoverageRequirements
+      FiniteModel.siteOverlap base) :
+    False := by
+  rcases F.admissible.atomSupportCoverage
+      FiniteModel.FiniteAtom.componentA trivial with ⟨i, hi⟩
+  exact hi
+
+/-- X.例9.2: every covering sieve in the selected witness topology is top. -/
+theorem circleSiteTopology_cover_eq_top {base : circleSite.category}
+    {cover : Sieve base} (hcover : cover ∈ circleSite.topology base) :
+    cover = ⊤ := by
+  change
+    (Site.admissiblePrecoverage circleCoverageRequirements
+      FiniteModel.siteOverlap).Saturate base cover at hcover
+  induction hcover with
+  | of _X _S hS =>
+      rcases hS with ⟨F, rfl⟩
+      exact False.elim (circleCoverageFamily_impossible F)
+  | top _X =>
+      rfl
+  | pullback _X _S _hS _Y _f ih =>
+      rw [ih, Sieve.pullback_top]
+  | transitive X S R _hS hR ihS ihR =>
+      rw [← Sieve.id_mem_iff_eq_top]
+      have hSid : S (𝟙 X) := by
+        rw [Sieve.id_mem_iff_eq_top, ihS]
+      have hlocal : R = ⊤ := by
+        simpa using ihR hSid
+      rw [hlocal]
+      trivial
+
+/-- X.例9.2: constant `F₂` coefficient presheaf on the circle witness site. -/
+def circleF2Presheaf : Site.AATPresheaf circleSite where
+  obj _ := ZMod 2
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- X.例9.2: the constant `F₂` presheaf is a sheaf on the witness topology. -/
+theorem circleF2IsSheaf :
+    Site.AATSheafCondition circleSite circleF2Presheaf := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor, circleSiteTopology_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top circleF2Presheaf
+
+/-- X.例9.2: obstruction coefficient sheaf `Q ≅ F₂` for the circle witness. -/
+def circleObstructionSheaf :
+    Cohomology.ObstructionSheaf circleSite where
+  carrier := {
+    carrier := circleF2Presheaf
+    isSheaf := circleF2IsSheaf
+  }
+  addCommGroup _ := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  map_zero := by
+    intro _source _target _f
+    rfl
+  map_add := by
+    intro _source _target _f _x _y
+    rfl
+
+/-- X.例9.2: supplied circle-nerve cover data. -/
+def circleSimplex : Nat -> Type
+  | 0 => Fin 3
+  | 1 => Fin 3
+  | _ + 2 => Unit
+
+/-- X.例9.2: cyclic successor on the three selected circle vertices. -/
+def circleNext (vertex : Fin 3) : Fin 3 :=
+  ⟨(vertex.val + 1) % 3, Nat.mod_lt _ (by decide : 0 < 3)⟩
+
+/-- X.例9.2: selected face map for the three-edge circle nerve. -/
+def circleFace : ∀ n : Nat, Fin (n + 2) -> circleSimplex (n + 1) ->
+    circleSimplex n
+  | 0, i, edge => if i.val = 0 then circleNext edge else edge
+  | 1, _i, _twoSimplex => (0 : Fin 3)
+  | _ + 2, _i, _higherSimplex => ()
+
+/-- X.例9.2: selected circle C0 cochains. -/
+abbrev circleC0 : Type := Fin 3 -> ZMod 2
+
+/-- X.例9.2: selected circle C1 cochains. -/
+abbrev circleC1 : Type := Fin 3 -> ZMod 2
+
+/-- X.例9.2: selected circle C2 cochains. -/
+abbrev circleC2 : Type := Unit -> ZMod 2
+
+/-- X.例9.2: selected circle Cech coboundary `d0`. -/
+def circleD0 (cochain : circleC0) : circleC1 :=
+  fun edge => cochain (circleNext edge) - cochain edge
+
+/-- X.例9.2: selected residual one-cochain on the circle. -/
+def circleResidual : circleC1 :=
+  fun _ => (1 : ZMod 2)
+
+/-- X.例9.2: selected zero one-cochain on the circle. -/
+def circleZero1 : circleC1 :=
+  fun _ => (0 : ZMod 2)
+
+/-- X.例9.2: selected zero two-cochain on the circle. -/
+def circleZero2 : circleC2 :=
+  fun _ : Unit => (0 : ZMod 2)
+
+/-- X.例9.2: the residual `1` on the three-edge circle is not a coboundary. -/
+theorem circleResidual_not_coboundary :
+    ¬ ∃ primitive : circleC0, circleResidual - circleZero1 = circleD0 primitive := by
+  decide
+
+/-- X.例9.2: supplied circle-nerve cover data. -/
+def circleCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover circleSite where
+  base := circleSiteBase
+  Index := Fin 3
+  chart _ := circleSiteBase
+  inclusion _ := 𝟙 circleSiteBase
+  simplex := circleSimplex
+  overlap _ _ := circleSiteBase
+  face := circleFace
+  faceRestriction _ _ _ := 𝟙 circleSiteBase
+
+/-- X.例9.2: selected three-edge circle complex over `F₂`. -/
+def circleCoverRelativeComplex :
+    Cohomology.CoverRelativeCechComplex
+      circleCoverRelativeCover circleObstructionSheaf where
+  cochainAddCommGroup n := by
+    change AddCommGroup (circleSimplex n -> ZMod 2)
+    infer_instance
+  alternatingFaceCombination
+    | 0, terms => fun edge =>
+        (terms edge 0 : ZMod 2) - (terms edge 1 : ZMod 2)
+    | _ + 1, _terms => fun _ => (0 : ZMod 2)
+  differential
+    | 0 => by
+        change circleC0 →+ circleC1
+        exact {
+          toFun := circleD0
+          map_zero' := by
+            funext edge
+            simp [circleD0]
+          map_add' := by
+            intro left right
+            funext edge
+            simp [circleD0]
+            abel
+        }
+    | _ + 1 => by
+        change (circleSimplex (_ + 1) -> ZMod 2) →+
+          (circleSimplex (_ + 2) -> ZMod 2)
+        exact {
+          toFun := fun _ => fun _ => (0 : ZMod 2)
+          map_zero' := by
+            funext σ
+            rfl
+          map_add' := by
+            intro _x _y
+            funext σ
+            rfl
+        }
+  differential_eq_alternatingFaceCombination := by
+    intro n c
+    cases n with
+    | zero =>
+        funext edge
+        letI := circleObstructionSheaf.addCommGroup circleSiteBase
+        dsimp [circleD0, circleFace, circleCoverRelativeCover,
+          circleObstructionSheaf, circleF2Presheaf, Site.AATSheaf.toPresheaf]
+        change circleD0 (c : circleC0) edge = _
+        rfl
+    | succ n =>
+        funext σ
+        change (0 : ZMod 2) = 0
+        rfl
+  differential_comp := by
+    intro n _c
+    cases n with
+    | zero =>
+        funext σ
+        change (0 : ZMod 2) = 0
+        rfl
+    | succ n =>
+        funext σ
+        change (0 : ZMod 2) = 0
+        rfl
+
+/-- X.例9.2: semantic additive `H¹` surface with residual `1 ∈ F₂`. -/
+def circleAdditiveH1Surface :
+    SemanticRepairAdditiveH1Surface where
+  C0 := circleC0
+  C1 := circleC1
+  C2 := circleC2
+  zero1 := circleZero1
+  zero2 := circleZero2
+  delta0 := circleD0
+  delta1 _ := circleZero2
+  residual := circleResidual
+  c0AddCommGroup := inferInstance
+  c1AddCommGroup := inferInstance
+  zero1_eq_zero := by
+    funext edge
+    rfl
+  delta0_zero := by
+    funext edge
+    simp [circleD0]
+  delta0_add := by
+    intro left right
+    funext edge
+    simp [circleD0]
+    abel
+  delta0_neg := by
+    intro primitive
+    funext edge
+    change
+      (-primitive (circleNext edge) - -primitive edge) =
+        -(primitive (circleNext edge) - primitive edge)
+    abel
+  zero1_cocycle := by
+    funext σ
+    rfl
+  delta1_delta0_eq_zero := by
+    intro _primitive
+    funext σ
+    rfl
+  residual_cocycle := by
+    funext σ
+    rfl
+
+/-- X.例9.2: the semantic residual circle cochain is not a semantic coboundary. -/
+theorem circleSemantic_residual_not_coboundary :
+    ¬ circleAdditiveH1Surface.Cohomologous
+      ⟨circleResidual, circleAdditiveH1Surface.residual_cocycle⟩
+      ⟨circleZero1, circleAdditiveH1Surface.zero1_cocycle⟩ :=
+  circleResidual_not_coboundary
+
+/-- X.例9.2: semantic additive residual class is nonzero in `H¹`. -/
+theorem circleSemanticH1_nonzero :
+    ¬ circleAdditiveH1Surface.H1Zero := by
+  intro hzero
+  exact circleSemantic_residual_not_coboundary (Quotient.exact hzero)
+
+/-- X.例9.2: selected cover-relative residual cocycle. -/
+def circleCoverRelativeResidualCocycle :
+    circleCoverRelativeComplex.CechCocycle 1 where
+  val := circleResidual
+  property := by
+    funext σ
+    change (0 : ZMod 2) = 0
+    rfl
+
+/-- X.例9.2: selected cover-relative zero cocycle. -/
+def circleCoverRelativeZeroCocycle :
+    circleCoverRelativeComplex.CechCocycle 1 where
+  val := circleZero1
+  property := by
+    funext σ
+    change (0 : ZMod 2) = 0
+    rfl
+
+/-- X.例9.2: selected cover-relative residual class. -/
+def circleCoverRelativeResidualClass :
+    circleCoverRelativeComplex.CechCohomologySucc 0 :=
+  circleCoverRelativeComplex.cohomologyClassSucc 0
+    circleCoverRelativeResidualCocycle
+
+/-- X.例9.2: selected cover-relative zero class. -/
+def circleCoverRelativeZeroClass :
+    circleCoverRelativeComplex.CechCohomologySucc 0 :=
+  circleCoverRelativeComplex.cohomologyClassSucc 0
+    circleCoverRelativeZeroCocycle
+
+/-- X.例9.2: the cover-relative residual `1` is not a coboundary. -/
+theorem circleCoverRelative_residual_not_coboundary :
+    ¬ (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+      circleCoverRelativeResidualCocycle circleCoverRelativeZeroCocycle := by
+  rintro ⟨primitive, hprimitive⟩
+  have hzero :
+      circleResidual - circleZero1 = circleD0 primitive := hprimitive
+  exact circleResidual_not_coboundary ⟨primitive, hzero⟩
+
+/-- X.例9.2: the cover-relative residual class is nonzero in `H¹`. -/
+theorem circleCoverRelativeH1_nonzero :
+    circleCoverRelativeResidualClass ≠ circleCoverRelativeZeroClass := by
+  intro hzero
+  exact circleCoverRelative_residual_not_coboundary (Quotient.exact hzero)
+
+/--
+X.例9.2: identity cochain comparison between the semantic additive surface and
+the selected cover-relative circle complex.
+-/
+def circleH1Comparison :
+    SemanticRepairCoverRelativeH1Comparison
+      circleAdditiveH1Surface circleCoverRelativeComplex where
+  c0Equiv := by
+    change circleC0 ≃+ circleC0
+    exact AddEquiv.refl circleC0
+  c1Equiv := by
+    change circleC1 ≃+ circleC1
+    exact AddEquiv.refl circleC1
+  c2Equiv := by
+    change (Unit -> ZMod 2) ≃ (Unit -> ZMod 2)
+    exact Equiv.refl (Unit -> ZMod 2)
+  c2Equiv_zero := by
+    funext σ
+    rfl
+  c2Equiv_symm_zero := by
+    funext σ
+    rfl
+  d0_to := by
+    intro primitive
+    rfl
+  d0_from := by
+    intro primitive
+    rfl
+  d1_to := by
+    intro _cochain
+    funext σ
+    change (0 : ZMod 2) = 0
+    rfl
+  d1_from := by
+    intro _cochain
+    funext σ
+    change (0 : ZMod 2) = 0
+    rfl
+
+/-- X.例9.2: nonzero semantic class transfers across theorem 7.2 comparison. -/
+theorem circleTransferredCoverRelativeH1_nonzero :
+    ¬ circleH1Comparison.CoverRelativeResidualH1Zero := by
+  intro hzero
+  exact circleSemanticH1_nonzero
+    ((SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
+        circleH1Comparison).2 hzero)
+
+/-- X.例9.2: concrete transfer packet for the circle-nerve nonzero class. -/
+structure CircleNerveNonzeroTransferPacket where
+  semanticResidualNonzero :
+    ¬ circleAdditiveH1Surface.H1Zero
+  coverRelativeResidualNonzero :
+    circleCoverRelativeResidualClass ≠ circleCoverRelativeZeroClass
+  transferredCoverRelativeNonzero :
+    ¬ circleH1Comparison.CoverRelativeResidualH1Zero
+  comparisonEquiv :
+    circleAdditiveH1Surface.H1 ≃ circleCoverRelativeComplex.CechCohomologySucc 0
+  zeroPredicateTransfer :
+    circleAdditiveH1Surface.H1Zero <->
+      circleH1Comparison.CoverRelativeResidualH1Zero
+
+/--
+X.例9.2: the selected circle nerve fires: both semantic and cover-relative
+degree-one classes are nonzero, and theorem 7.2 transfers the nonzero reading
+through the identity comparison.
+-/
+theorem circleNerve_nonzeroClassTransfer_packet :
+    Nonempty CircleNerveNonzeroTransferPacket := by
+  refine ⟨{
+    semanticResidualNonzero := circleSemanticH1_nonzero
+    coverRelativeResidualNonzero := circleCoverRelativeH1_nonzero
+    transferredCoverRelativeNonzero :=
+      circleTransferredCoverRelativeH1_nonzero
+    comparisonEquiv :=
+      SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1
+        circleH1Comparison
+    zeroPredicateTransfer :=
+      SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
+        circleH1Comparison
+  }⟩
 
 end SemanticRepairPart10
 end Examples
