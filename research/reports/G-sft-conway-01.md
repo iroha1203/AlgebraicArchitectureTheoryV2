@@ -104,12 +104,15 @@ Lean evidence:
 - `Formal.AG.Research.SFT.ConwayTwoTopology.compatible_no_supportReceiver`
 - `Formal.AG.Research.SFT.ConwayTwoTopology.compatibleAtlas_noSupportReceiver`
 - `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_supportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgedAtlas_noSupportReceiver`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactoredAtlas_noSupportReceiver`
 - `Formal.AG.Research.SFT.ConwayTwoTopology.selectedSupportReceiverPackage`
 
 G2 / G3 audit summary:
 
 - G2 A: revise, base 70. 最初の receiver 語彙化として一段前進だが、full relative nerve / nerve map mismatch には届かない。
 - G2 B: revise, base 55. 定義は使えるが、中心 obstruction 条件は Cycle 1 witness の再包装に近い。
+- G2 C: revise, base 60. 将来の `C^1/B^1` や comparison functor failure の受け皿として自然だが、`CommonRefinementSpan` は obstruction 判定に未接続。
 - G2 D adversarial: revise, base 45. `CommonRefinementSpan` は obstruction 判定に未使用で、rival separation は弱い。
 - G3 formalization quality: pass。blocking な健全性問題なし。
 - G3 axiom check: pass with `propext` only on finite example receiver declarations; receiver equivalence itself is axiom-free.
