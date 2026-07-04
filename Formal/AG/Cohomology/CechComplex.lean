@@ -170,6 +170,187 @@ def cohomologyClassSucc (K : CoverRelativeCechComplex 𝒰 Ob) (n : Nat)
   Quotient.mk (K.CechCoboundarySetoidSucc n) c
 
 /--
+R5 / IV-1: cochain type tagged by the selected complex so its additive
+group instance is recoverable by typeclass search.
+-/
+def AdditiveCochain (K : CoverRelativeCechComplex 𝒰 Ob) (n : Nat) : Type u :=
+  K.Cn n
+
+instance additiveCochainAddCommGroup (K : CoverRelativeCechComplex 𝒰 Ob)
+    (n : Nat) : AddCommGroup (K.AdditiveCochain n) :=
+  K.cochainAddCommGroup n
+
+/--
+R5 / IV-1: additive cocycle subgroup `Z^n = ker d^n` inside the selected
+cover-relative cochain group.
+-/
+def CechCocycleSubgroup (K : CoverRelativeCechComplex 𝒰 Ob) (n : Nat) :
+    AddSubgroup (K.AdditiveCochain n) :=
+  letI := K.cochainAddCommGroup n
+  letI := K.cochainAddCommGroup (n + 1)
+  letI := K.additiveCochainAddCommGroup n
+  letI := K.additiveCochainAddCommGroup (n + 1)
+  {
+    carrier := fun c => K.d n c = 0
+    zero_mem' := by
+      change K.d n (0 : K.Cn n) = 0
+      simp [d]
+    add_mem' := by
+      intro x y hx hy
+      change K.d n (x + y : K.Cn n) = 0
+      rw [map_add, hx, hy, add_zero]
+    neg_mem' := by
+      intro x hx
+      change K.d n (-x : K.Cn n) = 0
+      rw [map_neg, hx, neg_zero]
+  }
+
+/--
+R5 / IV-1: a coboundary `d^n b` is a cocycle in degree `n+1`.
+
+This is the load-bearing use of the selected `d ∘ d = 0` witness.
+-/
+def coboundaryCocycle (K : CoverRelativeCechComplex 𝒰 Ob) (n : Nat)
+    (b : K.Cn n) : K.CechCocycleSubgroup (n + 1) :=
+  letI := K.cochainAddCommGroup n
+  letI := K.cochainAddCommGroup (n + 1)
+  letI := K.cochainAddCommGroup (n + 2)
+  letI := K.additiveCochainAddCommGroup n
+  letI := K.additiveCochainAddCommGroup (n + 1)
+  letI := K.additiveCochainAddCommGroup (n + 2)
+  ⟨K.d n b, by
+    simpa [CechCocycleSubgroup] using K.d_comp_d_eq_zero n b⟩
+
+/--
+R5 / IV-1: additive coboundary subgroup `B^(n+1) = im d^n` inside
+`Z^(n+1)`.
+-/
+def CechCoboundarySubgroupSucc (K : CoverRelativeCechComplex 𝒰 Ob) (n : Nat) :
+    AddSubgroup (K.CechCocycleSubgroup (n + 1)) :=
+  letI := K.cochainAddCommGroup n
+  letI := K.cochainAddCommGroup (n + 1)
+  letI := K.cochainAddCommGroup (n + 2)
+  letI := K.additiveCochainAddCommGroup n
+  letI := K.additiveCochainAddCommGroup (n + 1)
+  letI := K.additiveCochainAddCommGroup (n + 2)
+  {
+    carrier := fun c => ∃ b : K.Cn n, c = K.coboundaryCocycle n b
+    zero_mem' := by
+      refine ⟨0, ?_⟩
+      ext
+      simp [coboundaryCocycle, CechCocycleSubgroup]
+    add_mem' := by
+      intro x y hx hy
+      rcases hx with ⟨bx, rfl⟩
+      rcases hy with ⟨by', rfl⟩
+      refine ⟨bx + by', ?_⟩
+      ext
+      simp [coboundaryCocycle, CechCocycleSubgroup, map_add]
+    neg_mem' := by
+      intro x hx
+      rcases hx with ⟨b, rfl⟩
+      refine ⟨-b, ?_⟩
+      ext
+      simp [coboundaryCocycle, CechCocycleSubgroup, map_neg]
+  }
+
+/--
+R5 / IV-1: additive cover-relative `H^1(𝒰, Ob_U) = Z^1 / B^1`.
+
+The legacy `CechCohomologySucc 0` quotient surface remains unchanged; this is
+the additive group reading of the same selected degree-one relation.
+-/
+abbrev AdditiveCechH1 (K : CoverRelativeCechComplex 𝒰 Ob) : Type u :=
+  letI := K.additiveCochainAddCommGroup 0
+  letI := K.additiveCochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 2
+  K.CechCocycleSubgroup 1 ⧸ K.CechCoboundarySubgroupSucc 0
+
+/-- R5 / IV-1: the additive H1 surface carries its quotient abelian group. -/
+instance additiveCechH1AddCommGroup (K : CoverRelativeCechComplex 𝒰 Ob) :
+    AddCommGroup K.AdditiveCechH1 := by
+  dsimp [AdditiveCechH1]
+  infer_instance
+
+/-- R5 / IV-1: class of a degree-one cocycle in additive cover-relative H1. -/
+def additiveH1Class (K : CoverRelativeCechComplex 𝒰 Ob)
+    (c : K.CechCocycle 1) : K.AdditiveCechH1 :=
+  letI := K.additiveCochainAddCommGroup 0
+  letI := K.additiveCochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 2
+  ((⟨c.1, c.2⟩ :
+      K.CechCocycleSubgroup 1) : K.AdditiveCechH1)
+
+/--
+R5 / IV-1: a degree-one additive class vanishes exactly when the selected
+cocycle is a degree-zero coboundary.
+-/
+theorem additiveH1Class_eq_zero_iff (K : CoverRelativeCechComplex 𝒰 Ob)
+    (c : K.CechCocycle 1) :
+    K.additiveH1Class c = 0 ↔ ∃ b : K.Cn 0, c.1 = K.d 0 b := by
+  letI := K.additiveCochainAddCommGroup 0
+  letI := K.additiveCochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 2
+  change
+    ((⟨c.1, c.2⟩ :
+        K.CechCocycleSubgroup 1) : K.AdditiveCechH1) = 0 ↔
+      ∃ b : K.Cn 0, c.1 = K.d 0 b
+  rw [QuotientAddGroup.eq_zero_iff]
+  constructor
+  · intro h
+    rcases h with ⟨b, hb⟩
+    refine ⟨b, ?_⟩
+    exact congrArg Subtype.val hb
+  · intro h
+    rcases h with ⟨b, hb⟩
+    refine ⟨b, ?_⟩
+    ext
+    exact hb
+
+/--
+R5 / IV-1: the legacy degree-one setoid relation is the same relation read
+as equality in the additive quotient.
+-/
+theorem additiveH1Class_eq_iff_legacy_setoid (K : CoverRelativeCechComplex 𝒰 Ob)
+    (x y : K.CechCocycle 1) :
+    K.additiveH1Class x = K.additiveH1Class y ↔
+      (K.CechCoboundarySetoidSucc 0).r x y := by
+  letI := K.additiveCochainAddCommGroup 0
+  letI := K.additiveCochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 2
+  change
+    ((⟨x.1, x.2⟩ :
+        K.CechCocycleSubgroup 1) : K.AdditiveCechH1) =
+      ((⟨y.1, y.2⟩ :
+          K.CechCocycleSubgroup 1) : K.AdditiveCechH1) ↔
+      (K.CechCoboundarySetoidSucc 0).r x y
+  rw [QuotientAddGroup.eq_iff_sub_mem]
+  constructor
+  · intro h
+    rcases h with ⟨b, hb⟩
+    refine ⟨b, ?_⟩
+    exact congrArg Subtype.val hb
+  · intro h
+    rcases h with ⟨b, hb⟩
+    refine ⟨b, ?_⟩
+    ext
+    exact hb
+
+/--
+R5 / IV-1: equality of legacy `CechCohomologySucc 0` classes is equivalent
+to equality of their additive H1 quotient classes.
+-/
+theorem cohomologyClassSucc_eq_iff_additiveH1Class_eq
+    (K : CoverRelativeCechComplex 𝒰 Ob) (x y : K.CechCocycle 1) :
+    K.cohomologyClassSucc 0 x = K.cohomologyClassSucc 0 y ↔
+      K.additiveH1Class x = K.additiveH1Class y := by
+  change Quotient.mk (K.CechCoboundarySetoidSucc 0) x =
+      Quotient.mk (K.CechCoboundarySetoidSucc 0) y ↔
+    K.additiveH1Class x = K.additiveH1Class y
+  rw [Quotient.eq]
+  exact (K.additiveH1Class_eq_iff_legacy_setoid x y).symm
+
+/--
 IV.R2 frontier: finite-poset comparison witness for a general Čech complex.
 
 The actual PRD-2 comparison theorem is intentionally left for the R2 issue.
