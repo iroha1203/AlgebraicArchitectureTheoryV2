@@ -301,3 +301,27 @@ docs/aat/proof_obligations_ag_aat.md
 This R0 pass does not claim that every mechanical hit has been repaired.
 It fixes the audit surface and assigns the PRD-R table items to one of the four actions.
 Repair work starts in R1 and R2-R10 child issues.
+
+## R1 kernel axiom guard
+
+R1 removes all `native_decide` occurrences from `Formal/AG` and adds
+`Formal/AG/AxiomAudit.lean` as the kernel-level audit entrypoint.
+
+CI command:
+
+```bash
+lake env lean Formal/AG/AxiomAudit.lean
+```
+
+R1 tracked declarations:
+
+| Audit wrapper | Source declaration | Allowed axiom set |
+| --- | --- | --- |
+| `AAT.AG.AxiomAudit.boundaryCocycleNonzero` | `AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle_AB_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.derivedG5AllDegree` | `AAT.AG.FiniteModel.DerivedPart5.sharedWitnessG5_all_degree_coefficient_identity` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.temporalPseudoCircleNonzero` | `AAT.AG.Examples.EvolutionPart9.pseudoCircleMismatch_ab_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.forceCandidateConcreteNonzero` | `AAT.AG.Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+
+The audit list is intentionally additive. Later PRD-R hardening PRs must add
+new wrappers when they promote theorem-package or firing-instance declarations
+into the kernel-audited surface.

@@ -369,7 +369,10 @@ private theorem sharedWitnessG5RightCoeff_increment (n : Nat) :
         (if n = 0 then 0 else sharedWitnessAmbientIntCoeff (n - 1)) := by
   cases n with
   | zero =>
-      native_decide
+      unfold sharedWitnessG5RightCoeff sharedWitnessAmbientIntCoeff
+        sharedWitnessConflictAlternatingCoeff
+      rw [Finset.sum_range_succ, Finset.sum_range_succ]
+      rfl
   | succ m =>
       unfold sharedWitnessG5RightCoeff
       rw [Finset.sum_range_succ]
@@ -393,7 +396,7 @@ private theorem sharedWitnessG5_increment_eq (n : Nat) :
         sharedWitnessQuotientIntCoeff (n + 1) := by
   by_cases hn : n = 0
   · subst n
-    native_decide
+    rfl
   · apply mul_left_cancel₀ (show (2 : Int) ≠ 0 by norm_num)
     rw [mul_add, mul_add, mul_add]
     simp [hn]
@@ -410,7 +413,10 @@ private theorem sharedWitnessG5_coefficients_eq (n : Nat) :
     sharedWitnessG5LeftCoeff n = sharedWitnessG5RightCoeff n := by
   induction n with
   | zero =>
-      native_decide
+      unfold sharedWitnessG5LeftCoeff sharedWitnessG5RightCoeff
+        sharedWitnessAmbientIntCoeff sharedWitnessQuotientIntCoeff
+        sharedWitnessConflictAlternatingCoeff
+      rfl
   | succ n ih =>
       rw [sharedWitnessG5LeftCoeff_increment,
         sharedWitnessG5RightCoeff_increment, ih]

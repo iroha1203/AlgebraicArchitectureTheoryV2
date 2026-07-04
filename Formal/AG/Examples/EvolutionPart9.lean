@@ -737,7 +737,10 @@ def pseudoCircleMismatch : PseudoCircleEdge -> ZMod 2
 /-- R10(c): the pseudo-circle boundary mismatch has a concrete nonzero edge. -/
 theorem pseudoCircleMismatch_ab_nonzero :
     pseudoCircleMismatch .ab ≠ 0 := by
-  native_decide
+  intro h
+  have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+  rw [ZMod.val_one] at hv
+  simp at hv
 
 /-- R10(c): selected nonzero replay class fixture without claiming global failure. -/
 structure ReplayDescentNonzeroExample where
@@ -845,7 +848,11 @@ def forceCandidateFixture : ForceCandidateFixture where
   forceSelected := toyForce.selected
   mismatchClass := toyForceMismatchClass
   concreteObstructionValue := 1
-  concreteObstruction_nonzero := by native_decide
+  concreteObstruction_nonzero := by
+    intro h
+    have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+    rw [ZMod.val_one] at hv
+    simp at hv
   selectedNonzero := fun _ => True
   selectedNonzero_cert := trivial
   coefficientExactness := True
