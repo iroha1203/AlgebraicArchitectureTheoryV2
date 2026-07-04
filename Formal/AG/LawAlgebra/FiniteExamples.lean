@@ -214,6 +214,37 @@ theorem acyclic_pulledObstructionIdeal_eq_bot :
     cycleIdeal, Ideal.map_span]
   simp [cycleCoordinate, zeroEval]
 
+/-- III.R4 / III-1: acyclic section data for the generated local obstruction ideal. -/
+def acyclicLocalSectionData :
+    LawfulLocus.LocalLawfulSectionData CycleRing cycleWitnessIdealFamily where
+  SectionRing := Int
+  commRing := inferInstance
+  pullback := zeroEval
+
+/-- III.R4 / III-1: the acyclic pullback kills the selected cycle witness ideal. -/
+theorem acyclic_cycleWitnessIdeal_le_ker
+    (index : cycleWitnessIdealFamily.LawIndex) :
+    cycleWitnessIdealFamily.witnessIdeal index ≤ RingHom.ker zeroEval := by
+  cases index
+  change cycleIdeal ≤ RingHom.ker zeroEval
+  exact (Ideal.map_eq_bot_iff_le_ker zeroEval).mp
+    (by
+      simpa [LawfulLocus.LawfulSectionData.pulledObstructionIdeal, acyclicSectionData]
+        using acyclic_pulledObstructionIdeal_eq_bot)
+
+/--
+III.R4 / III-1: the finite acyclic cycle example fires the strengthened
+Lawfulness-Ideal bridge through selected witness ideals and
+`localObstructionIdeal`, not through the old `witnessCoverage` field.
+-/
+theorem acyclicLocalSection_lawful_from_witnessIdeals :
+    acyclicLocalSectionData.Lawful :=
+  Correspondence.lawful_of_selectedWitnessIdeals_le_ker
+    cycleWitnessIdealFamily acyclicLocalSectionData
+    (by
+      intro index _hselected
+      exact acyclic_cycleWitnessIdeal_le_ker index)
+
 /-- III.R13: the cyclic witness section pulls `I_cycle` back to the unit ideal. -/
 theorem cyclic_pulledObstructionIdeal_eq_top :
     cyclicSectionData.pulledObstructionIdeal = ⊤ := by

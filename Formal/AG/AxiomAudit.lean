@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.LawAlgebra.FiniteExamples
 
 /-!
 Kernel axiom audit entrypoint for PRD-R R1.
@@ -133,6 +134,10 @@ theorem finiteSiteTopologyEqCoverageToGrothendieck :
         FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap).toCoverage.toGrothendieck :=
   FiniteModel.siteTopology_eq_coverage_toGrothendieck
 
+theorem finiteAcyclicLocalSectionLawfulFromWitnessIdeals :
+    AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSectionData.Lawful :=
+  AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -257,6 +262,14 @@ info: 'AAT.AG.AxiomAudit.finiteSiteTopologyEqCoverageToGrothendieck' depends on 
 -/
 #guard_msgs in
 #print axioms finiteSiteTopologyEqCoverageToGrothendieck
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteAcyclicLocalSectionLawfulFromWitnessIdeals' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteAcyclicLocalSectionLawfulFromWitnessIdeals
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
