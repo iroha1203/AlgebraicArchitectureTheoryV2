@@ -127,6 +127,12 @@ theorem finiteTwoPatchCechDifferentialNonzero :
       FiniteModel.twoPatchSeparatedCochain PUnit.unit = true :=
   FiniteModel.twoPatchSeparatedCochain_differential_nonzero
 
+theorem finiteSiteTopologyEqCoverageToGrothendieck :
+    FiniteModel.site.topology =
+      (Site.admissiblePrecoverage
+        FiniteModel.siteCoverageRequirements FiniteModel.siteOverlap).toCoverage.toGrothendieck :=
+  FiniteModel.siteTopology_eq_coverage_toGrothendieck
+
 theorem canonicalTupleStandardFinitePosetCechComplexDComp
     {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
     {geometry : Site.FinitePosetCoverGeometry S}
@@ -243,6 +249,14 @@ info: 'AAT.AG.AxiomAudit.finiteTwoPatchCechDifferentialNonzero' depends on axiom
 -/
 #guard_msgs in
 #print axioms finiteTwoPatchCechDifferentialNonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteSiteTopologyEqCoverageToGrothendieck' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteSiteTopologyEqCoverageToGrothendieck
 
 /--
 info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
