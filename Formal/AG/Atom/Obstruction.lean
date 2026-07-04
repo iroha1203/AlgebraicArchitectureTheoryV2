@@ -107,6 +107,15 @@ theorem omegaU_zero_iff_required {U : AtomCarrier.{u}} {Value : Type u}
 
 namespace ObstructionCircuit
 
+/--
+PRD-R I-3: concrete finite-support reading for an obstruction circuit. New
+finite examples should provide this explicit list cover in addition to any
+legacy marker required by frozen declarations.
+-/
+def ListFinite {U : AtomCarrier.{u}} {L : Law U}
+    {A : ArchitectureObject U} (O : ObstructionCircuit L A) : Prop :=
+  O.family.ListFinite
+
 /-- I.定義8.2: the relation of an obstruction circuit is supported by its family. -/
 theorem relation_supported_holds {U : AtomCarrier.{u}} {L : Law U}
     {A : ArchitectureObject U} (O : ObstructionCircuit L A)
@@ -119,6 +128,13 @@ theorem finite_marker {U : AtomCarrier.{u}} {L : Law U}
     {A : ArchitectureObject U} (O : ObstructionCircuit L A) :
     O.finite :=
   O.finite_holds
+
+/-- PRD-R I-3: expose the explicit atom cover carried by list-finite evidence. -/
+theorem listFinite_has_cover {U : AtomCarrier.{u}} {L : Law U}
+    {A : ArchitectureObject U} (O : ObstructionCircuit L A)
+    (h : O.ListFinite) :
+    ∃ atoms : List U.Atom, ∀ atom, O.family.mem atom -> atom ∈ atoms :=
+  h
 
 /-- I.定義8.2: an obstruction circuit records failure of its selected law. -/
 theorem law_failure_holds {U : AtomCarrier.{u}} {L : Law U}

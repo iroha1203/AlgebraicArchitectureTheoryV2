@@ -222,7 +222,7 @@ docs/aat/proof_obligations_ag_aat.md
 | I-1 | `ThreeReading.lean` 定理9.3後段 | 昇格 | theorem conclusion が assumption package field。law-indexed witness family と finite firing が必要。 |
 | I-2 | `AATCore.lean` 定理10.5 | 昇格 | selected components を束ねる package で、S から標準塔を構成していない。 |
 | I-3 | `Configuration.lean` / `Obstruction.lean` finite marker | 実質化 | `finite : Prop` 系を `Set.Finite` / `Finite` へ接続する。 |
-| I-4 | `Law.lean` unused assumptions | 削除 | 被参照ゼロの自由 Prop。必要分は I-1 へ移す。 |
+| I-4 | `Law.lean` unused assumptions | 宣言 | R2 で Research 参照が確認されたため削除せず、selected 公理スロットとして凍結する。必要な load-bearing reading は I-1 の concrete required-law API へ移す。 |
 | II-1 | `Adequate.lean` 補題7.2A | 昇格 | closure construction が load-bearing になる additive theorem が必要。 |
 | II-2 | `ContextCategory.lean` 命題4.2 | 昇格 | quotient poset / meet construction を実 theorem にする。 |
 | II-3 | `Context.lean` morphism roles | 実質化 | phantom parameter と自由 Prop role を support/restriction predicate に接続する。 |
@@ -277,8 +277,8 @@ docs/aat/proof_obligations_ag_aat.md
 
 | PRD | AC item | Reclassified AC text | R0 tag | Evidence |
 | --- | --- | --- | --- | --- |
-| PRD-1 | AC11 | 定理9.3 後段の三読み一致は explicit package field 由来の theorem package。 | `packaged (assumption-relative)` | `Formal/AG/Atom/ThreeReading.lean`, `ThreeReadingAgreementAssumptions.*` |
-| PRD-1 | AC13 | 定理10.5 AAT Core は selected components を singleton tower に束ねる theorem package。 | `packaged (assumption-relative)` | `Formal/AG/Atom/AATCore.lean`, `AATCorePackage.*` |
+| PRD-1 | AC11 | 旧 `ThreeReadingAgreementAssumptions` 版は explicit package field 由来。PRD-R R2 で required-law concrete counterpart が証明済み。 | `proved` / `packaged (assumption-relative)` | `Formal/AG/Atom/ThreeReading.lean`, `concreteThreeReadingAgreement`, `ThreeReadingAgreementAssumptions.*` |
+| PRD-1 | AC13 | 旧 `exists_ofComponents` は selected components を束ねる theorem package。PRD-R R2 で `AtomTowerRealization` と HEq-free counterpart が証明済み。 | `proved` / `packaged (assumption-relative)` | `Formal/AG/Atom/AATCore.lean`, `exists_ofAxiomRealization_noHEq`, `AATCorePackage.*` |
 | PRD-2 | AC5 | 補題7.2A は `WitnessClosureCover` package assumptions に相対化される。 | `packaged (assumption-relative)` | `Formal/AG/Site/Adequate.lean`, `witnessClosureCover_uAdequate` |
 | PRD-2 | AC11 | finite model examples は singleton / selected finite-poset fixture に相対化される。 | `packaged (assumption-relative)` | `Formal/AG/Examples/FiniteModel.lean`, `siteSingletonCover_uAdequate` |
 | PRD-3 | AC12 | Nullstellensatz candidate は statement surface に留まり、証明済み theorem ではない。 | `statement-only` | `Formal/AG/LawAlgebra/Nullstellensatz.lean`, `ArchitectureNullstellensatzCandidate` |
@@ -321,7 +321,25 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.derivedG5AllDegree` | `AAT.AG.FiniteModel.DerivedPart5.sharedWitnessG5_all_degree_coefficient_identity` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.temporalPseudoCircleNonzero` | `AAT.AG.Examples.EvolutionPart9.pseudoCircleMismatch_ab_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.forceCandidateConcreteNonzero` | `AAT.AG.Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.concreteThreeReadingAgreementRequiredLaw` | `AAT.AG.concreteThreeReadingAgreement` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteAcyclicConcreteThreeReadingAgreement` | `AAT.AG.FiniteModel.acyclic_concreteThreeReadingAgreement` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteCyclicConcreteThreeReadingFires` | `AAT.AG.FiniteModel.object_concreteThreeReadingAgreement_fires` | `propext` |
+| `AAT.AG.AxiomAudit.finiteCorePackageFromAxiomRealizationNoHEq` | `AAT.AG.FiniteModel.corePackageFromAxiomRealization_exists_noHEq` | `propext` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
 new wrappers when they promote theorem-package or firing-instance declarations
 into the kernel-audited surface.
+
+## R2 Atom hardening
+
+R2 closes the Part I PRD-R items additively, preserving Research-imported
+surfaces while adding concrete theorem counterparts.
+
+| ID | Disposition | New evidence |
+| --- | --- | --- |
+| I-1 | 昇格 | `Formal/AG/Atom/ThreeReading.lean` adds `requiredLawWitnessFamily`, `requiredLawSignatureAxes`, `semanticLawful_iff_noRequiredObstruction_requiredLawWitness`, `semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes`, `noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw`, and `concreteThreeReadingAgreement`. These theorems are proved from the required-law predicates themselves, not from `ThreeReadingAgreementAssumptions` fields. |
+| I-1 firing | 発火 | `Formal/AG/Examples/FiniteModel.lean` adds `concreteNoCycleWitnessFamily`, `concreteNoCycleSignatureAxes`, `acyclic_concreteThreeReadingAgreement`, and `object_concreteThreeReadingAgreement_fires`. The cyclic object has an actual required-law bad witness; the acyclic object has no such witness. |
+| I-2 | 昇格 | `AATCorePackage.AtomTowerRealization`, `ofAxiomRealization`, `exists_ofComponents_noHEq`, and `exists_ofAxiomRealization_noHEq` expose the `AtomAxiomSystem.configurationOf` bridge and provide HEq-free core existence statements. |
+| I-2 firing | 発火 | `FiniteModel.atomTowerRealization`, `corePackageFromAxiomRealization`, and `corePackageFromAxiomRealization_exists_noHEq` instantiate the bridge on the finite Part I model. |
+| I-3 | 実質化 | `AtomFamily.ListFinite`, `AtomConfiguration.Molecule.ListFinite`, and `ObstructionCircuit.ListFinite` provide explicit list-cover finite-support predicates. `FiniteModel.allFamily_listFinite`, `cycleObstructionCircuit_listFinite`, and `substitutionObstructionCircuit_listFinite` provide concrete finite support. |
+| I-4 | 宣言 | `LawUniverse.coverageAssumptions` and `LawUniverse.exactnessAssumptions` remain frozen because `Formal/AG/Research` imports them directly. R2 does not use them for the concrete three-reading theorem; they remain selected assumption slots for the legacy packaged surface. |

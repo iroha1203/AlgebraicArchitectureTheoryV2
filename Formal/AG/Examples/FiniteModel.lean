@@ -1,5 +1,6 @@
 import Formal.AG.Atom.AATCore
 import Formal.AG.Atom.LawfulnessZero
+import Formal.AG.Atom.ThreeReading
 import Formal.AG.Site.FinitePoset
 import Formal.AG.Site.SheafCategory
 
@@ -53,6 +54,10 @@ def carrier : AtomCarrier where
 def allFamily : AtomFamily carrier where
   mem _ := True
 
+/-- PRD-R I-3: the selected finite family has an explicit list cover. -/
+theorem allFamily_listFinite : allFamily.ListFinite :=
+  ⟨FiniteAtom.all, fun atom _hmem => FiniteAtom.mem_all atom⟩
+
 /-- R10: the cycle relation of example 8.3. -/
 def cycleRelation : carrier.Atom -> carrier.Atom -> Prop
   | FiniteAtom.dependsAB, FiniteAtom.dependsBC => True
@@ -73,6 +78,12 @@ def configuration : AtomConfiguration carrier where
   relation a b := cycleRelation a b ∨ substitutionRelation a b
   identification _ _ := False
 
+/-- PRD-R I-1/I-3: acyclic finite configuration over the same nonempty atom family. -/
+def acyclicConfiguration : AtomConfiguration carrier where
+  family := allFamily
+  relation _ _ := False
+  identification _ _ := False
+
 /-- R10: the finite configuration relation is supported by the finite family. -/
 theorem configuration_familySupported :
     AtomConfiguration.FamilySupported configuration := by
@@ -85,6 +96,14 @@ theorem configuration_familySupported :
 /-- R10: finite architecture object over the selected configuration. -/
 def object : ArchitectureObject carrier where
   configuration := configuration
+  StructureMaps := PUnit
+  SelectedQuantities := PUnit
+  structureMaps := PUnit.unit
+  selectedQuantities := PUnit.unit
+
+/-- PRD-R I-1: acyclic finite architecture object used for concrete three-reading firing. -/
+def acyclicObject : ArchitectureObject carrier where
+  configuration := acyclicConfiguration
   StructureMaps := PUnit
   SelectedQuantities := PUnit
   structureMaps := PUnit.unit
@@ -134,6 +153,14 @@ theorem lawUniverse_required (index : lawUniverse.Index) :
     lawUniverse.Required index := by
   cases index
   rfl
+
+/-- PRD-R I-1: canonical required-law witness family for the finite NoCycle universe. -/
+def concreteNoCycleWitnessFamily : LawWitnessFamily carrier :=
+  requiredLawWitnessFamily lawUniverse
+
+/-- PRD-R I-1: canonical required-law signature axes for the finite NoCycle universe. -/
+def concreteNoCycleSignatureAxes : SignatureAxes carrier :=
+  requiredLawSignatureAxes lawUniverse
 
 /-- R10: finite architecture signature with a singleton selected axis. -/
 def signature : ArchitectureSignature carrier where
@@ -204,6 +231,11 @@ def cycleObstructionCircuit : ObstructionCircuit noCycleLaw object where
     exact h ⟨Or.inl cycle_dependsAB_BC,
       Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
 
+/-- PRD-R I-3: the cycle obstruction circuit has explicit finite support. -/
+theorem cycleObstructionCircuit_listFinite :
+    cycleObstructionCircuit.ListFinite :=
+  allFamily_listFinite
+
 /-- R10 / example 8.3: the cycle circuit records NoCycle law failure. -/
 theorem cycle_obstruction_law_failure :
     ¬ noCycleLaw.holds object :=
@@ -234,6 +266,11 @@ def substitutionObstructionCircuit :
     exact h ⟨Or.inr substitution_contract_impl_base,
       Or.inr substitution_impl_base⟩
 
+/-- PRD-R I-3: the substitution obstruction circuit has explicit finite support. -/
+theorem substitutionObstructionCircuit_listFinite :
+    substitutionObstructionCircuit.ListFinite :=
+  allFamily_listFinite
+
 /-- R10: the selected object visibly carries the 3-cycle witness. -/
 def hasCycleWitness (A : ArchitectureObject carrier) : Prop :=
   A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC ∧
@@ -244,6 +281,68 @@ def hasCycleWitness (A : ArchitectureObject carrier) : Prop :=
 theorem object_hasCycleWitness : hasCycleWitness object :=
   ⟨Or.inl cycle_dependsAB_BC,
     Or.inl cycle_dependsBC_CA, Or.inl cycle_dependsCA_AB⟩
+
+/-- PRD-R I-1: the acyclic finite object satisfies the selected NoCycle law. -/
+theorem acyclic_noCycleLaw_holds :
+    noCycleLaw.holds acyclicObject := by
+  intro hcycle
+  exact hcycle.1
+
+/-- PRD-R I-1: the acyclic finite object is semantically lawful. -/
+theorem acyclic_lawfulness :
+    Lawfulness acyclicObject lawUniverse := by
+  intro index _hrequired
+  cases index
+  exact acyclic_noCycleLaw_holds
+
+/-- PRD-R I-1: the cyclic finite object is not semantically lawful. -/
+theorem object_lawfulness_fails :
+    ¬ Lawfulness object lawUniverse := by
+  intro h
+  exact cycle_obstruction_law_failure (h PUnit.unit rfl)
+
+/-- PRD-R I-1: the concrete witness family is nondegenerate on the cyclic object. -/
+theorem object_hasConcreteNoCycleBadWitness :
+    ∃ witness : concreteNoCycleWitnessFamily.Witness,
+      concreteNoCycleWitnessFamily.badWitness object witness :=
+  ⟨⟨PUnit.unit, rfl⟩, cycle_obstruction_law_failure⟩
+
+/-- PRD-R I-1: the acyclic object has no concrete required-law bad witness. -/
+theorem acyclic_noConcreteNoCycleBadWitness :
+    NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily :=
+  (semanticLawful_iff_noRequiredObstruction_requiredLawWitness
+    acyclicObject lawUniverse).mp acyclic_lawfulness
+
+/-- PRD-R I-1: the acyclic object has zero on the concrete required-law axis. -/
+theorem acyclic_requiredLawAxesZero :
+    RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes :=
+  (semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
+    acyclicObject lawUniverse).mp acyclic_lawfulness
+
+/-- PRD-R I-1: the cyclic object has a nonzero concrete required-law axis. -/
+theorem object_requiredLawAxesZero_fails :
+    ¬ RequiredSignatureAxesZero object concreteNoCycleSignatureAxes := by
+  intro hzero
+  exact cycle_obstruction_law_failure (hzero ⟨PUnit.unit, rfl⟩ trivial)
+
+/-- PRD-R I-1: concrete three-reading agreement fires on the acyclic finite object. -/
+theorem acyclic_concreteThreeReadingAgreement :
+    (SemanticLawful acyclicObject lawUniverse ↔
+        NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily) ∧
+      (NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily ↔
+        RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes) ∧
+        (SemanticLawful acyclicObject lawUniverse ↔
+          RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes) :=
+  concreteThreeReadingAgreement acyclicObject lawUniverse
+
+/-- PRD-R I-1: concrete three-reading agreement also detects the cyclic failure. -/
+theorem object_concreteThreeReadingAgreement_fires :
+    (¬ SemanticLawful object lawUniverse) ∧
+      (∃ witness : concreteNoCycleWitnessFamily.Witness,
+        concreteNoCycleWitnessFamily.badWitness object witness) ∧
+        ¬ RequiredSignatureAxesZero object concreteNoCycleSignatureAxes :=
+  ⟨object_lawfulness_fails, object_hasConcreteNoCycleBadWitness,
+    object_requiredLawAxesZero_fails⟩
 
 /-- R10 / example 8.4: the substitution circuit records compatibility law failure. -/
 theorem substitution_obstruction_law_failure :
@@ -315,6 +414,40 @@ theorem finite_lawfulness_iff_omega_zero :
 def corePackage : AATCorePackage carrier :=
   AATCorePackage.ofComponents axiomSystem allFamily configuration object rfl rfl
     invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
+
+/-- PRD-R I-2: the finite model realizes the abstract A0-A8 family/configuration tower. -/
+def atomTowerRealization : AATCorePackage.AtomTowerRealization axiomSystem where
+  familyToken := PUnit.unit
+  configurationToken := PUnit.unit
+  familyOf _ := allFamily
+  configurationOf _ := configuration
+  family := allFamily
+  configuration := configuration
+  family_eq := rfl
+  configuration_eq := rfl
+  configurationToken_eq := rfl
+  configuration_family_eq := rfl
+
+/-- PRD-R I-2: finite model core package using the axiom-system realization bridge. -/
+def corePackageFromAxiomRealization : AATCorePackage carrier :=
+  AATCorePackage.ofAxiomRealization axiomSystem atomTowerRealization object rfl
+    invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit signature
+
+/-- PRD-R I-2: the finite realization theorem has no HEq in its conclusion. -/
+theorem corePackageFromAxiomRealization_exists_noHEq :
+    ∃ core : AATCorePackage carrier,
+      core.axioms = axiomSystem ∧
+        core.family = allFamily ∧
+          core.configuration = configuration ∧
+            core.object = object ∧
+              core.configuration.family = core.family ∧
+                core.object.configuration = core.configuration ∧
+                  core.lawUniverse = lawUniverse ∧
+                    core.obstructionLaw = noCycleLaw ∧
+                      core.signature = signature :=
+  AATCorePackage.exists_ofAxiomRealization_noHEq axiomSystem atomTowerRealization
+    object rfl invariantFamily lawUniverse noCycleLaw cycleObstructionCircuit
+    signature
 
 /-- R10: the finite core package contains the selected finite object. -/
 theorem corePackage_object :
