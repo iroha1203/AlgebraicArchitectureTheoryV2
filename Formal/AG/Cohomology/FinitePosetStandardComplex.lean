@@ -1095,6 +1095,78 @@ theorem standardFinitePosetCechComplex_differential
   rfl
 
 /--
+X.R1(a) / II.命題7.2C: the standard complex satisfies the existing
+face-restriction presentation used by the finite-poset Cech surface.
+-/
+theorem standardFinitePosetCechComplex_differential_from_restrictions
+    {geometry : Site.FinitePosetCoverGeometry S}
+    {Ob : ObstructionSheaf S}
+    {faces :
+      Site.FinitePosetCechFaceData
+        (geometry.toObstructionCoefficientRegime Ob)}
+    (law : StandardDifferentialCompLaw geometry Ob faces)
+    (n : Nat)
+    (cochain :
+      Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      Site.FinitePosetCechSimplex
+        (geometry.toObstructionCoefficientRegime Ob) (n + 1)) :
+    (standardFinitePosetCechComplex law).differential n cochain simplex =
+      (standardFinitePosetCechComplex law).additive.combineFaces n simplex
+        (fun i =>
+          Site.FinitePosetCechFaceRestriction
+            (standardFinitePosetCechComplex law).faces cochain simplex i) :=
+  Site.FinitePosetCechComplex.differential_from_restrictions
+    (standardFinitePosetCechComplex law) n cochain simplex
+
+/--
+X.R1(a) / II.命題7.2C: the standard complex has `d ∘ d = 0` through
+the generated standard differential law, not through a free final theorem.
+-/
+theorem standardFinitePosetCechComplex_differential_comp
+    {geometry : Site.FinitePosetCoverGeometry S}
+    {Ob : ObstructionSheaf S}
+    {faces :
+      Site.FinitePosetCechFaceData
+        (geometry.toObstructionCoefficientRegime Ob)}
+    (law : StandardDifferentialCompLaw geometry Ob faces)
+    (n : Nat)
+    (cochain :
+      Site.FinitePosetCechCochain
+        (geometry.toObstructionCoefficientRegime Ob) n) :
+    (standardFinitePosetCechComplex law).differential (n + 1)
+        ((standardFinitePosetCechComplex law).differential n cochain) =
+      Site.FinitePosetCechZeroCochain
+        (standardFinitePosetCechComplex law).additive (n + 2) :=
+  Site.FinitePosetCechComplex.differential_comp
+    (standardFinitePosetCechComplex law) n cochain
+
+/--
+X.R1(a) / II.命題7.2C: the existing finite-poset high-degree vanishing theorem
+applies to the standard complex route.
+-/
+theorem standardFinitePosetCechComplex_cohomology_vanishes_above_nerveDimension
+    {geometry : Site.FinitePosetCoverGeometry S}
+    {Ob : ObstructionSheaf S}
+    {faces :
+      Site.FinitePosetCechFaceData
+        (geometry.toObstructionCoefficientRegime Ob)}
+    (law : StandardDifferentialCompLaw geometry Ob faces)
+    {d n : Nat}
+    (R :
+      Site.FinitePosetCechCoboundaryRelation
+        (standardFinitePosetCechComplex law) n)
+    (hdim :
+      Site.FinitePosetNerveDimension
+        (geometry.toObstructionCoefficientRegime Ob) d)
+    (hn : d < n) :
+    Site.FinitePosetCechCohomologyVanishes
+      (standardFinitePosetCechComplex law) n R :=
+  Site.finitePosetCechCohomology_vanishes_above_nerveDimension
+    (standardFinitePosetCechComplex law) R hdim hn
+
+/--
 X.R1(a): generated cover-relative cover from the standard finite-poset route.
 
 The additive cover-relative complex requires the semantic-free cochain
@@ -1164,6 +1236,77 @@ theorem canonicalTupleStandardFinitePosetCechComplex_additive
     (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).additive =
       standardAdditiveData tupleGeometry.toCoverGeometry Ob :=
   rfl
+
+/--
+X.R1(a) / II.命題7.2C: the canonical tuple route generates the existing
+face-restriction presentation.
+-/
+theorem canonicalTupleStandardFinitePosetCechComplex_differential_from_restrictions
+    {geometry : Site.FinitePosetCoverGeometry S}
+    (tupleGeometry : Site.FinitePosetCanonicalTupleCoverGeometry geometry)
+    (Ob : ObstructionSheaf S)
+    (n : Nat)
+    (cochain :
+      Site.FinitePosetCechCochain
+        (tupleGeometry.toCoverGeometry.toObstructionCoefficientRegime Ob) n)
+    (simplex :
+      Site.FinitePosetCechSimplex
+        (tupleGeometry.toCoverGeometry.toObstructionCoefficientRegime Ob) (n + 1)) :
+    (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).differential
+        n cochain simplex =
+      (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).additive.combineFaces
+        n simplex
+        (fun i =>
+          Site.FinitePosetCechFaceRestriction
+            (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).faces
+            cochain simplex i) :=
+  standardFinitePosetCechComplex_differential_from_restrictions
+    (canonicalTupleStandardDifferentialCompLaw tupleGeometry Ob)
+    n cochain simplex
+
+/--
+X.R1(a) / II.命題7.2C: the canonical tuple route proves `d ∘ d = 0` by
+simplicial double-face cancellation.
+-/
+theorem canonicalTupleStandardFinitePosetCechComplex_differential_comp
+    {geometry : Site.FinitePosetCoverGeometry S}
+    (tupleGeometry : Site.FinitePosetCanonicalTupleCoverGeometry geometry)
+    (Ob : ObstructionSheaf S)
+    (n : Nat)
+    (cochain :
+      Site.FinitePosetCechCochain
+        (tupleGeometry.toCoverGeometry.toObstructionCoefficientRegime Ob) n) :
+    (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).differential
+        (n + 1)
+        ((canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).differential
+          n cochain) =
+      Site.FinitePosetCechZeroCochain
+        (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob).additive
+        (n + 2) :=
+  standardFinitePosetCechComplex_differential_comp
+    (canonicalTupleStandardDifferentialCompLaw tupleGeometry Ob) n cochain
+
+/--
+X.R1(a) / II.命題7.2C: when the generated tuple-regime has a finite nerve
+dimension bound, the standard finite-poset cohomology quotient vanishes above
+that bound.
+-/
+theorem canonicalTupleStandardFinitePosetCechComplex_cohomology_vanishes_above_nerveDimension
+    {geometry : Site.FinitePosetCoverGeometry S}
+    (tupleGeometry : Site.FinitePosetCanonicalTupleCoverGeometry geometry)
+    (Ob : ObstructionSheaf S)
+    {d n : Nat}
+    (R :
+      Site.FinitePosetCechCoboundaryRelation
+        (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob) n)
+    (hdim :
+      Site.FinitePosetNerveDimension
+        (tupleGeometry.toCoverGeometry.toObstructionCoefficientRegime Ob) d)
+    (hn : d < n) :
+    Site.FinitePosetCechCohomologyVanishes
+      (canonicalTupleStandardFinitePosetCechComplex tupleGeometry Ob) n R :=
+  standardFinitePosetCechComplex_cohomology_vanishes_above_nerveDimension
+    (canonicalTupleStandardDifferentialCompLaw tupleGeometry Ob) R hdim hn
 
 /--
 X.R1(a): canonical tuple geometry generates the corresponding cover-relative

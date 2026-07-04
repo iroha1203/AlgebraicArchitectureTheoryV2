@@ -108,6 +108,25 @@ theorem finiteContextMorphismRolesConcrete :
           (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsBaseChange :=
   FiniteModel.siteContextIdentityMorphism_rolesConcrete
 
+theorem canonicalTupleStandardFinitePosetCechComplexDComp
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {geometry : Site.FinitePosetCoverGeometry S}
+    (tupleGeometry : Site.FinitePosetCanonicalTupleCoverGeometry geometry)
+    (Ob : Cohomology.ObstructionSheaf S) :
+    ∀ (n : Nat)
+      (cochain :
+        Site.FinitePosetCechCochain
+          (tupleGeometry.toCoverGeometry.toObstructionCoefficientRegime Ob) n),
+      (Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex
+          tupleGeometry Ob).differential (n + 1)
+          ((Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex
+            tupleGeometry Ob).differential n cochain) =
+        Site.FinitePosetCechZeroCochain
+          (Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex
+            tupleGeometry Ob).additive (n + 2) :=
+  Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp
+    tupleGeometry Ob
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -181,5 +200,13 @@ info: 'AAT.AG.AxiomAudit.finiteContextMorphismRolesConcrete' depends on axioms: 
 -/
 #guard_msgs in
 #print axioms finiteContextMorphismRolesConcrete
+
+/--
+info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms canonicalTupleStandardFinitePosetCechComplexDComp
 
 end AAT.AG.AxiomAudit
