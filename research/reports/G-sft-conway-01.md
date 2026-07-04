@@ -655,3 +655,55 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。core family support construction は axiom-free。compatibility equivalence/package は
   `Classical.choice`, `propext` に依存。
 - G4 score confirmation: base 50、evidence multiplier 2.0、penalty 0、final +100。
+
+## Cycle 13 — Coherent family morphism naturality
+
+candidate: `research/ideas/g-sft-conway-01-coherent-family-morphism-naturality.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 35
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 70
+category: `common-refinement`, `coherent-family`, `selected-naturality`,
+  `conway-obstruction`
+goal_delta: Cycle 12 の coherent family support に strict fork-preserving selected family morphism layer を追加した。
+  fork equality を保存する reindex / subfamily map に沿って、coherent support と coherent
+  global/common-refinement vanishing が pullback すること、selected morphism naturality failure が
+  起きないことを Lean theorem として固定した。
+project_value_delta: common-refinement provenance を family-level existence から selected morphism-level
+  preservation へ上げた。arbitrary cover naturality は主張しないが、その blocker を述べるための
+  基準線になる。
+rival_delta: 既存 rival は owner mismatch を可視化できる。この cycle の差分は、検出力の追加ではなく、
+  support provenance が selected family morphism に沿って保存されるかを theorem package として保存する点にある。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayCoherentFamilyMorphism.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayCoherentFamilyMorphism`、`lake build FormalAGResearch`、
+  full `lake build` が通過。`#print axioms` は main declarations すべて axiom-free。
+open_questions: arbitrary cover naturality、non-selected refinement span family、local support はあるが shared span が
+  存在しない finite family、true quotient object、true sheaf `H^1` は未固定。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayCoherentFamilyMorphism.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilyMorphism`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilyMorphism.id`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilyMorphism.comp`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamilyMorphism.pullbackSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentCommonRefinementSupport_pullback`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.coherentGlobalCommonRefinement_vanishes_pullback`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily.reindex`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily.reindexMorphism`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily.subfamily`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.SupportForkFamily.subfamilyInclusion`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.no_coherentFamilyMorphismNaturalityFailure`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCoherentFamilyMorphismPackage`
+
+G2 / G3 audit summary:
+
+- G2 audit: pass。ただし二審判の推奨は base 40 と base 35。`SupportForkFamilyMorphism` は
+  fork equality を保存する strict selected map で、主定理は target support を source へ引き戻す
+  closure result なので、保守的に base 35 を採用。
+- G3 formalization quality: pass。`lake env lean`、module build、`FormalAGResearch`、full `lake build` が通過。
+- G3 axiom check: pass。`pullbackSupport`、support pullback、vanishing pullback、naturality failure theorem、
+  package theorem はすべて axiom-free。
+- G4 score confirmation: base 35、evidence multiplier 2.0、penalty 0、final +70。
