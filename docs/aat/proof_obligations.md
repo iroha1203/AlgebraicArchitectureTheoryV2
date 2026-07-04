@@ -8,7 +8,7 @@
 | 台帳 | 対象 | 主な用途 |
 | --- | --- | --- |
 | [古典 AAT / downstream Lean proof obligation 台帳](proof_obligations_classical_aat.md) | `Formal/Arch`、finite static structural core、Atom-generated kernel、SFT / tooling bridge、empirical hypothesis | 既存 bounded theorem package、古典 AAT 由来の proof obligation、tooling / empirical claim boundary を確認する。 |
-| [代数幾何 AAT Lean proof obligation 台帳](proof_obligations_ag_aat.md) | `Formal/AG`、AG 版 AAT PRD-1〜9、本文ラベルと Lean status の対応 | 現行 AAT 数学本文に対応する Lean proof obligation と証明済みラベルを確認する。 |
+| [代数幾何 AAT Lean proof obligation 台帳](proof_obligations_ag_aat.md) | `Formal/AG`、AG 版 AAT PRD-1〜10、本文ラベルと Lean status の対応 | 現行 AAT 数学本文に対応する Lean proof obligation と証明済みラベルを確認する。 |
 | [研究ループ theorem status 台帳](proof_obligations_research.md) | `Formal/AG/Research`、`research/GOALS.md`、target-theorem / research-loop の成果 | 研究ループで固定された theorem package、tracking issue、最終 review status を確認する。 |
 
 ## Source of Truth

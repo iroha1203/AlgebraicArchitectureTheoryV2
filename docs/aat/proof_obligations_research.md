@@ -12,6 +12,14 @@ their GOAL cards, reports, and GitHub tracking Issues. They are not canonical
 math text, but the following rows record the current Lean boundary needed for
 completion review.
 
+Canonicalization pointer: `G-aat-quality-surface-02`,
+`G-aat-quality-surface-05`, and `G-aat-quality-surface-06` have been promoted
+into the canonical Part X Semantic Repair Descent (SAGA) surface by PRD-10.
+The correspondence and implementation history are tracked in Issue
+[#2910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2910);
+future canonical status updates for these results belong in
+`proof_obligations_ag_aat.md`, not in this research evidence ledger.
+
 | 対象 | 現在の status | 詳細 |
 | --- | --- | --- |
 | `G-aat-quality-surface-02` Finite Semantic Repair-Gluing Descent Theorem | `target-theorem-proved` under explicit complete-support finite atlas class / certificate-discharged range. | Tracking Issue [#2476](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2476), [Lean theorem index](lean_theorem_index_research.md#research-target-theorem-packages), `research/reports/G-aat-quality-surface-02.md`, `Formal/AG/Research/QualitySurface/SemanticRepairGluingComplex.lean`, `Formal/AG/Research/QualitySurface/SemanticRepairAdequacyDischarge.lean`. `FiniteSemanticRepairGluingComplex` records explicit finite chart and overlap / transition witness lists, including `overlapOrder` and `overlapOrder_complete`. Stage 1 necessity and nonzero-obstruction contrapositive, Stage 2 finite `B1` / obstruction vanish, Stage 2.5a conditional sufficiency under `SemanticFaithfulnessHypotheses`, and Stage 2.5b complete-support finite-class discharge are Lean-proved. The completion reading is relative to `CompleteRepairSupportBoundaryComplex`; `completeRepairSupportBoundary_boundarySemanticClosureCertificate` exposes coverage / faithfulness certificate fields and `completeRepairSupportBoundary_semanticFaithfulnessHypotheses_of_boundaryCertificate` derives `SemanticFaithfulnessHypotheses` from that certificate rather than taking it as a material premise. The generic `SemanticFaithfulnessHypotheses K` theorem remains a conditional checkpoint outside that explicit class. Final `$math-lean-review` passed with four `No major findings` lanes: theorem strength, premise discharge / anti-weakening, Lean integrity, and ledger sync. |
