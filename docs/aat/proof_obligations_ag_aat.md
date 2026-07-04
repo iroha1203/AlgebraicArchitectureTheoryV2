@@ -811,6 +811,7 @@ Tracking Issue: [#2910](https://github.com/iroha1203/AlgebraicArchitectureTheory
 AC14 implementation Issue: [#2937](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2937).
 AC16 implementation Issue: [#2941](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2941).
 AC17 implementation Issue: [#2943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2943).
+AC18 final scan Issue: [#2946](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2946).
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -823,6 +824,7 @@ AC17 implementation Issue: [#2943](https://github.com/iroha1203/AlgebraicArchite
 | `X.定理8.1 / 8.2 / 8.4 / 8.5` Boundary theorems | `proved boundary theorem package construction`. `GeneratedSourceC0PointwiseZero`、`GeneratedSourceC0CechZero`、`GeneratedSourceC0ZeroPackage`、`displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage` が law fulfillment から degree-zero zero readings を構成する。`generatedSAGA_lawIndependentConclusions_withoutLawPremise` は law premise なしで theorem 7.5 の law-independent conclusion group を構成する。`SemanticRepairTypedComparisonTarget` / `SemanticRepairTypedZeroComparison` と `SemanticRepairRefinementZeroComparison` は comparison / refinement を explicit data とし、empty target と coarse-zero/fine-nonzero の no-go を証明する。 | §8 theorem は zero preservation や law-independent conclusion を explicit selected data から読む。typed target、refinement comparison、cover-relative H1 comparison、cochain realization を無条件に構成しない。意味8.3 の conormal coefficient open question は R11/AC19 の future proof obligation 登録対象として残す。 |
 | `X.例9.1` Lawful Firing Instance | `proved lawful firing instance`. `Formal/AG/Examples/SemanticRepairPart10.lean` が singleton quotient presheaf の `quotientIsSheaf` を theorem として放電し、`lawfulObject_noCycleLaw`、`defectSource.DisplayedRequiredLawsHoldOn`、`trueSheafCertificate`、`h1Comparison` から `lawfulFiring_endToEndPacket` と `lawfulFiring_generatedSourceC0Zero` を構成する。 | 例9.1 は lawful zero firing witness であり、circle nerve 非零 class / transfer packet は例9.2 の別 witness で扱う。一般 quotient sheaf comparison は explicit data なしに構成しない。 |
 | `X.例9.2` Circle Nerve Nonzero Class | `proved nonzero circle-nerve transfer instance`. `Formal/AG/Examples/SemanticRepairPart10.lean` が selected witness site、`circleF2IsSheaf`、`circleObstructionSheaf`、three-edge `circleSimplex` / `circleFace`、`circleD0`、`circleCoverRelativeComplex`、semantic residual `1 : ZMod 2`、cover-relative residual class、`circleSemanticH1_nonzero`、`circleCoverRelativeH1_nonzero`、`circleH1Comparison`、`circleNerve_nonzeroClassTransfer_packet` を持つ。 | 例9.2 の nerve は supplied simplicial data であり、chart intersections から生成されたとは主張しない。comparison は identity comparison に限る。degenerate witness site 上の instance であり、atom-generated nonzero instance や非恒等 comparison の transfer は future hardening に残す。 |
+| `X.R10 final ledger / no-sorry scan` | `proved final ledger sync`. `Formal/AG.lean` が `Formal.AG.SemanticRepair` と `Formal.AG.Examples.SemanticRepairPart10` を import し、Part X semantic repair tower と examples を default `lake build` 対象に含める。AC18 validation で `Formal/AG` から `Formal/AG/Research/` と `Formal/AG/Research.lean` を除いた範囲の `axiom` / `admit` / `sorry` / `unsafe` scan、および `Formal.AG.Research` import scan が no match であることを確認する。 | validation は Lean source と docs ledger の一致確認であり、PRD 外の source observation、tooling completeness、website completeness は主張しない。 |
 
 第X部 PRD-10 の証明対象ラベルは次の現在状態である。
 
@@ -837,6 +839,7 @@ AC17 implementation Issue: [#2943](https://github.com/iroha1203/AlgebraicArchite
 | `X.定理8.1 / 8.2 / 8.4 / 8.5` Boundary theorems | `proved boundary theorem package construction` |
 | `X.例9.1` Lawful Firing Instance | `proved lawful firing instance` |
 | `X.例9.2` Circle Nerve Nonzero Class | `proved nonzero circle-nerve transfer instance` |
+| `X.R10 final ledger / no-sorry scan` | `proved final ledger sync` |
 | `CertificateFreeSemanticAtomExtraction` | `future proof obligation` / explicit non-goal for PRD-10 |
 | `FullSheafCohomologyComparisonWithoutSelectedCochainData` | `future proof obligation` / explicit non-goal for PRD-10 |
 | `LawGroundingImpliesAllDescentConclusionsDirectly` | `future proof obligation` / explicit non-goal for PRD-10 |
