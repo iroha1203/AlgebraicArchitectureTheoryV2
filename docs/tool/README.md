@@ -106,6 +106,8 @@ Atom handoff checklist:
 
 Forward design PRDs:
 
+- [ArchSig v0.5.0 PRD-1 — レガシー破棄(前半)と契約基盤](archsig_v0_5_0_prd1_legacy_purge_and_foundation.md)
+  (設計の正本は [v0.5.0 再設計ノート](../note/archsig_v0_5_0_redesign_note.md))
 - [ArchMap Atom-to-AAT Presentation Contract PRD](archmap_minimal_observation_contract_prd.md)
 - [ArchSig v0.4.0 Algebraic Geometry Measurement PRD](archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
 - [ArchSig v0.4.0 改善 PRD(measured_zero 純度 / 行レベル assumption 依存 / 境界の機械可読化 / ArchMap atom 語彙 lint)](archsig_v0_4_0_improvement_prd.md)
