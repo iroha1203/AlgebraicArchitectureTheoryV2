@@ -469,6 +469,7 @@ def siteContext : Site.ArchCtx object where
     Axis := PUnit
     Observable := PUnit
     supportReads := fun _ _ => True
+    supportReads_objectFamily := fun _h => trivial
     axisReads := fun _ => True
     observableReads := fun _ => True
   }
@@ -481,14 +482,34 @@ def siteContextIdentityMorphism (W : Site.ArchCtx object) :
   supportMap := id
   axisMap := id
   observableRestrict := id
-  supportReadable := True
-  axisReadable := True
-  observableFunctorial := True
-  nonGenerating := True
-  axisForgetting := False
-  supportRefinement := True
-  axisRefinement := True
-  baseChangeCompatible := True
+
+/--
+R11 / PRD-R II-3: the singleton finite context reads only atoms from the
+selected architecture object's Atom family.
+-/
+theorem siteContext_supportReads_objectFamily
+    {support : siteContext.Support} {atom : carrier.Atom}
+    (h : siteContext.minimal.supportReads support atom) :
+    object.configuration.family.mem atom :=
+  siteContext.supportReads_objectFamily h
+
+/--
+R11 / PRD-R II-3: the finite model's selected identity morphism fires all
+concrete context-morphism role predicates.
+-/
+theorem siteContextIdentityMorphism_rolesConcrete :
+    (siteContextIdentityMorphism siteContext).IsRestriction ∧
+      (siteContextIdentityMorphism siteContext).IsProjection ∧
+        (siteContextIdentityMorphism siteContext).IsRefinement ∧
+          (siteContextIdentityMorphism siteContext).IsBaseChange := by
+  let f := siteContextIdentityMorphism siteContext
+  let hRestriction : f.IsRestriction :=
+    ⟨fun h => h, fun h => h, fun h => h,
+      fun h => siteContext.supportReads_objectFamily h⟩
+  exact ⟨hRestriction, ⟨hRestriction, fun h => h⟩,
+    ⟨hRestriction, ⟨⟨fun h => h, fun h => h⟩, ⟨fun h => h, fun h => h⟩⟩⟩,
+    ⟨hRestriction, ⟨⟨fun h => h, fun h => h⟩,
+      ⟨fun h => h, fun h => h⟩, fun h => h⟩⟩⟩
 
 /-- R11 / II.AC16: equality preorder on contexts, used by the singleton selected poset. -/
 def siteContextPreorder : Site.ContextPreorderCategory object where
@@ -498,9 +519,10 @@ def siteContextPreorder : Site.ContextPreorderCategory object where
   readableMorphism := fun h => by
     cases h
     exact siteContextIdentityMorphism _
-  readableMorphism_isRestriction := fun h => by
+  readableMorphism_isRestriction := fun {W _V} h => by
     cases h
-    exact ⟨trivial, trivial, trivial, trivial⟩
+    exact ⟨fun h => h, fun h => h, fun h => h,
+      fun h => W.supportReads_objectFamily h⟩
 
 /-- R11 / II.AC16: singleton selected finite context index. -/
 abbrev SiteContextIndex := PUnit
@@ -599,7 +621,7 @@ def siteSingletonCover :
     lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
     signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
     boundaryCoverage := fun _i _j => trivial
-    nonGeneration := fun _i => trivial
+    nonGeneration := fun _i {_support} {_atom} _h => trivial
   }
 
 /-- R11 / II.AC16: selected witness ideal requirements for the finite site. -/

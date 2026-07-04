@@ -101,6 +101,13 @@ theorem finiteRestrictionQuotientFiniteMeetPoset :
           (Site.productContextFiniteMeet (A := FiniteModel.object)) :=
   FiniteModel.siteRestrictionQuotientFiniteMeetPosetCategory_fromFiniteMeet
 
+theorem finiteContextMorphismRolesConcrete :
+    (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsRestriction ∧
+      (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsProjection ∧
+        (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsRefinement ∧
+          (FiniteModel.siteContextIdentityMorphism FiniteModel.siteContext).IsBaseChange :=
+  FiniteModel.siteContextIdentityMorphism_rolesConcrete
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -168,5 +175,11 @@ info: 'AAT.AG.AxiomAudit.finiteRestrictionQuotientFiniteMeetPoset' depends on ax
 -/
 #guard_msgs in
 #print axioms finiteRestrictionQuotientFiniteMeetPoset
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteContextMorphismRolesConcrete' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms finiteContextMorphismRolesConcrete
 
 end AAT.AG.AxiomAudit

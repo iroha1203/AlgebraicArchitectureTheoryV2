@@ -36,7 +36,8 @@ theorem inclusion_isRestriction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 /-- II.定義7.1: readable patch inclusions do not generate atoms. -/
 theorem inclusion_nonGenerating {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : ContextPreorderCategory A} (F : CoverageFamily C) (i : F.Index) :
-    (F.inclusionMorphism i).nonGenerating :=
+    SupportMapNonGenerating (F.patch i) F.base
+      (F.inclusionMorphism i).supportMap :=
   ContextMorphism.nonGenerating_of_restriction (F.inclusion_isRestriction i)
 
 end CoverageFamily
@@ -86,7 +87,8 @@ structure AdmissibleCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     ∀ i j : F.Index,
       R.boundaryVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) F.base
   nonGeneration :
-    ∀ i : F.Index, (F.inclusionMorphism i).nonGenerating
+    ∀ i : F.Index, SupportMapNonGenerating (F.patch i) F.base
+      (F.inclusionMorphism i).supportMap
 
 namespace AdmissibleCover
 
@@ -138,7 +140,8 @@ theorem nonGenerating {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     (i : F.Index) :
-    (F.inclusionMorphism i).nonGenerating :=
+    SupportMapNonGenerating (F.patch i) F.base
+      (F.inclusionMorphism i).supportMap :=
   h.nonGeneration i
 
 /--
@@ -148,7 +151,8 @@ the context preorder satisfies the fifth admissibility condition.
 theorem nonGenerating_from_inclusions {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : ContextPreorderCategory A}
     {F : CoverageFamily C} :
-    (∀ i : F.Index, (F.inclusionMorphism i).nonGenerating) :=
+    (∀ i : F.Index, SupportMapNonGenerating (F.patch i) F.base
+      (F.inclusionMorphism i).supportMap) :=
   F.inclusion_nonGenerating
 
 end AdmissibleCover
