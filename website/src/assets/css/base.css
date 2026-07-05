@@ -84,3 +84,22 @@ p {
       font-size: clamp(2.62rem, 12vw, 4.2rem);
     }
 }
+
+/* bare pre blocks (outside .code-panel) must scroll, not overflow */
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* wide math scrolls instead of stretching the page.
+   inline containers need inline-block for max-width to apply */
+mjx-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+mjx-container:not([display="true"]) {
+  display: inline-block;
+  vertical-align: middle;
+}
