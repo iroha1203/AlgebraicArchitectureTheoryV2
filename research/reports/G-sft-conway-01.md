@@ -1083,3 +1083,71 @@ G2 / G3 / G4 audit summary:
   へ overclaim していない。
 - G4 score audit: reduce。G2 A の low bound を採用し、base 40、evidence multiplier 2.0、
   penalty 0、final +80。
+
+## Cycle 21 — Owner-uniform finite Cech-style boundary shadow
+
+candidate: `research/ideas/g-sft-conway-01-relative-cech-shadow.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 35
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 60
+category: `finite-cech-shadow`, `boundary-generator-provenance`,
+  `conway-obstruction`, `finite-witness`
+goal_delta: Cycle 20 の selected finite quotient carrier を、有限 `C0 -> C1`
+  cochain-style boundary shadow として読む receiver を追加した。`C0` は explicit
+  owner-uniform boundary-generator provenance、`C1` は selected `ZMod 2` family defect
+  coefficient であり、その boundary image は Cycle 17 の explicit generator subgroup と一致する。
+  shadow class は Cycle 20 の `OwnerUniformConwayClass` と同じ zero/nonzero 判定を持ち、
+  selected singleton subfamily は zero、full restricted two-fork family は nonzero である。
+project_value_delta: `true H^1` へ進む前の有限 receiver spine として、owner-uniform obstruction が
+  どの selected `C0 -> C1` boundary image に載っているかを Lean theorem package として固定した。
+  これは true sheaf cohomology、arbitrary-site Cech cohomology、arbitrary-cover naturality、
+  universal quotient theorem、canonical selector ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  owner mismatch や local/global failure を報告できるが、この cycle は selected local-zero /
+  full-family-nonzero obstruction を finite Cech-style boundary shadow と Cycle 20 quotient class の
+  比較 theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformRelativeCechShadow.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformRelativeCechShadow` が通過。
+  `#print axioms` は reported declarations について `propext`, `Classical.choice`, `Quot.sound`
+  のみで `sorryAx` はない。
+open_questions: independent relative nerve / intersection indexing、arbitrary-cover naturality、
+  reorg/refactor obstruction-killing operation theorem、review-route comparison、true sheaf `H^1`
+  は未固定。Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformRelativeCechShadow.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechCochain0`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundary`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechBoundaryImage`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechBoundaryImage_eq_familyBoundarySubgroup`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechShadow`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformRelativeCechClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_familyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_conwayClass_zero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_ne_zero_iff_conwayClass_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformRelativeCechClass_eq_zero_iff_spanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_relativeCechClass_zero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_relativeCechClass_nonzero_iff_selectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformRelativeCechShadowPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: revise寄り accept。`C0` は `OwnerUniformFamilyBoundaryGenerator` wrapper、
+  `C1` は既存 `OwnerUniformFamilyZ2`、boundary は selected defect なので Cycle 17/20 の再提示に近い。
+  ただし boundary image 同定、Cycle 20 class との比較、local-zero/global-nonzero witness により、
+  bounded finite Cech-style receiver としての整理にはなっている。`relative nerve` という語は弱めた。
+  G2 は base 55、final +110 を推奨した。
+- G3 axiom audit: pass。reported declarations は `propext`, `Classical.choice`, `Quot.sound`
+  のみに依存し、`sorryAx` はない。
+- G3 formalization quality: pass。claim は selected finite `C0 -> C1`
+  boundary shadow に限定し、true sheaf `H^1`、arbitrary-site cohomology、arbitrary-cover naturality、
+  canonical selector を主張しない。
+- G4 score audit: reduce。`C0` は existing generator wrapper、boundary は cochain を読まず
+  selected defect を返すため、Cycle 17/20 への incremental cochain-style relabeling に近い。
+  independent relative nerve / Cech incidence structure はまだ入っていない。G4 の low bound を採用し、
+  base 35、evidence multiplier 2.0、penalty 10、final +60 とする。
