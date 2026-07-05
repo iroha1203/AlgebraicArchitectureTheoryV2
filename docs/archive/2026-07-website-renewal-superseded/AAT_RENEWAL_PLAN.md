@@ -1,5 +1,8 @@
 # AAT Website Renewal Plan
 
+> **Archived 2026-07-05**: Atom refoundation 期の計画。AG 版 1:1 構成のリライトは
+> `docs/note/website_renewal_design_note.md` の Wave 1 と `docs/website/DESIGN.md` が後継。
+
 この文書は、`website/aat/**` を Atom refoundation 後の AAT に合わせて再構成するための
 作業計画である。目的は小幅な copy 修正ではなく、AAT website を現在の理論を読むための
 web-native monograph として設計し直すことである。

@@ -1,0 +1,1292 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part I. Atoms, Objects, and Laws",
+  "description": "Part I of Algebraic Architecture Theory: the Atom axiom system, atom families, configurations, architecture objects, invariants, laws, obstruction circuits, and the lawfulness-zero-obstruction theorem.",
+  "order": 2,
+  "llmsLabel": "AAT Part I: Atoms, Objects, and Laws",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part I</span>
+          </nav>
+          <p class="eyebrow">Part I</p>
+          <h1>Atoms, Objects, and Laws</h1>
+          <p class="lede">
+            AAT begins with the Atom: a primitive typed architectural fact.
+            Part I axiomatizes atoms, generates atom families, configurations,
+            molecules, and architecture objects from them, introduces
+            invariants, laws, and obstruction circuits over those objects, and
+            proves that lawfulness and zero obstruction coincide under
+            explicitly selected soundness, completeness, and aggregation
+            assumptions. The chapter closes by assembling these ingredients
+            into an object algebra: architecture as algebra.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part I page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#primitive-facts">1. Primitive architectural fact</a></li>
+                <li><a href="#atom-axioms">2. Atom axiom system</a></li>
+                <li><a href="#atom-families">3. Atom family</a></li>
+                <li><a href="#configurations-molecules">4. Configuration and molecule</a></li>
+                <li><a href="#architecture-objects">5. Architecture object</a></li>
+                <li><a href="#invariants">6. Invariant</a></li>
+                <li><a href="#laws">7. Law</a></li>
+                <li><a href="#obstruction-circuits">8. Obstruction circuit</a></li>
+                <li><a href="#lawfulness-zero">9. Lawfulness and zero obstruction</a></li>
+                <li><a href="#architecture-as-algebra">10. Architecture as algebra</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed atom vocabulary, law
+                universe, coverage topology, and selected reading. Three claim
+                grades are kept distinct throughout the monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                Theorem labels on this page follow the canonical text. A label
+                carries a Lean status badge only when the AG Lean index has a
+                corresponding ledger row; a label without a badge is a
+                mathematical statement in the canonical text and is not read as
+                a current Lean proved claim.
+              </p>
+            </section>
+
+            <section id="primitive-facts" class="article-section">
+              <h2>1. Primitive architectural fact</h2>
+              <p>
+                The minimal unit of AAT is the Atom. An Atom is a typed fact
+                about software architecture that the theory treats as
+                indivisible: components, relations, capabilities, state,
+                effects, authority and trust, contracts, semantic facts, and
+                runtime interactions all appear in atomic form. The set of
+                atoms is written <code>At</code>, and every atom
+                <code>a : At</code> carries five coordinates:
+              </p>
+              <pre><code>kind(a)       : AtomKind
+axis(a)       : Axis
+subject(a)    : Subject
+predicate(a)  : Predicate
+payload(a)    : Payload</code></pre>
+              <p>
+                <code>kind(a)</code> names the atom's family,
+                <code>axis(a)</code> names the structural axis the atom
+                concerns, <code>subject(a)</code> names what the atom is about,
+                <code>predicate(a)</code> states the fact that holds, and
+                <code>payload(a)</code> carries content: a value, name, type,
+                evidence handle, or weight.
+              </p>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition I.1.1 (Atom).</a>
+                An Atom is a typed fact
+                <code>a = (kind, axis, subject, predicate, payload)</code>
+                such that <code>predicate</code> gives exactly one atomic
+                statement about <code>subject</code>.
+              </p>
+              <p>
+                An atom may be a proposition or a value. Inside AAT, atoms are
+                generators: laws select atoms, operations map atoms, and
+                signatures read the behavior of atoms, but the existence of
+                atoms starts from the atom axiom system and nowhere else.
+              </p>
+              <p id="example-1-2" class="statement">
+                <a class="statement-anchor" href="#example-1-2">Example I.1.2 (Basic atom schemas).</a>
+                The current core atom families give the following schemas. This
+                family is the current core, not a closed enumeration: if a
+                primitive architectural fact stably resists expression as a
+                molecule of existing families, a new atom family may be added.
+              </p>
+              <pre><code>component(c)
+relation_r(c, d)
+capability(c, k)
+state(c, x)
+effect(e)
+authority(actor, action, resource)
+trust_relation(source, target)
+contract(m, p)
+semantic(t, s)
+runtime_interaction(u, v, h)</code></pre>
+
+              <h3 id="example-1-3">Example I.1.3 (Reading the basic atoms)</h3>
+              <p>
+                The basic atoms are the minimal vocabulary for building
+                architecture objects. Each atom is a generator connected to
+                later laws, obstructions, operations, and signature axes, not a
+                bare label.
+              </p>
+              <h4>Component atoms</h4>
+              <p>
+                <code>component(c)</code> asserts that an architecture unit
+                exists: a module, service, class, package, process, table,
+                queue, adapter, or port. A component atom generates a vertex in
+                a graph representation, but the vertex is not the whole
+                content: the same component becomes a richer architecture
+                object by carrying state, capability, contract, effect, and
+                semantic atoms. Component atoms answer which units enter an
+                architecture object's carrier and which can serve as relation
+                sources and targets. Lawfulness never follows from component
+                atoms alone; components supply the objects that laws act on.
+              </p>
+              <h4>Relation atoms</h4>
+              <p>
+                <code>relation_r(c, d)</code> asserts that a relation holds
+                between two or more atoms or subjects: dependency, calls,
+                reads, writes, publishes, subscribes, owns, implements,
+                substitutes, projects. A binary relation generates a graph edge
+                with <code>source = c</code>, <code>target = d</code>,
+                <code>predicate = r</code>. Relation atoms connect to cycle,
+                reachability, layering, projection, substitution, and effect
+                ordering laws, and they are the principal material of
+                obstruction circuits.
+              </p>
+              <h4>Capability atoms</h4>
+              <p>
+                <code>capability(c, k)</code> asserts that a component or
+                object provides an ability: an interface, port, query,
+                command, handler, storage access, serialization, calculation.
+                Capability sits between relation and contract: a relation says
+                where something connects, a contract says what is promised,
+                and a capability says what can be provided. Typical laws
+                demand that a required capability is provided, that a provided
+                capability satisfies a selected contract, and that capability
+                use factors through a declared interface. A missing capability
+                yields a missing-capability obstruction; a capability that
+                exists but fails its contract yields a substitution or
+                semantic obstruction.
+              </p>
+              <h4>State atoms</h4>
+              <p>
+                <code>state(c, x)</code> asserts that an architecture object
+                holds a state quantity: a database column, aggregate field,
+                cache entry, session value, event-log projection, or
+                configuration value. State atoms generate state spaces and
+                transition laws, and they raise the questions of which
+                operations read or update state, which invariants are
+                preserved by transitions, and which effects demand ordering
+                around state updates. State atoms surface obstructions
+                invisible to the static component graph: a dependency graph
+                can be acyclic while state transitions fail to commute.
+              </p>
+              <h4>Effect atoms</h4>
+              <p>
+                <code>effect(e)</code> asserts that an architecture object
+                acts on external or internal state: message send, email,
+                payment capture, database write, cache invalidation, event
+                publish, file write, remote call, retry, compensation. Effect
+                atoms connect to ordering, idempotence, replay, compensation,
+                authority, and handler-existence laws. Effect obstructions
+                frequently do not appear in the dependency graph, so AAT keeps
+                effects as independent atoms rather than collapsing them into
+                component relations.
+              </p>
+              <h4>Authority and trust atoms</h4>
+              <p>
+                <code>authority(actor, action, resource)</code> asserts who
+                holds the authority or trust to perform which action on which
+                resource. Owner, visibility, permission, policy scope, access
+                path, encapsulation, and allocation facts belong to this
+                family, with schemas such as
+                <code>permission(subject, action, resource)</code>,
+                <code>trust_relation(source, target)</code>,
+                <code>owner(subject, owner)</code>,
+                <code>visibility(subject, v)</code>,
+                <code>policy_scope(policy, target)</code>,
+                <code>access_path(subject, resource)</code>, and
+                <code>encapsulates(subject, detail)</code>. Authority is not
+                dependency and not effect: that a component can reach a
+                resource and that it is authorized to act on it are distinct
+                primitive facts. Typical laws demand that effects require
+                authority, access paths respect permissions, hidden details
+                remain encapsulated, and policies apply to their selected
+                targets; their failures produce unauthorized-effect,
+                leaked-detail, policy-mismatch, and unexpected-access-path
+                obstructions.
+              </p>
+              <h4>Contract atoms</h4>
+              <p>
+                <code>contract(m, p)</code> asserts what an operation,
+                capability, component, or effect must satisfy: preconditions,
+                postconditions, return types, error behavior, event shapes,
+                idempotency promises, latency promises, authorization rules.
+                Contract atoms are the center of substitution laws:
+              </p>
+              <pre><code>substitutes(Impl, Base)
+contract(Base, C)
+contract(Impl, C')
+C' refines C</code></pre>
+              <p>
+                When <code>C'</code> fails to satisfy <code>C</code>, a
+                substitution obstruction arises. Matching interface types do
+                not give lawfulness when the contract atoms disagree.
+              </p>
+              <h4>Semantic atoms</h4>
+              <p>
+                <code>semantic(t, s)</code> asserts a semantic interpretation
+                of an architecture object: domain invariant, business meaning,
+                identity, ownership, money amount, authorization meaning,
+                event meaning. The same types and relations under a different
+                meaning give a different architecture reading. The uniqueness
+                of semantic atoms is defined relative to rules of use rather
+                than as an absolute uniqueness of meaning objects. This
+                transfers the late-Wittgensteinian language-game position —
+                meaning is use — to AAT's semantic atoms: the meaning of a
+                program fragment or architecture subject is read from how it
+                is used within a rule-governed practice.
+              </p>
+              <pre><code>UseContext Γ
+UseRuleSet R
+ExtractorSemantics E
+Normalization N
+
+semantic_Γ(t, s)</code></pre>
+              <p>
+                Here \( \Gamma \) fixes which workflows, contracts, operations,
+                state transitions, effects, authorization rules, tests,
+                examples, and documented practices <code>t</code> participates
+                in; <code>R</code> fixes identification, distinction,
+                preservation, substitution, and failure within that
+                use-context; <code>E</code> reads the source's syntax, types,
+                language specification, and extraction rules; and
+                <code>N</code> fixes identification and normalization.
+                Together these form the extraction doctrine
+                <code>D = (V, Γ, R, ρ, E, N)</code>, and the uniqueness of the
+                semantic atom family takes the form: if
+                <code>Atomize_D(S) = F</code> and
+                <code>Atomize_D(S) = G</code>, then <code>F = G</code>.
+              </p>
+              <p>
+                Semantic atoms do not demand single membership. The same
+                subject may carry several semantic atoms at once — an overlap
+                of semantic facts, not a non-uniqueness of meaning. If the same
+                email-sending capability serves both two-factor authentication
+                and newsletter delivery, the canonical atom family contains
+                both semantic atoms:
+              </p>
+              <pre><code>semantic(sendEmail, twoFactorAuthentication)
+semantic(sendEmail, newsletterDelivery)
+
+semantic_{twoFactorAuthGame}(sendEmail, verificationChannel)
+semantic_{newsletterGame}(sendEmail, deliveryChannel)</code></pre>
+              <p>
+                An observation that collapses these into a coarse meaning such
+                as <code>notification</code> is a coarse semantic observation.
+                Semantic atoms separate static flatness from semantic
+                flatness: a tidy dependency graph leaves an obstruction
+                standing whenever a diagram demanded by a semantic atom fails
+                to commute.
+              </p>
+              <h4>Runtime and interaction atoms</h4>
+              <p>
+                <code>runtime_interaction(u, v, h)</code> asserts a runtime
+                call, message, event, retry, timeout, protection,
+                synchronization, transaction, or schedule constraint, with
+                schemas such as <code>runtime_call(u, v)</code>,
+                <code>rpc(u, v)</code>, <code>message(ch, payload)</code>,
+                <code>event_emission(u, event)</code>,
+                <code>event_handling(h, event)</code>, <code>retry(op)</code>,
+                <code>timeout(op)</code>, <code>circuit_breaker(op)</code>,
+                <code>bulkhead(op)</code>, <code>lock(resource)</code>,
+                <code>transaction(scope)</code>, and
+                <code>schedule_constraint(subject, constraint)</code>. These
+                are not obstructions: a timeout or circuit breaker is a
+                primitive fact that runtime laws act on, not a failure. A flat
+                static relation surface can still host a separate runtime
+                obstruction, so runtime atoms are kept independent of relation
+                and effect atoms.
+              </p>
+              <h4>Combining atoms</h4>
+              <p>
+                Basic atoms are meaningful alone, but AAT's objects appear as
+                combinations. A family mixing component, relation, capability,
+                state, contract, effect, authority, trust, semantic, and
+                runtime atoms generates a molecule for one concern, and from
+                it relation laws, state transition laws, effect ordering laws,
+                authority laws, contract preservation laws, runtime
+                interaction laws, and semantic consistency laws rise at once.
+              </p>
+
+              <h3 id="example-1-4">Example I.1.4 (Atom extraction from a source fragment)</h3>
+              <p>
+                Atoms are not the source code itself. To read a source
+                fragment as an architecture object, an atom family is
+                extracted from its declarations, references, calls, state
+                updates, external effects, type annotations, and semantic
+                annotations. Consider the abstract fragment:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Abstract source fragment</figcaption>
+                <pre><code>module C
+  imports D
+
+  state x : X
+
+  provides k : K
+
+  def m(input : P) : Q
+    require authority a on r
+    y = D.read(input.id)
+    x = update(x, y)
+    emit e(y)
+    with timeout T
+    return q(y)</code></pre>
+              </figure>
+              <p>
+                Reading this source under the atom vocabulary determines,
+                essentially, the following atom family. Semantic annotations
+                enter the family as primitive facts appearing in the source.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Canonical atom family</figcaption>
+                <pre><code>component(C)
+component(D)
+relation_imports(C, D)
+capability(C, k)
+state(C, x : X)
+authority(a, act, r)
+contract(m, P -> Q)
+relation_calls(m, D.read)
+relation_reads(m, input.id)
+relation_writes(m, x)
+effect(e)
+relation_emits(m, e)
+runtime_interaction(m, D.read, call)
+timeout(m, T)
+semantic(q(y), denotes result-of-m)</code></pre>
+              </figure>
+              <p>
+                Each atom does distinct work. The import and call relations
+                feed dependency, reachability, layering, and cycle readings.
+                The state and write atoms raise state transition laws. The
+                effect and emit atoms raise effect ordering, retry,
+                idempotence, and compensation laws. The authority atom raises
+                access, permission, and encapsulation laws. The runtime
+                interaction and timeout atoms raise runtime protection,
+                retry, timeout, transaction, and synchronization laws. The
+                contract and semantic atoms raise substitution, projection,
+                and semantic consistency laws.
+              </p>
+              <p>
+                The atom family itself is read uniquely under the same source
+                and atom vocabulary. Semantic reading and resolution are not
+                existence conditions on atoms; they are downstream
+                interpretation and projection or truncation of the canonical
+                family:
+              </p>
+              <pre><code>canonical:
+  component(C), component(D), relation_imports(C,D),
+  relation_calls(m,D.read), relation_reads(m,input.id),
+  relation_writes(m,x), effect(e), relation_emits(m,e),
+  authority(a,act,r), runtime_interaction(m,D.read,call),
+  timeout(m,T), contract(m, P -> Q),
+  semantic(q(y), denotes result-of-m)
+
+coarse projection:
+  component(C)
+  relation_imports(C,D)
+  contract(m, P -> Q)</code></pre>
+              <p>
+                AAT reads laws, obstructions, and signatures over the
+                canonical atom family. Conclusions computed on a coarse
+                projection are read only for the axes that projection
+                preserves.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition I.1.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.AtomRecord</code>, <code>AAT.AG.AtomCarrier</code>, <code>AAT.AG.AtomCarrier.record</code></dd>
+                  <dt>Meaning</dt>
+                  <dd>A five-coordinate atom record over kind, axis, subject, predicate, and payload, and a carrier bundling an atom type with its five coordinate projections.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Vocabulary definitions; the theorem content of Part I is carried by the axiom package and downstream theorems below.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="atom-axioms" class="article-section">
+              <h2>2. Atom axiom system</h2>
+              <p>
+                The atom axiom system is the starting point from which AAT
+                rises. It fixes atoms as generators and fences off laws and
+                observations from generating atom truth.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Axiom A0 (Primitive existence)</dt>
+                  <dd><code>At</code> is the type of primitive facts. AAT's architecture objects are generated from <code>At</code>.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A1 (Typing)</dt>
+                  <dd>Every atom has a kind and an axis: for all <code>a : At</code>, <code>kind(a)</code> and <code>axis(a)</code> are defined.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A2 (Single fact)</dt>
+                  <dd>One atom expresses one primitive fact. Composite claims are expressed as sets of atoms or configurations.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A3 (Predicate stability)</dt>
+                  <dd>Atom identity is read through type, subject, predicate, and content: <code>a = b</code> iff the five coordinates <code>kind</code>, <code>axis</code>, <code>subject</code>, <code>predicate</code>, <code>payload</code> agree.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A4 (Composition)</dt>
+                  <dd>A finite family of atoms generates a configuration: from <code>F subset At</code>, form <code>Config(F)</code>.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A5 (Law non-generation)</dt>
+                  <dd>Laws do not generate the holding of atoms. A law acts on an atom family as constraint, preservation condition, commutation condition, or absence condition.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A6 (Observation non-generation)</dt>
+                  <dd>Observation, measurement, reporting, inspection, and recording do not generate the holding of atoms. They give readings of an atom family; they are not sources of the atoms themselves.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A7 (Operation preservation of atom-origin)</dt>
+                  <dd>Architecture operations map atom families to atom families: <code>op : Config(F) -> Config(G)</code> with <code>F, G subset At</code>. Operations therefore close as algebraic transformations of architecture objects.</dd>
+                </div>
+                <div>
+                  <dt>Axiom A8 (Essential uniqueness)</dt>
+                  <dd>When a source and an extraction doctrine are fixed, the canonical atom family determined by that source is unique. The doctrine <code>D = (V, Γ, R, ρ, E, N)</code> covers not only the atom vocabulary but semantic reading, resolution, source semantics, and normalization.</dd>
+                </div>
+              </dl>
+              <p>
+                Axiom A8 relativizes uniqueness rather than weakening it. The
+                same source under the same atom vocabulary but a different
+                semantic use-context, use-rule, resolution, source semantics,
+                or normalization yields an atom family relativized to a
+                different doctrine — a relativization of uniqueness, not a
+                failure of uniqueness. Reading a fixed doctrine's canonical
+                family coarsely is a projection
+                <code>pi : F -> F_coarse</code>: not a rival candidate for
+                atom truth, but a record of which atoms are visible, which are
+                merged, and which relations are forgotten.
+              </p>
+
+              <div id="proposition-a9" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition A9</span>
+                    <h3>Observation incompleteness and existence uniqueness</h3>
+                  </div>
+                </div>
+                <p>
+                  The existence of an atom and the observation of an atom are
+                  not the same. Incomplete observation does not make the
+                  existence of the atom family ambiguous: the canonical atom
+                  family exists uniquely while observation may be partial,
+                  coarse, or coordinate-forgetting.
+                </p>
+                <p>
+                  Observation is read as a map from the canonical family into
+                  observed values, <code>obs : F -> O</code>. When
+                  <code>obs</code> is not injective, distinct atoms collapse
+                  to the same observed value — <code>a != b</code> with
+                  <code>obs(a) = obs(b)</code> — which shows the observation
+                  map forgetting information, not atoms losing uniqueness.
+                  Likewise an atom absent from the observed values need not be
+                  absent from <code>F</code>.
+                </p>
+                <pre><code>Atom existence      : the unique fact fixed by the canonical source
+Atom observation    : a map reading that fact
+Atom projection     : a coarse reading at the observation's resolution
+Atom reconstruction : an attempt to return from observed values to the canonical family</code></pre>
+                <p>
+                  Correct reconstruction requires the observation map to
+                  preserve enough information, but a failed reconstruction
+                  never breaks the existence uniqueness of atoms.
+                </p>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Axioms A0–A8 and Proposition A9 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>A0–A8 package</dt>
+                  <dd><code>AAT.AG.AtomAxiomSystem</code> bundles A0–A8 as structure fields, with proved accessors <code>primitive_exists</code>, <code>typing_total</code>, <code>configurationOf</code>, <code>operateFamily</code> — <em>defined only / proved</em>.</dd>
+                  <dt>A3</dt>
+                  <dd><code>AAT.AG.SameCoordinates</code>, <code>AtomAxiomSystem.eq_iff_sameCoordinates</code>, <code>AtomAxiomSystem.ext</code>: the equivalence of five-coordinate agreement and atom identity, with an ext lemma — <em>proved</em>.</dd>
+                  <dt>A8</dt>
+                  <dd><code>AAT.AG.ExtractionDoctrine</code>, <code>ExtractionDoctrine.atomize_unique</code>, <code>AAT.AG.CoarseProjection</code>, <code>AtomAxiomSystem.doctrine_family_unique</code>: canonical-family uniqueness from <code>atomize</code> being a function — <em>defined only / proved</em>.</dd>
+                  <dt>Proposition A9</dt>
+                  <dd><code>AAT.AG.ObservationModel</code>, <code>ObservationModel.NonInjective</code>, <code>ObservationProjection</code>, <code>ReconstructionAttempt</code>, <code>no_exact_reconstruction_of_nonInjective</code>, and the <code>A9Example</code> finite model exhibiting non-injective observation, unobserved atoms, inexact reconstruction, and coexistence with A8 uniqueness — <em>defined only / proved</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="atom-families" class="article-section">
+              <h2>3. Atom family</h2>
+              <p>
+                An atom family is a collection of atoms treated together.
+              </p>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition I.3.1 (Atom family).</a>
+                An atom family <code>F</code> is a subset of <code>At</code>:
+                <code>F subset At</code>. A family may mix component,
+                relation, state, contract, effect, and semantic atoms. AAT
+                does not exclude the mixture; it asks which laws the mixed
+                primitive facts satisfy and which obstructions they generate.
+              </p>
+              <p id="definition-3-2" class="statement">
+                <a class="statement-anchor" href="#definition-3-2">Definition I.3.2 (Support).</a>
+                <code>support(F) = { subject(a) | a in F }</code> is the set
+                of subjects appearing in <code>F</code>. The support is not
+                restricted to components: operations, states, effects, and
+                contracts also appear as subjects.
+              </p>
+              <p id="definition-3-3" class="statement">
+                <a class="statement-anchor" href="#definition-3-3">Definition I.3.3 (Axis restriction).</a>
+                For an axis <code>x</code>,
+                <code>F|x = { a in F | axis(a) = x }</code>. Reading the
+                dependency, state, effect, contract, and semantic axes
+                separately yields different faces of the same architecture
+                object.
+              </p>
+              <p id="definition-3-4" class="statement">
+                <a class="statement-anchor" href="#definition-3-4">Definition I.3.4 (Compatibility).</a>
+                <code>F</code> is compatible when it never simultaneously
+                contains contradictory payloads on the same subject and
+                predicate:
+              </p>
+              <pre><code>Compatible(F)
+  iff not exists a b in F,
+      sameSlot(a,b) and inconsistent(payload(a), payload(b))</code></pre>
+              <p>
+                Compatibility is not completeness: a compatible family can
+                still lack atoms it needs.
+              </p>
+              <p id="definition-3-5" class="statement">
+                <a class="statement-anchor" href="#definition-3-5">Definition I.3.5 (Closure).</a>
+                For a family of inference rules <code>R</code>,
+                <code>cl_R(F)</code> is the least <code>G</code> with
+                <code>F subset G</code> and <code>R(G) subset G</code>.
+                Closure extends the family, and atoms in the closure are
+                treated as derived atoms justified by <code>R</code>; when
+                primitive and derived atoms must be distinguished, an origin
+                marker is attached.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.3.1–I.3.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.AtomFamily</code> with <code>Subset</code>, <code>ListFinite</code>, <code>support</code>, <code>restrictAxis</code>, <code>Compatible</code>, <code>EqCompatible</code>, <code>AtomOrigin</code>, <code>OriginMarked</code>, <code>InferenceSystem</code>, <code>IsClosed</code>, <code>closure</code>, and the support / restriction lemmas and three closure lemmas (<code>subset_closure</code>, <code>closure_isClosed</code>, <code>closure_minimal</code>).</dd>
+                  <dt>Boundary</dt>
+                  <dd>Compatibility is relativized to a selected payload compatibility relation; closure is proved for monotone inference-rule families.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="configurations-molecules" class="article-section">
+              <h2>4. Configuration and molecule</h2>
+              <p>
+                Atoms alone are not architecture objects. Architecture objects
+                arise from the placement of atoms and their interrelation.
+              </p>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition I.4.1 (Atom configuration).</a>
+                An atom configuration is a triple <code>C = (F, R, E)</code>,
+                where <code>F</code> is an atom family, <code>R</code> is a
+                relation among atoms — dependency, coherence, generation,
+                reference, substitution, realization — and <code>E</code> is
+                identification or equivalence data expressing identification
+                and abstraction.
+              </p>
+              <p id="definition-4-2" class="statement">
+                <a class="statement-anchor" href="#definition-4-2">Definition I.4.2 (Molecule).</a>
+                A molecule is a finite atom arrangement inside a configuration
+                that can be treated as one unit of meaning:
+                <code>M = (F_M, R_M, E_M)</code> with
+                <code>F_M subset F</code> and <code>R_M</code>,
+                <code>E_M</code> restricted from <code>C</code>.
+              </p>
+              <p id="example-4-3" class="statement">
+                <a class="statement-anchor" href="#example-4-3">Example I.4.3 (Concern molecule).</a>
+                A finite arrangement carrying one architecture concern:
+              </p>
+              <pre><code>component(c)
+component(d)
+relation_r(c, d)
+capability(d, k)
+contract(m, p)
+state(c, x)
+effect(e)
+semantic(t, s)</code></pre>
+              <p>
+                The semantic atom gives the semantic facts inside the concern.
+                A selected reading — which role, responsibility, or pattern
+                name explains this molecule — is downstream interpretation and
+                not an existence condition on the molecule.
+              </p>
+              <p id="definition-4-4" class="statement">
+                <a class="statement-anchor" href="#definition-4-4">Definition I.4.4 (Subconfiguration).</a>
+                <code>C' &lt;= C</code> holds when the atoms, relations, and
+                identifications of <code>C'</code> are contained in
+                <code>C</code>: <code>F' subset F</code>,
+                <code>R' subset R</code>, <code>E' subset E</code>.
+                Subconfigurations express the substructures of an
+                architecture object.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.4.1 / I.4.2 / I.4.4 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.AtomConfiguration</code> with <code>Subconfiguration</code>, <code>FamilySupported</code>, <code>Molecule</code>, and the proved <code>Subconfiguration.refl</code>, <code>Subconfiguration.trans</code>, <code>Subconfiguration.preorder</code>, plus molecule finiteness lemmas (<code>Molecule.ListFinite</code>, <code>family_subset_parent</code>, <code>finite_marker</code>, <code>listFinite_has_cover</code>).</dd>
+                  <dt>Boundary</dt>
+                  <dd>Molecules carry an explicit finite marker; <code>R</code> and <code>E</code> are read through a family-supported predicate.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="architecture-objects" class="article-section">
+              <h2>5. Architecture object</h2>
+              <p>
+                The architecture object is the central object of AAT,
+                generated from atom configurations.
+              </p>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition I.5.1 (Architecture object).</a>
+                An architecture object is a triple <code>A = (C, S, Q)</code>,
+                where <code>C</code> is an atom configuration, <code>S</code>
+                is a family of structure maps into graphs, categories,
+                algebras, diagrams, and state transitions, and <code>Q</code>
+                is a family of selected quantities — invariants, measures,
+                signature axes, curvature values.
+              </p>
+              <p id="definition-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-5-2">Definition I.5.2 (Generated object).</a>
+                <code>F =&gt; A</code> expresses that atom family
+                <code>F</code> generates architecture object <code>A</code>:
+                a configuration <code>C</code> is built from <code>F</code>,
+                and <code>A</code> is obtained by equipping <code>C</code>
+                with structure maps and selected quantities.
+              </p>
+
+              <div id="proposition-5-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition I.5.3</span>
+                    <h3>Atom-Origin</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  Every architecture object is generated from an atom family:
+                </p>
+                <p>\[ \forall A,\ \exists F,\ F \Rightarrow A. \]</p>
+                <p>
+                  This proposition is the generation principle of AAT: there
+                  is no architecture object whose origin lies outside the
+                  atoms.
+                </p>
+                <dl>
+                  <dt>Lean anchor</dt>
+                  <dd><code>AAT.AG.ArchitectureObject.atom_origin</code>, with <code>ArchitectureObject.GeneratedObject</code> and the <code>generated_family_eq</code> / <code>generated_family_subset</code> lemmas.</dd>
+                </dl>
+              </div>
+
+              <p id="definition-5-4" class="statement">
+                <a class="statement-anchor" href="#definition-5-4">Definition I.5.4 (Object equivalence).</a>
+                Two architecture objects <code>A</code> and <code>B</code> are
+                equivalent, <code>A ~= B</code>, when there exists a
+                configuration equivalence preserving the selected structure
+                maps and selected quantities. Objects generated from the same
+                atom family may still be read as different objects when their
+                structure maps are chosen differently.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.5.1 / I.5.2 / I.5.4 and Proposition I.5.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.ArchitectureObject</code>, <code>GeneratedObject</code>, <code>ObjectEquivalence</code>, <code>atom_origin</code>, and the equivalence accessors <code>configuration_equivalent</code>, <code>structure_maps_preserved</code>, <code>selected_quantities_preserved</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Structure maps and selected quantities are abstract carriers at this stage; concrete graph, category, algebra, diagram, and state-transition instances belong to Part II and later.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="invariants" class="article-section">
+              <h2>6. Invariant</h2>
+              <p>
+                An invariant is a quantity or property preserved on
+                architecture objects.
+              </p>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition I.6.1 (Invariant).</a>
+                An invariant on an architecture object is a function
+                <code>I : Obj -&gt; Value</code> or a predicate
+                <code>P : Obj -&gt; Prop</code>.
+              </p>
+              <p id="definition-6-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-2">Definition I.6.2 (Invariant family).</a>
+                An invariant family is a collection of invariants to be
+                preserved together: <code>Inv(A) = { I_i | i in J }</code>.
+              </p>
+              <p id="definition-6-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-3">Definition I.6.3 (Preservation).</a>
+                An operation <code>op : A -&gt; B</code> preserves invariant
+                <code>I</code> when \( I(A) = I(B) \), or, for ordered
+                quantities, when \( I(B) \le I(A) \).
+              </p>
+              <p id="example-6-4" class="statement">
+                <a class="statement-anchor" href="#example-6-4">Example I.6.4 (Preserved quantities).</a>
+                Typical invariants — each corresponding to a distinct law and
+                obstruction:
+              </p>
+              <pre><code>number of forbidden dependency atoms
+cycle count
+projection violation count
+contract mismatch count
+effect replay failure count
+semantic inconsistency count</code></pre>
+
+              <div id="proposition-6-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition I.6.5</span>
+                    <h3>Layers of design principles</h3>
+                  </div>
+                </div>
+                <p>
+                  A design principle is not a single slogan; it is a reading
+                  that ties together several invariant families and operation
+                  families. The representative classification:
+                </p>
+                <div style="overflow-x: auto;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Design principle / pattern</th>
+                        <th>Principal invariants</th>
+                        <th>Layer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>SRP / OCP / LSP / ISP / DIP</td>
+                        <td>Local contracts, abstraction, substitutability, interface separation</td>
+                        <td>Local contract layer</td>
+                      </tr>
+                      <tr>
+                        <td>Layered Architecture</td>
+                        <td>Ranking, dependency direction, acyclicity, decomposability</td>
+                        <td>Global structure layer</td>
+                      </tr>
+                      <tr>
+                        <td>Clean Architecture</td>
+                        <td>Inside/outside separation, inward dependency, abstraction coherence</td>
+                        <td>Global structure layer</td>
+                      </tr>
+                      <tr>
+                        <td>Event Sourcing / Saga / CRUD</td>
+                        <td>Replay, projection, compensation, history-versus-overwrite relations</td>
+                        <td>State transition algebra layer</td>
+                      </tr>
+                      <tr>
+                        <td>Circuit Breaker</td>
+                        <td>Runtime protection, failure locality</td>
+                        <td>Runtime dependency layer</td>
+                      </tr>
+                      <tr>
+                        <td>Replicated Log</td>
+                        <td>Ordering, quorum, failure model, conditional convergence</td>
+                        <td>Distributed convergence layer</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>
+                  Local-contract-layer invariants do not automatically imply
+                  the invariants of the global structure, state transition
+                  algebra, runtime dependency, or distributed convergence
+                  layers. Proposition I.6.5 is a mathematical statement in the
+                  canonical text.
+                </p>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.6.1–I.6.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.FunctionInvariant</code>, <code>PredicateInvariant</code>, <code>Invariant</code>, <code>InvariantFamily</code>, the preservation predicates <code>EqualityPreserved</code>, <code>OrderPreserved</code>, <code>PredicatePreserved</code>, and their accessor lemmas.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Function-valued and predicate-valued invariants with equality-form <code>I(A)=I(B)</code> and order-form <code>I(B) &lt;= I(A)</code> preservation. The Example I.6.4 quantities and the Proposition I.6.5 layer table have no ledger row and are read as canonical-text statements.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="laws" class="article-section">
+              <h2>7. Law</h2>
+              <p>
+                A law expresses commutation, preservation, absence, and
+                coherence on architecture objects.
+              </p>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition I.7.1 (Law).</a>
+                A law <code>L</code> is a predicate on architecture objects,
+                <code>L : Obj -&gt; Prop</code>. Structurally, laws take the
+                forms:
+              </p>
+              <pre><code>L(A) iff diagram(A) commutes
+L(A) iff forbidden(A) is empty
+L(A) iff projection(A) is sound
+L(A) iff substitution(A) preserves contract
+L(A) iff operation(A) preserves invariant</code></pre>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition I.7.2 (Law universe).</a>
+                A law universe is the family of laws considered together,
+                <code>Law(A) = { L_i | i in K }</code>, further read through
+                its components:
+              </p>
+              <pre><code>required laws
+optional laws
+derived laws
+witness family
+selected reading
+coverage assumptions
+exactness assumptions</code></pre>
+              <p>
+                At the definition stage, lawfulness is not identified with
+                obstruction absence. AAT first places semantic lawfulness and
+                connects it through finite witness families and signature
+                axes:
+              </p>
+              <pre><code>SemanticLawful(A,U)
+  = A is semantically lawful for the selected law universe U
+
+NoRequiredObstruction(A,W)
+  = the selected witness family W contains no required bad witness
+
+RequiredSignatureAxesZero(A,S)
+  = the selected signature axes S are zero</code></pre>
+              <p id="definition-7-3" class="statement">
+                <a class="statement-anchor" href="#definition-7-3">Definition I.7.3 (Lawfulness).</a>
+                An architecture object <code>A</code> is lawful for a law
+                universe <code>U</code> when every law in <code>U</code>
+                holds:
+              </p>
+              <p>\[ \mathrm{Lawful}_U(A) \iff \forall L \in U,\ L(A). \]</p>
+              <p id="example-7-4" class="statement">
+                <a class="statement-anchor" href="#example-7-4">Example I.7.4 (Representative laws).</a>
+                <code>NoCycle</code>, <code>ProjectionSound</code>,
+                <code>SubstitutionCompatible</code>,
+                <code>LayerRespecting</code>, <code>EffectReplayLawful</code>,
+                <code>StateTransitionCommutative</code>,
+                <code>SemanticInterpretationConsistent</code>. These laws are
+                not natural-language design principles themselves; they are
+                mathematical conditions on atom configurations.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.7.1–I.7.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Law</code>, <code>LawRole</code>, <code>LawWitnessFamily</code>, <code>SignatureAxes</code>, <code>LawUniverse</code> with <code>Required</code> / <code>Optional</code> / <code>Derived</code> roles, <code>Lawfulness</code>, and the three reading predicates <code>SemanticLawful</code>, <code>NoRequiredObstruction</code>, <code>RequiredSignatureAxesZero</code> with accessor lemmas.</dd>
+                  <dt>Boundary</dt>
+                  <dd>At this layer the equivalence of the three reading predicates is not claimed. Their agreement is proved downstream under the Theorem I.9.3 assumptions (see Section 9).</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="obstruction-circuits" class="article-section">
+              <h2>8. Obstruction circuit</h2>
+              <p>
+                When a law fails, the failure is read as an obstruction.
+              </p>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition I.8.1 (Obstruction).</a>
+                An obstruction for a law <code>L</code>, written
+                <code>Ob_L(A)</code>, is a structure witnessing that
+                <code>L(A)</code> fails.
+              </p>
+              <p id="definition-8-2" class="statement">
+                <a class="statement-anchor" href="#definition-8-2">Definition I.8.2 (Obstruction circuit).</a>
+                An obstruction circuit is a finite arrangement of atoms and
+                relations that triggers a law failure:
+                <code>O = (F_O, R_O, L)</code> with
+                <code>F_O subset At</code>, <code>R_O</code> a relation on
+                <code>F_O</code>, and <code>not L(A)</code>.
+              </p>
+              <p id="example-8-3" class="statement">
+                <a class="statement-anchor" href="#example-8-3">Example I.8.3 (Cycle obstruction).</a>
+                An obstruction circuit for <code>NoCycle</code>:
+              </p>
+              <pre><code>depends(A, B)
+depends(B, C)
+depends(C, A)</code></pre>
+              <p id="example-8-4" class="statement">
+                <a class="statement-anchor" href="#example-8-4">Example I.8.4 (Substitution obstruction).</a>
+                An obstruction circuit for substitution compatibility:
+              </p>
+              <pre><code>contract(Base, returns NonNull)
+contract(Impl, returns Nullable)
+substitutes(Impl, Base)</code></pre>
+              <p id="definition-8-5" class="statement">
+                <a class="statement-anchor" href="#definition-8-5">Definition I.8.5 (Obstruction valuation).</a>
+                An obstruction valuation assigns a quantity of obstruction per
+                law, <code>omega_L(A) : Value</code> — typically a count, a
+                boolean, a weight, a rank, or an energy. To read zero
+                obstruction and lawfulness as equivalent, the value domain and
+                the aggregation are not arbitrary. The zero theorem is stated
+                only when the selected value domain <code>Value_U</code>
+                carries:
+              </p>
+              <pre><code>0 in Value_U
+positive predicate (&gt; 0)
+zero/positive dichotomy for selected readings
+no cancellation at zero</code></pre>
+              <p>
+                and the aggregation over the law universe,
+                <code>Agg_U : (forall L in U, Value_U) -&gt; Value_U</code>,
+                is assumed zero-reflecting:
+              </p>
+              <p>\[ \mathrm{Agg}_U\big((v_L)_{L \in U}\big) = 0 \iff \forall L \in U,\ v_L = 0. \]</p>
+              <p>
+                This assumption excludes signed sums and cancellation-friendly
+                aggregations; sums of counts, disjunctions of booleans, sums
+                and suprema of nonnegative weights are the typical instances.
+                Write \( \omega_U(A) := \mathrm{Agg}_U\big((\omega_L(A))_{L \in U}\big) \).
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.8.1 / I.8.2 / I.8.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Obstruction</code>, <code>ObstructionCircuit</code> (with finite marker and explicit list-finite support), <code>ObstructionValueDomain</code> (zero / positive / dichotomy / no-cancellation), <code>ObstructionValuation</code>, <code>ZeroReflectingAggregation</code>, <code>ZeroReflectingListAggregation</code>, <code>omegaU</code>, <code>omegaU_zero_iff_required</code>, and the concrete instances <code>ObstructionAggregation.natSum</code>, <code>boolOr</code>, <code>weightSup</code> with their zero-reflecting theorems.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The aggregate valuation is relativized to the required law index; this file does not claim Theorem I.9.3, which lives in Section 9's anchors. Examples I.8.3 and I.8.4 fire in the finite model (<code>FiniteModel.cycleObstructionCircuit</code>, <code>FiniteModel.substitutionObstructionCircuit</code>) — <em>defined only / proved</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="lawfulness-zero" class="article-section">
+              <h2>9. Lawfulness and zero obstruction</h2>
+              <p>
+                Lawfulness and zero obstruction read the same phenomenon from
+                two directions.
+              </p>
+              <p id="proposition-9-1" class="statement">
+                <a class="statement-anchor" href="#proposition-9-1">Proposition I.9.1 (Obstruction soundness).</a>
+                A valuation <code>omega_L</code> for law <code>L</code> is
+                sound when the law's holding forces the selected obstruction
+                to vanish: \( L(A) \rightarrow \omega_L(A) = 0 \).
+                Equivalently, under the zero/positive dichotomy,
+                \( \omega_L(A) &gt; 0 \rightarrow \neg L(A) \).
+              </p>
+              <p id="proposition-9-2" class="statement">
+                <a class="statement-anchor" href="#proposition-9-2">Proposition I.9.2 (Completeness).</a>
+                An obstruction family for <code>L</code> is complete when a
+                law failure is always detected as a selected obstruction:
+                \( \neg L(A) \rightarrow \omega_L(A) &gt; 0 \). Equivalently,
+                under the zero/positive dichotomy,
+                \( \omega_L(A) = 0 \rightarrow L(A) \).
+              </p>
+
+              <div id="theorem-9-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem I.9.3 — Certified bounded inference</span>
+                    <h3>Lawfulness–Zero Obstruction</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume, for a law universe \( U \):</p>
+                <pre><code>forall L in U, omega_L is sound.
+forall L in U, omega_L is complete.
+Agg_U is zero-reflecting.
+Lawful_U(A) iff forall L in U, L(A).</code></pre>
+                <p>Then</p>
+                <p>\[ \mathrm{Lawful}_U(A) \iff \omega_U(A) = 0. \]</p>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    \( \mathrm{Lawful}_U(A) \iff \forall L \in U,\ L(A)
+                    \iff \forall L \in U,\ \omega_L(A) = 0
+                    \iff \omega_U(A) = 0 \).
+                    The second equivalence is soundness with completeness; the
+                    last is zero-reflecting aggregation.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.ObstructionSound</code>, <code>ObstructionComplete</code>, <code>law_holds_iff_omega_zero</code>, <code>lawfulness_iff_omegaU_zero</code> — <em>defined only / proved</em>, relativized to the required law universe and a zero-reflecting aggregation.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    This theorem is a certified bounded inference relativized
+                    to the selected law universe, obstruction family, value
+                    domain, and aggregation. It issues no zero claim about
+                    unselected laws, witnesses, axes, or metric aggregations
+                    that are not zero-reflecting.
+                  </dd>
+                </dl>
+              </div>
+
+              <p>
+                More structurally, for a law universe <code>U</code>, witness
+                family <code>W</code>, and signature axes <code>S</code>, when
+                witness completeness, axis exactness, coverage, and exactness
+                of the selected reading are all in place, the three readings
+                agree:
+              </p>
+              <p>\[ \mathrm{SemanticLawful}(A,U) \iff \mathrm{NoRequiredObstruction}(A,W) \iff \mathrm{RequiredSignatureAxesZero}(A,S). \]</p>
+              <p>
+                The equivalence is relativized to the selected atom family,
+                selected witness family, and selected signature axes.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Theorem I.9.3, later part (three-reading agreement)</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved / packaged</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.requiredLawWitnessFamily</code>, <code>requiredLawSignatureAxes</code>, <code>semanticLawful_iff_noRequiredObstruction_requiredLawWitness</code>, <code>semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes</code>, <code>noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw</code>, <code>concreteThreeReadingAgreement</code>, and the <code>ThreeReadingAgreementAssumptions</code> surface.</dd>
+                  <dt>Status</dt>
+                  <dd><em>proved</em> for the concrete route that builds the canonical witness family and signature axes from the required-law index and derives three-reading agreement from the actual <code>Lawfulness</code> predicate; the older <code>ThreeReadingAgreementAssumptions</code> surface remains as a Research-compatible <em>packaged (assumption-relative)</em> surface.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="architecture-as-algebra" class="article-section">
+              <h2>10. Architecture as algebra</h2>
+              <p>
+                AAT's objects, maps, laws, and obstructions form an algebra.
+              </p>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition I.10.1 (Object algebra).</a>
+                An object algebra consists of the data
+                <code>Obj</code>, <code>Op</code>, <code>Inv</code>,
+                <code>Law</code>, <code>Ob</code>, <code>Sig</code>:
+                architecture objects, operations, invariants, the law
+                universe, obstruction circuits, and signatures.
+              </p>
+              <p id="definition-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-10-2">Definition I.10.2 (Operation).</a>
+                An operation is a map of architecture objects,
+                <code>op : A -&gt; B</code>; at the atom level it is a
+                transformation of configurations,
+                <code>op_At : Config(F) -&gt; Config(G)</code>.
+              </p>
+              <p id="definition-10-3" class="statement">
+                <a class="statement-anchor" href="#definition-10-3">Definition I.10.3 (Signature).</a>
+                A signature is a multi-axis presentation collecting the
+                selected quantities of an architecture object:
+                <code>Sig(A) = (q_1(A), q_2(A), ..., q_n(A))</code>. A
+                signature is not a single value: different law failures
+                appear on different axes.
+              </p>
+              <p id="proposition-10-4" class="statement">
+                <a class="statement-anchor" href="#proposition-10-4">Proposition I.10.4 (Operation reading).</a>
+                An operation <code>op : A -&gt; B</code> carries one or more
+                of the following roles:
+              </p>
+              <pre><code>preservation      : preserves selected invariants
+reflection        : exposes obstructions
+repair            : decreases the obstruction valuation
+extension         : extends functionality by enlarging the atom family
+synthesis         : constructs an object satisfying the laws
+translation       : changes the representation</code></pre>
+
+              <div id="theorem-10-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem I.10.5</span>
+                    <h3>AAT Core</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved / packaged</span>
+                </div>
+                <p>
+                  In any universe satisfying the atom axiom system, the
+                  following construction is possible:
+                </p>
+                <pre><code>Atom
+  -> AtomFamily
+  -> Configuration
+  -> ArchitectureObject
+  -> LawUniverse
+  -> ObstructionCircuit
+  -> ArchitectureSignature</code></pre>
+                <p>
+                  AAT therefore stands as a pure theory over the atom axiom
+                  system, equipped with architecture objects, laws,
+                  obstructions, signatures, and operations.
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.AATCorePackage</code>, <code>AATCorePackage.AtomTowerRealization</code>, <code>ofComponents</code>, <code>ofAxiomRealization</code>, <code>exists_ofComponents_noHEq</code>, <code>exists_ofAxiomRealization_noHEq</code>, and the coherence lemmas (<code>configuration_family</code>, <code>object_configuration</code>, <code>algebra_*</code>).</dd>
+                  <dt>Status</dt>
+                  <dd><em>proved</em> for the HEq-free existence theorems and the <code>AtomTowerRealization</code> bridge reading the Part I tower from <code>S.configurationOf</code>; the older <code>exists_ofComponents</code> dependent obstruction equality remains a Research-compatible <em>packaged (assumption-relative)</em> surface.</dd>
+                </dl>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions I.10.1–I.10.3, Proposition I.10.4, and the finite model</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined / proved</span>
+                </div>
+                <dl>
+                  <dt>Object algebra layer</dt>
+                  <dd><code>AAT.AG.Operation</code>, <code>ArchitectureSignature</code>, <code>ObjectAlgebra</code>, <code>OperationRole</code>, the six role predicates (<code>PreservesFunctionInvariant</code>, <code>PreservesPredicateInvariant</code>, <code>ReflectsObstruction</code>, <code>RepairsObstruction</code>, <code>ExtendsAtomFamily</code>, <code>SynthesizesLawfulObject</code>, <code>TranslatesRepresentation</code>), and accessor lemmas — <em>defined only / proved</em>. Theorem I.10.5 is not claimed at this layer; it is carried by <code>AATCorePackage</code> above.</dd>
+                  <dt>Finite model</dt>
+                  <dd><code>AAT.AG.FiniteModel</code>: a finite example universe with component / depends / contract / substitution atoms, the A0–A8 package, the NoCycle and substitution obstruction circuits of Examples I.8.3 / I.8.4, a Theorem I.9.3 instance on a singleton required law universe (<code>finite_lawfulness_iff_omega_zero</code>), concrete three-reading firing, and handoff into the AAT Core package (<code>FiniteModel.corePackage</code>) — <em>defined only / proved</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Part I fixes the generative base of AAT. The atom axiom system
+                supplies primitive typed facts and forbids laws and
+                observations from generating them; atom families,
+                configurations, and molecules organize those facts; every
+                architecture object is generated from an atom family
+                (Proposition I.5.3); invariants, laws, and obstruction
+                circuits read structure over those objects; and under
+                soundness, completeness, and zero-reflecting aggregation,
+                lawfulness coincides with zero obstruction (Theorem I.9.3, a
+                certified bounded inference). Theorem I.10.5 packages the
+                whole tower — atom to signature — as an object algebra.
+              </p>
+              <p>
+                Part II takes this tower geometric: architecture context
+                categories, coverage, AAT sites, and sheaves of architectural
+                data over them.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Atom</dt>
+                  <dd>A primitive typed architectural fact <code>a = (kind, axis, subject, predicate, payload)</code>; the generator of AAT.</dd>
+                </div>
+                <div>
+                  <dt>Extraction doctrine</dt>
+                  <dd>The tuple <code>D = (V, Γ, R, ρ, E, N)</code> fixing vocabulary, use-context, use-rules, resolution, source semantics, and normalization; canonical atom families are unique relative to a doctrine (Axiom A8).</dd>
+                </div>
+                <div>
+                  <dt>Configuration / molecule</dt>
+                  <dd><code>C = (F, R, E)</code>: an atom family with relations and identifications; a molecule is a finite meaning-unit arrangement inside it.</dd>
+                </div>
+                <div>
+                  <dt>Architecture object</dt>
+                  <dd><code>A = (C, S, Q)</code>: a configuration with structure maps and selected quantities; always atom-generated.</dd>
+                </div>
+                <div>
+                  <dt>Law universe</dt>
+                  <dd>The family of laws considered together, with required / optional / derived roles, witness families, and coverage and exactness assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Obstruction circuit</dt>
+                  <dd>A finite atom-and-relation arrangement witnessing a law failure.</dd>
+                </div>
+                <div>
+                  <dt>Zero-reflecting aggregation</dt>
+                  <dd>An aggregation whose zero forces every per-law valuation to be zero; the hypothesis under which lawfulness and \( \omega_U(A) = 0 \) coincide.</dd>
+                </div>
+                <div>
+                  <dt>Object algebra</dt>
+                  <dd>The data <code>Obj, Op, Inv, Law, Ob, Sig</code> in which AAT's constructions close.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../">
+                <span>Previous</span>
+                <strong>Algebraic Architecture Theory</strong>
+              </a>
+              <a class="page-nav-next" href="../sites-and-sheaves/">
+                <span>Next</span>
+                <strong>Part II. Architecture Geometry, Sites, and Sheaves</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

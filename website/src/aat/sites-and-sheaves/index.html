@@ -1,0 +1,1254 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part II. Architecture Geometry: Sites and Sheaves",
+  "description": "Architecture objects become local-global geometry: context categories, AAT Grothendieck sites, sheaves, gluing, and descent explain why locally correct modules can fail to glue globally.",
+  "order": 3,
+  "llmsLabel": "AAT Part II: Sites and Sheaves",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part II</span>
+          </nav>
+          <p class="eyebrow">Part II</p>
+          <h1>Architecture Geometry: Sites and Sheaves</h1>
+          <p class="lede">
+            Part II lifts the architecture object of Part I to a geometric
+            object with local-global structure. Local contexts form a
+            Grothendieck site, local data forms presheaves and sheaves, and
+            the failure mode "every module is correct, yet the whole system
+            breaks" becomes a precise statement: local sections do not glue
+            globally.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#object-to-geometry">From object to geometry</a></li>
+                <li><a href="#architecture-geometry">Architecture geometry</a></li>
+                <li><a href="#architecture-context">Architecture context</a></li>
+                <li><a href="#context-category">Context category</a></li>
+                <li><a href="#morphisms">Restriction, projection, refinement</a></li>
+                <li><a href="#coverage-family">Coverage families</a></li>
+                <li><a href="#grothendieck-topology">AAT Grothendieck topology</a></li>
+                <li><a href="#adequate-covers">U-adequate covers</a></li>
+                <li><a href="#finite-poset-regime">Finite poset regime</a></li>
+                <li><a href="#aat-site">AAT site</a></li>
+                <li><a href="#presheaves">Presheaves</a></li>
+                <li><a href="#sheaves">Architecture sheaves</a></li>
+                <li><a href="#gluing-descent">Gluing and descent</a></li>
+                <li><a href="#sheafification-gap">Sheafification gap</a></li>
+                <li><a href="#topos">Toward the AAT topos</a></li>
+                <li><a href="#worked-example">Worked example</a></li>
+                <li><a href="#non-conclusions">Counterexamples and non-conclusions</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
+              </ol>
+            </nav>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                Every module is correct. Every service is correct. Every test
+                passes. Why does the whole system still break?
+              </p>
+              <p>
+                Part I builds the architecture object from atoms: atom family,
+                configuration, molecule, invariant, law, obstruction,
+                signature, operation. That algebra is generative but not yet
+                local-global. Many architectural failures never appear inside
+                a single local object; they appear only when local views are
+                laid side by side and asked to agree. AAT names this structure
+                exactly:
+              </p>
+              <p class="statement">
+                local sections do not glue globally.
+              </p>
+              <p>
+                Part II therefore moves from algebra to geometry. It equips
+                the architecture object with local contexts, covers,
+                restrictions, projections, gluing, and descent — the apparatus
+                of a Grothendieck site — so that the local-global gap becomes
+                a mathematical object rather than an anecdote. The chapter
+                builds the stage through sheaves and descent; the law algebra
+                sheaf, obstruction ideal, and lawful locus enter in Part III,
+                and the cohomological reading of descent failure enters in
+                Part IV.
+              </p>
+            </section>
+
+            <section id="object-to-geometry" class="article-section">
+              <h2>From architecture object to architecture geometry</h2>
+              <p>
+                The architecture object of Part I is generated from an atom
+                configuration:
+              </p>
+              <pre><code>F_S^V  ->  Config(F_S^V)  ->  A_S^V</code></pre>
+              <p>
+                where \( S \) is a source, \( V \) an atom vocabulary, and
+                \( A_S^V \) the resulting architecture object. This object
+                carries many local views — component-local views,
+                feature-local views, semantic slices, runtime slices, boundary
+                slices — and these views overlap, restrict, project, and glue.
+                The object enriched with this local-global structure is the
+                architecture geometry \( X_S^{V,U,J} \), where \( U \) is a
+                law universe and \( J \) a coverage topology.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Central diagram of Part II</figcaption>
+                <pre><code>source S
+  -> AtomFamily F_S^V
+  -> AtomConfiguration
+  -> ArchitectureObject A_S^V
+  -> ArchitectureContextCategory ArchCtx(A_S^V)
+  -> AATSite(A_S^V, U, J)
+  -> ArchitectureGeometry X_S^{V,U,J}</code></pre>
+              </figure>
+              <p>
+                \( X_S^{V,U,J} \) is a local-global architecture geometry
+                relativized to the atom vocabulary, the law universe, and the
+                coverage topology. Each stage of the diagram is constructed in
+                this chapter.
+              </p>
+            </section>
+
+            <section id="architecture-geometry" class="article-section">
+              <h2>Architecture geometry</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition II.2.1 (Architecture Geometry).</a>
+                For a source \( S \), atom vocabulary \( V \), law universe
+                \( U \), and coverage topology \( J \), the architecture
+                geometry is the data
+              </p>
+              <p>
+                \[
+                  X_S^{V,U,J} = \bigl( A_S^V,\ \mathrm{ArchCtx}(A_S^V),\ J_U \bigr),
+                \]
+              </p>
+              <p>
+                where \( A_S^V \) is the architecture object generated from
+                the atom family \( F_S^V \), \( \mathrm{ArchCtx}(A_S^V) \) is
+                its category of local contexts, and \( J_U \) is the coverage
+                topology relativized to the law universe \( U \).
+              </p>
+              <p>
+                Later chapters install further structure on
+                \( X_S^{V,U,J} \):
+              </p>
+              <figure class="code-panel">
+                <figcaption>Structure received in later parts</figcaption>
+                <pre><code>At_X       : Atom sheaf
+Law_U      : Law sheaf
+Sig_U      : Signature sheaf
+Ob_U       : Obstruction sheaf
+O_X^U      : Law algebra sheaf
+I_Ob^U     : Obstruction ideal sheaf
+Flat_U(X)  : lawful locus</code></pre>
+              </figure>
+              <p>
+                Part II constructs the stage up to sheaves and descent. The
+                law algebra sheaf, obstruction ideal sheaf, and lawful locus
+                belong to Part III; obstruction cohomology belongs to Part IV.
+              </p>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle II.2.2 (Geometry Relativity).</a>
+                Architecture geometry is relativized to the source \( S \),
+                the atom vocabulary \( V \), the law universe \( U \), and the
+                coverage topology \( J \). Different choices give different
+                geometries over the same source:
+              </p>
+              <pre><code>X_S^{V,U,J} != X_S^{W,U,J}   in general
+X_S^{V,U,J} != X_S^{V,U',J}  in general
+X_S^{V,U,J} != X_S^{V,U,J'}  in general</code></pre>
+              <p>
+                By making explicit which vocabulary generates the atoms, which
+                laws are selected, and which covers read locality, AAT speaks
+                exactly about what it can speak about.
+              </p>
+            </section>
+
+            <section id="architecture-context" class="article-section">
+              <h2>Architecture context</h2>
+              <p>
+                An architecture context is a local view of the architecture
+                geometry — the analogue of an open set.
+              </p>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition II.3.1 (Architecture Context).</a>
+                For an architecture object \( A \), an architecture context
+                \( W \in \mathrm{ArchContext}(A) \) is a local reading of
+                \( A \). In the minimal model, a context is readable as the
+                data
+              </p>
+              <p>
+                \[
+                  W = \bigl( \mathrm{Supp}(W),\ \mathrm{Ax}(W),\ \mathrm{Obs}(W) \bigr),
+                \]
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Supp(W)</dt>
+                  <dd>The atom support read in \( W \).</dd>
+                </div>
+                <div>
+                  <dt>Ax(W)</dt>
+                  <dd>The signature and law axes selected in \( W \).</dd>
+                </div>
+                <div>
+                  <dt>Obs(W)</dt>
+                  <dd>The family of coordinates, witnesses, boundaries, traces, and semantic data readable in \( W \).</dd>
+                </div>
+              </dl>
+              <p>
+                A general context may extend this minimal model. For
+                restriction, projection, refinement, and base change to behave
+                functorially, at least the restriction of support, axes, and
+                observable family must be determined.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Representative contexts</figcaption>
+                <pre><code>component-local context
+module-local context
+feature-local context
+bounded-context view
+dependency slice
+semantic contract slice
+authority / trust slice
+state transition slice
+effect interaction slice
+runtime trace slice
+deployment environment slice
+test observation slice</code></pre>
+              </figure>
+              <p>
+                A context selects the local view in which the already
+                constructed atom family and architecture object are read. It
+                does not manufacture new architecture.
+              </p>
+              <p id="example-3-2" class="statement">
+                <a class="statement-anchor" href="#example-3-2">Example II.3.2 (Local views).</a>
+                The same architecture object yields distinct contexts:
+              </p>
+              <pre><code>W_component(C)
+  = local view of atoms and relations touching component C
+
+W_feature(F)
+  = local view of capability, contract, effect,
+    and semantic atoms touching feature F
+
+W_boundary(B)
+  = local view containing core/feature, semantic/runtime,
+    and authority/effect boundaries
+
+W_runtime(T)
+  = local view containing runtime traces, messages,
+    retries, timeouts, transactions</code></pre>
+              <p>
+                These carry different information, yet all are local views of
+                one architecture object.
+              </p>
+            </section>
+
+            <section id="context-category" class="article-section">
+              <h2>Architecture context category</h2>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition II.4.1 (Architecture Context Category).</a>
+                For an architecture object \( A \), the architecture context
+                category \( \mathrm{ArchCtx}(A) \) has architecture contexts
+                as objects and re-readings between contexts as morphisms
+                \( i : W' \to W \). In this orientation \( W' \) is a readable
+                local context over \( W \): local contexts map into global
+                contexts.
+              </p>
+              <p>
+                Morphisms arise as restriction, projection, refinement,
+                forgetting, embedding, and base change. A morphism expresses
+                which information the passage between local views preserves,
+                which it forgets, and which it reads more finely. In the
+                minimal model, a morphism \( i : W' \to W \) is a readable
+                restriction or refinement satisfying
+              </p>
+              <pre><code>Supp(W') maps into or refines Supp(W)
+Ax(W')   maps into or refines Ax(W)
+Obs(W)   restricts functorially to Obs(W')</code></pre>
+              <p>
+                so context morphisms induce coordinate restriction and witness
+                restriction, and overlaps are constructed as pullbacks or
+                intersections of supports, axes, and observable families. When
+                the category is used as a minimal poset site, one sets
+                \( W' \le W \) iff \( W' \) is a local or refined readable
+                context of \( W \). This poset model already suffices as the
+                base example for sheaves, &#268;ech complexes, and affine
+                chart gluing in later parts.
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Proposition II.4.2</span>
+                      <h3>Minimal Context Finite-Meet Site</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        In the minimal context model, if supports, axes, and
+                        observable families have finite meets compatible with
+                        observable restriction, morphisms are unique
+                        (\( \mathrm{Hom}(W',W) \) empty or contractible), and
+                        context equality is taken up to readable-identity
+                        equivalence, then \( \mathrm{ArchCtx}_{\min}(A) \) is a
+                        finite-meet poset category. Overlaps are meets:
+                        \( W_i \times_W W_j = W_i \wedge_W W_j \).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Thinness comes from morphism uniqueness; antisymmetry
+                        holds after the equivalence quotient; identities are
+                        readable identities and composition is composition of
+                        restrictions/refinements. Without the quotient the
+                        same data is a finite-meet preorder category.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AAT.AG.Site.ContextFiniteMeet</code>,
+                        <code>minimalContextQuotientFiniteMeetPosetCategory_fromFiniteMeet</code>,
+                        <code>quotientMeet_wellDefined</code>,
+                        <code>meetOverlapPullback</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        Read on the supplied finite-meet package; the older
+                        supplied-package surface remains as a
+                        <em>packaged (assumption-relative)</em> compatibility
+                        surface.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p>
+                Observable families are read through pullbacks of the
+                restriction diagram, not bare set intersections: the meet of
+                two contexts keeps exactly the observations both contexts can
+                still read compatibly. This proposition supplies the minimal
+                construction model that supports the later &#268;ech complex
+                and chart gluing.
+              </p>
+              <p id="assumption-4-3" class="statement">
+                <a class="statement-anchor" href="#assumption-4-3">Assumption II.4.3 (Pullback and Overlap).</a>
+                \( \mathrm{ArchCtx}(A) \) is assumed to have the pullbacks
+                needed to form cover overlaps:
+              </p>
+              <pre><code>W_i -> W
+W_j -> W
+----------------
+W_i x_W W_j</code></pre>
+              <p>
+                This pullback is the context overlap. The &#268;ech complex of
+                Part IV is defined against these overlaps.
+              </p>
+              <p id="principle-4-4" class="statement">
+                <a class="statement-anchor" href="#principle-4-4">Principle II.4.4 (Context Non-Generation).</a>
+                Contexts do not create atoms. Context morphisms, restrictions,
+                projections, and refinements do not create atoms. Atom
+                existence belongs to the atom axiom system of Part I; a
+                context only chooses where to read.
+              </p>
+            </section>
+
+            <section id="morphisms" class="article-section">
+              <h2>Restriction, projection, refinement, base change</h2>
+              <p>
+                The morphisms of the context category control locality in AAT.
+                Four roles are singled out.
+              </p>
+              <h3>Restriction</h3>
+              <p>
+                Restriction passes from a larger context to a smaller one,
+                restricting the atoms, laws, signatures, state, effects, and
+                semantic facts visible in the local view:
+              </p>
+              <p>
+                \[
+                  \mathrm{res}_{W,W'} : F(W) \to F(W'),
+                \]
+              </p>
+              <p>where \( W' \) is a local part of \( W \).</p>
+              <h3>Projection</h3>
+              <p>
+                Projection keeps the selected coordinates and forgets the
+                others, \( \mathrm{proj} : W_{\mathrm{axis}} \to W \), where
+                \( W_{\mathrm{axis}} \) reads \( W \) along the selected axes.
+                An axis that becomes invisible under projection has not become
+                zero; it has been forgotten. AAT keeps this distinction as a
+                standing discipline:
+              </p>
+              <pre><code>forgotten   != zero
+unobserved  != zero
+unmeasured  != zero</code></pre>
+              <h3>Refinement</h3>
+              <p>
+                Refinement decomposes a coarse context into finer ones,
+                \( \mathrm{refine} : W' \to W \) — for instance, a
+                module-level view into function-level views or runtime trace
+                slices. Refinement makes facts already present in the
+                canonical atom family visible in a finer context; it does not
+                create facts.
+              </p>
+              <h3>Base change</h3>
+              <p>
+                Base change pulls a cover or local data on one context back
+                along a morphism to another:
+              </p>
+              <pre><code>W' -> W
+{ U_i -> W }
+----------------
+{ U_i x_W W' -> W' }</code></pre>
+              <p>
+                For the coverage topology to be a Grothendieck topology,
+                covers must be stable under this base change. Section 7 closes
+                the axioms by generation.
+              </p>
+            </section>
+
+            <section id="coverage-family" class="article-section">
+              <h2>Coverage families</h2>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition II.6.1 (Coverage Family).</a>
+                For a context \( W \), a coverage family is a family of local
+                contexts
+              </p>
+              <p>
+                \[
+                  \{\, W_i \to W \,\}_{i \in I},
+                \]
+              </p>
+              <p>
+                expressing that the required support, law witnesses,
+                boundaries, and signature axes of \( W \) are read through the
+                local views \( W_i \). What counts as "covered" is
+                relativized to the law universe and the selected reading, per
+                Principle II.7.3.
+              </p>
+              <p id="example-6-2" class="statement">
+                <a class="statement-anchor" href="#example-6-2">Example II.6.2 (Readings of covers).</a>
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Component cover</dt>
+                  <dd>Covers the required component support with component-local contexts.</dd>
+                </div>
+                <div>
+                  <dt>Feature cover</dt>
+                  <dd>Covers a feature extension with feature-local contexts and core contexts.</dd>
+                </div>
+                <div>
+                  <dt>Boundary cover</dt>
+                  <dd>Explicitly covers core/feature overlaps, semantic/runtime overlaps, and authority/effect overlaps.</dd>
+                </div>
+                <div>
+                  <dt>Runtime cover</dt>
+                  <dd>Covers interactions invisible to static views by runtime trace slices.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section id="grothendieck-topology" class="article-section">
+              <h2>AAT Grothendieck topology</h2>
+              <p>
+                For a law universe \( U \), AAT first defines admissible
+                covers on \( \mathrm{ArchCtx}(A) \), then takes the
+                Grothendieck topology they generate as the AAT coverage
+                topology \( J_U \).
+              </p>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition II.7.1 (AAT Grothendieck Topology).</a>
+                The assignment \( J_U^{\mathrm{adm}}(W) \) collects the
+                admissible coverage families of each context \( W \). A family
+                \( \{ W_i \to W \} \) is admissible when it satisfies at least
+                the five conditions:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Admissibility conditions</figcaption>
+                <pre><code>Atom support coverage:
+  the required atom support of W is covered by the W_i.
+
+Law witness coverage:
+  required law witnesses appear on some W_i
+  or on an overlap W_ij.
+
+Signature axis coverage:
+  required zero axes are read across the cover.
+
+Boundary coverage:
+  mixed-axis obstructions, feature/core boundaries,
+  semantic/runtime boundaries, authority/effect
+  boundaries are visible on overlaps.
+
+Non-generation:
+  the cover does not create atoms.</code></pre>
+              </figure>
+              <p>
+                These semantic coverage conditions do not by themselves imply
+                base-change stability or transitivity. The AAT coverage
+                topology is therefore defined as the smallest Grothendieck
+                topology generated by the admissible covers:
+              </p>
+              <p>
+                \[
+                  J_U = \text{the Grothendieck topology generated by } J_U^{\mathrm{adm}}.
+                \]
+              </p>
+              <p>In particular \( J_U \) contains:</p>
+              <pre><code>identity / isomorphism:
+  identities and isomorphisms are covers.
+
+base-change stability:
+  covers remain covers under pullback / refinement.
+
+transitivity:
+  covers of covers are covers.</code></pre>
+              <p>
+                This generation closes the site axioms on the topology side
+                even when law witness coverage or boundary coverage can be
+                lost after refinement. Where a required witness disappears in
+                a refined cover, that is not a failure of the cover; it
+                reappears as a failure of coverage or witness completeness in
+                the hypotheses of later theorems. All sheaves on the AAT site
+                are read against this generated topology \( J_U \).
+              </p>
+            </section>
+
+            <section id="adequate-covers" class="article-section">
+              <h2>U-adequate covers and witness closure</h2>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition II.7.2 (U-Adequate Cover).</a>
+                Among the covers of the generated topology \( J_U \), a cover
+                \( \mathcal{U} = \{ W_i \to W \} \) is \( U \)-adequate when
+                it is a \( J_U \)-cover and, for the selected data a theorem
+                requires, satisfies:
+              </p>
+              <pre><code>required atom support is covered.
+required law witnesses appear on patches or overlaps.
+required signature axes are readable on the cover.
+required boundary witnesses are visible on overlaps.
+restriction maps preserve the selected witness ideals.</code></pre>
+              <p>
+                \( J_U \) is the topology for sheaf theory; \( U \)-adequacy
+                is the additional predicate for reading laws, witnesses, and
+                axes. Theorems about lawfulness and cohomological flatness in
+                later parts quantify over \( U \)-adequate covers.
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lemma II.7.2A &middot; Certified bounded inference</span>
+                      <h3>Witness-Closure Cover</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        Suppose the required witness family is locally finite,
+                        each witness support is representable in the context
+                        category, and the needed finite intersections or
+                        overlaps exist. Suppose further, for the selected
+                        reading, that restriction maps preserve the selected
+                        witness ideals, required signature axes are readable on
+                        the closed cover, and required boundary witnesses
+                        remain visible on overlaps. Then the witness-closure
+                        cover — the cover closed up to contain the required
+                        witness supports and their boundary overlaps — is
+                        \( U \)-adequate.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Closing the cover over the finitely many required
+                        witness supports and their overlaps realizes support,
+                        witness, axis, and boundary coverage directly; the
+                        ideal-preservation, axis-readability, and
+                        boundary-visibility hypotheses supply the remaining
+                        adequacy clauses.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AAT.AG.Site.witnessClosureCover_uAdequate</code>,
+                        <code>WitnessClosureCover</code>,
+                        <code>SeedWitnessClosureCover.uAdequate</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        A certified bounded inference: containing the supports
+                        alone does not automatically preserve the selected
+                        ideals, axes, and boundary readings. Those
+                        preservations are hypotheses of this lemma and are
+                        passed forward to later theorems. The construction
+                        package is <em>packaged (assumption-relative)</em> in
+                        Lean.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="principle-7-3" class="statement">
+                <a class="statement-anchor" href="#principle-7-3">Principle II.7.3 (Coverage Relativity).</a>
+                Coverage is relativized to the law universe and the selected
+                reading: covered within \( U \), covered for the selected
+                witnesses, covered for the selected axes. About atoms and axes
+                outside the coverage, AAT asserts neither zero nor lawful.
+              </p>
+            </section>
+
+            <section id="finite-poset-regime" class="article-section">
+              <h2>The finite poset regime</h2>
+              <p>
+                For finite poset contexts, covers by principal contexts are
+                the tractable standard example. Sheaves on a poset are read as
+                functors, sections over principal contexts behave like stalks,
+                and for many coefficients the &#268;ech computation reduces to
+                finite linear algebra, with nonzero cohomological degrees
+                bounded above by the depth of the context hierarchy.
+              </p>
+              <p id="definition-7-2b" class="statement">
+                <a class="statement-anchor" href="#definition-7-2b">Definition II.7.2B (Finite Poset AAT Site Regime).</a>
+                An AAT site is in the finite poset AAT site regime when:
+              </p>
+              <pre><code>ArchCtx_min(A) is a finite poset category.
+finite meets give selected overlaps.
+J_U is generated by finite witness-closure covers.
+selected coefficient sheaves are functors on this finite poset.
+restriction maps preserve selected witness ideals and axes.</code></pre>
+              <p>
+                Cover nerves, overlaps, and restrictions are induced from atom
+                supports, axes, and observable families.
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Proposition II.7.2C</span>
+                      <h3>Finite Poset Computation</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        In the finite poset regime, for a finite
+                        witness-closure cover
+                        \( \mathcal{U} = \{ W_i \to W \} \) and a coefficient
+                        sheaf \( F \) &#268;ech-computable on it, the
+                        cover-relative &#268;ech complex
+                        \[
+                          C^n(\mathcal{U}, F)
+                          = \prod_{\substack{\text{nonempty } (n+1)\text{-fold overlaps}}} F\bigl(W_{i_0 \dots i_n}\bigr)
+                        \]
+                        is a finite complex, so each
+                        \( H^n(\mathcal{U}, F) \) is computed from finitely
+                        many section groups and restriction maps. If the cover
+                        nerve has dimension \( d \), then
+                        \( C^n(\mathcal{U},F) = 0 \) and
+                        \( H^n(\mathcal{U},F) = 0 \) for \( n &gt; d \).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Finiteness of the poset and of the cover index bounds
+                        the nonempty overlaps; above the nerve dimension there
+                        are no nonempty \( (n+1) \)-fold overlaps, so the
+                        cochain groups themselves vanish.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AAT.AG.Site.FinitePosetAATSiteRegime</code>,
+                        <code>FinitePosetCechComplex</code>,
+                        <code>FinitePosetCechComplex.differential_comp</code>,
+                        <code>finitePosetCechCohomology_vanishes_above_nerveDimension</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        This is cover-relative &#268;ech cohomology. For
+                        &#268;ech cohomology to compute sheaf cohomology, a
+                        Leray condition, an acyclic cover, or a refinement
+                        limit is fixed separately. The standard
+                        alternating-sum route
+                        (<code>standardFinitePosetCechComplex</code>,
+                        <code>canonicalTupleStandardFinitePosetCechComplex</code>)
+                        is <em>packaged (assumption-relative)</em> on a
+                        supplied differential-composition law, with the
+                        canonical tuple route discharging
+                        \( d \circ d = 0 \).
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="aat-site" class="article-section">
+              <h2>AAT site</h2>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition II.8.1 (AAT Site).</a>
+                For an architecture object \( A_S^V \), a law universe
+                \( U \), and the coverage topology \( J_U \), the AAT site is
+                the pair
+              </p>
+              <p>
+                \[
+                  \mathrm{Site}_{\mathrm{AAT}}(S,V,U,J)
+                  = \bigl( \mathrm{ArchCtx}(A_S^V),\ J_U \bigr),
+                \]
+              </p>
+              <p>
+                abbreviated \( \mathrm{Site}_{\mathrm{AAT}}(A,U,J) =
+                (\mathrm{ArchCtx}(A), J_U) \) when the architecture object is
+                fixed. Locality, coverage, projection, unmeasured axes, and
+                gluing in AAT are all controlled by this site.
+              </p>
+            </section>
+
+            <section id="presheaves" class="article-section">
+              <h2>Presheaves on the AAT site</h2>
+              <p>
+                Local data first appears as presheaves.
+              </p>
+              <p id="definition-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-9-1">Definition II.9.1 (Presheaf).</a>
+                A presheaf on the AAT site is a contravariant functor
+              </p>
+              <p>
+                \[
+                  F : \mathrm{ArchCtx}(A)^{\mathrm{op}} \to \mathbf{Set}
+                \]
+              </p>
+              <p>
+                assigning to each context \( W \) the local data \( F(W) \)
+                visible in \( W \), and to each morphism \( f : W' \to W \) a
+                restriction map. The representative raw presheaves are:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Raw presheaves</figcaption>
+                <pre><code>AtRaw_A(W)    = atom family visible in W
+LawRaw_U(W)   = laws required in W
+SigRaw_U(W)   = signature axes read in W
+StateRaw_A(W) = state transition data visible in W
+EffRaw_A(W)   = effect interaction data visible in W
+SemRaw_A(W)   = semantic facts visible in W
+TraceRaw_A(W) = runtime trace data visible in W</code></pre>
+              </figure>
+              <p>
+                The suffix <code>Raw</code> records that no sheaf condition
+                has yet been assumed: these are honest local readings before
+                the question of gluing is asked.
+              </p>
+            </section>
+
+            <section id="sheaves" class="article-section">
+              <h2>Architecture sheaves</h2>
+              <p>
+                When a presheaf satisfies the sheaf condition, local data
+                glues uniquely.
+              </p>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition II.10.1 (Sheaf Condition).</a>
+                A presheaf \( F \) is a sheaf when, for every cover
+                \( \{ W_i \to W \} \), compatible local sections glue to a
+                unique global section:
+              </p>
+              <pre><code>sections s_i in F(W_i)
+agree on overlaps W_i x_W W_j
+--------------------------------
+exists unique s in F(W)
+such that s|W_i = s_i</code></pre>
+              <p id="definition-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-10-2">Definition II.10.2 (Architecture Sheaf).</a>
+                On the AAT site, AAT installs the following sheaves or
+                presheaves:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Named sheaf family</figcaption>
+                <pre><code>At_A       : Atom sheaf
+Law_U      : Law sheaf
+Sig_U      : Signature sheaf
+State_A    : State transition sheaf
+Eff_A      : Effect sheaf
+Auth_A     : Authority / trust sheaf
+Sem_A      : Semantic sheaf
+Trace_A    : Runtime trace sheaf</code></pre>
+              </figure>
+              <p>
+                The obstruction sheaf \( \mathrm{Ob}_U \) becomes central in
+                the following parts.
+              </p>
+              <p id="principle-10-3" class="statement">
+                <a class="statement-anchor" href="#principle-10-3">Principle II.10.3 (Semantic Sheaf).</a>
+                Semantic atoms were defined in Part I relative to language
+                games and use-rules. Sections of the semantic sheaf
+                \( \mathrm{Sem}_A \) are therefore read relative to the fixed
+                use-context and resolution:
+                \( \mathrm{Sem}_A(W) \) is the semantic facts in \( W \) under
+                the selected language games. When semantic sections fail to
+                agree on an overlap, this is not a mere naming mismatch; it
+                signals that different language games may not glue.
+              </p>
+            </section>
+
+            <section id="gluing-descent" class="article-section">
+              <h2>Gluing and descent</h2>
+              <p>
+                Gluing and descent are the conditions under which local data
+                determines global data — the technical heart of the chapter's
+                opening question.
+              </p>
+              <p id="definition-11-1" class="statement">
+                <a class="statement-anchor" href="#definition-11-1">Definition II.11.1 (Gluing Data).</a>
+                For a cover \( \{ W_i \to W \} \), gluing data is a family of
+                local sections \( s_i \in F(W_i) \). The family is compatible
+                on overlaps when
+              </p>
+              <p>
+                \[
+                  s_i|_{W_{ij}} = s_j|_{W_{ij}}.
+                \]
+              </p>
+              <p id="definition-11-2" class="statement">
+                <a class="statement-anchor" href="#definition-11-2">Definition II.11.2 (Descent).</a>
+                A presheaf \( F \) satisfies descent for a cover
+                \( \{ W_i \to W \} \) when compatible gluing data comes from a
+                global section:
+              </p>
+              <pre><code>local sections
++ agreement on overlaps
++ cocycle condition
+--------------------------------
+global section</code></pre>
+              <p>
+                When descent fails, data that looks consistent locally does
+                not glue into global architecture data. This is the exact
+                shape of the opening failure mode:
+              </p>
+              <p class="statement">
+                local lawful does not imply global lawful.
+              </p>
+              <p>
+                Each module can carry a lawful local section while no global
+                section exists over them. The cohomological reading of this
+                failure — where the obstruction to gluing lives and how it is
+                measured — is the subject of Part IV.
+              </p>
+            </section>
+
+            <section id="sheafification-gap" class="article-section">
+              <h2>Sheafification gap</h2>
+              <p>
+                A raw presheaf \( F_{\mathrm{raw}} :
+                \mathrm{ArchCtx}(A)^{\mathrm{op}} \to \mathbf{Set} \) is in
+                general not a sheaf. Sheafification produces
+                \( F_{\mathrm{raw}}^{+} \) with a canonical map
+              </p>
+              <p>
+                \[
+                  F_{\mathrm{raw}} \to F_{\mathrm{raw}}^{+}.
+                \]
+              </p>
+              <p id="definition-12-1" class="statement">
+                <a class="statement-anchor" href="#definition-12-1">Definition II.12.1 (Sheafification Gap).</a>
+                The sheafification gap is the difference between the raw local
+                data and the sheafified data:
+                \( \mathrm{Gap}(F_{\mathrm{raw}}) \) is the difference between
+                \( F_{\mathrm{raw}} \) and \( F_{\mathrm{raw}}^{+} \).
+              </p>
+              <p>In AAT, the gap is read as:</p>
+              <pre><code>missing overlap evidence
+projection loss
+coverage gap
+incompatible local readings
+failed gluing
+unmeasured axis</code></pre>
+              <p>
+                The sheafification gap is the local-global deficiency that
+                precedes obstruction cohomology: it records where raw
+                architectural readings already fail to be sheaf-like, before
+                any cohomology class is computed.
+              </p>
+            </section>
+
+            <section id="topos" class="article-section">
+              <h2>Toward the AAT topos</h2>
+              <p>
+                From the AAT site, the sheaf category follows:
+              </p>
+              <p>
+                \[
+                  \mathrm{AATSh}(A,U,J)
+                  = \mathrm{Sh}\bigl( \mathrm{ArchCtx}(A),\ J_U \bigr).
+                \]
+              </p>
+              <p>
+                This is the sheaf category of AAT. Part III places the law
+                algebra sheaf \( \mathcal{O}_X^U \) on it and defines the
+                obstruction ideal sheaf \( \mathcal{I}_{\mathrm{Ob}}^U \) and
+                the lawful locus \( \mathrm{Flat}_U(X) \).
+              </p>
+              <figure class="code-panel">
+                <figcaption>Conclusion of Part II</figcaption>
+                <pre><code>ArchitectureObject A_S^V
+  -> ArchitectureGeometry X_S^{V,U,J}
+  -> AATSite(S,V,U,J)
+  -> AATSh(A_S^V,U,J)</code></pre>
+              </figure>
+              <p>
+                With this, AAT passes from an atom-generated algebra into a
+                Grothendieck-style architecture geometry with genuine
+                local-global structure.
+              </p>
+            </section>
+
+            <section id="worked-example" class="article-section">
+              <h2>Worked example: the two-patch finite site</h2>
+              <p>
+                The Lean development fires the Part II stage on a concrete
+                finite model. On the Part I finite model, a selected
+                four-context poset carries a two-patch adequate cover with an
+                explicit overlap: two patch contexts over a base, with
+                overlap-to-patch morphisms realizing
+                \( W_1 \times_W W_2 \) as a meet. On this site:
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Descent fires</strong>
+                  <span>The unit sheaf satisfies the sheaf condition and descent on the two-patch cover (<code>twoPatchUnit_isSheaf</code>, <code>twoPatchUnit_descent</code>).</span>
+                </li>
+                <li>
+                  <strong>The gap is exhibited</strong>
+                  <span>A selected sheafification gap is constructed on the same cover (<code>twoPatchSheafificationGap</code>), showing raw data that the sheafified object separates.</span>
+                </li>
+                <li>
+                  <strong>&#268;ech computes</strong>
+                  <span>The selected nerve is one-dimensional, the Boolean-coefficient &#268;ech complex vanishes above degree one (<code>twoPatchFinitePosetRegime_cech_vanishes_above_one</code>), and a separated zero-cochain has a nonzero differential (<code>twoPatchSeparatedCochain_differential_nonzero</code>) — a finite, fully checked instance of local sections failing to agree on an overlap.</span>
+                </li>
+                <li>
+                  <strong>The topology bridge fires</strong>
+                  <span>On the singleton equality-thin site, the generated topology coincides with Mathlib's <code>Coverage.toGrothendieck</code> under concrete pullback and base-change-stability instances (<code>siteTopology_eq_coverage_toGrothendieck</code>).</span>
+                </li>
+              </ul>
+              <p>
+                The example is deliberately small. Its role is to show that
+                every constructor of the chapter — context, morphism, meet,
+                cover, adequacy, sheaf condition, descent, gap, &#268;ech
+                complex — is inhabited and computes on finite data.
+              </p>
+            </section>
+
+            <section id="non-conclusions" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p>
+                The chapter's claim boundary is as important as its
+                constructions. Three disciplines recur.
+              </p>
+              <p class="statement">
+                <strong>Projection is not zero.</strong>
+                An axis invisible after projection is forgotten, not measured
+                to be zero. A dependency view that omits the authority axis
+                says nothing about authority; the site keeps
+                <code>forgotten != zero</code> as a structural fact of the
+                morphism, not a caveat.
+              </p>
+              <p class="statement">
+                <strong>Coverage is relative.</strong>
+                Per Principle II.7.3, "covered" means covered within
+                \( U \), for the selected witnesses and axes. About atoms and
+                axes outside the coverage, the theory asserts neither zero nor
+                lawful — it is silent.
+              </p>
+              <p class="statement">
+                <strong>Local lawful does not imply global lawful.</strong>
+                Descent can fail: each patch carries a lawful section while no
+                global section exists. This is a theorem-shaped fact about the
+                site, exhibited on the finite model by a nonzero degree-zero
+                differential, and its systematic measurement is Part IV's
+                obstruction cohomology.
+              </p>
+              <p class="statement">
+                <strong>Non-conclusions.</strong>
+                Part II does not claim unconditional base-change stability of
+                arbitrary precoverages, does not compute general sheaf
+                cohomology from cover-relative &#268;ech cohomology without a
+                separately fixed Leray or acyclicity assumption, and does not
+                construct the law algebra sheaf — that construction belongs to
+                Part III.
+              </p>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                The Part II tower is formalized in
+                <code>Formal/AG/Site</code> under the namespace
+                <code>AAT.AG.Site</code>, independent of the classic
+                <code>Formal/Arch</code> tree. Statuses follow the
+                peer-review vocabulary:
+                <em>proved</em>, <em>packaged (assumption-relative)</em>,
+                <em>statement-only</em>, and <em>defined only</em>.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors for Part II</figcaption>
+                <pre><code>Formal/AG/Site/Context.lean          MinimalContext, ArchitectureContext, ContextMorphism
+Formal/AG/Site/ContextCategory.lean  ArchCtx, finite-meet poset, overlap pullbacks
+Formal/AG/Site/Coverage.lean         CoverageFamily, AdmissibleCover
+Formal/AG/Site/Topology.lean         AATGrothendieckTopology, Coverage.toGrothendieck bridge
+Formal/AG/Site/Adequate.lean         UAdequateCover, WitnessClosureCover
+Formal/AG/Site/Geometry.lean         AATSite, ArchitectureGeometry
+Formal/AG/Site/Sheaf.lean            AATPresheaf, AATSheafCondition, ArchitectureSheafFamily
+Formal/AG/Site/Descent.lean          AATGluingData, AATDescent, AATSheafificationGap
+Formal/AG/Site/FinitePoset.lean      FinitePosetAATSiteRegime, FinitePosetCechComplex
+Formal/AG/Site/SheafCategory.lean    AATSh
+Formal/AG/Examples/FiniteModel.lean  singleton and two-patch site examples</code></pre>
+              </figure>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Definitions II.2.1, II.3.1, II.4.1</span>
+                      <h3>Contexts, morphisms, geometry package</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined + proved accessors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>MinimalContext</code>,
+                        <code>ArchitectureContext</code>,
+                        <code>ContextMorphism</code> with restriction /
+                        projection / refinement / base-change role predicates;
+                        <code>ArchitectureGeometry</code> over the
+                        <code>PartIPrerequisites</code> package.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>
+                        Structures defined; readability, non-generation, and
+                        role accessors proved.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Definition II.7.1</span>
+                      <h3>Generated topology and Mathlib bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AATGrothendieckTopology</code> with
+                        <code>top_mem</code>, <code>pullback_stable</code>,
+                        <code>transitive</code>, and
+                        <code>eq_coverage_toGrothendieck</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        The equality with Mathlib's
+                        <code>Coverage.toGrothendieck</code> is a bridge
+                        theorem under explicit pullback and
+                        base-change-stability premises, fired concretely on
+                        the finite singleton site.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Definitions II.10.1, II.11.2, II.12.1</span>
+                      <h3>Sheaf condition, descent, sheafification gap</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AATSheafCondition.iff_presieve_isSheaf</code>
+                        bridges to Mathlib's <code>Presieve.IsSheaf</code>;
+                        <code>AATSheafCondition.descent</code> reads descent
+                        from the sheaf condition;
+                        <code>AATSheafificationComparison</code> /
+                        <code>AATSheafificationGap</code> are relativized to
+                        the canonical map
+                        \( F_{\mathrm{raw}} \to F_{\mathrm{raw}}^{+} \).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>
+                        Definitions in place; the bridge and descent lemmas
+                        proved; the named sheaf family
+                        (<code>At / Law / Sig / State / Eff / Auth / Sem /
+                        Trace</code>) is a carrier package with proved
+                        accessors.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Section II.13</span>
+                      <h3>AAT sheaf category</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean</dt>
+                      <dd>
+                        <code>AATSh</code> defined as Mathlib
+                        <code>Sheaf S.topology (Type u)</code>, with the
+                        presheaf forgetful functor, the presieve sheaf
+                        condition, and the bridge to the
+                        <code>AATSheaf</code> carrier package.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>Entry point defined; bridges proved.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+              <p>
+                Not yet formalized, per the ledger's own non-conclusions:
+                unconditional base-change stability of arbitrary
+                precoverages, &#268;ech complexes on general sites, general
+                sheaf cohomology computation, the concrete law algebra sheaf,
+                and sheafification constructions for arbitrary finite sites.
+                These are recorded as boundaries, not as failures of the
+                constructions above.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Part II gives AAT its geometry. Local views of an architecture
+                object form a context category; admissible covers generate a
+                Grothendieck topology; the pair is the AAT site. Local data
+                lives in presheaves, glues in sheaves, and descends — or fails
+                to descend — along covers. The opening question now has a
+                precise home: "every module is correct, yet the whole breaks"
+                is the statement that compatible local sections admit no
+                global section, and the sheafification gap and descent failure
+                locate exactly where the local-global passage breaks before
+                any cohomology is computed.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Architecture geometry</dt>
+                  <dd>\( X_S^{V,U,J} = (A_S^V, \mathrm{ArchCtx}(A_S^V), J_U) \): the architecture object with its context category and coverage topology.</dd>
+                </div>
+                <div>
+                  <dt>Architecture context</dt>
+                  <dd>A local reading \( W = (\mathrm{Supp}(W), \mathrm{Ax}(W), \mathrm{Obs}(W)) \) of an architecture object.</dd>
+                </div>
+                <div>
+                  <dt>Context category</dt>
+                  <dd>\( \mathrm{ArchCtx}(A) \): contexts and readable re-readings; a finite-meet poset in the minimal quotient model.</dd>
+                </div>
+                <div>
+                  <dt>Admissible cover</dt>
+                  <dd>A coverage family satisfying atom support, law witness, signature axis, boundary coverage, and non-generation.</dd>
+                </div>
+                <div>
+                  <dt>AAT coverage topology</dt>
+                  <dd>\( J_U \): the smallest Grothendieck topology generated by the admissible covers.</dd>
+                </div>
+                <div>
+                  <dt>U-adequate cover</dt>
+                  <dd>A \( J_U \)-cover that additionally keeps the selected witnesses, axes, boundaries, and witness ideals readable.</dd>
+                </div>
+                <div>
+                  <dt>AAT site</dt>
+                  <dd>\( (\mathrm{ArchCtx}(A), J_U) \): the stage for all locality in AAT.</dd>
+                </div>
+                <div>
+                  <dt>Descent</dt>
+                  <dd>Compatible local sections with the cocycle condition come from a global section; its failure is the local-correct, globally-broken pattern.</dd>
+                </div>
+                <div>
+                  <dt>Sheafification gap</dt>
+                  <dd>The difference between a raw presheaf and its sheafification: missing overlap evidence, projection loss, coverage gaps, failed gluing.</dd>
+                </div>
+                <div>
+                  <dt>AAT sheaf category</dt>
+                  <dd>\( \mathrm{AATSh}(A,U,J) = \mathrm{Sh}(\mathrm{ArchCtx}(A), J_U) \): the entry to the ringed AAT topos of Part III.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../atoms-objects-laws/">
+                <span>Previous</span>
+                <strong>Part I. Atoms, Objects, and Laws</strong>
+              </a>
+              <a class="page-nav-next" href="../law-algebra-lawful-locus/">
+                <span>Next</span>
+                <strong>Part III. Law Algebra and the Lawful Locus</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
