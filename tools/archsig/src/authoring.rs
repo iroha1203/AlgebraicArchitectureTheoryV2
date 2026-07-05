@@ -1085,6 +1085,7 @@ fn artifact_ref_examples(
     input: &AuthoringAuditInputV1,
 ) -> Vec<ValidationExample> {
     let mut examples = Vec::new();
+    examples.extend(worklist_chunk_read_examples(input));
     for packet in &input.candidate_packets {
         if packet.scope_manifest_ref != input.scope_manifest.id {
             examples.push(validation_example(
@@ -1141,6 +1142,56 @@ fn artifact_ref_examples(
         }
     }
     examples
+}
+
+fn worklist_chunk_read_examples(input: &AuthoringAuditInputV1) -> Vec<ValidationExample> {
+    let surveyed = input
+        .candidate_packets
+        .iter()
+        .flat_map(|packet| packet.survey_rows.iter().map(|row| row.source_id.as_str()))
+        .collect::<Vec<_>>();
+    let reviewed = input
+        .candidate_packets
+        .iter()
+        .flat_map(|packet| packet.reviewed_sources.iter().map(String::as_str))
+        .collect::<Vec<_>>();
+    let mut examples = Vec::new();
+    for entry in &input.scope_manifest.worklist {
+        if !surveyed
+            .iter()
+            .any(|source_id| source_id_resolves_to_worklist_entry(source_id, entry))
+        {
+            examples.push(validation_example(
+                "candidatePackets[].surveyRows[].sourceId",
+                &entry.source_id,
+                "candidate survey rows must cover every scope worklist row",
+            ));
+        }
+        if !reviewed
+            .iter()
+            .any(|source_id| source_id_resolves_to_worklist_entry(source_id, entry))
+        {
+            examples.push(validation_example(
+                "candidatePackets[].reviewedSources[]",
+                &entry.source_id,
+                "candidate reviewedSources must cover every scope worklist row",
+            ));
+        }
+    }
+    examples
+}
+
+fn source_id_resolves_to_worklist_entry(
+    source_id: &str,
+    entry: &ArchmapScopeManifestWorklistEntryV1,
+) -> bool {
+    if source_id == entry.source_id {
+        return true;
+    }
+    source_id
+        .strip_prefix("doc:")
+        .map(|doc_ref| doc_ref.split_once('#').map_or(doc_ref, |(path, _)| path) == entry.path)
+        .unwrap_or(false)
 }
 
 struct CitationRef {

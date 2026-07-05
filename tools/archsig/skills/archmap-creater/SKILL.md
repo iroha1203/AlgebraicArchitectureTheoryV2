@@ -51,11 +51,9 @@ scope. Do not claim that all possible repository evidence was extracted.
      user asks to publish or commit them.
 
 2. **Scope Manifest**
-   - If `archsig scope-manifest` is available, run it to produce
-     `<run-dir>/scope-manifest.json`.
-   - Until that CLI exists, create the same `archmap-scope-manifest/v0.5.0` shape by
-     hand from a deterministic file list, repo-relative paths, sha256 hashes, and
-     the approved scope spec.
+   - Run `archsig scope-manifest` to produce
+     `<run-dir>/scope-manifest.json` from a deterministic file list,
+     repo-relative paths, sha256 hashes, and the approved scope spec.
    - Present exclusions to the user or author for approval. Do not start the
      reading passes before the scope manifest is approved.
    - `out-of-scope` is valid only in scope-manifest exclusions after approval or
@@ -112,20 +110,21 @@ scope. Do not claim that all possible repository evidence was extracted.
 
 8. **Validate**
    - Run the existing `archsig archmap --input archmap.json` validation.
-   - When authoring flags are implemented in ArchSig, also run:
+   - Run binary authoring validation with the authoring artifacts:
 
      ```bash
      archsig archmap \
        --input archmap.json \
        --scope-manifest <run-dir>/scope-manifest.json \
        --candidate-packets '<run-dir>/candidates/*.json' \
+       --extraction-consistency <run-dir>/extraction-consistency.json \
        --coverage-ledger <run-dir>/coverage-ledger.json \
        --out <run-dir>/archmap-validation.json
      ```
 
-   - Before those flags exist, perform the same authoring checks manually from
-     `coverage-and-consistency.md` and record that authoring validation was
-     hand-checked rather than binary-checked.
+   - If the run was explicitly `single-pass` and no consistency artifact was
+     produced, omit `--extraction-consistency` and state that adjudicated
+     provenance was not supplied to the binary audit.
    - Repair any failed checks and rerun applicable validation.
    - If LawPolicy and MeasurementProfile are supplied, run `archsig analyze`.
      If the user asks for analyze without LawPolicy, stop and ask for LawPolicy
