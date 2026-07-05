@@ -1290,3 +1290,60 @@ G2 / G3 / G4 audit summary:
 - G4 score audit: reduce。operation scaffold はあるが、中核は post-edit compatibility criterion の再表現であり、
   partial edit negative witness、pre/post transition relation、一般 conflict set hitting predicate は未実装。
   fail-closed に G4 の low bound を採用し、base 50、evidence multiplier 2.0、penalty 10、final +90 とする。
+
+## Cycle 24 — Canonical reorg/refactor missed-conflict witnesses
+
+candidate: `research/ideas/g-sft-conway-01-reorg-refactor-negative-witness.md`
+candidate_type: `obstruction`
+evidence_stage: `proved-in-research`
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 70
+category: `reorg-refactor-duality`, `negative-witness`,
+  `finite-operation`, `conway-obstruction`
+goal_delta: Cycle 23 の operation-shaped compatibility criteria に対して、canonical missed-conflict
+  negative witness を追加した。`partialReorgMissesDbConflict` は platform communication block が
+  API/DB の両方を見るため reorg hitting criterion を満たさず、post-edit compatible でもなく、
+  実際に `ConwayObstructionWitness` を残す。`partialRefactorSupportsOnlyApi` は Cycle 23 の
+  single-owner refactor shape 上で API のみを support し、hitting/compatibility failure を示す。
+project_value_delta: Cycle 23 の「hit すれば kill」の正方向だけでなく、canonical conflict を外すと
+  少なくとも reorg 側では obstruction が残ることを Lean witness として固定した。ただし一般 conflict set
+  calculus や任意 partial edit theorem ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  partial repair narrative を出せるが、この cycle は canonical missed-conflict edit の failure を
+  Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayReorgRefactorNegativeWitness.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayReorgRefactorNegativeWitness` が通過。
+  `#print axioms` では reorg-side theorem と package は `propext` のみ、refactor-side theorem は
+  axiom-free。`sorryAx` / `Classical.choice` / 追加 axiom はない。
+open_questions: refactor-side two-owner obstruction witness、pre/post transition relation from `mismatchedAtlas`,
+  general conflict-set hitting predicate、reorg-only/refactor-only separation、refinement naturality failure は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayReorgRefactorNegativeWitness.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_nonzeroConwayObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedReorgRefactorNegativeWitnessPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduced score。Cycle 23 に対し、criterion を外した finite edit を作り、
+  reorg 側では actual `ConwayObstructionWitness` まで構成している。ただし新規性は Cycle 23 に依存し、
+  refactor 側は single-owner shape のため obstruction witness ではなく hitting/compatibility failure に留まる。
+  G2 は base 40、penalty 10、final +70 を推奨。
+- G3 formalization quality: pass。reorg negative witness は platform が API/DB の両方を見る一方、
+  split ownership では単一 owner が両方を support できないことを使っている。refactor 側は
+  claim boundary 通り `not_hitsEveryConflict` / `not_compatible` に限定している。
+- G3 axiom audit: pass。reorg-side theorem と package は `propext` のみ、refactor-side theorem は
+  axiom-free。`sorryAx`、`Classical.choice`、追加 axiom はない。
+- G4 score audit: reduce。Cycle 23 gap の一部は埋めたが、一般 theorem ではなく canonical finite
+  missed-conflict witness であり、refactor 側が obstruction witness でない。fail-closed に
+  base 40、evidence multiplier 2.0、penalty 10、final +70 とする。
