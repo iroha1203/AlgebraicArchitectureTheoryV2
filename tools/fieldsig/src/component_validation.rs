@@ -116,7 +116,7 @@ fn check_schema_version(schema_version: &str) -> ValidationCheck {
         },
     );
     if check.result == "fail" {
-        check.reason = Some(format!("unsupported schemaVersion: {schema_version}"));
+        check.reason = Some(format!("unsupported schema: {schema_version}"));
     }
     check
 }

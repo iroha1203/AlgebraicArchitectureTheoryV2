@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "ai-proposal-governance-v0",
+  "schema": "ai-proposal-governance/v0.5.0",
   "governanceId": "governance:descriptor:fixture-ai-proposal-governance",
   "proposalRef": {
     "proposalSourceRefId": "source:ai-proposal-json:fixture-ai-proposal-governance",
     "descriptorId": "descriptor:fixture-ai-proposal-governance",
-    "descriptorSchemaVersion": "artifact-descriptor-v0",
-    "operationSupportEstimateId": "fixture-operation-support-estimate-v0",
-    "consequenceEnvelopeId": "fixture-consequence-envelope-report-v0",
+    "descriptorSchemaVersion": "artifact-descriptor/v0.5.0",
+    "operationSupportEstimateId": "fixture-operation-support-estimate/v0.5.0",
+    "consequenceEnvelopeId": "fixture-consequence-envelope-report/v0.5.0",
     "sourceRefIds": [
       "source:ai-proposal-json:fixture-ai-proposal-governance"
     ],
@@ -172,7 +172,7 @@
     "updateId": "posterior:update-after-review-or-outcome",
     "updateKind": "bounded-calibration-hook",
     "calibrationRefs": [
-      "forecast-calibration-hook-v0",
+      "forecast-calibration-hook/v0.5.0",
       "B10/B11 operational feedback refs when available"
     ],
     "retainedUnknownAxes": [
@@ -192,9 +192,9 @@
   "evidenceBoundary": {
     "boundaryId": "boundary:evidence:descriptor:fixture-ai-proposal-governance",
     "artifactRefs": [
-      "artifact-descriptor-v0",
-      "operation-support-estimate-v0",
-      "consequence-envelope-report-v0"
+      "artifact-descriptor/v0.5.0",
+      "operation-support-estimate/v0.5.0",
+      "consequence-envelope-report/v0.5.0"
     ],
     "missingEvidenceRefs": [
       "missing:human-review",

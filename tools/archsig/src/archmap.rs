@@ -2,10 +2,10 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
-    AatAtomVocabularyEntryV1, AatAtomVocabularyV1, ArchMapAtomV1, ArchMapDocumentV1,
-    ArchMapDocumentV2, ArchMapValidationReportV1, ArchMapValidationReportV2,
-    ArchMapValidationSummaryV1, ArchMapValidationSummaryV2, ValidationCheck, ValidationExample,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, AatAtomVocabularyEntryV1,
+    AatAtomVocabularyV1, ArchMapAtomV1, ArchMapDocumentV1, ArchMapDocumentV2,
+    ArchMapValidationReportV1, ArchMapValidationReportV2, ArchMapValidationSummaryV1,
+    ArchMapValidationSummaryV2, ValidationCheck, ValidationExample,
     canonical_archmap_extraction_doctrine_ref_v2,
 };
 
@@ -61,7 +61,7 @@ pub fn validate_archmap_v2_report(
     };
 
     ArchMapValidationReportV2 {
-        schema_version: "archmap-validation-report-v2".to_string(),
+        schema_version: "archmap-validation-report/v0.5.0".to_string(),
         archmap_ref: input_path.to_string(),
         input_schema: document.schema.clone(),
         checks,
@@ -118,7 +118,7 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
 
 fn check_archmap_v2_schema(schema: &str) -> ValidationCheck {
     let mut check = validation_check(
-        "archmap-v2-schema",
+        "archmap-schema050-schema",
         "ArchMap v2 uses the finite poset site schema discriminator",
         if schema == ARCHMAP_V2_SCHEMA {
             "pass"
@@ -157,7 +157,7 @@ fn check_archmap_v2_doctrine(document: &ArchMapDocumentV2) -> ValidationCheck {
         ));
     }
     check_from_examples(
-        "archmap-v2-extraction-doctrine-ref",
+        "archmap-schema050-extraction-doctrine-ref",
         "ArchMap v2 uses the fixed AAT canonical doctrine; authors do not select doctrine",
         examples,
     )
@@ -191,7 +191,7 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-v2-sources-resolve",
+        "archmap-schema050-sources-resolve",
         "sources table is present and internally resolvable",
         examples,
     )
@@ -216,7 +216,7 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
             }),
     );
     check_from_examples(
-        "archmap-v2-atom-ids",
+        "archmap-schema050-atom-ids",
         "atom ids are non-empty and unique",
         examples,
     )
@@ -243,7 +243,7 @@ fn check_archmap_v2_no_diagnostic_shortcuts(document: &ArchMapDocumentV2) -> Val
         }
     }
     check_from_examples(
-        "archmap-v2-no-diagnostic-shortcuts",
+        "archmap-schema050-no-diagnostic-shortcuts",
         "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions",
         examples,
     )
@@ -345,7 +345,7 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
         evidence: Some("declared AAT atom vocabulary does not contain this token".to_string()),
     }));
     let mut check = check_from_examples(
-        "archmap-v2-atom-kind-vocabulary",
+        "archmap-schema050-atom-kind-vocabulary",
         "ATOMS_WITHIN_DECLARED_VOCABULARY: atom kinds are members of aat-atom-vocabulary/v1",
         examples,
     );
@@ -398,7 +398,7 @@ fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck
         }
     }
     check_from_examples(
-        "archmap-v2-atom-subject-axis-refs",
+        "archmap-schema050-atom-subject-axis-refs",
         "atoms carry subject / axis decorations and source refs resolve",
         examples,
     )
@@ -489,7 +489,7 @@ fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-v2-context-poset-refs",
+        "archmap-schema050-context-poset-refs",
         "contexts form a finite source-grounded poset over atom subfamilies",
         examples,
     )
@@ -563,7 +563,7 @@ fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-v2-cover-refs",
+        "archmap-schema050-cover-refs",
         "covers select finite source-grounded context families",
         examples,
     )
@@ -594,7 +594,7 @@ pub fn validate_archmap_v1_report(
     };
 
     ArchMapValidationReportV1 {
-        schema_version: "archmap-validation-report-v1".to_string(),
+        schema_version: "archmap-validation-report/v0.5.0".to_string(),
         archmap_ref: input_path.to_string(),
         input_schema: document.schema.clone(),
         checks,
@@ -615,7 +615,7 @@ pub fn validate_archmap_v1_report(
 
 fn check_archmap_v1_schema(schema: &str) -> ValidationCheck {
     let mut check = validation_check(
-        "archmap-v1-schema",
+        "archmap-schema050-schema",
         "ArchMap v1 uses the atom-to-AAT schema discriminator",
         if schema == ARCHMAP_V1_SCHEMA {
             "pass"
@@ -657,7 +657,7 @@ fn check_archmap_v1_sources(document: &ArchMapDocumentV1) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-v1-sources-resolve",
+        "archmap-schema050-sources-resolve",
         "sources table is present and internally resolvable",
         examples,
     )
@@ -682,7 +682,7 @@ fn check_archmap_v1_atom_ids(document: &ArchMapDocumentV1) -> ValidationCheck {
             }),
     );
     check_from_examples(
-        "archmap-v1-atom-ids",
+        "archmap-schema050-atom-ids",
         "atom ids are non-empty and unique",
         examples,
     )
@@ -702,7 +702,7 @@ fn check_archmap_v1_atom_kinds(document: &ArchMapDocumentV1) -> ValidationCheck 
         })
         .collect::<Vec<_>>();
     check_from_examples(
-        "archmap-v1-atom-kind-vocabulary",
+        "archmap-schema050-atom-kind-vocabulary",
         "atom kinds are in the v1 constructor vocabulary",
         examples,
     )
@@ -718,7 +718,7 @@ fn check_archmap_v1_atom_shapes(document: &ArchMapDocumentV1) -> ValidationCheck
         );
     }
     check_from_examples(
-        "archmap-v1-atom-required-shapes",
+        "archmap-schema050-atom-required-shapes",
         "atom constructor payloads match required v1 shapes",
         examples,
     )
@@ -738,7 +738,7 @@ fn check_archmap_v1_atom_predicates(document: &ArchMapDocumentV1) -> ValidationC
         }
     }
     check_from_examples(
-        "archmap-v1-predicate-vocabulary",
+        "archmap-schema050-predicate-vocabulary",
         "atom predicates resolve to the v1 predicate vocabulary",
         examples,
     )
@@ -767,7 +767,7 @@ fn check_archmap_v1_atom_refs(document: &ArchMapDocumentV1) -> ValidationCheck {
         }
     }
     check_from_examples(
-        "archmap-v1-atom-refs-resolve",
+        "archmap-schema050-atom-refs-resolve",
         "atom source refs resolve to sources",
         examples,
     )
@@ -827,7 +827,7 @@ fn check_archmap_v1_molecule_refs(document: &ArchMapDocumentV1) -> ValidationChe
         }
     }
     check_from_examples(
-        "archmap-v1-molecule-refs-resolve",
+        "archmap-schema050-molecule-refs-resolve",
         "molecule membership and source refs resolve",
         examples,
     )
@@ -925,7 +925,6 @@ fn atom_refs(atom: &ArchMapAtomV1) -> Vec<&str> {
     .flatten()
     .collect()
 }
-
 
 #[cfg(test)]
 mod tests {

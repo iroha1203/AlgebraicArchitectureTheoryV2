@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-semantic-measured-zero",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-semantic-business-flow",
       "kind": "semantic",
-      "schemaVersion": "business-flow-test-v0",
+      "schema": "business-flow-test/v0.5.0",
       "path": "tests/coupon_discount_commuting_order.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -36,7 +36,7 @@
       "path": "tests/coupon_discount_commuting_order.json",
       "symbol": "couponDiscountCommutingObservation",
       "line": 8,
-      "ruleId": "business-flow-test-v0",
+      "ruleId": "business-flow-test/v0.5.0",
       "confidence": "high"
     },
     {
@@ -46,7 +46,7 @@
       "path": "tests/coupon_discount_commuting_order.json",
       "symbol": "couponDiscountCommutingTest",
       "line": 3,
-      "ruleId": "business-flow-test-v0",
+      "ruleId": "business-flow-test/v0.5.0",
       "confidence": "high"
     },
     {
@@ -148,7 +148,7 @@
         "value": 0,
         "measured": true,
         "measurementBoundary": "measuredZero",
-        "source": "business-flow-test-v0",
+        "source": "business-flow-test/v0.5.0",
         "reason": null
       }
     ]

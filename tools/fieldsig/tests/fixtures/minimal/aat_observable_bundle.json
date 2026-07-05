@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "aat-observable-bundle-v0",
-  "bundleId": "fixture-aat-observable-bundle-v0",
+  "schema": "aat-observable-bundle/v0.5.0",
+  "bundleId": "fixture-aat-observable-bundle/v0.5.0",
   "architectureId": "coupon-service",
   "sourceRefs": [
     {
       "sourceRefId": "source:air:coupon",
       "artifactKind": "air",
-      "schemaVersion": "aat-air-v0",
+      "schema": "aat-air/v0.5.0",
       "path": "tools/archsig/tests/fixtures/air/good_extension.json",
       "retainedFields": [
         "components",
@@ -22,7 +22,7 @@
     {
       "sourceRefId": "source:archmap:coupon",
       "artifactKind": "archmap",
-      "schemaVersion": "archmap-v0",
+      "schema": "archmap/v0.5.0",
       "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
       "retainedFields": [
         "sourceUniverse",
@@ -37,7 +37,7 @@
     {
       "sourceRefId": "source:feature-report:coupon",
       "artifactKind": "feature-extension-report",
-      "schemaVersion": "feature-extension-report-v0",
+      "schema": "feature-extension-report/v0.5.0",
       "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
       "retainedFields": [
         "introducedObstructionWitnesses",
@@ -129,7 +129,7 @@
       "conceptId": "concept:theorem-boundary",
       "aatConcept": "TheoremBoundary / NonConclusion",
       "artifactRefs": [
-        "theorem-check-report-v0"
+        "theorem-check-report/v0.5.0"
       ],
       "reportRefs": [
         "boundary:formal-precondition-missing"
@@ -150,8 +150,8 @@
       "conceptId": "concept:operation",
       "aatConcept": "ArchitectureOperation",
       "artifactRefs": [
-        "pr-quality-analysis-report-v0",
-        "operation-support-estimate-v0"
+        "pr-quality-analysis-report/v0.5.0",
+        "operation-support-estimate/v0.5.0"
       ],
       "reportRefs": [
         "operation:coupon-feature-extension"
@@ -334,7 +334,7 @@
         "concept:state-effect"
       ],
       "artifactRefs": [
-        "runtime-edge-evidence-v0"
+        "runtime-edge-evidence/v0.5.0"
       ],
       "measurementStatus": "unmeasured",
       "value": null,
@@ -644,7 +644,7 @@
       ],
       "action": "request runtime traces or mark runtime law family unmeasured",
       "nextEvidence": [
-        "runtime-edge-evidence-v0"
+        "runtime-edge-evidence/v0.5.0"
       ],
       "owner": "human-review",
       "nonConclusions": [
@@ -675,7 +675,7 @@
       ],
       "action": "do not promote tooling evidence to Lean theorem claim",
       "nextEvidence": [
-        "theorem-precondition-check-report-v0"
+        "theorem-precondition-check-report/v0.5.0"
       ],
       "owner": "deterministic-tool",
       "nonConclusions": [
@@ -720,7 +720,7 @@
     "inputArtifactRefs": [
       "source:air:coupon",
       "source:feature-report:coupon",
-      "bundle:fixture-aat-observable-bundle-v0"
+      "bundle:fixture-aat-observable-bundle-schema050"
     ],
     "reviewQuestions": [
       "Which invariant is preserved, broken, unmeasured, or out of scope?",

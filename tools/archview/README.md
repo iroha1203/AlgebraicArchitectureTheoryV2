@@ -28,7 +28,7 @@ ArchView は自分と同じディレクトリから以下を fetch する（`arc
 
 | ファイル | 必須 | 内容 |
 | --- | --- | --- |
-| `archsig-atom-viewer-data.json` | ✅ | `archsig-atom-viewer-data-v2` 投影本体（nerve / cocycleRibbon / atomGlyphs / overlays / finitePosetSite / reportPane …） |
+| `archsig-atom-viewer-data.json` | ✅ | `archsig-atom-viewer-data/v0.5.0` 投影本体（nerve / cocycleRibbon / atomGlyphs / overlays / finitePosetSite / reportPane …） |
 | `archsig-analysis-summary.json` | 任意 | verdict / assumption ledger / structural verdict summary（report pane にマージ） |
 | `archsig-run-manifest.json` | 任意 | artifact パス一覧（report pane にマージ） |
 

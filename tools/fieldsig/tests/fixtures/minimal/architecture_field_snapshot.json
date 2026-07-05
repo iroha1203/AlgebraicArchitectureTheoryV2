@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "architecture-field-snapshot-v0",
-  "snapshotId": "fixture-architecture-field-snapshot-v0",
+  "schema": "architecture-field-snapshot/v0.5.0",
+  "snapshotId": "fixture-architecture-field-snapshot/v0.5.0",
   "repository": {
     "owner": "iroha1203",
     "name": "AlgebraicArchitectureTheoryV2",
@@ -15,26 +15,26 @@
     {
       "kind": "signature-trajectory-report",
       "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-      "schemaVersion": "signature-trajectory-report-v0",
-      "artifactId": "fixture-signature-trajectory-report-v0"
+      "schema": "signature-trajectory-report/v0.5.0",
+      "artifactId": "fixture-signature-trajectory-report/v0.5.0"
     },
     {
       "kind": "organization-policy",
       "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-      "schemaVersion": "organization-policy-v0",
+      "schema": "organization-policy/v0.5.0",
       "artifactId": "fixture-b7-organization-policy"
     },
     {
       "kind": "law-policy-template-registry",
       "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-      "schemaVersion": "law-policy-template-registry-v0",
-      "artifactId": "fixture-law-policy-template-registry-v0"
+      "schema": "law-policy-template-registry/v0.5.0",
+      "artifactId": "fixture-law-policy-template-registry/v0.5.0"
     },
     {
       "kind": "measurement-unit-registry",
       "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-      "schemaVersion": "measurement-unit-registry-v0",
-      "artifactId": "fixture-measurement-unit-registry-v0"
+      "schema": "measurement-unit-registry/v0.5.0",
+      "artifactId": "fixture-measurement-unit-registry/v0.5.0"
     }
   ],
   "selectedContextRefs": [
@@ -51,14 +51,14 @@
         {
           "kind": "organization-policy",
           "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-          "schemaVersion": "organization-policy-v0",
+          "schema": "organization-policy/v0.5.0",
           "artifactId": "fixture-b7-organization-policy"
         },
         {
           "kind": "law-policy-template-registry",
           "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-          "schemaVersion": "law-policy-template-registry-v0",
-          "artifactId": "fixture-law-policy-template-registry-v0"
+          "schema": "law-policy-template-registry/v0.5.0",
+          "artifactId": "fixture-law-policy-template-registry/v0.5.0"
         }
       ],
       "confidence": "selected-window-fixture-signal",
@@ -72,31 +72,31 @@
           {
             "kind": "signature-trajectory-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-            "schemaVersion": "signature-trajectory-report-v0",
-            "artifactId": "fixture-signature-trajectory-report-v0"
+            "schema": "signature-trajectory-report/v0.5.0",
+            "artifactId": "fixture-signature-trajectory-report/v0.5.0"
           },
           {
             "kind": "organization-policy",
             "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-            "schemaVersion": "organization-policy-v0",
+            "schema": "organization-policy/v0.5.0",
             "artifactId": "fixture-b7-organization-policy"
           },
           {
             "kind": "law-policy-template-registry",
             "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-            "schemaVersion": "law-policy-template-registry-v0",
-            "artifactId": "fixture-law-policy-template-registry-v0"
+            "schema": "law-policy-template-registry/v0.5.0",
+            "artifactId": "fixture-law-policy-template-registry/v0.5.0"
           },
           {
             "kind": "measurement-unit-registry",
             "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-            "schemaVersion": "measurement-unit-registry-v0",
-            "artifactId": "fixture-measurement-unit-registry-v0"
+            "schema": "measurement-unit-registry/v0.5.0",
+            "artifactId": "fixture-measurement-unit-registry/v0.5.0"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "architecture-field-snapshot-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "architecture-field-snapshot/v0.5.0",
         "aggregationWindow": {
           "windowStart": "2026-01-01T00:00:00Z",
           "windowEnd": "2026-01-31T23:59:59Z",
@@ -138,14 +138,14 @@
         {
           "kind": "signature-trajectory-report",
           "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-          "schemaVersion": "signature-trajectory-report-v0",
-          "artifactId": "fixture-signature-trajectory-report-v0"
+          "schema": "signature-trajectory-report/v0.5.0",
+          "artifactId": "fixture-signature-trajectory-report/v0.5.0"
         },
         {
           "kind": "measurement-unit-registry",
           "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-          "schemaVersion": "measurement-unit-registry-v0",
-          "artifactId": "fixture-measurement-unit-registry-v0"
+          "schema": "measurement-unit-registry/v0.5.0",
+          "artifactId": "fixture-measurement-unit-registry/v0.5.0"
         }
       ],
       "confidence": "selected-window-fixture-signal",
@@ -159,31 +159,31 @@
           {
             "kind": "signature-trajectory-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-            "schemaVersion": "signature-trajectory-report-v0",
-            "artifactId": "fixture-signature-trajectory-report-v0"
+            "schema": "signature-trajectory-report/v0.5.0",
+            "artifactId": "fixture-signature-trajectory-report/v0.5.0"
           },
           {
             "kind": "organization-policy",
             "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-            "schemaVersion": "organization-policy-v0",
+            "schema": "organization-policy/v0.5.0",
             "artifactId": "fixture-b7-organization-policy"
           },
           {
             "kind": "law-policy-template-registry",
             "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-            "schemaVersion": "law-policy-template-registry-v0",
-            "artifactId": "fixture-law-policy-template-registry-v0"
+            "schema": "law-policy-template-registry/v0.5.0",
+            "artifactId": "fixture-law-policy-template-registry/v0.5.0"
           },
           {
             "kind": "measurement-unit-registry",
             "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-            "schemaVersion": "measurement-unit-registry-v0",
-            "artifactId": "fixture-measurement-unit-registry-v0"
+            "schema": "measurement-unit-registry/v0.5.0",
+            "artifactId": "fixture-measurement-unit-registry/v0.5.0"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "architecture-field-snapshot-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "architecture-field-snapshot/v0.5.0",
         "aggregationWindow": {
           "windowStart": "2026-01-01T00:00:00Z",
           "windowEnd": "2026-01-31T23:59:59Z",
@@ -227,31 +227,31 @@
       {
         "kind": "signature-trajectory-report",
         "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-        "schemaVersion": "signature-trajectory-report-v0",
-        "artifactId": "fixture-signature-trajectory-report-v0"
+        "schema": "signature-trajectory-report/v0.5.0",
+        "artifactId": "fixture-signature-trajectory-report/v0.5.0"
       },
       {
         "kind": "organization-policy",
         "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-        "schemaVersion": "organization-policy-v0",
+        "schema": "organization-policy/v0.5.0",
         "artifactId": "fixture-b7-organization-policy"
       },
       {
         "kind": "law-policy-template-registry",
         "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-        "schemaVersion": "law-policy-template-registry-v0",
-        "artifactId": "fixture-law-policy-template-registry-v0"
+        "schema": "law-policy-template-registry/v0.5.0",
+        "artifactId": "fixture-law-policy-template-registry/v0.5.0"
       },
       {
         "kind": "measurement-unit-registry",
         "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-        "schemaVersion": "measurement-unit-registry-v0",
-        "artifactId": "fixture-measurement-unit-registry-v0"
+        "schema": "measurement-unit-registry/v0.5.0",
+        "artifactId": "fixture-measurement-unit-registry/v0.5.0"
       }
     ],
     "extractorVersion": "0.1.0",
-    "policyVersion": "fixture-policy-v0",
-    "schemaVersion": "architecture-field-snapshot-v0",
+    "policyVersion": "fixture-policy/v0.5.0",
+    "schema": "architecture-field-snapshot/v0.5.0",
     "aggregationWindow": {
       "windowStart": "2026-01-01T00:00:00Z",
       "windowEnd": "2026-01-31T23:59:59Z",

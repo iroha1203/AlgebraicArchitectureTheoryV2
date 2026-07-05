@@ -33,10 +33,10 @@ Then inspect likely config and architecture surfaces:
 
 | Evidence | LawPolicy surface |
 | --- | --- |
-| "Repository adopts SOLID" | `pack: "solid@1"`, `basis: ["policy-basis:solid"]` |
-| "Domain layer must not depend on infrastructure" | `law: "domain.no-direct-infra-dependency"`, `evaluator: "domain.no-direct-infra-dependency@1"`, `basis: ["policy-basis:layering"]` |
-| "Measure selected cover for Čech obstruction" | `law: "ag.cech-obstruction"`, `evaluator: "ag.cech-obstruction@1"`, plus `measurementProfileRef` |
-| "Measure square-free repair candidates" | `law: "ag.square-free-repair"`, `evaluator: "ag.square-free-repair@1"`, plus `measurementProfileRef` |
+| "Repository adopts SOLID" | `pack: "solid"`, `basis: ["policy-basis:solid"]` |
+| "Domain layer must not depend on infrastructure" | `law: "domain.no-direct-infra-dependency"`, `evaluator: "domain.no-direct-infra-dependency"`, `basis: ["policy-basis:layering"]` |
+| "Measure selected cover for Čech obstruction" | `law: "ag.cech-obstruction"`, `evaluator: "ag.cech-obstruction"`, plus `measurementProfileRef` |
+| "Measure square-free repair candidates" | `law: "ag.square-free-repair"`, `evaluator: "ag.square-free-repair"`, plus `measurementProfileRef` |
 | repeated but undocumented pattern | question to user, not policy yet |
 
 Do not translate evidence into witness rules, signature axes, coverage

@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "intent-calibration-record-v0",
-  "calibrationId": "fixture-intent-calibration-record-v0",
+  "schema": "intent-calibration-record/v0.5.0",
+  "calibrationId": "fixture-intent-calibration-record/v0.5.0",
   "intentMapRef": {
-    "schemaVersion": "intentmap-v0",
-    "intentMapId": "fixture-intentmap-v0",
+    "schema": "intentmap/v0.5.0",
+    "intentMapId": "fixture-intentmap/v0.5.0",
     "path": "tools/fieldsig/tests/fixtures/minimal/intentmap.json",
     "intentItemIds": [
       "intent:coupon-apply-operation",
@@ -18,7 +18,7 @@
     ]
   },
   "forecastConeRef": {
-    "forecastConeSchemaVersion": "forecast-cone-skeleton-v0",
+    "forecastConeSchemaVersion": "forecast-cone-skeleton/v0.5.0",
     "coneId": "cone:intent-alignment",
     "operationSupportEstimateId": "estimate:intent-alignment",
     "sourceRefIds": [

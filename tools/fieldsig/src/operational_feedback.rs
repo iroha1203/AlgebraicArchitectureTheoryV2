@@ -33,7 +33,7 @@ use crate::{
     VersionedHypothesisRefV0,
 };
 
-const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
+const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy/v0.5.0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReportOutcomeDailyLedgerInput {
@@ -582,7 +582,7 @@ pub fn static_calibration_review_record() -> CalibrationReviewRecordV0 {
     let mut record = CalibrationReviewRecordV0 {
         schema_version: CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION.to_string(),
         schema_compatibility: None,
-        record_id: "fixture-b10-calibration-review-false-positive-v0".to_string(),
+        record_id: "fixture-b10-calibration-review-false-positive/v0.5.0".to_string(),
         reviewed_at: "2026-05-05T09:00:00Z".to_string(),
         reviewer: "architecture-reviewer@example.com".to_string(),
         report_finding_refs: vec![CalibrationReportFindingRefV0 {
@@ -659,7 +659,7 @@ pub fn static_calibration_review_record() -> CalibrationReviewRecordV0 {
                 "driftLedger.private_runtime_evidence_count".to_string(),
                 "reviewCost.approvalLatencyHours".to_string(),
             ],
-            threshold_policy_refs: vec!["ci-policy:runtime-private-evidence-advisory-v0".to_string()],
+            threshold_policy_refs: vec!["ci-policy:runtime-private-evidence-advisory-schema050".to_string()],
             source_ledger_refs: vec![
                 "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
@@ -829,7 +829,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
     let mut policy = TeamThresholdPolicyV0 {
         schema_version: TEAM_THRESHOLD_POLICY_SCHEMA_VERSION.to_string(),
         schema_compatibility: None,
-        policy_id: "fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+        policy_id: "fixture-b10-checkout-team-threshold-policy/v0.5.0".to_string(),
         organization_ref: "org:example-commerce".to_string(),
         team_ref: "team:checkout-platform".to_string(),
         effective_period: TeamThresholdEffectivePeriodV0 {
@@ -850,7 +850,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
                     "private runtime evidence is monitored as advisory until observation coverage improves"
                         .to_string(),
                 calibration_source_refs: vec![
-                    "calibration-review:fixture-b10-calibration-review-false-positive-v0"
+                    "calibration-review:fixture-b10-calibration-review-false-positive-schema050"
                         .to_string(),
                     "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
                 ],
@@ -888,7 +888,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
         ],
         calibration_source_refs: vec![
             TeamThresholdCalibrationSourceRefV0 {
-                source_ref: "calibration-review:fixture-b10-calibration-review-false-positive-v0"
+                source_ref: "calibration-review:fixture-b10-calibration-review-false-positive-schema050"
                     .to_string(),
                 source_kind: "calibration-review-record".to_string(),
                 path: "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json"
@@ -916,7 +916,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
             rollback_trigger:
                 "two consecutive calibration reviews show false negatives or a linked rollback / incident within the bounded window"
                     .to_string(),
-            fallback_policy_ref: "ci-policy:runtime-private-evidence-warn-v0".to_string(),
+            fallback_policy_ref: "ci-policy:runtime-private-evidence-warn-schema050".to_string(),
             approval_refs: vec![
                 "architecture-review-board".to_string(),
                 "checkout-platform-owner".to_string(),
@@ -1080,7 +1080,7 @@ pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
     let mut monitor = OwnershipBoundaryMonitorV0 {
         schema_version: OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION.to_string(),
         schema_compatibility: None,
-        monitor_id: "fixture-b10-ownership-boundary-monitor-v0".to_string(),
+        monitor_id: "fixture-b10-ownership-boundary-monitor/v0.5.0".to_string(),
         generated_at: "2026-05-05T10:00:00Z".to_string(),
         organization_ref: "org:example-commerce".to_string(),
         team_ref: "team:checkout-platform".to_string(),
@@ -1102,7 +1102,7 @@ pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
                 ],
             },
             OwnershipBoundarySourceRefV0 {
-                source_ref: "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+                source_ref: "threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050"
                     .to_string(),
                 source_kind: "team-threshold-policy".to_string(),
                 path: "tools/fieldsig/tests/fixtures/minimal/team_threshold_policy.json"
@@ -1123,7 +1123,7 @@ pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
                 ],
                 boundary_policy_refs: vec![
                     "policy:checkout-owned-api-surface".to_string(),
-                    "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+                    "threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050".to_string(),
                 ],
                 observation_boundary: "boundedOperationalObservation".to_string(),
                 evidence_refs: vec![
@@ -1346,7 +1346,7 @@ pub fn static_repair_adoption_record() -> RepairAdoptionRecordV0 {
     let mut record = RepairAdoptionRecordV0 {
         schema_version: REPAIR_ADOPTION_RECORD_SCHEMA_VERSION.to_string(),
         schema_compatibility: None,
-        record_id: "fixture-b10-repair-adoption-record-v0".to_string(),
+        record_id: "fixture-b10-repair-adoption-record/v0.5.0".to_string(),
         reviewed_at: "2026-05-05T11:00:00Z".to_string(),
         reviewer: "architecture-reviewer@example.com".to_string(),
         suggestion_refs: vec![RepairSuggestionRefV0 {
@@ -1396,7 +1396,7 @@ pub fn static_repair_adoption_record() -> RepairAdoptionRecordV0 {
                 ],
             },
             RepairFollowUpOutcomeRefV0 {
-                outcome_ref: "ownership-monitor:fixture-b10-ownership-boundary-monitor-v0"
+                outcome_ref: "ownership-monitor:fixture-b10-ownership-boundary-monitor-schema050"
                     .to_string(),
                 outcome_kind: "ownership-boundary-monitor".to_string(),
                 boundary: "boundedOperationalObservation".to_string(),
@@ -1418,7 +1418,7 @@ pub fn static_repair_adoption_record() -> RepairAdoptionRecordV0 {
                     .to_string(),
             severity: "watch".to_string(),
             evidence_refs: vec![
-                "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+                "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050".to_string(),
             ],
             non_conclusions: vec![
                 "side-effect note is risk tracking, not a prediction theorem".to_string(),
@@ -1586,7 +1586,7 @@ pub fn static_incident_correlation_monitor() -> IncidentCorrelationMonitorV0 {
     let mut monitor = IncidentCorrelationMonitorV0 {
         schema_version: INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION.to_string(),
         schema_compatibility: None,
-        monitor_id: "fixture-b10-incident-correlation-monitor-v0".to_string(),
+        monitor_id: "fixture-b10-incident-correlation-monitor/v0.5.0".to_string(),
         generated_at: "2026-05-05T12:00:00Z".to_string(),
         organization_ref: "org:example".to_string(),
         team_ref: "team:checkout-platform".to_string(),
@@ -1847,7 +1847,7 @@ pub fn static_hypothesis_refresh_cycle() -> HypothesisRefreshCycleV0 {
         organization_ref: "org:example".to_string(),
         team_ref: "team:checkout-platform".to_string(),
         source_monitor_refs: vec![HypothesisRefreshSourceMonitorRefV0 {
-            monitor_ref: "fixture-b10-incident-correlation-monitor-v0".to_string(),
+            monitor_ref: "fixture-b10-incident-correlation-monitor/v0.5.0".to_string(),
             source_kind: "incident-correlation-monitor".to_string(),
             path: "tools/fieldsig/tests/fixtures/minimal/incident_correlation_monitor.json"
                 .to_string(),

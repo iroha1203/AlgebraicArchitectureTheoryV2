@@ -23,7 +23,7 @@ pub fn extract_relation_complexity_observation(
 ) -> Result<RelationComplexityObservation, Box<dyn Error>> {
     if input.schema_version != RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION {
         return Err(format!(
-            "unsupported relation complexity candidate schemaVersion: {}",
+            "unsupported relation complexity candidate schema: {}",
             input.schema_version
         )
         .into());

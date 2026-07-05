@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "obstruction-witness-v0",
+  "schema": "obstruction-witness/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "obstruction-witness",
-    "schemaVersionName": "obstruction-witness-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "obstruction-witness/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "witnessId",
@@ -137,7 +137,7 @@
         "artifactRef": "artifact-current-feature-report",
         "path": "src/coupon/CouponService.ts",
         "symbol": "CouponService.calculate",
-        "ruleId": "typescript-static-call-fixture-v0"
+        "ruleId": "typescript-static-call-fixture/v0.5.0"
       },
       {
         "evidenceRef": "evidence-private-runtime-log",
@@ -145,7 +145,7 @@
         "artifactRef": null,
         "path": null,
         "symbol": null,
-        "ruleId": "retention-manifest-private-evidence-v0"
+        "ruleId": "retention-manifest-private-evidence/v0.5.0"
       }
     ],
     "theoremReference": [

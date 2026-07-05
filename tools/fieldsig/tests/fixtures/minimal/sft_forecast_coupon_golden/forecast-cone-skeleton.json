@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "forecast-cone-skeleton-v0",
+  "schema": "forecast-cone-skeleton/v0.5.0",
   "coneId": "cone:estimate:descriptor:coupon-prd-forecast-pipeline",
   "operationSupportRef": {
-    "estimateSchemaVersion": "operation-support-estimate-v0",
+    "estimateSchemaVersion": "operation-support-estimate/v0.5.0",
     "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
     "descriptorId": "descriptor:coupon-prd-forecast-pipeline",
     "candidateOperationFamilyIds": [

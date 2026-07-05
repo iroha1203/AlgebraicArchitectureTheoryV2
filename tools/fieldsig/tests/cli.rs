@@ -34,10 +34,7 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
             .expect("validation path is utf-8"),
     ]);
     let intent_json = read_json(&intent_validation);
-    assert_eq!(
-        intent_json["schemaVersion"],
-        "intentmap-validation-report-v0"
-    );
+    assert_eq!(intent_json["schema"], "intentmap-validation-report/v0.5.0");
     assert_eq!(intent_json["summary"]["result"], "pass");
     assert!(
         intent_json["checks"]
@@ -77,8 +74,8 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     ]);
     let alignment_json = read_json(&alignment_validation);
     assert_eq!(
-        alignment_json["schemaVersion"],
-        "intent-archmap-alignment-validation-report-v0"
+        alignment_json["schema"],
+        "intent-archmap-alignment-validation-report/v0.5.0"
     );
     assert_eq!(alignment_json["summary"]["result"], "pass");
     assert!(
@@ -109,10 +106,10 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
         forecast_dir.to_str().expect("forecast dir is utf-8"),
     ]);
     let estimate = read_json(&forecast_dir.join("operation-support-estimate.json"));
-    assert_eq!(estimate["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(estimate["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(
         estimate["descriptorRef"]["descriptorSchemaVersion"],
-        "intent-archmap-alignment-v0"
+        "intent-archmap-alignment/v0.5.0"
     );
     assert!(
         estimate["unknownRemainder"][0]["unknownAxes"]
@@ -126,7 +123,7 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
             })
     );
     let cone = read_json(&forecast_dir.join("forecast-cone-skeleton.json"));
-    assert_eq!(cone["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(cone["schema"], "forecast-cone-skeleton/v0.5.0");
     assert!(
         cone["nonConclusions"]
             .as_array()
@@ -148,8 +145,8 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     ]);
     let pr_quality = read_json(&pr_quality_validation);
     assert_eq!(
-        pr_quality["schemaVersion"],
-        "pr-quality-analysis-validation-report-v0"
+        pr_quality["schema"],
+        "pr-quality-analysis-validation-report/v0.5.0"
     );
     assert_eq!(pr_quality["summary"]["result"], "pass");
     assert!(
@@ -174,8 +171,8 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     ]);
     let calibration = read_json(&calibration_validation);
     assert_eq!(
-        calibration["schemaVersion"],
-        "intent-calibration-validation-report-v0"
+        calibration["schema"],
+        "intent-calibration-validation-report/v0.5.0"
     );
     assert_eq!(calibration["summary"]["result"], "pass");
     assert!(
@@ -202,7 +199,7 @@ fn cli_emits_and_validates_aat_observable_bundle() {
         bundle.to_str().expect("bundle path is utf-8"),
     ]);
     let bundle_json = read_json(&bundle);
-    assert_eq!(bundle_json["schemaVersion"], "aat-observable-bundle-v0");
+    assert_eq!(bundle_json["schema"], "aat-observable-bundle/v0.5.0");
     assert!(
         bundle_json["conceptMappings"]
             .as_array()
@@ -246,8 +243,8 @@ fn cli_emits_and_validates_aat_observable_bundle() {
     ]);
     let validation_json = read_json(&validation);
     assert_eq!(
-        validation_json["schemaVersion"],
-        "aat-observable-bundle-validation-report-v0"
+        validation_json["schema"],
+        "aat-observable-bundle-validation-report/v0.5.0"
     );
     assert_eq!(validation_json["summary"]["result"], "pass");
     assert!(
@@ -329,14 +326,14 @@ fn write_json(path: &Path, value: &Value) {
 #[test]
 fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     let out_dir = temp_dir("archsig-analysis-sft-input");
-    let packet = out_dir.join("archsig-analysis-packet-v1.json");
+    let packet = out_dir.join("archsig-analysis-packet-schema050.json");
     let estimate = out_dir.join("operation-support-estimate.json");
     let cone = out_dir.join("forecast-cone.json");
     write_json(
         &packet,
         &serde_json::json!({
-            "schema": "archsig-analysis-packet/v1",
-            "analysisId": "analysis:test-v1-handoff",
+            "schema": "archsig-analysis-packet/v0.5.0",
+            "analysisId": "analysis:test-schema050-handoff",
             "inputRefs": {
                 "lawPolicy": "law-policy:test",
                 "normalizedArchMap": "normalized-archmap:test",
@@ -344,7 +341,7 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
             },
             "typedEvaluatorResults": [
                 {
-                    "evaluator": "ag.cech-obstruction@1",
+                    "evaluator": "ag.cech-obstruction",
                     "law": "cech-obstruction",
                     "status": "blocked",
                     "supportAtomRefs": ["atom:test"],
@@ -377,10 +374,7 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     ]);
 
     let estimate_json = read_json(&estimate);
-    assert_eq!(
-        estimate_json["schemaVersion"],
-        "operation-support-estimate-v0"
-    );
+    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(
         estimate_json["descriptorRef"]["artifactKind"],
         "archsig-analysis-packet"
@@ -506,7 +500,7 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     assert!(!rejected.status.success());
     assert!(
         String::from_utf8_lossy(&rejected.stderr)
-            .contains("requires archsig-analysis-packet/v1"),
+            .contains("requires archsig-analysis-packet/v0.5.0"),
         "raw ArchMap input must be rejected by the ArchSig analysis handoff command"
     );
 }
@@ -518,10 +512,10 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     let estimate = out_dir.join("operation-support-estimate.json");
     let estimate_validation = out_dir.join("operation-support-estimate-validation.json");
     let packet_json = serde_json::json!({
-        "schema": "archsig-measurement-packet/v1",
+        "schema": "archsig-measurement-packet/v0.5.0",
         "packetId": "measurement:test-handoff",
         "profile": {
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:test-handoff",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:test",
@@ -536,7 +530,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "verdictDiscipline": "five-valued-structural-verdict@1"
         },
         "structuralVerdict": [{
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
             "verdict": "measured_nonzero",
             "verdictData": {
@@ -547,7 +541,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 "certRef": "computedInvariants/cech-cohomology:profile:test-handoff"
             }
         }, {
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
             "verdict": "unknown",
             "reason": "certificate boundary is outside the selected profile",
@@ -560,13 +554,13 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
         }],
         "computedInvariants": [{
             "invariantId": "cech-cohomology:profile:test-handoff",
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "status": "computed",
             "dimensions": {"H0": 1, "H1": 1}
         }],
         "analyticReadings": [{
             "readingId": "theorem-candidate:transfer-lower-bound:test",
-            "evaluator": "ag.foundation@1",
+            "evaluator": "ag.foundation",
             "value": {"transferLowerBound": 3.5},
             "regime": "theorem-candidate",
             "structuralVerdictRef": null
@@ -615,10 +609,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     ]);
 
     let estimate_json = read_json(&estimate);
-    assert_eq!(
-        estimate_json["schemaVersion"],
-        "operation-support-estimate-v0"
-    );
+    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(
         estimate_json["descriptorRef"]["artifactKind"],
         "archsig-measurement-packet"
@@ -677,8 +668,9 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             .as_array()
             .expect("measurement boundary refs are array")
             .iter()
-            .any(|source| source
-                == "archsigMeasurementVerdict:ag.cech-obstruction@1:measured_nonzero"),
+            .any(
+                |source| source == "archsigMeasurementVerdict:ag.cech-obstruction:measured_nonzero"
+            ),
         "FieldSig must carry measurement packet verdict boundaries"
     );
     assert!(
@@ -737,7 +729,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 entry["reason"]
                     .as_str()
                     .expect("reason is string")
-                    .contains("ag.cech-obstruction@1 returned unknown")
+                    .contains("ag.cech-obstruction returned unknown")
                     && entry["unknownAxes"]
                         .as_array()
                         .expect("unknown axes are array")
@@ -764,10 +756,10 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
     let packet = out_dir.join("archsig-measurement-packet.json");
     let estimate = out_dir.join("operation-support-estimate.json");
     let packet_json = serde_json::json!({
-        "schema": "archsig-measurement-packet/v1",
+        "schema": "archsig-measurement-packet/v0.5.0",
         "packetId": "measurement:capacity-not-cert",
         "profile": {
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:capacity-not-cert",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:test",
@@ -782,7 +774,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "verdictDiscipline": "five-valued-structural-verdict@1"
         },
         "structuralVerdict": [{
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
             "verdict": "measured_nonzero",
             "verdictData": {
@@ -794,7 +786,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
         }],
         "computedInvariants": [{
             "invariantId": "topological-debt-capacity:profile:capacity-not-cert",
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "status": "computed",
             "structuralVerdictRef": null,
             "capacityLowerBound": 1
@@ -837,7 +829,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     fs::write(
         &schema_only,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schema": "archsig-measurement-packet/v1"
+            "schema": "archsig-measurement-packet/v0.5.0"
         }))
         .expect("schema-only packet serializes"),
     )
@@ -877,7 +869,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!rejected.status.success());
     assert!(
         String::from_utf8_lossy(&rejected.stderr)
-            .contains("requires archsig-measurement-packet/v1"),
+            .contains("requires archsig-measurement-packet/v0.5.0"),
         "raw ArchMap input must be rejected by the measurement-packet handoff"
     );
 
@@ -903,14 +895,14 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     );
 
     let valid_measurement_packet = serde_json::json!({
-        "schema": "archsig-measurement-packet/v1",
+        "schema": "archsig-measurement-packet/v0.5.0",
         "packetId": "measurement:semantic-validation",
         "profile": {
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:semantic-validation"
         },
         "structuralVerdict": [{
-            "evaluator": "ag.square-free-repair@1",
+            "evaluator": "ag.square-free-repair",
             "law": "ag.square-free-repair",
             "verdict": "measured_nonzero",
             "verdictData": {
@@ -923,7 +915,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         }],
         "computedInvariants": [{
             "invariantId": "square-free-repair:profile:semantic-validation",
-            "evaluator": "ag.square-free-repair@1",
+            "evaluator": "ag.square-free-repair",
             "status": "computed"
         }],
         "analyticReadings": [],
@@ -931,7 +923,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "theoremRef": "part3/7.2B",
             "assumption": "finite certificate verified",
             "status": "checked",
-            "checkedBy": "ag.square-free-repair@1"
+            "checkedBy": "ag.square-free-repair"
         }],
         "nonConclusions": []
     });
@@ -1031,13 +1023,13 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
 
 #[test]
 fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
-    let out_dir = temp_dir("archsig-v1-analysis-sft-input");
-    let packet = out_dir.join("archsig-analysis-packet-v1.json");
+    let out_dir = temp_dir("archsig-schema050-analysis-sft-input");
+    let packet = out_dir.join("archsig-analysis-packet-schema050.json");
     let estimate = out_dir.join("operation-support-estimate.json");
     let compatibility = out_dir.join("schema-compatibility-report.json");
     let packet_json = serde_json::json!({
-        "schema": "archsig-analysis-packet/v1",
-        "analysisId": "analysis:test-v1-handoff",
+        "schema": "archsig-analysis-packet/v0.5.0",
+        "analysisId": "analysis:test-schema050-handoff",
         "inputRefs": {
             "normalizedArchMap": "normalized-archmap.json",
             "lawPolicy": "law-policy.json",
@@ -1062,7 +1054,7 @@ fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
             "homotopyHolonomyReadings": "/homotopyHolonomyReadings"
         },
         "architectureSpectrumReport": {
-            "schemaVersion": "architecture-spectrum-report/v1",
+            "schema": "architecture-spectrum-report/v0.5.0",
             "reportId": "architecture-spectrum-report:test"
         },
         "spectralAnalysisReadings": [
@@ -1072,7 +1064,7 @@ fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
             }
         ],
         "architectureHomotopyReport": {
-            "schemaVersion": "architecture-homotopy-report/v1",
+            "schema": "architecture-homotopy-report/v0.5.0",
             "reportId": "architecture-homotopy-report:test"
         },
         "homotopyHolonomyReadings": [
@@ -1094,7 +1086,7 @@ fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
             }
         ],
         "structuralReadingReviewSurface": {
-            "schemaVersion": "structural-reading-review-surface/v1",
+            "schema": "structural-reading-review-surface/v0.5.0",
             "surfaceId": "structural-reading-review-surface:test",
             "connectedReadingRefs": [
                 "/representationMetricReadings/0",
@@ -1182,11 +1174,11 @@ fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
     assert_eq!(compatibility_json["summary"]["result"], "pass");
     assert_eq!(
         compatibility_json["after"]["artifactId"],
-        "archsig-analysis-packet-v1"
+        "archsig-analysis-packet/v0.5.0"
     );
     assert_eq!(
-        compatibility_json["after"]["schemaVersionName"],
-        "archsig-analysis-packet/v1"
+        compatibility_json["after"]["schemaName"],
+        "archsig-analysis-packet/v0.5.0"
     );
 }
 
@@ -1205,7 +1197,7 @@ fn cli_validates_archmap_fixture_and_guardrails() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archmap-validation-report-v0");
+    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "warn");
     let source_inventory_checks = json["sourceInventoryChecks"]
         .as_array()
@@ -1341,8 +1333,9 @@ fn cli_validates_archmap_fixture_and_guardrails() {
     let missing_inventory = out_dir.join("archmap-missing-source-inventory.json");
     let missing_inventory_report = out_dir.join("archmap-missing-source-inventory-report.json");
     let mut missing_inventory_json = read_json(&input);
-    missing_inventory_json["sourceInventoryRef"]["path"] =
-        serde_json::json!("tools/fieldsig/tests/fixtures/minimal/external/missing_source_inventory.json");
+    missing_inventory_json["sourceInventoryRef"]["path"] = serde_json::json!(
+        "tools/fieldsig/tests/fixtures/minimal/external/missing_source_inventory.json"
+    );
     fs::write(
         &missing_inventory,
         serde_json::to_string_pretty(&missing_inventory_json)
@@ -1490,10 +1483,7 @@ fn cli_projects_archmap_to_sft_input_and_generation_protocol() {
     ]);
 
     let estimate_json = read_json(&estimate);
-    assert_eq!(
-        estimate_json["schemaVersion"],
-        "operation-support-estimate-v0"
-    );
+    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
     assert!(
         estimate_json["candidateOperationFamilies"]
             .as_array()
@@ -1567,8 +1557,8 @@ fn cli_projects_archmap_to_sft_input_and_generation_protocol() {
 
     let protocol_json = read_json(&protocol);
     assert_eq!(
-        protocol_json["schemaVersion"],
-        "archmap-generation-protocol-v0"
+        protocol_json["schema"],
+        "archmap-generation-protocol/v0.5.0"
     );
     assert_eq!(
         protocol_json["modelProvenance"]["provider"],
@@ -1636,7 +1626,7 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
     ]);
 
     let air_json = read_json(&air);
-    assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert_eq!(air_json["schema"], "aat-air/v0.5.0");
     assert!(
         air_json["artifacts"]
             .as_array()
@@ -1685,8 +1675,8 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
     assert_eq!(air_validation_json["summary"]["result"], "pass");
     let theorem_json = read_json(&theorem_report);
     assert_eq!(
-        theorem_json["schemaVersion"],
-        "theorem-precondition-check-report-v0"
+        theorem_json["schema"],
+        "theorem-precondition-check-report/v0.5.0"
     );
     let theorem_archmap_checklist = theorem_json["archmapPreservationPreconditionChecklist"]
         .as_array()
@@ -1727,7 +1717,7 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
         "theorem-check should keep ArchMap formal promotion blocked"
     );
     let feature_json = read_json(&feature_report);
-    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(feature_json["schema"], "feature-extension-report/v0.5.0");
     assert!(
         feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
             .as_u64()
@@ -1879,7 +1869,7 @@ fn cli_locks_archmap_expressiveness_suite_v0_boundaries() {
     );
 
     let air_json = read_json(&air);
-    assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert_eq!(air_json["schema"], "aat-air/v0.5.0");
     assert!(
         air_json["semanticDiagrams"]
             .as_array()
@@ -1918,7 +1908,7 @@ fn cli_locks_archmap_expressiveness_suite_v0_boundaries() {
     );
 
     let feature_json = read_json(&feature_report);
-    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(feature_json["schema"], "feature-extension-report/v0.5.0");
     assert!(
         feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
             .as_u64()
@@ -1945,7 +1935,7 @@ fn cli_extracts_python_import_graph() {
     ]);
 
     let json = read_json(&sig0);
-    assert_eq!(json["schemaVersion"], "archsig-sig0-v0");
+    assert_eq!(json["schema"], "archsig-sig0/v0.5.0");
     assert_eq!(json["componentKind"], "python-module");
     assert!(
         json["components"]
@@ -2047,7 +2037,7 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
     ]);
 
     let json = read_json(&air);
-    assert_eq!(json["schemaVersion"], "aat-air-v0");
+    assert_eq!(json["schema"], "aat-air/v0.5.0");
     assert_eq!(json["schemaCompatibility"]["artifactId"], "air");
     assert!(
         json["schemaCompatibility"]["fieldMappings"]
@@ -2103,7 +2093,7 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
             .iter()
             .any(|relation| {
                 relation["layer"] == "static"
-                    && relation["extractionRule"] == "python-import-graph-v0"
+                    && relation["extractionRule"] == "python-import-graph/v0.5.0"
             })
     );
     assert!(
@@ -2114,7 +2104,7 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
             .any(|relation| {
                 relation["from"] == "app.service"
                     && relation["to"] == "requests"
-                    && relation["extractionRule"] == "python-import-graph-v0"
+                    && relation["extractionRule"] == "python-import-graph/v0.5.0"
             })
     );
     assert!(
@@ -2130,7 +2120,10 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
         .iter()
         .find(|layer| layer["layer"] == "static")
         .expect("static coverage exists");
-    assert_eq!(static_coverage["projectionRule"], "python-import-graph-v0");
+    assert_eq!(
+        static_coverage["projectionRule"],
+        "python-import-graph/v0.5.0"
+    );
     assert!(
         static_coverage["extractionScope"]
             .as_array()
@@ -2190,7 +2183,7 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
             .expect("feature report path is utf-8"),
     ]);
     let feature_json = read_json(&feature_report);
-    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(feature_json["schema"], "feature-extension-report/v0.5.0");
     assert_eq!(
         feature_json["schemaCompatibility"]["artifactId"],
         "feature-extension-report"
@@ -2364,7 +2357,7 @@ fn cli_traces_framework_adapter_fixture_to_air_and_feature_report() {
             .expect("artifacts are an array")
             .iter()
             .any(|artifact| artifact["kind"] == "framework_adapter"
-                && artifact["producedBy"] == "fastapi-route-adapter-fixture-v0")
+                && artifact["producedBy"] == "fastapi-route-adapter-fixture/v0.5.0")
     );
     assert!(
         json["evidence"]
@@ -2386,7 +2379,7 @@ fn cli_traces_framework_adapter_fixture_to_air_and_feature_report() {
                 relation["layer"] == "framework"
                     && relation["from"] == "app.web"
                     && relation["kind"] == "http_route_handler"
-                    && relation["extractionRule"] == "fastapi-route-adapter-fixture-v0"
+                    && relation["extractionRule"] == "fastapi-route-adapter-fixture/v0.5.0"
             })
     );
     let framework_coverage = json["coverage"]["layers"]
@@ -2397,7 +2390,7 @@ fn cli_traces_framework_adapter_fixture_to_air_and_feature_report() {
         .expect("framework coverage exists");
     assert_eq!(
         framework_coverage["projectionRule"],
-        "fastapi-route-adapter-fixture-v0"
+        "fastapi-route-adapter-fixture/v0.5.0"
     );
     assert_eq!(framework_coverage["measurementBoundary"], "measuredNonzero");
     assert!(
@@ -2501,7 +2494,7 @@ fn set_measured_runtime_axis(json: &mut Value, runtime_propagation: i64) {
     axis["value"] = serde_json::json!(runtime_propagation);
     axis["measured"] = serde_json::json!(true);
     axis["measurementBoundary"] = serde_json::json!(measurement_boundary);
-    axis["source"] = serde_json::json!("runtime-edge-projection-v0");
+    axis["source"] = serde_json::json!("runtime-edge-projection/v0.5.0");
     axis["reason"] = Value::Null;
 
     let layer = runtime_layer_mut(json);
@@ -2509,13 +2502,13 @@ fn set_measured_runtime_axis(json: &mut Value, runtime_propagation: i64) {
     layer["universeRefs"] = serde_json::json!(["artifact-sig0"]);
     layer["measuredAxes"] = serde_json::json!(["runtimePropagation"]);
     layer["unmeasuredAxes"] = serde_json::json!([]);
-    layer["projectionRule"] = serde_json::json!("runtime-edge-projection-v0");
+    layer["projectionRule"] = serde_json::json!("runtime-edge-projection/v0.5.0");
     layer["extractionScope"] = serde_json::json!([
         "runtime edge evidence JSON",
         "0/1 runtime dependency graph over measured component pairs"
     ]);
     layer["exactnessAssumptions"] = serde_json::json!([
-        "runtime-edge-projection-v0 maps each observed component pair to one runtime edge",
+        "runtime-edge-projection-schema050 maps each observed component pair to one runtime edge",
         "runtime evidence component ids resolve inside the AIR component universe"
     ]);
     layer["unsupportedConstructs"] = serde_json::json!([]);
@@ -2528,7 +2521,8 @@ fn set_measured_runtime_axis(json: &mut Value, runtime_propagation: i64) {
     claim["measurementBoundary"] = serde_json::json!(measurement_boundary);
     claim["evidenceRefs"] = serde_json::json!(["evidence-sig0"]);
     claim["coverageAssumptions"] = serde_json::json!(["runtime edge evidence coverage"]);
-    claim["exactnessAssumptions"] = serde_json::json!(["runtime-edge-projection-v0 exactness"]);
+    claim["exactnessAssumptions"] =
+        serde_json::json!(["runtime-edge-projection-schema050 exactness"]);
     claim["missingPreconditions"] = serde_json::json!([]);
     claim["nonConclusions"] = serde_json::json!([
         "runtime blast radius is not concluded",
@@ -2561,7 +2555,7 @@ fn add_runtime_relation(json: &mut Value) {
             "kind": "grpc",
             "lifecycle": "added",
             "protectedBy": "unknown",
-            "extractionRule": "runtime-edge-projection-v0",
+            "extractionRule": "runtime-edge-projection/v0.5.0",
             "evidenceRefs": ["evidence-runtime-coupon"]
         }));
     runtime_claim_mut(json)["evidenceRefs"] =
@@ -2616,7 +2610,7 @@ fn cli_feature_report_classifies_good_static_fixture_as_split() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(json["schema"], "feature-extension-report/v0.5.0");
     assert_eq!(json["architectureId"], "canonical-good-extension");
     assert_eq!(json["splitStatus"], "split");
     assert_eq!(json["reviewSummary"]["claimClassification"], "MEASURED");
@@ -2677,7 +2671,7 @@ fn cli_feature_report_surfaces_runtime_exposure_boundaries() {
     );
     assert_eq!(
         measured_zero["runtimeSummary"]["projectionRule"],
-        "runtime-edge-projection-v0"
+        "runtime-edge-projection/v0.5.0"
     );
     assert!(
         measured_zero["runtimeSummary"]["measuredAxes"]
@@ -2793,7 +2787,7 @@ fn cli_runtime_canonical_fixtures_lock_measurement_boundaries() {
     );
     assert_eq!(
         measured_zero["runtimeSummary"]["projectionRule"],
-        "runtime-edge-projection-v0"
+        "runtime-edge-projection/v0.5.0"
     );
     assert!(
         measured_zero["theoremPreconditionChecks"]
@@ -3337,10 +3331,7 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
     ]);
 
     let report = read_json(&report);
-    assert_eq!(
-        report["schemaVersion"],
-        "theorem-precondition-check-report-v0"
-    );
+    assert_eq!(report["schema"], "theorem-precondition-check-report/v0.5.0");
     assert_eq!(
         report["registry"]["scope"],
         "static, runtime, semantic, and synthesis theorem package registry v0"
@@ -3384,21 +3375,18 @@ fn cli_repair_registry_reports_static_rules_and_boundaries() {
 
     let report = read_json(&report);
     assert_eq!(
-        report["schemaVersion"],
-        "repair-rule-registry-validation-report-v0"
+        report["schema"],
+        "repair-rule-registry-validation-report/v0.5.0"
     );
     assert_eq!(report["summary"]["result"], "pass");
-    assert_eq!(
-        report["registry"]["schemaVersion"],
-        "repair-rule-registry-v0"
-    );
+    assert_eq!(report["registry"]["schema"], "repair-rule-registry/v0.5.0");
     assert!(
         report["registry"]["rules"]
             .as_array()
             .expect("repair rules are an array")
             .iter()
             .any(|rule| {
-                rule["repairRuleId"] == "repair-hidden-interaction-through-interface-v0"
+                rule["repairRuleId"] == "repair-hidden-interaction-through-interface/v0.5.0"
                     && rule["targetWitnessKind"] == "hidden_interaction"
                     && rule["relativeTo"]["selectedObstructionUniverse"]
                         == "selected obstruction witnesses in the current Feature Extension Report"
@@ -3420,7 +3408,7 @@ fn cli_repair_registry_rejects_invalid_success_boundary() {
     fs::write(
         &input,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schemaVersion": "repair-rule-registry-v0",
+            "schema": "repair-rule-registry/v0.5.0",
             "scope": "invalid fixture",
             "selectedObstructionUniverse": "",
             "explicitAssumptions": [],
@@ -3488,13 +3476,13 @@ fn cli_synthesis_constraints_reports_static_candidate_boundary() {
 
     let report = read_json(&report);
     assert_eq!(
-        report["schemaVersion"],
-        "synthesis-constraint-validation-report-v0"
+        report["schema"],
+        "synthesis-constraint-validation-report/v0.5.0"
     );
     assert_eq!(report["summary"]["result"], "pass");
     assert_eq!(
-        report["artifact"]["schemaVersion"],
-        "synthesis-constraint-artifact-v0"
+        report["artifact"]["schema"],
+        "synthesis-constraint-artifact/v0.5.0"
     );
     assert!(
         report["artifact"]["candidates"]
@@ -3502,13 +3490,13 @@ fn cli_synthesis_constraints_reports_static_candidate_boundary() {
             .expect("synthesis candidates are an array")
             .iter()
             .any(|candidate| {
-                candidate["candidateId"] == "candidate-split-coupon-interface-v0"
+                candidate["candidateId"] == "candidate-split-coupon-interface/v0.5.0"
                     && candidate["constraintRefs"]
                         .as_array()
                         .expect("constraint refs are an array")
                         .iter()
                         .any(|constraint_ref| {
-                            constraint_ref == "constraint-static-boundary-coupon-v0"
+                            constraint_ref == "constraint-static-boundary-coupon/v0.5.0"
                         })
                     && candidate["soundnessPackageRefs"]
                         .as_array()
@@ -3562,7 +3550,7 @@ fn cli_synthesis_constraints_reports_valid_no_solution_certificate_boundary() {
     );
     assert_eq!(
         report["artifact"]["noSolutionBoundary"]["noSolutionCertificateRef"],
-        "certificate-coupon-no-solution-v0"
+        "certificate-coupon-no-solution/v0.5.0"
     );
     assert!(
         report["artifact"]["noSolutionBoundary"]["nonConclusions"]
@@ -3582,7 +3570,7 @@ fn cli_synthesis_constraints_rejects_solver_completeness_confusion() {
     fs::write(
         &input,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schemaVersion": "synthesis-constraint-artifact-v0",
+            "schema": "synthesis-constraint-artifact/v0.5.0",
             "scope": "invalid fixture",
             "constraintRefs": ["missing-constraint"],
             "candidateRefs": ["missing-candidate"],
@@ -3705,11 +3693,11 @@ fn cli_no_solution_certificate_rejects_missing_certificate_claim() {
     fs::write(
         &input,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schemaVersion": "no-solution-certificate-v0",
+            "schema": "no-solution-certificate/v0.5.0",
             "certificateId": "certificate-invalid",
             "scope": "invalid fixture",
-            "constraintRefs": ["constraint-static-boundary-coupon-v0"],
-            "refutedCandidateRefs": ["candidate-direct-cache-access-v0"],
+            "constraintRefs": ["constraint-static-boundary-coupon/v0.5.0"],
+            "refutedCandidateRefs": ["candidate-direct-cache-access/v0.5.0"],
             "obstructionWitnessRefs": ["witness-hidden-cache-access"],
             "requiredAssumptions": ["candidate universe is finite"],
             "coverageAssumptions": ["cases cover recorded candidates"],
@@ -3719,8 +3707,8 @@ fn cli_no_solution_certificate_rejects_missing_certificate_claim() {
             "validCertificateClaimRef": null,
             "cases": [{
                 "caseId": "case-invalid",
-                "constraintRefs": ["constraint-static-boundary-coupon-v0"],
-                "refutedCandidateRef": "candidate-direct-cache-access-v0",
+                "constraintRefs": ["constraint-static-boundary-coupon/v0.5.0"],
+                "refutedCandidateRef": "candidate-direct-cache-access/v0.5.0",
                 "evidenceRefs": ["evidence-hidden-edge"],
                 "theoremPreconditionRefs": ["ValidNoSolutionCertificate"],
                 "reason": "candidate remains blocked"
@@ -3853,7 +3841,7 @@ fn cli_theorem_check_reports_no_solution_certificate_package_boundary() {
                         .as_array()
                         .expect("package refs are an array")
                         .iter()
-                        .any(|package_ref| package_ref == "no-solution-certificate-package-v0")
+                        .any(|package_ref| package_ref == "no-solution-certificate-package/v0.5.0")
                     && check["nonConclusions"]
                         .as_array()
                         .expect("non conclusions are an array")
@@ -3926,7 +3914,7 @@ fn cli_theorem_check_reports_semantic_package_boundary() {
             .expect("packages is array")
             .iter()
             .any(|package| {
-                package["packageId"] == "semantic-nonfillability-package-v0"
+                package["packageId"] == "semantic-nonfillability-package/v0.5.0"
                     && package["theoremRefs"]
                         .as_array()
                         .expect("theorem refs is array")
@@ -3943,7 +3931,7 @@ fn cli_theorem_check_reports_semantic_package_boundary() {
             .iter()
             .any(|package| {
                 let package_id_matches =
-                    package["packageId"] == "semantic-numerical-curvature-zero-package-v0";
+                    package["packageId"] == "semantic-numerical-curvature-zero-package/v0.5.0";
                 let theorem_ref_matches = package["theoremRefs"]
                     .as_array()
                     .expect("theorem refs is array")
@@ -3967,7 +3955,7 @@ fn cli_theorem_check_reports_semantic_package_boundary() {
                         .as_array()
                         .expect("applicable package refs is array")
                         .iter()
-                        .any(|package_ref| package_ref == "semantic-nonfillability-package-v0")
+                        .any(|package_ref| package_ref == "semantic-nonfillability-package/v0.5.0")
             )
     );
     assert!(
@@ -4012,7 +4000,7 @@ fn cli_theorem_check_reports_runtime_zero_bridge_boundary() {
             "runtimePropagation is computed over a measured 0/1 RuntimeDependencyGraph"
         ]),
         serde_json::json!(["runtime edge evidence coverage"]),
-        serde_json::json!(["runtime-edge-projection-v0 exactness"]),
+        serde_json::json!(["runtime-edge-projection-schema050 exactness"]),
         serde_json::json!([]),
     ));
     claims.push(runtime_zero_bridge_claim_json(
@@ -4042,7 +4030,7 @@ fn cli_theorem_check_reports_runtime_zero_bridge_boundary() {
             .as_array()
             .expect("packages is array")
             .iter()
-            .any(|package| package["packageId"] == "runtime-zero-bridge-package-v0"
+            .any(|package| package["packageId"] == "runtime-zero-bridge-package/v0.5.0"
                 && package["theoremRefs"]
                     .as_array()
                     .expect("theorem refs is array")
@@ -4066,7 +4054,7 @@ fn cli_theorem_check_reports_runtime_zero_bridge_boundary() {
             .any(
                 |check| check["claimId"] == "claim-runtime-zero-bridge-proved"
                     && check["resolvedClaimClassification"] == "FORMAL_PROVED"
-                    && check["projectionRule"] == "runtime-edge-projection-v0"
+                    && check["projectionRule"] == "runtime-edge-projection/v0.5.0"
             )
     );
     assert!(
@@ -4150,7 +4138,7 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         ]);
 
         let json = read_json(&report);
-        assert_eq!(json["schemaVersion"], "aat-air-validation-report-v0");
+        assert_eq!(json["schema"], "aat-air-validation-report/v0.5.0");
         assert_eq!(json["summary"]["result"], "pass");
         assert_eq!(json["summary"]["failedCheckCount"], 0);
     }
@@ -4623,8 +4611,8 @@ fn cli_validate_air_detects_incomplete_schema_compatibility_metadata() {
 
     json["schemaCompatibility"] = serde_json::json!({
         "artifactId": "air",
-        "schemaVersionName": "aat-air-v0",
-        "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+        "schemaName": "aat-air/v0.5.0",
+        "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
         "fieldMappings": [],
         "deprecatedFields": [],
         "requiredAssumptions": [],
@@ -4686,10 +4674,7 @@ fn cli_schema_compatibility_accepts_backward_compatible_sig0_fixture() {
     ]);
 
     let report = read_json(&report);
-    assert_eq!(
-        report["schemaVersion"],
-        "schema-compatibility-check-report-v0"
-    );
+    assert_eq!(report["schema"], "schema-compatibility-check-report/v0.5.0");
     assert_eq!(report["summary"]["result"], "pass");
     assert_eq!(report["after"]["artifactId"], "signature-artifact");
     assert_eq!(
@@ -4933,10 +4918,13 @@ fn cli_reported_axes_catalog_locks_benchmark_and_axis_boundaries() {
     ]);
     let json = read_json(&generated);
     assert_eq!(
-        json["schemaVersion"],
-        "detectable-values-reported-axes-catalog-v0"
+        json["schema"],
+        "detectable-values-reported-axes-catalog/v0.5.0"
     );
-    assert_eq!(json["benchmarkSuiteVersion"], "archsig-benchmark-suite-v0");
+    assert_eq!(
+        json["benchmarkSuiteVersion"],
+        "archsig-benchmark-suite/v0.5.0"
+    );
     assert!(
         json["frozenFixtures"]
             .as_array()
@@ -5189,7 +5177,7 @@ fn cli_extracts_policy_runtime_fixture_contract() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "archsig-sig0-v0");
+    assert_eq!(json["schema"], "archsig-sig0/v0.5.0");
     assert_eq!(json["policies"]["policyId"], "minimal-measured-zero");
     assert_eq!(
         json["metricStatus"]["boundaryViolationCount"]["measured"],
@@ -5198,7 +5186,7 @@ fn cli_extracts_policy_runtime_fixture_contract() {
     assert_eq!(json["metricStatus"]["runtimePropagation"]["measured"], true);
     assert_eq!(
         json["runtimeDependencyGraph"]["projectionRule"],
-        "runtime-edge-projection-v0"
+        "runtime-edge-projection/v0.5.0"
     );
     assert_eq!(
         json["runtimeEdgeEvidence"][0]["evidenceLocation"]["path"],
@@ -5225,8 +5213,8 @@ fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
     ]);
     let validation_json = read_json(&validation);
     assert_eq!(
-        validation_json["schemaVersion"],
-        "architecture-policy-validation-report-v0"
+        validation_json["schema"],
+        "architecture-policy-validation-report/v0.5.0"
     );
     assert_eq!(validation_json["summary"]["result"], "pass");
     assert!(
@@ -5264,8 +5252,8 @@ fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
     ]);
     let sig0_json = read_json(&sig0);
     assert_eq!(
-        sig0_json["policies"]["schemaVersion"],
-        "architecture-policy-v0"
+        sig0_json["policies"]["schema"],
+        "architecture-policy/v0.5.0"
     );
     assert_eq!(
         sig0_json["metricStatus"]["boundaryViolationCount"]["measured"],
@@ -5296,7 +5284,7 @@ fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
         report.to_str().expect("report path is utf-8"),
     ]);
     let report_json = read_json(&report);
-    assert_eq!(report_json["schemaVersion"], "law-violation-report-v0");
+    assert_eq!(report_json["schema"], "law-violation-report/v0.5.0");
     assert_eq!(report_json["summary"]["deterministicViolationCount"], 1);
     assert!(
         report_json["nonConclusions"]
@@ -5323,8 +5311,8 @@ fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
     ]);
     let python_json = read_json(&python_sig0);
     assert_eq!(
-        python_json["policies"]["schemaVersion"],
-        "architecture-policy-v0"
+        python_json["policies"]["schema"],
+        "architecture-policy/v0.5.0"
     );
     assert_eq!(
         python_json["metricStatus"]["boundaryViolationCount"]["measured"], false,
@@ -5375,7 +5363,7 @@ fn cli_dataset_fixture_keeps_unmeasured_deltas_null() {
     ]);
 
     let json = read_json(&dataset);
-    assert_eq!(json["schemaVersion"], "empirical-signature-dataset-v0");
+    assert_eq!(json["schema"], "empirical-signature-dataset/v0.5.0");
     assert_eq!(
         json["deltaSignatureSigned"]["boundaryViolationCount"],
         Value::Null
@@ -5484,7 +5472,7 @@ fn cli_pr_history_dataset_generates_record_from_github_json() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "pr-history-dataset-v0");
+    assert_eq!(json["schema"], "pr-history-dataset/v0.5.0");
     assert_eq!(json["repository"]["owner"], "example");
     assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
     assert_eq!(
@@ -5506,8 +5494,8 @@ fn cli_pr_history_dataset_generates_record_from_github_json() {
         "base"
     );
     assert_eq!(
-        json["records"][0]["artifactRefs"]["featureExtensionReports"][0]["schemaVersion"],
-        "feature-extension-report-v0"
+        json["records"][0]["artifactRefs"]["featureExtensionReports"][0]["schema"],
+        "feature-extension-report/v0.5.0"
     );
     assert!(
         json["analysisMetadata"]["nonConclusions"]
@@ -5584,7 +5572,7 @@ fn cli_feature_extension_dataset_joins_pr_history_and_feature_report() {
     ]);
 
     let json = read_json(&dataset);
-    assert_eq!(json["schemaVersion"], "feature-extension-dataset-v0");
+    assert_eq!(json["schema"], "feature-extension-dataset/v0.5.0");
     assert_eq!(json["repository"]["owner"], "example");
     assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
     assert_eq!(json["records"][0]["splitStatus"], "split");
@@ -5719,7 +5707,7 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
     fs::write(
         &outcome_input,
         serde_json::to_string_pretty(&serde_json::json!({
-            "schemaVersion": "outcome-linkage-input-v0",
+            "schema": "outcome-linkage-input/v0.5.0",
             "repository": {
                 "owner": "example",
                 "name": "service",
@@ -5816,7 +5804,7 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
                     "artifactRefs": [{
                         "kind": "outcomeObservation",
                         "path": "outcomes/pr-42.json",
-                        "schemaVersion": "outcome-linkage-input-v0"
+                        "schema": "outcome-linkage-input/v0.5.0"
                     }],
                     "missingOrPrivateData": ["incident timeline redacted"],
                     "nonConclusions": ["private incident data is not absence of incident evidence"]
@@ -5853,7 +5841,7 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
     ]);
 
     let json = read_json(&outcome_dataset);
-    assert_eq!(json["schemaVersion"], "outcome-linkage-dataset-v0");
+    assert_eq!(json["schema"], "outcome-linkage-dataset/v0.5.0");
     assert_eq!(json["repository"]["owner"], "example");
     assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
     assert_eq!(
@@ -5914,7 +5902,7 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
     ]);
 
     let ledger = read_json(&daily_ledger);
-    assert_eq!(ledger["schemaVersion"], "report-outcome-daily-ledger-v0");
+    assert_eq!(ledger["schema"], "report-outcome-daily-ledger/v0.5.0");
     assert!(
         ledger["sourceReportRefs"]
             .as_array()
@@ -5975,7 +5963,7 @@ fn cli_calibration_review_record_fixture_preserves_review_boundaries() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "calibration-review-record-v0");
+    assert_eq!(json["schema"], "calibration-review-record/v0.5.0");
     assert_eq!(json["reviewerDecision"]["decision"], "falsePositive");
     assert!(
         json["reportFindingRefs"]
@@ -6032,7 +6020,7 @@ fn cli_team_threshold_policy_fixture_preserves_policy_boundaries() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "team-threshold-policy-v0");
+    assert_eq!(json["schema"], "team-threshold-policy/v0.5.0");
     assert_eq!(json["teamRef"], "team:checkout-platform");
     assert!(
         json["axisThresholds"]
@@ -6087,7 +6075,7 @@ fn cli_ownership_boundary_monitor_fixture_preserves_boundary_evidence() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "ownership-boundary-monitor-v0");
+    assert_eq!(json["schema"], "ownership-boundary-monitor/v0.5.0");
     assert_eq!(json["teamRef"], "team:checkout-platform");
     assert!(
         json["ownershipScopes"]
@@ -6144,7 +6132,7 @@ fn cli_repair_adoption_record_fixture_preserves_adoption_boundaries() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "repair-adoption-record-v0");
+    assert_eq!(json["schema"], "repair-adoption-record/v0.5.0");
     assert_eq!(json["adoptionDecision"]["decision"], "deferred");
     assert!(
         json["suggestionRefs"]
@@ -6206,7 +6194,7 @@ fn cli_incident_correlation_monitor_fixture_preserves_correlation_boundaries() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "incident-correlation-monitor-v0");
+    assert_eq!(json["schema"], "incident-correlation-monitor/v0.5.0");
     assert_eq!(json["teamRef"], "team:checkout-platform");
     assert_eq!(json["correlationWindow"]["windowKind"], "monthly");
     assert!(
@@ -6260,7 +6248,7 @@ fn cli_hypothesis_refresh_cycle_fixture_preserves_refresh_boundaries() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "hypothesis-refresh-cycle-v0");
+    assert_eq!(json["schema"], "hypothesis-refresh-cycle/v0.5.0");
     assert_eq!(json["refreshDecision"]["decision"], "reviseAndRetain");
     assert!(
         json["versionedHypothesisRefs"]
@@ -6319,11 +6307,11 @@ fn cli_relation_complexity_fixture_outputs_observation() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "relation-complexity-observation/v0");
+    assert_eq!(json["schema"], "relation-complexity-observation/v0.5.0");
     assert_eq!(json["relationComplexity"], 3);
     assert_eq!(
         json["measurementUniverse"]["ruleSetVersion"],
-        "relation-complexity-rules/v0"
+        "relation-complexity-rules/v0.5.0"
     );
 }
 
@@ -6376,7 +6364,7 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
     ]);
 
     let json = read_json(&air);
-    assert_eq!(json["schemaVersion"], "aat-air-v0");
+    assert_eq!(json["schema"], "aat-air/v0.5.0");
     assert_eq!(json["feature"]["featureId"], "#42");
     assert_eq!(json["revision"]["before"], "base-sha");
     assert_eq!(json["revision"]["after"], "head-sha");
@@ -6395,7 +6383,7 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
             .any(|relation| {
                 relation["layer"] == "runtime"
                     && relation["kind"] == "grpc"
-                    && relation["extractionRule"] == "runtime-edge-projection-v0"
+                    && relation["extractionRule"] == "runtime-edge-projection/v0.5.0"
                     && !relation["evidenceRefs"]
                         .as_array()
                         .expect("evidenceRefs is array")
@@ -6410,7 +6398,7 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
         .expect("runtime coverage layer");
     assert_eq!(
         runtime_coverage["projectionRule"],
-        "runtime-edge-projection-v0"
+        "runtime-edge-projection/v0.5.0"
     );
     assert_eq!(runtime_coverage["measurementBoundary"], "measuredNonzero");
     assert!(
@@ -6728,7 +6716,7 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "signature-diff-report-v0");
+    assert_eq!(json["schema"], "signature-diff-report/v0.5.0");
     assert_eq!(json["comparisonStatus"]["primaryDiffEligible"], true);
     assert!(
         json["worsenedAxes"]
@@ -6877,8 +6865,8 @@ fn cli_organization_policy_validates_static_policy_and_input_fixture() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "organization-policy-validation-report-v0"
+        json["schema"],
+        "organization-policy-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(json["summary"]["requiredAxisCount"].as_u64().unwrap() >= 3);
@@ -6929,8 +6917,8 @@ fn cli_law_policy_templates_validate_fixture_and_non_conclusion_boundary() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "law-policy-template-registry-validation-report-v0"
+        json["schema"],
+        "law-policy-template-registry-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(json["summary"]["templateCount"].as_u64().unwrap() >= 3);
@@ -6940,7 +6928,7 @@ fn cli_law_policy_templates_validate_fixture_and_non_conclusion_boundary() {
             .expect("templates is array")
             .iter()
             .any(|template| {
-                template["templateId"] == "python-boundary-allowlist-template-v0"
+                template["templateId"] == "python-boundary-allowlist-template/v0.5.0"
                     && template["targetComponentKind"] == "python-module"
                     && template["lawPolicyFamily"] == "boundary"
             })
@@ -6964,7 +6952,7 @@ fn cli_law_policy_templates_validate_fixture_and_non_conclusion_boundary() {
             .expect("templates is array")
             .iter()
             .any(|template| {
-                template["templateId"] == "fixture-service-runtime-template-v0"
+                template["templateId"] == "fixture-service-runtime-template/v0.5.0"
                     && template["selectorSemantics"] == "adapter-provided"
                     && template["nonConclusions"]
                         .as_array()
@@ -7036,8 +7024,8 @@ fn cli_custom_rule_plugins_validate_fixture_and_formal_promotion_boundary() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "custom-rule-plugin-registry-validation-report-v0"
+        json["schema"],
+        "custom-rule-plugin-registry-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(json["summary"]["pluginCount"].as_u64().unwrap() >= 2);
@@ -7047,13 +7035,13 @@ fn cli_custom_rule_plugins_validate_fixture_and_formal_promotion_boundary() {
             .expect("plugins is array")
             .iter()
             .any(|plugin| {
-                plugin["pluginId"] == "runtime-hot-path-annotation-plugin-v0"
+                plugin["pluginId"] == "runtime-hot-path-annotation-plugin/v0.5.0"
                     && plugin["formalClaimPromotion"] == "requires-theorem-precondition-check"
                     && plugin["theoremPreconditionRefs"]
                         .as_array()
                         .expect("theorem refs are an array")
                         .iter()
-                        .any(|reference| reference == "runtime-zero-bridge-theorem-package-v0")
+                        .any(|reference| reference == "runtime-zero-bridge-theorem-package/v0.5.0")
             })
     );
     assert!(
@@ -7075,7 +7063,7 @@ fn cli_custom_rule_plugins_validate_fixture_and_formal_promotion_boundary() {
             .expect("plugins is array")
             .iter()
             .any(|plugin| {
-                plugin["pluginId"] == "fixture-semantic-workflow-plugin-v0"
+                plugin["pluginId"] == "fixture-semantic-workflow-plugin/v0.5.0"
                     && plugin["permittedClaimLevels"]
                         .as_array()
                         .expect("claim levels are array")
@@ -7153,8 +7141,8 @@ fn cli_measurement_units_validate_fixture_and_boundary_refs() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "measurement-unit-registry-validation-report-v0"
+        json["schema"],
+        "measurement-unit-registry-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(json["summary"]["unitCount"].as_u64().unwrap() >= 3);
@@ -7188,7 +7176,7 @@ fn cli_measurement_units_validate_fixture_and_boundary_refs() {
             .expect("evidenceAdapters is array")
             .iter()
             .any(|adapter| {
-                adapter["adapterId"] == "fixture-semantic-workflow-measurement-unit-adapter-v0"
+                adapter["adapterId"] == "fixture-semantic-workflow-measurement-unit-adapter/v0.5.0"
                     && adapter["measurementUnitRefs"]
                         .as_array()
                         .expect("unit refs are array")
@@ -7273,8 +7261,8 @@ fn cli_dynamics_measurements_validate_common_contract() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "dynamics-measurement-contract-validation-report-v0"
+        json["schema"],
+        "dynamics-measurement-contract-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
@@ -7416,10 +7404,7 @@ fn cli_pr_force_report_fixture_and_validator_preserve_boundaries() {
     ]);
 
     let json = read_json(&static_report);
-    assert_eq!(
-        json["schemaVersion"],
-        "pr-force-report-validation-report-v0"
-    );
+    assert_eq!(json["schema"], "pr-force-report-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
         json["report"]["observedForce"]
@@ -7450,7 +7435,7 @@ fn cli_pr_force_report_fixture_and_validator_preserve_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "pr-force-report-v0");
+    assert_eq!(artifact["schema"], "pr-force-report/v0.5.0");
     assert!(
         artifact["forceDecomposition"]["components"]
             .as_array()
@@ -7557,8 +7542,8 @@ fn cli_signature_trajectory_report_fixture_and_validator_preserve_boundaries() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "signature-trajectory-report-validation-report-v0"
+        json["schema"],
+        "signature-trajectory-report-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
@@ -7599,7 +7584,7 @@ fn cli_signature_trajectory_report_fixture_and_validator_preserve_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "signature-trajectory-report-v0");
+    assert_eq!(artifact["schema"], "signature-trajectory-report/v0.5.0");
     assert!(
         artifact["selectedRegions"]
             .as_array()
@@ -7633,8 +7618,8 @@ fn cli_signature_trajectory_report_fixture_and_validator_preserve_boundaries() {
     assert_eq!(json["summary"]["result"], "pass");
 
     let mut invalid_json = read_json(&root.join("signature_trajectory_report.json"));
-    invalid_json["trajectoryPoints"][1]["measurementBoundary"]["schemaVersion"] =
-        serde_json::json!("signature-trajectory-report-v1");
+    invalid_json["trajectoryPoints"][1]["measurementBoundary"]["schema"] =
+        serde_json::json!("signature-trajectory-report/legacy-test");
     invalid_json["driftSignals"][1]["status"] = serde_json::json!("unmeasured");
     invalid_json["measurementBoundary"]["missingEvidence"] = serde_json::json!([]);
     invalid_json["selectedRegions"][3]["nonConclusions"] = serde_json::json!([]);
@@ -7724,8 +7709,8 @@ fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() 
 
     let json = read_json(&field_static_validation);
     assert_eq!(
-        json["schemaVersion"],
-        "architecture-field-snapshot-validation-report-v0"
+        json["schema"],
+        "architecture-field-snapshot-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
@@ -7753,7 +7738,7 @@ fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() 
         }));
 
     let artifact = read_json(&field_fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "architecture-field-snapshot-v0");
+    assert_eq!(artifact["schema"], "architecture-field-snapshot/v0.5.0");
     assert_eq!(
         read_json(&field_fixture_validation)["summary"]["result"],
         "pass"
@@ -7815,8 +7800,8 @@ fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() 
 
     let json = read_json(&proposal_static_validation);
     assert_eq!(
-        json["schemaVersion"],
-        "operation-proposal-log-validation-report-v0"
+        json["schema"],
+        "operation-proposal-log-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
@@ -7840,7 +7825,7 @@ fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() 
         }));
 
     let artifact = read_json(&proposal_fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "operation-proposal-log-v0");
+    assert_eq!(artifact["schema"], "operation-proposal-log/v0.5.0");
     assert_eq!(
         read_json(&proposal_fixture_validation)["summary"]["result"],
         "pass"
@@ -7901,9 +7886,9 @@ fn cli_ai_proposal_governance_projects_and_validates_boundaries() {
         "--descriptor",
         descriptor.to_str().expect("descriptor path is utf-8"),
         "--operation-support-id",
-        "fixture-operation-support-estimate-v0",
+        "fixture-operation-support-estimate/v0.5.0",
         "--consequence-envelope-id",
-        "fixture-consequence-envelope-report-v0",
+        "fixture-consequence-envelope-report/v0.5.0",
         "--out",
         governance_from_descriptor
             .to_str()
@@ -7930,10 +7915,10 @@ fn cli_ai_proposal_governance_projects_and_validates_boundaries() {
     ]);
 
     let json = read_json(&governance_from_descriptor);
-    assert_eq!(json["schemaVersion"], "ai-proposal-governance-v0");
+    assert_eq!(json["schema"], "ai-proposal-governance/v0.5.0");
     assert_eq!(
         json["proposalRef"]["operationSupportEstimateId"],
-        "fixture-operation-support-estimate-v0"
+        "fixture-operation-support-estimate/v0.5.0"
     );
     assert!(
         json["supportAssessments"]
@@ -8042,8 +8027,8 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "architecture-dynamics-metrics-report-validation-report-v0"
+        json["schema"],
+        "architecture-dynamics-metrics-report-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert!(
@@ -8289,8 +8274,8 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
 
     let artifact = read_json(&fixture_artifact);
     assert_eq!(
-        artifact["schemaVersion"],
-        "architecture-dynamics-metrics-report-v0"
+        artifact["schema"],
+        "architecture-dynamics-metrics-report/v0.5.0"
     );
     assert!(
         artifact["gapMetrics"]
@@ -8686,7 +8671,7 @@ fn cli_policy_decision_reports_fail_and_pass_boundaries() {
         "unmeasured required runtime axis should fail policy decision"
     );
     let json = read_json(&unmeasured_policy_decision);
-    assert_eq!(json["schemaVersion"], "policy-decision-report-v0");
+    assert_eq!(json["schema"], "policy-decision-report/v0.5.0");
     assert_eq!(json["summary"]["decision"], "fail");
     assert!(
         json["requiredAxisDecisions"]
@@ -8714,7 +8699,7 @@ fn cli_policy_decision_reports_fail_and_pass_boundaries() {
                 "runtimePropagation is computed over a measured 0/1 RuntimeDependencyGraph"
             ]),
             serde_json::json!(["runtime edge evidence coverage"]),
-            serde_json::json!(["runtime-edge-projection-v0 exactness"]),
+            serde_json::json!(["runtime-edge-projection-schema050 exactness"]),
             serde_json::json!([]),
         ));
     let measured_zero_air = out_dir.join("runtime-measured-zero.air.json");
@@ -8809,7 +8794,7 @@ fn cli_pr_comment_renders_levelled_markdown_summary() {
     ]);
 
     let markdown = fs::read_to_string(&pr_comment).expect("PR comment markdown is readable");
-    assert!(markdown.contains("<!-- schemaVersion: pr-comment-summary-v0 -->"));
+    assert!(markdown.contains("<!-- schema: pr-comment-summary/v0.5.0 -->"));
     assert!(markdown.contains("### Level 1 Review Summary"));
     assert!(markdown.contains("<summary>Level 2 Evidence Detail</summary>"));
     assert!(markdown.contains("<summary>Level 3 Formal Detail</summary>"));
@@ -8842,8 +8827,8 @@ fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
 
     let json = read_json(&static_report);
     assert_eq!(
-        json["schemaVersion"],
-        "report-artifact-retention-validation-report-v0"
+        json["schema"],
+        "report-artifact-retention-validation-report/v0.5.0"
     );
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["artifactCount"], 4);
@@ -8994,8 +8979,8 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
 
     let static_json = read_json(&static_validation);
     assert_eq!(
-        static_json["schemaVersion"],
-        "artifact-descriptor-validation-report-v0"
+        static_json["schema"],
+        "artifact-descriptor-validation-report/v0.5.0"
     );
     assert_eq!(static_json["summary"]["result"], "pass");
     assert_eq!(static_json["summary"]["actionClassCandidateCount"], 3);
@@ -9010,7 +8995,7 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(artifact["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(artifact["artifactKind"], "issue");
     assert!(
         artifact["actionClassCandidates"]
@@ -9043,7 +9028,7 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     );
 
     let generated = read_json(&generated_descriptor);
-    assert_eq!(generated["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(generated["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(generated["artifactKind"], "prd");
     assert_eq!(
         generated["artifactTitle"],
@@ -9093,7 +9078,7 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     );
 
     let github_issue = read_json(&github_issue_descriptor);
-    assert_eq!(github_issue["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(github_issue["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(github_issue["artifactKind"], "issue");
     assert_eq!(
         github_issue["sourceRefs"][0]["sourceKind"],
@@ -9110,7 +9095,7 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     assert_eq!(github_issue_report["summary"]["result"], "pass");
 
     let ai_proposal = read_json(&ai_proposal_descriptor);
-    assert_eq!(ai_proposal["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(ai_proposal["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(ai_proposal["artifactKind"], "ai-proposal");
     assert_eq!(
         ai_proposal["sourceRefs"][0]["sourceKind"],
@@ -9237,8 +9222,8 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
 
     let static_json = read_json(&static_validation);
     assert_eq!(
-        static_json["schemaVersion"],
-        "operation-support-estimate-validation-report-v0"
+        static_json["schema"],
+        "operation-support-estimate-validation-report/v0.5.0"
     );
     assert_eq!(static_json["summary"]["result"], "pass");
     assert_eq!(static_json["summary"]["candidateOperationFamilyCount"], 2);
@@ -9253,10 +9238,10 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(artifact["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(
         artifact["descriptorRef"]["descriptorSchemaVersion"],
-        "artifact-descriptor-v0"
+        "artifact-descriptor/v0.5.0"
     );
     assert!(
         artifact["candidateOperationFamilies"]
@@ -9293,7 +9278,7 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
     );
 
     let generated = read_json(&generated_estimate);
-    assert_eq!(generated["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(generated["schema"], "operation-support-estimate/v0.5.0");
     assert_eq!(generated["descriptorRef"]["artifactKind"], "prd");
     assert!(
         generated["descriptorRef"]["sourceRefIds"]
@@ -9476,8 +9461,8 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
 
     let static_json = read_json(&static_validation);
     assert_eq!(
-        static_json["schemaVersion"],
-        "forecast-cone-skeleton-validation-report-v0"
+        static_json["schema"],
+        "forecast-cone-skeleton-validation-report/v0.5.0"
     );
     assert_eq!(static_json["summary"]["result"], "pass");
     assert_eq!(static_json["summary"]["pathClassCandidateCount"], 2);
@@ -9490,10 +9475,10 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(artifact["schema"], "forecast-cone-skeleton/v0.5.0");
     assert_eq!(
         artifact["operationSupportRef"]["estimateSchemaVersion"],
-        "operation-support-estimate-v0"
+        "operation-support-estimate/v0.5.0"
     );
     assert!(
         artifact["forecastBoundary"]["unsupportedConstructs"]
@@ -9517,10 +9502,10 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
     );
 
     let generated = read_json(&generated_cone);
-    assert_eq!(generated["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(generated["schema"], "forecast-cone-skeleton/v0.5.0");
     assert_eq!(
         generated["operationSupportRef"]["estimateSchemaVersion"],
-        "operation-support-estimate-v0"
+        "operation-support-estimate/v0.5.0"
     );
     assert_eq!(generated["boundedHorizon"]["maxSteps"], 4);
     assert!(
@@ -9712,8 +9697,8 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
 
     let static_json = read_json(&static_validation);
     assert_eq!(
-        static_json["schemaVersion"],
-        "consequence-envelope-report-validation-report-v0"
+        static_json["schema"],
+        "consequence-envelope-report-validation-report/v0.5.0"
     );
     assert_eq!(static_json["summary"]["result"], "pass");
     assert_eq!(static_json["summary"]["affectedRegionCount"], 2);
@@ -9726,7 +9711,7 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "consequence-envelope-report-v0");
+    assert_eq!(artifact["schema"], "consequence-envelope-report/v0.5.0");
     assert!(
         artifact["summaryProjection"]["reviewerNotes"]
             .as_array()
@@ -9749,10 +9734,10 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
     );
 
     let generated = read_json(&generated_envelope);
-    assert_eq!(generated["schemaVersion"], "consequence-envelope-report-v0");
+    assert_eq!(generated["schema"], "consequence-envelope-report/v0.5.0");
     assert_eq!(
         generated["forecastConeRef"]["forecastConeSchemaVersion"],
-        "forecast-cone-skeleton-v0"
+        "forecast-cone-skeleton/v0.5.0"
     );
     assert!(
         generated["forecastConeRef"]["sourceRefIds"]
@@ -9887,8 +9872,8 @@ fn cli_sft_review_summary_projects_reviewer_judgement_contract() {
 
     let validation_json = read_json(&validation);
     assert_eq!(
-        validation_json["schemaVersion"],
-        "sft-review-summary-validation-report-v0"
+        validation_json["schema"],
+        "sft-review-summary-validation-report/v0.5.0"
     );
     assert_eq!(validation_json["validationSummary"]["result"], "pass");
     assert!(
@@ -9903,7 +9888,7 @@ fn cli_sft_review_summary_projects_reviewer_judgement_contract() {
     );
 
     let generated = read_json(&generated_summary);
-    assert_eq!(generated["schemaVersion"], "sft-review-summary-v0");
+    assert_eq!(generated["schema"], "sft-review-summary/v0.5.0");
     assert!(
         generated["openedFutures"]
             .as_array()
@@ -9993,7 +9978,7 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     }
 
     let descriptor_json = read_json(&descriptor);
-    assert_eq!(descriptor_json["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(descriptor_json["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(descriptor_json["artifactKind"], "prd");
     assert_eq!(
         descriptor_json["artifactTitle"],
@@ -10021,10 +10006,7 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     );
 
     let estimate_json = read_json(&estimate);
-    assert_eq!(
-        estimate_json["schemaVersion"],
-        "operation-support-estimate-v0"
-    );
+    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
     assert!(
         estimate_json["descriptorRef"]["sourceRefIds"]
             .as_array()
@@ -10047,7 +10029,7 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     assert_eq!(read_json(&estimate_validation)["summary"]["result"], "pass");
 
     let cone_json = read_json(&cone);
-    assert_eq!(cone_json["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(cone_json["schema"], "forecast-cone-skeleton/v0.5.0");
     assert_eq!(cone_json["boundedHorizon"]["maxSteps"], 4);
     assert!(
         cone_json["operationSupportRef"]["sourceRefIds"]
@@ -10074,14 +10056,11 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
 
     let envelope_json = read_json(&envelope);
     assert_eq!(
-        envelope_json["schemaVersion"],
-        "consequence-envelope-report-v0"
+        envelope_json["schema"],
+        "consequence-envelope-report/v0.5.0"
     );
     let review_summary_json = read_json(&review_summary);
-    assert_eq!(
-        review_summary_json["schemaVersion"],
-        "sft-review-summary-v0"
-    );
+    assert_eq!(review_summary_json["schema"], "sft-review-summary/v0.5.0");
     assert!(
         review_summary_json["boundaryFailures"]
             .as_array()
@@ -10147,7 +10126,7 @@ fn cli_sft_forecast_accepts_json_adapters_and_retains_source_boundaries() {
     assert!(envelope.exists(), "expected consequence envelope output");
 
     let descriptor_json = read_json(&descriptor);
-    assert_eq!(descriptor_json["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(descriptor_json["schema"], "artifact-descriptor/v0.5.0");
     assert_eq!(descriptor_json["artifactKind"], "issue");
     assert_eq!(
         descriptor_json["sourceRefs"][0]["sourceKind"],
@@ -10201,8 +10180,8 @@ fn cli_forecast_calibration_hook_emits_fixture_and_validates_boundaries() {
 
     let static_json = read_json(&static_validation);
     assert_eq!(
-        static_json["schemaVersion"],
-        "forecast-calibration-hook-validation-report-v0"
+        static_json["schema"],
+        "forecast-calibration-hook-validation-report/v0.5.0"
     );
     assert_eq!(static_json["summary"]["result"], "pass");
     assert_eq!(static_json["summary"]["matchCount"], 2);
@@ -10215,13 +10194,13 @@ fn cli_forecast_calibration_hook_emits_fixture_and_validates_boundaries() {
     );
 
     let artifact = read_json(&fixture_artifact);
-    assert_eq!(artifact["schemaVersion"], "forecast-calibration-hook-v0");
+    assert_eq!(artifact["schema"], "forecast-calibration-hook/v0.5.0");
     assert!(
         artifact["referenceBoundaries"]["b10Refs"]
             .as_array()
             .expect("b10Refs is array")
             .iter()
-            .any(|reference| reference == "report-outcome-daily-ledger-v0")
+            .any(|reference| reference == "report-outcome-daily-ledger/v0.5.0")
     );
     assert!(
         artifact["matches"]
@@ -10388,7 +10367,7 @@ fn cli_baseline_suppression_reports_deltas_without_resolving_suppressed_witnesse
     ]);
 
     let json = read_json(&baseline_suppression);
-    assert_eq!(json["schemaVersion"], "baseline-suppression-report-v0");
+    assert_eq!(json["schema"], "baseline-suppression-report/v0.5.0");
     assert_eq!(json["summary"]["suppressedCount"], 1);
     assert_eq!(json["summary"]["newlyIntroducedWitnessCount"], 1);
     assert!(

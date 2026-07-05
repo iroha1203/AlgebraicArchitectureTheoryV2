@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "law-policy-template-registry-v0",
+  "schema": "law-policy-template-registry/v0.5.0",
   "registryId": "fixture-b8-law-policy-template-registry",
   "scope": "canonical B8 law policy template fixture",
   "templates": [
     {
-      "templateId": "fixture-python-boundary-template-v0",
+      "templateId": "fixture-python-boundary-template/v0.5.0",
       "targetComponentKind": "python-module",
       "lawPolicyFamily": "boundary",
       "selectorSemantics": "exact-or-prefix-star",
@@ -20,8 +20,8 @@
         "boundaryViolationCount"
       ],
       "policyOutputArtifacts": [
-        "signature-policy-v0",
-        "feature-extension-report-v0"
+        "signature-policy/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "theoremBridgePreconditions": [
         "policy selector coverage is explicit claim-side data",
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "templateId": "fixture-service-runtime-template-v0",
+      "templateId": "fixture-service-runtime-template/v0.5.0",
       "targetComponentKind": "service",
       "lawPolicyFamily": "runtime-protection",
       "selectorSemantics": "adapter-provided",
@@ -52,8 +52,8 @@
         "runtimePropagation"
       ],
       "policyOutputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "theoremBridgePreconditions": [
         "runtime zero bridge theorem preconditions are explicit claim-side data",

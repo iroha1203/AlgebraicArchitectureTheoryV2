@@ -1,9 +1,9 @@
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "bad-pack",
   "policies": [
     {
-      "pack": "freeform@1",
+      "pack": "freeform",
       "basis": ["policy-basis:solid"],
       "scope": ["src.app"],
       "severity": "error"

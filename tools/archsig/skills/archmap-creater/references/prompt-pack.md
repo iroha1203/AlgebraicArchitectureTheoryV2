@@ -4,7 +4,7 @@ Use this prompt when asking an LLM or sub-agent to author candidate ArchMap v2
 evidence.
 
 ```text
-Create candidate evidence for an archmap/v2 JSON artifact from the selected repository evidence.
+Create candidate evidence for an archmap/v0.5.0 JSON artifact from the selected repository evidence.
 
 Read only the supplied files, docs, tests, traces, and user-approved context.
 Record read evidence in sources. Write primitive architectural facts in atoms.
@@ -27,7 +27,7 @@ write dictionary glosses, vibes, or lawfulness conclusions.
 Do not output v0 fields: atomObservations, moleculeObservations,
 semanticObservations, projectionInfo, operationSquareEvidence, concernHints,
 observationGaps, confidence, uncertainty, or defensive nonConclusions.
-Do not output v1 molecules for archmap/v2.
+Do not output v1 molecules for archmap/v0.5.0.
 
 Do not write law violations, obstruction circuits, distance scores, risk
 claims, projection hints, proof objects, or global architecture truth.

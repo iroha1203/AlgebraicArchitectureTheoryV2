@@ -6,8 +6,8 @@ in-memory infrastructure adapters, policy evaluation, telemetry, and an
 executable demo scenario.
 
 ArchSig itself is not modified by this example. The demo supplies source code,
-an `archmap/v2` observation artifact, and a `law-policy/v1` selector, then runs
-the existing `archsig analyze` workflow.
+an `archmap/v0.5.0` observation artifact, and a `law-policy/v0.5.0` selector,
+then runs the existing `archsig analyze` workflow.
 
 ## What This Demonstrates
 
@@ -19,11 +19,11 @@ the existing `archsig analyze` workflow.
 - ArchMap atoms are source-grounded observations only. They do not pre-label
   mismatch, obstruction, violation, safety, or lawfulness; those readings belong
   to LawPolicy-selected evaluators and generated ArchSig artifacts.
-- A latest-shape `archmap/v2` finite poset site with contexts and a selected
+- A latest-shape `archmap/v0.5.0` finite poset site with contexts and a selected
   cover.
-- A `law-policy/v1` policy that selects SOLID/layering rules and an AG
-  measurement profile for `archsig-measurement-packet/v1`.
-- Rich viewer output through `archsig-atom-viewer-data-v2`: 60 atom nodes,
+- A `law-policy/v0.5.0` policy that selects SOLID/layering rules and an AG
+  measurement profile for `archsig-measurement-packet/v0.5.0`.
+- Rich viewer output through `archsig-atom-viewer-data/v0.5.0`: 60 atom nodes,
   78 atom edges, 7 context groups, 10 visual scenes, guided tours, an insight
   queue, and an action queue.
 
@@ -41,9 +41,9 @@ sample/
     scenario.rs   # executable demo scenario
 archmap/
   source_inventory.json
-  archmap.json    # latest archmap/v2 source-grounded observation
+  archmap.json    # latest archmap/v0.5.0 source-grounded observation
 law_policy/
-  law_policy.json # law-policy/v1 selector and measurement profile
+  law_policy.json # law-policy/v0.5.0 selector and measurement profile
 runtime/
   place_order_trace.json
   concurrent_reservation_trace.json

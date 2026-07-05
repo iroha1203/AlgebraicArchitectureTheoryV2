@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "ownership-boundary-monitor-v0",
+  "schema": "ownership-boundary-monitor/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "ownership-boundary-monitor",
-    "schemaVersionName": "ownership-boundary-monitor-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "ownership-boundary-monitor/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "sourceRefs",
@@ -98,7 +98,7 @@
       "boundary erosion monitoring is empirical signal, not repair correctness"
     ]
   },
-  "monitorId": "fixture-b10-ownership-boundary-monitor-v0",
+  "monitorId": "fixture-b10-ownership-boundary-monitor/v0.5.0",
   "generatedAt": "2026-05-05T10:00:00Z",
   "organizationRef": "org:example-commerce",
   "teamRef": "team:checkout-platform",
@@ -119,7 +119,7 @@
       ]
     },
     {
-      "sourceRef": "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0",
+      "sourceRef": "threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050",
       "sourceKind": "team-threshold-policy",
       "path": "tools/fieldsig/tests/fixtures/minimal/team_threshold_policy.json",
       "boundary": "teamLocalEmpiricalCalibration",
@@ -138,7 +138,7 @@
       ],
       "boundaryPolicyRefs": [
         "policy:checkout-owned-api-surface",
-        "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+        "threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050"
       ],
       "observationBoundary": "boundedOperationalObservation",
       "evidenceRefs": [

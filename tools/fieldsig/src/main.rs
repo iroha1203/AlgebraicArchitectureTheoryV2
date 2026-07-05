@@ -550,22 +550,22 @@ enum Command {
         #[arg(long)]
         archmap: PathBuf,
 
-        /// Output operation-support-estimate-v0 JSON path. If omitted, JSON is written to stdout.
+        /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
 
     /// Project an ArchSig measurement packet into SFT operation-support input.
     ArchsigAnalysisSftInput {
-        /// Input archsig-measurement-packet/v1 JSON path.
+        /// Input archsig-measurement-packet/v0.5.0 JSON path.
         #[arg(long = "measurement-packet")]
         measurement_packet: Option<PathBuf>,
 
-        /// Legacy input archsig-analysis-packet/v1 JSON path.
+        /// Legacy input archsig-analysis-packet/v0.5.0 JSON path.
         #[arg(long = "analysis-packet")]
         analysis_packet: Option<PathBuf>,
 
-        /// Output operation-support-estimate-v0 JSON path. If omitted, JSON is written to stdout.
+        /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -740,13 +740,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a pr-force-report-v0 artifact.
+    /// Emit or validate a pr-force-report/v0.5.0 artifact.
     PrForceReport {
         /// Optional PR force report JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal pr-force-report-v0 fixture instead of a validation report.
+        /// Emit the canonical minimal pr-force-report/v0.5.0 fixture instead of a validation report.
         #[arg(long)]
         fixture: bool,
 
@@ -755,13 +755,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a signature-trajectory-report-v0 artifact.
+    /// Emit or validate a signature-trajectory-report/v0.5.0 artifact.
     SignatureTrajectoryReport {
         /// Optional Signature trajectory report JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal signature-trajectory-report-v0 fixture.
+        /// Emit the canonical minimal signature-trajectory-report/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -770,13 +770,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an architecture-dynamics-metrics-report-v0 artifact.
+    /// Emit or validate an architecture-dynamics-metrics-report/v0.5.0 artifact.
     ArchitectureDynamicsMetrics {
         /// Optional Architecture Dynamics metrics report JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal architecture-dynamics-metrics-report-v0 fixture.
+        /// Emit the canonical minimal architecture-dynamics-metrics-report/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -785,13 +785,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an architecture-field-snapshot-v0 artifact.
+    /// Emit or validate an architecture-field-snapshot/v0.5.0 artifact.
     ArchitectureFieldSnapshot {
         /// Optional Architecture field snapshot JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal architecture-field-snapshot-v0 fixture.
+        /// Emit the canonical minimal architecture-field-snapshot/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -800,13 +800,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an operation-proposal-log-v0 artifact.
+    /// Emit or validate an operation-proposal-log/v0.5.0 artifact.
     OperationProposalLog {
         /// Optional Operation proposal log JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal operation-proposal-log-v0 fixture.
+        /// Emit the canonical minimal operation-proposal-log/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -815,13 +815,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a software-field-measurement-v0 artifact.
+    /// Emit or validate a software-field-measurement/v0.5.0 artifact.
     SoftwareFieldMeasurement {
         /// Optional SoftwareFieldMeasurement JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal software-field-measurement-v0 fixture.
+        /// Emit the canonical minimal software-field-measurement/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -830,14 +830,14 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a fieldsig-run-manifest-v0 artifact.
+    /// Emit or validate a fieldsig-run-manifest/v0.5.0 artifact.
     #[command(name = "fieldsig-run-manifest")]
     FieldSigRunManifest {
         /// Optional FieldSig run manifest JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal fieldsig-run-manifest-v0 fixture.
+        /// Emit the canonical minimal fieldsig-run-manifest/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -846,21 +846,21 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an artifact-descriptor-v0 artifact.
+    /// Emit or validate an artifact-descriptor/v0.5.0 artifact.
     ArtifactDescriptor {
         /// Optional ArtifactDescriptor JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Markdown PRD / Spec / proposal path to normalize into artifact-descriptor-v0.
+        /// Markdown PRD / Spec / proposal path to normalize into artifact-descriptor/v0.5.0.
         #[arg(long = "from-markdown")]
         from_markdown: Option<PathBuf>,
 
-        /// GitHub Issue JSON path to normalize into artifact-descriptor-v0.
+        /// GitHub Issue JSON path to normalize into artifact-descriptor/v0.5.0.
         #[arg(long = "from-github-issue-json")]
         from_github_issue_json: Option<PathBuf>,
 
-        /// AI proposal JSON path to normalize into artifact-descriptor-v0.
+        /// AI proposal JSON path to normalize into artifact-descriptor/v0.5.0.
         #[arg(long = "from-ai-proposal-json")]
         from_ai_proposal_json: Option<PathBuf>,
 
@@ -868,7 +868,7 @@ enum Command {
         #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
         artifact_kind: String,
 
-        /// Emit the canonical minimal artifact-descriptor-v0 fixture.
+        /// Emit the canonical minimal artifact-descriptor/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -877,13 +877,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an intentmap-v0 artifact.
+    /// Emit or validate an intentmap/v0.5.0 artifact.
     IntentMap {
         /// Optional IntentMap JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal intentmap-v0 fixture.
+        /// Emit the canonical minimal intentmap/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -892,7 +892,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an intent-archmap-alignment-v0 artifact.
+    /// Emit or validate an intent-archmap-alignment/v0.5.0 artifact.
     IntentArchmapAlignment {
         /// Optional AlignmentMap JSON path to validate.
         #[arg(long)]
@@ -906,7 +906,7 @@ enum Command {
         #[arg(long)]
         archmap: Option<PathBuf>,
 
-        /// Emit the canonical minimal intent-archmap-alignment-v0 fixture.
+        /// Emit the canonical minimal intent-archmap-alignment/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -933,11 +933,11 @@ enum Command {
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
 
-        /// Bounded horizon step count for forecast-cone-skeleton-v0 generation.
+        /// Bounded horizon step count for forecast-cone-skeleton/v0.5.0 generation.
         #[arg(long = "horizon-steps", default_value_t = 3)]
         horizon_steps: u32,
 
-        /// Human-readable horizon boundary for forecast-cone-skeleton-v0 generation.
+        /// Human-readable horizon boundary for forecast-cone-skeleton/v0.5.0 generation.
         #[arg(
             long = "horizon-window",
             default_value = "selected bounded intent forecast horizon"
@@ -945,17 +945,17 @@ enum Command {
         horizon_window: String,
     },
 
-    /// Emit or validate an operation-support-estimate-v0 artifact.
+    /// Emit or validate an operation-support-estimate/v0.5.0 artifact.
     OperationSupportEstimate {
         /// Optional OperationSupportEstimate JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// ArtifactDescriptor JSON path to generate operation-support-estimate-v0 from.
+        /// ArtifactDescriptor JSON path to generate operation-support-estimate/v0.5.0 from.
         #[arg(long)]
         descriptor: Option<PathBuf>,
 
-        /// Emit the canonical minimal operation-support-estimate-v0 fixture.
+        /// Emit the canonical minimal operation-support-estimate/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -964,13 +964,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a forecast-cone-skeleton-v0 artifact.
+    /// Emit or validate a forecast-cone-skeleton/v0.5.0 artifact.
     ForecastConeSkeleton {
         /// Optional ForecastCone skeleton JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// OperationSupportEstimate JSON path to generate forecast-cone-skeleton-v0 from.
+        /// OperationSupportEstimate JSON path to generate forecast-cone-skeleton/v0.5.0 from.
         #[arg(long = "operation-support")]
         operation_support: Option<PathBuf>,
 
@@ -985,7 +985,7 @@ enum Command {
         )]
         horizon_window: String,
 
-        /// Emit the canonical minimal forecast-cone-skeleton-v0 fixture.
+        /// Emit the canonical minimal forecast-cone-skeleton/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -994,17 +994,17 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a consequence-envelope-report-v0 artifact.
+    /// Emit or validate a consequence-envelope-report/v0.5.0 artifact.
     ConsequenceEnvelope {
         /// Optional ConsequenceEnvelope report JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// ForecastConeSkeleton JSON path to generate consequence-envelope-report-v0 from.
+        /// ForecastConeSkeleton JSON path to generate consequence-envelope-report/v0.5.0 from.
         #[arg(long = "forecast-cone")]
         forecast_cone: Option<PathBuf>,
 
-        /// Emit the canonical minimal consequence-envelope-report-v0 fixture.
+        /// Emit the canonical minimal consequence-envelope-report/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1013,17 +1013,17 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an sft-review-summary-v0 artifact.
+    /// Emit or validate an sft-review-summary/v0.5.0 artifact.
     SftReviewSummary {
         /// Optional SFT review summary JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// ConsequenceEnvelope report JSON path to generate sft-review-summary-v0 from.
+        /// ConsequenceEnvelope report JSON path to generate sft-review-summary/v0.5.0 from.
         #[arg(long = "consequence-envelope")]
         consequence_envelope: Option<PathBuf>,
 
-        /// Emit the canonical minimal sft-review-summary-v0 fixture.
+        /// Emit the canonical minimal sft-review-summary/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1038,19 +1038,19 @@ enum Command {
         #[arg(long)]
         artifact: PathBuf,
 
-        /// Input format for the generated artifact-descriptor-v0.
+        /// Input format for the generated artifact-descriptor/v0.5.0.
         #[arg(long = "artifact-format", default_value = "markdown", value_parser = ["markdown", "github-issue-json", "ai-proposal-json"])]
         artifact_format: String,
 
-        /// Artifact kind for markdown-generated artifact-descriptor-v0.
+        /// Artifact kind for markdown-generated artifact-descriptor/v0.5.0.
         #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
         artifact_kind: String,
 
-        /// Bounded horizon step count for forecast-cone-skeleton-v0 generation.
+        /// Bounded horizon step count for forecast-cone-skeleton/v0.5.0 generation.
         #[arg(long = "horizon-steps", default_value_t = 3)]
         horizon_steps: u32,
 
-        /// Human-readable horizon boundary for forecast-cone-skeleton-v0 generation.
+        /// Human-readable horizon boundary for forecast-cone-skeleton/v0.5.0 generation.
         #[arg(
             long = "horizon-window",
             default_value = "selected bounded forecast horizon"
@@ -1062,13 +1062,13 @@ enum Command {
         out_dir: PathBuf,
     },
 
-    /// Emit or validate a forecast-calibration-hook-v0 artifact.
+    /// Emit or validate a forecast-calibration-hook/v0.5.0 artifact.
     ForecastCalibrationHook {
         /// Optional ForecastCalibrationHook JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal forecast-calibration-hook-v0 fixture.
+        /// Emit the canonical minimal forecast-calibration-hook/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1077,13 +1077,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate a pr-quality-analysis-report-v0 artifact.
+    /// Emit or validate a pr-quality-analysis-report/v0.5.0 artifact.
     PrQualityAnalysis {
         /// Optional PR quality analysis JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal pr-quality-analysis-report-v0 fixture.
+        /// Emit the canonical minimal pr-quality-analysis-report/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1092,13 +1092,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an aat-observable-bundle-v0 artifact.
+    /// Emit or validate an aat-observable-bundle/v0.5.0 artifact.
     AatObservableBundle {
         /// Optional AAT observable bundle JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal aat-observable-bundle-v0 fixture.
+        /// Emit the canonical minimal aat-observable-bundle/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1107,13 +1107,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an intent-calibration-record-v0 artifact.
+    /// Emit or validate an intent-calibration-record/v0.5.0 artifact.
     IntentCalibrationRecord {
         /// Optional intent calibration record JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// Emit the canonical minimal intent-calibration-record-v0 fixture.
+        /// Emit the canonical minimal intent-calibration-record/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1128,19 +1128,19 @@ enum Command {
         #[arg(long)]
         input: Option<PathBuf>,
 
-        /// ArtifactDescriptor JSON path to project into ai-proposal-governance-v0.
+        /// ArtifactDescriptor JSON path to project into ai-proposal-governance/v0.5.0.
         #[arg(long)]
         descriptor: Option<PathBuf>,
 
-        /// Optional operation-support-estimate-v0 id retained as a governance source ref.
+        /// Optional operation-support-estimate/v0.5.0 id retained as a governance source ref.
         #[arg(long = "operation-support-id")]
         operation_support_id: Option<String>,
 
-        /// Optional consequence-envelope-report-v0 id retained as a governance source ref.
+        /// Optional consequence-envelope-report/v0.5.0 id retained as a governance source ref.
         #[arg(long = "consequence-envelope-id")]
         consequence_envelope_id: Option<String>,
 
-        /// Emit the canonical minimal ai-proposal-governance-v0 fixture.
+        /// Emit the canonical minimal ai-proposal-governance/v0.5.0 fixture.
         #[arg(long)]
         fixture: bool,
 
@@ -1622,7 +1622,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }) => {
             let inventory: ArchMapSourceInventoryV0 = read_json(&source_inventory)?;
             let protocol = serde_json::json!({
-                "schemaVersion": "archmap-generation-protocol-v0",
+                "schema": "archmap-generation-protocol/v0.5.0",
                 "protocolId": format!("archmap-generation:{}", inventory.inventory_id),
                 "sourceInventoryRef": {
                     "artifactId": inventory.inventory_id,
@@ -1640,7 +1640,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 },
                 "requiredWorkflow": [
                     "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
-                    "produce archmap-v0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
+                    "produce archmap/v0.5.0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
                     "run archsig archmap --input <archmap.json> before downstream projection",
                     "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
                 ],
@@ -2928,7 +2928,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let document = match args.language.as_str() {
                 "lean" => {
                     if policy_schema_version(args.policy.as_deref())?.as_deref()
-                        == Some("architecture-policy-v0")
+                        == Some("architecture-policy/v0.5.0")
                     {
                         let mut document = extract_sig0_with_runtime(
                             &args.root,
@@ -2955,7 +2955,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 "python" => {
                     if args.runtime_edges.is_some() {
                         return Err(
-                            "runtime edge projection is not part of python-import-graph-v0".into(),
+                            "runtime edge projection is not part of python-import-graph/v0.5.0"
+                                .into(),
                         );
                     }
                     let mut document =
@@ -2985,7 +2986,7 @@ fn policy_schema_version(path: Option<&Path>) -> Result<Option<String>, Box<dyn 
     let source = std::fs::read_to_string(path)?;
     let value: serde_json::Value = serde_json::from_str(&source)?;
     Ok(value
-        .get("schemaVersion")
+        .get("schema")
         .and_then(|value| value.as_str())
         .map(str::to_string))
 }

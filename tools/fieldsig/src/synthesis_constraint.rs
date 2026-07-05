@@ -37,10 +37,10 @@ pub fn static_synthesis_constraint_artifact() -> SynthesisConstraintArtifactV0 {
         schema_version: SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION.to_string(),
         scope: "synthesis constraint artifact v0 for selected obstruction witnesses".to_string(),
         constraint_refs: vec![
-            "constraint-static-boundary-coupon-v0".to_string(),
-            "constraint-semantic-rounding-contract-v0".to_string(),
+            "constraint-static-boundary-coupon/v0.5.0".to_string(),
+            "constraint-semantic-rounding-contract/v0.5.0".to_string(),
         ],
-        candidate_refs: vec!["candidate-split-coupon-interface-v0".to_string()],
+        candidate_refs: vec!["candidate-split-coupon-interface/v0.5.0".to_string()],
         required_assumptions: vec![
             "selected obstruction witnesses resolve in the current Feature Extension Report"
                 .to_string(),
@@ -60,7 +60,7 @@ pub fn static_synthesis_constraint_artifact() -> SynthesisConstraintArtifactV0 {
         ],
         constraints: vec![
             synthesis_constraint(
-                "constraint-static-boundary-coupon-v0",
+                "constraint-static-boundary-coupon/v0.5.0",
                 "static",
                 "relation.UserService.CouponService",
                 "candidate must route forbidden static edge through an allowed boundary",
@@ -68,7 +68,7 @@ pub fn static_synthesis_constraint_artifact() -> SynthesisConstraintArtifactV0 {
                 &["NoNewForbiddenStaticEdge", "SynthesisConstraintSystem"],
             ),
             synthesis_constraint(
-                "constraint-semantic-rounding-contract-v0",
+                "constraint-semantic-rounding-contract/v0.5.0",
                 "semantic",
                 "semantic.diagram.diagram-coupon-discount-order",
                 "candidate must preserve selected coupon / discount observation contract",
@@ -83,12 +83,12 @@ pub fn static_synthesis_constraint_artifact() -> SynthesisConstraintArtifactV0 {
             ),
         ],
         candidates: vec![synthesis_candidate(
-            "candidate-split-coupon-interface-v0",
+            "candidate-split-coupon-interface/v0.5.0",
             "bounded synthesis prototype",
             &["operation.split.CouponPort"],
             &[
-                "constraint-static-boundary-coupon-v0",
-                "constraint-semantic-rounding-contract-v0",
+                "constraint-static-boundary-coupon/v0.5.0",
+                "constraint-semantic-rounding-contract/v0.5.0",
             ],
             &[
                 "SynthesisSoundnessPackage.candidate_satisfies",
@@ -110,7 +110,7 @@ pub fn static_synthesis_constraint_artifact() -> SynthesisConstraintArtifactV0 {
         )],
         no_solution_boundary: SynthesisNoSolutionBoundaryV0 {
             solver_status: "candidate_produced".to_string(),
-            candidate_refs: vec!["candidate-split-coupon-interface-v0".to_string()],
+            candidate_refs: vec!["candidate-split-coupon-interface/v0.5.0".to_string()],
             no_solution_certificate_ref: None,
             valid_certificate_claim_ref: None,
             non_conclusions: REQUIRED_NON_CONCLUSIONS
@@ -228,7 +228,7 @@ fn check_schema_version(artifact: &SynthesisConstraintArtifactV0) -> ValidationC
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported synthesis constraint schemaVersion: {}",
+            "unsupported synthesis constraint schema: {}",
             artifact.schema_version
         ));
     }
@@ -580,7 +580,7 @@ mod tests {
         assert_eq!(report.summary.constraint_count, 2);
         assert_eq!(report.summary.candidate_count, 1);
         assert!(report.artifact.candidates.iter().any(|candidate| {
-            candidate.candidate_id == "candidate-split-coupon-interface-v0"
+            candidate.candidate_id == "candidate-split-coupon-interface/v0.5.0"
                 && candidate
                     .soundness_package_refs
                     .iter()

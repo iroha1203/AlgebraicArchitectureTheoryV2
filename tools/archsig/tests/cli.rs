@@ -29,7 +29,7 @@ fn ag_measurement_root() -> PathBuf {
 
 #[test]
 fn cli_validates_archmap_v2_finite_poset_site_contract() {
-    let out_dir = temp_dir("archmap-v2-validation");
+    let out_dir = temp_dir("archmap-schema050-validation");
     let root = ag_measurement_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -44,15 +44,15 @@ fn cli_validates_archmap_v2_finite_poset_site_contract() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archmap-validation-report-v2");
-    assert_eq!(json["inputSchema"], "archmap/v2");
+    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
+    assert_eq!(json["inputSchema"], "archmap/v0.5.0");
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["atomCount"], 3);
     assert_eq!(json["summary"]["contextCount"], 3);
     assert_eq!(json["summary"]["coverCount"], 1);
     assert!(
         json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "archmap-v2-atom-kind-vocabulary"
+            check["id"] == "archmap-schema050-atom-kind-vocabulary"
                 && check["result"] == "pass"
                 && check["title"]
                     .as_str()
@@ -65,7 +65,7 @@ fn cli_validates_archmap_v2_finite_poset_site_contract() {
 
 #[test]
 fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
-    let out_dir = temp_dir("archmap-v2-atom-kind-vocabulary");
+    let out_dir = temp_dir("archmap-schema050-atom-kind-vocabulary");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["kind"] = json!("externalForecast");
@@ -93,7 +93,7 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
+        .find(|check| check["id"] == "archmap-schema050-atom-kind-vocabulary")
         .expect("atom vocabulary check is present");
     assert_eq!(check["result"], "fail");
     assert_eq!(
@@ -113,7 +113,7 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
     assert!(!reason.contains("should"));
     assert!(!reason.contains("semantic correctness"));
 
-    let analyze_out = temp_dir("archmap-v2-atom-kind-vocabulary-analyze");
+    let analyze_out = temp_dir("archmap-schema050-atom-kind-vocabulary-analyze");
     let output = run_sig0_output(&[
         "analyze",
         "--archmap",
@@ -142,7 +142,7 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
 
 #[test]
 fn cli_rejects_archmap_v2_diagnostic_atom_id_shortcut() {
-    let out_dir = temp_dir("archmap-v2-diagnostic-id");
+    let out_dir = temp_dir("archmap-schema050-diagnostic-id");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["id"] = json!("atom:service-violation");
@@ -179,7 +179,7 @@ fn cli_rejects_archmap_v2_diagnostic_atom_id_shortcut() {
     );
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
-    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    let check = check_by_id(&json, "archmap-schema050-no-diagnostic-shortcuts");
     assert_eq!(check["result"], "fail");
     assert_eq!(check["examples"][0]["source"], "atom:service-violation");
     assert_eq!(check["examples"][0]["target"], "id:violation");
@@ -187,7 +187,7 @@ fn cli_rejects_archmap_v2_diagnostic_atom_id_shortcut() {
 
 #[test]
 fn cli_rejects_archmap_v2_diagnostic_predicate_shortcut() {
-    let out_dir = temp_dir("archmap-v2-diagnostic-predicate");
+    let out_dir = temp_dir("archmap-schema050-diagnostic-predicate");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["predicate"] = json!("violatesLaw");
@@ -211,7 +211,7 @@ fn cli_rejects_archmap_v2_diagnostic_predicate_shortcut() {
     );
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
-    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    let check = check_by_id(&json, "archmap-schema050-no-diagnostic-shortcuts");
     assert_eq!(check["result"], "fail");
     assert_eq!(check["examples"][0]["source"], "atom:order");
     assert_eq!(check["examples"][0]["target"], "predicate:violation");
@@ -219,7 +219,7 @@ fn cli_rejects_archmap_v2_diagnostic_predicate_shortcut() {
 
 #[test]
 fn cli_rejects_archmap_v2_violated_diagnostic_shortcut() {
-    let out_dir = temp_dir("archmap-v2-diagnostic-violated");
+    let out_dir = temp_dir("archmap-schema050-diagnostic-violated");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["id"] = json!("atom:contract-violated");
@@ -256,7 +256,7 @@ fn cli_rejects_archmap_v2_violated_diagnostic_shortcut() {
     );
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
-    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    let check = check_by_id(&json, "archmap-schema050-no-diagnostic-shortcuts");
     assert_eq!(check["result"], "fail");
     assert_eq!(check["examples"][0]["source"], "atom:contract-violated");
     assert_eq!(check["examples"][0]["target"], "id:violation");
@@ -264,7 +264,7 @@ fn cli_rejects_archmap_v2_violated_diagnostic_shortcut() {
 
 #[test]
 fn cli_rejects_archmap_v2_nonzero_camel_case_shortcut() {
-    let out_dir = temp_dir("archmap-v2-diagnostic-nonzero-camel");
+    let out_dir = temp_dir("archmap-schema050-diagnostic-nonzero-camel");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["id"] = json!("atom:selected-nonZero-section");
@@ -302,7 +302,7 @@ fn cli_rejects_archmap_v2_nonzero_camel_case_shortcut() {
     );
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
-    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    let check = check_by_id(&json, "archmap-schema050-no-diagnostic-shortcuts");
     assert_eq!(check["result"], "fail");
     assert!(check["examples"].as_array().unwrap().iter().any(|example| {
         example["source"] == "atom:selected-nonZero-section" && example["target"] == "id:nonzero"
@@ -315,7 +315,7 @@ fn cli_rejects_archmap_v2_nonzero_camel_case_shortcut() {
 
 #[test]
 fn cli_allows_archmap_v2_semantic_free_text_without_diagnostic_lint() {
-    let out_dir = temp_dir("archmap-v2-semantic-free-text");
+    let out_dir = temp_dir("archmap-schema050-semantic-free-text");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["kind"] = json!("semantic");
@@ -341,13 +341,13 @@ fn cli_allows_archmap_v2_semantic_free_text_without_diagnostic_lint() {
     ]);
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "pass");
-    let check = check_by_id(&json, "archmap-v2-no-diagnostic-shortcuts");
+    let check = check_by_id(&json, "archmap-schema050-no-diagnostic-shortcuts");
     assert_eq!(check["result"], "pass");
 }
 
 #[test]
 fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
-    let out_dir = temp_dir("archmap-v2-state-atom-kind-vocabulary");
+    let out_dir = temp_dir("archmap-schema050-state-atom-kind-vocabulary");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["atoms"][0]["kind"] = json!("state");
@@ -373,7 +373,7 @@ fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|check| check["id"] == "archmap-v2-atom-kind-vocabulary")
+        .find(|check| check["id"] == "archmap-schema050-atom-kind-vocabulary")
         .expect("atom vocabulary check is present");
     assert_eq!(check["result"], "pass");
     assert_eq!(check["metric"], "aat-atom-vocabulary:ag-archmap@1");
@@ -381,7 +381,7 @@ fn cli_accepts_archmap_v2_state_atom_kind_from_aat_vocabulary() {
 
 #[test]
 fn cli_rejects_archmap_v2_custom_extraction_doctrine() {
-    let out_dir = temp_dir("archmap-v2-custom-extraction-doctrine");
+    let out_dir = temp_dir("archmap-schema050-custom-extraction-doctrine");
     let root = ag_measurement_root();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
     archmap["extractionDoctrineRef"] = json!({
@@ -414,7 +414,7 @@ fn cli_rejects_archmap_v2_custom_extraction_doctrine() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|check| check["id"] == "archmap-v2-extraction-doctrine-ref")
+        .find(|check| check["id"] == "archmap-schema050-extraction-doctrine-ref")
         .expect("fixed doctrine check is present");
     assert_eq!(check["result"], "fail");
     assert_eq!(
@@ -428,7 +428,7 @@ fn cli_rejects_archmap_v2_custom_extraction_doctrine() {
         example["evidence"],
         "ArchMap v2 uses the fixed AAT canonical doctrine"
     );
-    let analyze_out = temp_dir("archmap-v2-atom-kind-vocabulary-doctrine-analyze");
+    let analyze_out = temp_dir("archmap-schema050-atom-kind-vocabulary-doctrine-analyze");
     let output = run_sig0_output(&[
         "analyze",
         "--archmap",
@@ -478,7 +478,7 @@ fn cli_law_policy_ag_evaluator_requires_measurement_profile() {
     assert_eq!(json["summary"]["result"], "fail");
     assert!(
         json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "law-policy-v1-ag-evaluator-profile-required"
+            check["id"] == "law-policy-schema050-ag-evaluator-profile-required"
                 && check["result"] == "fail"
         }),
         "AG evaluator execution must fail closed without MeasurementProfile"
@@ -505,14 +505,14 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     ]);
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(normalized["schema"], "normalized-archmap/v2");
+    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.0");
     assert_eq!(
         normalized["summary"]["doctrineFingerprint"],
-        "sha256:aat-canonical-doctrine-v1"
+        "sha256:aat-canonical-doctrine-schema050"
     );
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(packet["schema"], "archsig-measurement-packet/v1");
+    assert_eq!(packet["schema"], "archsig-measurement-packet/v0.5.0");
     assert!(packet["profile"].is_object());
     assert!(packet["structuralVerdict"].is_array());
     assert!(packet["computedInvariants"].is_array());
@@ -644,7 +644,7 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     assert_eq!(validation["summary"]["result"], "pass");
 
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_eq!(viewer["schemaVersion"], "archsig-atom-viewer-data-v2");
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.0");
     assert_eq!(
         viewer["sourceArtifactRefs"]["measurementPacket"],
         "archsig-measurement-packet.json"
@@ -679,7 +679,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         packet["structuralVerdict"][0]["evaluator"],
-        "ag.cech-obstruction@1"
+        "ag.cech-obstruction"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdict"],
@@ -727,7 +727,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         stable_cech_row,
         json!({
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
             "verdict": "measured_nonzero",
             "verdictData": {
@@ -762,7 +762,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "atomCount": 6,
                 "contextCount": 4,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:aat-canonical-doctrine-v1",
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema050",
                 "invariantId": "finite-poset-site-shape"
             },
             {
@@ -809,7 +809,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                             "value": 0
                         }
                     ],
-                    "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer",
+                    "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.0; not inferred by the viewer",
                     "faces": [],
                     "h2CoherenceVisualized": false,
                     "vertices": [
@@ -839,7 +839,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                     "H0": 1,
                     "H1": 1
                 },
-                "evaluator": "ag.cech-obstruction@1",
+                "evaluator": "ag.cech-obstruction",
                 "invariantId": "cech-cohomology:profile:ag-default@1",
                 "method": "finite-f2-incidence-graph-cochain@1",
                 "methodStatus": "finite_f2_cech_computed",
@@ -857,7 +857,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                     ]
                 },
                 "rankD0": 3,
-                "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction@1",
+                "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
                 "restrictionEdgeCount": 4,
                 "selectedCoverRef": "cover:order-inventory",
                 "selectedH2": {
@@ -868,7 +868,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "status": "computed"
             },
             {
-                "evaluator": "witness-counting@1",
+                "evaluator": "witness-counting",
                 "invariantId": "witness-counting:profile:ag-default@1",
                 "nonConclusion": "Witness counting is reported as a fixture discriminator and does not determine Cech H1.",
                 "supportAtomRefs": [],
@@ -879,7 +879,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         "ledger transparency must not change computed invariants for the same Cech input"
     );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
-    assert_eq!(capacity["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(capacity["evaluator"], "ag.cech-obstruction");
     assert_eq!(capacity["status"], "computed");
     assert_eq!(capacity["structuralVerdictRef"], Value::Null);
     assert_eq!(capacity["dimensions"]["dimC0"], Value::from(4));
@@ -922,7 +922,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         json!([
             {
                 "readingId": "candidate-regime:stability-placeholder",
-                "evaluator": "ag.foundation@1",
+                "evaluator": "ag.foundation",
                 "value": {
                     "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
                     "state": "not_evaluated"
@@ -1005,7 +1005,7 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let cech_row = &packet["structuralVerdict"][0];
-    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction");
     assert_eq!(
         cech_row["verdict"], "measured_zero",
         "ledger transparency must not change the Cech verdict calculation"
@@ -1162,7 +1162,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
             .as_array()
             .expect("structuralVerdict is array")
             .iter()
-            .filter(|row| row["evaluator"] == "ag.cech-obstruction@1")
+            .filter(|row| row["evaluator"] == "ag.cech-obstruction")
             .count(),
         1,
         "Topological Debt Capacity must not add a structural verdict row"
@@ -1191,7 +1191,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     );
     assert_eq!(
         cech["coverNerveProjection"]["faceSource"],
-        "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer"
+        "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.0; not inferred by the viewer"
     );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
     assert_eq!(
@@ -1657,7 +1657,7 @@ fn cli_analyze_v2_boundary_residue_measures_mayer_vietoris_d0() {
             .as_array()
             .unwrap()
             .iter()
-            .all(|row| row["evaluator"] != "ag.boundary-residue@1"),
+            .all(|row| row["evaluator"] != "ag.boundary-residue"),
         "boundary-residue must be structural only and not a period/modelRelative analytic reading"
     );
     assert_eq!(
@@ -1665,7 +1665,7 @@ fn cli_analyze_v2_boundary_residue_measures_mayer_vietoris_d0() {
             .as_array()
             .unwrap()
             .iter()
-            .filter(|row| row["evaluator"] == "ag.boundary-residue@1")
+            .filter(|row| row["evaluator"] == "ag.boundary-residue")
             .count(),
         1,
         "M6 must generate exactly one structural verdict row"
@@ -2096,7 +2096,7 @@ fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative(
         .as_array()
         .unwrap()
         .iter()
-        .find(|row| row["evaluator"] == "ag.cech-obstruction@1")
+        .find(|row| row["evaluator"] == "ag.cech-obstruction")
         .expect("H1 row is present");
     assert_eq!(
         cech["verdict"], "measured_zero",
@@ -2106,7 +2106,7 @@ fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative(
         .as_array()
         .unwrap()
         .iter()
-        .find(|row| row["evaluator"] == "ag.coherence-obstruction@1")
+        .find(|row| row["evaluator"] == "ag.coherence-obstruction")
         .expect("H2 coherence row is present");
     assert_eq!(coherence["verdict"], "measured_nonzero");
     assert_eq!(coherence["verdictData"]["nonZero"], true);
@@ -2165,12 +2165,12 @@ fn cli_analyze_v2_coherence_obstruction_measures_h2_nonzero_with_representative(
     assert!(
         h2_face["structuralVerdictRef"]
             .as_str()
-            .is_some_and(|value| value.contains("ag-coherence-obstruction-1")),
+            .is_some_and(|value| value.contains("ag-coherence-obstruction")),
         "H2 viewer projection must point back to the packet structural verdict"
     );
     assert_eq!(
         h2_face["coherenceProjectionBoundary"],
-        "Projected from ag.coherence-obstruction@1; viewer adds no H2 verdict"
+        "Projected from ag.coherence-obstruction; viewer adds no H2 verdict"
     );
 
     let zero_cochain_dir = temp_dir("ag-measurement-coherence-h2-nonzero-zero-cochain");
@@ -2542,7 +2542,7 @@ fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
     let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
         .expect("insight brief is generated");
 
-    assert_eq!(report["schema"], "archsig-insight-report/v1");
+    assert_eq!(report["schema"], "archsig-insight-report/v0.5.0");
     assert_eq!(
         report["headline"]["conclusionCode"],
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -2922,7 +2922,7 @@ fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundar
         .expect("insight report must expose gluing geometry projection");
     assert_eq!(
         gluing_geometry["schema"].as_str(),
-        Some("archsig-viewer-gluing-geometry/v1"),
+        Some("archsig-viewer-gluing-geometry/v0.5.0"),
         "gluing geometry projection must be typed"
     );
     assert!(
@@ -3467,7 +3467,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         packet["structuralVerdict"][0]["evaluator"],
-        "ag.square-free-repair@1"
+        "ag.square-free-repair"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdict"],
@@ -3521,7 +3521,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     assert_eq!(nsdepth_assumption["status"], "checked");
     assert_eq!(
         nsdepth_assumption["checkedBy"],
-        "ag.square-free-repair@1:cert:nsdepth-square-free:computed"
+        "ag.square-free-repair:cert:nsdepth-square-free:computed"
     );
     assert!(
         nsdepth_assumption["assumedBy"].is_null(),
@@ -3650,8 +3650,7 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
             .as_array()
             .expect("analytic readings is array")
             .iter()
-            .all(|reading| reading["value"]["readingKind"]
-                != "ag.nullstellensatz-depth-monotone@1"),
+            .all(|reading| reading["value"]["readingKind"] != "ag.nullstellensatz-depth-monotone"),
         "nsdepth monotone proxy is not authored in ArchMap input after R2"
     );
     let repair_reading = packet["analyticReadings"]
@@ -3731,7 +3730,7 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
         "support-localized-transfer@1",
         "graph-laplacian-hodge-proxy@1",
         "curvature-transfer-perron-hotspot@1",
-        "ag.law-conflict-tor@1/lawConflicts",
+        "ag.law-conflict-tor/lawConflicts",
     ] {
         assert!(
             period_viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["allowlist"]
@@ -3829,8 +3828,8 @@ fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
     );
     let spectrum_landscape = &laplacian_viewer["aatGeometryOverlays"]["spectrumLandscape"];
     assert_eq!(
-        spectrum_landscape["schemaVersion"],
-        "archsig-spectrum-landscape-v1"
+        spectrum_landscape["schema"],
+        "archsig-spectrum-landscape/v0.5.0"
     );
     assert_eq!(spectrum_landscape["measurementStatus"], "proxy");
     assert_eq!(spectrum_landscape["colorRole"], "analytic_reading");
@@ -4077,7 +4076,7 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         packet["structuralVerdict"][0]["evaluator"],
-        "ag.law-conflict-tor@1"
+        "ag.law-conflict-tor"
     );
     assert_eq!(
         packet["structuralVerdict"][0]["verdict"],
@@ -4671,7 +4670,7 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         packet["structuralVerdict"][0]["evaluator"],
-        "ag.sheaf-laplacian@1"
+        "ag.sheaf-laplacian"
     );
     assert_eq!(packet["structuralVerdict"][0]["verdict"], "unknown");
     assert_eq!(
@@ -4699,7 +4698,7 @@ fn cli_analyze_v2_sheaf_laplacian_outputs_analytic_hodge_reading() {
         .as_array()
         .expect("analytic readings is array")
         .iter()
-        .find(|reading| reading["evaluator"] == "ag.sheaf-laplacian@1")
+        .find(|reading| reading["evaluator"] == "ag.sheaf-laplacian")
         .expect("laplacian analytic reading exists");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
     assert_eq!(reading["regime"], "analytic-measurement");
@@ -5072,7 +5071,7 @@ fn cli_analyze_v2_period_stokes_outputs_pairing_and_audit_reading() {
         .as_array()
         .expect("analytic readings is array")
         .iter()
-        .find(|reading| reading["evaluator"] == "ag.period-stokes@1")
+        .find(|reading| reading["evaluator"] == "ag.period-stokes")
         .expect("period analytic reading exists");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
     assert_eq!(reading["regime"], "analytic-measurement");
@@ -5204,7 +5203,7 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
             witness["law"] = Value::String("ag.period-stokes-audit".to_string());
         }
         policy["policies"][0]["law"] = Value::String("ag.period-stokes-audit".to_string());
-        policy["policies"][0]["evaluator"] = Value::String("ag.period-stokes-audit@1".to_string());
+        policy["policies"][0]["evaluator"] = Value::String("ag.period-stokes-audit".to_string());
         let policy_path = out_dir.join("law_policy.json");
         fs::write(
             &policy_path,
@@ -5232,31 +5231,31 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
             1,
             "period-stokes-audit must add exactly one structural verdict row"
         );
-        assert_eq!(structural[0]["evaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(structural[0]["evaluator"], "ag.period-stokes-audit");
         assert_eq!(structural[0]["verdict"], expected_verdict);
         assert_eq!(
             structural[0]["verdictData"]["methodStatus"],
             expected_status
         );
         let invariant = invariant_by_id(&packet, "period-stokes-audit:profile:ag-period-stokes@1");
-        assert_eq!(invariant["evaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(invariant["evaluator"], "ag.period-stokes-audit");
         assert_eq!(invariant["stokesAudit"]["coefficient"], coefficient);
         assert!(
             packet["analyticReadings"]
                 .as_array()
                 .expect("analytic readings is array")
                 .iter()
-                .any(|reading| reading["evaluator"] == "ag.period-stokes@1"
+                .any(|reading| reading["evaluator"] == "ag.period-stokes"
                     && reading["structuralVerdictRef"] == Value::Null
                     && reading["value"]["readingKind"] == "strict-period-pairing@1"),
             "strict-period-pairing must remain an analytic reading separate from the structural verdict"
         );
         let period_stokes = &viewer["aatGeometryOverlays"]["periodStokes"];
         assert_eq!(
-            period_stokes["schemaVersion"],
-            "archsig-period-stokes-meter-v1"
+            period_stokes["schema"],
+            "archsig-period-stokes-meter/v0.5.0"
         );
-        assert_eq!(period_stokes["sourceEvaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(period_stokes["sourceEvaluator"], "ag.period-stokes-audit");
         assert_eq!(period_stokes["modelRelative"], Value::Bool(true));
         let meters = period_stokes["meters"]
             .as_array()
@@ -5267,7 +5266,7 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
             "period audit fixture must project one meter"
         );
         let meter = &meters[0];
-        assert_eq!(meter["sourceEvaluator"], "ag.period-stokes-audit@1");
+        assert_eq!(meter["sourceEvaluator"], "ag.period-stokes-audit");
         assert_eq!(meter["modelRelative"], Value::Bool(true));
         assert_eq!(
             meter["periodPairingMatrix"],
@@ -5306,25 +5305,25 @@ fn cli_analyze_v2_common_structural_verdict_discipline_locks_prd_m_evaluators() 
     for (case, evaluator, archmap, policy) in [
         (
             "restriction",
-            "ag.restriction-compatibility@1",
+            "ag.restriction-compatibility",
             restriction_archmap("compatible"),
             restriction_policy(),
         ),
         (
             "section",
-            "ag.section-factorization@1",
+            "ag.section-factorization",
             section_archmap("lawful"),
             section_policy(),
         ),
         (
             "coherence",
-            "ag.coherence-obstruction@1",
+            "ag.coherence-obstruction",
             coherence_triangle_archmap(true),
             coherence_policy("F2", false),
         ),
         (
             "boundary-residue",
-            "ag.boundary-residue@1",
+            "ag.boundary-residue",
             boundary_residue_archmap("zero"),
             boundary_residue_policy(),
         ),
@@ -5356,25 +5355,24 @@ fn cli_analyze_v2_common_structural_verdict_discipline_locks_prd_m_evaluators() 
         witness["law"] = Value::String("ag.period-stokes-audit".to_string());
     }
     period_policy["policies"][0]["law"] = Value::String("ag.period-stokes-audit".to_string());
-    period_policy["policies"][0]["evaluator"] =
-        Value::String("ag.period-stokes-audit@1".to_string());
+    period_policy["policies"][0]["evaluator"] = Value::String("ag.period-stokes-audit".to_string());
     let period_packet = run_generated_ag_measurement_case(
         &root_out,
         "period-stokes-audit",
         period_archmap,
         period_policy,
     );
-    assert_common_structural_verdict_discipline(&period_packet, "ag.period-stokes-audit@1");
-    observed_new_structural_evaluators.insert("ag.period-stokes-audit@1".to_string());
+    assert_common_structural_verdict_discipline(&period_packet, "ag.period-stokes-audit");
+    observed_new_structural_evaluators.insert("ag.period-stokes-audit".to_string());
 
     assert_eq!(
         observed_new_structural_evaluators,
         BTreeSet::from([
-            "ag.restriction-compatibility@1".to_string(),
-            "ag.section-factorization@1".to_string(),
-            "ag.coherence-obstruction@1".to_string(),
-            "ag.boundary-residue@1".to_string(),
-            "ag.period-stokes-audit@1".to_string(),
+            "ag.restriction-compatibility".to_string(),
+            "ag.section-factorization".to_string(),
+            "ag.coherence-obstruction".to_string(),
+            "ag.boundary-residue".to_string(),
+            "ag.period-stokes-audit".to_string(),
         ]),
         "PRD M common must limit new structural verdict evaluators to M2/M3/M5/M6/M9"
     );
@@ -5494,7 +5492,7 @@ fn cli_analyze_v2_period_stokes_missing_pairing_cell_is_not_computed() {
             .as_array()
             .expect("analytic readings is array")
             .iter()
-            .all(|reading| reading["evaluator"] != "ag.period-stokes@1"),
+            .all(|reading| reading["evaluator"] != "ag.period-stokes"),
         "missing period pairing cells must not synthesize zero analytic readings"
     );
 }
@@ -5719,7 +5717,7 @@ fn cli_analyze_v2_support_transfer_outputs_residue_and_wasserstein_cost() {
         .as_array()
         .expect("analytic readings is array")
         .iter()
-        .find(|reading| reading["evaluator"] == "ag.support-transfer@1")
+        .find(|reading| reading["evaluator"] == "ag.support-transfer")
         .expect("transfer analytic reading exists");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
     assert_eq!(reading["regime"], "analytic-measurement");
@@ -5834,7 +5832,7 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
             "id": "atom:refactor-transport",
             "kind": "semantic",
             "subject": "refactor:extract-square-free-repair-module",
-            "object": "ag.square-free-repair@1",
+            "object": "ag.square-free-repair",
             "axis": "refactor",
             "predicate": "functorialityWitness",
             "refs": ["src:refactor"]
@@ -5877,7 +5875,7 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
         .iter()
         .find(|reading| reading["value"]["readingKind"] == "refactor-invariant-transport@1")
         .expect("refactor transport reading exists when functoriality witness is supplied");
-    assert_eq!(reading["evaluator"], "ag.foundation@1");
+    assert_eq!(reading["evaluator"], "ag.foundation");
     assert_eq!(reading["structuralVerdictRef"], Value::Null);
     assert_eq!(
         reading["value"]["witnessAtomRef"],
@@ -5885,7 +5883,7 @@ fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
     );
     assert_eq!(
         reading["value"]["transportedEvaluator"],
-        "ag.square-free-repair@1"
+        "ag.square-free-repair"
     );
     assert!(
         reading["value"]["nonConclusion"]
@@ -5994,7 +5992,7 @@ fn cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed() {
             .as_array()
             .expect("analytic readings is array")
             .iter()
-            .all(|reading| reading["evaluator"] != "ag.support-transfer@1"),
+            .all(|reading| reading["evaluator"] != "ag.support-transfer"),
         "missing transfer pairing cells must not synthesize zero analytic readings"
     );
 }
@@ -6261,7 +6259,7 @@ fn cli_locks_archview_gluing_geometry_golden_ux_fixture() {
     let manifest = read_json(&root.join("archsig_viewer_gluing_geometry_golden_ux.json"));
     assert_eq!(
         manifest["schema"],
-        "archsig-viewer-gluing-geometry-golden-ux/v1"
+        "archsig-viewer-gluing-geometry-golden-ux/v0.5.0"
     );
 
     let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -6325,7 +6323,7 @@ fn cli_locks_archview_gluing_geometry_golden_ux_fixture() {
         let report = read_json(&out_dir.join("archsig-insight-report.json"));
         let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let gluing = &report["gluingGeometry"];
-        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v1");
+        assert_eq!(gluing["schema"], "archsig-viewer-gluing-geometry/v0.5.0");
         assert_eq!(
             viewer["aatGeometryOverlays"]["gluingGeometry"], report["gluingGeometry"],
             "{case_id} viewer data must expose the same golden gluing geometry projection"
@@ -6539,7 +6537,7 @@ fn cli_locks_ag_measurement_cech_h1_visible_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_cech_h1_visible.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-cech-h1-visible-fixture");
     assert!(
         fixture["atoms"]
@@ -6572,7 +6570,7 @@ fn cli_locks_ag_measurement_square_free_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_square_free_repair.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-square-free-repair-fixture");
     assert!(
         fixture["atoms"]
@@ -6605,7 +6603,7 @@ fn cli_locks_ag_measurement_law_conflict_tor_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_law_conflict_tor.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-law-conflict-tor-fixture");
     assert!(
         fixture["atoms"]
@@ -6639,7 +6637,7 @@ fn cli_locks_ag_measurement_sheaf_laplacian_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_sheaf_laplacian.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-sheaf-laplacian-fixture");
     assert!(
         fixture["atoms"]
@@ -6673,7 +6671,7 @@ fn cli_locks_ag_measurement_period_stokes_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_period_stokes.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-period-stokes-fixture");
     assert!(
         fixture["atoms"]
@@ -6707,7 +6705,7 @@ fn cli_locks_ag_measurement_support_transfer_golden_fixture() {
         .and_then(Path::parent)
         .expect("crate root is tools/archsig inside repo");
     let fixture = read_json(&ag_measurement_root().join("archmap_v2_support_transfer.json"));
-    assert_eq!(fixture["schema"], "archmap/v2");
+    assert_eq!(fixture["schema"], "archmap/v0.5.0");
     assert_eq!(fixture["id"], "ag-measurement-support-transfer-fixture");
     assert!(
         fixture["atoms"]
@@ -6791,7 +6789,7 @@ fn cli_rejects_archmap_v2_context_restriction_cycle() {
     let json = read_json(&report);
     assert!(
         json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "archmap-v2-context-poset-refs" && check["result"] == "fail"
+            check["id"] == "archmap-schema050-context-poset-refs" && check["result"] == "fail"
         }),
         "context restriction cycle must fail finite-poset validation"
     );
@@ -6864,7 +6862,7 @@ fn archmap_v2_cross_doctrine_comparison_rejects_noncanonical_input() {
 
 #[test]
 fn cli_validates_archmap_v1_atom_contract() {
-    let out_dir = temp_dir("archmap-v1-validation");
+    let out_dir = temp_dir("archmap-schema050-validation");
     let root = archmap_v1_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -6877,8 +6875,8 @@ fn cli_validates_archmap_v1_atom_contract() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archmap-validation-report-v1");
-    assert_eq!(json["inputSchema"], "archmap/v1");
+    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
+    assert_eq!(json["inputSchema"], "archmap/v0.5.0");
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["atomCount"], 3);
     assert_eq!(json["summary"]["moleculeCount"], 1);
@@ -6886,7 +6884,7 @@ fn cli_validates_archmap_v1_atom_contract() {
 
 #[test]
 fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
-    let out_dir = temp_dir("analyze-v1-normalized");
+    let out_dir = temp_dir("analyze-schema050-normalized");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -6903,8 +6901,8 @@ fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
 
     assert!(output.status.success());
     let json = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(json["schema"], "normalized-archmap/v1");
-    assert_eq!(json["normalizerId"], "archmap-v1-aat-presentation@1");
+    assert_eq!(json["schema"], "normalized-archmap/v0.5.0");
+    assert_eq!(json["normalizerId"], "archmap-schema050-aat-presentation@1");
     assert_eq!(json["summary"]["atomCount"], 3);
     assert_eq!(json["summary"]["normalizedAtomCount"], 3);
     assert_eq!(json["summary"]["generatedMoleculeCandidateCount"], 1);
@@ -6923,7 +6921,7 @@ fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
 
 #[test]
 fn cli_analyze_v1_writes_typed_evaluator_results() {
-    let out_dir = temp_dir("analyze-v1-typed-results");
+    let out_dir = temp_dir("analyze-schema050-typed-results");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -6941,7 +6939,7 @@ fn cli_analyze_v1_writes_typed_evaluator_results() {
 
     assert!(output.status.success());
     let json = read_json(&out_dir.join("typed-evaluator-results.json"));
-    assert_eq!(json["schema"], "typed-evaluator-results/v1");
+    assert_eq!(json["schema"], "typed-evaluator-results/v0.5.0");
     assert_eq!(json["summary"]["resultCount"], 6);
     assert!(
         json["summary"]["measuredPassCount"].as_u64().unwrap_or(0) > 0
@@ -6980,7 +6978,7 @@ fn cli_analyze_v1_writes_typed_evaluator_results() {
 
 #[test]
 fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
-    let out_dir = temp_dir("analyze-v1-blocked-molecule");
+    let out_dir = temp_dir("analyze-schema050-blocked-molecule");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -7022,7 +7020,7 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
             .as_array()
             .is_some_and(|results| {
                 results.iter().any(|result| {
-                    result["replacementId"] == "missing-evidence.reading@1"
+                    result["replacementId"] == "missing-evidence.reading"
                         && result["replacementForV0Field"] == "observationGaps"
                         && result["status"] == "blocked"
                         && result["blockerReason"]
@@ -7149,7 +7147,7 @@ fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
 
 #[test]
 fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
-    let out_dir = temp_dir("analyze-v1-spectrum-nonzero");
+    let out_dir = temp_dir("analyze-schema050-spectrum-nonzero");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -7349,7 +7347,9 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
             "blockedByMissingFiller",
         ),
     ] {
-        let out_dir = temp_dir(&format!("analyze-v1-homotopy-{expected_loop_status}"));
+        let out_dir = temp_dir(&format!(
+            "analyze-schema050-homotopy-{expected_loop_status}"
+        ));
         let output = run_sig0_output(&[
             "analyze",
             "--archmap",
@@ -7551,7 +7551,7 @@ fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
 
 #[test]
 fn cli_analyze_v1_homotopy_accepts_empty_molecule_support() {
-    let out_dir = temp_dir("analyze-v1-homotopy-empty-support");
+    let out_dir = temp_dir("analyze-schema050-homotopy-empty-support");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -7604,7 +7604,7 @@ fn cli_analyze_v1_homotopy_accepts_empty_molecule_support() {
 
 #[test]
 fn cli_analyze_v1_structural_reading_review_surface_uses_typed_refs() {
-    let out_dir = temp_dir("analyze-v1-structural-reading-review");
+    let out_dir = temp_dir("analyze-schema050-structural-reading-review");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -7624,8 +7624,8 @@ fn cli_analyze_v1_structural_reading_review_surface_uses_typed_refs() {
     let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
     let surface = &packet["structuralReadingReviewSurface"];
     assert_eq!(
-        surface["schemaVersion"].as_str(),
-        Some("structural-reading-review-surface/v1")
+        surface["schema"].as_str(),
+        Some("structural-reading-review-surface/v0.5.0")
     );
     assert!(
         surface["connectedReadingRefs"]
@@ -7752,7 +7752,7 @@ fn cli_analyze_v1_structural_reading_review_surface_uses_typed_refs() {
 
 #[test]
 fn cli_rejects_archmap_v1_unknown_atom_kind() {
-    let out_dir = temp_dir("archmap-v1-unknown-kind");
+    let out_dir = temp_dir("archmap-schema050-unknown-kind");
     let root = archmap_v1_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -7768,19 +7768,20 @@ fn cli_rejects_archmap_v1_unknown_atom_kind() {
 
     assert!(!output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archmap-validation-report-v1");
+    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "fail");
     assert!(
-        json["checks"].as_array().is_some_and(|checks| checks
-            .iter()
-            .any(|check| check["id"] == "archmap-v1-atom-kind-vocabulary"
+        json["checks"]
+            .as_array()
+            .is_some_and(|checks| checks.iter().any(|check| check["id"]
+                == "archmap-schema050-atom-kind-vocabulary"
                 && check["result"] == "fail"))
     );
 }
 
 #[test]
 fn cli_rejects_archmap_v1_unresolved_source_ref() {
-    let out_dir = temp_dir("archmap-v1-bad-ref");
+    let out_dir = temp_dir("archmap-schema050-bad-ref");
     let root = archmap_v1_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -7798,15 +7799,15 @@ fn cli_rejects_archmap_v1_unresolved_source_ref() {
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
     assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks
-            .iter()
-            .any(|check| check["id"] == "archmap-v1-atom-refs-resolve" && check["result"] == "fail")
+        checks.iter().any(|check| {
+            check["id"] == "archmap-schema050-atom-refs-resolve" && check["result"] == "fail"
+        })
     }));
 }
 
 #[test]
 fn cli_rejects_archmap_v1_unknown_predicate() {
-    let out_dir = temp_dir("archmap-v1-unknown-predicate");
+    let out_dir = temp_dir("archmap-schema050-unknown-predicate");
     let root = archmap_v1_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -7824,16 +7825,17 @@ fn cli_rejects_archmap_v1_unknown_predicate() {
     let json = read_json(&report);
     assert_eq!(json["summary"]["result"], "fail");
     assert!(
-        json["checks"].as_array().is_some_and(|checks| checks
-            .iter()
-            .any(|check| check["id"] == "archmap-v1-predicate-vocabulary"
+        json["checks"]
+            .as_array()
+            .is_some_and(|checks| checks.iter().any(|check| check["id"]
+                == "archmap-schema050-predicate-vocabulary"
                 && check["result"] == "fail"))
     );
 }
 
 #[test]
 fn cli_rejects_archmap_v1_legacy_root_field() {
-    let out_dir = temp_dir("archmap-v1-legacy-field");
+    let out_dir = temp_dir("archmap-schema050-legacy-field");
     let root = archmap_v1_root();
     let report = out_dir.join("archmap-validation.json");
 
@@ -7856,7 +7858,7 @@ fn cli_rejects_archmap_v1_legacy_root_field() {
 
 #[test]
 fn cli_validates_law_policy_v1_selector_contract() {
-    let out_dir = temp_dir("law-policy-v1-validation");
+    let out_dir = temp_dir("law-policy-schema050-validation");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
 
@@ -7871,15 +7873,15 @@ fn cli_validates_law_policy_v1_selector_contract() {
     ]);
 
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
-    assert_eq!(json["input"]["schema"], "law-policy/v1");
+    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
+    assert_eq!(json["input"]["schema"], "law-policy/v0.5.0");
     assert_eq!(json["summary"]["result"], "pass");
     assert_eq!(json["summary"]["policyEntryCount"], 2);
     assert_eq!(json["summary"]["packEntryCount"], 1);
     assert_eq!(json["summary"]["expandedPolicyEntryCount"], 6);
     assert!(json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-policy-v1-replacement-registry-manifest"
+            check["id"] == "law-policy-schema050-replacement-registry-manifest"
                 && check["result"] == "pass"
         })
     }));
@@ -7887,22 +7889,22 @@ fn cli_validates_law_policy_v1_selector_contract() {
         entries.len() == 6
             && entries.iter().any(|entry| {
                 entry["law"] == "solid.single-responsibility"
-                    && entry["evaluator"] == "solid.single-responsibility@1"
+                    && entry["evaluator"] == "solid.single-responsibility"
             })
             && entries.iter().any(|entry| {
                 entry["law"] == "solid.dependency-inversion"
-                    && entry["evaluator"] == "solid.dependency-inversion@1"
+                    && entry["evaluator"] == "solid.dependency-inversion"
             })
             && entries.iter().any(|entry| {
                 entry["law"] == "domain.no-direct-infra-dependency"
-                    && entry["evaluator"] == "domain.no-direct-infra-dependency@1"
+                    && entry["evaluator"] == "domain.no-direct-infra-dependency"
             })
     }));
 }
 
 #[test]
 fn cli_rejects_law_policy_v1_unknown_evaluator() {
-    let out_dir = temp_dir("law-policy-v1-unknown-evaluator");
+    let out_dir = temp_dir("law-policy-schema050-unknown-evaluator");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
 
@@ -7918,19 +7920,20 @@ fn cli_rejects_law_policy_v1_unknown_evaluator() {
 
     assert!(!output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "fail");
     assert!(
-        json["checks"].as_array().is_some_and(|checks| checks
-            .iter()
-            .any(|check| check["id"] == "law-policy-v1-registry-vocabulary"
+        json["checks"]
+            .as_array()
+            .is_some_and(|checks| checks.iter().any(|check| check["id"]
+                == "law-policy-schema050-registry-vocabulary"
                 && check["result"] == "fail"))
     );
 }
 
 #[test]
 fn cli_rejects_law_policy_v1_unknown_pack() {
-    let out_dir = temp_dir("law-policy-v1-unknown-pack");
+    let out_dir = temp_dir("law-policy-schema050-unknown-pack");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
 
@@ -7946,18 +7949,18 @@ fn cli_rejects_law_policy_v1_unknown_pack() {
 
     assert!(!output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "fail");
     assert!(json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-policy-v1-registry-vocabulary" && check["result"] == "fail"
+            check["id"] == "law-policy-schema050-registry-vocabulary" && check["result"] == "fail"
         })
     }));
 }
 
 #[test]
 fn cli_rejects_law_policy_v1_unresolved_basis() {
-    let out_dir = temp_dir("law-policy-v1-unknown-basis");
+    let out_dir = temp_dir("law-policy-schema050-unknown-basis");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
 
@@ -7973,18 +7976,18 @@ fn cli_rejects_law_policy_v1_unresolved_basis() {
 
     assert!(!output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "fail");
     assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks
-            .iter()
-            .any(|check| check["id"] == "law-policy-v1-basis-recorded" && check["result"] == "fail")
+        checks.iter().any(|check| {
+            check["id"] == "law-policy-schema050-basis-recorded" && check["result"] == "fail"
+        })
     }));
 }
 
 #[test]
 fn cli_rejects_law_policy_v1_dsl_field() {
-    let out_dir = temp_dir("law-policy-v1-dsl-field");
+    let out_dir = temp_dir("law-policy-schema050-dsl-field");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
 
@@ -8007,7 +8010,7 @@ fn cli_rejects_law_policy_v1_dsl_field() {
 
 #[test]
 fn cli_rejects_law_policy_v1_unknown_distance_profile_ref() {
-    let out_dir = temp_dir("law-policy-v1-unknown-distance-profile");
+    let out_dir = temp_dir("law-policy-schema050-unknown-distance-profile");
     let root = archmap_v1_root();
     let report = out_dir.join("law-policy-validation.json");
     let policy_path = out_dir.join("law_policy_unknown_distance_profile.json");
@@ -8029,18 +8032,19 @@ fn cli_rejects_law_policy_v1_unknown_distance_profile_ref() {
 
     assert!(!output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "law-policy-validation-report-v1");
+    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
     assert_eq!(json["summary"]["result"], "fail");
     assert!(json["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "law-policy-v1-distance-profile-selector" && check["result"] == "fail"
+            check["id"] == "law-policy-schema050-distance-profile-selector"
+                && check["result"] == "fail"
         })
     }));
 }
 
 #[test]
 fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
-    let out_dir = temp_dir("analyze-v1-preflight");
+    let out_dir = temp_dir("analyze-schema050-preflight");
     let root = archmap_v1_root();
     for stale_artifact in [
         "archsig-analysis-packet.json",
@@ -8068,41 +8072,41 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
 
     assert!(output.status.success());
     assert_eq!(
-        read_json(&out_dir.join("archmap-validation.json"))["schemaVersion"],
-        "archmap-validation-report-v1"
+        read_json(&out_dir.join("archmap-validation.json"))["schema"],
+        "archmap-validation-report/v0.5.0"
     );
     assert_eq!(
-        read_json(&out_dir.join("law-policy-validation.json"))["schemaVersion"],
-        "law-policy-validation-report-v1"
+        read_json(&out_dir.join("law-policy-validation.json"))["schema"],
+        "law-policy-validation-report/v0.5.0"
     );
     assert_eq!(
         read_json(&out_dir.join("normalized-archmap.json"))["schema"],
-        "normalized-archmap/v1"
+        "normalized-archmap/v0.5.0"
     );
     assert_eq!(
         read_json(&out_dir.join("typed-evaluator-results.json"))["schema"],
-        "typed-evaluator-results/v1"
+        "typed-evaluator-results/v0.5.0"
     );
     let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
     assert_eq!(
         architecture_distance["schema"],
-        "archsig-architecture-distance/v1"
+        "archsig-architecture-distance/v0.5.0"
     );
     assert_eq!(
         read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
-        "archsig-analysis-summary/v1"
+        "archsig-analysis-summary/v0.5.0"
     );
     assert_eq!(
-        read_json(&out_dir.join("archsig-atom-viewer-data.json"))["schemaVersion"],
-        "archsig-atom-viewer-data-v1"
+        read_json(&out_dir.join("archsig-atom-viewer-data.json"))["schema"],
+        "archsig-atom-viewer-data/v0.5.0"
     );
     assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-validation.json"))["schemaVersion"],
-        "archsig-analysis-validation-report-v1"
+        read_json(&out_dir.join("archsig-analysis-validation.json"))["schema"],
+        "archsig-analysis-validation-report/v0.5.0"
     );
     assert_eq!(
-        read_json(&out_dir.join("archsig-run-manifest.json"))["schemaVersion"],
-        "archsig-run-manifest-v1"
+        read_json(&out_dir.join("archsig-run-manifest.json"))["schema"],
+        "archsig-run-manifest/v0.5.0"
     );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
@@ -8186,7 +8190,7 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
 
 #[test]
 fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
-    let out_dir = temp_dir("analyze-v1-label-only-semantic");
+    let out_dir = temp_dir("analyze-schema050-label-only-semantic");
     let root = archmap_v1_root();
     let archmap_path = root.join("replacement_negative/archmap_label_only_semantic.json");
 
@@ -8207,7 +8211,7 @@ fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
     assert_eq!(validation["summary"]["result"], "fail");
     assert!(validation["checks"].as_array().is_some_and(|checks| {
         checks.iter().any(|check| {
-            check["id"] == "archmap-v1-atom-required-shapes" && check["result"] == "fail"
+            check["id"] == "archmap-schema050-atom-required-shapes" && check["result"] == "fail"
         })
     }));
     assert!(
@@ -8218,7 +8222,7 @@ fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
 
 #[test]
 fn cli_analyze_v1_schema_only_input_does_not_become_measured_replacement() {
-    let out_dir = temp_dir("analyze-v1-schema-only");
+    let out_dir = temp_dir("analyze-schema050-schema-only");
     let root = archmap_v1_root();
     let archmap_path = root.join("replacement_negative/archmap_schema_only.json");
 
@@ -8239,7 +8243,7 @@ fn cli_analyze_v1_schema_only_input_does_not_become_measured_replacement() {
         "schema-only v1 input is syntactically valid but must remain bounded incomplete"
     );
     let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
-    assert_eq!(typed["schema"], "typed-evaluator-results/v1");
+    assert_eq!(typed["schema"], "typed-evaluator-results/v0.5.0");
     assert_eq!(
         typed["summary"]["measuredPassCount"].as_u64().unwrap_or(0)
             + typed["summary"]["measuredViolationCount"]
@@ -8288,7 +8292,10 @@ fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() 
             "replacement_negative/archmap_non_conclusion_only_v0_field.json",
         ),
     ] {
-        let out_dir = temp_dir(&format!("analyze-v1-removed-field-only-{}", removed_field));
+        let out_dir = temp_dir(&format!(
+            "analyze-schema050-removed-field-only-{}",
+            removed_field
+        ));
         let archmap_path = root.join(fixture);
 
         let output = run_sig0_output(&[
@@ -8316,7 +8323,7 @@ fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() 
 
 #[test]
 fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
-    let out_dir = temp_dir("analyze-v1-stale-success-artifact-suppression");
+    let out_dir = temp_dir("analyze-schema050-stale-success-artifact-suppression");
     let root = archmap_v1_root();
     for stale_artifact in [
         "archsig-analysis-summary.json",
@@ -8413,7 +8420,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(archmap_validation["summary"]["result"], "pass");
 
     let normalized = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(normalized["schema"], "normalized-archmap/v2");
+    assert_eq!(normalized["schema"], "normalized-archmap/v0.5.0");
     assert_eq!(normalized["summary"]["normalizedAtomCount"], 60);
     assert_eq!(normalized["summary"]["contextCount"], 7);
     assert_eq!(normalized["summary"]["coverCount"], 1);
@@ -8421,17 +8428,17 @@ fn practical_rust_service_example_runs_current_analyze() {
     let measurement_packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
         measurement_packet["schema"],
-        "archsig-measurement-packet/v1"
+        "archsig-measurement-packet/v0.5.0"
     );
     assert_eq!(
         measurement_packet["packetId"],
-        "measurement:practical-rust-commerce-fulfillment-v2"
+        "measurement:practical-rust-commerce-fulfillment/v0.5.0"
     );
     assert!(
         measurement_packet["structuralVerdict"]
             .as_array()
             .is_some_and(|rows| rows.len() == 1
-                && rows[0]["evaluator"] == "ag.cech-obstruction@1"
+                && rows[0]["evaluator"] == "ag.cech-obstruction"
                 && rows[0]["verdict"] == "measured_zero"),
         "practical sample must expose the selected AG structural verdict"
     );
@@ -8447,7 +8454,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
-    assert_eq!(summary["schema"], "archsig-analysis-summary/v2");
+    assert_eq!(summary["schema"], "archsig-analysis-summary/v0.5.0");
     assert_eq!(
         summary["conclusion"],
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -8455,7 +8462,7 @@ fn practical_rust_service_example_runs_current_analyze() {
     assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 1);
     assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
 
-    assert_eq!(viewer["schemaVersion"], "archsig-atom-viewer-data-v2");
+    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.0");
     assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(60));
     assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
     assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(78));
@@ -8477,7 +8484,7 @@ fn practical_rust_service_example_runs_current_analyze() {
         "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     );
 
-    assert_eq!(manifest["schemaVersion"], "archsig-run-manifest-v2");
+    assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.0");
     assert_eq!(manifest["outputMode"], "v2-measurement-foundation");
     assert!(
         manifest["generatedArtifacts"]
@@ -8496,10 +8503,10 @@ fn practical_rust_service_example_runs_current_analyze() {
 
 #[test]
 fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
-    let out_dir = temp_dir("pr-review-v1");
+    let out_dir = temp_dir("pr-review/v0.5.0");
     let root = archmap_v1_root();
     let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-v1.json");
+    let report = out_dir.join("archsig-pr-review-schema050.json");
 
     let output = run_sig0_output(&[
         "pr-review",
@@ -8520,23 +8527,23 @@ fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
 
     assert!(output.status.success());
     let json = read_json(&report);
-    assert_eq!(json["schemaVersion"], "archsig-pr-review-report-v1");
+    assert_eq!(json["schema"], "archsig-pr-review-report/v0.5.0");
     assert_eq!(
         json["reviewKind"],
         "v1-output-replacement-structural-pr-review"
     );
     assert_eq!(
         json["canonicalInputs"]["baseArchMap"]["schema"],
-        "archmap/v1"
+        "archmap/v0.5.0"
     );
     assert_eq!(
         json["canonicalInputs"]["lawPolicy"]["schema"],
-        "law-policy/v1"
+        "law-policy/v0.5.0"
     );
     assert_eq!(json["typedEvaluatorSummary"]["resultCount"], 6);
     assert_eq!(
         json["v1Analysis"]["base"]["packetSchema"],
-        "archsig-analysis-packet/v1"
+        "archsig-analysis-packet/v0.5.0"
     );
     assert!(
         json["v1Analysis"]["base"]["structuralPacketRefs"]["structuralReadingReviewSurface"]
@@ -8572,10 +8579,10 @@ fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
 
 #[test]
 fn cli_pr_review_v1_reads_after_and_path_archmap_structural_diagnosis() {
-    let out_dir = temp_dir("pr-review-v1-after-archmap");
+    let out_dir = temp_dir("pr-review-schema050-after-archmap");
     let root = archmap_v1_root();
     let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-v1.json");
+    let report = out_dir.join("archsig-pr-review-schema050.json");
 
     let output = run_sig0_output(&[
         "pr-review",
@@ -8604,11 +8611,11 @@ fn cli_pr_review_v1_reads_after_and_path_archmap_structural_diagnosis() {
     let json = read_json(&report);
     assert_eq!(
         json["canonicalInputs"]["afterArchMap"]["schema"],
-        "archmap/v1"
+        "archmap/v0.5.0"
     );
     assert_eq!(
         json["v1Analysis"]["after"]["packetSchema"],
-        "archsig-analysis-packet/v1"
+        "archsig-analysis-packet/v0.5.0"
     );
     assert_eq!(
         json["v1Analysis"]["path"]
@@ -8640,10 +8647,10 @@ fn cli_pr_review_v1_reads_after_and_path_archmap_structural_diagnosis() {
 
 #[test]
 fn cli_pr_review_v1_matches_head_only_delta_refs() {
-    let out_dir = temp_dir("pr-review-v1-after-only-delta");
+    let out_dir = temp_dir("pr-review-schema050-after-only-delta");
     let root = archmap_v1_root();
     let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-v1.json");
+    let report = out_dir.join("archsig-pr-review-schema050.json");
 
     let output = run_sig0_output(&[
         "pr-review",
@@ -8688,18 +8695,18 @@ fn cli_pr_review_v1_matches_head_only_delta_refs() {
 
 #[test]
 fn cli_pr_review_v1_rejects_invalid_delta_refs_and_path_without_after() {
-    let out_dir = temp_dir("pr-review-v1-invalid-delta");
+    let out_dir = temp_dir("pr-review-schema050-invalid-delta");
     let root = archmap_v1_root();
     let malformed_delta = out_dir.join("archmap_delta_missing_refs.json");
     fs::write(
         &malformed_delta,
         r#"{
-  "schemaVersion": "archmap-delta-v0",
+  "schema": "archmap-delta/v0.5.0",
   "deltaId": "delta:missing-refs"
 }"#,
     )
     .expect("malformed delta fixture can be written");
-    let report = out_dir.join("archsig-pr-review-v1.json");
+    let report = out_dir.join("archsig-pr-review-schema050.json");
 
     let missing_refs = run_sig0_output(&[
         "pr-review",
@@ -8750,10 +8757,10 @@ fn cli_pr_review_v1_rejects_invalid_delta_refs_and_path_without_after() {
 
 #[test]
 fn cli_pr_review_v1_rejects_invalid_archmap_or_law_policy_contract() {
-    let out_dir = temp_dir("pr-review-v1-invalid-contract");
+    let out_dir = temp_dir("pr-review-schema050-invalid-contract");
     let root = archmap_v1_root();
     let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-v1.json");
+    let report = out_dir.join("archsig-pr-review-schema050.json");
 
     let invalid_archmap = run_sig0_output(&[
         "pr-review",
@@ -8799,6 +8806,31 @@ fn cli_pr_review_v1_rejects_invalid_archmap_or_law_policy_contract() {
     assert!(
         String::from_utf8_lossy(&invalid_policy.stderr)
             .contains("failed LawPolicy v1 validation for pr-review")
+    );
+
+    let finite_poset_archmap = run_sig0_output(&[
+        "pr-review",
+        "--base-archmap",
+        ag_measurement_root()
+            .join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--delta-archmap",
+        review
+            .join("archmap_delta_v1_refs.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!finite_poset_archmap.status.success());
+    assert!(
+        String::from_utf8_lossy(&finite_poset_archmap.stderr)
+            .contains("finite-poset-site ArchMap shape")
     );
 }
 
@@ -9030,24 +9062,38 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         .iter()
         .map(|entry| entry["artifactId"].as_str().expect("artifact id"))
         .collect::<Vec<_>>();
+    let unique_ids = ids.iter().copied().collect::<BTreeSet<_>>();
+    assert_eq!(
+        unique_ids.len(),
+        ids.len(),
+        "schema catalog artifact IDs must be unique"
+    );
+    let schema_names = artifacts
+        .iter()
+        .map(|entry| entry["schemaName"].as_str().expect("schema name"))
+        .collect::<Vec<_>>();
+    let unique_schema_names = schema_names.iter().copied().collect::<BTreeSet<_>>();
+    assert_eq!(
+        unique_schema_names.len(),
+        schema_names.len(),
+        "schema catalog schema names must be unique"
+    );
     assert_eq!(
         ids,
         vec![
-            "archmap-v1",
-            "aat-atom-vocabulary-v1",
-            "archmap-v2",
-            "law-policy-v1",
-            "measurement-profile-v1",
-            "law-evaluator-registry-v1",
-            "normalized-archmap-v1",
-            "normalized-archmap-v2",
-            "typed-evaluator-results-v1",
-            "architecture-distance-v1",
-            "archsig-measurement-packet-v1",
-            "archsig-boundary-statement-v1",
-            "archsig-analysis-packet-v1",
-            "archsig-run-manifest",
-            "archsig-atom-viewer-data",
+            "archmap-current",
+            "aat-atom-vocabulary/v0.5.0",
+            "law-policy/v0.5.0",
+            "measurement-profile/v0.5.0",
+            "law-evaluator-registry/v0.5.0",
+            "normalized-archmap-current",
+            "typed-evaluator-results/v0.5.0",
+            "archsig-architecture-distance/v0.5.0",
+            "archsig-measurement-packet/v0.5.0",
+            "archsig-boundary-statement/v0.5.0",
+            "archsig-analysis-packet/v0.5.0",
+            "archsig-run-manifest/v0.5.0",
+            "archsig-atom-viewer-data/v0.5.0",
         ]
     );
     for entry in artifacts {
@@ -9060,7 +9106,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     }
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "aat-atom-vocabulary-v1"
+            entry["artifactId"] == "aat-atom-vocabulary/v0.5.0"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -9081,8 +9127,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-boundary-statement-v1"
-                && entry["schemaVersionName"] == "archsig-boundary-statement/v1"
+            entry["artifactId"] == "archsig-boundary-statement/v0.5.0"
+                && entry["schemaName"] == "archsig-boundary-statement/v0.5.0"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -9102,36 +9148,36 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "architecture-distance-v1"
+            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
                         description.contains("primary curvature geometry readings")
                     })
         }),
-        "schema catalog must describe architecture-distance-v1 curvature primary surface"
+        "schema catalog must describe architecture-distance-schema050 curvature primary surface"
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "architecture-distance-v1"
+            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
                         description.contains("primary homotopy filling geometry readings")
                     })
         }),
-        "schema catalog must describe architecture-distance-v1 homotopy primary surface"
+        "schema catalog must describe architecture-distance-schema050 homotopy primary surface"
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "architecture-distance-v1"
+            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
                         description.contains("primary representation metric readings")
                     })
         }),
-        "schema catalog must describe architecture-distance-v1 representation primary surface"
+        "schema catalog must describe architecture-distance-schema050 representation primary surface"
     );
 }
 
@@ -9285,7 +9331,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         .expect("policies is an array")
         .push(json!({
             "law": "ag.square-free-repair",
-            "evaluator": "ag.square-free-repair@1",
+            "evaluator": "ag.square-free-repair",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "medium"
@@ -9309,7 +9355,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let cech_row = &packet["structuralVerdict"][0];
-    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction@1");
+    assert_eq!(cech_row["evaluator"], "ag.cech-obstruction");
     assert_eq!(cech_row["verdict"], "not_computed");
     assert_eq!(cech_row["verdictData"]["zero"], false);
     assert_eq!(cech_row["verdictData"]["nonZero"], false);
@@ -9347,7 +9393,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|row| row["evaluator"] == "ag.square-free-repair@1")
+        .find(|row| row["evaluator"] == "ag.square-free-repair")
         .expect("independent square-free row exists");
     assert_eq!(
         square_free_row["verdict"], "measured_zero",
@@ -9418,7 +9464,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
     assert_eq!(cech["selectedH2"]["status"], "not_computed");
     assert_eq!(
         cech["selectedH2"]["reason"],
-        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
     );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
     assert_eq!(capacity["status"], "not_computed");
@@ -9572,7 +9618,7 @@ fn cli_analyze_v2_strict_distance_allows_implemented_analytic_only_evaluators() 
             .as_array()
             .expect("analytic readings is array")
             .iter()
-            .any(|reading| reading["evaluator"] == "ag.support-transfer@1")
+            .any(|reading| reading["evaluator"] == "ag.support-transfer")
     );
 }
 
@@ -9623,7 +9669,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             "website/archsig/reference/index.html",
             &[
                 "architecture-distance.json",
-                "archsig-architecture-distance/v1",
+                "archsig-architecture-distance/v0.5.0",
                 "--strict-distance",
             ][..],
         ),
@@ -9631,7 +9677,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             "tools/archsig/examples/practical-rust-service/README.md",
             &[
                 "archsig-measurement-packet.json",
-                "archsig-atom-viewer-data-v2",
+                "archsig-atom-viewer-data/v0.5.0",
                 "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
             ][..],
         ),
@@ -9649,7 +9695,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
 
 #[test]
 fn cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref() {
-    let out_dir = temp_dir("analyze-v1-strict-distance-missing-profile");
+    let out_dir = temp_dir("analyze-schema050-strict-distance-missing-profile");
     let root = archmap_v1_root();
     let policy_path = out_dir.join("law_policy_without_distance_profile.json");
     let mut policy = read_json(&root.join("law_policy.json"));
@@ -9702,7 +9748,7 @@ fn cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref() {
 
 #[test]
 fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
-    let out_dir = temp_dir("analyze-v1-strict-distance-blocked");
+    let out_dir = temp_dir("analyze-schema050-strict-distance-blocked");
     let root = archmap_v1_root();
 
     let output = run_sig0_output(&[
@@ -9760,7 +9806,7 @@ fn cli_analyze_current_strict_distance_accepts_practical_measurement_foundation(
     );
     assert_eq!(
         read_json(&out_dir.join("archsig-measurement-packet.json"))["schema"],
-        "archsig-measurement-packet/v1"
+        "archsig-measurement-packet/v0.5.0"
     );
     assert_eq!(
         read_json(&out_dir.join("archsig-analysis-summary.json"))["conclusion"],
@@ -9879,7 +9925,7 @@ fn coherence_row(packet: &Value) -> &Value {
         .as_array()
         .expect("structuralVerdict is array")
         .iter()
-        .find(|row| row["evaluator"] == "ag.coherence-obstruction@1")
+        .find(|row| row["evaluator"] == "ag.coherence-obstruction")
         .expect("coherence row exists")
 }
 
@@ -9888,7 +9934,7 @@ fn restriction_row(packet: &Value) -> &Value {
         .as_array()
         .expect("structuralVerdict is array")
         .iter()
-        .find(|row| row["evaluator"] == "ag.restriction-compatibility@1")
+        .find(|row| row["evaluator"] == "ag.restriction-compatibility")
         .expect("restriction compatibility row exists")
 }
 
@@ -9897,7 +9943,7 @@ fn section_row(packet: &Value) -> &Value {
         .as_array()
         .expect("structuralVerdict is array")
         .iter()
-        .find(|row| row["evaluator"] == "ag.section-factorization@1")
+        .find(|row| row["evaluator"] == "ag.section-factorization")
         .expect("section factorization row exists")
 }
 
@@ -9906,7 +9952,7 @@ fn boundary_residue_row(packet: &Value) -> &Value {
         .as_array()
         .expect("structuralVerdict is array")
         .iter()
-        .find(|row| row["evaluator"] == "ag.boundary-residue@1")
+        .find(|row| row["evaluator"] == "ag.boundary-residue")
         .expect("boundary residue row exists")
 }
 
@@ -10009,11 +10055,11 @@ fn assert_common_structural_verdict_discipline(packet: &Value, evaluator: &str) 
 
 fn restriction_policy() -> Value {
     json!({
-        "schema": "law-policy/v1",
+        "schema": "law-policy/v0.5.0",
         "id": "ag-restriction-policy",
         "measurementProfileRef": "profile:ag-restriction@1",
         "measurementProfiles": [{
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:ag-restriction@1",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:restriction",
@@ -10032,7 +10078,7 @@ fn restriction_policy() -> Value {
         }],
         "policies": [{
             "law": "ag.restriction-compatibility",
-            "evaluator": "ag.restriction-compatibility@1",
+            "evaluator": "ag.restriction-compatibility",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "high"
@@ -10042,11 +10088,11 @@ fn restriction_policy() -> Value {
 
 fn boundary_residue_policy() -> Value {
     json!({
-        "schema": "law-policy/v1",
+        "schema": "law-policy/v0.5.0",
         "id": "ag-boundary-residue-policy",
         "measurementProfileRef": "profile:ag-boundary-residue@1",
         "measurementProfiles": [{
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:ag-boundary-residue@1",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:boundary-residue",
@@ -10065,7 +10111,7 @@ fn boundary_residue_policy() -> Value {
         }],
         "policies": [{
             "law": "ag.boundary-residue",
-            "evaluator": "ag.boundary-residue@1",
+            "evaluator": "ag.boundary-residue",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "high"
@@ -10075,11 +10121,11 @@ fn boundary_residue_policy() -> Value {
 
 fn section_policy() -> Value {
     json!({
-        "schema": "law-policy/v1",
+        "schema": "law-policy/v0.5.0",
         "id": "ag-section-policy",
         "measurementProfileRef": "profile:ag-section@1",
         "measurementProfiles": [{
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:ag-section@1",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:section",
@@ -10098,7 +10144,7 @@ fn section_policy() -> Value {
         }],
         "policies": [{
             "law": "ag.section-factorization",
-            "evaluator": "ag.section-factorization@1",
+            "evaluator": "ag.section-factorization",
             "basis": ["policy-basis:layering"],
             "scope": ["src/"],
             "severity": "high"
@@ -10171,7 +10217,7 @@ fn restriction_archmap(case: &str) -> Value {
         target_atoms.push(atom_id);
     }
     json!({
-        "schema": "archmap/v2",
+        "schema": "archmap/v0.5.0",
         "id": format!("ag-restriction-fixture-{case}"),
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
@@ -10375,7 +10421,7 @@ fn boundary_residue_archmap(case: &str) -> Value {
         .collect::<Vec<_>>();
 
     json!({
-        "schema": "archmap/v2",
+        "schema": "archmap/v0.5.0",
         "id": format!("ag-boundary-residue-fixture-{case}"),
         "sources": {
             "src:core": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M6 core patch"},
@@ -10478,7 +10524,7 @@ fn section_archmap(case: &str) -> Value {
         context_atoms.push(atom_id);
     }
     json!({
-        "schema": "archmap/v2",
+        "schema": "archmap/v0.5.0",
         "id": format!("ag-section-fixture-{case}"),
         "sources": {
             "src:section-carrier": {"kind": "policy", "path": "docs/tool/archsig_measurement_faithfulness_and_ag_viewer_prd.md", "section": "M3 section"},
@@ -10510,7 +10556,7 @@ fn coherence_policy(coefficient: &str, include_cech: bool) -> Value {
     })];
     let mut policies = vec![json!({
         "law": "ag.coherence-obstruction",
-        "evaluator": "ag.coherence-obstruction@1",
+        "evaluator": "ag.coherence-obstruction",
         "basis": ["policy-basis:layering"],
         "scope": ["src/"],
         "severity": "high"
@@ -10524,7 +10570,7 @@ fn coherence_policy(coefficient: &str, include_cech: bool) -> Value {
             0,
             json!({
                 "law": "ag.cech-obstruction",
-                "evaluator": "ag.cech-obstruction@1",
+                "evaluator": "ag.cech-obstruction",
                 "basis": ["policy-basis:layering"],
                 "scope": ["src/"],
                 "severity": "high"
@@ -10532,11 +10578,11 @@ fn coherence_policy(coefficient: &str, include_cech: bool) -> Value {
         );
     }
     json!({
-        "schema": "law-policy/v1",
+        "schema": "law-policy/v0.5.0",
         "id": "ag-coherence-policy",
         "measurementProfileRef": "profile:ag-coherence@1",
         "measurementProfiles": [{
-            "schema": "measurement-profile/v1",
+            "schema": "measurement-profile/v0.5.0",
             "profileId": "profile:ag-coherence@1",
             "siteRef": "archmap:/contexts",
             "coverRef": "cover:coherence",
@@ -10963,7 +11009,7 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
         .filter_map(|context| context["id"].as_str())
         .collect::<Vec<_>>();
     json!({
-        "schema": "archmap/v2",
+        "schema": "archmap/v0.5.0",
         "id": "ag-coherence-fixture",
         "sources": {
             "src:a": {"kind": "rust", "path": "src/a.rs", "symbol": "A", "line": 1},

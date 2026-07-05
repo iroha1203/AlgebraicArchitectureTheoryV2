@@ -33,7 +33,7 @@ pub(crate) fn build_analyze_run_manifest_v1(
     }
 
     serde_json::json!({
-        "schemaVersion": "archsig-run-manifest-v1",
+        "schema": "archsig-run-manifest/v0.5.0",
         "commandName": "analyze",
         "archmapInputPath": archmap.display().to_string(),
         "lawPolicyInputPath": law_policy.display().to_string(),

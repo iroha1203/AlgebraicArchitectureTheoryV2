@@ -87,7 +87,7 @@ pub fn static_report_artifact_retention_manifest() -> ReportArtifactRetentionMan
                 &repository,
                 pr_number,
                 &commit_sha,
-                "policy-decision-report-v0",
+                "policy-decision-report/v0.5.0",
                 &policy_version,
                 &generated_at,
                 &retention_scope,
@@ -208,7 +208,7 @@ fn check_schema_version(manifest: &ReportArtifactRetentionManifestV0) -> Validat
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported report artifact retention schemaVersion: {}",
+            "unsupported report artifact retention schema: {}",
             manifest.schema_version
         ));
     }
@@ -528,7 +528,7 @@ mod tests {
                 repository: manifest.repository.clone(),
                 pull_request_number: manifest.pull_request.number,
                 commit_sha: manifest.commit_sha.clone(),
-                schema_version: "pr-comment-summary-v0".to_string(),
+                schema_version: "pr-comment-summary/v0.5.0".to_string(),
                 policy_version: manifest.policy.policy_version.clone(),
                 generated_at: manifest.generated_at.clone(),
                 retention_scope: manifest.retention_scope.clone(),

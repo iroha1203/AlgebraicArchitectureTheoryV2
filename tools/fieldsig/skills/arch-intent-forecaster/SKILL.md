@@ -11,14 +11,14 @@ Analyze Epic / PRD / Spec planning forecast. This skill simplifies ArchSig's Int
 
 ## Inputs To Prefer
 
-- `intentmap-v0` and `intentmap-validation-report-v0`
+- `intentmap/v0.5.0` and `intentmap-validation-report/v0.5.0`
 - current ArchMap observation artifact and ArchMap validation report
-- `intent-archmap-alignment-v0` and validation report
-- `operation-support-estimate-v0`
-- `forecast-cone-skeleton-v0`
-- `consequence-envelope-report-v0`
-- `sft-review-summary-v0`
-- `intent-calibration-record-v0`
+- `intent-archmap-alignment/v0.5.0` and validation report
+- `operation-support-estimate/v0.5.0`
+- `forecast-cone-skeleton/v0.5.0`
+- `consequence-envelope-report/v0.5.0`
+- `sft-review-summary/v0.5.0`
+- `intent-calibration-record/v0.5.0`
 
 Do not use PR quality analysis as planning forecast unless the user explicitly asks to compare planning evidence with PR evidence.
 
@@ -82,7 +82,7 @@ ${FIELDSIG_BIN:-fieldsig} intent-calibration-record \
    - Keep missing decisions, ambiguous intents, unsupported intents, and missing evidence separate.
    - Describe likely pressure directions and bounded consequences, not point predictions.
    - Translate unknown remainder, missing invariant, non-conclusion, and typed boundary failure into reviewer next actions.
-   - For bounded LLM judgement, cite `sft-review-summary-v0` evidence refs and boundary refs.
+   - For bounded LLM judgement, cite `sft-review-summary/v0.5.0` evidence refs and boundary refs.
 
 ## Output Shape
 

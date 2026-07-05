@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "synthesis-constraint-artifact-v0",
+  "schema": "synthesis-constraint-artifact/v0.5.0",
   "scope": "fixture synthesis constraint artifact for candidate boundary",
   "constraintRefs": [
-    "constraint-static-boundary-coupon-v0",
-    "constraint-semantic-rounding-contract-v0"
+    "constraint-static-boundary-coupon/v0.5.0",
+    "constraint-semantic-rounding-contract/v0.5.0"
   ],
   "candidateRefs": [
-    "candidate-split-coupon-interface-v0"
+    "candidate-split-coupon-interface/v0.5.0"
   ],
   "requiredAssumptions": [
     "selected obstruction witnesses resolve in the current Feature Extension Report",
@@ -25,7 +25,7 @@
   ],
   "constraints": [
     {
-      "constraintId": "constraint-static-boundary-coupon-v0",
+      "constraintId": "constraint-static-boundary-coupon/v0.5.0",
       "kind": "static",
       "subjectRef": "relation.UserService.CouponService",
       "predicate": "candidate must route forbidden static edge through an allowed boundary",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "constraintId": "constraint-semantic-rounding-contract-v0",
+      "constraintId": "constraint-semantic-rounding-contract/v0.5.0",
       "kind": "semantic",
       "subjectRef": "semantic.diagram.diagram-coupon-discount-order",
       "predicate": "candidate must preserve selected coupon / discount observation contract",
@@ -54,14 +54,14 @@
   ],
   "candidates": [
     {
-      "candidateId": "candidate-split-coupon-interface-v0",
+      "candidateId": "candidate-split-coupon-interface/v0.5.0",
       "producedBy": "bounded synthesis prototype fixture",
       "operationRefs": [
         "operation.split.CouponPort"
       ],
       "constraintRefs": [
-        "constraint-static-boundary-coupon-v0",
-        "constraint-semantic-rounding-contract-v0"
+        "constraint-static-boundary-coupon/v0.5.0",
+        "constraint-semantic-rounding-contract/v0.5.0"
       ],
       "soundnessPackageRefs": [
         "SynthesisSoundnessPackage.candidate_satisfies",
@@ -93,7 +93,7 @@
   "noSolutionBoundary": {
     "solverStatus": "candidate_produced",
     "candidateRefs": [
-      "candidate-split-coupon-interface-v0"
+      "candidate-split-coupon-interface/v0.5.0"
     ],
     "noSolutionCertificateRef": null,
     "validCertificateClaimRef": null,

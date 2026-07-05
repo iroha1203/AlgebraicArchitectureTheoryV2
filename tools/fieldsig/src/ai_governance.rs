@@ -43,8 +43,8 @@ pub fn static_ai_proposal_governance() -> AiProposalGovernanceV0 {
     );
     build_ai_proposal_governance_from_descriptor(
         &descriptor,
-        Some("fixture-operation-support-estimate-v0"),
-        Some("fixture-consequence-envelope-report-v0"),
+        Some("fixture-operation-support-estimate/v0.5.0"),
+        Some("fixture-consequence-envelope-report/v0.5.0"),
     )
 }
 

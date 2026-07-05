@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-repair-synthesis-boundary",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-sig0",
       "kind": "sig0",
-      "schemaVersion": "archsig-sig0-v0",
+      "schema": "archsig-sig0/v0.5.0",
       "path": "canonical/b5/sig0.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -30,7 +30,7 @@
     {
       "artifactId": "artifact-repair-registry",
       "kind": "repair-rule-registry",
-      "schemaVersion": "repair-rule-registry-v0",
+      "schema": "repair-rule-registry/v0.5.0",
       "path": "canonical/b5/repair_rule_registry.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -38,7 +38,7 @@
     {
       "artifactId": "artifact-synthesis-constraints",
       "kind": "synthesis-constraint-artifact",
-      "schemaVersion": "synthesis-constraint-artifact-v0",
+      "schema": "synthesis-constraint-artifact/v0.5.0",
       "path": "canonical/b5/synthesis_constraints_no_solution_certificate.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -46,7 +46,7 @@
     {
       "artifactId": "artifact-no-solution-certificate",
       "kind": "no-solution-certificate",
-      "schemaVersion": "no-solution-certificate-v0",
+      "schema": "no-solution-certificate/v0.5.0",
       "path": "canonical/b5/no_solution_certificate_valid.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -60,7 +60,7 @@
       "path": "canonical/b5/sig0.json",
       "symbol": null,
       "line": null,
-      "ruleId": "archsig-sig0-v0",
+      "ruleId": "archsig-sig0/v0.5.0",
       "confidence": "high"
     },
     {
@@ -80,7 +80,7 @@
       "path": "canonical/b5/repair_rule_registry.json",
       "symbol": null,
       "line": null,
-      "ruleId": "repair-rule-registry-v0",
+      "ruleId": "repair-rule-registry/v0.5.0",
       "confidence": "medium"
     },
     {
@@ -90,7 +90,7 @@
       "path": "canonical/b5/synthesis_constraints_no_solution_certificate.json",
       "symbol": null,
       "line": null,
-      "ruleId": "synthesis-constraint-artifact-v0",
+      "ruleId": "synthesis-constraint-artifact/v0.5.0",
       "confidence": "medium"
     },
     {
@@ -100,7 +100,7 @@
       "path": "canonical/b5/no_solution_certificate_valid.json",
       "symbol": null,
       "line": null,
-      "ruleId": "no-solution-certificate-v0",
+      "ruleId": "no-solution-certificate/v0.5.0",
       "confidence": "medium"
     }
   ],
@@ -237,7 +237,7 @@
     },
     {
       "claimId": "claim-valid-no-solution-certificate",
-      "subjectRef": "synthesis.noSolutionCertificate.certificate-coupon-no-solution-v0",
+      "subjectRef": "synthesis.noSolutionCertificate.certificate-coupon-no-solution-schema050",
       "predicate": "valid no-solution certificate soundness applies to the selected bounded synthesis universe",
       "claimLevel": "formal",
       "claimClassification": "proved",

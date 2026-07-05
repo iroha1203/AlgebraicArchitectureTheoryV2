@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "consequence-envelope-report-v0",
+  "schema": "consequence-envelope-report/v0.5.0",
   "envelopeId": "envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline",
   "forecastConeRef": {
-    "forecastConeSchemaVersion": "forecast-cone-skeleton-v0",
+    "forecastConeSchemaVersion": "forecast-cone-skeleton/v0.5.0",
     "coneId": "cone:estimate:descriptor:coupon-prd-forecast-pipeline",
     "operationSupportEstimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
     "sourceRefIds": [

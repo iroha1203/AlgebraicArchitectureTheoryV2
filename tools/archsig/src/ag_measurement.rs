@@ -18,15 +18,15 @@ const VERDICTS: [&str; 5] = [
     "not_computed",
 ];
 const STRUCTURAL_VERDICT_EVALUATORS: [&str; 9] = [
-    "ag.cech-obstruction@1",
-    "ag.restriction-compatibility@1",
-    "ag.section-factorization@1",
-    "ag.boundary-residue@1",
-    "ag.square-free-repair@1",
-    "ag.law-conflict-tor@1",
-    "ag.coherence-obstruction@1",
-    "ag.sheaf-laplacian@1",
-    "ag.period-stokes-audit@1",
+    "ag.cech-obstruction",
+    "ag.restriction-compatibility",
+    "ag.section-factorization",
+    "ag.boundary-residue",
+    "ag.square-free-repair",
+    "ag.law-conflict-tor",
+    "ag.coherence-obstruction",
+    "ag.sheaf-laplacian",
+    "ag.period-stokes-audit",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -244,7 +244,7 @@ pub fn build_foundation_measurement_packet_v1(
     })];
     let mut analytic_readings = vec![AgAnalyticReadingV1 {
         reading_id: "candidate-regime:stability-placeholder".to_string(),
-        evaluator: "ag.foundation@1".to_string(),
+        evaluator: "ag.foundation".to_string(),
         value: json!({
             "state": "not_evaluated",
             "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them"
@@ -257,7 +257,7 @@ pub fn build_foundation_measurement_packet_v1(
             theorem_ref: "part8/4.2".to_string(),
             assumption: "finite site".to_string(),
             status: "checked".to_string(),
-            checked_by: Some("archmap-v2-validation.contexts-finite".to_string()),
+            checked_by: Some("archmap-schema050-validation.contexts-finite".to_string()),
             assumed_by: None,
         },
         AgAssumptionLedgerEntryV1 {
@@ -282,7 +282,7 @@ pub fn build_foundation_measurement_packet_v1(
             .is_some_and(|evaluator| evaluator.starts_with("ag."))
     }) {
         let evaluator = entry.evaluator.as_deref().unwrap_or_default();
-        if evaluator == "ag.cech-obstruction@1" {
+        if evaluator == "ag.cech-obstruction" {
             validate_cech_profile_v1(&profile)?;
             let measurement = evaluate_cech_obstruction_v1(normalized, &profile);
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -305,7 +305,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.coherence-obstruction@1" {
+        } else if evaluator == "ag.coherence-obstruction" {
             validate_coherence_profile_v1(&profile)?;
             let measurement = evaluate_coherence_obstruction_v1(normalized, &profile);
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -328,7 +328,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.restriction-compatibility@1" {
+        } else if evaluator == "ag.restriction-compatibility" {
             validate_restriction_profile_v1(&profile)?;
             let measurement = evaluate_restriction_compatibility_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -351,7 +351,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.section-factorization@1" {
+        } else if evaluator == "ag.section-factorization" {
             validate_section_profile_v1(&profile)?;
             let measurement = evaluate_section_factorization_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -374,7 +374,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.boundary-residue@1" {
+        } else if evaluator == "ag.boundary-residue" {
             validate_boundary_residue_profile_v1(&profile)?;
             let measurement = evaluate_boundary_residue_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -397,7 +397,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.square-free-repair@1" {
+        } else if evaluator == "ag.square-free-repair" {
             validate_square_free_profile_v1(&profile)?;
             let measurement = evaluate_square_free_repair_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -421,7 +421,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.law-conflict-tor@1" {
+        } else if evaluator == "ag.law-conflict-tor" {
             validate_tor_profile_v1(&profile)?;
             let measurement = evaluate_law_conflict_tor_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -445,7 +445,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.sheaf-laplacian@1" {
+        } else if evaluator == "ag.sheaf-laplacian" {
             validate_laplacian_profile_v1(&profile)?;
             let measurement = evaluate_sheaf_laplacian_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -469,13 +469,13 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.period-stokes@1" {
+        } else if evaluator == "ag.period-stokes" {
             validate_period_profile_v1(&profile)?;
             let measurement = evaluate_period_stokes_v1(normalized, &profile)?;
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
-        } else if evaluator == "ag.period-stokes-audit@1" {
+        } else if evaluator == "ag.period-stokes-audit" {
             validate_period_audit_profile_v1(&profile)?;
             let measurement = evaluate_period_stokes_audit_v1(normalized, &profile)?;
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
@@ -499,7 +499,7 @@ pub fn build_foundation_measurement_packet_v1(
                 depends_on_assumptions,
                 reason: Some(measurement.reason),
             });
-        } else if evaluator == "ag.support-transfer@1" {
+        } else if evaluator == "ag.support-transfer" {
             validate_transfer_profile_v1(&profile)?;
             let measurement = evaluate_support_transfer_v1(normalized, &profile)?;
             computed_invariants.extend(measurement.computed_invariants);
@@ -895,7 +895,7 @@ fn evaluate_coherence_obstruction_v1(
             method_status: "selected_cover_too_large".to_string(),
             cert_ref: None,
             reason: format!(
-                "selected cover has {} contexts; ag.coherence-obstruction@1 enumerates at most {MAX_COHERENCE_CONTEXTS}",
+                "selected cover has {} contexts; ag.coherence-obstruction enumerates at most {MAX_COHERENCE_CONTEXTS}",
                 selected_contexts.len()
             ),
             computed_invariants: vec![coherence_invariant_json(
@@ -968,9 +968,8 @@ fn evaluate_coherence_obstruction_v1(
             non_zero: false,
             method_status: "empty_selected_2_skeleton".to_string(),
             cert_ref: None,
-            reason:
-                "selected cover has no triple-overlap 2-skeleton for ag.coherence-obstruction@1"
-                    .to_string(),
+            reason: "selected cover has no triple-overlap 2-skeleton for ag.coherence-obstruction"
+                .to_string(),
             computed_invariants: vec![coherence_invariant_json(
                 profile,
                 "not_computed",
@@ -1235,7 +1234,7 @@ fn evaluate_square_free_repair_v1(
     let computed_invariants = vec![
         json!({
             "invariantId": format!("square-free-repair:{}", profile.profile_id),
-            "evaluator": "ag.square-free-repair@1",
+            "evaluator": "ag.square-free-repair",
             "method": "finite-square-free-monomial-repair@1",
             "selectedCoverRef": profile.cover_ref,
             "witnessVariables": witness_variables,
@@ -1290,7 +1289,7 @@ fn evaluate_square_free_repair_v1(
     ];
     let analytic_readings = vec![AgAnalyticReadingV1 {
         reading_id: format!("theorem-candidate:repair-inspection:{}", profile.profile_id),
-        evaluator: "ag.foundation@1".to_string(),
+        evaluator: "ag.foundation".to_string(),
         value: json!({
             "readingKind": "repair-lower-bound-inspection@1",
             "selectedCoverRef": profile.cover_ref,
@@ -1328,7 +1327,7 @@ fn evaluate_square_free_repair_v1(
                 theorem_ref: "part8/5.2".to_string(),
                 assumption: "finite support family for Alexander dual enumeration".to_string(),
                 status: "checked".to_string(),
-                checked_by: Some("archmap-v2-validation.contexts-finite".to_string()),
+                checked_by: Some("archmap-schema050-validation.contexts-finite".to_string()),
                 assumed_by: None,
             },
             AgAssumptionLedgerEntryV1 {
@@ -1347,7 +1346,7 @@ fn evaluate_square_free_repair_v1(
                     .filter(|certificate| {
                         matches!(certificate.status.as_str(), "verified" | "computed")
                     })
-                    .map(|certificate| format!("ag.square-free-repair@1:{}", certificate.cert_ref)),
+                    .map(|certificate| format!("ag.square-free-repair:{}", certificate.cert_ref)),
                 assumed_by: certificate
                     .as_ref()
                     .map(|certificate| {
@@ -1391,7 +1390,7 @@ fn lawful_locus_arrangement_invariant(
 
     json!({
         "invariantId": format!("lawful-locus-arrangement:{}", profile.profile_id),
-        "evaluator": "ag.square-free-repair@1",
+        "evaluator": "ag.square-free-repair",
         "method": "finite-delta-coordinate-arrangement@1",
         "claimScope": "selected cover and selected witness-family relative finite Delta_U coordinate arrangement",
         "selectedCoverRef": profile.cover_ref,
@@ -1457,7 +1456,7 @@ fn delta_facet_link_reading_invariant(
 
     json!({
         "invariantId": format!("delta-facet-link-reading:{}", profile.profile_id),
-        "evaluator": "ag.square-free-repair@1",
+        "evaluator": "ag.square-free-repair",
         "method": "finite-delta-facet-link-neutral-reading@1",
         "claimScope": "selected cover and selected witness-family relative raw Delta_U combinatorial reading",
         "selectedCoverRef": profile.cover_ref,
@@ -1586,8 +1585,7 @@ fn evaluate_restriction_compatibility_v1(
             "not_computed".to_string(),
             false,
             false,
-            "selected cover has no restriction edges for ag.restriction-compatibility@1"
-                .to_string(),
+            "selected cover has no restriction edges for ag.restriction-compatibility".to_string(),
         )
     } else if missing_generators {
         (
@@ -1696,7 +1694,7 @@ fn evaluate_section_factorization_v1(
             "not_computed".to_string(),
             false,
             false,
-            "selected section witnessAssignment atom is absent; ag.section-factorization@1 remains silent".to_string(),
+            "selected section witnessAssignment atom is absent; ag.section-factorization remains silent".to_string(),
         )
     } else if forbidden_supports.is_empty() {
         (
@@ -1813,7 +1811,7 @@ fn evaluate_boundary_residue_v1(
             "not_computed".to_string(),
             false,
             false,
-            "selected cover lacks core / feature / boundary patch classification atoms for ag.boundary-residue@1".to_string(),
+            "selected cover lacks core / feature / boundary patch classification atoms for ag.boundary-residue".to_string(),
         ),
         "boundary_mismatch_section_absent" => (
             "not_computed".to_string(),
@@ -1893,7 +1891,7 @@ fn evaluate_law_conflict_tor_v1(
                 .to_string(),
             computed_invariants: vec![json!({
                 "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
-                "evaluator": "ag.law-conflict-tor@1",
+                "evaluator": "ag.law-conflict-tor",
                 "method": "finite-monomial-tor-taylor@1",
                 "selectedCoverRef": profile.cover_ref,
                 "status": "not_computed",
@@ -1920,7 +1918,7 @@ fn evaluate_law_conflict_tor_v1(
         .collect::<Vec<_>>();
     if !outside_ambient.is_empty() {
         return Err(format!(
-            "ag.law-conflict-tor@1 selected law generators outside common ambient pair: {}",
+            "ag.law-conflict-tor selected law generators outside common ambient pair: {}",
             outside_ambient.join(",")
         ));
     }
@@ -1928,7 +1926,7 @@ fn evaluate_law_conflict_tor_v1(
         || selected_laws.iter().cloned().collect::<BTreeSet<_>>() != ambient_laws
     {
         return Err(format!(
-            "ag.law-conflict-tor@1 requires generators for exactly the common ambient law pair {}, found {}",
+            "ag.law-conflict-tor requires generators for exactly the common ambient law pair {}, found {}",
             law_order.join(","),
             selected_laws.join(",")
         ));
@@ -1964,7 +1962,7 @@ fn evaluate_law_conflict_tor_v1(
             reason: "selected law ideal generator contains a non-square-free monomial; finite square-free Taylor regime is not measured".to_string(),
             computed_invariants: vec![json!({
                 "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
-                "evaluator": "ag.law-conflict-tor@1",
+                "evaluator": "ag.law-conflict-tor",
                 "method": "finite-monomial-tor-taylor@1",
                 "status": "unmeasured",
                 "methodStatus": "non_square_free_monomial",
@@ -2045,7 +2043,7 @@ fn evaluate_law_conflict_tor_v1(
         },
         computed_invariants: vec![json!({
                 "invariantId": format!("law-conflict-tor:{}", profile.profile_id),
-                "evaluator": "ag.law-conflict-tor@1",
+                "evaluator": "ag.law-conflict-tor",
                 "method": "finite-monomial-tor-taylor@1",
                 "claimScope": "degree-1 square-free monomial Tor over the selected common ambient pair",
                 "resolution": profile.resolution_selector,
@@ -2105,7 +2103,7 @@ fn hilbert_interference_reading(
 
     AgAnalyticReadingV1 {
         reading_id: format!("analytic:hilbert-interference:{}", profile.profile_id),
-        evaluator: "ag.law-conflict-tor@1".to_string(),
+        evaluator: "ag.law-conflict-tor".to_string(),
         value: json!({
             "readingKind": "hilbert-interference-series@1",
             "seriesSymbol": "Int_{U,V}(t)",
@@ -2200,7 +2198,7 @@ fn evaluate_sheaf_laplacian_v1(
             reason: "selected cellular cochains or boundaries are missing; no Laplacian analytic reading is computed".to_string(),
             computed_invariants: vec![json!({
                 "invariantId": format!("sheaf-laplacian:{}", profile.profile_id),
-                "evaluator": "ag.sheaf-laplacian@1",
+                "evaluator": "ag.sheaf-laplacian",
                 "status": "not_computed",
                 "reason": reason
             })],
@@ -2221,7 +2219,7 @@ fn evaluate_sheaf_laplacian_v1(
     for edge in &edges {
         if !cell_index.contains_key(&edge.source) || !cell_index.contains_key(&edge.target) {
             return Err(format!(
-                "ag.sheaf-laplacian@1 boundary {} references cells outside selected cochain family",
+                "ag.sheaf-laplacian boundary {} references cells outside selected cochain family",
                 edge.atom_ref
             ));
         }
@@ -2297,7 +2295,7 @@ fn evaluate_sheaf_laplacian_v1(
         reason: "finite Laplacian / Hodge values were computed as analytic readings; structural lawfulness is not concluded".to_string(),
         computed_invariants: vec![json!({
             "invariantId": format!("sheaf-laplacian:{}", profile.profile_id),
-            "evaluator": "ag.sheaf-laplacian@1",
+            "evaluator": "ag.sheaf-laplacian",
             "method": "finite-graph-laplacian@1",
             "claimScope": "graph Laplacian analytic proxy; not a full sheaf chain-complex Hodge theorem",
             "selectedCoverRef": profile.cover_ref,
@@ -2311,14 +2309,14 @@ fn evaluate_sheaf_laplacian_v1(
         analytic_readings: vec![
             AgAnalyticReadingV1 {
                 reading_id: format!("analytic:sheaf-laplacian:{}", profile.profile_id),
-                evaluator: "ag.sheaf-laplacian@1".to_string(),
+                evaluator: "ag.sheaf-laplacian".to_string(),
                 value: analytic_value,
                 regime: Some("analytic-measurement".to_string()),
                 structural_verdict_ref: None,
             },
             AgAnalyticReadingV1 {
                 reading_id: format!("theorem-candidate:harmonic-debt:{}", profile.profile_id),
-                evaluator: "ag.foundation@1".to_string(),
+                evaluator: "ag.foundation".to_string(),
                 value: json!({
                     "readingKind": "harmonic-debt-minimality-candidate@1",
                     "essentialRepairLowerBound": round_f64(distance_to_flatness.sqrt()),
@@ -2329,7 +2327,7 @@ fn evaluate_sheaf_laplacian_v1(
             },
             AgAnalyticReadingV1 {
                 reading_id: format!("theorem-candidate:curvature-hotspot:{}", profile.profile_id),
-                evaluator: "ag.foundation@1".to_string(),
+                evaluator: "ag.foundation".to_string(),
                 value: json!({
                     "readingKind": "curvature-transfer-perron-hotspot@1",
                     "sourceProxyReadingKind": "graph-laplacian-hodge-proxy@1",
@@ -2358,13 +2356,13 @@ fn evaluate_period_stokes_v1(
         normalized,
         &selected_contexts,
         "dOmegaIntegral",
-        "ag.period-stokes@1 d omega audit",
+        "ag.period-stokes d omega audit",
     )?;
     let boundary = stokes_audit_values(
         normalized,
         &selected_contexts,
         "boundaryPeriod",
-        "ag.period-stokes@1 boundary audit",
+        "ag.period-stokes boundary audit",
     )?;
     let observed_cycles = pairings
         .iter()
@@ -2388,7 +2386,7 @@ fn evaluate_period_stokes_v1(
         return Ok(PeriodMeasurementV1 {
             computed_invariants: vec![json!({
                 "invariantId": format!("period-stokes:{}", profile.profile_id),
-                "evaluator": "ag.period-stokes@1",
+                "evaluator": "ag.period-stokes",
                 "status": "not_computed",
                 "reason": reason
             })],
@@ -2419,7 +2417,7 @@ fn evaluate_period_stokes_v1(
         return Ok(PeriodMeasurementV1 {
             computed_invariants: vec![json!({
                 "invariantId": format!("period-stokes:{}", profile.profile_id),
-                "evaluator": "ag.period-stokes@1",
+                "evaluator": "ag.period-stokes",
                 "status": "not_computed",
                 "reason": format!("period_model_missing:{}", missing_pairings.join(","))
             })],
@@ -2466,7 +2464,7 @@ fn evaluate_period_stokes_v1(
     Ok(PeriodMeasurementV1 {
         computed_invariants: vec![json!({
             "invariantId": format!("period-stokes:{}", profile.profile_id),
-            "evaluator": "ag.period-stokes@1",
+            "evaluator": "ag.period-stokes",
             "method": "finite-poset-period-stokes@1",
             "selectedCoverRef": profile.cover_ref,
             "pairingAtomRefs": pairings.iter().map(|pairing| json!({
@@ -2480,7 +2478,7 @@ fn evaluate_period_stokes_v1(
         })],
         analytic_readings: vec![AgAnalyticReadingV1 {
             reading_id: format!("analytic:period-stokes:{}", profile.profile_id),
-            evaluator: "ag.period-stokes@1".to_string(),
+            evaluator: "ag.period-stokes".to_string(),
             value: analytic_value,
             regime: Some("analytic-measurement".to_string()),
             structural_verdict_ref: None,
@@ -2502,13 +2500,13 @@ fn evaluate_period_stokes_audit_v1(
         normalized,
         &selected_contexts,
         "dOmegaIntegral",
-        "ag.period-stokes-audit@1 d omega audit",
+        "ag.period-stokes-audit d omega audit",
     )?;
     let boundary = stokes_audit_values(
         normalized,
         &selected_contexts,
         "boundaryPeriod",
-        "ag.period-stokes-audit@1 boundary audit",
+        "ag.period-stokes-audit boundary audit",
     )?;
 
     let audit = fixed_coefficient_stokes_audit_report(&d_omega, &boundary, &profile.coefficient);
@@ -2525,7 +2523,7 @@ fn evaluate_period_stokes_audit_v1(
         .collect::<Vec<_>>();
     let computed_invariant = json!({
         "invariantId": format!("period-stokes-audit:{}", profile.profile_id),
-        "evaluator": "ag.period-stokes-audit@1",
+        "evaluator": "ag.period-stokes-audit",
         "method": "fixed-coefficient-stokes-audit@1",
         "selectedCoverRef": profile.cover_ref,
         "coefficient": profile.coefficient,
@@ -2652,7 +2650,7 @@ fn period_pairing_analytic_reading(
         matrix,
         AgAnalyticReadingV1 {
             reading_id: format!("analytic:period-stokes:{}", profile.profile_id),
-            evaluator: "ag.period-stokes@1".to_string(),
+            evaluator: "ag.period-stokes".to_string(),
             value: analytic_value,
             regime: Some("analytic-measurement".to_string()),
             structural_verdict_ref: None,
@@ -2708,7 +2706,7 @@ fn evaluate_support_transfer_v1(
         return Ok(TransferMeasurementV1 {
             computed_invariants: vec![json!({
                 "invariantId": format!("support-transfer:{}", profile.profile_id),
-                "evaluator": "ag.support-transfer@1",
+                "evaluator": "ag.support-transfer",
                 "status": "not_computed",
                 "reason": reasons.join(";")
             })],
@@ -2731,7 +2729,7 @@ fn evaluate_support_transfer_v1(
         .collect::<Vec<_>>();
     if !outside_paths.is_empty() {
         return Err(format!(
-            "ag.support-transfer@1 transfer pairings reference paths outside selected repair path model: {}",
+            "ag.support-transfer transfer pairings reference paths outside selected repair path model: {}",
             outside_paths.join(",")
         ));
     }
@@ -2764,7 +2762,7 @@ fn evaluate_support_transfer_v1(
         return Ok(TransferMeasurementV1 {
             computed_invariants: vec![json!({
                 "invariantId": format!("support-transfer:{}", profile.profile_id),
-                "evaluator": "ag.support-transfer@1",
+                "evaluator": "ag.support-transfer",
                 "status": "not_computed",
                 "reason": format!("support_localized_premise_violated:{}", support_disjoint_pairings.join(",")),
                 "supportLocalizedPremise": {
@@ -2794,7 +2792,7 @@ fn evaluate_support_transfer_v1(
         return Ok(TransferMeasurementV1 {
             computed_invariants: vec![json!({
                 "invariantId": format!("support-transfer:{}", profile.profile_id),
-                "evaluator": "ag.support-transfer@1",
+                "evaluator": "ag.support-transfer",
                 "status": "not_computed",
                 "reason": format!("transfer_model_missing:{}", missing_pairings.join(","))
             })],
@@ -2876,7 +2874,7 @@ fn evaluate_support_transfer_v1(
     Ok(TransferMeasurementV1 {
         computed_invariants: vec![json!({
             "invariantId": format!("support-transfer:{}", profile.profile_id),
-            "evaluator": "ag.support-transfer@1",
+            "evaluator": "ag.support-transfer",
             "method": "finite-support-localized-transfer@1",
             "selectedCoverRef": profile.cover_ref,
             "repairPathAtomRefs": repair_paths.iter().map(|path| json!({
@@ -2897,7 +2895,7 @@ fn evaluate_support_transfer_v1(
         analytic_readings: vec![
             AgAnalyticReadingV1 {
                 reading_id: format!("analytic:support-transfer:{}", profile.profile_id),
-                evaluator: "ag.support-transfer@1".to_string(),
+                evaluator: "ag.support-transfer".to_string(),
                 value: analytic_value,
                 regime: Some("analytic-measurement".to_string()),
                 structural_verdict_ref: None,
@@ -2907,7 +2905,7 @@ fn evaluate_support_transfer_v1(
                     "theorem-candidate:transfer-lower-bound:{}",
                     profile.profile_id
                 ),
-                evaluator: "ag.foundation@1".to_string(),
+                evaluator: "ag.foundation".to_string(),
                 value: json!({
                     "readingKind": "transfer-lower-bound-candidate@1",
                     "transferLowerBound": round_f64(wasserstein_cost),
@@ -2957,7 +2955,7 @@ fn refactor_transport_readings(
                 })?;
             Some(AgAnalyticReadingV1 {
                 reading_id: format!("analytic:refactor-transport:{}", atom.normalized_atom_id),
-                evaluator: "ag.foundation@1".to_string(),
+                evaluator: "ag.foundation".to_string(),
                 value: json!({
                     "readingKind": "refactor-invariant-transport@1",
                     "selectedCoverRef": profile.cover_ref.clone(),
@@ -2995,10 +2993,10 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         })
         .count();
     let cech_nonzero = packet.structural_verdict.iter().any(|verdict| {
-        verdict.evaluator == "ag.cech-obstruction@1" && verdict.verdict == "measured_nonzero"
+        verdict.evaluator == "ag.cech-obstruction" && verdict.verdict == "measured_nonzero"
     });
     let cech_zero = packet.structural_verdict.iter().any(|verdict| {
-        verdict.evaluator == "ag.cech-obstruction@1" && verdict.verdict == "measured_zero"
+        verdict.evaluator == "ag.cech-obstruction" && verdict.verdict == "measured_zero"
     });
     let conclusion = if cech_nonzero {
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
@@ -3016,7 +3014,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     };
     json!({
-        "schema": "archsig-analysis-summary/v2",
+        "schema": "archsig-analysis-summary/v0.5.0",
         "conclusion": conclusion,
         "readThisFirst": {
             "heading": "Read this first",
@@ -3103,7 +3101,7 @@ pub fn build_insight_report_v1(
         })
     });
     json!({
-        "schema": "archsig-insight-report/v1",
+        "schema": "archsig-insight-report/v0.5.0",
         "reportId": format!("insight:{}", packet.packet_id),
         "sourcePacketRef": "archsig-measurement-packet.json",
         "generatedAt": "deterministic-run-artifact",
@@ -3157,7 +3155,7 @@ pub fn build_insight_report_v1(
             "monodromyVerdictGenerated": false
         },
         "nonConclusions": [
-            "Insight report is a projection of archsig-measurement-packet/v1 and does not generate new measurement claims.",
+            "Insight report is a projection of archsig-measurement-packet/v0.5.0 and does not generate new measurement claims.",
             "Repair candidates are next inspection cues, not automatic fixes.",
             "Viewer scenes are visual projections, not structural verdict derivations."
         ]
@@ -3340,7 +3338,7 @@ fn insight_cards_v1(
 ) -> Vec<Value> {
     let mut cards = Vec::new();
     for row in &packet.structural_verdict {
-        if row.evaluator == "ag.cech-obstruction@1" && row.verdict == "measured_nonzero" {
+        if row.evaluator == "ag.cech-obstruction" && row.verdict == "measured_nonzero" {
             cards.push(insight_card(
                 "insight:h1-glue-mismatch:001",
                 "global_glue_mismatch",
@@ -3363,7 +3361,7 @@ fn insight_cards_v1(
                     "This does not automatically identify a safe repair.".to_string(),
                 ],
             ));
-        } else if row.evaluator == "ag.cech-obstruction@1" && row.verdict == "measured_zero" {
+        } else if row.evaluator == "ag.cech-obstruction" && row.verdict == "measured_zero" {
             cards.push(insight_card(
                 "insight:h1-glue-mismatch:zero",
                 "no_measured_glue_mismatch",
@@ -3385,7 +3383,7 @@ fn insight_cards_v1(
                     "This does not rule out unmeasured or unknown support.".to_string(),
                 ],
             ));
-        } else if row.evaluator == "ag.square-free-repair@1" && row.verdict == "measured_nonzero" {
+        } else if row.evaluator == "ag.square-free-repair" && row.verdict == "measured_nonzero" {
             cards.push(insight_card(
                 "insight:repair-candidate:001",
                 "minimal_repair_candidate",
@@ -3408,7 +3406,7 @@ fn insight_cards_v1(
                     "This does not prove repair safety.".to_string(),
                 ],
             ));
-        } else if row.evaluator == "ag.law-conflict-tor@1" && row.verdict == "measured_nonzero" {
+        } else if row.evaluator == "ag.law-conflict-tor" && row.verdict == "measured_nonzero" {
             cards.push(insight_card(
                 "insight:policy-conflict:001",
                 "policy_conflict",
@@ -3439,7 +3437,7 @@ fn insight_cards_v1(
                 packet,
                 normalized,
                 "Inspect blocking reason",
-                if row.evaluator == "ag.law-conflict-tor@1" {
+                if row.evaluator == "ag.law-conflict-tor" {
                     "law-conflict-tor"
                 } else {
                     "boundary-assumption"
@@ -3455,7 +3453,7 @@ fn insight_cards_v1(
     if packet
         .analytic_readings
         .iter()
-        .any(|reading| reading.evaluator == "ag.sheaf-laplacian@1")
+        .any(|reading| reading.evaluator == "ag.sheaf-laplacian")
     {
         cards.push(analytic_insight_card(
             "insight:architecture-debt-mass:001",
@@ -4160,7 +4158,7 @@ fn attach_gluing_scene_geometry(mut scene: Value, gluing_geometry: &Value) -> Va
         "source": "renderer sceneAxisPosition reads these metric keys from each gluing geometry object"
     });
     scene["projectionBoundary"] = json!(
-        "Scene geometry is a bounded projection of archsig-measurement-packet/v1 and archsig-insight-report/v1; it does not create a new structural verdict."
+        "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.0 and archsig-insight-report/v0.5.0; it does not create a new structural verdict."
     );
     scene["visualEncodingLegend"] = visual_encoding_legend_v1();
     if scene_id == "cech-h1-mismatch" {
@@ -4409,10 +4407,10 @@ fn gluing_geometry_projection_v1(
         })
         .collect::<Vec<_>>();
     json!({
-        "schema": "archsig-viewer-gluing-geometry/v1",
+        "schema": "archsig-viewer-gluing-geometry/v0.5.0",
         "sourcePacketRef": "archsig-measurement-packet.json",
         "sourceInsightReportRef": "archsig-insight-report.json",
-        "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict or monodromy verdict; H2 coherence color appears only when projected from ag.coherence-obstruction@1 packet verdicts.",
+        "projectionBoundary": "This geometry translates measured packet and ArchMap cover support into viewer objects. It adds no structural verdict or monodromy verdict; H2 coherence color appears only when projected from ag.coherence-obstruction packet verdicts.",
         "nerve": {
             "coverRef": packet.profile.cover_ref,
             "sourceRefs": cover_refs,
@@ -4698,7 +4696,7 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
     let singularity_concentration = packet
         .computed_invariants
         .iter()
-        .filter(|invariant| invariant["evaluator"] == "ag.law-conflict-tor@1")
+        .filter(|invariant| invariant["evaluator"] == "ag.law-conflict-tor")
         .flat_map(|invariant| {
             invariant["lawConflicts"]
                 .as_array()
@@ -4757,13 +4755,13 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
         .collect::<Vec<_>>();
 
     json!({
-        "schemaVersion": "archsig-analytic-overlay-bundle-v1",
+        "schema": "archsig-analytic-overlay-bundle/v0.5.0",
         "allowlist": [
             "strict-period-pairing@1",
             "support-localized-transfer@1",
             "graph-laplacian-hodge-proxy@1",
             "curvature-transfer-perron-hotspot@1",
-            "ag.law-conflict-tor@1/lawConflicts"
+            "ag.law-conflict-tor/lawConflicts"
         ],
         "colorRole": "analytic_reading",
         "rawOverlayCount": raw_overlay_count,
@@ -4788,7 +4786,7 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let structural_verdict = packet
         .structural_verdict
         .iter()
-        .find(|row| row.evaluator == "ag.period-stokes-audit@1");
+        .find(|row| row.evaluator == "ag.period-stokes-audit");
     let structural_verdict_ref = structural_verdict.map(structural_verdict_ref);
     let structural_verdict_value = structural_verdict
         .map(|row| row.verdict.clone())
@@ -4796,7 +4794,7 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let meters = packet
         .computed_invariants
         .iter()
-        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit@1")
+        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit")
         .take(PERIOD_STOKES_METER_RENDER_LIMIT)
         .enumerate()
         .map(|(index, invariant)| {
@@ -4825,7 +4823,7 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
                     stable_ref_segment(&string_field(invariant, "invariantId"))
                 ),
                 "sourceInvariantRef": invariant["invariantId"],
-                "sourceEvaluator": "ag.period-stokes-audit@1",
+                "sourceEvaluator": "ag.period-stokes-audit",
                 "structuralVerdictRef": structural_verdict_ref.clone(),
                 "structuralVerdict": structural_verdict_value.clone(),
                 "meterStatus": meter_status,
@@ -4853,11 +4851,11 @@ fn period_stokes_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let raw_meter_count = packet
         .computed_invariants
         .iter()
-        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit@1")
+        .filter(|invariant| invariant["evaluator"] == "ag.period-stokes-audit")
         .count();
     json!({
-        "schemaVersion": "archsig-period-stokes-meter-v1",
-        "sourceEvaluator": "ag.period-stokes-audit@1",
+        "schema": "archsig-period-stokes-meter/v0.5.0",
+        "sourceEvaluator": "ag.period-stokes-audit",
         "sourceAnalyticReadingKind": "strict-period-pairing@1",
         "colorRole": "analytic_reading",
         "modelRelative": true,
@@ -4883,7 +4881,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     });
     let Some(reading) = hodge_reading else {
         return json!({
-            "schemaVersion": "archsig-spectrum-landscape-v1",
+            "schema": "archsig-spectrum-landscape/v0.5.0",
             "status": "silent",
             "measurementStatus": "not_projected",
             "colorRole": "analytic_reading",
@@ -4972,7 +4970,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
     let spectral_radius_numeric = spectrum_numeric_value(&spectral_radius_value);
 
     json!({
-        "schemaVersion": "archsig-spectrum-landscape-v1",
+        "schema": "archsig-spectrum-landscape/v0.5.0",
         "status": "needsReview",
         "measurementStatus": "proxy",
         "sourceReadingRef": reading.reading_id,
@@ -4989,7 +4987,7 @@ fn spectrum_landscape_projection(packet: &ArchSigMeasurementPacketV1) -> Value {
         "spectralRadius": spectral_radius_value,
         "spectralRadiusNumeric": spectral_radius_numeric.map(round_f64),
         "axisPlacement": "axisRef-deterministic",
-        "forbiddenFieldRefs": ["legacy-v0-curvature-status"],
+        "forbiddenFieldRefs": ["legacy-schema050-curvature-status"],
         "nonClaim": "Spectrum landscape is an analytic proxy reading; lawful plain and hotspots are not structural verdicts.",
         "projectionBoundary": "spectrumLandscape carries M10/M14 packet readings only; no legacy v0 status field is read and no structural verdict is created."
     })
@@ -6154,7 +6152,7 @@ fn evaluate_cech_obstruction_v1(
             false,
             false,
             "empty_selected_scope".to_string(),
-            "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1".to_string(),
+            "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction".to_string(),
         )
     } else if h1_class_nonzero {
         (
@@ -6192,7 +6190,7 @@ fn evaluate_cech_obstruction_v1(
         computed_invariants: vec![
             json!({
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
-                "evaluator": "ag.cech-obstruction@1",
+                "evaluator": "ag.cech-obstruction",
                 "method": "finite-f2-incidence-graph-cochain@1",
                 "status": if empty_selected_scope {
                     "not_computed"
@@ -6205,9 +6203,9 @@ fn evaluate_cech_obstruction_v1(
                     "finite_f2_cech_computed"
                 },
                 "reason": if empty_selected_scope {
-                    "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                    "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
                 } else {
-                    "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                    "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction"
                 },
                 "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
                 "selectedCoverRef": profile.cover_ref,
@@ -6234,7 +6232,7 @@ fn evaluate_cech_obstruction_v1(
                         "not_measured_for_triple_overlap_faces"
                     },
                     "reason": if empty_selected_scope {
-                        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction@1"
+                        "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
                     } else if cover_nerve_face_count == 0 {
                         "no selected 2-simplices are present in the finite incidence graph complex"
                     } else {
@@ -6250,7 +6248,7 @@ fn evaluate_cech_obstruction_v1(
             topological_debt_capacity,
             json!({
                 "invariantId": format!("witness-counting:{}", profile.profile_id),
-                "evaluator": "witness-counting@1",
+                "evaluator": "witness-counting",
                 "verdict": if witness_violation_count == 0 {
                     "measured_zero"
                 } else {
@@ -6286,7 +6284,7 @@ fn topological_debt_capacity_invariant_v1(
     let nerve_complex_b1 = nerve_complex_b1_f2(selected_contexts, edges, cover_nerve_projection);
     json!({
         "invariantId": format!("topological-debt-capacity:{}", profile.profile_id),
-        "evaluator": "ag.cech-obstruction@1",
+        "evaluator": "ag.cech-obstruction",
         "method": "finite-f2-rank-nullity-nerve-capacity@1",
         "status": if empty_selected_scope {
             "not_computed"
@@ -6334,7 +6332,7 @@ fn topological_debt_capacity_invariant_v1(
             "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims."
         },
         "measuredCechVerdictEcho": {
-            "evaluator": "ag.cech-obstruction@1",
+            "evaluator": "ag.cech-obstruction",
             "certRef": if empty_selected_scope {
                 Value::Null
             } else {
@@ -6496,7 +6494,7 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.cech-obstruction@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.cech-obstruction requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
@@ -6506,7 +6504,7 @@ fn validate_cech_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String
         .any(|witness| witness.law == "ag.cech-obstruction")
     {
         return Err(format!(
-            "ag.cech-obstruction@1 requires MeasurementProfile {} witnessFamily law ag.cech-obstruction",
+            "ag.cech-obstruction requires MeasurementProfile {} witnessFamily law ag.cech-obstruction",
             profile.profile_id
         ));
     }
@@ -6551,7 +6549,7 @@ fn validate_restriction_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.restriction-compatibility@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.restriction-compatibility requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
@@ -6561,7 +6559,7 @@ fn validate_restriction_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
         .any(|witness| witness.law == "ag.restriction-compatibility")
     {
         return Err(
-            "ag.restriction-compatibility@1 requires MeasurementProfile witnessFamily law ag.restriction-compatibility"
+            "ag.restriction-compatibility requires MeasurementProfile witnessFamily law ag.restriction-compatibility"
                 .to_string(),
         );
     }
@@ -6606,19 +6604,19 @@ fn validate_section_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Str
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.section-factorization@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.section-factorization requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if section_witness_variables(profile).is_empty() {
         return Err(
-            "ag.section-factorization@1 requires MeasurementProfile witnessFamily law ag.section-factorization"
+            "ag.section-factorization requires MeasurementProfile witnessFamily law ag.section-factorization"
                 .to_string(),
         );
     }
     if section_witness_variables(profile).len() > MAX_SQUARE_FREE_WITNESS_VARIABLES {
         return Err(format!(
-            "ag.section-factorization@1 supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
+            "ag.section-factorization supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
         ));
     }
     Ok(())
@@ -6655,7 +6653,7 @@ fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.coherence-obstruction@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.coherence-obstruction requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
@@ -6665,7 +6663,7 @@ fn validate_coherence_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
         .any(|witness| witness.law == "ag.coherence-obstruction")
     {
         return Err(format!(
-            "ag.coherence-obstruction@1 requires MeasurementProfile {} witnessFamily law ag.coherence-obstruction",
+            "ag.coherence-obstruction requires MeasurementProfile {} witnessFamily law ag.coherence-obstruction",
             profile.profile_id
         ));
     }
@@ -6704,25 +6702,25 @@ fn validate_boundary_residue_profile_v1(profile: &MeasurementProfileV1) -> Resul
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.boundary-residue@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.boundary-residue requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if profile.resolution_selector != "mayer-vietoris-d0@1" {
         return Err(format!(
-            "ag.boundary-residue@1 requires MeasurementProfile resolutionSelector=mayer-vietoris-d0@1, found {}",
+            "ag.boundary-residue requires MeasurementProfile resolutionSelector=mayer-vietoris-d0@1, found {}",
             profile.resolution_selector
         ));
     }
     if boundary_residue_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.boundary-residue@1 requires MeasurementProfile {} witnessFamily law ag.boundary-residue",
+            "ag.boundary-residue requires MeasurementProfile {} witnessFamily law ag.boundary-residue",
             profile.profile_id
         ));
     }
     if boundary_residue_witness_variables(profile).len() > MAX_BOUNDARY_RESIDUE_VARIABLES {
         return Err(format!(
-            "ag.boundary-residue@1 supports at most {MAX_BOUNDARY_RESIDUE_VARIABLES} witness variables for finite F2 image membership"
+            "ag.boundary-residue supports at most {MAX_BOUNDARY_RESIDUE_VARIABLES} witness variables for finite F2 image membership"
         ));
     }
     Ok(())
@@ -6760,19 +6758,19 @@ fn validate_square_free_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.square-free-repair@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.square-free-repair requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if square_free_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.square-free-repair@1 requires MeasurementProfile {} witnessFamily law ag.square-free-repair",
+            "ag.square-free-repair requires MeasurementProfile {} witnessFamily law ag.square-free-repair",
             profile.profile_id
         ));
     }
     if square_free_witness_variables(profile).len() > MAX_SQUARE_FREE_WITNESS_VARIABLES {
         return Err(format!(
-            "ag.square-free-repair@1 supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
+            "ag.square-free-repair supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
         ));
     }
     Ok(())
@@ -6816,25 +6814,25 @@ fn validate_tor_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String>
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.law-conflict-tor@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.law-conflict-tor requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if profile.resolution_selector != "taylor@1" {
         return Err(format!(
-            "ag.law-conflict-tor@1 requires MeasurementProfile resolutionSelector=taylor@1, found {}",
+            "ag.law-conflict-tor requires MeasurementProfile resolutionSelector=taylor@1, found {}",
             profile.resolution_selector
         ));
     }
     if tor_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.law-conflict-tor@1 requires MeasurementProfile {} witnessFamily law ag.law-conflict-tor",
+            "ag.law-conflict-tor requires MeasurementProfile {} witnessFamily law ag.law-conflict-tor",
             profile.profile_id
         ));
     }
     if tor_witness_variables(profile).len() > MAX_TOR_WITNESS_VARIABLES {
         return Err(format!(
-            "ag.law-conflict-tor@1 supports at most {MAX_TOR_WITNESS_VARIABLES} witness variables for finite monomial enumeration"
+            "ag.law-conflict-tor supports at most {MAX_TOR_WITNESS_VARIABLES} witness variables for finite monomial enumeration"
         ));
     }
     Ok(())
@@ -6883,19 +6881,19 @@ fn validate_laplacian_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.sheaf-laplacian@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.sheaf-laplacian requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if laplacian_witness_variables(profile).is_empty() {
         return Err(format!(
-            "ag.sheaf-laplacian@1 requires MeasurementProfile {} witnessFamily law ag.sheaf-laplacian",
+            "ag.sheaf-laplacian requires MeasurementProfile {} witnessFamily law ag.sheaf-laplacian",
             profile.profile_id
         ));
     }
     if laplacian_witness_variables(profile).len() > MAX_LAPLACIAN_CELLS {
         return Err(format!(
-            "ag.sheaf-laplacian@1 supports at most {MAX_LAPLACIAN_CELLS} witness cells for finite Laplacian enumeration"
+            "ag.sheaf-laplacian supports at most {MAX_LAPLACIAN_CELLS} witness cells for finite Laplacian enumeration"
         ));
     }
     Ok(())
@@ -6933,19 +6931,19 @@ fn validate_period_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Stri
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.period-stokes@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.period-stokes requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if period_witness_cycles(profile).is_empty() {
         return Err(format!(
-            "ag.period-stokes@1 requires MeasurementProfile {} witnessFamily law ag.period-stokes",
+            "ag.period-stokes requires MeasurementProfile {} witnessFamily law ag.period-stokes",
             profile.profile_id
         ));
     }
     if period_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
         return Err(format!(
-            "ag.period-stokes@1 supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
+            "ag.period-stokes supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
         ));
     }
     Ok(())
@@ -6988,25 +6986,25 @@ fn validate_period_audit_profile_v1(profile: &MeasurementProfileV1) -> Result<()
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.period-stokes-audit@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.period-stokes-audit requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if !matches!(profile.coefficient.as_str(), "F2" | "Q" | "R") {
         return Err(format!(
-            "ag.period-stokes-audit@1 requires MeasurementProfile coefficient F2, Q, or R, found {}",
+            "ag.period-stokes-audit requires MeasurementProfile coefficient F2, Q, or R, found {}",
             profile.coefficient
         ));
     }
     if period_audit_witness_cycles(profile).is_empty() {
         return Err(format!(
-            "ag.period-stokes-audit@1 requires MeasurementProfile {} witnessFamily law ag.period-stokes-audit",
+            "ag.period-stokes-audit requires MeasurementProfile {} witnessFamily law ag.period-stokes-audit",
             profile.profile_id
         ));
     }
     if period_audit_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
         return Err(format!(
-            "ag.period-stokes-audit@1 supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
+            "ag.period-stokes-audit supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
         ));
     }
     Ok(())
@@ -7044,19 +7042,19 @@ fn validate_transfer_profile_v1(profile: &MeasurementProfileV1) -> Result<(), St
     for (field, actual, expected) in expected {
         if actual != expected {
             return Err(format!(
-                "ag.support-transfer@1 requires MeasurementProfile {field}={expected}, found {actual}"
+                "ag.support-transfer requires MeasurementProfile {field}={expected}, found {actual}"
             ));
         }
     }
     if transfer_witness_targets(profile).is_empty() {
         return Err(format!(
-            "ag.support-transfer@1 requires MeasurementProfile {} witnessFamily law ag.support-transfer",
+            "ag.support-transfer requires MeasurementProfile {} witnessFamily law ag.support-transfer",
             profile.profile_id
         ));
     }
     if transfer_witness_targets(profile).len() > MAX_TRANSFER_TARGETS {
         return Err(format!(
-            "ag.support-transfer@1 supports at most {MAX_TRANSFER_TARGETS} witness targets for finite transfer enumeration"
+            "ag.support-transfer supports at most {MAX_TRANSFER_TARGETS} witness targets for finite transfer enumeration"
         ));
     }
     Ok(())
@@ -7121,25 +7119,25 @@ fn laplacian_cells(
     {
         if !witness_set.contains(&atom.subject) {
             return Err(format!(
-                "ag.sheaf-laplacian@1 cochain {} uses cell outside witnessFamily: {}",
+                "ag.sheaf-laplacian cochain {} uses cell outside witnessFamily: {}",
                 atom.normalized_atom_id, atom.subject
             ));
         }
         let raw = atom.object.as_deref().ok_or_else(|| {
             format!(
-                "ag.sheaf-laplacian@1 cochain {} requires numeric object",
+                "ag.sheaf-laplacian cochain {} requires numeric object",
                 atom.normalized_atom_id
             )
         })?;
         let value = raw.parse::<f64>().map_err(|_| {
             format!(
-                "ag.sheaf-laplacian@1 cochain {} has non-numeric object {raw}",
+                "ag.sheaf-laplacian cochain {} has non-numeric object {raw}",
                 atom.normalized_atom_id
             )
         })?;
         if !value.is_finite() {
             return Err(format!(
-                "ag.sheaf-laplacian@1 cochain {} requires finite numeric object",
+                "ag.sheaf-laplacian cochain {} requires finite numeric object",
                 atom.normalized_atom_id
             ));
         }
@@ -7148,7 +7146,7 @@ fn laplacian_cells(
             .any(|cell: &LaplacianCellV1| cell.cell_id == atom.subject)
         {
             return Err(format!(
-                "ag.sheaf-laplacian@1 duplicate cellular cochain for {}",
+                "ag.sheaf-laplacian duplicate cellular cochain for {}",
                 atom.subject
             ));
         }
@@ -7176,7 +7174,7 @@ fn laplacian_edges(
     {
         let target = atom.object.as_deref().ok_or_else(|| {
             format!(
-                "ag.sheaf-laplacian@1 boundary {} requires target cell object",
+                "ag.sheaf-laplacian boundary {} requires target cell object",
                 atom.normalized_atom_id
             )
         })?;
@@ -7211,18 +7209,18 @@ fn period_integrals(
     {
         let raw = atom.object.as_deref().ok_or_else(|| {
             format!(
-                "ag.period-stokes@1 period integral {} requires object cycle=value",
+                "ag.period-stokes period integral {} requires object cycle=value",
                 atom.normalized_atom_id
             )
         })?;
         let (cycle_id, value) = parse_numeric_assignment(
             raw,
-            "ag.period-stokes@1 period integral",
+            "ag.period-stokes period integral",
             &atom.normalized_atom_id,
         )?;
         if !cycle_set.contains(&cycle_id) {
             return Err(format!(
-                "ag.period-stokes@1 period integral {} uses cycle outside witnessFamily: {}",
+                "ag.period-stokes period integral {} uses cycle outside witnessFamily: {}",
                 atom.normalized_atom_id, cycle_id
             ));
         }
@@ -7230,7 +7228,7 @@ fn period_integrals(
             pairing.form_id == atom.subject && pairing.cycle_id == cycle_id
         }) {
             return Err(format!(
-                "ag.period-stokes@1 duplicate period integral for form {} and cycle {}",
+                "ag.period-stokes duplicate period integral for form {} and cycle {}",
                 atom.subject, cycle_id
             ));
         }
@@ -7336,7 +7334,7 @@ fn stokes_audit_report(
         .collect::<BTreeMap<_, _>>();
     if d_map.keys().collect::<Vec<_>>() != boundary_map.keys().collect::<Vec<_>>() {
         return Err(
-            "ag.period-stokes@1 Stokes audit requires matching dOmegaIntegral and boundaryPeriod keys"
+            "ag.period-stokes Stokes audit requires matching dOmegaIntegral and boundaryPeriod keys"
                 .to_string(),
         );
     }
@@ -7500,18 +7498,18 @@ fn transfer_pairings(
     {
         let raw = atom.object.as_deref().ok_or_else(|| {
             format!(
-                "ag.support-transfer@1 transfer pairing {} requires object target=value",
+                "ag.support-transfer transfer pairing {} requires object target=value",
                 atom.normalized_atom_id
             )
         })?;
         let (target_id, value) = parse_numeric_assignment(
             raw,
-            "ag.support-transfer@1 transfer pairing",
+            "ag.support-transfer transfer pairing",
             &atom.normalized_atom_id,
         )?;
         if !target_set.contains(&target_id) {
             return Err(format!(
-                "ag.support-transfer@1 transfer pairing {} uses target outside witnessFamily: {}",
+                "ag.support-transfer transfer pairing {} uses target outside witnessFamily: {}",
                 atom.normalized_atom_id, target_id
             ));
         }
@@ -7519,7 +7517,7 @@ fn transfer_pairings(
             pairing.path_id == atom.subject && pairing.target_id == target_id
         }) {
             return Err(format!(
-                "ag.support-transfer@1 duplicate transfer pairing for path {} and target {}",
+                "ag.support-transfer duplicate transfer pairing for path {} and target {}",
                 atom.subject, target_id
             ));
         }
@@ -7557,7 +7555,7 @@ fn transfer_repair_paths(
             .any(|path: &TransferRepairPathV1| path.path_id == atom.subject)
         {
             return Err(format!(
-                "ag.support-transfer@1 duplicate repair path {}",
+                "ag.support-transfer duplicate repair path {}",
                 atom.subject
             ));
         }
@@ -7577,7 +7575,7 @@ fn transfer_repair_paths(
             .collect::<Vec<_>>();
         if !unknown_support_targets.is_empty() {
             return Err(format!(
-                "ag.support-transfer@1 repair path {} uses support targets outside witnessFamily: {}",
+                "ag.support-transfer repair path {} uses support targets outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown_support_targets.join(",")
             ));
@@ -7608,25 +7606,25 @@ fn transfer_ground_costs(
     {
         if !target_set.contains(&atom.subject) {
             return Err(format!(
-                "ag.support-transfer@1 ground cost {} uses target outside witnessFamily: {}",
+                "ag.support-transfer ground cost {} uses target outside witnessFamily: {}",
                 atom.normalized_atom_id, atom.subject
             ));
         }
         let raw = atom.object.as_deref().ok_or_else(|| {
             format!(
-                "ag.support-transfer@1 ground cost {} requires numeric object",
+                "ag.support-transfer ground cost {} requires numeric object",
                 atom.normalized_atom_id
             )
         })?;
         let cost = raw.parse::<f64>().map_err(|_| {
             format!(
-                "ag.support-transfer@1 ground cost {} has non-numeric object {raw}",
+                "ag.support-transfer ground cost {} has non-numeric object {raw}",
                 atom.normalized_atom_id
             )
         })?;
         if !cost.is_finite() || cost < 0.0 {
             return Err(format!(
-                "ag.support-transfer@1 ground cost {} requires finite non-negative object",
+                "ag.support-transfer ground cost {} requires finite non-negative object",
                 atom.normalized_atom_id
             ));
         }
@@ -7635,7 +7633,7 @@ fn transfer_ground_costs(
             .any(|cost_entry: &TransferGroundCostV1| cost_entry.target_id == atom.subject)
         {
             return Err(format!(
-                "ag.support-transfer@1 duplicate ground cost for target {}",
+                "ag.support-transfer duplicate ground cost for target {}",
                 atom.subject
             ));
         }
@@ -7980,7 +7978,7 @@ fn tor_common_ambient(
         .map(|atom| {
             let raw_pair = atom.object.as_deref().ok_or_else(|| {
                 format!(
-                    "ag.law-conflict-tor@1 common ambient {} requires object law pair",
+                    "ag.law-conflict-tor common ambient {} requires object law pair",
                     atom.normalized_atom_id
                 )
             })?;
@@ -7993,7 +7991,7 @@ fn tor_common_ambient(
             let unique_laws = law_pair.iter().cloned().collect::<BTreeSet<_>>();
             if law_pair.len() != 2 || unique_laws.len() != 2 {
                 return Err(format!(
-                    "ag.law-conflict-tor@1 common ambient {} requires exactly two laws in object",
+                    "ag.law-conflict-tor common ambient {} requires exactly two laws in object",
                     atom.normalized_atom_id
                 ));
             }
@@ -8008,7 +8006,7 @@ fn tor_common_ambient(
 
     if ambients.len() > 1 {
         return Err(format!(
-            "ag.law-conflict-tor@1 expected at most one selected common ambient, found {}",
+            "ag.law-conflict-tor expected at most one selected common ambient, found {}",
             ambients.len()
         ));
     }
@@ -8037,14 +8035,14 @@ fn tor_ideal_generators(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.law-conflict-tor@1 generator {} contains variables outside witnessFamily: {}",
+                "ag.law-conflict-tor generator {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
         }
         if support.is_empty() {
             return Err(format!(
-                "ag.law-conflict-tor@1 generator {} has no Tor witness variables",
+                "ag.law-conflict-tor generator {} has no Tor witness variables",
                 atom.normalized_atom_id
             ));
         }
@@ -8370,7 +8368,7 @@ fn tor_assumptions(
                     "measurement-profile:{}.witnessFamily",
                     profile.profile_id
                 )),
-                "violated" => Some("ag.law-conflict-tor@1.squareFreeGeneratorCheck".to_string()),
+                "violated" => Some("ag.law-conflict-tor.squareFreeGeneratorCheck".to_string()),
                 _ => None,
             },
             assumed_by: (square_free_status == "assumed")
@@ -8427,14 +8425,14 @@ fn restriction_generators(
             .any(|context| context == &atom.subject)
         {
             return Err(format!(
-                "ag.restriction-compatibility@1 generator {} must belong to its subject context {}",
+                "ag.restriction-compatibility generator {} must belong to its subject context {}",
                 atom.normalized_atom_id, atom.subject
             ));
         }
         let support = restriction_generator_support(atom);
         if support.is_empty() {
             return Err(format!(
-                "ag.restriction-compatibility@1 generator {} has no finite support variables",
+                "ag.restriction-compatibility generator {} has no finite support variables",
                 atom.normalized_atom_id
             ));
         }
@@ -8445,7 +8443,7 @@ fn restriction_generators(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.restriction-compatibility@1 generator {} contains variables outside witnessFamily: {}",
+                "ag.restriction-compatibility generator {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
@@ -8486,7 +8484,7 @@ fn restriction_invariant_json(
 ) -> Value {
     json!({
         "invariantId": format!("restriction-compatibility:{}", profile.profile_id),
-        "evaluator": "ag.restriction-compatibility@1",
+        "evaluator": "ag.restriction-compatibility",
         "method": "finite-support-inclusion@1",
         "status": if method_status == "finite_support_inclusion_computed" { "computed" } else { "not_computed" },
         "methodStatus": method_status,
@@ -8599,7 +8597,7 @@ fn section_forbidden_supports(
         let support = parse_csv_values(atom.object.as_deref().unwrap_or_default());
         if support.is_empty() {
             return Err(format!(
-                "ag.section-factorization@1 raw support {} has no finite support variables",
+                "ag.section-factorization raw support {} has no finite support variables",
                 atom.normalized_atom_id
             ));
         }
@@ -8610,7 +8608,7 @@ fn section_forbidden_supports(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.section-factorization@1 raw support {} contains variables outside witnessFamily: {}",
+                "ag.section-factorization raw support {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
@@ -8670,7 +8668,7 @@ fn section_assignment(
     }
     if atoms.len() > 1 {
         return Err(format!(
-            "ag.section-factorization@1 expects one selected witnessAssignment atom, found {}",
+            "ag.section-factorization expects one selected witnessAssignment atom, found {}",
             atoms.len()
         ));
     }
@@ -8686,14 +8684,14 @@ fn section_assignment(
     {
         let Some((variable, raw_value)) = field.split_once('=') else {
             return Err(format!(
-                "ag.section-factorization@1 witnessAssignment {} segment must be variable=value: {}",
+                "ag.section-factorization witnessAssignment {} segment must be variable=value: {}",
                 atom.normalized_atom_id, field
             ));
         };
         let variable = variable.trim().to_string();
         if !witness_set.contains(&variable) {
             return Err(format!(
-                "ag.section-factorization@1 witnessAssignment {} contains variable outside witnessFamily: {}",
+                "ag.section-factorization witnessAssignment {} contains variable outside witnessFamily: {}",
                 atom.normalized_atom_id, variable
             ));
         }
@@ -8702,21 +8700,21 @@ fn section_assignment(
             "0" | "false" | "False" => false,
             other => {
                 return Err(format!(
-                    "ag.section-factorization@1 witnessAssignment {} has non-Boolean value for {}: {}",
+                    "ag.section-factorization witnessAssignment {} has non-Boolean value for {}: {}",
                     atom.normalized_atom_id, variable, other
                 ));
             }
         };
         if assigned.insert(variable.clone(), value).is_some() {
             return Err(format!(
-                "ag.section-factorization@1 witnessAssignment {} repeats variable {}",
+                "ag.section-factorization witnessAssignment {} repeats variable {}",
                 atom.normalized_atom_id, variable
             ));
         }
     }
     if assigned.is_empty() {
         return Err(format!(
-            "ag.section-factorization@1 witnessAssignment {} has no Boolean assignments",
+            "ag.section-factorization witnessAssignment {} has no Boolean assignments",
             atom.normalized_atom_id
         ));
     }
@@ -8740,7 +8738,7 @@ fn section_invariant_json(
 ) -> Value {
     json!({
         "invariantId": format!("section-factorization:{}", profile.profile_id),
-        "evaluator": "ag.section-factorization@1",
+        "evaluator": "ag.section-factorization",
         "method": "finite-section-pullback@1",
         "status": if method_status == "finite_section_pullback_computed" { "computed" } else { method_status },
         "methodStatus": method_status,
@@ -8815,7 +8813,7 @@ fn section_assumptions(
             .to_string(),
             checked_by: (!support_refs.is_empty()).then(|| {
                 format!(
-                    "ag.section-factorization@1:{}:{}",
+                    "ag.section-factorization:{}:{}",
                     profile.profile_id,
                     support_refs.join(",")
                 )
@@ -8859,14 +8857,14 @@ fn boundary_residue_roles(
     {
         if !selected_contexts.contains(&atom.subject) {
             return Err(format!(
-                "ag.boundary-residue@1 patch role {} subject must be a selected context",
+                "ag.boundary-residue patch role {} subject must be a selected context",
                 atom.normalized_atom_id
             ));
         }
         let role = atom.object.as_deref().unwrap_or_default().trim();
         if !matches!(role, "core" | "feature" | "boundary") {
             return Err(format!(
-                "ag.boundary-residue@1 patch role {} must be core, feature, or boundary",
+                "ag.boundary-residue patch role {} must be core, feature, or boundary",
                 atom.normalized_atom_id
             ));
         }
@@ -8940,14 +8938,14 @@ fn boundary_residue_columns(
     {
         if !selected_contexts.contains(&atom.subject) {
             return Err(format!(
-                "ag.boundary-residue@1 restrictionColumn {} subject must be a selected source context",
+                "ag.boundary-residue restrictionColumn {} subject must be a selected source context",
                 atom.normalized_atom_id
             ));
         }
         let source_role = role_map.get(&atom.subject).map(String::as_str);
         if !matches!(source_role, Some("core" | "feature")) {
             return Err(format!(
-                "ag.boundary-residue@1 restrictionColumn {} source context must be core or feature",
+                "ag.boundary-residue restrictionColumn {} source context must be core or feature",
                 atom.normalized_atom_id
             ));
         }
@@ -8959,7 +8957,7 @@ fn boundary_residue_columns(
             .collect::<Vec<_>>();
         if boundary_contexts.len() != 1 {
             return Err(format!(
-                "ag.boundary-residue@1 restrictionColumn {} must target exactly one boundary context",
+                "ag.boundary-residue restrictionColumn {} must target exactly one boundary context",
                 atom.normalized_atom_id
             ));
         }
@@ -9005,7 +9003,7 @@ fn boundary_residue_mismatch(
                 .any(|context| role_map.get(*context).map(String::as_str) != Some("boundary"))
         {
             return Err(format!(
-                "ag.boundary-residue@1 boundarySection {} must belong only to selected boundary contexts",
+                "ag.boundary-residue boundarySection {} must belong only to selected boundary contexts",
                 atom.normalized_atom_id
             ));
         }
@@ -9052,7 +9050,7 @@ fn boundary_residue_atom_support(
         .collect::<Vec<_>>();
     if !unknown.is_empty() {
         return Err(format!(
-            "ag.boundary-residue@1 atom {} contains variables outside witnessFamily: {}",
+            "ag.boundary-residue atom {} contains variables outside witnessFamily: {}",
             atom.normalized_atom_id,
             unknown.join(",")
         ));
@@ -9088,7 +9086,7 @@ fn boundary_residue_invariant_json(
     let matrix_rows = boundary_residue_matrix_rows(columns, witness_variables.len());
     json!({
         "invariantId": format!("boundary-residue:{}", profile.profile_id),
-        "evaluator": "ag.boundary-residue@1",
+        "evaluator": "ag.boundary-residue",
         "method": "finite-mayer-vietoris-d0@1",
         "claimScope": "selected-cover core/feature/boundary F2 Mayer-Vietoris boundary residue",
         "selectedCoverRef": profile.cover_ref,
@@ -9222,14 +9220,14 @@ fn square_free_generators(
             .collect::<Vec<_>>();
         if !unknown.is_empty() {
             return Err(format!(
-                "ag.square-free-repair@1 raw support {} contains variables outside witnessFamily: {}",
+                "ag.square-free-repair raw support {} contains variables outside witnessFamily: {}",
                 atom.normalized_atom_id,
                 unknown.join(",")
             ));
         }
         if raw_variables.is_empty() {
             return Err(format!(
-                "ag.square-free-repair@1 raw support {} has no square-free witness variables",
+                "ag.square-free-repair raw support {} has no square-free witness variables",
                 atom.normalized_atom_id
             ));
         }
@@ -10076,7 +10074,7 @@ fn coherence_invariant_json(
 ) -> Value {
     json!({
         "invariantId": format!("coherence-obstruction:{}", profile.profile_id),
-        "evaluator": "ag.coherence-obstruction@1",
+        "evaluator": "ag.coherence-obstruction",
         "method": "finite-f2-h2-coherence@1",
         "status": status,
         "methodStatus": method_status,
@@ -10237,7 +10235,7 @@ fn cover_nerve_projection_v1(
         "vertices": vertices,
         "edges": edge_rows,
         "faces": faces,
-        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v1; not inferred by the viewer",
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.0; not inferred by the viewer",
         "h2CoherenceVisualized": false
     })
 }
@@ -10249,7 +10247,7 @@ fn project_h2_coherence_to_cover_nerve(
     let Some(coherence_row) = packet
         .structural_verdict
         .iter()
-        .find(|row| row.evaluator == "ag.coherence-obstruction@1")
+        .find(|row| row.evaluator == "ag.coherence-obstruction")
     else {
         return cover_nerve_projection;
     };
@@ -10259,7 +10257,7 @@ fn project_h2_coherence_to_cover_nerve(
     let Some(coherence_invariant) = packet
         .computed_invariants
         .iter()
-        .find(|invariant| invariant["evaluator"] == "ag.coherence-obstruction@1")
+        .find(|invariant| invariant["evaluator"] == "ag.coherence-obstruction")
     else {
         return cover_nerve_projection;
     };
@@ -10311,7 +10309,7 @@ fn project_h2_coherence_to_cover_nerve(
                 object.insert(
                     "coherenceProjectionBoundary".to_string(),
                     Value::String(
-                        "Projected from ag.coherence-obstruction@1; viewer adds no H2 verdict"
+                        "Projected from ag.coherence-obstruction; viewer adds no H2 verdict"
                             .to_string(),
                     ),
                 );
@@ -10500,7 +10498,7 @@ pub fn build_measurement_viewer_data_v1(
         .map(|scenes| insight_omitted_detail_counts_v1(normalized, scenes))
         .unwrap_or_else(|| insight_omitted_detail_counts_v1(normalized, &[]));
     json!({
-        "schemaVersion": "archsig-atom-viewer-data-v2",
+        "schema": "archsig-atom-viewer-data/v0.5.0",
         "sourceArtifactRefs": {
             "normalizedArchMap": "normalized-archmap.json",
             "measurementPacket": "archsig-measurement-packet.json",
@@ -10523,7 +10521,7 @@ pub fn build_measurement_viewer_data_v1(
         "guidedTours": insight_report["guidedTours"],
         "copyBlocks": insight_report["copyBlocks"],
         "aatGeometryOverlays": {
-            "schemaVersion": "archsig-aat-geometry-overlays-v1",
+            "schema": "archsig-aat-geometry-overlays/v0.5.0",
             "projectionBoundary": "bounded viewer projection of measured ArchSig AG geometry; visual richness is not a new verdict",
             "gluingGeometry": insight_report["gluingGeometry"],
             "nerve": insight_report["gluingGeometry"]["nerve"],
@@ -10855,8 +10853,8 @@ pub fn validate_measurement_packet_v1(packet: &ArchSigMeasurementPacketV1) -> Ve
 
 fn check_packet_schema(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
     let mut check = validation_check(
-        "measurement-packet-v1-schema",
-        "measurement packet uses archsig-measurement-packet/v1",
+        "measurement-packet-schema050-schema",
+        "measurement packet uses archsig-measurement-packet/v0.5.0",
         if packet.schema == ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA {
             "pass"
         } else {
@@ -10886,7 +10884,7 @@ fn check_structural_verdict_values(packet: &ArchSigMeasurementPacketV1) -> Valid
         })
         .collect::<Vec<_>>();
     check_examples(
-        "measurement-packet-v1-five-verdict-values",
+        "measurement-packet-schema050-five-verdict-values",
         "structural verdicts are limited to the five v0.4.0 values",
         examples,
     )
@@ -10906,7 +10904,7 @@ fn check_structural_verdict_evaluators(packet: &ArchSigMeasurementPacketV1) -> V
         })
         .collect::<Vec<_>>();
     check_examples(
-        "measurement-packet-v1-structural-verdict-evaluators",
+        "measurement-packet-schema050-structural-verdict-evaluators",
         "structural verdict rows are limited to registered AG measurement evaluators",
         examples,
     )
@@ -10963,7 +10961,7 @@ fn check_structural_verdict_data(packet: &ArchSigMeasurementPacketV1) -> Validat
         }
     }
     check_examples(
-        "measurement-packet-v1-verdict-data-boundary",
+        "measurement-packet-schema050-verdict-data-boundary",
         "VerdictData keeps zero, nonzero, unmeasured, unknown, and not_computed separate",
         examples,
     )
@@ -10997,7 +10995,7 @@ fn check_analytic_regime_boundary(packet: &ArchSigMeasurementPacketV1) -> Valida
         }
     }
     check_examples(
-        "measurement-packet-v1-theorem-candidate-analytic-only",
+        "measurement-packet-schema050-theorem-candidate-analytic-only",
         "theorem-candidate readings are flagged analytic readings and do not generate structural verdicts",
         examples,
     )
@@ -11063,7 +11061,7 @@ fn check_assumption_ledger(packet: &ArchSigMeasurementPacketV1) -> ValidationChe
         }
     }
     check_examples(
-        "measurement-packet-v1-assumption-ledger",
+        "measurement-packet-schema050-assumption-ledger",
         "assumption ledger records checked / assumed / violated and row-level verdict dependencies",
         examples,
     )
@@ -11163,7 +11161,7 @@ fn check_boundary_statements(packet: &ArchSigMeasurementPacketV1) -> ValidationC
     }
 
     check_examples(
-        "measurement-packet-v1-boundary-statements",
+        "measurement-packet-schema050-boundary-statements",
         "boundaryStatements provide typed, scoped non-conclusion qualifiers with nonConclusions compatibility",
         examples,
     )
@@ -11280,10 +11278,10 @@ mod tests {
 
     fn packet_fixture() -> ArchSigMeasurementPacketV1 {
         let mut packet: ArchSigMeasurementPacketV1 = serde_json::from_value(json!({
-            "schema": "archsig-measurement-packet/v1",
+            "schema": "archsig-measurement-packet/v0.5.0",
             "packetId": "measurement:test",
             "profile": {
-                "schema": "measurement-profile/v1",
+                "schema": "measurement-profile/v0.5.0",
                 "profileId": "profile:test",
                 "siteRef": "archmap:/contexts",
                 "coverRef": "cover:test",
@@ -11298,7 +11296,7 @@ mod tests {
                 "verdictDiscipline": "five-valued-structural-verdict@1"
             },
             "structuralVerdict": [{
-                "evaluator": "ag.cech-obstruction@1",
+                "evaluator": "ag.cech-obstruction",
                 "law": "ag.cech-obstruction",
                 "verdict": "unmeasured",
                 "verdictData": {
@@ -11311,7 +11309,7 @@ mod tests {
             "computedInvariants": [],
             "analyticReadings": [{
                 "readingId": "candidate:test",
-                "evaluator": "ag.foundation@1",
+                "evaluator": "ag.foundation",
                 "value": {"state": "not_evaluated"},
                 "regime": "theorem-candidate",
                 "structuralVerdictRef": null
@@ -11331,13 +11329,13 @@ mod tests {
 
     fn normalized_fixture() -> NormalizedArchMapV2 {
         serde_json::from_value(json!({
-            "schema": "archmap-normalized/v2",
+            "schema": "archmap-normalized/v0.5.0",
             "normalizerId": "test-normalizer",
             "sourceArchmapRef": "archmap:test",
             "sourceArchmapId": "archmap:test",
             "extractionDoctrineRef": {
                 "doctrineId": "doctrine:aat-canonical@1",
-                "fingerprint": "sha256:aat-canonical-doctrine-v1",
+                "fingerprint": "sha256:aat-canonical-doctrine-schema050",
                 "components": ["V", "Gamma", "R", "rho", "E", "N"]
             },
             "atoms": [
@@ -11416,7 +11414,7 @@ mod tests {
                 "normalizedAtomCount": 3,
                 "contextCount": 3,
                 "coverCount": 1,
-                "doctrineFingerprint": "sha256:aat-canonical-doctrine-v1"
+                "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema050"
             },
             "nonConclusions": []
         }))
@@ -11429,17 +11427,17 @@ mod tests {
         packet.structural_verdict[0].verdict = "blocked".to_string();
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-five-verdict-values" && check.result == "fail"
+            check.id == "measurement-packet-schema050-five-verdict-values" && check.result == "fail"
         }));
     }
 
     #[test]
     fn unregistered_structural_verdict_evaluator_fails_validation() {
         let mut packet = packet_fixture();
-        packet.structural_verdict[0].evaluator = "ag.synthetic-new-verdict@1".to_string();
+        packet.structural_verdict[0].evaluator = "ag.synthetic-new-verdict".to_string();
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-structural-verdict-evaluators"
+            check.id == "measurement-packet-schema050-structural-verdict-evaluators"
                 && check.result == "fail"
         }));
     }
@@ -11451,7 +11449,8 @@ mod tests {
         packet.structural_verdict[0].verdict_data.non_zero = true;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-verdict-data-boundary" && check.result == "fail"
+            check.id == "measurement-packet-schema050-verdict-data-boundary"
+                && check.result == "fail"
         }));
     }
 
@@ -11463,7 +11462,8 @@ mod tests {
         packet.structural_verdict[0].verdict_data.in_scope = false;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-verdict-data-boundary" && check.result == "fail"
+            check.id == "measurement-packet-schema050-verdict-data-boundary"
+                && check.result == "fail"
         }));
 
         let mut packet = packet_fixture();
@@ -11472,7 +11472,8 @@ mod tests {
         packet.structural_verdict[0].verdict_data.non_zero = true;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-verdict-data-boundary" && check.result == "fail"
+            check.id == "measurement-packet-schema050-verdict-data-boundary"
+                && check.result == "fail"
         }));
     }
 
@@ -11486,7 +11487,7 @@ mod tests {
         packet.assumptions[0].checked_by = None;
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-assumption-ledger" && check.result == "fail"
+            check.id == "measurement-packet-schema050-assumption-ledger" && check.result == "fail"
         }));
     }
 
@@ -11496,7 +11497,7 @@ mod tests {
         packet.structural_verdict[0].depends_on_assumptions = vec!["missing/theorem".to_string()];
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-assumption-ledger" && check.result == "fail"
+            check.id == "measurement-packet-schema050-assumption-ledger" && check.result == "fail"
         }));
     }
 
@@ -11525,7 +11526,7 @@ mod tests {
         packet.structural_verdict[0].verdict_data.zero = true;
         packet.structural_verdict[0].depends_on_assumptions = vec!["part8/4.2".to_string()];
         packet.structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.square-free-repair@1".to_string(),
+            evaluator: "ag.square-free-repair".to_string(),
             law: "ag.square-free-repair".to_string(),
             verdict: "measured_zero".to_string(),
             verdict_data: AgVerdictDataV1 {
@@ -11570,7 +11571,7 @@ mod tests {
             Some("/structuralVerdict/0".to_string());
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-theorem-candidate-analytic-only"
+            check.id == "measurement-packet-schema050-theorem-candidate-analytic-only"
                 && check.result == "fail"
         }));
     }
@@ -11581,7 +11582,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "pass"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "pass"
         }));
         assert!(packet.non_conclusions.iter().all(|text| {
             packet
@@ -11612,7 +11613,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -11623,7 +11624,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -11634,7 +11635,7 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
 
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
         }));
     }
 
@@ -11662,7 +11663,7 @@ mod tests {
         }));
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "pass"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "pass"
         }));
 
         let mut broken = packet;
@@ -11674,7 +11675,7 @@ mod tests {
         statement.scope_refs = vec!["part8/4.2".to_string()];
         let checks = validate_measurement_packet_v1(&broken);
         assert!(checks.iter().any(|check| {
-            check.id == "measurement-packet-v1-boundary-statements" && check.result == "fail"
+            check.id == "measurement-packet-schema050-boundary-statements" && check.result == "fail"
         }));
     }
 

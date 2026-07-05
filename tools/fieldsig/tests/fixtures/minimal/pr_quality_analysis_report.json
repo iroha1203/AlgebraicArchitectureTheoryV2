@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "pr-quality-analysis-report-v0",
-  "reportId": "fixture-pr-quality-analysis-v0",
+  "schema": "pr-quality-analysis-report/v0.5.0",
+  "reportId": "fixture-pr-quality-analysis/v0.5.0",
   "archmapRef": {
-    "schemaVersion": "archmap-v0",
-    "mapId": "fixture-archmap-v0",
+    "schema": "archmap/v0.5.0",
+    "mapId": "fixture-archmap/v0.5.0",
     "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
     "mapItemIds": [
       "object-route-users",
@@ -22,7 +22,7 @@
     "artifactId": "artifact:air",
     "artifactKind": "air",
     "path": "air.json",
-    "schemaVersion": "aat-air-v0",
+    "schema": "aat-air/v0.5.0",
     "nonConclusions": [
       "PR quality analysis is reviewer-facing evidence, not merge approval",
       "PR quality analysis does not prove architecture lawfulness",
@@ -34,7 +34,7 @@
     "artifactId": "artifact:theorem-check",
     "artifactKind": "theorem-check",
     "path": "theorem-check.json",
-    "schemaVersion": "theorem-precondition-check-report-v0",
+    "schema": "theorem-precondition-check-report/v0.5.0",
     "nonConclusions": [
       "PR quality analysis is reviewer-facing evidence, not merge approval",
       "PR quality analysis does not prove architecture lawfulness",
@@ -46,7 +46,7 @@
     "artifactId": "artifact:feature-report",
     "artifactKind": "feature-report",
     "path": "feature-report.json",
-    "schemaVersion": "feature-extension-report-v0",
+    "schema": "feature-extension-report/v0.5.0",
     "nonConclusions": [
       "PR quality analysis is reviewer-facing evidence, not merge approval",
       "PR quality analysis does not prove architecture lawfulness",
@@ -58,7 +58,7 @@
     "artifactId": "artifact:policy-decision",
     "artifactKind": "policy-decision",
     "path": "policy-decision.json",
-    "schemaVersion": "policy-decision-report-v0",
+    "schema": "policy-decision-report/v0.5.0",
     "nonConclusions": [
       "PR quality analysis is reviewer-facing evidence, not merge approval",
       "PR quality analysis does not prove architecture lawfulness",

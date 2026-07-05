@@ -1,5 +1,5 @@
 {
-  "schema": "archmap/v2",
+  "schema": "archmap/v0.5.0",
   "id": "ag-measurement-law-conflict-tor-fixture",
   "sources": {
     "src:checkout-policy": {

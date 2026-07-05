@@ -1,6 +1,6 @@
 {
-  "schema": "archsig-analysis-packet/v1",
-  "analysisId": "analysis:fieldsig-v1-handoff-fixture",
+  "schema": "archsig-analysis-packet/v0.5.0",
+  "analysisId": "analysis:fieldsig-schema050-handoff-fixture",
   "inputRefs": {
     "lawPolicy": "law-policy:fieldsig-fixture",
     "normalizedArchMap": "normalized-archmap:fieldsig-fixture",
@@ -8,7 +8,7 @@
   },
   "typedEvaluatorResults": [
     {
-      "evaluator": "ag.cech-obstruction@1",
+      "evaluator": "ag.cech-obstruction",
       "law": "cech-obstruction",
       "status": "blocked",
       "supportAtomRefs": [

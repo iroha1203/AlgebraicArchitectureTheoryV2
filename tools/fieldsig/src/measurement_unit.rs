@@ -80,7 +80,7 @@ pub fn static_measurement_unit_registry() -> MeasurementUnitRegistryV0 {
                     "service roots and deployment units are selected separately",
                 ],
                 &["implicit-service-boundary", "private-runtime-telemetry"],
-                &["aat-air-v0", "feature-extension-report-v0"],
+                &["aat-air/v0.5.0", "feature-extension-report/v0.5.0"],
             ),
             measurement_unit(
                 "billing-service-fixture",
@@ -107,7 +107,7 @@ pub fn static_measurement_unit_registry() -> MeasurementUnitRegistryV0 {
                     "selected components are bounded by the service fixture",
                 ],
                 &["shared-library-runtime-calls", "external-managed-service"],
-                &["aat-air-v0", "feature-extension-report-v0"],
+                &["aat-air/v0.5.0", "feature-extension-report/v0.5.0"],
             ),
             measurement_unit(
                 "billing-worker-deployment-fixture",
@@ -134,12 +134,12 @@ pub fn static_measurement_unit_registry() -> MeasurementUnitRegistryV0 {
                     "runtime evidence is bounded by the selected deployment unit",
                 ],
                 &["sidecar-runtime-edge", "ephemeral-job"],
-                &["aat-air-v0", "feature-extension-report-v0"],
+                &["aat-air/v0.5.0", "feature-extension-report/v0.5.0"],
             ),
         ],
         evidence_adapters: vec![
             evidence_adapter(
-                "runtime-edge-measurement-unit-adapter-v0",
+                "runtime-edge-measurement-unit-adapter/v0.5.0",
                 "runtime-evidence-adapter",
                 &[
                     "repo-root-aat-fixture",
@@ -148,7 +148,7 @@ pub fn static_measurement_unit_registry() -> MeasurementUnitRegistryV0 {
                 ],
                 &["runtime"],
                 &["runtime_trace", "observation_result"],
-                "runtime-edge-projection-v0",
+                "runtime-edge-projection/v0.5.0",
                 &[
                     "runtime evidence sources are attached to explicit measurementUnitRefs",
                     "repository root, service root, and deployment unit are not collapsed",
@@ -160,12 +160,12 @@ pub fn static_measurement_unit_registry() -> MeasurementUnitRegistryV0 {
                 &["private-telemetry", "sampling-gap", "unresolved-service-identity"],
             ),
             evidence_adapter(
-                "semantic-workflow-measurement-unit-adapter-v0",
+                "semantic-workflow-measurement-unit-adapter/v0.5.0",
                 "semantic-evidence-adapter",
                 &["repo-root-aat-fixture"],
                 &["semantic"],
                 &["semantic_diagram", "test", "manual_annotation"],
-                "semantic-workflow-projection-v0",
+                "semantic-workflow-projection/v0.5.0",
                 &[
                     "semantic workflow sources are selected explicitly per measurement unit",
                     "manual workflow evidence is bounded by referenced paths",
@@ -304,8 +304,8 @@ fn evidence_adapter(
         exactness_assumptions: strings(exactness_assumptions),
         unsupported_constructs: strings(unsupported_constructs),
         output_artifacts: vec![
-            "aat-air-v0".to_string(),
-            "feature-extension-report-v0".to_string(),
+            "aat-air/v0.5.0".to_string(),
+            "feature-extension-report/v0.5.0".to_string(),
         ],
         theorem_bridge_preconditions: vec![
             "explicit Lean ComponentUniverse bridge precondition".to_string(),
@@ -327,7 +327,7 @@ fn check_schema_version(registry: &MeasurementUnitRegistryV0) -> ValidationCheck
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported measurement unit registry schemaVersion: {}",
+            "unsupported measurement unit registry schema: {}",
             registry.schema_version
         ));
     }

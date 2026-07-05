@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "intent-archmap-alignment-v0",
-  "alignmentMapId": "fixture-intent-archmap-alignment-v0",
+  "schema": "intent-archmap-alignment/v0.5.0",
+  "alignmentMapId": "fixture-intent-archmap-alignment/v0.5.0",
   "intentMapRef": {
-    "schemaVersion": "intentmap-v0",
-    "intentMapId": "fixture-intentmap-v0",
+    "schema": "intentmap/v0.5.0",
+    "intentMapId": "fixture-intentmap/v0.5.0",
     "path": "tools/fieldsig/tests/fixtures/minimal/intentmap.json",
     "intentItemIds": [
       "intent:coupon-apply-operation",
@@ -19,8 +19,8 @@
     ]
   },
   "archmapRef": {
-    "schemaVersion": "archmap-v0",
-    "mapId": "fixture-archmap-v0",
+    "schema": "archmap/v0.5.0",
+    "mapId": "fixture-archmap/v0.5.0",
     "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
     "mapItemIds": [
       "object-route-users",

@@ -1,10 +1,10 @@
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "ag-square-free-policy",
   "measurementProfileRef": "profile:ag-square-free@1",
   "measurementProfiles": [
     {
-      "schema": "measurement-profile/v1",
+      "schema": "measurement-profile/v0.5.0",
       "profileId": "profile:ag-square-free@1",
       "siteRef": "archmap:/contexts",
       "coverRef": "cover:square-free-repair",
@@ -35,7 +35,7 @@
   "policies": [
     {
       "law": "ag.square-free-repair",
-      "evaluator": "ag.square-free-repair@1",
+      "evaluator": "ag.square-free-repair",
       "basis": ["policy-basis:layering"],
       "scope": ["src/"],
       "severity": "high"

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "intentmap-v0",
-  "intentMapId": "fixture-intentmap-v0",
+  "schema": "intentmap/v0.5.0",
+  "intentMapId": "fixture-intentmap/v0.5.0",
   "sourceUniverse": {
     "universeId": "intent-universe:coupon-prd",
     "sourceRefs": [

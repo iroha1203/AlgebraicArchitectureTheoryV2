@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "incident-correlation-monitor-v0",
+  "schema": "incident-correlation-monitor/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "incident-correlation-monitor",
-    "schemaVersionName": "incident-correlation-monitor-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "incident-correlation-monitor/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "correlationWindow",
@@ -123,7 +123,7 @@
       "compatibility pass does not promote tooling evidence to a Lean theorem claim"
     ]
   },
-  "monitorId": "fixture-b10-incident-correlation-monitor-v0",
+  "monitorId": "fixture-b10-incident-correlation-monitor/v0.5.0",
   "generatedAt": "2026-05-05T12:00:00Z",
   "organizationRef": "org:example",
   "teamRef": "team:checkout-platform",
@@ -138,7 +138,7 @@
       "sourceRef": "report-outcome-daily-ledger:checkout-2026-04",
       "sourceKind": "report-outcome-daily-ledger",
       "path": "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
-      "schemaVersion": "report-outcome-daily-ledger-v0",
+      "schema": "report-outcome-daily-ledger/v0.5.0",
       "boundary": "operationalFeedback",
       "nonConclusions": [
         "daily ledger is an operational aggregation, not causal proof"
@@ -148,7 +148,7 @@
       "sourceRef": "calibration-review:runtime-private-evidence",
       "sourceKind": "calibration-review-record",
       "path": "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json",
-      "schemaVersion": "calibration-review-record-v0",
+      "schema": "calibration-review-record/v0.5.0",
       "boundary": "boundedEmpiricalReview",
       "nonConclusions": [
         "reviewer calibration remains empirical policy evidence"

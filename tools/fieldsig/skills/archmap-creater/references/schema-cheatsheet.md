@@ -9,7 +9,7 @@ Required top-level shape:
 
 ```json
 {
-  "schema": "archmap/v1",
+  "schema": "archmap/v0.5.0",
   "mapId": "...",
   "architectureId": "...",
   "generatedAt": "2026-05-24T00:00:00Z",

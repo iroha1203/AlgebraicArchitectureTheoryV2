@@ -58,7 +58,7 @@ pub fn static_pr_force_report() -> PrForceReportV0 {
     let empirical_ref = artifact_ref(
         "empirical-signature-dataset",
         "tools/fieldsig/tests/fixtures/minimal/external/empirical_signature_dataset.json",
-        Some("empirical-signature-dataset-v0"),
+        Some("empirical-signature-dataset/v0.5.0"),
         Some("fixture-pr-force-empirical-dataset"),
     );
     let feature_ref = artifact_ref(
@@ -76,7 +76,7 @@ pub fn static_pr_force_report() -> PrForceReportV0 {
 
     PrForceReportV0 {
         schema_version: PR_FORCE_REPORT_SCHEMA_VERSION.to_string(),
-        report_id: "fixture-pr-force-report-v0".to_string(),
+        report_id: "fixture-pr-force-report/v0.5.0".to_string(),
         pull_request: PullRequestRefV0 {
             provider: "github".to_string(),
             repository: "iroha1203/AlgebraicArchitectureTheoryV2".to_string(),
@@ -230,7 +230,7 @@ pub fn static_pr_force_report() -> PrForceReportV0 {
             ],
             source_artifact_refs: vec![before_ref, after_ref, diff_ref, empirical_ref],
             extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-            policy_version: Some("fixture-policy-v0".to_string()),
+            policy_version: Some("fixture-policy/v0.5.0".to_string()),
             schema_version: Some(PR_FORCE_REPORT_SCHEMA_VERSION.to_string()),
             aggregation_window: Some(DynamicsAggregationWindowV0 {
                 window_start: Some("2026-01-01T00:00:00Z".to_string()),
@@ -386,7 +386,7 @@ fn boundary(
         measured_axes: strings(measured_axes),
         source_artifact_refs,
         extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-        policy_version: Some("fixture-policy-v0".to_string()),
+        policy_version: Some("fixture-policy/v0.5.0".to_string()),
         schema_version: Some(PR_FORCE_REPORT_SCHEMA_VERSION.to_string()),
         aggregation_window: None,
         selected_region_refs: vec!["fixture:accepted-pr-675".to_string()],
@@ -452,7 +452,7 @@ fn check_schema_version(report: &PrForceReportV0) -> ValidationCheck {
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported pr-force-report schemaVersion: {}",
+            "unsupported pr-force-report schema: {}",
             report.schema_version
         ));
     }

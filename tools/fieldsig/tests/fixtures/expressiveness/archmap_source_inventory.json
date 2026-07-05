@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "archmap-source-inventory-v0",
-  "inventoryId": "archmap-expressiveness-suite-v0-source-inventory",
+  "schema": "archmap-source-inventory/v0.5.0",
+  "inventoryId": "archmap-expressiveness-suite-schema050-source-inventory",
   "root": ".",
   "includedRefs": [
     {"artifactId": "src-layer-policy", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"},
@@ -30,7 +30,7 @@
     "runtime trace is unavailable in the fixture",
     "dynamic plugin registry is private"
   ],
-  "selectionBoundary": "archmap-expressiveness-suite-v0 bounded source inventory",
+  "selectionBoundary": "archmap-expressiveness-suite-schema050 bounded source inventory",
   "nonConclusions": [
     "source inventory does not prove repository completeness",
     "private plugin rules are not reconstructed"

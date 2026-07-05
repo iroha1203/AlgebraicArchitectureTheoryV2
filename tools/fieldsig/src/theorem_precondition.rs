@@ -33,7 +33,7 @@ pub fn static_theorem_package_registry() -> TheoremPackageRegistryV0 {
 
 fn static_split_theorem_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "static-theorem-package-v0".to_string(),
+        package_id: "static-theorem-package/v0.5.0".to_string(),
         lean_entrypoint: "SelectedStaticSplitExtension".to_string(),
         theorem_refs: vec![
             "SelectedStaticSplitExtension".to_string(),
@@ -86,7 +86,7 @@ fn static_split_theorem_package() -> TheoremPackageMetadataV0 {
 
 fn runtime_zero_bridge_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "runtime-zero-bridge-package-v0".to_string(),
+        package_id: "runtime-zero-bridge-package/v0.5.0".to_string(),
         lean_entrypoint:
             "ArchitectureSignature.v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff"
                 .to_string(),
@@ -116,7 +116,7 @@ fn runtime_zero_bridge_package() -> TheoremPackageMetadataV0 {
             "runtime coverage records runtimePropagation as a measured axis".to_string(),
         ],
         exactness_assumptions: vec![
-            "runtime-edge-projection-v0 maps each observed component pair to one runtime edge"
+            "runtime-edge-projection-schema050 maps each observed component pair to one runtime edge"
                 .to_string(),
             "runtime evidence component ids resolve inside the AIR component universe".to_string(),
         ],
@@ -132,7 +132,7 @@ fn runtime_zero_bridge_package() -> TheoremPackageMetadataV0 {
 
 fn semantic_diagram_filler_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "semantic-diagram-filler-package-v0".to_string(),
+        package_id: "semantic-diagram-filler-package/v0.5.0".to_string(),
         lean_entrypoint: "Chapter9DiagramFilling".to_string(),
         theorem_refs: vec![
             "ArchitecturePath.PathHomotopy".to_string(),
@@ -172,7 +172,7 @@ fn semantic_diagram_filler_package() -> TheoremPackageMetadataV0 {
 
 fn semantic_nonfillability_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "semantic-nonfillability-package-v0".to_string(),
+        package_id: "semantic-nonfillability-package/v0.5.0".to_string(),
         lean_entrypoint: "Chapter9DiagramFilling".to_string(),
         theorem_refs: vec![
             "NonFillabilityWitness".to_string(),
@@ -214,7 +214,7 @@ fn semantic_nonfillability_package() -> TheoremPackageMetadataV0 {
 
 fn semantic_numerical_curvature_zero_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "semantic-numerical-curvature-zero-package-v0".to_string(),
+        package_id: "semantic-numerical-curvature-zero-package/v0.5.0".to_string(),
         lean_entrypoint: "Formal.Arch.Signature.Curvature".to_string(),
         theorem_refs: vec![
             "numericalCurvature_eq_zero_iff_DiagramCommutes".to_string(),
@@ -269,7 +269,7 @@ fn semantic_numerical_curvature_zero_package() -> TheoremPackageMetadataV0 {
 
 fn no_solution_certificate_package() -> TheoremPackageMetadataV0 {
     TheoremPackageMetadataV0 {
-        package_id: "no-solution-certificate-package-v0".to_string(),
+        package_id: "no-solution-certificate-package/v0.5.0".to_string(),
         lean_entrypoint: "NoSolutionCertificate.sound_of_valid".to_string(),
         theorem_refs: vec![
             "NoSolutionCertificate".to_string(),
@@ -601,7 +601,7 @@ fn add_runtime_inferred_missing_preconditions(
         || claim.claim_classification != "proved"
         || !applicable_packages
             .iter()
-            .any(|package| package.package_id == "runtime-zero-bridge-package-v0")
+            .any(|package| package.package_id == "runtime-zero-bridge-package/v0.5.0")
     {
         return;
     }
@@ -824,7 +824,7 @@ fn add_python_inferred_missing_preconditions(
         .any(|evidence| evidence.kind == "python_import");
     let has_python_static_relation = document.relations.iter().any(|relation| {
         relation.layer == "static"
-            && relation.extraction_rule.as_deref() == Some("python-import-graph-v0")
+            && relation.extraction_rule.as_deref() == Some("python-import-graph/v0.5.0")
     });
     if has_python_components || has_python_import_evidence || has_python_static_relation {
         push_missing_once(
@@ -1077,7 +1077,7 @@ mod tests {
         runtime_axis.value = Some(0);
         runtime_axis.measured = true;
         runtime_axis.measurement_boundary = "measuredZero".to_string();
-        runtime_axis.source = Some("runtime-edge-projection-v0".to_string());
+        runtime_axis.source = Some("runtime-edge-projection/v0.5.0".to_string());
         runtime_axis.reason = None;
 
         let runtime_layer = document
@@ -1089,9 +1089,9 @@ mod tests {
         runtime_layer.measurement_boundary = "measuredZero".to_string();
         runtime_layer.measured_axes = vec!["runtimePropagation".to_string()];
         runtime_layer.unmeasured_axes = Vec::new();
-        runtime_layer.projection_rule = Some("runtime-edge-projection-v0".to_string());
+        runtime_layer.projection_rule = Some("runtime-edge-projection/v0.5.0".to_string());
         runtime_layer.exactness_assumptions = vec![
-            "runtime-edge-projection-v0 maps each observed component pair to one runtime edge"
+            "runtime-edge-projection-schema050 maps each observed component pair to one runtime edge"
                 .to_string(),
         ];
     }
@@ -1120,13 +1120,13 @@ mod tests {
                 ]
         }));
         assert!(report.registry.packages.iter().any(|package| {
-            package.package_id == "runtime-zero-bridge-package-v0"
+            package.package_id == "runtime-zero-bridge-package/v0.5.0"
                 && package
                     .theorem_refs
                     .contains(&"ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction".to_string())
         }));
         assert!(report.registry.packages.iter().any(|package| {
-            package.package_id == "semantic-nonfillability-package-v0"
+            package.package_id == "semantic-nonfillability-package/v0.5.0"
                 && package
                     .theorem_refs
                     .contains(&"observationDifference_refutesDiagramFiller".to_string())
@@ -1227,7 +1227,7 @@ mod tests {
                     .to_string(),
             ],
             vec!["runtime edge evidence coverage".to_string()],
-            vec!["runtime-edge-projection-v0 exactness".to_string()],
+            vec!["runtime-edge-projection-schema050 exactness".to_string()],
             Vec::new(),
         ));
         document.claims.push(runtime_zero_bridge_claim(
@@ -1253,7 +1253,7 @@ mod tests {
         assert_eq!(proved.resolved_claim_classification, "FORMAL_PROVED");
         assert_eq!(
             proved.projection_rule.as_deref(),
-            Some("runtime-edge-projection-v0")
+            Some("runtime-edge-projection/v0.5.0")
         );
         assert_eq!(
             blocked.resolved_claim_classification,
@@ -1338,7 +1338,7 @@ mod tests {
         assert!(
             proved
                 .applicable_package_refs
-                .contains(&"semantic-nonfillability-package-v0".to_string())
+                .contains(&"semantic-nonfillability-package/v0.5.0".to_string())
         );
         assert_eq!(proved.missing_preconditions, Vec::<String>::new());
     }

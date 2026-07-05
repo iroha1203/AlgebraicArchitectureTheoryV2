@@ -71,7 +71,7 @@ pub fn static_organization_policy() -> OrganizationPolicyV0 {
                 Some(0),
                 &[
                     "runtime edge evidence coverage is present",
-                    "runtime-edge-projection-v0 exactness assumptions are recorded",
+                    "runtime-edge-projection-schema050 exactness assumptions are recorded",
                     "runtime zero bridge theorem preconditions are discharged",
                 ],
             ),
@@ -184,7 +184,7 @@ fn check_schema_version(policy: &OrganizationPolicyV0) -> ValidationCheck {
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported organization policy schemaVersion: {}",
+            "unsupported organization policy schema: {}",
             policy.schema_version
         ));
     }

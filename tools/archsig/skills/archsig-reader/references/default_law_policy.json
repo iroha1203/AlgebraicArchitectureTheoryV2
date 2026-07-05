@@ -1,9 +1,9 @@
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "archsig-reader-smoke-policy",
   "policies": [
     {
-      "pack": "solid@1",
+      "pack": "solid",
       "basis": ["policy-basis:solid"],
       "scope": ["src."],
       "severity": "review"

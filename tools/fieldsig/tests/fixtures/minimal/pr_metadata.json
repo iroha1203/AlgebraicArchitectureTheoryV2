@@ -51,8 +51,8 @@
       "partialPairCount": 0,
       "unprotectedPairCount": 0,
       "unknownCoveragePairCount": 1,
-      "failureModeTaxonomyVersion": "fixture-v0",
-      "coveragePolicyVersion": "fixture-coverage-v0",
+      "failureModeTaxonomyVersion": "fixture/v0.5.0",
+      "coveragePolicyVersion": "fixture-coverage/v0.5.0",
       "confidenceThreshold": null
     },
     "alternateSignatureAfter": null

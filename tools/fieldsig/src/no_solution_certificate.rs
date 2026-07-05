@@ -24,15 +24,15 @@ const REQUIRED_PROOF_OBLIGATION_REFS: [&str; 2] = [
 pub fn static_no_solution_certificate() -> NoSolutionCertificateV0 {
     NoSolutionCertificateV0 {
         schema_version: NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION.to_string(),
-        certificate_id: "certificate-coupon-no-solution-v0".to_string(),
+        certificate_id: "certificate-coupon-no-solution/v0.5.0".to_string(),
         scope: "bounded no-solution certificate for selected coupon synthesis universe".to_string(),
         constraint_refs: vec![
-            "constraint-static-boundary-coupon-v0".to_string(),
-            "constraint-semantic-rounding-contract-v0".to_string(),
+            "constraint-static-boundary-coupon/v0.5.0".to_string(),
+            "constraint-semantic-rounding-contract/v0.5.0".to_string(),
         ],
         refuted_candidate_refs: vec![
-            "candidate-direct-cache-access-v0".to_string(),
-            "candidate-ignore-rounding-contract-v0".to_string(),
+            "candidate-direct-cache-access/v0.5.0".to_string(),
+            "candidate-ignore-rounding-contract/v0.5.0".to_string(),
         ],
         obstruction_witness_refs: vec![
             "witness-hidden-cache-access".to_string(),
@@ -52,7 +52,8 @@ pub fn static_no_solution_certificate() -> NoSolutionCertificateV0 {
             "case evidence refs name the selected obstruction witnesses".to_string(),
         ],
         unsupported_constructs: vec![
-            "unbounded candidate generation is outside no-solution-certificate-v0".to_string(),
+            "unbounded candidate generation is outside no-solution-certificate-schema050"
+                .to_string(),
         ],
         proof_obligation_refs: REQUIRED_PROOF_OBLIGATION_REFS
             .iter()
@@ -62,16 +63,16 @@ pub fn static_no_solution_certificate() -> NoSolutionCertificateV0 {
         cases: vec![
             no_solution_case(
                 "case-direct-cache-still-breaks-boundary",
-                &["constraint-static-boundary-coupon-v0"],
-                Some("candidate-direct-cache-access-v0"),
+                &["constraint-static-boundary-coupon/v0.5.0"],
+                Some("candidate-direct-cache-access/v0.5.0"),
                 &["evidence-hidden-edge"],
                 &["ValidNoSolutionCertificate"],
                 "candidate preserves the forbidden cache dependency in the selected static universe",
             ),
             no_solution_case(
                 "case-ignore-rounding-contract-still-breaks-semantics",
-                &["constraint-semantic-rounding-contract-v0"],
-                Some("candidate-ignore-rounding-contract-v0"),
+                &["constraint-semantic-rounding-contract/v0.5.0"],
+                Some("candidate-ignore-rounding-contract/v0.5.0"),
                 &["evidence-rounding-order-difference"],
                 &["NoSolutionCertificate.sound_of_valid"],
                 "candidate does not discharge the selected coupon / discount observation contract",
@@ -153,7 +154,7 @@ fn check_schema_version(certificate: &NoSolutionCertificateV0) -> ValidationChec
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported no-solution certificate schemaVersion: {}",
+            "unsupported no-solution certificate schema: {}",
             certificate.schema_version
         ));
     }

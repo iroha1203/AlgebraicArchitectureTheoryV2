@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "measurement-unit-registry-v0",
+  "schema": "measurement-unit-registry/v0.5.0",
   "registryId": "fixture-b8-measurement-unit-registry",
   "scope": "canonical B8 monorepo and multi-service measurement unit fixture",
   "units": [
@@ -55,8 +55,8 @@
         "private-runtime-telemetry"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "nonConclusions": [
         "measurement unit registry is tooling validation, not a Lean theorem",
@@ -103,8 +103,8 @@
         "external-managed-service"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "nonConclusions": [
         "measurement unit registry is tooling validation, not a Lean theorem",
@@ -151,8 +151,8 @@
         "ephemeral-job"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "nonConclusions": [
         "measurement unit registry is tooling validation, not a Lean theorem",
@@ -165,7 +165,7 @@
   ],
   "evidenceAdapters": [
     {
-      "adapterId": "fixture-runtime-measurement-unit-adapter-v0",
+      "adapterId": "fixture-runtime-measurement-unit-adapter/v0.5.0",
       "adapterKind": "runtime-evidence-adapter",
       "measurementUnitRefs": [
         "fixture-repository-root",
@@ -179,7 +179,7 @@
         "runtime_trace",
         "observation_result"
       ],
-      "projectionRule": "runtime-edge-projection-v0",
+      "projectionRule": "runtime-edge-projection/v0.5.0",
       "coverageAssumptions": [
         "runtime evidence sources are attached to explicit measurement unit refs",
         "repository root, service root, and deployment unit are not collapsed"
@@ -194,8 +194,8 @@
         "unresolved-service-identity"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "theoremBridgePreconditions": [
         "explicit Lean ComponentUniverse bridge precondition",
@@ -210,7 +210,7 @@
       ]
     },
     {
-      "adapterId": "fixture-semantic-workflow-measurement-unit-adapter-v0",
+      "adapterId": "fixture-semantic-workflow-measurement-unit-adapter/v0.5.0",
       "adapterKind": "semantic-evidence-adapter",
       "measurementUnitRefs": [
         "fixture-repository-root"
@@ -223,7 +223,7 @@
         "test",
         "manual_annotation"
       ],
-      "projectionRule": "semantic-workflow-projection-v0",
+      "projectionRule": "semantic-workflow-projection/v0.5.0",
       "coverageAssumptions": [
         "semantic workflow sources are selected explicitly per measurement unit",
         "manual workflow evidence is bounded by referenced paths"
@@ -238,8 +238,8 @@
         "private-contract-test"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "theoremBridgePreconditions": [
         "explicit Lean ComponentUniverse bridge precondition",

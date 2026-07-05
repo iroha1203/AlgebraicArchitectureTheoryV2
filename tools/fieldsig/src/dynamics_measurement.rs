@@ -38,19 +38,19 @@ pub fn static_dynamics_measurement_contract() -> DynamicsMeasurementContractV0 {
     let source_ref = artifact_ref(
         "signature-snapshot-store",
         "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
-        Some("signature-snapshot-store-v0"),
+        Some("signature-snapshot-store/v0.5.0"),
         Some("fixture-signature-snapshot"),
     );
     let pr_ref = artifact_ref(
         "pr-history-dataset",
         "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
-        Some("pr-history-dataset-v0"),
+        Some("pr-history-dataset/v0.5.0"),
         Some("fixture-pr-history"),
     );
 
     DynamicsMeasurementContractV0 {
         schema_version: DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION.to_string(),
-        artifact_id: "fixture-dynamics-measurement-contract-v0".to_string(),
+        artifact_id: "fixture-dynamics-measurement-contract/v0.5.0".to_string(),
         scope: "canonical Architecture Dynamics measurement status boundary fixture".to_string(),
         metrics: vec![
             metric(
@@ -167,7 +167,7 @@ pub fn static_dynamics_measurement_contract() -> DynamicsMeasurementContractV0 {
             ],
             source_artifact_refs: vec![source_ref, pr_ref],
             extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-            policy_version: Some("fixture-policy-v0".to_string()),
+            policy_version: Some("fixture-policy/v0.5.0".to_string()),
             schema_version: Some(DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION.to_string()),
             aggregation_window: Some(DynamicsAggregationWindowV0 {
                 window_start: Some("2026-01-01T00:00:00Z".to_string()),
@@ -295,7 +295,7 @@ fn boundary(
         measured_axes: strings(measured_axes),
         source_artifact_refs,
         extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-        policy_version: Some("fixture-policy-v0".to_string()),
+        policy_version: Some("fixture-policy/v0.5.0".to_string()),
         schema_version: Some(DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION.to_string()),
         aggregation_window: None,
         selected_region_refs: vec!["fixture:selected-pr-window".to_string()],
@@ -344,7 +344,7 @@ fn check_schema_version(contract: &DynamicsMeasurementContractV0) -> ValidationC
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported dynamics measurement contract schemaVersion: {}",
+            "unsupported dynamics measurement contract schema: {}",
             contract.schema_version
         ));
     }

@@ -7,7 +7,7 @@ use crate::{
     SchemaRequiredAssumptionV0,
 };
 
-const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
+const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy/v0.5.0";
 
 pub(crate) fn air_schema_compatibility_metadata(
     coverage: &AirCoverage,

@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "architecture-drift-ledger-v0",
+  "schema": "architecture-drift-ledger/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "architecture-drift-ledger",
-    "schemaVersionName": "architecture-drift-ledger-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "architecture-drift-ledger/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "entries[].subjectRef",
@@ -155,7 +155,7 @@
       "revisionRef": "main@fixture-b9-drift-current",
       "subjectRef": "component:CouponService->PaymentAdapter",
       "witnessFingerprint": "hidden-cache-access:CouponService:PaymentAdapter",
-      "policyRef": "boundary-policy-v0",
+      "policyRef": "boundary-policy/v0.5.0",
       "aggregationWindow": {
         "windowStart": "2026-05-04T00:00:00Z",
         "windowEnd": "2026-05-05T00:00:00Z",
@@ -185,7 +185,7 @@
         "approvedAt": "2026-05-04T11:00:00Z",
         "expiresAt": "2026-05-11T00:00:00Z",
         "scope": "pr-575 hidden interaction witness",
-        "policyRef": "boundary-policy-v0",
+        "policyRef": "boundary-policy/v0.5.0",
         "witnessRef": "witness-hidden-cache-access"
       },
       "repairCandidates": [
@@ -209,7 +209,7 @@
       "revisionRef": "main@fixture-b9-drift-current",
       "subjectRef": "runtime:PaymentAdapter",
       "witnessFingerprint": "private-runtime-log:PaymentAdapter",
-      "policyRef": "runtime-evidence-policy-v0",
+      "policyRef": "runtime-evidence-policy/v0.5.0",
       "aggregationWindow": {
         "windowStart": "2026-05-04T00:00:00Z",
         "windowEnd": "2026-05-05T00:00:00Z",

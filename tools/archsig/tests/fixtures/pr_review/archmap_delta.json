@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "archmap-delta-v0",
+  "schema": "archmap-delta/v0.5.0",
   "deltaId": "delta:create-user-boundary-pr",
   "baseSnapshotRef": "archmap-snapshot:create-user:base",
   "headSnapshotRef": "archmap-snapshot:create-user:head",

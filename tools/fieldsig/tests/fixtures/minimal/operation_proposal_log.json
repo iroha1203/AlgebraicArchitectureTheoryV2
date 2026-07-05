@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "operation-proposal-log-v0",
-  "logId": "fixture-operation-proposal-log-v0",
+  "schema": "operation-proposal-log/v0.5.0",
+  "logId": "fixture-operation-proposal-log/v0.5.0",
   "repository": {
     "owner": "iroha1203",
     "name": "AlgebraicArchitectureTheoryV2",
@@ -20,13 +20,13 @@
     {
       "kind": "pr-force-report",
       "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-      "schemaVersion": "pr-force-report-v0",
-      "artifactId": "fixture-pr-force-report-v0"
+      "schema": "pr-force-report/v0.5.0",
+      "artifactId": "fixture-pr-force-report/v0.5.0"
     },
     {
       "kind": "policy-decision-report",
       "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-      "schemaVersion": "policy-decision-report-v0",
+      "schema": "policy-decision-report/v0.5.0",
       "artifactId": "fixture-policy-decision-report"
     }
   ],
@@ -49,8 +49,8 @@
         {
           "kind": "pr-force-report",
           "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-          "schemaVersion": "pr-force-report-v0",
-          "artifactId": "fixture-pr-force-report-v0"
+          "schema": "pr-force-report/v0.5.0",
+          "artifactId": "fixture-pr-force-report/v0.5.0"
         }
       ],
       "measurementBoundary": {
@@ -69,19 +69,19 @@
           {
             "kind": "pr-force-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-            "schemaVersion": "pr-force-report-v0",
-            "artifactId": "fixture-pr-force-report-v0"
+            "schema": "pr-force-report/v0.5.0",
+            "artifactId": "fixture-pr-force-report/v0.5.0"
           },
           {
             "kind": "policy-decision-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-            "schemaVersion": "policy-decision-report-v0",
+            "schema": "policy-decision-report/v0.5.0",
             "artifactId": "fixture-policy-decision-report"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "operation-proposal-log-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "operation-proposal-log/v0.5.0",
         "aggregationWindow": {
           "windowStart": "2026-01-01T00:00:00Z",
           "windowEnd": "2026-01-31T23:59:59Z",
@@ -132,7 +132,7 @@
         {
           "kind": "policy-decision-report",
           "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-          "schemaVersion": "policy-decision-report-v0",
+          "schema": "policy-decision-report/v0.5.0",
           "artifactId": "fixture-policy-decision-report"
         }
       ],
@@ -152,19 +152,19 @@
           {
             "kind": "pr-force-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-            "schemaVersion": "pr-force-report-v0",
-            "artifactId": "fixture-pr-force-report-v0"
+            "schema": "pr-force-report/v0.5.0",
+            "artifactId": "fixture-pr-force-report/v0.5.0"
           },
           {
             "kind": "policy-decision-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-            "schemaVersion": "policy-decision-report-v0",
+            "schema": "policy-decision-report/v0.5.0",
             "artifactId": "fixture-policy-decision-report"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "operation-proposal-log-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "operation-proposal-log/v0.5.0",
         "aggregationWindow": {
           "windowStart": "2026-01-01T00:00:00Z",
           "windowEnd": "2026-01-31T23:59:59Z",
@@ -210,7 +210,7 @@
         {
           "kind": "policy-decision-report",
           "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-          "schemaVersion": "policy-decision-report-v0",
+          "schema": "policy-decision-report/v0.5.0",
           "artifactId": "fixture-policy-decision-report"
         }
       ],
@@ -230,19 +230,19 @@
           {
             "kind": "pr-force-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-            "schemaVersion": "pr-force-report-v0",
-            "artifactId": "fixture-pr-force-report-v0"
+            "schema": "pr-force-report/v0.5.0",
+            "artifactId": "fixture-pr-force-report/v0.5.0"
           },
           {
             "kind": "policy-decision-report",
             "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-            "schemaVersion": "policy-decision-report-v0",
+            "schema": "policy-decision-report/v0.5.0",
             "artifactId": "fixture-policy-decision-report"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "operation-proposal-log-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "operation-proposal-log/v0.5.0",
         "aggregationWindow": {
           "windowStart": "2026-01-01T00:00:00Z",
           "windowEnd": "2026-01-31T23:59:59Z",
@@ -292,19 +292,19 @@
       {
         "kind": "pr-force-report",
         "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-        "schemaVersion": "pr-force-report-v0",
-        "artifactId": "fixture-pr-force-report-v0"
+        "schema": "pr-force-report/v0.5.0",
+        "artifactId": "fixture-pr-force-report/v0.5.0"
       },
       {
         "kind": "policy-decision-report",
         "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-        "schemaVersion": "policy-decision-report-v0",
+        "schema": "policy-decision-report/v0.5.0",
         "artifactId": "fixture-policy-decision-report"
       }
     ],
     "extractorVersion": "0.1.0",
-    "policyVersion": "fixture-policy-v0",
-    "schemaVersion": "operation-proposal-log-v0",
+    "policyVersion": "fixture-policy/v0.5.0",
+    "schema": "operation-proposal-log/v0.5.0",
     "aggregationWindow": {
       "windowStart": "2026-01-01T00:00:00Z",
       "windowEnd": "2026-01-31T23:59:59Z",

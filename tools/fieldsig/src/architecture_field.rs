@@ -50,26 +50,26 @@ pub fn static_architecture_field_snapshot() -> ArchitectureFieldSnapshotV0 {
     let trajectory_ref = artifact_ref(
         "signature-trajectory-report",
         "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-        Some("signature-trajectory-report-v0"),
-        Some("fixture-signature-trajectory-report-v0"),
+        Some("signature-trajectory-report/v0.5.0"),
+        Some("fixture-signature-trajectory-report/v0.5.0"),
     );
     let policy_ref = artifact_ref(
         "organization-policy",
         "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
-        Some("organization-policy-v0"),
+        Some("organization-policy/v0.5.0"),
         Some("fixture-b7-organization-policy"),
     );
     let law_template_ref = artifact_ref(
         "law-policy-template-registry",
         "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
-        Some("law-policy-template-registry-v0"),
-        Some("fixture-law-policy-template-registry-v0"),
+        Some("law-policy-template-registry/v0.5.0"),
+        Some("fixture-law-policy-template-registry/v0.5.0"),
     );
     let measurement_unit_ref = artifact_ref(
         "measurement-unit-registry",
         "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
-        Some("measurement-unit-registry-v0"),
-        Some("fixture-measurement-unit-registry-v0"),
+        Some("measurement-unit-registry/v0.5.0"),
+        Some("fixture-measurement-unit-registry/v0.5.0"),
     );
     let window = selected_window();
     let source_refs = vec![
@@ -97,7 +97,7 @@ pub fn static_architecture_field_snapshot() -> ArchitectureFieldSnapshotV0 {
 
     ArchitectureFieldSnapshotV0 {
         schema_version: ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION.to_string(),
-        snapshot_id: "fixture-architecture-field-snapshot-v0".to_string(),
+        snapshot_id: "fixture-architecture-field-snapshot/v0.5.0".to_string(),
         repository: fixture_repository(),
         window: window.clone(),
         source_refs: source_refs.clone(),
@@ -185,13 +185,13 @@ pub fn static_operation_proposal_log() -> OperationProposalLogV0 {
     let pr_force_ref = artifact_ref(
         "pr-force-report",
         "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
-        Some("pr-force-report-v0"),
-        Some("fixture-pr-force-report-v0"),
+        Some("pr-force-report/v0.5.0"),
+        Some("fixture-pr-force-report/v0.5.0"),
     );
     let policy_ref = artifact_ref(
         "policy-decision-report",
         "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-        Some("policy-decision-report-v0"),
+        Some("policy-decision-report/v0.5.0"),
         Some("fixture-policy-decision-report"),
     );
     let window = selected_window();
@@ -219,7 +219,7 @@ pub fn static_operation_proposal_log() -> OperationProposalLogV0 {
 
     OperationProposalLogV0 {
         schema_version: OPERATION_PROPOSAL_LOG_SCHEMA_VERSION.to_string(),
-        log_id: "fixture-operation-proposal-log-v0".to_string(),
+        log_id: "fixture-operation-proposal-log/v0.5.0".to_string(),
         repository: fixture_repository(),
         window,
         source_refs: source_refs.clone(),
@@ -392,7 +392,7 @@ fn check_field_snapshot_schema_version(snapshot: &ArchitectureFieldSnapshotV0) -
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported architecture-field-snapshot schemaVersion: {}",
+            "unsupported architecture-field-snapshot schema: {}",
             snapshot.schema_version
         ));
     }
@@ -499,7 +499,7 @@ fn check_operation_proposal_log_schema_version(log: &OperationProposalLogV0) -> 
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported operation-proposal-log schemaVersion: {}",
+            "unsupported operation-proposal-log schema: {}",
             log.schema_version
         ));
     }
@@ -691,8 +691,8 @@ fn validate_boundary(
     if boundary.schema_version.as_deref() != Some(expected_schema_version) {
         invalid.push(generic_validation_example(
             artifact_id,
-            "measurementBoundary.schemaVersion",
-            "measurement boundary schemaVersion must match the artifact schema",
+            "measurementBoundary.schema",
+            "measurement boundary schema must match the artifact schema",
         ));
     }
     for required in required_non_conclusions {
@@ -725,7 +725,7 @@ fn boundary(
         measured_axes: strings(measured_axes),
         source_artifact_refs,
         extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-        policy_version: Some("fixture-policy-v0".to_string()),
+        policy_version: Some("fixture-policy/v0.5.0".to_string()),
         schema_version: Some(schema_version.to_string()),
         aggregation_window,
         selected_region_refs: vec!["fixture:selected-safe-region".to_string()],

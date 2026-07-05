@@ -14,7 +14,7 @@
 
 ## Request
 
-Add a CLI command that reads a Markdown PRD and emits artifact-descriptor-v0 JSON.
+Add a CLI command that reads a Markdown PRD and emits artifact-descriptor-schema050 JSON.
 The descriptor should keep source refs, action class candidates, scope, missing
 evidence, measurement boundary, and forecast non-conclusions.
 

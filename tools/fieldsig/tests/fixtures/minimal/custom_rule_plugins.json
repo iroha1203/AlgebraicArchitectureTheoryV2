@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "custom-rule-plugin-registry-v0",
+  "schema": "custom-rule-plugin-registry/v0.5.0",
   "registryId": "fixture-b8-custom-rule-plugin-registry",
   "scope": "canonical B8 custom rule plugin fixture",
   "plugins": [
     {
-      "pluginId": "fixture-boundary-tag-rule-plugin-v0",
-      "ruleId": "fixture-boundary-tag-rule-v0",
+      "pluginId": "fixture-boundary-tag-rule-plugin/v0.5.0",
+      "ruleId": "fixture-boundary-tag-rule/v0.5.0",
       "pluginKind": "policy-rule",
       "evidenceKind": "policy_rule",
       "confidence": "medium",
@@ -29,8 +29,8 @@
       "theoremPreconditionRefs": [],
       "requiredTheoremPreconditions": [],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0"
       ],
       "nonConclusions": [
         "custom rule plugin registry is tooling validation, not a Lean theorem",
@@ -41,8 +41,8 @@
       ]
     },
     {
-      "pluginId": "fixture-semantic-workflow-plugin-v0",
-      "ruleId": "fixture-semantic-workflow-rule-v0",
+      "pluginId": "fixture-semantic-workflow-plugin/v0.5.0",
+      "ruleId": "fixture-semantic-workflow-rule/v0.5.0",
       "pluginKind": "semantic-evidence",
       "evidenceKind": "semantic_diagram",
       "confidence": "low",
@@ -65,16 +65,16 @@
       ],
       "formalClaimPromotion": "requires-theorem-precondition-check",
       "theoremPreconditionRefs": [
-        "semantic-diagram-commutation-theorem-package-v0"
+        "semantic-diagram-commutation-theorem-package/v0.5.0"
       ],
       "requiredTheoremPreconditions": [
         "AIR semantic diagram evidence is exact for the selected workflow",
         "theorem precondition checker reports no missing semantic diagram preconditions"
       ],
       "outputArtifacts": [
-        "aat-air-v0",
-        "feature-extension-report-v0",
-        "theorem-precondition-check-report-v0"
+        "aat-air/v0.5.0",
+        "feature-extension-report/v0.5.0",
+        "theorem-precondition-check-report/v0.5.0"
       ],
       "nonConclusions": [
         "custom rule plugin registry is tooling validation, not a Lean theorem",

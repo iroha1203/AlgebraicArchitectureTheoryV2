@@ -53,12 +53,12 @@ workflow unless they explicitly want to develop ArchSig itself.
 
 For `pr-review`, the release-only required artifacts are:
 
-| Artifact | Required schemaVersion | How to obtain |
+| Artifact | Required schema | How to obtain |
 | --- | --- | --- |
-| base ArchMap | `archmap/v1` | Existing project ArchMap. If absent, stop and use `archmap-creater`. |
-| PR-local delta | `archmap-delta-v0` | Create from the current PR's base branch diff. |
-| LawPolicy | `law-policy/v1` | Existing selected project policy. If absent, stop and use `law-policy-creater`. |
-| PR review report | `archsig-pr-review-report-v1` | Output from `archsig pr-review`. |
+| base ArchMap | `archmap/v0.5.0` | Existing project ArchMap. If absent, stop and use `archmap-creater`. |
+| PR-local delta | `archmap-delta/v0.5.0` | Create from the current PR's base branch diff. |
+| LawPolicy | `law-policy/v0.5.0` | Existing selected project policy. If absent, stop and use `law-policy-creater`. |
+| PR review report | `archsig-pr-review-report/v0.5.0` | Output from `archsig pr-review`. |
 
 No bundled default LawPolicy is valid for PR review. A generic LawPolicy would
 change the review meaning and should not be substituted silently.
@@ -67,7 +67,7 @@ change the review meaning and should not be substituted silently.
 
 Before running `archsig pr-review`, inspect the input JSON directly:
 
-- `schemaVersion`
+- `schema`
 - ids such as `mapId`, `deltaId`, `lawPolicyId`
 - `changedObservationRefs[]`
 - `reviewIntent.sourceFirstTargets[]`
@@ -75,7 +75,7 @@ Before running `archsig pr-review`, inspect the input JSON directly:
 
 After running, inspect the report:
 
-- `schemaVersion` is `archsig-pr-review-report-v1`
+- `schema` is `archsig-pr-review-report/v0.5.0`
 - `canonicalInputs` point to the intended files
 - `policyBoundary.lawPolicyRequired` is true
 - there is no raw diff input field
@@ -92,7 +92,7 @@ Stop instead of guessing when:
 - the LawPolicy path is unknown or missing
 - the base branch diff cannot be determined or supplied
 - the ArchSig binary cannot be found
-- a JSON file has the wrong `schemaVersion`
+- a JSON file has the wrong `schema`
 - changed observations cannot be mapped to the base ArchMap and the user asked
   for a confident architecture review
 

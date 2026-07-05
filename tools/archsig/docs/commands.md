@@ -3,14 +3,14 @@
 `archsig` is the ArchMap v1 + LawPolicy v1 analysis tool. The current route is:
 
 ```text
-archmap/v1
-  + law-policy/v1
-  -> normalized-archmap/v1
-  -> typed-evaluator-results/v1
+archmap/v0.5.0
+  + law-policy/v0.5.0
+  -> normalized-archmap/v0.5.0
+  -> typed-evaluator-results/v0.5.0
   -> archsig-architecture-distance/v1
   -> archsig-analysis-summary/v1
-  -> archsig-atom-viewer-data-v1
-  -> archsig-run-manifest-v1
+  -> archsig-atom-viewer-data/v0.5.0
+  -> archsig-run-manifest/v0.5.0
 ```
 
 ArchSig no longer exposes pre-Atom scan, projection, report, or legacy raw-diff
@@ -106,11 +106,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
 ```
 
 `pr-review` is the CI-friendly ArchSig surface for small PR review. Its
-canonical inputs are base `archmap/v1`, optional head `archmap/v1`, optional
-intermediate `archmap/v1` snapshots, PR-local `archmap-delta-v0`, and required
-`law-policy/v1`. No LawPolicy, no ArchSig judgement. `pr-review` does not
-accept raw diff, `archmap-commit-v0`, or base/head
-`archsig-analysis-packet/v1` artifacts as inputs. The command internally
+canonical inputs are base `archmap/v0.5.0`, optional head `archmap/v0.5.0`, optional
+intermediate `archmap/v0.5.0` snapshots, PR-local `archmap-delta/v0.5.0`, and required
+`law-policy/v0.5.0`. No LawPolicy, no ArchSig judgement. `pr-review` does not
+accept raw diff, `archmap-commit/v0.5.0`, or base/head
+`archsig-analysis-packet/v0.5.0` artifacts as inputs. The command internally
 generates report-local v1 analysis snapshots and emits `v1Analysis`,
 `deltaPacketRefIntersections`, and `prStructuralDiagnosis`: changed delta refs
 matched to typed / derived packet refs, endpoint architecture-distance
@@ -139,11 +139,11 @@ Large ArchMaps may be drafted in a sharded authoring layout documented in
     runtime.archmap-slice.json
 ```
 
-The manifest schema is historical `archmap-shard-manifest-v0`. This is an
+The manifest schema is historical `archmap-shard-manifest/v0.5.0`. This is an
 authoring-side layout, not a current analysis input. The primary sharding model
 is horizontal: each slice is a bounded observation slice over a repository
 surface or sub-agent assignment. Bundle/export must produce a monolithic
-`archmap/v1` file before running:
+`archmap/v0.5.0` file before running:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
@@ -168,7 +168,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
   --out .archsig/analyze/law-policy-validation.json
 ```
 
-`archmap` validates `archmap/v1`. `law-policy` validates `law-policy/v1`.
+`archmap` validates `archmap/v0.5.0`. `law-policy` validates `law-policy/v0.5.0`.
 Standalone packet-builder, standalone summary, codebase-inspection, and
 archmap-generation commands are removed runtime surfaces; use `analyze` and
 the ArchSig skills instead.

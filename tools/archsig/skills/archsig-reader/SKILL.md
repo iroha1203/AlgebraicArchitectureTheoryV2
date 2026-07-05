@@ -7,7 +7,7 @@ description: Run ArchMap artifacts through ArchSig, read the summary and ArchVie
 
 ## Purpose
 
-Turn a supplied `archmap/v1` and `law-policy/v1` into an ArchSig analysis, read the
+Turn a supplied `archmap/v0.5.0` and `law-policy/v0.5.0` into an ArchSig analysis, read the
 resulting summary and ArchView report pane as the first architecture
 measurement over the supplied `ArchMap + LawPolicy`, and propose practical
 improvements. Use raw packet artifacts only when detailed evidence lookup,
@@ -67,7 +67,7 @@ Resolve the ArchSig binary before running:
 
 If none exists, stop and ask the user for the binary path. Do not require Cargo or the ArchSig source tree in a released skill-only environment.
 
-Before passing a LawPolicy-like file to ArchSig, verify it is JSON with `schema: "law-policy/v1"`. If the schema is absent or different, do not pass it as LawPolicy; continue the search order or ask the user.
+Before passing a LawPolicy-like file to ArchSig, verify it is JSON with `schema: "law-policy/v0.5.0"`. If the schema is absent or different, do not pass it as LawPolicy; continue the search order or ask the user.
 
 ```bash
 SKILL_DIR=<path-to-archsig-reader-skill>

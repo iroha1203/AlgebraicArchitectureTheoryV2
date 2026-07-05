@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-good-extension",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-sig0",
       "kind": "sig0",
-      "schemaVersion": "archsig-sig0-v0",
+      "schema": "archsig-sig0/v0.5.0",
       "path": "canonical/good/sig0.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -36,7 +36,7 @@
       "path": "canonical/good/sig0.json",
       "symbol": null,
       "line": null,
-      "ruleId": "archsig-sig0-v0",
+      "ruleId": "archsig-sig0/v0.5.0",
       "confidence": "high"
     },
     {

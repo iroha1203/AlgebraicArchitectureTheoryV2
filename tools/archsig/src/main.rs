@@ -4,17 +4,16 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2,
-    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, SchemaVersionCatalogV0,
-    build_architecture_distance_v1, build_foundation_measurement_packet_v1, build_insight_brief_v1,
-    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
-    build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
-    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
-    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1,
-    enrich_architecture_distance_with_part4_bundle_v1, evaluate_typed_v1, normalize_archmap_v1,
-    normalize_archmap_v2, static_law_evaluator_registry_v1, static_schema_version_catalog,
-    validate_archmap_v1_report, validate_archmap_v2_report, validate_law_policy_v1_report,
-    validate_measurement_packet_v1,
+    ARCHMAP_V1_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
+    LawPolicyDocumentV1, SchemaVersionCatalogV0, build_architecture_distance_v1,
+    build_foundation_measurement_packet_v1, build_insight_brief_v1, build_insight_report_v1,
+    build_measurement_summary_v1, build_measurement_viewer_data_v1, build_typed_analysis_packet_v1,
+    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
+    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
+    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
+    evaluate_typed_v1, normalize_archmap_v1, normalize_archmap_v2,
+    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
+    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -81,27 +80,27 @@ enum Command {
 
     /// Produce a lightweight ArchSig PR review report from base ArchMap v1, PR-local ArchMap delta, and LawPolicy v1.
     PrReview {
-        /// Input base archmap/v1 JSON path.
+        /// Input base archmap/v0.5.0 JSON path.
         #[arg(long = "base-archmap")]
         base_archmap: PathBuf,
 
-        /// Optional typed head archmap/v1 JSON path.
+        /// Optional typed head archmap/v0.5.0 JSON path.
         #[arg(long = "after-archmap")]
         after_archmap: Option<PathBuf>,
 
-        /// Optional typed intermediate archmap/v1 JSON path. May be supplied multiple times.
+        /// Optional typed intermediate archmap/v0.5.0 JSON path. May be supplied multiple times.
         #[arg(long = "path-archmap")]
         path_archmap: Vec<PathBuf>,
 
-        /// Input archmap-delta-v0 JSON path. This is the PR-local ArchMap observation delta.
+        /// Input archmap-delta/v0.5.0 JSON path. This is the PR-local ArchMap observation delta.
         #[arg(long = "delta-archmap")]
         delta_archmap: PathBuf,
 
-        /// Input law-policy/v1 JSON path.
+        /// Input law-policy/v0.5.0 JSON path.
         #[arg(long = "law-policy")]
         law_policy: PathBuf,
 
-        /// Output archsig-pr-review-report-v1 JSON path. If omitted, JSON is written to stdout.
+        /// Output archsig-pr-review-report/v0.5.0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -129,23 +128,46 @@ fn validate_archmap_command_input(
 ) -> Result<(serde_json::Value, bool, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
     match json_schema(&raw) {
+        Some(ARCHMAP_V1_SCHEMA) if is_archmap_v2_shape(&raw) => {
+            let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
+            let report = validate_archmap_v2_report(&document, &input.display().to_string());
+            let failed = report.summary.result == "fail";
+            Ok((serde_json::to_value(report)?, failed, false))
+        }
         Some(ARCHMAP_V1_SCHEMA) => {
             let document: ArchMapDocumentV1 = serde_json::from_value(raw)?;
             let report = validate_archmap_v1_report(&document, &input.display().to_string());
             let failed = report.summary.result == "fail";
             Ok((serde_json::to_value(report)?, failed, true))
         }
-        Some(ARCHMAP_V2_SCHEMA) => {
-            let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
-            let report = validate_archmap_v2_report(&document, &input.display().to_string());
-            let failed = report.summary.result == "fail";
-            Ok((serde_json::to_value(report)?, failed, false))
-        }
         _ => {
             require_schema(&raw, ARCHMAP_V1_SCHEMA, "--input")?;
-            unreachable!("require_schema returns on success for archmap/v1")
+            unreachable!("require_schema returns on success for archmap/v0.5.0")
         }
     }
+}
+
+fn is_archmap_v2_shape(document: &serde_json::Value) -> bool {
+    document.get("extractionDoctrineRef").is_some()
+        || document.get("contexts").is_some()
+        || document.get("covers").is_some()
+        || document
+            .get("atoms")
+            .and_then(|value| value.as_array())
+            .is_some_and(|atoms| atoms.iter().any(|atom| atom.get("axis").is_some()))
+}
+
+fn require_structural_archmap_shape(
+    document: &serde_json::Value,
+    field_name: &str,
+) -> Result<(), Box<dyn Error>> {
+    if is_archmap_v2_shape(document) {
+        return Err(format!(
+            "{field_name} must use structural ArchMap shape under {ARCHMAP_V1_SCHEMA}; finite-poset-site ArchMap shape is accepted by archmap/analyze, not pr-review"
+        )
+        .into());
+    }
+    Ok(())
 }
 
 fn validate_law_policy_command_input(
@@ -160,10 +182,7 @@ fn validate_law_policy_command_input(
 }
 
 fn json_schema(document: &serde_json::Value) -> Option<&str> {
-    document
-        .get("schema")
-        .or_else(|| document.get("schemaVersion"))
-        .and_then(|value| value.as_str())
+    document.get("schema").and_then(|value| value.as_str())
 }
 
 fn summary_result(document: &serde_json::Value) -> &str {
@@ -248,7 +267,7 @@ fn build_pr_review_v1_analysis(
         "structuralReadingReviewSurface": packet["structuralReadingReviewSurface"],
         "structuralReadingRefs": packet["structuralReadingReviewSurface"]["connectedReadingRefs"],
         "detailIndexSummary": {
-            "schemaVersion": detail_index["schemaVersion"],
+            "schema": detail_index["schema"],
             "entryCount": detail_index["entries"].as_array().map(Vec::len).unwrap_or_default(),
             "refDictionaryCount": detail_index["refDictionary"].as_array().map(Vec::len).unwrap_or_default()
         },
@@ -406,7 +425,7 @@ fn pr_structural_diagnosis(
     };
 
     serde_json::json!({
-        "schema": "archsig-pr-structural-diagnosis/v1",
+        "schema": "archsig-pr-structural-diagnosis/v0.5.0",
         "basis": "ArchMapDelta refs + v1 typed evaluator results + v1 generated packet refs",
         "basePacketRef": base_analysis["packetRef"],
         "afterPacketRef": after_analysis
@@ -573,6 +592,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let base_archmap_document: serde_json::Value = read_json(&base_archmap)?;
             let law_policy_document: serde_json::Value = read_json(&law_policy)?;
             require_schema(&base_archmap_document, ARCHMAP_V1_SCHEMA, "--base-archmap")?;
+            require_structural_archmap_shape(&base_archmap_document, "--base-archmap")?;
             require_schema(&law_policy_document, LAW_POLICY_V1_SCHEMA, "--law-policy")?;
             let law_policy_typed: LawPolicyDocumentV1 = serde_json::from_value(
                 law_policy_document.clone(),
@@ -610,6 +630,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .map(|after_archmap| {
                     let after_archmap_document: Value = read_json(after_archmap)?;
                     require_schema(&after_archmap_document, ARCHMAP_V1_SCHEMA, "--after-archmap")?;
+                    require_structural_archmap_shape(&after_archmap_document, "--after-archmap")?;
                     build_pr_review_v1_analysis(
                         "after",
                         after_archmap,
@@ -629,6 +650,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         ARCHMAP_V1_SCHEMA,
                         "--path-archmap",
                     )?;
+                    require_structural_archmap_shape(&path_archmap_document, "--path-archmap")?;
                     build_pr_review_v1_analysis(
                         &format!("path-{index}"),
                         path_archmap,
@@ -639,7 +661,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 })
                 .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
             let delta_archmap_document: serde_json::Value = read_json(&delta_archmap)?;
-            require_schema(&delta_archmap_document, "archmap-delta-v0", "--delta-archmap")?;
+            require_schema(&delta_archmap_document, "archmap-delta/v0.5.0", "--delta-archmap")?;
             let changed_refs = required_string_array(&delta_archmap_document, "changedObservationRefs")?;
             let mut intersection_analyses = vec![("base".to_string(), &base_analysis)];
             if let Some(after_analysis) = after_analysis.as_ref() {
@@ -657,7 +679,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &delta_packet_ref_intersections,
             );
             let report = serde_json::json!({
-                "schemaVersion": "archsig-pr-review-report-v1",
+                "schema": "archsig-pr-review-report/v0.5.0",
                 "reviewKind": "v1-output-replacement-structural-pr-review",
                 "canonicalInputs": {
                     "baseArchMap": {
@@ -674,7 +696,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     })).collect::<Vec<_>>(),
                     "deltaArchMap": {
                         "path": delta_archmap.display().to_string(),
-                        "schemaVersion": json_schema(&delta_archmap_document),
+                        "schema": json_schema(&delta_archmap_document),
                         "changedObservationRefs": changed_refs
                     },
                     "lawPolicy": {
@@ -735,7 +757,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let (law_policy_preflight, law_policy_failed, law_policy_is_v1) =
                 validate_law_policy_command_input(&law_policy)?;
             if !law_policy_is_v1 {
-                return Err("archsig analyze accepts only law-policy/v1".into());
+                return Err("archsig analyze accepts only law-policy/v0.5.0".into());
             }
             std::fs::create_dir_all(&out_dir)?;
             remove_analyze_success_artifacts(&out_dir)?;
@@ -754,7 +776,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(
                     Some(run_manifest_path),
                     &serde_json::json!({
-                        "schema": "archsig-run-manifest/v1",
+                        "schema": "archsig-run-manifest/v0.5.0",
                         "command": "analyze",
                         "status": "validation_failed",
                         "generatedArtifacts": [
@@ -820,7 +842,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(
                     Some(analysis_validation_path),
                     &serde_json::json!({
-                        "schemaVersion": "archsig-measurement-packet-validation-report-v1",
+                        "schema": "archsig-measurement-packet-validation-report/v0.5.0",
                         "packetSchema": measurement_packet.schema,
                         "checks": packet_validation,
                         "summary": {
@@ -844,7 +866,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 write_json(
                     Some(run_manifest_path),
                     &serde_json::json!({
-                        "schemaVersion": "archsig-run-manifest-v2",
+                        "schema": "archsig-run-manifest/v0.5.0",
                         "commandName": "analyze",
                         "outputMode": "v2-measurement-foundation",
                         "archmapInputPath": archmap.display().to_string(),
@@ -914,7 +936,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             }
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
             if strict_distance && law_policy_document.distance_profile_ref.is_none() {
-                eprintln!("--strict-distance rejected law-policy/v1 without distanceProfileRef");
+                eprintln!("--strict-distance rejected law-policy/v0.5.0 without distanceProfileRef");
                 return Ok(ExitCode::from(1));
             }
             let archmap_document: ArchMapDocumentV1 = read_json(&archmap)?;
@@ -1086,7 +1108,7 @@ fn build_validation_failure_insight_report(
         .cloned()
         .unwrap_or_else(|| "validation:unknown-failure".to_string());
     serde_json::json!({
-        "schema": "archsig-insight-report/v1",
+        "schema": "archsig-insight-report/v0.5.0",
         "reportId": "insight:validation-failure",
         "sourcePacketRef": null,
         "generatedAt": "deterministic-run-artifact",
@@ -1222,7 +1244,7 @@ fn build_validation_failure_insight_report(
 
 fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
     serde_json::json!({
-        "schemaVersion": "archsig-atom-viewer-data-v2",
+        "schema": "archsig-atom-viewer-data/v0.5.0",
         "sourceArtifactRefs": {
             "archmapValidation": "archmap-validation.json",
             "lawPolicyValidation": "law-policy-validation.json",

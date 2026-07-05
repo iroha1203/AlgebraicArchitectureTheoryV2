@@ -51,7 +51,7 @@ pub fn static_law_policy_template_registry() -> LawPolicyTemplateRegistryV0 {
         ],
         templates: vec![
             law_policy_template(
-                "python-boundary-allowlist-template-v0",
+                "python-boundary-allowlist-template/v0.5.0",
                 "python-module",
                 "boundary",
                 "exact-or-prefix-star",
@@ -62,14 +62,14 @@ pub fn static_law_policy_template_registry() -> LawPolicyTemplateRegistryV0 {
                 ],
                 &["python_import", "policy_selector"],
                 &["boundaryViolationCount"],
-                &["signature-policy-v0", "aat-air-v0"],
+                &["signature-policy/v0.5.0", "aat-air/v0.5.0"],
                 &[
-                    "AIR relation extractionRule traces to python-import-graph-v0",
+                    "AIR relation extractionRule traces to python-import-graph-schema050",
                     "policy selector coverage is recorded before any formal bridge claim",
                 ],
             ),
             law_policy_template(
-                "python-abstraction-port-template-v0",
+                "python-abstraction-port-template/v0.5.0",
                 "python-module",
                 "abstraction",
                 "exact-or-prefix-star",
@@ -80,14 +80,14 @@ pub fn static_law_policy_template_registry() -> LawPolicyTemplateRegistryV0 {
                 ],
                 &["python_import", "policy_selector"],
                 &["abstractionViolationCount"],
-                &["signature-policy-v0", "feature-extension-report-v0"],
+                &["signature-policy/v0.5.0", "feature-extension-report/v0.5.0"],
                 &[
                     "Projection soundness and exactness are separate Lean-side proof obligations",
                     "policy evidence does not discharge abstraction theorem assumptions",
                 ],
             ),
             law_policy_template(
-                "service-runtime-protection-template-v0",
+                "service-runtime-protection-template/v0.5.0",
                 "service",
                 "runtime-protection",
                 "adapter-provided",
@@ -98,7 +98,7 @@ pub fn static_law_policy_template_registry() -> LawPolicyTemplateRegistryV0 {
                 ],
                 &["runtime_trace", "policy_selector"],
                 &["runtimePropagation"],
-                &["aat-air-v0", "feature-extension-report-v0"],
+                &["aat-air/v0.5.0", "feature-extension-report/v0.5.0"],
                 &[
                     "runtime zero bridge theorem preconditions are explicit claim-side data",
                     "runtime telemetry coverage is not inferred from template selection",
@@ -186,7 +186,7 @@ fn check_schema_version(registry: &LawPolicyTemplateRegistryV0) -> ValidationChe
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported law policy template registry schemaVersion: {}",
+            "unsupported law policy template registry schema: {}",
             registry.schema_version
         ));
     }

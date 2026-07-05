@@ -1,17 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-pub const SOFTWARE_FIELD_MEASUREMENT_SCHEMA_VERSION: &str = "software-field-measurement-v0";
-pub const FIELDSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "fieldsig-run-manifest-v0";
+pub const SOFTWARE_FIELD_MEASUREMENT_SCHEMA_VERSION: &str = "software-field-measurement/v0.5.0";
+pub const FIELDSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "fieldsig-run-manifest/v0.5.0";
 pub const SOFTWARE_FIELD_MEASUREMENT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "software-field-measurement-validation-report-v0";
+    "software-field-measurement-validation-report/v0.5.0";
 pub const FIELDSIG_RUN_MANIFEST_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "fieldsig-run-manifest-validation-report-v0";
+    "fieldsig-run-manifest-validation-report/v0.5.0";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactRefV0 {
     pub ref_id: String,
     pub artifact_kind: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub producer: String,
@@ -30,6 +31,7 @@ pub struct SoftwareFieldEstimateV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SoftwareFieldMeasurementV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub measurement_id: String,
     pub observation_boundary: Vec<String>,
@@ -48,6 +50,7 @@ pub struct SoftwareFieldMeasurementV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FieldSigRunManifestV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub run_id: String,
     pub input_artifact_refs: Vec<ArtifactRefV0>,
@@ -69,6 +72,7 @@ pub struct FieldSigValidationSummaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SoftwareFieldMeasurementValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: String,
     pub measurement: SoftwareFieldMeasurementV0,
@@ -79,6 +83,7 @@ pub struct SoftwareFieldMeasurementValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FieldSigRunManifestValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: String,
     pub manifest: FieldSigRunManifestV0,
@@ -105,7 +110,7 @@ pub fn static_software_field_measurement() -> SoftwareFieldMeasurementV0 {
         archsig_artifact_refs: vec![artifact_ref(
             "archsig:archmap:minimal",
             "archmap",
-            "archmap-v0",
+            "archmap/v0.5.0",
             "tools/fieldsig/tests/fixtures/minimal/archmap.json",
             "archsig",
             "AAT structural evidence ref; not architecture ground truth",
@@ -113,7 +118,7 @@ pub fn static_software_field_measurement() -> SoftwareFieldMeasurementV0 {
         workflow_evidence_refs: vec![
             artifact_ref("workflow:prd:coupon", "prd", "markdown", "docs/example/coupon_prd.md", "human", "planning evidence"),
             artifact_ref("workflow:issue:coupon", "github-issue", "github-issue-json", "issues/field-coupon.json", "github", "issue evidence"),
-            artifact_ref("workflow:ci:coupon", "ci-run", "ci-run-ref-v0", "ci/runs/field-coupon", "ci", "test evidence ref"),
+            artifact_ref("workflow:ci:coupon", "ci-run", "ci-run-ref/v0.5.0", "ci/runs/field-coupon", "ci", "test evidence ref"),
         ],
         software_field_estimate: SoftwareFieldEstimateV0 {
             estimate_id: "field-estimate:coupon:minimal".to_string(),
@@ -121,11 +126,11 @@ pub fn static_software_field_measurement() -> SoftwareFieldMeasurementV0 {
             unmeasured_axes: vec!["probability".to_string(), "causalCorrectness".to_string(), "globalSafety".to_string()],
             evidence_boundary: vec!["estimate is an SFT measurement artifact, not a theorem".to_string()],
         },
-        forecast_cone_refs: vec![artifact_ref("fieldsig:forecast:coupon", "forecast-cone-skeleton", "forecast-cone-skeleton-v0", "forecast-cone-skeleton.json", "fieldsig", "bounded forecast skeleton ref")],
-        consequence_envelope_refs: vec![artifact_ref("fieldsig:consequence:coupon", "consequence-envelope-report", "consequence-envelope-report-v0", "consequence-envelope-report.json", "fieldsig", "review consequence envelope ref")],
-        governance_candidate_refs: vec![artifact_ref("fieldsig:governance:coupon", "ai-proposal-governance", "ai-proposal-governance-v0", "ai-proposal-governance.json", "fieldsig", "governance candidate ref")],
-        operational_feedback_refs: vec![artifact_ref("fieldsig:feedback:coupon", "calibration-review-record", "calibration-review-record-v0", "calibration-review-record.json", "fieldsig", "empirical feedback ref")],
-        calibration_hook_refs: vec![artifact_ref("fieldsig:calibration:coupon", "forecast-calibration-hook", "forecast-calibration-hook-v0", "forecast-calibration-hook.json", "fieldsig", "calibration hook ref")],
+        forecast_cone_refs: vec![artifact_ref("fieldsig:forecast:coupon", "forecast-cone-skeleton", "forecast-cone-skeleton/v0.5.0", "forecast-cone-skeleton.json", "fieldsig", "bounded forecast skeleton ref")],
+        consequence_envelope_refs: vec![artifact_ref("fieldsig:consequence:coupon", "consequence-envelope-report", "consequence-envelope-report/v0.5.0", "consequence-envelope-report.json", "fieldsig", "review consequence envelope ref")],
+        governance_candidate_refs: vec![artifact_ref("fieldsig:governance:coupon", "ai-proposal-governance", "ai-proposal-governance/v0.5.0", "ai-proposal-governance.json", "fieldsig", "governance candidate ref")],
+        operational_feedback_refs: vec![artifact_ref("fieldsig:feedback:coupon", "calibration-review-record", "calibration-review-record/v0.5.0", "calibration-review-record.json", "fieldsig", "empirical feedback ref")],
+        calibration_hook_refs: vec![artifact_ref("fieldsig:calibration:coupon", "forecast-calibration-hook", "forecast-calibration-hook/v0.5.0", "forecast-calibration-hook.json", "fieldsig", "calibration hook ref")],
         unknown_remainder: vec!["runtime rollout impact is unmeasured in this fixture".to_string()],
         non_conclusions: measurement_non_conclusions(),
     }
@@ -172,7 +177,7 @@ pub fn validate_software_field_measurement(
         check(
             "software-field-measurement-schema",
             measurement.schema_version == SOFTWARE_FIELD_MEASUREMENT_SCHEMA_VERSION,
-            "schemaVersion must be software-field-measurement-v0",
+            "schema must be software-field-measurement-schema050",
         ),
         check(
             "software-field-measurement-archsig-ref-boundary",
@@ -216,7 +221,7 @@ pub fn validate_fieldsig_run_manifest(
         check(
             "fieldsig-run-manifest-schema",
             manifest.schema_version == FIELDSIG_RUN_MANIFEST_SCHEMA_VERSION,
-            "schemaVersion must be fieldsig-run-manifest-v0",
+            "schema must be fieldsig-run-manifest-schema050",
         ),
         check(
             "fieldsig-run-manifest-inputs",

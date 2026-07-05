@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "archsig-example-runtime-trace-v0",
+  "schema": "archsig-example-runtime-trace/v0.5.0",
   "traceId": "runtime-trace:place-order-demo",
   "scenario": "sample main reserves one order through OrderService and InMemoryInventoryStore",
   "sourceRefs": [

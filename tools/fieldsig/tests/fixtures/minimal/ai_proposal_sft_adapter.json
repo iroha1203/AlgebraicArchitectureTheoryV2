@@ -1,7 +1,7 @@
 {
-  "proposalId": "proposal-sft-json-adapter-v0",
+  "proposalId": "proposal-sft-json-adapter/v0.5.0",
   "title": "Normalize AI proposal JSON into SFT forecast input",
-  "summary": "Generate artifact-descriptor-v0 from a bounded AI proposal artifact without treating the proposal as accepted design evidence.",
+  "summary": "Generate artifact-descriptor-schema050 from a bounded AI proposal artifact without treating the proposal as accepted design evidence.",
   "changes": [
     "Add an artifact-descriptor JSON adapter",
     "Add fixture and validation tests",

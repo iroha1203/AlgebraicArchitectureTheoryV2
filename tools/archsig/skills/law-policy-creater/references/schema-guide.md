@@ -8,7 +8,7 @@ MeasurementProfile.
 
 ```json
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "policy-id",
   "policies": []
 }
@@ -22,7 +22,7 @@ Use either a pack selector:
 
 ```json
 {
-  "pack": "solid@1",
+  "pack": "solid",
   "basis": ["policy-basis:solid"],
   "scope": ["src."],
   "severity": "review"
@@ -34,7 +34,7 @@ Or an individual evaluator selector:
 ```json
 {
   "law": "domain.no-direct-infra-dependency",
-  "evaluator": "domain.no-direct-infra-dependency@1",
+  "evaluator": "domain.no-direct-infra-dependency",
   "basis": ["policy-basis:layering"],
   "scope": ["domain."],
   "severity": "error"
@@ -45,27 +45,27 @@ Or an individual evaluator selector:
 
 Packs:
 
-- `solid@1`
+- `solid`
 
 Evaluator ids:
 
-- `solid.single-responsibility@1`
-- `solid.open-closed@1`
-- `solid.liskov-substitution@1`
-- `solid.interface-segregation@1`
-- `solid.dependency-inversion@1`
-- `domain.no-direct-infra-dependency@1`
-- `ag.cech-obstruction@1`
-- `ag.coherence-obstruction@1`
-- `ag.restriction-compatibility@1`
-- `ag.section-factorization@1`
-- `ag.boundary-residue@1`
-- `ag.square-free-repair@1`
-- `ag.law-conflict-tor@1`
-- `ag.sheaf-laplacian@1`
-- `ag.period-stokes@1`
-- `ag.period-stokes-audit@1`
-- `ag.support-transfer@1`
+- `solid.single-responsibility`
+- `solid.open-closed`
+- `solid.liskov-substitution`
+- `solid.interface-segregation`
+- `solid.dependency-inversion`
+- `domain.no-direct-infra-dependency`
+- `ag.cech-obstruction`
+- `ag.coherence-obstruction`
+- `ag.restriction-compatibility`
+- `ag.section-factorization`
+- `ag.boundary-residue`
+- `ag.square-free-repair`
+- `ag.law-conflict-tor`
+- `ag.sheaf-laplacian`
+- `ag.period-stokes`
+- `ag.period-stokes-audit`
+- `ag.support-transfer`
 
 Basis refs:
 
@@ -79,7 +79,7 @@ AG evaluator selectors require `measurementProfileRef` resolving to
 
 ```json
 {
-  "schema": "measurement-profile/v1",
+  "schema": "measurement-profile/v0.5.0",
   "profileId": "profile:ag-default@1",
   "siteRef": "archmap:/contexts",
   "coverRef": "cover:<archmap-cover-id>",

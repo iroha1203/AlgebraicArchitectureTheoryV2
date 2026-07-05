@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "relation-complexity-candidates/v0",
+  "schema": "relation-complexity-candidates/v0.5.0",
   "repository": "example/service",
   "revision": "fixture-sha",
   "measurementUniverse": {

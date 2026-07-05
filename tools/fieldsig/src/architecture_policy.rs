@@ -247,7 +247,7 @@ fn check_schema_version(policy: &ArchitecturePolicyV0) -> ValidationCheck {
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported architecture policy schemaVersion: {}",
+            "unsupported architecture policy schema: {}",
             policy.schema_version
         ));
     }

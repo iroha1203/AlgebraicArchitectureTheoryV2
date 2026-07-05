@@ -94,7 +94,7 @@ pub fn static_artifact_descriptor() -> ArtifactDescriptorV0 {
 
     ArtifactDescriptorV0 {
         schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
-        descriptor_id: "fixture-artifact-descriptor-v0".to_string(),
+        descriptor_id: "fixture-artifact-descriptor/v0.5.0".to_string(),
         artifact_kind: "issue".to_string(),
         artifact_title: "B12.1 ArtifactDescriptor schema".to_string(),
         source_refs,
@@ -104,7 +104,7 @@ pub fn static_artifact_descriptor() -> ArtifactDescriptorV0 {
                 "schema-definition",
                 "high",
                 &["source:issue-733", "source:roadmap-b12"],
-                "Issue requests a Rust schema for artifact-descriptor-v0.",
+                "Issue requests a Rust schema for artifact-descriptor-schema050.",
             ),
             action_candidate(
                 "candidate:add-validator",
@@ -513,7 +513,7 @@ fn check_schema_version(descriptor: &ArtifactDescriptorV0) -> ValidationCheck {
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported artifact descriptor schemaVersion: {}",
+            "unsupported artifact descriptor schema: {}",
             descriptor.schema_version
         ));
     }

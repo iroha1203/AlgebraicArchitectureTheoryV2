@@ -83,7 +83,7 @@ jobs:
           test ! -e "$archsig_dir/llm-interpretation-packet.json"
 
           jq -e '
-            .schemaVersion == "archsig-run-manifest-v1"
+            .schema == "archsig-run-manifest/v0.5.0"
             and .rawArtifactRetention == "omitted"
             and .typedEvaluatorResultsPath == "typed-evaluator-results.json"
             and ([.generatedArtifacts[]] | index("archsig-analysis-summary.json") != null)
@@ -93,7 +93,7 @@ jobs:
           ' "$archsig_dir/archsig-run-manifest.json"
 
           jq -e '
-            .schemaVersion == "archsig-atom-viewer-data-v1"
+            .schema == "archsig-atom-viewer-data/v0.5.0"
             and .dataKind == "typed-evaluator-viewer-projection"
             and ((.atomNodes | length) > 0)
             and (.reportPane.overview.summaryVerdict | type == "string")
@@ -122,7 +122,7 @@ jobs:
           test -s "$archsig_raw_dir/llm-interpretation-packet.json"
 
           jq -e '
-            .schemaVersion == "archsig-run-manifest-v1"
+            .schema == "archsig-run-manifest/v0.5.0"
             and .rawArtifactRetention == "full"
             and ([.generatedArtifacts[]] | index("archsig-analysis-packet.json") != null)
             and .rawArtifactPaths.analysisPacket == "archsig-analysis-packet.json"
@@ -132,7 +132,7 @@ jobs:
           ' "$archsig_raw_dir/archsig-run-manifest.json"
 
           jq -e '
-            .schema == "archsig-analysis-packet/v1"
+            .schema == "archsig-analysis-packet/v0.5.0"
             and .inputRefs.lawPolicy == "tools/archsig/tests/fixtures/archmap_v1/law_policy.json"
             and .inputRefs.normalizedArchMap == "normalized-archmap.json"
             and .inputRefs.typedEvaluatorResults == "typed-evaluator-results.json"
@@ -142,7 +142,7 @@ jobs:
           ' "$archsig_raw_dir/archsig-analysis-packet.json"
 
           jq -e '
-            .schemaVersion == "archsig-analysis-detail-index-v1"
+            .schema == "archsig-analysis-detail-index/v0.5.0"
             and .indexKind == "typed-evaluator-support-index"
             and (.entries | type == "array")
             and ((.entries | length) > 0)
@@ -150,14 +150,14 @@ jobs:
           ' "$archsig_raw_dir/archsig-analysis-detail-index.json"
 
           jq -e --slurpfile packet "$archsig_raw_dir/archsig-analysis-packet.json" '
-            .schema == "llm-interpretation-packet/v1"
+            .schema == "llm-interpretation-packet/v0.5.0"
             and .interpretationKind == "typed-evaluator-bounded-reading"
             and .typedEvaluatorSummary.resultCount == ($packet[0].typedEvaluatorResults | length)
           ' "$archsig_raw_dir/llm-interpretation-packet.json"
 
           jq -e '
             .summary.result == "pass"
-            and .schemaVersion == "archsig-analysis-validation-report-v1"
+            and .schema == "archsig-analysis-validation-report/v0.5.0"
             and ([.checks[]? | select(.result == "pass") | .checkId] | index("archsig.v1.typedEvaluatorResultCount") != null)
           ' "$archsig_raw_dir/archsig-analysis-validation.json"
 
@@ -166,7 +166,7 @@ jobs:
             --out "$fieldsig_dir/operation-support-estimate.json"
 
           jq -e '
-            .schemaVersion == "operation-support-estimate-v0"
+            .schema == "operation-support-estimate/v0.5.0"
             and .descriptorRef.artifactKind == "archsig-analysis-packet"
             and ([.candidateOperationFamilies[]?.supportKind] | index("typed-evaluator-result") != null)
             and ([.descriptorRef.sourceRefIds[]? | startswith("archsigV1PacketRef:architectureSpectrumReport:")] | any)
@@ -185,10 +185,10 @@ jobs:
             --out "$fieldsig_dir/schema-compatibility-report.json"
 
           jq -e '
-            .schemaVersion == "schema-compatibility-check-report-v0"
+            .schema == "schema-compatibility-check-report/v0.5.0"
             and .summary.result == "pass"
-            and .after.artifactId == "archsig-analysis-packet-v1"
-            and .after.schemaVersionName == "archsig-analysis-packet/v1"
+            and .after.artifactId == "archsig-analysis-packet/v0.5.0"
+            and .after.schemaName == "archsig-analysis-packet/v0.5.0"
           ' "$fieldsig_dir/schema-compatibility-report.json"
 
           if cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
@@ -206,7 +206,7 @@ jobs:
           test -s "$archsig_measurement_dir/archsig-measurement-packet.json"
 
           jq -e '
-            .schema == "archsig-measurement-packet/v1"
+            .schema == "archsig-measurement-packet/v0.5.0"
             and .packetId == "measurement:ag-measurement-support-transfer-fixture"
             and (.profile.profileId == "profile:ag-support-transfer@1")
             and ((.computedInvariants | length) > 0)
@@ -219,7 +219,7 @@ jobs:
             --out "$fieldsig_dir/operation-support-estimate-measurement.json"
 
           jq -e '
-            .schemaVersion == "operation-support-estimate-v0"
+            .schema == "operation-support-estimate/v0.5.0"
             and .descriptorRef.artifactKind == "archsig-measurement-packet"
             and ([.candidateOperationFamilies[]?.supportKind] | index("measurement-packet-analytic-reading") != null)
             and ([.descriptorRef.sourceRefIds[]? | startswith("archsigMeasurementPacket:")] | any)

@@ -36,7 +36,7 @@ pub fn validate_law_policy_v1_report(
         "pass"
     };
     LawPolicyValidationReportV1 {
-        schema_version: "law-policy-validation-report-v1".to_string(),
+        schema_version: "law-policy-validation-report/v0.5.0".to_string(),
         input: LawPolicyValidationInputV1 {
             schema: policy.schema.clone(),
             path: input_path.to_string(),
@@ -66,7 +66,7 @@ pub fn validate_law_policy_v1_report(
 
 fn check_v1_schema(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
-        "law-policy-v1-schema",
+        "law-policy-schema050-schema",
         "LawPolicy v1 uses the selector schema discriminator",
         if policy.schema == LAW_POLICY_V1_SCHEMA {
             "pass"
@@ -100,7 +100,7 @@ fn check_v1_identity(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         ));
     }
     check_examples(
-        "law-policy-v1-identity",
+        "law-policy-schema050-identity",
         "LawPolicy v1 identity and selected policies are recorded",
         examples,
     )
@@ -147,7 +147,7 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-policy-v1-entry-shape",
+        "law-policy-schema050-entry-shape",
         "policy entries select pack or law and carry scope / severity",
         examples,
     )
@@ -180,7 +180,7 @@ fn check_v1_basis(policy: &LawPolicyDocumentV1) -> ValidationCheck {
         }
     }
     check_examples(
-        "law-policy-v1-basis-recorded",
+        "law-policy-schema050-basis-recorded",
         "policy entries carry explicit basis refs",
         examples,
     )
@@ -209,7 +209,7 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
         }
     }
     check_examples(
-        "law-policy-v1-registry-vocabulary",
+        "law-policy-schema050-registry-vocabulary",
         "policy entries resolve to known registry packs and evaluators",
         examples,
     )
@@ -233,7 +233,7 @@ fn check_v1_distance_profile_selector(policy: &LawPolicyDocumentV1) -> Validatio
         }
     }
     check_examples(
-        "law-policy-v1-distance-profile-selector",
+        "law-policy-schema050-distance-profile-selector",
         "LawPolicy v1 selects an optional distance profile by ref instead of embedding a distance DSL",
         examples,
     )
@@ -261,7 +261,7 @@ fn check_v1_measurement_profile_selector(policy: &LawPolicyDocumentV1) -> Valida
         }
     }
     check_examples(
-        "law-policy-v1-measurement-profile-selector",
+        "law-policy-schema050-measurement-profile-selector",
         "LawPolicy v1 can select a first-class MeasurementProfile for AG evaluators",
         examples,
     )
@@ -289,7 +289,7 @@ fn check_v1_measurement_profiles(policy: &LawPolicyDocumentV1) -> ValidationChec
         measurement_profile_errors(profile, &mut examples);
     }
     check_examples(
-        "law-policy-v1-measurement-profile-shape",
+        "law-policy-schema050-measurement-profile-shape",
         "MeasurementProfile v1 declares site, cover, coefficients, predicates, certificates, and verdict discipline",
         examples,
     )
@@ -303,7 +303,7 @@ fn measurement_profile_errors(
         examples.push(generic_validation_example(
             &profile.profile_id,
             &profile.schema,
-            "measurement profile schema must be measurement-profile/v1",
+            "measurement profile schema must be measurement-profile/v0.5.0",
         ));
     }
     for (field, value) in [
@@ -365,7 +365,7 @@ fn check_v1_ag_evaluators_require_profile(policy: &LawPolicyDocumentV1) -> Valid
         ));
     }
     check_examples(
-        "law-policy-v1-ag-evaluator-profile-required",
+        "law-policy-schema050-ag-evaluator-profile-required",
         "AG evaluator selectors fail closed when MeasurementProfile is absent",
         examples,
     )
@@ -416,7 +416,7 @@ fn check_v1_replacement_registry_manifest() -> ValidationCheck {
         }
     }
     check_examples(
-        "law-policy-v1-replacement-registry-manifest",
+        "law-policy-schema050-replacement-registry-manifest",
         "removed v0 field replacements resolve to registry manifests with output refs and fixture coverage",
         examples,
     )

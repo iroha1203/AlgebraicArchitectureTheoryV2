@@ -1,6 +1,6 @@
 # Source Diff To Delta
 
-Use this reference when creating the PR-local `archmap-delta-v0` from the base
+Use this reference when creating the PR-local `archmap-delta/v0.5.0` from the base
 branch difference.
 
 The delta is a compact review artifact. It says which ArchMap observations the
@@ -110,7 +110,7 @@ If the PR introduces a fact not present in the base ArchMap:
 
 ```json
 {
-  "schemaVersion": "archmap-delta-v0",
+  "schema": "archmap-delta/v0.5.0",
   "deltaId": "delta:<pr-or-branch-scope>",
   "baseSnapshotRef": "archmap-snapshot:<scope>:base",
   "headSnapshotRef": "archmap-snapshot:<scope>:head",

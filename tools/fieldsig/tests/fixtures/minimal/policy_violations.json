@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "signature-policy-v0",
+  "schema": "signature-policy/v0.5.0",
   "policyId": "minimal-violations",
   "componentIdKind": "lean-module",
   "selectorSemantics": "exact-or-prefix-star",

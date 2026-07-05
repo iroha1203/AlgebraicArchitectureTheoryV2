@@ -13,6 +13,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RuntimeEdgeEvidenceFile {
+    #[serde(rename = "schema")]
     schema_version: String,
     component_id_kind: String,
     edges: Vec<RuntimeEdgeEvidence>,
@@ -26,7 +27,7 @@ pub(crate) fn read_runtime_edge_evidence(
     let file: RuntimeEdgeEvidenceFile = serde_json::from_str(&source)?;
     if file.schema_version != RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION {
         return Err(format!(
-            "unsupported runtime edge evidence schemaVersion: {}",
+            "unsupported runtime edge evidence schema: {}",
             file.schema_version
         )
         .into());

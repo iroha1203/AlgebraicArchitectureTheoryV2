@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "operation-support-estimate-v0",
+  "schema": "operation-support-estimate/v0.5.0",
   "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
   "descriptorRef": {
-    "descriptorSchemaVersion": "artifact-descriptor-v0",
+    "descriptorSchemaVersion": "artifact-descriptor/v0.5.0",
     "descriptorId": "descriptor:coupon-prd-forecast-pipeline",
     "artifactKind": "prd",
     "sourceRefIds": [

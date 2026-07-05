@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "forecast-calibration-hook-v0",
-  "hookId": "fixture-forecast-calibration-hook-v0",
+  "schema": "forecast-calibration-hook/v0.5.0",
+  "hookId": "fixture-forecast-calibration-hook/v0.5.0",
   "envelopeRef": {
-    "envelopeSchemaVersion": "consequence-envelope-report-v0",
-    "envelopeId": "fixture-consequence-envelope-report-v0",
-    "coneId": "fixture-forecast-cone-skeleton-v0",
+    "envelopeSchemaVersion": "consequence-envelope-report/v0.5.0",
+    "envelopeId": "fixture-consequence-envelope-report/v0.5.0",
+    "coneId": "fixture-forecast-cone-skeleton/v0.5.0",
     "sourceRefIds": [
       "source:issue-737",
       "source:consequence-envelope-fixture",
@@ -131,12 +131,12 @@
   ],
   "referenceBoundaries": {
     "b10Refs": [
-      "outcome-linkage-dataset-v0",
-      "report-outcome-daily-ledger-v0"
+      "outcome-linkage-dataset/v0.5.0",
+      "report-outcome-daily-ledger/v0.5.0"
     ],
     "b11Refs": [
-      "signature-trajectory-report-v0",
-      "architecture-dynamics-metrics-report-v0"
+      "signature-trajectory-report/v0.5.0",
+      "architecture-dynamics-metrics-report/v0.5.0"
     ],
     "unavailableRefs": [
       "observed:future-review-outcome"

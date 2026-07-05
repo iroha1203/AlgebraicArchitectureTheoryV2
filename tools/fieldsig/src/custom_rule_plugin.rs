@@ -51,13 +51,13 @@ pub fn static_custom_rule_plugin_registry() -> CustomRulePluginRegistryV0 {
         ],
         plugins: vec![
             custom_rule_plugin(
-                "python-boundary-layer-rule-plugin-v0",
-                "org-python-boundary-layer-v0",
+                "python-boundary-layer-rule-plugin/v0.5.0",
+                "org-python-boundary-layer/v0.5.0",
                 "policy-rule",
                 "policy_rule",
                 "medium",
                 &[
-                    "input components are python-module ids from python-import-graph-v0",
+                    "input components are python-module ids from python-import-graph-schema050",
                     "policy selectors are exact or prefix-star selectors",
                 ],
                 &[
@@ -72,11 +72,11 @@ pub fn static_custom_rule_plugin_registry() -> CustomRulePluginRegistryV0 {
                 "not-permitted",
                 &[],
                 &[],
-                &["aat-air-v0", "feature-extension-report-v0"],
+                &["aat-air/v0.5.0", "feature-extension-report/v0.5.0"],
             ),
             custom_rule_plugin(
-                "runtime-hot-path-annotation-plugin-v0",
-                "org-runtime-hot-path-v0",
+                "runtime-hot-path-annotation-plugin/v0.5.0",
+                "org-runtime-hot-path/v0.5.0",
                 "runtime-evidence",
                 "runtime_trace",
                 "low",
@@ -94,12 +94,12 @@ pub fn static_custom_rule_plugin_registry() -> CustomRulePluginRegistryV0 {
                 ],
                 &["tooling", "empirical", "formal"],
                 "requires-theorem-precondition-check",
-                &["runtime-zero-bridge-theorem-package-v0"],
+                &["runtime-zero-bridge-theorem-package/v0.5.0"],
                 &[
                     "AIR runtime coverage layer is measuredZero for the selected relation universe",
                     "theorem precondition checker has no missing runtime coverage preconditions",
                 ],
-                &["aat-air-v0", "theorem-precondition-check-report-v0"],
+                &["aat-air/v0.5.0", "theorem-precondition-check-report/v0.5.0"],
             ),
         ],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
@@ -191,7 +191,7 @@ fn check_schema_version(registry: &CustomRulePluginRegistryV0) -> ValidationChec
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported custom rule plugin registry schemaVersion: {}",
+            "unsupported custom rule plugin registry schema: {}",
             registry.schema_version
         ));
     }

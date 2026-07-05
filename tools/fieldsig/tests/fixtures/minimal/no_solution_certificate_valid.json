@@ -1,14 +1,14 @@
 {
-  "schemaVersion": "no-solution-certificate-v0",
-  "certificateId": "certificate-coupon-no-solution-v0",
+  "schema": "no-solution-certificate/v0.5.0",
+  "certificateId": "certificate-coupon-no-solution/v0.5.0",
   "scope": "bounded no-solution certificate for selected coupon synthesis universe",
   "constraintRefs": [
-    "constraint-static-boundary-coupon-v0",
-    "constraint-semantic-rounding-contract-v0"
+    "constraint-static-boundary-coupon/v0.5.0",
+    "constraint-semantic-rounding-contract/v0.5.0"
   ],
   "refutedCandidateRefs": [
-    "candidate-direct-cache-access-v0",
-    "candidate-ignore-rounding-contract-v0"
+    "candidate-direct-cache-access/v0.5.0",
+    "candidate-ignore-rounding-contract/v0.5.0"
   ],
   "obstructionWitnessRefs": [
     "witness-hidden-cache-access",
@@ -27,7 +27,7 @@
     "case evidence refs name the selected obstruction witnesses"
   ],
   "unsupportedConstructs": [
-    "unbounded candidate generation is outside no-solution-certificate-v0"
+    "unbounded candidate generation is outside no-solution-certificate-schema050"
   ],
   "proofObligationRefs": [
     "ValidNoSolutionCertificate",
@@ -37,16 +37,16 @@
   "cases": [
     {
       "caseId": "case-direct-cache-still-breaks-boundary",
-      "constraintRefs": ["constraint-static-boundary-coupon-v0"],
-      "refutedCandidateRef": "candidate-direct-cache-access-v0",
+      "constraintRefs": ["constraint-static-boundary-coupon/v0.5.0"],
+      "refutedCandidateRef": "candidate-direct-cache-access/v0.5.0",
       "evidenceRefs": ["evidence-hidden-edge"],
       "theoremPreconditionRefs": ["ValidNoSolutionCertificate"],
       "reason": "candidate preserves the forbidden cache dependency in the selected static universe"
     },
     {
       "caseId": "case-ignore-rounding-contract-still-breaks-semantics",
-      "constraintRefs": ["constraint-semantic-rounding-contract-v0"],
-      "refutedCandidateRef": "candidate-ignore-rounding-contract-v0",
+      "constraintRefs": ["constraint-semantic-rounding-contract/v0.5.0"],
+      "refutedCandidateRef": "candidate-ignore-rounding-contract/v0.5.0",
       "evidenceRefs": ["evidence-rounding-order-difference"],
       "theoremPreconditionRefs": ["NoSolutionCertificate.sound_of_valid"],
       "reason": "candidate does not discharge the selected coupon / discount observation contract"

@@ -1,12 +1,12 @@
 # IntentMap Schema Cheatsheet
 
-Use `intentmap-v0` for Epic / PRD / Spec / Issue / proposal intent before planning forecast.
+Use `intentmap/v0.5.0` for Epic / PRD / Spec / Issue / proposal intent before planning forecast.
 
 Required top-level shape:
 
 ```json
 {
-  "schemaVersion": "intentmap-v0",
+  "schema": "intentmap/v0.5.0",
   "intentMapId": "...",
   "sourceUniverse": {},
   "generator": {},

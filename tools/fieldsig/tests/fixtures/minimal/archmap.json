@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "archmap-v0",
+  "schema": "archmap/v0.5.0",
   "mapId": "fixture-archmap-mvp",
   "architectureId": "archmap-fixture-repo",
   "generatedAt": "2026-05-23T00:00:00Z",
@@ -110,7 +110,7 @@
     "selectionBoundary": "bounded ArchMap MVP fixture over route, service, policy doc, and contract test"
   },
   "targetUniverse": {
-    "representation": "aat-air-v0",
+    "representation": "aat-air/v0.5.0",
     "selectedLayers": ["static", "semantic", "policy", "runtime"]
   },
   "atomCandidates": [
@@ -590,7 +590,7 @@
     }
   ],
   "nonConclusions": [
-    "archmap-v0 is not ground truth architecture",
+    "archmap-schema050 is not ground truth architecture",
     "validation pass is not architecture lawfulness",
     "LLM output does not prove semantic preservation",
     "framework-specific extractor evidence remains useful"
