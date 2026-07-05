@@ -916,6 +916,78 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         !json_contains_substring(&summary, "class"),
         "boundary-membership summary must not introduce layer C class vocabulary"
     );
+    assert_eq!(
+        summary["translationRule"]["conclusionCode"],
+        ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+    );
+    assert_eq!(summary["translationRule"]["theoremRef"], "part4/3.4");
+    assert_eq!(
+        summary["translationRule"]["emitsLawSatisfiedWithoutLawCheck"],
+        false
+    );
+    assert!(
+        summary["translationRule"]["concreteSupportRefs"]
+            .as_array()
+            .expect("active support refs are array")
+            .is_empty(),
+        "zero/gluing conclusion must not invent nonzero concrete support refs"
+    );
+    assert!(
+        summary["translationRule"]["principalText"]
+            .as_str()
+            .is_some_and(|text| {
+                text.contains("selected complete-support SAGA residual")
+                    && text.contains("covered and faithful")
+            }),
+        "translation principal text must stay inside the selected profile"
+    );
+    assert!(
+        summary["translationRule"]["boundary"]
+            .as_str()
+            .is_some_and(|text| text.contains("Supply Stage 2 law surface")),
+        "translation boundary must say what must be supplied next"
+    );
+    assert!(
+        summary["translationRuleTable"]
+            .as_array()
+            .is_some_and(|rules| rules.iter().all(|rule| {
+                rule.get("conclusionCode").and_then(Value::as_str).is_some()
+                    && rule.get("principalText").and_then(Value::as_str).is_some()
+                    && rule.get("boundary").and_then(Value::as_str).is_some()
+                    && rule
+                        .get("supportDiscipline")
+                        .and_then(Value::as_str)
+                        .is_some()
+                    && rule["emitsLawSatisfiedWithoutLawCheck"] == false
+            })),
+        "summary must expose a fixed translation rule table"
+    );
+    let generic_rule = summary["translationRuleTable"]
+        .as_array()
+        .expect("translation rule table")
+        .iter()
+        .find(|rule| rule["conclusionCode"] == "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE")
+        .expect("generic obstruction rule exists");
+    assert_eq!(generic_rule["theoremRef"], Value::Null);
+    assert!(
+        generic_rule["principalText"].as_str().is_some_and(|text| {
+            text.contains("Review the theoremRef-bearing structural verdict rows")
+                && !text.contains("measured a selected AG obstruction")
+        }),
+        "theoremRef-free generic rule must not emit a measurement claim as principal text"
+    );
+    assert!(
+        !json_contains_substring(&summary, &["law ", "is satisfied"].concat()),
+        "Stage 1 summary must not emit law-satisfied prose without a law-check row"
+    );
+    assert!(
+        !json_contains_substring(&summary, &["law ", "が守られている"].concat()),
+        "Stage 1 summary must not emit Japanese law-satisfied prose without a law-check row"
+    );
+    assert!(
+        !json_contains_substring(&summary, &["証", "明する"].concat()),
+        "tool first-person proof prose must not appear without theoremRef attribution"
+    );
 }
 
 #[test]
@@ -1158,6 +1230,78 @@ fn cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent() {
 }
 
 #[test]
+fn cli_gate_allows_saga_silence_by_design_with_boundary_override() {
+    let out_dir = temp_dir("ag-saga-descent-gate-boundary-override");
+    let root = ag_measurement_root();
+    let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let policy_path = out_dir.join("law_policy_saga_descent.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+    let mut repair_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    repair_plan["faithfulness"]["mode"] = json!("none");
+    let repair_plan_path = out_dir.join("repair_plan_mode_none.json");
+    fs::write(
+        &repair_plan_path,
+        serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
+    )
+    .expect("repair plan writes");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        repair_plan_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let report_path = out_dir.join("archsig-gate-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        out_dir
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--policy",
+        root.join("gate_policy_conservative.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "PASS_WITHIN_GATE_POLICY");
+    let saga_mapping = report["ruleOutcomes"][0]["appliedMapping"]
+        .as_array()
+        .expect("applied mappings")
+        .iter()
+        .find(|mapping| {
+            mapping["rowRef"]
+                .as_str()
+                .is_some_and(|row_ref| row_ref.contains("saga-global-coherence"))
+        })
+        .expect("saga global coherence mapping exists");
+    assert_eq!(saga_mapping["action"], "pass_with_boundary");
+    assert_eq!(saga_mapping["boundaryOverrideApplied"], true);
+}
+
+#[test]
 fn cli_analyze_saga_descent_nonboundary_residual_is_unconditional_negative() {
     let out_dir = temp_dir("ag-saga-descent-nonboundary");
     let root = ag_measurement_root();
@@ -1311,6 +1455,185 @@ fn cli_analyze_saga_descent_alias_witness_blocks_global_coherence() {
             .as_array()
             .expect("alias witnesses")
             .is_empty()
+    );
+}
+
+#[test]
+fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
+    let root = ag_measurement_root();
+
+    let saga_positive_a = run_saga_fixture_lock(
+        "prd4-r12-boundary-positive-a",
+        read_json(&root.join("repair_plan_complete_support.json")),
+    );
+    let saga_positive_b = run_saga_fixture_lock(
+        "prd4-r12-boundary-positive-b",
+        read_json(&root.join("repair_plan_complete_support.json")),
+    );
+    assert_byte_identical_analysis_artifacts(&saga_positive_a, &saga_positive_b);
+    let positive_packet = read_json(&saga_positive_a.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        saga_row(&positive_packet, "saga.residual-boundary-membership")["verdict"],
+        "measured_zero"
+    );
+    assert_eq!(
+        saga_row(&positive_packet, "saga.global-coherence")["verdict"],
+        "measured_zero"
+    );
+    let positive_summary = read_json(&saga_positive_a.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        positive_summary["translationRule"]["theoremRef"],
+        "part4/3.4"
+    );
+    assert_eq!(
+        positive_summary["translationRule"]["concreteSupportRefs"],
+        json!([])
+    );
+
+    let mut nonboundary_repair = read_json(&root.join("repair_plan_complete_support.json"));
+    nonboundary_repair["complex"]["tripleOverlaps"] = json!([]);
+    for primitive in nonboundary_repair["primitives"].as_array_mut().unwrap() {
+        primitive["resL"] = json!(["repair:cycle"]);
+        primitive["resR"] = json!([]);
+        primitive["support"]["variables"] = json!(["repair:cycle"]);
+    }
+    let saga_negative_a =
+        run_saga_fixture_lock("prd4-r12-boundary-negative-a", nonboundary_repair.clone());
+    let saga_negative_b = run_saga_fixture_lock("prd4-r12-boundary-negative-b", nonboundary_repair);
+    assert_byte_identical_analysis_artifacts(&saga_negative_a, &saga_negative_b);
+    let negative_packet = read_json(&saga_negative_a.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        saga_row(&negative_packet, "saga.residual-boundary-membership")["verdict"],
+        "measured_nonzero"
+    );
+    assert_eq!(
+        saga_row(&negative_packet, "saga.residual-boundary-membership")["verdictData"]["methodStatus"],
+        "residual_not_in_b1"
+    );
+    assert_eq!(
+        invariant_by_id(&negative_packet, "saga-descent:boundary-membership")["boundaryMembership"]
+            ["inB1"],
+        false
+    );
+    let negative_summary = read_json(&saga_negative_a.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        negative_summary["translationRule"]["theoremRef"],
+        "part4/3.5"
+    );
+    assert!(
+        negative_summary["translationRule"]["concreteSupportRefs"]
+            .as_array()
+            .is_some_and(|refs| !refs.is_empty()),
+        "nonboundary residual must name concrete support refs"
+    );
+
+    let mut alias_repair = read_json(&root.join("repair_plan_complete_support.json"));
+    alias_repair["primitives"][0]["resL"] = json!(["src:order"]);
+    alias_repair["primitives"][0]["resR"] = json!([]);
+    alias_repair["primitives"][0]["support"]["variables"] = json!(["src:order"]);
+    alias_repair["primitives"][1]["resL"] = json!([]);
+    alias_repair["primitives"][1]["resR"] = json!([]);
+    alias_repair["primitives"][1]["support"]["variables"] = json!([]);
+    alias_repair["primitives"][2]["resL"] = json!(["src:order"]);
+    alias_repair["primitives"][2]["resR"] = json!([]);
+    alias_repair["primitives"][2]["support"]["variables"] = json!(["src:order"]);
+    alias_repair["semanticProjection"]["lambda"] =
+        json!(["atom:order", "atom:order-inventory-restriction"]);
+    alias_repair["semanticProjection"]["k"] = json!(["src:order"]);
+    alias_repair["semanticProjection"]["pi"] = json!([
+        {"atomRef": "atom:order", "subject": "src:order"},
+        {"atomRef": "atom:order-inventory-restriction", "subject": "src:order"}
+    ]);
+    let alias_a = run_saga_fixture_lock("prd4-r12-alias-negative-a", alias_repair.clone());
+    let alias_b = run_saga_fixture_lock("prd4-r12-alias-negative-b", alias_repair);
+    assert_byte_identical_analysis_artifacts(&alias_a, &alias_b);
+    let alias_packet = read_json(&alias_a.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        saga_row(&alias_packet, "saga.global-coherence")["verdict"],
+        "measured_nonzero"
+    );
+    let alias_closure = invariant_by_id(&alias_packet, "saga-descent:closure-diagnostics");
+    assert_eq!(
+        alias_closure["closureDiagnostics"]["residualComponentCovered"],
+        true
+    );
+    assert_eq!(
+        alias_closure["closureDiagnostics"]["residualComponentFaithful"],
+        false
+    );
+    assert!(
+        alias_closure["closureDiagnostics"]["aliasWitnesses"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+
+    let cech_a = run_analyze_fixture_lock(
+        "prd4-r12-cech-b8-a",
+        "archmap_v2_cech_h1_visible.json",
+        "law_policy_ag.json",
+        None,
+    );
+    let cech_b = run_analyze_fixture_lock(
+        "prd4-r12-cech-b8-b",
+        "archmap_v2_cech_h1_visible.json",
+        "law_policy_ag.json",
+        None,
+    );
+    assert_byte_identical_analysis_artifacts(&cech_a, &cech_b);
+    let cech_packet = read_json(&cech_a.join("archsig-measurement-packet.json"));
+    let cech = invariant_by_id(&cech_packet, "cech-cohomology:profile:ag-default@1");
+    let cech_summary = read_json(&cech_a.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        cech["observedCocycle"]["mismatchSupportRefs"],
+        json!([
+            "atom:bottom-cech-section-value",
+            "atom:left-cech-section-value"
+        ])
+    );
+    assert_eq!(cech["dimensions"]["H1"], Value::from(1));
+    assert_eq!(cech["observedCocycle"]["classNonzero"], true);
+    assert_eq!(cech_summary["translationRule"]["theoremRef"], "part4/12.3");
+    assert_eq!(
+        cech_summary["translationRule"]["concreteSupportRefs"],
+        json!([
+            "atom:bottom-cech-section-value",
+            "atom:left-cech-section-value"
+        ])
+    );
+
+    let repair_a = run_analyze_fixture_lock(
+        "prd4-r12-square-free-a",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        None,
+    );
+    let repair_b = run_analyze_fixture_lock(
+        "prd4-r12-square-free-b",
+        "archmap_v2_square_free_repair.json",
+        "law_policy_square_free.json",
+        None,
+    );
+    assert_byte_identical_analysis_artifacts(&repair_a, &repair_b);
+    let repair_packet = read_json(&repair_a.join("archsig-measurement-packet.json"));
+    let repair_reading = repair_packet["analyticReadings"]
+        .as_array()
+        .expect("analytic readings")
+        .iter()
+        .find(|reading| reading["value"]["readingKind"] == "repair-lower-bound-inspection@1")
+        .expect("repair lower-bound reading exists");
+    assert_eq!(
+        repair_reading["value"]["minimalHittingSets"],
+        json!([["x_inventory"], ["x_checkout", "x_payment"]])
+    );
+    let repair_summary = read_json(&repair_a.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        repair_summary["conclusion"],
+        ARCHSIG_REPAIR_TARGETS_IDENTIFIED
+    );
+    assert_eq!(repair_summary["translationRule"]["theoremRef"], "part8/5.2");
+    assert_eq!(
+        repair_summary["translationRule"]["concreteSupportRefs"],
+        json!(["x_inventory", "x_checkout+x_payment"])
     );
 }
 
@@ -8722,11 +9045,8 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     run_sig0(&second_arg_refs);
 
     for artifact in [
-        "archmap-validation.json",
-        "law-policy-validation.json",
         "normalized-archmap.json",
         "archsig-measurement-packet.json",
-        "archsig-analysis-validation.json",
         "archsig-analysis-summary.json",
         "archsig-insight-report.json",
         "archsig-insight-brief.md",
@@ -8812,11 +9132,8 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
     run_sig0(&second_arg_refs);
 
     for artifact in [
-        "archmap-validation.json",
-        "law-policy-validation.json",
         "normalized-archmap.json",
         "archsig-measurement-packet.json",
-        "archsig-analysis-validation.json",
         "archsig-analysis-summary.json",
         "archsig-insight-report.json",
         "archsig-insight-brief.md",
@@ -9764,6 +10081,37 @@ fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
 }
 
 #[test]
+fn repair_plan_creater_skill_is_complete_support_only() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = crate_root
+        .parent()
+        .and_then(Path::parent)
+        .expect("crate root is tools/archsig inside repo");
+    let body =
+        fs::read_to_string(repo_root.join("tools/archsig/skills/repair-plan-creater/SKILL.md"))
+            .expect("repair-plan-creater skill exists");
+    for required in [
+        "repair-plan/v0.5.0",
+        "complete-support",
+        "existing ArchMap evidence",
+        "Validate first:",
+        "archsig repair-plan",
+        "Run the analyzer only after validation passes:",
+        "Read the resulting `archsig-measurement-packet.json`",
+        "boundaryStatements",
+        "Do not author `faithfulness.mode = supplied`.",
+        "Do not author comparison, grounding, true-sheaf, gluingData, lawSurfaceRef, or",
+        "Stage 2 law-equation surfaces",
+        "Do not place conclusion tokens",
+    ] {
+        assert!(
+            body.contains(required),
+            "repair-plan-creater skill must include required boundary snippet {required}"
+        );
+    }
+}
+
+#[test]
 fn cli_gate_rejects_unknown_packet_verdict_and_policy_mapping_keys() {
     let out_dir = temp_dir("archsig-gate-unknown-vocabulary");
     let packet_path = out_dir.join("packet.json");
@@ -10607,6 +10955,102 @@ fn saga_row<'a>(packet: &'a Value, law: &str) -> &'a Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.saga-descent" && row["law"] == law)
         .unwrap_or_else(|| panic!("missing saga row {law}"))
+}
+
+fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let policy_path = out_dir.join("law_policy_saga_descent.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+    let repair_plan_path = out_dir.join("repair_plan.json");
+    fs::write(
+        &repair_plan_path,
+        serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
+    )
+    .expect("repair plan writes");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        repair_plan_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+    out_dir
+}
+
+fn run_analyze_fixture_lock(
+    case_id: &str,
+    archmap: &str,
+    law_policy: &str,
+    repair_plan: Option<&Path>,
+) -> PathBuf {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir(case_id);
+    let law_policy_path = root.join(law_policy);
+    let measurement_profile_path = test_measurement_profile_path(&law_policy_path);
+    let mut args = vec![
+        "analyze".to_string(),
+        "--archmap".to_string(),
+        root.join(archmap)
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-policy".to_string(),
+        law_policy_path.to_str().expect("path is utf-8").to_string(),
+        "--measurement-profile".to_string(),
+        measurement_profile_path
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+    ];
+    if let Some(repair_plan) = repair_plan {
+        args.push("--repair-plan".to_string());
+        args.push(repair_plan.to_str().expect("path is utf-8").to_string());
+    }
+    args.push("--out-dir".to_string());
+    args.push(out_dir.to_str().expect("path is utf-8").to_string());
+    let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&arg_refs);
+    out_dir
+}
+
+fn assert_byte_identical_analysis_artifacts(first_out: &Path, second_out: &Path) {
+    for artifact in [
+        "normalized-archmap.json",
+        "archsig-measurement-packet.json",
+        "archsig-analysis-summary.json",
+        "archsig-insight-report.json",
+        "archsig-insight-brief.md",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        if !first_out.join(artifact).exists() && !second_out.join(artifact).exists() {
+            continue;
+        }
+        assert_eq!(
+            fs::read(first_out.join(artifact)).expect("first artifact is readable"),
+            fs::read(second_out.join(artifact)).expect("second artifact is readable"),
+            "{artifact} must be byte-identical across repeated PRD-4 fixture runs"
+        );
+    }
 }
 
 fn run_ag_measurement_fixture(case_id: &str, archmap: &str, law_policy: &str) -> PathBuf {
