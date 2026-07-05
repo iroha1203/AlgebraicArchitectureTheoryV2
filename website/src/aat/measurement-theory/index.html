@@ -20,17 +20,12 @@
           <p class="eyebrow">Part VIII</p>
           <h1>Measurement Theory</h1>
           <p class="lede">
-            Parts I through VII constructed the architecture geometry, the
-            lawful locus, obstruction cohomology, derived law conflict,
-            singularity, monodromy, representation, and metric enrichment.
+            Parts I through VII constructed the architecture geometry.
             Part VIII asks: when is this geometry measurably readable? Its
-            answer is a measurement theory internal to AAT: measurement is a
-            bounded reading performed inside a selected finite measurement
-            profile, governed by a verdict discipline in which unmeasured is
-            not zero and unknown is not nonzero. The chapter fixes the finite
-            regimes in which obstruction, cohomology, Tor, distance, and
-            repair residue become computable invariants, and closes with the
-            measurement packet and the AAT-GAGA finite measurement comparison.
+            answer is a measurement theory internal to AAT: measurement is
+            a bounded reading performed inside a selected finite
+            measurement profile, governed by a verdict discipline in which
+            unmeasured is not zero and unknown is not nonzero.
           </p>
         </div>
       </section>
@@ -41,7 +36,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-guide">How to read the claims</a></li>
                 <li><a href="#part7-to-part8">1. From Part VII to Part VIII</a></li>
                 <li><a href="#measurement-profile">2. Measurement profile</a></li>
                 <li><a href="#verdict-discipline">3. Measurement verdict discipline</a></li>
@@ -70,48 +64,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-guide" class="article-section">
-              <h2>How to read the claims</h2>
-              <p>
-                AAT states its claims relative to a fixed atom vocabulary, law
-                universe, coverage topology, coefficient sheaf, and selected
-                representation family. Three claim grades are kept distinct
-                throughout the monograph.
-              </p>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>Formal theorem</dt>
-                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
-                </div>
-                <div>
-                  <dt>Certified bounded inference</dt>
-                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
-                </div>
-                <div>
-                  <dt>Analytic reading</dt>
-                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
-                </div>
-              </dl>
-              <p>
-                Part VIII additionally carries <em>theorem candidates</em>:
-                labeled statements that fix a future definition-and-proof
-                design inside the canonical text. A theorem candidate becomes a
-                central Lean proof obligation only when the ledger carries a
-                corresponding row; until then it is a stated interface, not a
-                proved claim.
-              </p>
-              <p>
-                Theorem labels on this page follow the canonical text. A label
-                carries a Lean status badge only when the AG Lean index has a
-                corresponding ledger row; a label without a badge is a
-                mathematical statement in the canonical text and is not read as
-                a current Lean proved claim. Measurement in this chapter is a
-                reading relativized to a fixed mathematical object and a
-                selected profile; completeness of unselected data sources,
-                observation means, or decision procedures is not assumed.
-              </p>
-            </section>
-
             <section id="part7-to-part8" class="article-section">
               <h2>1. From Part VII to Part VIII</h2>
               <p>
@@ -229,7 +181,7 @@ not asserted here:
                   <dt>Definition VIII.2.1</dt>
                   <dd><code>AAT.AG.Measurement.MeasurementProfile</code>, <code>MeasurementProfile.Measured_M</code>, <code>MeasurementProfile.measured_inScope</code>, <code>MeasurementProfile.measured_method</code>, <code>MeasurementProfile.measured_certificate</code>: the profile holds site, cover, coefficient, effective interface, obstruction object, law universe, witness variables, obstruction ideal, representation family, domain, certificate, method, scope, and zero / nonzero / undecided / not-computed predicates as profile-relative fields; <code>Measured_M</code> is a bounded measurement surface carrying scope, selected method, and certificate reference — <em>defined only / proved accessors</em>.</dd>
                   <dt>Boundary</dt>
-                  <dd>Prerequisites of Parts II–VII are confirmed by concrete Lean type references; the measurement verdict discipline itself begins in Section 3.</dd>
+                  <dd>Prerequisites of Parts II through VII are confirmed by concrete Lean type references; the measurement verdict discipline itself begins in Section 3.</dd>
                 </dl>
               </article>
             </section>
