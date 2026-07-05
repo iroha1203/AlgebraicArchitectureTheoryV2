@@ -5,7 +5,8 @@ use serde_json::{Value, json};
 use crate::saga::evaluate_saga_descent_v1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     ArchSigMeasurementPacketV1, BoundaryStatementV1, LawPolicyDocumentV1, MeasurementProfileV1,
@@ -3069,6 +3070,17 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     let cech_zero = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.cech-obstruction" && verdict.verdict == "measured_zero"
     });
+    let cech_cover_shape_excludes = packet.computed_invariants.iter().any(|invariant| {
+        invariant["evaluator"] == "ag.cech-obstruction"
+            && invariant["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"].as_bool()
+                == Some(true)
+    });
+    let repair_targets_identified = packet.computed_invariants.iter().any(|invariant| {
+        invariant["evaluator"] == "ag.square-free-repair"
+            && invariant["alexanderDualRepair"]["minimalHittingSets"]
+                .as_array()
+                .is_some_and(|sets| !sets.is_empty())
+    });
     let saga_non_gluing = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-boundary-membership"
@@ -3083,8 +3095,12 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL
     } else if saga_glues {
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+    } else if cech_cover_shape_excludes {
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
     } else if cech_nonzero {
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+    } else if repair_targets_identified {
+        ARCHSIG_REPAIR_TARGETS_IDENTIFIED
     } else if nonzero_count > 0 {
         "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
     } else if cech_zero {
@@ -3104,7 +3120,11 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         "readThisFirst": {
             "heading": "Read this first",
             "conclusion": conclusion,
-            "whatItMeans": if cech_nonzero {
+            "whatItMeans": if conclusion == ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION {
+                "The selected cover shape and explicit restriction-surjectivity witnesses discharge the Stage 1 abelian cover-shape exclusion check."
+            } else if conclusion == ARCHSIG_REPAIR_TARGETS_IDENTIFIED {
+                "ArchSig identified combinatorial repair target supports from the selected square-free obstruction invariant."
+            } else if cech_nonzero {
                 "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
             } else if nonzero_count > 0 {
                 "ArchSig measured a selected AG obstruction under the profile."
@@ -3117,11 +3137,21 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             },
             "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence",
             "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
-            "boundary": format!(
-                "Profile-relative. {} assumptions declared. {} non-terminal rows.",
-                packet.assumptions.iter().filter(|row| row.status == "assumed").count(),
-                unmeasured_count
-            )
+            "boundary": if conclusion == ARCHSIG_REPAIR_TARGETS_IDENTIFIED {
+                "Profile-relative. Principle 5.3 boundary: repair targets are combinatorial hitting-set supports, not automatic semantic repairs or operation semantics.".to_string()
+            } else if conclusion == ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION {
+                format!(
+                    "Profile-relative abelian cover-shape statement. Non-abelian torsor, stacky descent, and gerbe obstructions are not excluded. {} assumptions declared. {} non-terminal rows.",
+                    packet.assumptions.iter().filter(|row| row.status == "assumed").count(),
+                    unmeasured_count
+                )
+            } else {
+                format!(
+                    "Profile-relative. {} assumptions declared. {} non-terminal rows.",
+                    packet.assumptions.iter().filter(|row| row.status == "assumed").count(),
+                    unmeasured_count
+                )
+            }
         },
         "measurementPacketSchema": packet.schema,
         "profileRef": packet.profile.profile_id,
@@ -6144,6 +6174,13 @@ fn evaluate_cech_obstruction_v1(
     let nerve_is_forest = !empty_selected_scope
         && edges.len().saturating_add(component_count) == selected_contexts.len();
     let has_triple_overlap_faces = cover_nerve_face_count > 0;
+    let restriction_surjectivity_witnesses =
+        restriction_surjectivity_witnesses_v1(normalized, &edges);
+    let restriction_surjectivity_checked = !empty_selected_scope
+        && !edges.is_empty()
+        && restriction_surjectivity_witnesses.len() == edges.len();
+    let cover_shape_excludes_gluing_obstruction =
+        nerve_is_forest && !has_triple_overlap_faces && restriction_surjectivity_checked;
     let h1_class_nonzero =
         !empty_selected_scope && !edge_cochain_is_coboundary(&selected_contexts, &edges);
     let topological_debt_capacity = topological_debt_capacity_invariant_v1(
@@ -6217,6 +6254,7 @@ fn evaluate_cech_obstruction_v1(
         profile,
         nerve_is_forest,
         has_triple_overlap_faces,
+        restriction_surjectivity_checked,
     ));
     if empty_selected_scope {
         assumptions.push(AgAssumptionLedgerEntryV1 {
@@ -6325,7 +6363,48 @@ fn evaluate_cech_obstruction_v1(
                     "classNonzero": h1_class_nonzero,
                     "representative": representative,
                     "mismatchSupportRefs": mismatch_support_refs
-                }
+                },
+                "classSupport": {
+                    "kind": "selected-cover-edge-support",
+                    "edgeRefs": edges.iter()
+                        .filter(|edge| edge.value == 1)
+                        .map(|edge| edge.edge_id.clone())
+                        .collect::<Vec<_>>(),
+                    "supportAtomRefs": mismatch_support_refs
+                },
+                "nerveShape": {
+                    "b1": if empty_selected_scope {
+                        Value::Null
+                    } else {
+                        json!(nerve_complex_b1_f2(&selected_contexts, &edges, &cover_nerve_projection))
+                    },
+                    "oneSkeletonB1": if empty_selected_scope {
+                        Value::Null
+                    } else {
+                        json!(h1_dimension)
+                    },
+                    "capacityLowerBound": topological_debt_capacity["capacityLowerBound"].clone(),
+                    "isForest": if empty_selected_scope {
+                        Value::Null
+                    } else {
+                        json!(nerve_is_forest)
+                    },
+                    "eulerCharacteristic": topological_debt_capacity["eulerCharacteristic"].clone()
+                },
+                "theorem12_4Discharge": {
+                    "theoremRef": "part4/12.4",
+                    "isForest": discharged_check_json(nerve_is_forest, "selected-cover graph cycle rank is zero"),
+                    "tripleOverlapsEmpty": discharged_check_json(!has_triple_overlap_faces, "selected cover has no projected triple-overlap faces"),
+                    "restrictionMapsSurjective": discharged_check_json(restriction_surjectivity_checked, "explicit restrictionSurjectivityWitness atoms cover every selected restriction edge"),
+                    "restrictionSurjectivityWitnesses": restriction_surjectivity_witnesses,
+                    "coverShapeExcludesGluingObstruction": cover_shape_excludes_gluing_obstruction,
+                    "conclusionCode": if cover_shape_excludes_gluing_obstruction {
+                        Value::String(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION.to_string())
+                    } else {
+                        Value::Null
+                    }
+                },
+                "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded."
             }),
             topological_debt_capacity,
         ],
@@ -6472,6 +6551,7 @@ fn cech_effectivity_assumptions_v1(
     profile: &MeasurementProfileV1,
     nerve_is_forest: bool,
     has_triple_overlap_faces: bool,
+    restriction_surjectivity_checked: bool,
 ) -> Vec<AgAssumptionLedgerEntryV1> {
     let profile_ref = format!("measurement-profile:{}", profile.profile_id);
     let forest_checked = nerve_is_forest && !has_triple_overlap_faces;
@@ -6508,9 +6588,19 @@ fn cech_effectivity_assumptions_v1(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part4/12.4".to_string(),
             assumption: "restriction maps are surjective".to_string(),
-            status: "assumed".to_string(),
-            checked_by: None,
-            assumed_by: Some(profile_ref.clone()),
+            status: if restriction_surjectivity_checked {
+                "checked"
+            } else {
+                "assumed"
+            }
+            .to_string(),
+            checked_by: restriction_surjectivity_checked.then(|| {
+                format!(
+                    "cover-nerve:{}:restrictionSurjectivityWitness=all-selected-edges",
+                    profile.cover_ref
+                )
+            }),
+            assumed_by: (!restriction_surjectivity_checked).then(|| profile_ref.clone()),
         },
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part4/12.4".to_string(),
@@ -6520,6 +6610,48 @@ fn cech_effectivity_assumptions_v1(
             assumed_by: forest_assumed_by,
         },
     ]
+}
+
+fn discharged_check_json(holds: bool, checked_by: &str) -> Value {
+    json!({
+        "holds": holds,
+        "status": if holds {
+            "discharged_by_check"
+        } else {
+            "not_discharged"
+        },
+        "checkedBy": if holds {
+            Value::String(checked_by.to_string())
+        } else {
+            Value::Null
+        }
+    })
+}
+
+fn restriction_surjectivity_witnesses_v1(
+    normalized: &NormalizedArchMapV2,
+    edges: &[CechEdgeV1],
+) -> Vec<Value> {
+    let edge_ids = edges
+        .iter()
+        .map(|edge| edge.edge_id.as_str())
+        .collect::<BTreeSet<_>>();
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech"
+                && atom.predicate == "restrictionSurjectivityWitness"
+                && edge_ids.contains(atom.subject.as_str())
+        })
+        .map(|atom| {
+            json!({
+                "edgeRef": atom.subject,
+                "atomRef": atom.normalized_atom_id,
+                "sourceRefs": atom.source_refs
+            })
+        })
+        .collect()
 }
 
 fn selected_cover_contexts(
