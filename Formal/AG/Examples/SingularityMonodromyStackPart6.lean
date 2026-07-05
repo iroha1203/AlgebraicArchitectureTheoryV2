@@ -101,13 +101,12 @@ theorem verifies_square_nonfillability
 end OperationSquareToyModel
 
 /--
-VI.R12(c): finite transport-descent toy model.
+VI.R12(c0): finite transport-descent zero toy model.
 
-The zero case verifies quotient factorization. The selected nonzero case is
-recorded as failure of the same zero-boundary predicate, so the descent
-criterion refutes quotient factorization.
+The zero case verifies quotient factorization. It is separated from the
+nonzero case so the example package is not an empty `P ∧ ¬P` surface.
 -/
-structure TransportDescentToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+structure TransportDescentZeroToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
     {X : ArchitectureStratum.{u, v, w, x, y} P k}
@@ -122,9 +121,30 @@ structure TransportDescentToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject
     (D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
   finiteSquares : Fintype D.Square
   zeroBoundaryCase : D.relationBoundaryZero
+
+/--
+VI.R12(c1): finite transport-descent nonzero toy model.
+
+The selected nonzero case records failure of the zero-boundary predicate, so
+the descent criterion refutes quotient factorization.
+-/
+structure TransportDescentNonzeroToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+    {base : G.State}
+    {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+    {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+    {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
+    {Tfree : Pi.FreeTransport}
+    (D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
+  finiteSquares : Fintype D.Square
   nonzeroBoundaryCase : ¬ D.relationBoundaryZero
 
-namespace TransportDescentToyModel
+namespace TransportDescentZeroToyModel
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
@@ -140,20 +160,50 @@ variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
 variable {Tfree : Pi.FreeTransport}
 variable {D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
 
+/-- VI.R12(c0): selected finite zero-boundary data inhabits the zero toy-model package. -/
+theorem nonempty_of_relationBoundaryZero
+    [Fintype D.Square] (hzero : D.relationBoundaryZero) :
+    Nonempty (TransportDescentZeroToyModel.{u, v, w, x, y, z} D) :=
+  ⟨{ finiteSquares := inferInstance, zeroBoundaryCase := hzero }⟩
+
 /-- VI.R12(c): zero selected boundary transport descends to the quotient. -/
 theorem zero_case_descends
-    (E : TransportDescentToyModel.{u, v, w, x, y, z} D) :
+    (E : TransportDescentZeroToyModel.{u, v, w, x, y, z} D) :
     ∃ Q : Pi.QuotientTransport, Pi.FactorsThroughQuotient Tfree Q :=
   D.factorsThroughQuotient_of_relationBoundaryZero E.zeroBoundaryCase
 
+end TransportDescentZeroToyModel
+
+namespace TransportDescentNonzeroToyModel
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {P : StratumReadingParameter S}
+variable {k : Type v} [CommRing k]
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+variable {base : G.State}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
+variable {Tfree : Pi.FreeTransport}
+variable {D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
+
+/-- VI.R12(c1): selected finite nonzero-boundary data inhabits the nonzero toy-model package. -/
+theorem nonempty_of_not_relationBoundaryZero
+    [Fintype D.Square] (hnonzero : ¬ D.relationBoundaryZero) :
+    Nonempty (TransportDescentNonzeroToyModel.{u, v, w, x, y, z} D) :=
+  ⟨{ finiteSquares := inferInstance, nonzeroBoundaryCase := hnonzero }⟩
+
 /-- VI.R12(c): selected nonzero boundary transport prevents quotient descent. -/
 theorem nonzero_case_not_descend
-    (E : TransportDescentToyModel.{u, v, w, x, y, z} D) :
+    (E : TransportDescentNonzeroToyModel.{u, v, w, x, y, z} D) :
     ¬ ∃ Q : Pi.QuotientTransport, Pi.FactorsThroughQuotient Tfree Q := by
   intro hdescends
   exact E.nonzeroBoundaryCase (D.relationBoundaryZero_of_factorsThroughQuotient hdescends)
 
-end TransportDescentToyModel
+end TransportDescentNonzeroToyModel
 
 /--
 VI.R12(d): finite refactor-Galois toy model.
