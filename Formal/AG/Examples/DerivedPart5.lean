@@ -1,5 +1,7 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Derived.Counterexample
+import Formal.AG.Derived.Intersection
+import Formal.AG.Derived.Transversality
 import Formal.AG.Derived.WellFoundedRepair
 
 noncomputable section
@@ -92,6 +94,22 @@ namespace Example56LawConflictPackageFiring
 
 variable {k : Type v} [CommRing k]
 
+/--
+V.R6 / AC10: build the example-5.6 firing package from an existing derived
+intersection using the canonical Mathlib Tor bridge.
+-/
+def ofCanonicalIntersection
+    (X : Derived.Intersection.ChartDerivedIntersection
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      (Derived.Counterexample.SharedWitnessCoord.idealU k)
+      (Derived.Counterexample.SharedWitnessCoord.idealV k))
+    (C : Derived.Counterexample.SharedWitnessPrincipalKernelQuotientCalculation k) :
+    Example56LawConflictPackageFiring k where
+  lawConflictPackage :=
+    Derived.Intersection.ChartDerivedIntersection.toCanonicalLawConflictPackage
+      (A := Derived.Counterexample.SharedWitnessCoord.ChartRing k) X
+  principalKernelCalculation := C
+
 /-- V.R6 / AC10: the firing surface induces the direct example-5.6 package. -/
 def toDirectTorCalculation (E : Example56LawConflictPackageFiring k) :
     Example56DirectTorCalculation k where
@@ -133,6 +151,40 @@ theorem tor1_nonzero (E : Example56LawConflictPackageFiring k) :
         (Derived.Counterexample.SharedWitnessCoord.idealV k) 1,
       x ≠ 0 :=
   E.principalKernelCalculation.mathlibTor1_nonzero_of_kernelQuotientCalculation
+
+/--
+V.R6 / AC10: the selected law-conflict package fires theorem 6.1 once its
+first law-conflict class is nonzero.
+-/
+theorem derivedNonTransverse (E : Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedNonTransverse
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  Derived.Transversality.LawConflictPackage.derivedNonTransverse_of_firstLawConflictNonzero
+    E.lawConflictPackage (lawConflict1_nonzero E)
+
+/--
+V.R6 / AC10: theorem 7.3 package for the selected example-5.6 law-conflict
+package, using the canonical Tor0 bridge carried by the package.
+-/
+def derivedTransversalityCriterion (E : Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedTransversalityCriterion
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  Derived.Transversality.SelectedDerivedTensorClassicalAgreement.toDerivedTransversalityCriterion
+
+/--
+V.R6 / AC10: the selected theorem 7.3 criterion gives the positive Mathlib Tor
+vanishing iff selected classical agreement equivalence.
+-/
+theorem positiveTorVanishing_iff_classicalAgreement
+    (E : Example56LawConflictPackageFiring k) :
+    Derived.Transversality.PositiveMathlibTorVanishing
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (I_U := Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (I_V := Derived.Counterexample.SharedWitnessCoord.idealV k) ↔
+      (derivedTransversalityCriterion E).classicalAgreement :=
+  (derivedTransversalityCriterion E).criterion_positiveTorVanishing_iff_classicalAgreement
 
 end Example56LawConflictPackageFiring
 

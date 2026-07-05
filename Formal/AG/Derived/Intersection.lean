@@ -4,6 +4,8 @@ import Mathlib.CategoryTheory.Monoidal.Tor
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Category.ModuleCat.Monoidal.Basic
+import Mathlib.Algebra.Category.ModuleCat.Monoidal.Closed
+import Mathlib.RingTheory.TensorProduct.Quotient
 
 noncomputable section
 
@@ -24,6 +26,40 @@ abbrev classicalJointQuotient (I_U I_V : Ideal A) :=
 abbrev mathlibTor (I_U I_V : Ideal A) (i : Nat) : ModuleCat.{v} A :=
   (((CategoryTheory.Tor (ModuleCat.{v} A) i).obj (ModuleCat.of A (A ⧸ I_U))).obj
     (ModuleCat.of A (A ⧸ I_V)))
+
+/--
+V.R3 / V-2: Mathlib's zero-th Tor is the ordinary tensor product because
+`ModuleCat` is monoidal closed, hence tensoring on the left preserves finite
+colimits.
+-/
+noncomputable def mathlibTorZeroIsoTensor (I_U I_V : Ideal A) :
+    mathlibTor A I_U I_V 0 ≅
+      ModuleCat.of A (TensorProduct A (A ⧸ I_U) (A ⧸ I_V)) := by
+  let F := ((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat.{v} A)).obj
+    (ModuleCat.of A (A ⧸ I_U)))
+  exact (CategoryTheory.Functor.leftDerivedZeroIsoSelf F).app
+    (ModuleCat.of A (A ⧸ I_V))
+
+/--
+V.R3 / V-2: quotient tensor product form of the classical joint quotient.
+
+This is the standard composition
+`A/(I_U+I_V) ≃ (A/I_U)/(I_V) ≃ (A/I_U) ⊗_A A/I_V`.
+-/
+noncomputable def classicalJointLinearEquivTensor (I_U I_V : Ideal A) :
+    classicalJointQuotient A I_U I_V ≃ₗ[A]
+      TensorProduct A (A ⧸ I_U) (A ⧸ I_V) :=
+  (DoubleQuot.quotQuotEquivQuotSupₐ A I_U I_V).symm.toLinearEquiv ≪≫ₗ
+    (Algebra.TensorProduct.quotIdealMapEquivTensorQuot (A ⧸ I_U) I_V).toLinearEquiv.restrictScalars A
+
+/--
+V.R3 / V-2: canonical linear bridge from the classical joint quotient to
+Mathlib `Tor_0`.
+-/
+noncomputable def classicalJointLinearEquivMathlibTorZero (I_U I_V : Ideal A) :
+    classicalJointQuotient A I_U I_V ≃ₗ[A] mathlibTor A I_U I_V 0 :=
+  classicalJointLinearEquivTensor A I_U I_V ≪≫ₗ
+    (mathlibTorZeroIsoTensor A I_U I_V).symm.toLinearEquiv
 
 /--
 V.定義4.1: selected chart-level derived tensor complex.
@@ -127,6 +163,54 @@ attribute [instance] SelectedTorBridge.torModule
 attribute [instance] SelectedTorBridge.tor0CommRing
 attribute [instance] SelectedTorBridge.tor0Algebra
 
+/--
+V.R3 / V-2: canonical selected Tor bridge.
+
+Degree zero is represented by the classical joint quotient and bridged to
+Mathlib `Tor_0` by the standard zero-th derived-functor/tensor quotient
+calculation. Positive degrees are represented by Mathlib `Tor_i` itself.
+-/
+noncomputable def canonicalSelectedTorBridge (I_U I_V : Ideal A) :
+    SelectedTorBridge.{v} A I_U I_V where
+  Tor
+    | 0 => classicalJointQuotient A I_U I_V
+    | i + 1 => mathlibTor A I_U I_V (i + 1)
+  torAddCommGroup := fun i => by
+    cases i with
+    | zero => infer_instance
+    | succ _ => infer_instance
+  torModule := fun i => by
+    cases i with
+    | zero => infer_instance
+    | succ _ => infer_instance
+  torLinearEquivMathlib := fun i => by
+    cases i with
+    | zero => exact classicalJointLinearEquivMathlibTorZero A I_U I_V
+    | succ i => exact LinearEquiv.refl A (mathlibTor A I_U I_V (i + 1))
+  tor0CommRing := inferInstance
+  tor0Algebra := inferInstance
+  tor0AlgEquivClassicalJoint := AlgEquiv.refl
+
+/--
+V.R3 / V-2: the canonical selected bridge has the required degree-zero
+law-conflict quotient reading.
+-/
+noncomputable def canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+    (I_U I_V : Ideal A) :
+    (canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₐ[A]
+      classicalJointQuotient A I_U I_V :=
+  (canonicalSelectedTorBridge A I_U I_V).tor0AlgEquivClassicalJoint
+
+/--
+V.R3 / V-2: the canonical selected bridge also supplies the Mathlib `Tor_0`
+linear equivalence.
+-/
+noncomputable def canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+    (I_U I_V : Ideal A) :
+    (canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₗ[A]
+      mathlibTor A I_U I_V 0 :=
+  (canonicalSelectedTorBridge A I_U I_V).torLinearEquivMathlib 0
+
 namespace SelectedTorBridge
 
 variable {A}
@@ -171,6 +255,18 @@ end SelectedTorBridge
 structure LawConflictPackage (I_U I_V : Ideal A) where
   intersection : ChartDerivedIntersection.{u, v} A I_U I_V
   torBridge : SelectedTorBridge.{v} A I_U I_V
+
+/--
+V.R3 / V-2: canonical law-conflict package attached to an existing derived
+intersection. The derived-intersection data remain explicit; the Tor bridge is
+the canonical Mathlib bridge above.
+-/
+noncomputable def ChartDerivedIntersection.toCanonicalLawConflictPackage
+    {I_U I_V : Ideal A}
+    (X : ChartDerivedIntersection.{u, v} A I_U I_V) :
+    LawConflictPackage.{u, v} A I_U I_V where
+  intersection := X
+  torBridge := canonicalSelectedTorBridge A I_U I_V
 
 namespace LawConflictPackage
 

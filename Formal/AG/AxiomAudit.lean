@@ -73,6 +73,48 @@ theorem example56LawConflictPackageFiringTor1Nonzero
       x ≠ 0 :=
   FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero E
 
+theorem example56LawConflictPackageFiringDerivedNonTransverse
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedNonTransverse
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedNonTransverse E
+
+noncomputable def example56LawConflictPackageFiringDerivedTransversalityCriterion
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.DerivedTransversalityCriterion
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      E.lawConflictPackage :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedTransversalityCriterion E
+
+theorem example56LawConflictPackageFiringPositiveTorVanishingIffClassicalAgreement
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    Derived.Transversality.PositiveMathlibTorVanishing
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (I_U := Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (I_V := Derived.Counterexample.SharedWitnessCoord.idealV k) ↔
+      (FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.derivedTransversalityCriterion
+        E).classicalAgreement :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.positiveTorVanishing_iff_classicalAgreement
+    E
+
+noncomputable def canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+    {A : Type} [CommRing A] (I_U I_V : Ideal A) :
+    (Derived.Intersection.canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₐ[A]
+      Derived.Intersection.classicalJointQuotient A I_U I_V :=
+  Derived.Intersection.canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+    A I_U I_V
+
+noncomputable def canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+    {A : Type} [CommRing A] (I_U I_V : Ideal A) :
+    (Derived.Intersection.canonicalSelectedTorBridge A I_U I_V).Tor 0 ≃ₗ[A]
+      Derived.Intersection.mathlibTor A I_U I_V 0 :=
+  Derived.Intersection.canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+    A I_U I_V
+
 theorem partVISingularBoundaryConcrete :
     SingularityMonodromyStack.USingularBoundary
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
@@ -469,6 +511,46 @@ info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringTor1Nonzero' depends o
 -/
 #guard_msgs in
 #print axioms example56LawConflictPackageFiringTor1Nonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringDerivedNonTransverse' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56LawConflictPackageFiringDerivedNonTransverse
+
+/--
+info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringDerivedTransversalityCriterion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56LawConflictPackageFiringDerivedTransversalityCriterion
+
+/--
+info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringPositiveTorVanishingIffClassicalAgreement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56LawConflictPackageFiringPositiveTorVanishingIffClassicalAgreement
+
+/--
+info: 'AAT.AG.AxiomAudit.canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms canonicalSelectedTorBridgeLawConflict0AlgEquivClassicalJoint
+
+/--
+info: 'AAT.AG.AxiomAudit.canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
 
 /--
 info: 'AAT.AG.AxiomAudit.temporalPseudoCircleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
