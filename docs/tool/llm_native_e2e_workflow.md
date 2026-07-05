@@ -29,6 +29,7 @@ mkdir -p .tmp/archsig-analyze-e2e/archsig .tmp/archsig-analyze-e2e/fieldsig
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2_support_transfer.json \
   --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_transfer.json \
+  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_transfer.json \
   --out-dir .tmp/archsig-analyze-e2e/archsig
 
 cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \

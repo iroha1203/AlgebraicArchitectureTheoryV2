@@ -59,10 +59,6 @@ pub fn is_known_evaluator(evaluator: &str) -> bool {
         .any(|manifest| manifest.evaluator_id == evaluator)
 }
 
-pub fn is_known_v1_basis(basis: &str) -> bool {
-    matches!(basis, "policy-basis:layering")
-}
-
 fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
     let mut manifests = Vec::new();
     manifests.extend(ag::ag_evaluator_manifests());

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::validation::ValidationCheck;
 
@@ -8,11 +9,22 @@ pub struct LawPolicyDocumentV1 {
     pub schema: String,
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub law_surface_ref: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub measurement_profile_ref: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub measurement_profiles: Vec<MeasurementProfileV1>,
+    pub basis_ledger: Vec<LawPolicyBasisLedgerEntryV1>,
     #[serde(default)]
     pub policies: Vec<LawPolicyEntryV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LawPolicyBasisLedgerEntryV1 {
+    pub basis_id: String,
+    pub kind: String,
+    pub path: String,
+    pub revision: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,6 +44,19 @@ pub struct MeasurementProfileV1 {
     pub non_zero_predicate: String,
     pub cert_selector: String,
     pub verdict_discipline: String,
+    pub finite_bounds: MeasurementProfileFiniteBoundsV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MeasurementProfileFiniteBoundsV1 {
+    pub max_square_free_witness_variables: usize,
+    pub max_coherence_contexts: usize,
+    pub max_tor_witness_variables: usize,
+    pub max_boundary_residue_variables: usize,
+    pub max_laplacian_cells: usize,
+    pub max_period_cycles: usize,
+    pub max_transfer_targets: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -52,6 +77,8 @@ pub struct LawPolicyEntryV1 {
     pub evaluator: Option<String>,
     #[serde(default)]
     pub basis: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profile_ref: Option<Value>,
     #[serde(default)]
     pub scope: Vec<String>,
     pub severity: String,

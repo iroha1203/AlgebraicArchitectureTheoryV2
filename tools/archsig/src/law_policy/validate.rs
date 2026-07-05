@@ -1,6 +1,6 @@
-use super::registry::{
-    expand_law_policy_v1, is_known_evaluator, is_known_v1_basis, is_known_v1_pack,
-};
+use std::collections::BTreeSet;
+
+use super::registry::{expand_law_policy_v1, is_known_evaluator, is_known_v1_pack};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, LawPolicyValidationInputV1,
@@ -11,18 +11,22 @@ use crate::{
 pub fn validate_law_policy_v1_report(
     policy: &LawPolicyDocumentV1,
     input_path: &str,
+    measurement_profile: Option<&MeasurementProfileV1>,
 ) -> LawPolicyValidationReportV1 {
     let expanded_policies = expand_law_policy_v1(policy);
-    let checks = vec![
+    let mut checks = vec![
         check_v1_schema(policy),
         check_v1_identity(policy),
         check_v1_policy_entries(policy),
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
-        check_v1_measurement_profile_selector(policy),
-        check_v1_measurement_profiles(policy),
+        check_v1_reserved_fields(policy),
+        check_v1_measurement_profile_selector(policy, measurement_profile),
         check_v1_ag_evaluators_require_profile(policy),
     ];
+    if let Some(profile) = measurement_profile {
+        checks.extend(measurement_profile_v1_checks(profile));
+    }
     let failed_check_count = count_checks(&checks, "fail");
     let warning_check_count = count_checks(&checks, "warn");
     let result = if failed_check_count > 0 {
@@ -59,6 +63,12 @@ pub fn validate_law_policy_v1_report(
             warning_check_count,
         },
     }
+}
+
+pub fn validate_measurement_profile_v1_checks(
+    profile: &MeasurementProfileV1,
+) -> Vec<ValidationCheck> {
+    measurement_profile_v1_checks(profile)
 }
 
 fn check_v1_schema(policy: &LawPolicyDocumentV1) -> ValidationCheck {
@@ -128,6 +138,13 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
                 "pack entry expands through registry and must not override evaluator",
             ));
         }
+        if entry.profile_ref.is_some() {
+            examples.push(generic_validation_example(
+                &format!("policies[{index}].profileRef"),
+                "reserved",
+                "policies[].profileRef is reserved for Stage 2 and is not accepted in Stage 1",
+            ));
+        }
         if entry.severity.trim().is_empty() {
             examples.push(generic_validation_example(
                 &format!("policies[{index}].severity"),
@@ -152,6 +169,53 @@ fn check_v1_policy_entries(policy: &LawPolicyDocumentV1) -> ValidationCheck {
 
 fn check_v1_basis(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut examples = Vec::new();
+    let basis_ids = policy
+        .basis_ledger
+        .iter()
+        .map(|entry| entry.basis_id.as_str())
+        .collect::<BTreeSet<_>>();
+    examples.extend(
+        duplicates(
+            policy
+                .basis_ledger
+                .iter()
+                .map(|entry| entry.basis_id.as_str()),
+        )
+        .into_iter()
+        .map(|duplicate| {
+            generic_validation_example(
+                "basisLedger[].basisId",
+                &duplicate,
+                "basisLedger basisId must be unique",
+            )
+        }),
+    );
+    for (index, entry) in policy.basis_ledger.iter().enumerate() {
+        for (field, value) in [
+            ("basisId", entry.basis_id.as_str()),
+            ("kind", entry.kind.as_str()),
+            ("path", entry.path.as_str()),
+            ("revision", entry.revision.as_str()),
+        ] {
+            if value.trim().is_empty() {
+                examples.push(generic_validation_example(
+                    &format!("basisLedger[{index}].{field}"),
+                    "empty",
+                    "basisLedger fields must be non-empty",
+                ));
+            }
+        }
+        if !matches!(
+            entry.kind.as_str(),
+            "repo-document" | "external-standard" | "registry"
+        ) {
+            examples.push(generic_validation_example(
+                &format!("basisLedger[{index}].kind"),
+                &entry.kind,
+                "basisLedger kind must be repo-document, external-standard, or registry",
+            ));
+        }
+    }
     for (index, entry) in policy.policies.iter().enumerate() {
         if entry.basis.is_empty() {
             examples.push(generic_validation_example(
@@ -167,11 +231,11 @@ fn check_v1_basis(policy: &LawPolicyDocumentV1) -> ValidationCheck {
                     "empty",
                     "basis refs must be non-empty",
                 ));
-            } else if !is_known_v1_basis(basis) {
+            } else if !basis_ids.contains(basis.as_str()) {
                 examples.push(generic_validation_example(
                     &format!("policies[{index}].basis"),
                     basis,
-                    "basis ref must resolve to the v1 policy basis registry",
+                    "basis ref must resolve to basisLedger[].basisId",
                 ));
             }
         }
@@ -179,6 +243,22 @@ fn check_v1_basis(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     check_examples(
         "law-policy-schema050-basis-recorded",
         "policy entries carry explicit basis refs",
+        examples,
+    )
+}
+
+fn check_v1_reserved_fields(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if policy.law_surface_ref.is_some() {
+        examples.push(generic_validation_example(
+            "lawSurfaceRef",
+            "reserved",
+            "lawSurfaceRef is reserved for Stage 2 and is not accepted in Stage 1",
+        ));
+    }
+    check_examples(
+        "law-policy-schema050-reserved-fields-fail-closed",
+        "Stage 2 LawPolicy fields fail closed in Stage 1",
         examples,
     )
 }
@@ -212,7 +292,10 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
     )
 }
 
-fn check_v1_measurement_profile_selector(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+fn check_v1_measurement_profile_selector(
+    policy: &LawPolicyDocumentV1,
+    measurement_profile: Option<&MeasurementProfileV1>,
+) -> ValidationCheck {
     let mut examples = Vec::new();
     if let Some(profile_ref) = policy.measurement_profile_ref.as_deref() {
         if profile_ref.trim().is_empty() {
@@ -221,51 +304,32 @@ fn check_v1_measurement_profile_selector(policy: &LawPolicyDocumentV1) -> Valida
                 "empty",
                 "measurement profile ref must be non-empty when present",
             ));
-        } else if !policy
-            .measurement_profiles
-            .iter()
-            .any(|profile| profile.profile_id == profile_ref)
-        {
+        } else if !measurement_profile.is_some_and(|profile| profile.profile_id == profile_ref) {
             examples.push(generic_validation_example(
                 "measurementProfileRef",
                 profile_ref,
-                "measurement profile ref must resolve to measurementProfiles[].profileId",
+                "measurement profile ref must resolve to the supplied --measurement-profile profileId",
             ));
         }
     }
     check_examples(
         "law-policy-schema050-measurement-profile-selector",
-        "LawPolicy v1 can select a first-class MeasurementProfile for AG evaluators",
+        "LawPolicy v1 selects an external MeasurementProfile artifact for AG evaluators",
         examples,
     )
 }
 
-fn check_v1_measurement_profiles(policy: &LawPolicyDocumentV1) -> ValidationCheck {
+fn measurement_profile_v1_checks(profile: &MeasurementProfileV1) -> Vec<ValidationCheck> {
     let mut examples = Vec::new();
-    examples.extend(
-        duplicates(
-            policy
-                .measurement_profiles
-                .iter()
-                .map(|profile| profile.profile_id.as_str()),
-        )
-        .into_iter()
-        .map(|duplicate| {
-            generic_validation_example(
-                "measurementProfiles[].profileId",
-                &duplicate,
-                "measurement profile id must be unique",
-            )
-        }),
-    );
-    for profile in &policy.measurement_profiles {
-        measurement_profile_errors(profile, &mut examples);
-    }
-    check_examples(
-        "law-policy-schema050-measurement-profile-shape",
-        "MeasurementProfile v1 declares site, cover, coefficients, predicates, certificates, and verdict discipline",
-        examples,
-    )
+    measurement_profile_errors(profile, &mut examples);
+    vec![
+        check_examples(
+            "measurement-profile-schema050-shape",
+            "MeasurementProfile v1 declares site, cover, coefficients, predicates, certificates, verdict discipline, and finite bounds",
+            examples,
+        ),
+        check_measurement_profile_finite_bounds(profile),
+    ]
 }
 
 fn measurement_profile_errors(
@@ -294,7 +358,7 @@ fn measurement_profile_errors(
     ] {
         if value.trim().is_empty() {
             examples.push(generic_validation_example(
-                &format!("measurementProfiles[].{field}"),
+                &format!("measurementProfile.{field}"),
                 "empty",
                 "measurement profile field must be non-empty",
             ));
@@ -316,6 +380,52 @@ fn measurement_profile_errors(
             ));
         }
     }
+}
+
+fn check_measurement_profile_finite_bounds(profile: &MeasurementProfileV1) -> ValidationCheck {
+    let bounds = &profile.finite_bounds;
+    let mut examples = Vec::new();
+    for (field, value, cap) in [
+        (
+            "maxSquareFreeWitnessVariables",
+            bounds.max_square_free_witness_variables,
+            12,
+        ),
+        ("maxCoherenceContexts", bounds.max_coherence_contexts, 12),
+        (
+            "maxTorWitnessVariables",
+            bounds.max_tor_witness_variables,
+            12,
+        ),
+        (
+            "maxBoundaryResidueVariables",
+            bounds.max_boundary_residue_variables,
+            16,
+        ),
+        ("maxLaplacianCells", bounds.max_laplacian_cells, 16),
+        ("maxPeriodCycles", bounds.max_period_cycles, 16),
+        ("maxTransferTargets", bounds.max_transfer_targets, 16),
+    ] {
+        if value == 0 {
+            examples.push(generic_validation_example(
+                &format!("finiteBounds.{field}"),
+                "0",
+                "finiteBounds values must be positive",
+            ));
+        }
+        if value > cap {
+            examples.push(generic_validation_example(
+                &format!("finiteBounds.{field}"),
+                &value.to_string(),
+                "finiteBounds value exceeds the ArchSig registry hard cap",
+            ));
+        }
+    }
+    check_examples(
+        "measurement-profile-schema050-finite-bounds",
+        "finiteBounds can only lower the registry hard caps used by finite evaluators",
+        examples,
+    )
 }
 
 fn check_v1_ag_evaluators_require_profile(policy: &LawPolicyDocumentV1) -> ValidationCheck {

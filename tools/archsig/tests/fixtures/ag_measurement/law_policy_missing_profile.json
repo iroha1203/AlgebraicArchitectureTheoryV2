@@ -5,9 +5,21 @@
     {
       "law": "ag.cech-obstruction",
       "evaluator": "ag.cech-obstruction",
-      "basis": ["policy-basis:layering"],
-      "scope": ["src/"],
+      "basis": [
+        "policy-basis:layering"
+      ],
+      "scope": [
+        "src/"
+      ],
       "severity": "high"
+    }
+  ],
+  "basisLedger": [
+    {
+      "basisId": "policy-basis:layering",
+      "kind": "repo-document",
+      "path": "docs/aat/algebraic_geometric_theory/README.md",
+      "revision": "aat-ag-current"
     }
   ]
 }

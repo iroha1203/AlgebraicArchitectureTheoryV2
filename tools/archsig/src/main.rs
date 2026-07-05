@@ -4,11 +4,12 @@ use std::process::ExitCode;
 
 use archsig::{
     ARCHMAP_V2_SCHEMA, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
-    SchemaVersionCatalogV0, build_comparison_artifacts_v1, build_foundation_measurement_packet_v1,
-    build_gate_report_v1, build_insight_brief_v1, build_insight_report_v1,
-    build_measurement_summary_v1, build_measurement_viewer_data_v1, normalize_archmap_v2,
-    static_schema_version_catalog, validate_archmap_v2_report, validate_law_policy_v1_report,
-    validate_measurement_packet_v1,
+    MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, SchemaVersionCatalogV0,
+    build_comparison_artifacts_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
+    build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
+    build_measurement_viewer_data_v1, normalize_archmap_v2, static_schema_version_catalog,
+    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
+    validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -42,10 +43,25 @@ enum Command {
     /// Validate a LawPolicy v1 selector artifact for ArchSig AAT analysis.
     LawPolicy {
         /// Input LawPolicy v1 JSON path.
-        #[arg(long)]
-        input: PathBuf,
+        #[arg(long = "law-policy")]
+        law_policy: PathBuf,
+
+        /// Input MeasurementProfile v1 JSON path.
+        #[arg(long = "measurement-profile")]
+        measurement_profile: PathBuf,
 
         /// Output LawPolicy fixture or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a standalone MeasurementProfile v1 artifact.
+    MeasurementProfile {
+        /// Input MeasurementProfile v1 JSON path.
+        #[arg(long = "measurement-profile")]
+        measurement_profile: PathBuf,
+
+        /// Output MeasurementProfile validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -59,6 +75,10 @@ enum Command {
         /// Input LawPolicy artifact path.
         #[arg(long = "law-policy")]
         law_policy: PathBuf,
+
+        /// Input MeasurementProfile artifact path.
+        #[arg(long = "measurement-profile")]
+        measurement_profile: PathBuf,
 
         /// Output directory for ArchSig analysis workflow artifacts.
         #[arg(long = "out-dir")]
@@ -139,13 +159,48 @@ fn validate_archmap_command_input(
 
 fn validate_law_policy_command_input(
     input: &PathBuf,
+    measurement_profile: &MeasurementProfileV1,
 ) -> Result<(serde_json::Value, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
-    require_schema(&raw, LAW_POLICY_V1_SCHEMA, "--input")?;
+    require_schema(&raw, LAW_POLICY_V1_SCHEMA, "--law-policy")?;
     let policy: LawPolicyDocumentV1 = serde_json::from_value(raw)?;
-    let report = validate_law_policy_v1_report(&policy, &input.display().to_string());
+    let report = validate_law_policy_v1_report(
+        &policy,
+        &input.display().to_string(),
+        Some(measurement_profile),
+    );
     let failed = report.summary.result == "fail";
     Ok((serde_json::to_value(report)?, failed))
+}
+
+fn validate_measurement_profile_command_input(
+    input: &PathBuf,
+) -> Result<(serde_json::Value, MeasurementProfileV1, bool), Box<dyn Error>> {
+    let raw: serde_json::Value = read_json(input)?;
+    require_schema(&raw, MEASUREMENT_PROFILE_V1_SCHEMA, "--measurement-profile")?;
+    let profile: MeasurementProfileV1 = serde_json::from_value(raw)?;
+    let checks = validate_measurement_profile_v1_checks(&profile);
+    let failed_check_count = checks.iter().filter(|check| check.result == "fail").count();
+    let warning_check_count = checks.iter().filter(|check| check.result == "warn").count();
+    let failed = failed_check_count > 0;
+    Ok((
+        serde_json::json!({
+            "schema": "measurement-profile-validation-report/v0.5.0",
+            "input": {
+                "schema": profile.schema,
+                "path": input.display().to_string(),
+                "id": profile.profile_id
+            },
+            "checks": checks,
+            "summary": {
+                "result": if failed { "fail" } else if warning_check_count > 0 { "warn" } else { "pass" },
+                "failedCheckCount": failed_check_count,
+                "warningCheckCount": warning_check_count
+            }
+        }),
+        profile,
+        failed,
+    ))
 }
 
 fn json_schema(document: &serde_json::Value) -> Option<&str> {
@@ -195,10 +250,25 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         Some(Command::LawPolicy {
-            input,
+            law_policy,
+            measurement_profile,
             out,
         }) => {
-            let (report, failed) = validate_law_policy_command_input(&input)?;
+            let (_, profile, profile_failed) =
+                validate_measurement_profile_command_input(&measurement_profile)?;
+            let (report, policy_failed) = validate_law_policy_command_input(&law_policy, &profile)?;
+            write_json(out, &report)?;
+            Ok(if policy_failed || profile_failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::MeasurementProfile {
+            measurement_profile,
+            out,
+        }) => {
+            let (report, _, failed) = validate_measurement_profile_command_input(&measurement_profile)?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -234,6 +304,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::Analyze {
             archmap,
             law_policy,
+            measurement_profile,
             out_dir,
             stamp,
         }) => {
@@ -249,16 +320,24 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
 
             let (archmap_preflight, archmap_failed) = validate_archmap_command_input(&archmap)?;
+            let (_measurement_profile_preflight, measurement_profile_document, measurement_profile_failed) =
+                validate_measurement_profile_command_input(&measurement_profile)?;
             let (law_policy_preflight, law_policy_failed) =
-                validate_law_policy_command_input(&law_policy)?;
+                validate_law_policy_command_input(&law_policy, &measurement_profile_document)?;
             let archmap_input_ref = artifact_input_ref(&archmap);
             let law_policy_input_ref = artifact_input_ref(&law_policy);
+            let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
+            let measurement_profile_contract_input: Value = read_json(&measurement_profile)?;
             let run_contract = AnalyzeRunContract::from_inputs(
                 &archmap,
                 &law_policy,
-                contract_profile_fingerprint(&law_policy_contract_input)?,
+                &measurement_profile,
+                contract_profile_fingerprint(
+                    &law_policy_contract_input,
+                    &measurement_profile_contract_input,
+                )?,
                 contract_site_cover_digest(&archmap_contract_input)?,
                 stamp,
             )?;
@@ -272,7 +351,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 Some(law_policy_validation_path),
                 &with_run_contract(&law_policy_preflight, &run_contract)?,
             )?;
-            if archmap_failed || law_policy_failed {
+            if archmap_failed || law_policy_failed || measurement_profile_failed {
                 let mut insight_report = build_validation_failure_insight_report(
                     &archmap_preflight,
                     &law_policy_preflight,
@@ -296,6 +375,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "conclusionCode": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
                         "archmapInputPath": archmap_input_ref,
                         "lawPolicyInputPath": law_policy_input_ref,
+                        "measurementProfileInputPath": measurement_profile_input_ref,
                         "rawArtifactRetention": "not-computed",
                         "generatedArtifacts": [
                             "archmap-validation.json",
@@ -349,6 +429,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let measurement_packet = build_foundation_measurement_packet_v1(
                 &normalized_archmap,
                 &law_policy_document,
+                &measurement_profile_document,
                 &archmap_input_ref,
                 &law_policy_input_ref,
             )
@@ -418,6 +499,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "conclusionCode": null,
                     "archmapInputPath": archmap_input_ref,
                     "lawPolicyInputPath": law_policy_input_ref,
+                    "measurementProfileInputPath": measurement_profile_input_ref,
                     "rawArtifactRetention": "omitted",
                     "generatedArtifacts": [
                         "archmap-validation.json",

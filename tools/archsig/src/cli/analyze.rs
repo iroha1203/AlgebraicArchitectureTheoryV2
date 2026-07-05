@@ -16,14 +16,18 @@ impl AnalyzeRunContract {
     pub(crate) fn from_inputs(
         archmap: &Path,
         law_policy: &Path,
+        measurement_profile: &Path,
         profile_fingerprint: Value,
         site_cover_digest: Value,
         stamp: bool,
     ) -> Result<Self, Box<dyn Error>> {
         let archmap_digest = canonical_json_file_digest(archmap)?;
         let law_policy_digest = canonical_json_file_digest(law_policy)?;
+        let measurement_profile_digest = canonical_json_file_digest(measurement_profile)?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
-        let run_seed = format!("{archmap_digest}|{law_policy_digest}|{tool_version}");
+        let run_seed = format!(
+            "{archmap_digest}|{law_policy_digest}|{measurement_profile_digest}|{tool_version}"
+        );
         let run_hash = sha256_hex(run_seed.as_bytes());
         let mut run_id = format!("run:{}", &run_hash[..12]);
         if stamp {
@@ -42,6 +46,10 @@ impl AnalyzeRunContract {
                     "path": artifact_input_ref(law_policy),
                     "sha256": law_policy_digest
                 },
+                "measurementProfile": {
+                    "path": artifact_input_ref(measurement_profile),
+                    "sha256": measurement_profile_digest
+                },
                 "profileFingerprint": profile_fingerprint,
                 "siteCoverDigest": site_cover_digest
             }),
@@ -49,31 +57,23 @@ impl AnalyzeRunContract {
     }
 }
 
-pub(crate) fn contract_profile_fingerprint(law_policy: &Value) -> Result<Value, Box<dyn Error>> {
+pub(crate) fn contract_profile_fingerprint(
+    law_policy: &Value,
+    measurement_profile: &Value,
+) -> Result<Value, Box<dyn Error>> {
     let measurement_profile_ref = law_policy
         .get("measurementProfileRef")
         .cloned()
         .unwrap_or(Value::Null);
-    let selected_measurement_profiles = law_policy
-        .get("measurementProfiles")
-        .and_then(Value::as_array)
-        .map(|profiles| {
-            profiles
-                .iter()
-                .filter(|profile| profile.get("profileId") == Some(&measurement_profile_ref))
-                .cloned()
-                .collect::<Vec<_>>()
-        })
-        .unwrap_or_default();
     let profile = serde_json::json!({
         "archmapShape": "finite-poset-site",
         "measurementProfileRef": measurement_profile_ref,
-        "selectedMeasurementProfiles": selected_measurement_profiles,
+        "selectedMeasurementProfile": measurement_profile,
     });
     let canonical = canonical_json_bytes(&profile)?;
     Ok(serde_json::json!({
         "sha256": sha256_hex(&canonical),
-        "basis": "archmap shape + selected LawPolicy profile refs and selected profile objects"
+        "basis": "archmap shape + selected LawPolicy profile ref and external MeasurementProfile artifact"
     }))
 }
 

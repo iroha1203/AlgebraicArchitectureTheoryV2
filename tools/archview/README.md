@@ -69,6 +69,7 @@ ES module + Three.js CDN を使うので、`archview.html` はローカルサー
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
   --out-dir .tmp/archview-demo
 
 # ② ArchView をその成果物の隣に置いて配信（sibling fetch が成立する）
