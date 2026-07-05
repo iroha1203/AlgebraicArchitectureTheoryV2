@@ -1,13 +1,13 @@
 ---
 name: archmap-creater
-description: Create bounded ArchMap observation artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-observation-map-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored Atom observation evidence.
+description: Create bounded ArchMap observation artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an ArchMap JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored Atom observation evidence.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap-observation-map-v0` as bounded LLM-authored Atom observation evidence. Treat ArchMap as a source-grounded observation map that records observed atoms, molecules, semantic observations, gaps, projection notes, and concern hints for later ArchSig analysis. It is not ground truth, certified atom truth, obstruction analysis, Lean proof, forecast correctness, or causal diagnosis.
+Create an ArchMap observation artifact as bounded LLM-authored Atom observation evidence. Treat ArchMap as a source-grounded observation map that records observed atoms, molecules, semantic observations, gaps, projection notes, and concern hints for later ArchSig analysis. It is not ground truth, certified atom truth, obstruction analysis, Lean proof, forecast correctness, or causal diagnosis.
 
 ## Inputs
 
@@ -31,8 +31,8 @@ When working inside the ArchSig source repository, these optional source referen
 
 - `tools/archsig/docs/commands.md`
 - `tools/archsig/docs/artifacts-and-boundaries.md`
-- `tools/archsig/tests/fixtures/minimal/archmap.json`
-- `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json`
+- `tools/fieldsig/tests/fixtures/minimal/archmap.json`
+- `tools/fieldsig/tests/fixtures/minimal/archmap_source_inventory.json`
 
 ## Workflow
 
@@ -56,7 +56,7 @@ ${ARCHSIG_BIN:-archsig} archmap-generate \
   --out .archsig/archmap/generation-protocol.json
 ```
 
-3. Draft `archmap-observation-map-v0`.
+3. Draft the ArchMap observation artifact.
    - Use `atomObservations[]` for source-grounded primitive observations.
    - Use `moleculeObservations[]` for composed roles such as responsibility over atom observation refs.
    - Use `semanticObservations[]` for selected behavioral, contract, workflow, or diagram readings supported by sources.
@@ -83,12 +83,6 @@ ${ARCHSIG_BIN:-archsig} law-policy \
   --input <law-policy.json> \
   --out .archsig/law-policy/validation.json
 
-${ARCHSIG_BIN:-archsig} archsig-analysis \
-  --archmap <archmap.json> \
-  --law-policy <law-policy.json> \
-  --out .archsig/analysis/packet.json \
-  --validation-out .archsig/analysis/validation.json
-
 ${ARCHSIG_BIN:-archsig} analyze \
   --archmap <archmap.json> \
   --law-policy <law-policy.json> \
@@ -103,7 +97,7 @@ ${ARCHSIG_BIN:-archsig} analyze \
 ## Writing Rules
 
 - Preserve uncertainty in fields; do not erase it in prose.
-- Never claim that `archmap-observation-map-v0` validates architecture lawfulness.
+- Never claim that an ArchMap observation artifact validates architecture lawfulness.
 - Never claim that `atomObservations[]` certifies universal `ArchitectureAtom` truth.
 - Never put obstruction circuits in ArchMap. Use `concernHints[]` for source-grounded review cues and let ArchSig + LawPolicy construct law-relative obstruction readings.
 - Never treat responsibility as a primitive atom; use `moleculeObservations[]`.
@@ -115,4 +109,4 @@ ${ARCHSIG_BIN:-archsig} analyze \
 
 Use `$arch-pr-analyzer` after this skill when the user asks what an ArchMap or PR / CI artifact implies for PR quality or current architecture state.
 
-Use FieldSig planning skills after ArchSig has produced `archsig-analysis-packet-v0` and the user asks for planning forecast.
+Use FieldSig planning skills after ArchSig has produced `archsig-analysis-packet/v1` and the user asks for planning forecast.

@@ -23,7 +23,7 @@
       "sourceRefId": "source:archmap:coupon",
       "artifactKind": "archmap",
       "schemaVersion": "archmap-v0",
-      "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
       "retainedFields": [
         "sourceUniverse",
         "mapItems",
@@ -38,7 +38,7 @@
       "sourceRefId": "source:feature-report:coupon",
       "artifactKind": "feature-extension-report",
       "schemaVersion": "feature-extension-report-v0",
-      "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
       "retainedFields": [
         "introducedObstructionWitnesses",
         "semanticPathSummary",

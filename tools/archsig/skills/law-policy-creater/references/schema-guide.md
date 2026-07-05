@@ -120,15 +120,15 @@ Rules:
 
 Do not emit:
 
-- `schemaVersion: "law-policy-v0"`
+- legacy LawPolicy schema identifiers
 - `selectedLaws`
 - `requiredZeroAxes`
 - `witnessRules`
-- `obstructionCircuitDefinitions`
-- `signatureAxisDefinitions`
+- legacy obstruction-circuit definition fields
+- legacy signature-axis definition fields
 - `measurementPolicy`
-- `part4DistanceProfile`
-- `spectrumMeasurementProfile`
+- legacy distance-profile fields
+- legacy spectrum-profile fields
 - `homotopyMeasurementProfile`
 - `coverageRequirements`
 - `exactnessAssumptions`

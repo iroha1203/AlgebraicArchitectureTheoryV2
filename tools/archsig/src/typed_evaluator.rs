@@ -246,10 +246,10 @@ pub fn build_typed_analysis_packet_v1(
         "nonConclusions": [
             "ArchSig v1 packet is computed from Normalized ArchMap v1 and TypedEvaluatorResults v1.",
             "Generated law inputs, signature axes, obstruction candidates, and repair targets are derived packet refs over typed evaluator results and registry basis.",
-            "ArchitectureSpectrumReport/v1 is derived from normalized support, typed evaluator results, and coverage status; it does not read v0 spectrumMeasurementProfile.",
-            "ArchitectureHomotopyReport/v1 is derived from normalized relations, explicit molecule candidates, typed evaluator results, and coverage status; it does not read v0 operationSquareEvidence or homotopyMeasurementProfile.",
-            "StructuralReadingReviewSurface/v1 is derived from normalized atoms, explicit molecule candidates, typed evaluator results, and generated packet refs; it does not read v0 projectionInfo, concernHints, or observationGaps as positive input.",
-            "ArchSig v1 packet does not read v0 semanticObservations, projectionInfo, operationSquareEvidence, concernHints, observationGaps, or homotopyMeasurementProfile.",
+            "ArchitectureSpectrumReport/v1 is derived from normalized support, typed evaluator results, and coverage status.",
+            "ArchitectureHomotopyReport/v1 is derived from normalized relations, explicit molecule candidates, typed evaluator results, and coverage status.",
+            "StructuralReadingReviewSurface/v1 is derived from normalized atoms, explicit molecule candidates, typed evaluator results, and generated packet refs.",
+            "ArchSig v1 packet is independent of removed legacy input surfaces.",
             "Blocked, unknown, and unmeasured evaluator results are not measured zero.",
             "ArchSig v1 packet is a computation artifact, not a Lean proof object."
         ]
@@ -2812,8 +2812,6 @@ pub fn build_typed_analysis_validation_v1(
         "semanticObservations",
         "projectionInfo",
         "operationSquareEvidence",
-        "spectrumMeasurementProfile",
-        "homotopyMeasurementProfile",
         "concernHints",
         "observationGaps",
     ]

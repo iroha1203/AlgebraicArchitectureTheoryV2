@@ -1,8 +1,0 @@
-{
-  "schemaVersion": "archsig-summary-large-regression-fixture-v0",
-  "description": "Sanitized large-repo class expansion parameters for analysis-summary compactness regression. This fixture intentionally contains only generic public-safe identifiers.",
-  "basePacket": "../minimal/archsig_analysis_packet.json",
-  "hotspotCount": 64,
-  "supportRefsPerHotspot": 48,
-  "summaryByteBudget": 90000
-}

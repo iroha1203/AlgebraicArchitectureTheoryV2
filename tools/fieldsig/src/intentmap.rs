@@ -81,7 +81,7 @@ pub fn static_intent_map() -> IntentMapV0 {
             source_refs: vec![IntentSourceRefV0 {
                 source_ref_id: "source:prd:coupon".to_string(),
                 source_kind: "prd".to_string(),
-                path_or_url: "tools/archsig/tests/fixtures/minimal/coupon_prd.md".to_string(),
+                path_or_url: "tools/fieldsig/tests/fixtures/minimal/coupon_prd.md".to_string(),
                 stable_ref: Some("section:requirements".to_string()),
                 evidence_role: "intent-source".to_string(),
                 retained_fields: vec![
@@ -204,7 +204,7 @@ pub fn static_intent_archmap_alignment() -> IntentArchMapAlignmentV0 {
         intent_map_ref: IntentMapArtifactRefV0 {
             schema_version: INTENTMAP_SCHEMA_VERSION.to_string(),
             intent_map_id: intent_map.intent_map_id.clone(),
-            path: "tools/archsig/tests/fixtures/minimal/intentmap.json".to_string(),
+            path: "tools/fieldsig/tests/fixtures/minimal/intentmap.json".to_string(),
             intent_item_ids: intent_map
                 .items
                 .iter()
@@ -215,7 +215,7 @@ pub fn static_intent_archmap_alignment() -> IntentArchMapAlignmentV0 {
         archmap_ref: IntentArchMapArtifactRefV0 {
             schema_version: ARCHMAP_SCHEMA_VERSION.to_string(),
             map_id: "fixture-archmap-v0".to_string(),
-            path: "tools/archsig/tests/fixtures/minimal/archmap.json".to_string(),
+            path: "tools/fieldsig/tests/fixtures/minimal/archmap.json".to_string(),
             map_item_ids: vec![
                 "object-route-users".to_string(),
                 "policy-layered-route-service".to_string(),
@@ -550,7 +550,7 @@ pub fn static_intent_calibration_record() -> IntentCalibrationRecordV0 {
         intent_map_ref: IntentMapArtifactRefV0 {
             schema_version: INTENTMAP_SCHEMA_VERSION.to_string(),
             intent_map_id: intent_map.intent_map_id.clone(),
-            path: "tools/archsig/tests/fixtures/minimal/intentmap.json".to_string(),
+            path: "tools/fieldsig/tests/fixtures/minimal/intentmap.json".to_string(),
             intent_item_ids: intent_map
                 .items
                 .iter()

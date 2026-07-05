@@ -1,6 +1,6 @@
 # ArchMap Observation Schema Cheatsheet
 
-Use this reference when filling an `archmap-observation-map-v0` document. Prefer the field names listed here.
+Use this reference when filling an ArchMap observation document. Prefer the field names listed here.
 When the ArchSig source repository is available, fixtures and schema code may be used as additional examples, but they are not required for this skill.
 
 ## Top-Level Fields
@@ -9,7 +9,7 @@ Required top-level shape:
 
 ```json
 {
-  "schemaVersion": "archmap-observation-map-v0",
+  "schema": "archmap/v1",
   "mapId": "...",
   "architectureId": "...",
   "generatedAt": "2026-05-24T00:00:00Z",
@@ -203,12 +203,6 @@ Then, for handoff:
 
 ```bash
 ${ARCHSIG_BIN:-archsig} law-policy --input <law-policy.json> --out .archsig/law-policy/validation.json
-${ARCHSIG_BIN:-archsig} archsig-analysis \
-  --archmap <archmap.json> \
-  --law-policy <law-policy.json> \
-  --out .archsig/analysis/packet.json \
-  --validation-out .archsig/analysis/validation.json
-
 ${ARCHSIG_BIN:-archsig} analyze \
   --archmap <archmap.json> \
   --law-policy <law-policy.json> \

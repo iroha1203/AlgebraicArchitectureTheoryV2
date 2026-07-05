@@ -10,7 +10,7 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-signature-snapshot"
         }
@@ -21,7 +21,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-signature-snapshot"
           }
@@ -52,7 +52,7 @@
       "sourceRefs": [
         {
           "kind": "pr-history-dataset",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
           "schemaVersion": "pr-history-dataset-v0",
           "artifactId": "fixture-pr-history"
         }
@@ -63,7 +63,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "pr-history-dataset",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
             "schemaVersion": "pr-history-dataset-v0",
             "artifactId": "fixture-pr-history"
           }
@@ -122,13 +122,13 @@
     "sourceArtifactRefs": [
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-signature-snapshot"
       },
       {
         "kind": "pr-history-dataset",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
         "schemaVersion": "pr-history-dataset-v0",
         "artifactId": "fixture-pr-history"
       }

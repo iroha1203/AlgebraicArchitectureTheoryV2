@@ -586,7 +586,7 @@ pub fn static_calibration_review_record() -> CalibrationReviewRecordV0 {
         reviewed_at: "2026-05-05T09:00:00Z".to_string(),
         reviewer: "architecture-reviewer@example.com".to_string(),
         report_finding_refs: vec![CalibrationReportFindingRefV0 {
-            report_ref: "tools/archsig/tests/fixtures/minimal/feature_extension_report.json"
+            report_ref: "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json"
                 .to_string(),
             finding_id: "finding-runtime-private-evidence-warning".to_string(),
             metric_ref: "runtime.privateEvidenceCount".to_string(),
@@ -661,7 +661,7 @@ pub fn static_calibration_review_record() -> CalibrationReviewRecordV0 {
             ],
             threshold_policy_refs: vec!["ci-policy:runtime-private-evidence-advisory-v0".to_string()],
             source_ledger_refs: vec![
-                "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
             ],
             downstream_issue_refs: vec!["#622".to_string()],
@@ -891,7 +891,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
                 source_ref: "calibration-review:fixture-b10-calibration-review-false-positive-v0"
                     .to_string(),
                 source_kind: "calibration-review-record".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/calibration_review_record.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json"
                     .to_string(),
                 window_ref: "bounded review window 2026-05-04/2026-05-05".to_string(),
                 boundary: "boundedEmpiricalReview".to_string(),
@@ -902,7 +902,7 @@ pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
             TeamThresholdCalibrationSourceRefV0 {
                 source_ref: "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
                 source_kind: "report-outcome-daily-ledger".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
                 window_ref: "daily ledger 2026-05-04/2026-05-05".to_string(),
                 boundary: "operationalFeedback".to_string(),
@@ -1094,7 +1094,7 @@ pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
             OwnershipBoundarySourceRefV0 {
                 source_ref: "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
                 source_kind: "report-outcome-daily-ledger".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
                 boundary: "operationalFeedback".to_string(),
                 non_conclusions: vec![
@@ -1105,7 +1105,7 @@ pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
                 source_ref: "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
                     .to_string(),
                 source_kind: "team-threshold-policy".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/team_threshold_policy.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/team_threshold_policy.json"
                     .to_string(),
                 boundary: "teamLocalEmpiricalCalibration".to_string(),
                 non_conclusions: vec![
@@ -1352,7 +1352,7 @@ pub fn static_repair_adoption_record() -> RepairAdoptionRecordV0 {
         suggestion_refs: vec![RepairSuggestionRefV0 {
             suggestion_ref: "repair-suggestion:split-runtime-adapter-boundary".to_string(),
             source_report_ref:
-                "tools/archsig/tests/fixtures/minimal/feature_extension_report.json".to_string(),
+                "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json".to_string(),
             obstruction_witness_ref: "obstruction-witness:private-runtime-evidence".to_string(),
             repair_rule_ref: "repair-rule:extract-runtime-adapter".to_string(),
             target_component_refs: vec![
@@ -1600,7 +1600,7 @@ pub fn static_incident_correlation_monitor() -> IncidentCorrelationMonitorV0 {
             IncidentCorrelationSourceRefV0 {
                 source_ref: "report-outcome-daily-ledger:checkout-2026-04".to_string(),
                 source_kind: "report-outcome-daily-ledger".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
                 schema_version: REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION.to_string(),
                 boundary: "operationalFeedback".to_string(),
@@ -1611,7 +1611,7 @@ pub fn static_incident_correlation_monitor() -> IncidentCorrelationMonitorV0 {
             IncidentCorrelationSourceRefV0 {
                 source_ref: "calibration-review:runtime-private-evidence".to_string(),
                 source_kind: "calibration-review-record".to_string(),
-                path: "tools/archsig/tests/fixtures/minimal/calibration_review_record.json"
+                path: "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json"
                     .to_string(),
                 schema_version: CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION.to_string(),
                 boundary: "boundedEmpiricalReview".to_string(),
@@ -1849,7 +1849,7 @@ pub fn static_hypothesis_refresh_cycle() -> HypothesisRefreshCycleV0 {
         source_monitor_refs: vec![HypothesisRefreshSourceMonitorRefV0 {
             monitor_ref: "fixture-b10-incident-correlation-monitor-v0".to_string(),
             source_kind: "incident-correlation-monitor".to_string(),
-            path: "tools/archsig/tests/fixtures/minimal/incident_correlation_monitor.json"
+            path: "tools/fieldsig/tests/fixtures/minimal/incident_correlation_monitor.json"
                 .to_string(),
             boundary: "exploratoryOperationalCorrelation".to_string(),
             non_conclusions: vec!["monitor correlation is empirical input only".to_string()],

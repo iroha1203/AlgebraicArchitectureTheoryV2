@@ -49,25 +49,25 @@ const REQUIRED_PROPOSAL_LOG_NON_CONCLUSIONS: [&str; 3] = [
 pub fn static_architecture_field_snapshot() -> ArchitectureFieldSnapshotV0 {
     let trajectory_ref = artifact_ref(
         "signature-trajectory-report",
-        "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
         Some("signature-trajectory-report-v0"),
         Some("fixture-signature-trajectory-report-v0"),
     );
     let policy_ref = artifact_ref(
         "organization-policy",
-        "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+        "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
         Some("organization-policy-v0"),
         Some("fixture-b7-organization-policy"),
     );
     let law_template_ref = artifact_ref(
         "law-policy-template-registry",
-        "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+        "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
         Some("law-policy-template-registry-v0"),
         Some("fixture-law-policy-template-registry-v0"),
     );
     let measurement_unit_ref = artifact_ref(
         "measurement-unit-registry",
-        "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+        "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
         Some("measurement-unit-registry-v0"),
         Some("fixture-measurement-unit-registry-v0"),
     );
@@ -178,19 +178,19 @@ pub fn validate_architecture_field_snapshot(
 pub fn static_operation_proposal_log() -> OperationProposalLogV0 {
     let pr_ref = artifact_ref(
         "github-pr",
-        "tools/archsig/tests/fixtures/minimal/github_pr.json",
+        "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
         None,
         Some("fixture-github-pr"),
     );
     let pr_force_ref = artifact_ref(
         "pr-force-report",
-        "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         Some("pr-force-report-v0"),
         Some("fixture-pr-force-report-v0"),
     );
     let policy_ref = artifact_ref(
         "policy-decision-report",
-        "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
         Some("policy-decision-report-v0"),
         Some("fixture-policy-decision-report"),
     );

@@ -125,61 +125,61 @@ const REQUIRED_VIBE_CODING_READINESS_AXES: [&str; 8] = [
 pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetricsReportV0 {
     let pr_force_ref = artifact_ref(
         "pr-force-report",
-        "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         Some(PR_FORCE_REPORT_SCHEMA_VERSION),
         Some("fixture-pr-force-report-v0"),
     );
     let trajectory_ref = artifact_ref(
         "signature-trajectory-report",
-        "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
         Some("signature-trajectory-report-v0"),
         Some("fixture-signature-trajectory-report-v0"),
     );
     let drift_ref = artifact_ref(
         "architecture-drift-ledger",
-        "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
         Some("architecture-drift-ledger-v0"),
         Some("fixture-architecture-drift-ledger"),
     );
     let outcome_ref = artifact_ref(
         "outcome-linkage-dataset",
-        "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
         Some("outcome-linkage-dataset-v0"),
         Some("fixture-outcome-linkage-dataset"),
     );
     let policy_ref = artifact_ref(
         "policy-decision-report",
-        "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
         Some("policy-decision-report-v0"),
         Some("fixture-policy-decision-report"),
     );
     let ai_ref = artifact_ref(
         "ai-provenance-log",
-        "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/ai_provenance_log.json",
         None,
         Some("fixture-ai-provenance-log"),
     );
     let field_snapshot_ref = artifact_ref(
         "architecture-field-snapshot",
-        "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+        "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
         Some(ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION),
         Some("fixture-architecture-field-snapshot-v0"),
     );
     let proposal_log_ref = artifact_ref(
         "operation-proposal-log",
-        "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+        "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
         Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
         Some("fixture-operation-proposal-log-v0"),
     );
     let canonical_example_ref = artifact_ref(
         "canonical-example-ref",
-        "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+        "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
         Some(ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION),
         Some("fixture-canonical-example-refs"),
     );
     let patch_similarity_ref = artifact_ref(
         "patch-similarity-evidence",
-        "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+        "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
         Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
         Some("fixture-patch-similarity-evidence"),
     );

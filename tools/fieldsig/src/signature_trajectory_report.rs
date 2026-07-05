@@ -42,37 +42,37 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
     let before_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
         Some(SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION),
         Some("fixture-trajectory-before-signature"),
     );
     let middle_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
         Some(SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION),
         Some("fixture-trajectory-middle-signature"),
     );
     let after_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
         Some(SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION),
         Some("fixture-trajectory-after-signature"),
     );
     let force_ref = artifact_ref(
         "pr-force-report",
-        "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         Some(PR_FORCE_REPORT_SCHEMA_VERSION),
         Some("fixture-pr-force-report-v0"),
     );
     let archsig_analysis_ref = artifact_ref(
         "archsig-analysis-packet",
-        "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-        Some("archsig-analysis-packet-v0"),
+        "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+        Some("archsig-analysis-packet/v1"),
         Some("archsig-analysis-fixture"),
     );
     let drift_ref = artifact_ref(
         "architecture-drift-ledger",
-        "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
         Some("architecture-drift-ledger-v0"),
         Some("fixture-architecture-drift-ledger"),
     );

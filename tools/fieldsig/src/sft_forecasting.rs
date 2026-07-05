@@ -964,7 +964,7 @@ pub fn static_forecast_calibration_hook() -> ForecastCalibrationHookV0 {
             CalibrationObservedOutcomeRefV0 {
                 observed_ref_id: "observed:b10-daily-ledger".to_string(),
                 observed_kind: "report-outcome-daily-ledger".to_string(),
-                path_or_url: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                path_or_url: "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
                     .to_string(),
                 status: "matched".to_string(),
                 b10_refs: vec!["b10:report-outcome-daily-ledger".to_string()],

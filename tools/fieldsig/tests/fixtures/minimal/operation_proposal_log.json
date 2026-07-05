@@ -14,18 +14,18 @@
   "sourceRefs": [
     {
       "kind": "github-pr",
-      "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
       "artifactId": "fixture-github-pr"
     },
     {
       "kind": "pr-force-report",
-      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
       "schemaVersion": "pr-force-report-v0",
       "artifactId": "fixture-pr-force-report-v0"
     },
     {
       "kind": "policy-decision-report",
-      "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
       "schemaVersion": "policy-decision-report-v0",
       "artifactId": "fixture-policy-decision-report"
     }
@@ -43,12 +43,12 @@
       "sourceRefs": [
         {
           "kind": "github-pr",
-          "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
           "artifactId": "fixture-github-pr"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         }
@@ -63,18 +63,18 @@
         "sourceArtifactRefs": [
           {
             "kind": "github-pr",
-            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
             "artifactId": "fixture-github-pr"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "policy-decision-report",
-            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
             "schemaVersion": "policy-decision-report-v0",
             "artifactId": "fixture-policy-decision-report"
           }
@@ -126,12 +126,12 @@
       "sourceRefs": [
         {
           "kind": "github-pr",
-          "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
           "artifactId": "fixture-github-pr"
         },
         {
           "kind": "policy-decision-report",
-          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
           "schemaVersion": "policy-decision-report-v0",
           "artifactId": "fixture-policy-decision-report"
         }
@@ -146,18 +146,18 @@
         "sourceArtifactRefs": [
           {
             "kind": "github-pr",
-            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
             "artifactId": "fixture-github-pr"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "policy-decision-report",
-            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
             "schemaVersion": "policy-decision-report-v0",
             "artifactId": "fixture-policy-decision-report"
           }
@@ -209,7 +209,7 @@
       "sourceRefs": [
         {
           "kind": "policy-decision-report",
-          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
           "schemaVersion": "policy-decision-report-v0",
           "artifactId": "fixture-policy-decision-report"
         }
@@ -224,18 +224,18 @@
         "sourceArtifactRefs": [
           {
             "kind": "github-pr",
-            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
             "artifactId": "fixture-github-pr"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "policy-decision-report",
-            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
             "schemaVersion": "policy-decision-report-v0",
             "artifactId": "fixture-policy-decision-report"
           }
@@ -286,18 +286,18 @@
     "sourceArtifactRefs": [
       {
         "kind": "github-pr",
-        "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/github_pr.json",
         "artifactId": "fixture-github-pr"
       },
       {
         "kind": "pr-force-report",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         "schemaVersion": "pr-force-report-v0",
         "artifactId": "fixture-pr-force-report-v0"
       },
       {
         "kind": "policy-decision-report",
-        "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
         "schemaVersion": "policy-decision-report-v0",
         "artifactId": "fixture-policy-decision-report"
       }

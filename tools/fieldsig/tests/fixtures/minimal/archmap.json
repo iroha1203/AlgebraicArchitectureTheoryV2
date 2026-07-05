@@ -19,7 +19,7 @@
   "sourceInventoryRef": {
     "artifactId": "source-inventory-fixture",
     "kind": "source_inventory",
-    "path": "tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/archmap_source_inventory.json",
     "contentHash": "sha256-fixture-source-inventory"
   },
   "generationBoundary": {

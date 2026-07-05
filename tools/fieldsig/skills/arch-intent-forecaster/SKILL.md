@@ -12,7 +12,7 @@ Analyze Epic / PRD / Spec planning forecast. This skill simplifies ArchSig's Int
 ## Inputs To Prefer
 
 - `intentmap-v0` and `intentmap-validation-report-v0`
-- current `archmap-observation-map-v0` and `archmap-validation-report-v0`
+- current ArchMap observation artifact and ArchMap validation report
 - `intent-archmap-alignment-v0` and validation report
 - `operation-support-estimate-v0`
 - `forecast-cone-skeleton-v0`

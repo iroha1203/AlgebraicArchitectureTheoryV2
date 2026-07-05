@@ -25,7 +25,7 @@
       },
       "signatureSnapshotRef": {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-before-signature"
       },
@@ -37,14 +37,14 @@
           "sourceRefs": [
             {
               "kind": "signature-snapshot-store",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
               "schemaVersion": "signature-snapshot-store-v0",
               "artifactId": "fixture-trajectory-before-signature"
             },
             {
               "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-              "schemaVersion": "archsig-analysis-packet-v0",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+              "schemaVersion": "archsig-analysis-packet/v1",
               "artifactId": "archsig-analysis-fixture"
             }
           ],
@@ -56,14 +56,14 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-snapshot-store",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
                 "schemaVersion": "signature-snapshot-store-v0",
                 "artifactId": "fixture-trajectory-before-signature"
               },
               {
                 "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-                "schemaVersion": "archsig-analysis-packet-v0",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+                "schemaVersion": "archsig-analysis-packet/v1",
                 "artifactId": "archsig-analysis-fixture"
               }
             ],
@@ -145,7 +145,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-before-signature"
           }
@@ -188,7 +188,7 @@
       },
       "signatureSnapshotRef": {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-middle-signature"
       },
@@ -200,20 +200,20 @@
           "sourceRefs": [
             {
               "kind": "signature-snapshot-store",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
               "schemaVersion": "signature-snapshot-store-v0",
               "artifactId": "fixture-trajectory-middle-signature"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-              "schemaVersion": "archsig-analysis-packet-v0",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+              "schemaVersion": "archsig-analysis-packet/v1",
               "artifactId": "archsig-analysis-fixture"
             }
           ],
@@ -225,20 +225,20 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-snapshot-store",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
                 "schemaVersion": "signature-snapshot-store-v0",
                 "artifactId": "fixture-trajectory-middle-signature"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-                "schemaVersion": "archsig-analysis-packet-v0",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+                "schemaVersion": "archsig-analysis-packet/v1",
                 "artifactId": "archsig-analysis-fixture"
               }
             ],
@@ -281,7 +281,7 @@
       ],
       "forceRef": {
         "kind": "pr-force-report",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         "schemaVersion": "pr-force-report-v0",
         "artifactId": "fixture-pr-force-report-v0"
       },
@@ -293,13 +293,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-middle-signature"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           }
@@ -342,7 +342,7 @@
       },
       "signatureSnapshotRef": {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-after-signature"
       },
@@ -354,20 +354,20 @@
           "sourceRefs": [
             {
               "kind": "signature-snapshot-store",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
               "schemaVersion": "signature-snapshot-store-v0",
               "artifactId": "fixture-trajectory-after-signature"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-              "schemaVersion": "archsig-analysis-packet-v0",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+              "schemaVersion": "archsig-analysis-packet/v1",
               "artifactId": "archsig-analysis-fixture"
             }
           ],
@@ -379,20 +379,20 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-snapshot-store",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
                 "schemaVersion": "signature-snapshot-store-v0",
                 "artifactId": "fixture-trajectory-after-signature"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
-                "schemaVersion": "archsig-analysis-packet-v0",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
+                "schemaVersion": "archsig-analysis-packet/v1",
                 "artifactId": "archsig-analysis-fixture"
               }
             ],
@@ -435,7 +435,7 @@
       ],
       "forceRef": {
         "kind": "pr-force-report",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         "schemaVersion": "pr-force-report-v0",
         "artifactId": "fixture-pr-force-report-v0"
       },
@@ -447,13 +447,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-after-signature"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           }
@@ -487,7 +487,7 @@
   "forceRefs": [
     {
       "kind": "pr-force-report",
-      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
       "schemaVersion": "pr-force-report-v0",
       "artifactId": "fixture-pr-force-report-v0"
     }
@@ -500,13 +500,13 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-before-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-after-signature"
         }
@@ -519,13 +519,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-before-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-after-signature"
           }
@@ -569,7 +569,7 @@
       "sourceRefs": [
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         }
@@ -616,19 +616,19 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-before-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-middle-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-after-signature"
         }
@@ -641,19 +641,19 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-before-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-middle-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-after-signature"
           }
@@ -702,7 +702,7 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-middle-signature"
         }
@@ -715,7 +715,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-middle-signature"
           }
@@ -764,19 +764,19 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-before-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-middle-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-trajectory-after-signature"
         }
@@ -789,19 +789,19 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-before-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-middle-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-trajectory-after-signature"
           }
@@ -1052,31 +1052,31 @@
     "sourceArtifactRefs": [
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-before-signature"
       },
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_middle.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-middle-signature"
       },
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-trajectory-after-signature"
       },
       {
         "kind": "pr-force-report",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         "schemaVersion": "pr-force-report-v0",
         "artifactId": "fixture-pr-force-report-v0"
       },
       {
         "kind": "architecture-drift-ledger",
-        "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
         "schemaVersion": "architecture-drift-ledger-v0",
         "artifactId": "fixture-architecture-drift-ledger"
       }

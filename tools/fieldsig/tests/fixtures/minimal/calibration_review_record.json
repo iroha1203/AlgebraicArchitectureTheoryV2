@@ -127,7 +127,7 @@
   "reviewer": "architecture-reviewer@example.com",
   "reportFindingRefs": [
     {
-      "reportRef": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "reportRef": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
       "findingId": "finding-runtime-private-evidence-warning",
       "metricRef": "runtime.privateEvidenceCount",
       "findingKind": "boundary-warning",
@@ -202,7 +202,7 @@
       "ci-policy:runtime-private-evidence-advisory-v0"
     ],
     "sourceLedgerRefs": [
-      "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+      "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
     ],
     "downstreamIssueRefs": [
       "#622"

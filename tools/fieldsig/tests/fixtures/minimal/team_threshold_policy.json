@@ -171,7 +171,7 @@
     {
       "sourceRef": "calibration-review:fixture-b10-calibration-review-false-positive-v0",
       "sourceKind": "calibration-review-record",
-      "path": "tools/archsig/tests/fixtures/minimal/calibration_review_record.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json",
       "windowRef": "bounded review window 2026-05-04/2026-05-05",
       "boundary": "boundedEmpiricalReview",
       "nonConclusions": [
@@ -181,7 +181,7 @@
     {
       "sourceRef": "daily-ledger:fixture-b10-report-outcome-daily-ledger",
       "sourceKind": "report-outcome-daily-ledger",
-      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
       "windowRef": "daily ledger 2026-05-04/2026-05-05",
       "boundary": "operationalFeedback",
       "nonConclusions": [

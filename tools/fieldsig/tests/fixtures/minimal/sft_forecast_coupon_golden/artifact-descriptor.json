@@ -7,7 +7,7 @@
     {
       "sourceRefId": "source:markdown:coupon-prd-forecast-pipeline",
       "sourceKind": "markdown",
-      "pathOrUrl": "tools/archsig/tests/fixtures/minimal/coupon_prd.md",
+      "pathOrUrl": "tools/fieldsig/tests/fixtures/minimal/coupon_prd.md",
       "stableRef": "Coupon PRD Forecast Pipeline",
       "evidenceRole": "primary markdown artifact input",
       "retainedFields": [

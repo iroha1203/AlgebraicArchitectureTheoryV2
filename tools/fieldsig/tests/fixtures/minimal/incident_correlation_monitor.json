@@ -137,7 +137,7 @@
     {
       "sourceRef": "report-outcome-daily-ledger:checkout-2026-04",
       "sourceKind": "report-outcome-daily-ledger",
-      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
       "schemaVersion": "report-outcome-daily-ledger-v0",
       "boundary": "operationalFeedback",
       "nonConclusions": [
@@ -147,7 +147,7 @@
     {
       "sourceRef": "calibration-review:runtime-private-evidence",
       "sourceKind": "calibration-review-record",
-      "path": "tools/archsig/tests/fixtures/minimal/calibration_review_record.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json",
       "schemaVersion": "calibration-review-record-v0",
       "boundary": "boundedEmpiricalReview",
       "nonConclusions": [

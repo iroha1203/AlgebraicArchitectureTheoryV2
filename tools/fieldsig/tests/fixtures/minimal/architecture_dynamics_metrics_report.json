@@ -14,60 +14,60 @@
   "sourceRefs": [
     {
       "kind": "pr-force-report",
-      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
       "schemaVersion": "pr-force-report-v0",
       "artifactId": "fixture-pr-force-report-v0"
     },
     {
       "kind": "signature-trajectory-report",
-      "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
       "schemaVersion": "signature-trajectory-report-v0",
       "artifactId": "fixture-signature-trajectory-report-v0"
     },
     {
       "kind": "architecture-drift-ledger",
-      "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
       "schemaVersion": "architecture-drift-ledger-v0",
       "artifactId": "fixture-architecture-drift-ledger"
     },
     {
       "kind": "outcome-linkage-dataset",
-      "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
       "schemaVersion": "outcome-linkage-dataset-v0",
       "artifactId": "fixture-outcome-linkage-dataset"
     },
     {
       "kind": "policy-decision-report",
-      "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
       "schemaVersion": "policy-decision-report-v0",
       "artifactId": "fixture-policy-decision-report"
     },
     {
       "kind": "ai-provenance-log",
-      "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/ai_provenance_log.json",
       "artifactId": "fixture-ai-provenance-log"
     },
     {
       "kind": "architecture-field-snapshot",
-      "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
       "schemaVersion": "architecture-field-snapshot-v0",
       "artifactId": "fixture-architecture-field-snapshot-v0"
     },
     {
       "kind": "operation-proposal-log",
-      "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
       "schemaVersion": "operation-proposal-log-v0",
       "artifactId": "fixture-operation-proposal-log-v0"
     },
     {
       "kind": "canonical-example-ref",
-      "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+      "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
       "schemaVersion": "architecture-field-snapshot-v0",
       "artifactId": "fixture-canonical-example-refs"
     },
     {
       "kind": "patch-similarity-evidence",
-      "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+      "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
       "schemaVersion": "operation-proposal-log-v0",
       "artifactId": "fixture-patch-similarity-evidence"
     }
@@ -115,7 +115,7 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         }
@@ -128,7 +128,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           }
@@ -177,7 +177,7 @@
       "sourceRefs": [
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         }
@@ -190,7 +190,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           }
@@ -235,7 +235,7 @@
       "sourceRefs": [
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -277,7 +277,7 @@
       "sourceRefs": [
         {
           "kind": "policy-decision-report",
-          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
           "schemaVersion": "policy-decision-report-v0",
           "artifactId": "fixture-policy-decision-report"
         }
@@ -290,7 +290,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "policy-decision-report",
-            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
             "schemaVersion": "policy-decision-report-v0",
             "artifactId": "fixture-policy-decision-report"
           }
@@ -335,7 +335,7 @@
       "sourceRefs": [
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         }
@@ -348,7 +348,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           }
@@ -394,13 +394,13 @@
       "sourceRefs": [
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         }
@@ -413,13 +413,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           }
@@ -499,13 +499,13 @@
       "sourceRefs": [
         {
           "kind": "policy-decision-report",
-          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
           "schemaVersion": "policy-decision-report-v0",
           "artifactId": "fixture-policy-decision-report"
         },
         {
           "kind": "outcome-linkage-dataset",
-          "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
           "schemaVersion": "outcome-linkage-dataset-v0",
           "artifactId": "fixture-outcome-linkage-dataset"
         }
@@ -518,13 +518,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "policy-decision-report",
-            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
             "schemaVersion": "policy-decision-report-v0",
             "artifactId": "fixture-policy-decision-report"
           },
           {
             "kind": "outcome-linkage-dataset",
-            "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
             "schemaVersion": "outcome-linkage-dataset-v0",
             "artifactId": "fixture-outcome-linkage-dataset"
           }
@@ -568,7 +568,7 @@
       "sourceRefs": [
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         }
@@ -581,7 +581,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           }
@@ -628,7 +628,7 @@
       "sourceRefs": [
         {
           "kind": "ai-provenance-log",
-          "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/ai_provenance_log.json",
           "artifactId": "fixture-ai-provenance-log"
         }
       ],
@@ -640,7 +640,7 @@
         "sourceArtifactRefs": [
           {
             "kind": "ai-provenance-log",
-            "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/ai_provenance_log.json",
             "artifactId": "fixture-ai-provenance-log"
           }
         ],
@@ -746,31 +746,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -836,31 +836,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -930,31 +930,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -1022,31 +1022,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -1159,31 +1159,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -1253,31 +1253,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -1347,31 +1347,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -1435,31 +1435,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -1479,31 +1479,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -1552,31 +1552,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -1596,31 +1596,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -1725,31 +1725,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -1769,31 +1769,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -1844,31 +1844,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -1888,31 +1888,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2003,31 +2003,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -2047,31 +2047,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2127,31 +2127,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -2171,31 +2171,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2303,31 +2303,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -2371,31 +2371,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -2415,31 +2415,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2502,31 +2502,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -2570,31 +2570,31 @@
             "sourceRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -2614,31 +2614,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2701,31 +2701,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -2782,31 +2782,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -2869,31 +2869,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -2950,31 +2950,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -3037,31 +3037,31 @@
                 "sourceArtifactRefs": [
                   {
                     "kind": "signature-trajectory-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                     "schemaVersion": "signature-trajectory-report-v0",
                     "artifactId": "fixture-signature-trajectory-report-v0"
                   },
                   {
                     "kind": "pr-force-report",
-                    "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                     "schemaVersion": "pr-force-report-v0",
                     "artifactId": "fixture-pr-force-report-v0"
                   },
                   {
                     "kind": "architecture-drift-ledger",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                     "schemaVersion": "architecture-drift-ledger-v0",
                     "artifactId": "fixture-architecture-drift-ledger"
                   },
                   {
                     "kind": "architecture-field-snapshot",
-                    "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                     "schemaVersion": "architecture-field-snapshot-v0",
                     "artifactId": "fixture-architecture-field-snapshot-v0"
                   },
                   {
                     "kind": "operation-proposal-log",
-                    "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                    "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                     "schemaVersion": "operation-proposal-log-v0",
                     "artifactId": "fixture-operation-proposal-log-v0"
                   }
@@ -3118,31 +3118,31 @@
               "sourceArtifactRefs": [
                 {
                   "kind": "signature-trajectory-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                   "schemaVersion": "signature-trajectory-report-v0",
                   "artifactId": "fixture-signature-trajectory-report-v0"
                 },
                 {
                   "kind": "pr-force-report",
-                  "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                   "schemaVersion": "pr-force-report-v0",
                   "artifactId": "fixture-pr-force-report-v0"
                 },
                 {
                   "kind": "architecture-drift-ledger",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                   "schemaVersion": "architecture-drift-ledger-v0",
                   "artifactId": "fixture-architecture-drift-ledger"
                 },
                 {
                   "kind": "architecture-field-snapshot",
-                  "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                   "schemaVersion": "architecture-field-snapshot-v0",
                   "artifactId": "fixture-architecture-field-snapshot-v0"
                 },
                 {
                   "kind": "operation-proposal-log",
-                  "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                  "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                   "schemaVersion": "operation-proposal-log-v0",
                   "artifactId": "fixture-operation-proposal-log-v0"
                 }
@@ -3186,31 +3186,31 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -3229,31 +3229,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -3325,31 +3325,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -3416,31 +3416,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -3496,31 +3496,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -3588,31 +3588,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -3675,31 +3675,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -3755,31 +3755,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -3847,31 +3847,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -3934,31 +3934,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -4014,31 +4014,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -4106,31 +4106,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -4193,31 +4193,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -4273,31 +4273,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -4365,31 +4365,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -4451,31 +4451,31 @@
             "sourceArtifactRefs": [
               {
                 "kind": "signature-trajectory-report",
-                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
                 "schemaVersion": "signature-trajectory-report-v0",
                 "artifactId": "fixture-signature-trajectory-report-v0"
               },
               {
                 "kind": "pr-force-report",
-                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
               },
               {
                 "kind": "architecture-drift-ledger",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
               },
               {
                 "kind": "architecture-field-snapshot",
-                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
                 "schemaVersion": "architecture-field-snapshot-v0",
                 "artifactId": "fixture-architecture-field-snapshot-v0"
               },
               {
                 "kind": "operation-proposal-log",
-                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
                 "schemaVersion": "operation-proposal-log-v0",
                 "artifactId": "fixture-operation-proposal-log-v0"
               }
@@ -4531,31 +4531,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -4606,31 +4606,31 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -4651,31 +4651,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -4726,31 +4726,31 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -4771,31 +4771,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -4848,43 +4848,43 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           },
           {
             "kind": "canonical-example-ref",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-canonical-example-refs"
           },
           {
             "kind": "patch-similarity-evidence",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-patch-similarity-evidence"
           }
@@ -4905,31 +4905,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5006,31 +5006,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -5050,31 +5050,31 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -5136,31 +5136,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -5180,31 +5180,31 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -5263,43 +5263,43 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         },
         {
           "kind": "canonical-example-ref",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-canonical-example-refs"
         },
         {
           "kind": "patch-similarity-evidence",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-patch-similarity-evidence"
         }
@@ -5312,43 +5312,43 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           },
           {
             "kind": "canonical-example-ref",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-canonical-example-refs"
           },
           {
             "kind": "patch-similarity-evidence",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-patch-similarity-evidence"
           }
@@ -5399,31 +5399,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -5467,31 +5467,31 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -5511,31 +5511,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5584,43 +5584,43 @@
         "sourceRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           },
           {
             "kind": "canonical-example-ref",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-canonical-example-refs"
           },
           {
             "kind": "patch-similarity-evidence",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-patch-similarity-evidence"
           }
@@ -5640,31 +5640,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5725,31 +5725,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5810,31 +5810,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5895,31 +5895,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -5980,31 +5980,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -6065,31 +6065,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -6150,31 +6150,31 @@
           "sourceArtifactRefs": [
             {
               "kind": "signature-trajectory-report",
-              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
               "schemaVersion": "signature-trajectory-report-v0",
               "artifactId": "fixture-signature-trajectory-report-v0"
             },
             {
               "kind": "pr-force-report",
-              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
             },
             {
               "kind": "architecture-drift-ledger",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
             },
             {
               "kind": "architecture-field-snapshot",
-              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
               "schemaVersion": "architecture-field-snapshot-v0",
               "artifactId": "fixture-architecture-field-snapshot-v0"
             },
             {
               "kind": "operation-proposal-log",
-              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
               "schemaVersion": "operation-proposal-log-v0",
               "artifactId": "fixture-operation-proposal-log-v0"
             }
@@ -6235,31 +6235,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -6279,31 +6279,31 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -6365,31 +6365,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -6409,31 +6409,31 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -6501,31 +6501,31 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -6545,31 +6545,31 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
             "schemaVersion": "pr-force-report-v0",
             "artifactId": "fixture-pr-force-report-v0"
           },
           {
             "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
           },
           {
             "kind": "architecture-field-snapshot",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
             "schemaVersion": "architecture-field-snapshot-v0",
             "artifactId": "fixture-architecture-field-snapshot-v0"
           },
           {
             "kind": "operation-proposal-log",
-            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
           }
@@ -6625,31 +6625,31 @@
       "sourceArtifactRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
           "schemaVersion": "pr-force-report-v0",
           "artifactId": "fixture-pr-force-report-v0"
         },
         {
           "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
         },
         {
           "kind": "architecture-field-snapshot",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
           "schemaVersion": "architecture-field-snapshot-v0",
           "artifactId": "fixture-architecture-field-snapshot-v0"
         },
         {
           "kind": "operation-proposal-log",
-          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
         }
@@ -6707,48 +6707,48 @@
     "sourceArtifactRefs": [
       {
         "kind": "pr-force-report",
-        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         "schemaVersion": "pr-force-report-v0",
         "artifactId": "fixture-pr-force-report-v0"
       },
       {
         "kind": "signature-trajectory-report",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
         "schemaVersion": "signature-trajectory-report-v0",
         "artifactId": "fixture-signature-trajectory-report-v0"
       },
       {
         "kind": "architecture-drift-ledger",
-        "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
         "schemaVersion": "architecture-drift-ledger-v0",
         "artifactId": "fixture-architecture-drift-ledger"
       },
       {
         "kind": "outcome-linkage-dataset",
-        "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
         "schemaVersion": "outcome-linkage-dataset-v0",
         "artifactId": "fixture-outcome-linkage-dataset"
       },
       {
         "kind": "policy-decision-report",
-        "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
         "schemaVersion": "policy-decision-report-v0",
         "artifactId": "fixture-policy-decision-report"
       },
       {
         "kind": "ai-provenance-log",
-        "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/ai_provenance_log.json",
         "artifactId": "fixture-ai-provenance-log"
       },
       {
         "kind": "architecture-field-snapshot",
-        "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
         "schemaVersion": "architecture-field-snapshot-v0",
         "artifactId": "fixture-architecture-field-snapshot-v0"
       },
       {
         "kind": "operation-proposal-log",
-        "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
         "schemaVersion": "operation-proposal-log-v0",
         "artifactId": "fixture-operation-proposal-log-v0"
       }

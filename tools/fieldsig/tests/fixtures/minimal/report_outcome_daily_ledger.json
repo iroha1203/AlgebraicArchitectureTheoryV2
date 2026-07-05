@@ -85,13 +85,13 @@
   "sourceReportRefs": [
     {
       "kind": "outcome-linkage-dataset",
-      "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
       "schemaVersion": "outcome-linkage-dataset-v0",
       "boundary": "PR-level bounded outcome observations"
     },
     {
       "kind": "architecture-drift-ledger",
-      "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
       "schemaVersion": "architecture-drift-ledger-v0",
       "reportId": "fixture-b9-architecture-drift-ledger",
       "boundary": "daily drift / suppression / retention operational state"
@@ -101,8 +101,8 @@
     "retentionManifestRef": "report-artifacts:fixture-b7-report-artifact-retention",
     "retentionPeriodDays": 90,
     "retainedArtifactRefs": [
-      "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
-      "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json"
+      "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
+      "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json"
     ],
     "privateDataPolicy": "private source artifacts remain traceability refs and are not treated as measured-zero",
     "missingDataPolicy": "missing outcome, incident, or retained-report data is preserved as unavailable / unmeasured",
@@ -114,13 +114,13 @@
     {
       "batchId": "daily-batch-2026-05-05",
       "architectureId": "checkout-service",
-      "outcomeDatasetRef": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
-      "driftLedgerRef": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "outcomeDatasetRef": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
+      "driftLedgerRef": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
       "outcomeRecordCount": 1,
       "driftEntryCount": 2,
       "sourceReportRefs": [
-        "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
-        "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json"
+        "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
+        "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json"
       ],
       "outcomeMetricSummaries": [
         {

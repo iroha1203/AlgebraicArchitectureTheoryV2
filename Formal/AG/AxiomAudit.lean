@@ -218,6 +218,20 @@ theorem canonicalTupleStandardFinitePosetCechComplexDComp
   Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp
     tupleGeometry Ob
 
+theorem coverNerveTopologicalDebtCapacityFromComplex
+    {N : Cohomology.CoverNerve}
+    (D : Cohomology.FiniteNerveCochainComplex N) :
+    Module.finrank D.k D.C1 <=
+      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
+        Module.finrank D.k D.C2 :=
+  Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
+
+theorem finiteForestEdgeAbsorptionVanishing
+    {N : Cohomology.CoverNerve}
+    (F : Cohomology.FiniteForestEdgeAbsorptionData N) :
+    ∀ x : F.H1, x = 0 :=
+  Cohomology.FiniteForestEdgeAbsorptionData.forestVanishing F
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -385,5 +399,19 @@ info: 'AAT.AG.AxiomAudit.canonicalTupleStandardFinitePosetCechComplexDComp' depe
 -/
 #guard_msgs in
 #print axioms canonicalTupleStandardFinitePosetCechComplexDComp
+
+/--
+info: 'AAT.AG.AxiomAudit.coverNerveTopologicalDebtCapacityFromComplex' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms coverNerveTopologicalDebtCapacityFromComplex
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteForestEdgeAbsorptionVanishing' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms finiteForestEdgeAbsorptionVanishing
 
 end AAT.AG.AxiomAudit
