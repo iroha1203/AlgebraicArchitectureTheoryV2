@@ -4,7 +4,7 @@
 
 ## 境界
 
-- ArchMap finite-poset-site shape は supplied `archmap/v0.5.0` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。`molecules` は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
+- ArchMap finite-poset-site shape は supplied `archmap/v0.5.0` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。旧 grouping field は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
 - 現行 AAT は Atom 公理系から architecture object を構成し、それを site / sheaf /
   law algebra / obstruction ideal / lawful locus へ持ち上げる代数幾何的アーキテクチャ論である。
   ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
