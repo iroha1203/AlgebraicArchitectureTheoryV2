@@ -111,6 +111,42 @@ if ("IntersectionObserver" in window && sections.length > 0) {
   sections.forEach((section) => observer.observe(section));
 }
 
+const tocLinks = Array.from(document.querySelectorAll(".toc-panel a")).filter(
+  (link) => link.getAttribute("href")?.startsWith("#")
+);
+const tocSections = tocLinks
+  .map((link) => document.getElementById(link.getAttribute("href").slice(1)))
+  .filter(Boolean);
+
+if ("IntersectionObserver" in window && tocSections.length > 0) {
+  const tocLinkById = new Map(
+    tocLinks.map((link) => [link.getAttribute("href").slice(1), link])
+  );
+
+  const tocVisibleIds = new Set();
+
+  const tocObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          tocVisibleIds.add(entry.target.id);
+        } else {
+          tocVisibleIds.delete(entry.target.id);
+        }
+      });
+
+      const current = tocSections.find((section) => tocVisibleIds.has(section.id));
+      if (!current) return;
+
+      tocLinks.forEach((link) => link.classList.remove("is-active"));
+      tocLinkById.get(current.id)?.classList.add("is-active");
+    },
+    { rootMargin: "-15% 0px -70% 0px", threshold: 0 }
+  );
+
+  tocSections.forEach((section) => tocObserver.observe(section));
+}
+
 const currentPath = window.location.pathname.replace(/index\.html$/, "");
 
 navLinks

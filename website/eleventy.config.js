@@ -12,6 +12,17 @@ module.exports = function (eleventyConfig) {
     return depth <= 0 ? "./" : "../".repeat(depth);
   });
 
+  // Pages of one nav section in reading order, shaped for the series-nav panel.
+  eleventyConfig.addFilter("sectionSeries", (pages, section) =>
+    pages
+      .filter((p) => p.data.navSection === section)
+      .map((p) => ({
+        path: p.url.slice(1),
+        title: p.data.title,
+        depth: p.url.split("/").filter(Boolean).length,
+      }))
+  );
+
   // All public pages in curated reading order (front matter `order`).
   eleventyConfig.addCollection("pages", (api) =>
     api

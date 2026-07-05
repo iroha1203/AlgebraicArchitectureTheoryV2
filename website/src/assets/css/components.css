@@ -279,6 +279,7 @@
 
 .toc-panel ol,
 .toc-panel ul,
+.source-panel ol,
 .source-panel ul,
 .boundary-note ul,
 .chapter-list,
@@ -332,6 +333,20 @@
 
 .toc-panel li:has(a[aria-current="page"])::before,
 .source-panel li:has(a[aria-current="page"])::before {
+  background: var(--accent-warm);
+}
+
+/* series-nav: nested SFT chapters indent under their section */
+.series-panel .series-depth-3 {
+  margin-left: 14px;
+}
+
+/* toc scrollspy: the section currently in view */
+.toc-panel a.is-active {
+  color: var(--accent-warm);
+}
+
+.toc-panel li:has(a.is-active)::before {
   background: var(--accent-warm);
 }
 
