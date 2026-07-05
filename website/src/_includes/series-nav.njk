@@ -1,0 +1,13 @@
+{%- set seriesItems = collections.pages | sectionSeries(navSection) -%}
+{%- if seriesItems.length > 1 %}
+            <nav class="series-panel source-panel" data-sidebar-open="true" aria-labelledby="series-nav-title">
+              <h2 id="series-nav-title">In this series</h2>
+              <ol>
+{%- for item in seriesItems %}
+                <li{% if item.depth > 2 %} class="series-depth-{{ item.depth }}"{% endif %}>
+                  <a href="{{ page.url | relprefix }}{{ item.path }}"{% if ('/' + item.path) == page.url %} aria-current="page"{% endif %}>{{ item.title }}</a>
+                </li>
+{%- endfor %}
+              </ol>
+            </nav>
+{%- endif %}

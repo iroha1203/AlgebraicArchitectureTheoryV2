@@ -1,5 +1,51 @@
 /* theory.css — theorem environments: theorem-card, lean-status-card, status badges, formal anchors. */
 
+/* statement blocks: axioms, definitions, and theorems read as first-class
+   objects in the same visual family as theorem cards. Kind is derived from
+   the canonical id prefix, so the markup stays untouched. */
+p.statement {
+  border-left: 3px solid var(--rule-strong);
+  background: var(--surface-alpha);
+  margin-top: 22px;
+  padding: 13px 16px 14px 17px;
+}
+
+p.statement[id^="theorem-"],
+p.statement[id^="proposition-"],
+p.statement[id^="lemma-"],
+p.statement[id^="corollary-"] {
+  border-left-color: var(--accent);
+}
+
+p.statement[id^="axiom-"],
+p.statement[id^="assumption-"],
+p.statement[id^="principle-"],
+p.statement[id^="condition-"] {
+  border-left-color: var(--accent-warm);
+}
+
+p.statement[id^="example-"],
+p.statement[id^="candidate-"],
+p.statement[id^="position-"],
+p.statement[id^="novelty-"],
+p.statement[id^="status-"],
+p.statement[id^="counterexample"] {
+  border-left-style: dashed;
+  background: transparent;
+}
+
+p.statement-proof {
+  border-left: 1px dashed var(--rule-strong);
+  margin-top: 14px;
+  padding-left: 18px;
+}
+
+p.statement:target,
+p.statement-proof:target {
+  border-left-color: var(--accent-warm);
+  background: color-mix(in srgb, var(--accent-warm) 7%, transparent);
+}
+
 .theorem-card-list {
   display: grid;
   gap: 16px;
