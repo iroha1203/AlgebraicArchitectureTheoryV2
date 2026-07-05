@@ -1532,3 +1532,59 @@ G2 / G3 / G4 audit summary:
   object の第一歩であり、transition composition、assignment-preserving transition、一般 conflict-set
   calculus には未達。fail-closed に G2 の下限を採用し、base 30、evidence multiplier 2.0、
   penalty 10、final +50 とする。
+
+## Cycle 28 — Repair transition criterion
+
+candidate: `research/ideas/g-sft-conway-01-repair-transition-criterion.md`
+candidate_type: `criterion`
+evidence_stage: `proved-in-research`
+base_score: 35
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 60
+category: `conway-obstruction`, `repair-transition`,
+  `finite-conflict-table`, `communication-support`
+goal_delta: selected reorg/refactor edit shapes について、finite conflict-table satisfaction が
+  `mismatchedAtlas` から edit post-atlas への selected repair-transition record existence と同値であることを
+  Lean theorem として固定した。canonical reorg/refactor edits は repair-transition record を実現し、
+  selected missed-conflict reorg / API-only refactor edits はその record を実現しない。
+project_value_delta: Cycle 27 の transition record packaging から一歩進み、edit が selected
+  repair-transition record を実現するための判定条件を finite table interface で与えた。positive repair と missed-hit failure を
+  同じ iff criterion で分類する。ただし任意 repair calculus、transition composition、一般 conflict-set
+  calculus ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  repair success/failure を説明できるが、この cycle は selected edit shapes 上で repair transition
+  existence の iff criterion を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayRepairTransitionCriterion.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary repair calculus、transition composition、general conflict-set calculus、
+  selector-preserving refinement naturality、refactor-side two-owner obstruction witness は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayRepairTransitionCriterion.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditRepairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.repairTransition_nonempty_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.canonicalRepairTransition_nonempty`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.partialMissesDbConflict_noRepairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditRepairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.repairTransition_nonempty_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.canonicalRepairTransition_nonempty`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.partialSupportsOnlyApi_noRepairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedRepairTransitionCriterionPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduce。finite table と repair-transition vocabulary をつなぐ有用な iff だが、
+  中核は既存の `supportAssignment_nonempty_iff_finiteConflictTable` を `ConwayRepairTransition` wrapper へ
+  持ち上げる合成であり、任意 repair calculus、transition composition、minimality、general conflict-set
+  calculus、new obstruction receiver ではない。G2 は base 40、multiplier 2.0、penalty 10、final +70 を推奨。
+- G3 formalization quality: pass once tracked and committed。Lean theorem は selected finite Conway vocabulary、
+  selected edit shapes、finite table、`mismatchedAtlas -> edit.postAtlas` の record existence に限定される。
+  focused check、module build、`FormalAGResearch` は通過し、`sorry/admit/unsafe/axiom` は対象 Lean にない。
+  axiom audit は標準 `propext` と support-assignment existence 由来の `Classical.choice` に収まる。
+- G4 score audit: reduce。Cycle 26/27 の単なる restatement ではないが、中核は finite table iff と
+  transition record の合成であり、新しい repair calculus、composition、一般 conflict-set calculus までは
+  進まない。fail-closed に G4 の下限を採用し、base 35、evidence multiplier 2.0、penalty 10、
+  final +60 とする。
