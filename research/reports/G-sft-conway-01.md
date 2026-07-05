@@ -1223,3 +1223,70 @@ G2 / G3 / G4 audit summary:
   actual linear `C0 -> C1` boundary、incidence matrix exactness、refinement failure、operation theorem は
   まだ入っていない。fail-closed に G4 の low bound を採用し、base 55、evidence multiplier 2.0、
   penalty 0、final +110 とする。
+
+## Cycle 23 — Canonical reorg/refactor obstruction-killing criteria
+
+candidate: `research/ideas/g-sft-conway-01-reorg-refactor-killing.md`
+candidate_type: `closure`
+evidence_stage: `proved-in-research`
+base_score: 50
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 90
+category: `reorg-refactor-duality`, `obstruction-killing`,
+  `finite-operation`, `conway-obstruction`
+goal_delta: Cycle 1 の `reorgedAtlas` / `refactoredAtlas` repaired examples を、
+  canonical mismatch に対する finite operation-shaped compatibility criteria へ格上げした。
+  `ReorgCoverEdit` は communication cover を編集し split ownership を保つ操作、
+  `RefactorOwnershipEdit` は all-communication を保ち ownership cover を編集する操作である。
+  それぞれに concrete `HitsEveryConflict` predicate を置き、post-edit compatibility と同値であること、
+  canonical edit が hitting criterion を満たして selected Conway obstruction を kill することを証明した。
+project_value_delta: reorg/refactor を単なる finite repaired examples から、canonical one-sided operation shape
+  と post-edit compatibility criterion の theorem package へ進めた。ただし一般 family の最小 hitting theorem、
+  partial edit の negative witness、arbitrary-cover operation calculus ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  reorg/refactor narrative を提案できるが、この cycle は canonical finite operation shape ごとに
+  Lean-checked hitting criterion と obstruction-kill theorem を保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayReorgRefactorKilling.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayReorgRefactorKilling` が通過。
+  `#print axioms` では reorg-side theorem と combined package は `propext` のみ、
+  refactor-side theorem は axiom-free。`sorryAx` はない。
+open_questions: partial edit が kill しない negative witness、pre/post transition relation from
+  `mismatchedAtlas`、conflict set を計算して hit する一般 predicate、reorg-only/refactor-only separation、
+  refinement naturality failure は未固定。Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayReorgRefactorKilling.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditHitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.postCompatible_iff_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.killsConwayObstruction_of_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_killsConwayObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditHitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.postCompatible_iff_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.killsConwayObstruction_of_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_killsConwayObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRepairOperation_killsConwayObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedReorgRefactorKillingPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduced score。Cycle 1 repaired examples から canonical one-sided operation
+  shape の判定条件へ前進している。ただし obstruction killing は `compatible_no_conwayObstruction` へ戻しており、
+  一般 family の最小 hitting theorem、任意 edit 分類、reorg/refactor separation theorem ではない。
+  G2 は base 60 / final +120 を推奨。
+- G3 formalization quality: pass。hitting criteria は `ConwayObstructionWitness = false` を直接埋め込まず、
+  reorg 側は platform/data block が対応 owner に support されること、refactor 側は single owner block が
+  all-context を support することとして書かれている。claim は canonical finite operation criteria に限定している。
+- G3 axiom audit: pass。reorg-side theorem と combined package は `propext` のみ、
+  refactor-side theorem は axiom-free。`sorryAx` はない。
+- G4 score audit: reduce。operation scaffold はあるが、中核は post-edit compatibility criterion の再表現であり、
+  partial edit negative witness、pre/post transition relation、一般 conflict set hitting predicate は未実装。
+  fail-closed に G4 の low bound を採用し、base 50、evidence multiplier 2.0、penalty 10、final +90 とする。
