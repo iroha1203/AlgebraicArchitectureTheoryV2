@@ -66,19 +66,36 @@ end Force
 IX.定義7.1 / AC18: evidence that a force integrates to selected global
 temporal law data.
 
-The law data, local evidence, and descent/integration boundary are all explicit.
+The law data, selected replay descent interface, and global replay transition
+are all explicit.  A force is integrable only when the selected force points are
+identified with the base source/target of a replay descent package and the
+global replay sends the selected source state to the selected target state.
 -/
 structure ForceIntegrationData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     (F : Force St) where
   globalTemporalLaw : TemporalLaw St
+  coefficient : TemporalCoefficient T
+  replayData : ReplayDescentData St coefficient globalTemporalLaw
+  descentCriterion : TemporalDescentCriterion replayData
+  globalReplayTransition : replayData.GlobalReplayTransition
+  replaySource_eq : F.source = (replayData.sourceTrace, replayData.cover.baseContext)
+  replayTarget_eq : F.target = (replayData.targetTrace, replayData.cover.baseContext)
+  globalReplay_hits_force :
+    globalReplayTransition (replaySource_eq ▸ F.sourceState) =
+      (replayTarget_eq ▸ F.targetState)
   localLawData : Prop
   localLawData_cert : localLawData
   descendsToGlobalTemporalLaw : Prop
   descendsToGlobalTemporalLaw_cert : descendsToGlobalTemporalLaw
-  forceRespectsGlobalLaw : Prop
-  forceRespectsGlobalLaw_cert : forceRespectsGlobalLaw
+  lawWitness : globalTemporalLaw.Witness
+  lawSource_eq : globalTemporalLaw.source lawWitness = F.source
+  lawTarget_eq : globalTemporalLaw.target lawWitness = F.target
+  forceRespectsGlobalLaw :
+    globalTemporalLaw.stateEquation lawWitness
+      (lawSource_eq.symm ▸ F.sourceState)
+      (lawTarget_eq.symm ▸ F.targetState)
 
 /-- IX.定義7.1 / AC18: selected integrability predicate for a force. -/
 def IntegrableForce {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -110,6 +127,30 @@ theorem local_law_data_holds (D : ForceIntegrationData F) :
 theorem descends_to_global_temporal_law (D : ForceIntegrationData F) :
     D.descendsToGlobalTemporalLaw :=
   D.descendsToGlobalTemporalLaw_cert
+
+/-- IX.定義7.1 / AC18: the R5 theorem-4.2 package yields a global replay transition. -/
+theorem temporal_descent_criterion_holds (D : ForceIntegrationData F) :
+    Nonempty D.replayData.GlobalReplayTransition :=
+  D.descentCriterion.temporal_descent_criterion
+
+/--
+IX.定義7.1 / AC18: the selected global replay transition realizes the force on
+the selected source/target states.
+-/
+theorem global_replay_hits_force (D : ForceIntegrationData F) :
+    D.globalReplayTransition (D.replaySource_eq ▸ F.sourceState) =
+      (D.replayTarget_eq ▸ F.targetState) :=
+  D.globalReplay_hits_force
+
+/--
+IX.定義7.1 / AC18: the selected force source/target states satisfy the selected
+global temporal law equation.
+-/
+theorem force_respects_global_law (D : ForceIntegrationData F) :
+    D.globalTemporalLaw.stateEquation D.lawWitness
+      (D.lawSource_eq.symm ▸ F.sourceState)
+      (D.lawTarget_eq.symm ▸ F.targetState) :=
+  D.forceRespectsGlobalLaw
 
 end ForceIntegrationData
 
@@ -169,6 +210,78 @@ theorem mismatch_constructed_from_force
   C.mismatchConstructedFromForce_cert
 
 end ForceMismatchClass
+
+/--
+IX.定理候補7.2 / AC18: inhabitable selected data for the force-integrability
+obstruction candidate.
+
+This is the candidate-data layer: it records the selected nonzero marker
+and detection assumptions, but it does not require or prove the theorem
+statement `ob(F) != 0 -> not IntegrableForce F`.
+-/
+structure ForceIntegrabilityObstructionCandidateData
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
+    {T : TemporalSite S E} {St : StateTransitionPresheaf T}
+    {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
+    {F : Force St} (C : ForceMismatchClass (Coeff := Coeff) (Law := Law) F) where
+  selectedNonzero :
+    C.mismatch.bridge.siteComplex.CoverRelativeHn C.mismatch.degree -> Prop
+  obstruction_nonzero : selectedNonzero C.obstructionClass
+  coefficientExactness : Prop
+  coefficientExactness_cert : coefficientExactness
+  witnessCoverage : Prop
+  witnessCoverage_cert : witnessCoverage
+  temporalDescentDetecting : Prop
+  temporalDescentDetecting_cert : temporalDescentDetecting
+  localToGlobalControlledByDescent : Prop
+  localToGlobalControlledByDescent_cert : localToGlobalControlledByDescent
+
+namespace ForceIntegrabilityObstructionCandidateData
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+variable {E : EvolutionProfile.{u, v, w, x, y, z}}
+variable {T : TemporalSite S E}
+variable {St : StateTransitionPresheaf T}
+variable {Coeff : TemporalCoefficient T}
+variable {Law : TemporalLaw St}
+variable {F : Force St}
+variable {C : ForceMismatchClass (Coeff := Coeff) (Law := Law) F}
+
+/-- IX.定理候補7.2 / AC18: read the selected nonzero marker data. -/
+theorem obstruction_nonzero_holds
+    (O : ForceIntegrabilityObstructionCandidateData C) :
+    O.selectedNonzero C.obstructionClass :=
+  O.obstruction_nonzero
+
+/-- IX.定理候補7.2 / AC18: coefficient exactness is selected candidate data. -/
+theorem coefficient_exactness_holds
+    (O : ForceIntegrabilityObstructionCandidateData C) :
+    O.coefficientExactness :=
+  O.coefficientExactness_cert
+
+/-- IX.定理候補7.2 / AC18: witness coverage is selected candidate data. -/
+theorem witness_coverage_holds
+    (O : ForceIntegrabilityObstructionCandidateData C) :
+    O.witnessCoverage :=
+  O.witnessCoverage_cert
+
+/-- IX.定理候補7.2 / AC18: temporal descent detection is selected candidate data. -/
+theorem temporal_descent_detecting_holds
+    (O : ForceIntegrabilityObstructionCandidateData C) :
+    O.temporalDescentDetecting :=
+  O.temporalDescentDetecting_cert
+
+/--
+IX.定理候補7.2 / AC18: the unproved theorem statement associated with the
+selected candidate data.
+-/
+def nonintegrabilityStatement
+    (O : ForceIntegrabilityObstructionCandidateData C) : Prop :=
+  O.selectedNonzero C.obstructionClass -> ¬ IntegrableForce F
+
+end ForceIntegrabilityObstructionCandidateData
 
 /--
 IX.定理候補7.2 / AC19: force integrability obstruction candidate.
