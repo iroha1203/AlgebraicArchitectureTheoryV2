@@ -250,6 +250,20 @@ pub struct ArchmapExtractionConsistencyV1 {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArchmapExtractionMatchCountV1 {
     pub count: usize,
+    #[serde(default)]
+    pub rows: Vec<ArchmapExtractionMatchedCandidateV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionMatchedCandidateV1 {
+    pub key: String,
+    #[serde(default)]
+    pub pass_a_atom_ids: Vec<String>,
+    #[serde(default)]
+    pub pass_b_atom_ids: Vec<String>,
+    #[serde(default)]
+    pub refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

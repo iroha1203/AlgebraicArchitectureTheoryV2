@@ -3,9 +3,10 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
-    LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
-    SchemaVersionCatalogV0, ScopeManifestOptions, build_comparison_artifacts_v1,
+    ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, ExtractionDiffOptions,
+    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1,
+    RepairPlanDocumentV1, SchemaVersionCatalogV0, ScopeManifestOptions,
+    build_comparison_artifacts_v1, build_extraction_consistency_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
     build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
     build_repair_plan_validation_report_v1, build_scope_manifest_v1, normalize_archmap_v2,
@@ -84,6 +85,29 @@ enum Command {
         dirty_override: Option<bool>,
 
         /// Output scope manifest JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Compare candidate packets by authoring atom-match-key without adjudicating adoption.
+    ExtractionDiff {
+        /// Pass A candidate packet JSON path. Repeat for multiple chunks.
+        #[arg(long = "pass-a", required = true)]
+        pass_a: Vec<PathBuf>,
+
+        /// Pass B candidate packet JSON path. Omit only for explicit single-pass degraded records.
+        #[arg(long = "pass-b")]
+        pass_b: Vec<PathBuf>,
+
+        /// Consistency artifact id.
+        #[arg(long, default_value = "consistency:archmap-authoring")]
+        id: String,
+
+        /// Scope manifest ref override. Defaults to the first pass A packet's scopeManifestRef.
+        #[arg(long = "scope-manifest-ref")]
+        scope_manifest_ref: Option<String>,
+
+        /// Output extraction consistency JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -370,6 +394,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 dirty_override,
             })?;
             write_json(out, &manifest)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::ExtractionDiff {
+            pass_a,
+            pass_b,
+            id,
+            scope_manifest_ref,
+            out,
+        }) => {
+            let report = build_extraction_consistency_v1(&ExtractionDiffOptions {
+                pass_a,
+                pass_b,
+                id,
+                scope_manifest_ref,
+            })?;
+            write_json(out, &report)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::LawPolicy {

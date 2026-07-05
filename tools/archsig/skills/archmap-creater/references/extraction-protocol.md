@@ -132,8 +132,6 @@ machine-specific identifiers. Source paths in artifacts are repo-relative.
 
 ## Integration
 
-When available, run `archsig extraction-diff` after both passes. Until then,
-apply `atom-match-key@1` by hand and record the consistency artifact as
-hand-authored. The integrator rereads the cited source for every unmatched key
-and records `adjudications`. Integration is complete only after those rereads,
-not after mechanical matching.
+Run `archsig extraction-diff` after both passes. The integrator rereads the
+cited source for every unmatched key and records `adjudications`. Integration is
+complete only after those rereads, not after mechanical matching.

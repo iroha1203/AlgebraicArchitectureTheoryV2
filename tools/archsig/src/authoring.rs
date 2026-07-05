@@ -8,13 +8,15 @@ use std::process::Command;
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use sha2::{Digest, Sha256};
+use unicode_normalization::UnicodeNormalization;
 use walkdir::WalkDir;
 
 use crate::{
     ArchMapAtomV2, ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1,
-    ArchmapExtractionConsistencyV1, ArchmapScopeManifestExclusionV1,
-    ArchmapScopeManifestRepositoryV1, ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1,
-    ArchmapScopeManifestWorklistEntryV1,
+    ArchmapExtractionConsistencyV1, ArchmapExtractionContextDiffV1, ArchmapExtractionMatchCountV1,
+    ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
+    ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
+    ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
 };
 
 pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.0";
@@ -35,6 +37,14 @@ pub struct ScopeManifestOptions {
     pub baseline: Option<PathBuf>,
     pub revision_override: Option<String>,
     pub dirty_override: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExtractionDiffOptions {
+    pub pass_a: Vec<PathBuf>,
+    pub pass_b: Vec<PathBuf>,
+    pub id: String,
+    pub scope_manifest_ref: Option<String>,
 }
 
 pub fn build_scope_manifest_v1(
@@ -152,6 +162,257 @@ pub fn build_scope_manifest_v1(
             })
             .collect(),
     })
+}
+
+pub fn build_extraction_consistency_v1(
+    options: &ExtractionDiffOptions,
+) -> Result<ArchmapExtractionConsistencyV1, Box<dyn Error>> {
+    if options.pass_a.is_empty() {
+        return Err("--pass-a is required".into());
+    }
+    let pass_a = load_candidate_packets(&options.pass_a, "pass-a")?;
+    let pass_b = load_candidate_packets(&options.pass_b, "pass-b")?;
+    let scope_manifest_ref = options
+        .scope_manifest_ref
+        .clone()
+        .or_else(|| {
+            pass_a
+                .first()
+                .map(|packet| packet.scope_manifest_ref.clone())
+        })
+        .unwrap_or_else(|| "scope:unknown".to_string());
+
+    let pass_a_refs = pass_a
+        .iter()
+        .map(|packet| packet.id.clone())
+        .collect::<Vec<_>>();
+    let pass_b_refs = pass_b
+        .iter()
+        .map(|packet| packet.id.clone())
+        .collect::<Vec<_>>();
+    let pass_a_atoms = candidate_atom_index(&pass_a);
+    let pass_b_atoms = candidate_atom_index(&pass_b);
+    let matched_rows = matched_candidates(&pass_a_atoms, &pass_b_atoms);
+    let matched_count = matched_rows
+        .iter()
+        .map(|row| row.pass_a_atom_ids.len().min(row.pass_b_atom_ids.len()))
+        .sum();
+    let only_in_pass_a = only_in_candidates(&pass_a_atoms, &pass_b_atoms);
+    let only_in_pass_b = only_in_candidates(&pass_b_atoms, &pass_a_atoms);
+    let denominator = matched_count + only_in_pass_a.len() + only_in_pass_b.len();
+    let match_rate = if denominator == 0 {
+        1.0
+    } else {
+        matched_count as f64 / denominator as f64
+    };
+    let context_diff = context_diff(&pass_a, &pass_b);
+
+    Ok(ArchmapExtractionConsistencyV1 {
+        schema: ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA.to_string(),
+        id: options.id.clone(),
+        scope_manifest_ref,
+        pass_a_refs,
+        pass_b_refs,
+        atom_match_key_spec: "kind | NFC(trim(subject)) | axis | predicate? | object?".to_string(),
+        matched: ArchmapExtractionMatchCountV1 {
+            count: matched_count,
+            rows: matched_rows,
+        },
+        only_in_pass_a,
+        only_in_pass_b,
+        match_rate,
+        context_diff,
+        adjudications: vec![],
+    })
+}
+
+fn load_candidate_packets(
+    paths: &[PathBuf],
+    label: &str,
+) -> Result<Vec<ArchmapCandidatePacketV1>, Box<dyn Error>> {
+    let mut packets = Vec::new();
+    for path in paths {
+        let packet: ArchmapCandidatePacketV1 = serde_json::from_reader(File::open(path)?)?;
+        if let Err(errors) = validate_candidate_packet_v1(&packet) {
+            return Err(format!(
+                "{label} candidate packet {} failed validation: {}",
+                path.display(),
+                errors.join("; ")
+            )
+            .into());
+        }
+        packets.push(packet);
+    }
+    Ok(packets)
+}
+
+fn candidate_atom_index(
+    packets: &[ArchmapCandidatePacketV1],
+) -> BTreeMap<String, Vec<ArchMapAtomV2>> {
+    let mut index: BTreeMap<String, Vec<ArchMapAtomV2>> = BTreeMap::new();
+    for packet in packets {
+        for atom in &packet.candidate_atoms {
+            index
+                .entry(atom_match_key(atom))
+                .or_default()
+                .push(atom.clone());
+        }
+    }
+    index
+}
+
+fn matched_candidates(
+    pass_a_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+    pass_b_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+) -> Vec<ArchmapExtractionMatchedCandidateV1> {
+    let mut rows = Vec::new();
+    for (key, pass_a) in pass_a_atoms {
+        if let Some(pass_b) = pass_b_atoms.get(key) {
+            let matched = pass_a.len().min(pass_b.len());
+            if matched == 0 {
+                continue;
+            }
+            let pass_a_matched = &pass_a[..matched];
+            let pass_b_matched = &pass_b[..matched];
+            let refs = pass_a_matched
+                .iter()
+                .chain(pass_b_matched.iter())
+                .flat_map(|atom| atom.refs.iter().cloned())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect();
+            rows.push(ArchmapExtractionMatchedCandidateV1 {
+                key: key.clone(),
+                pass_a_atom_ids: pass_a_matched.iter().map(|atom| atom.id.clone()).collect(),
+                pass_b_atom_ids: pass_b_matched.iter().map(|atom| atom.id.clone()).collect(),
+                refs,
+            });
+        }
+    }
+    rows
+}
+
+fn only_in_candidates(
+    source_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+    other_atoms: &BTreeMap<String, Vec<ArchMapAtomV2>>,
+) -> Vec<ArchmapExtractionOnlyInCandidateV1> {
+    let mut rows = Vec::new();
+    for (key, atoms) in source_atoms {
+        let matched = other_atoms.get(key).map(Vec::len).unwrap_or(0);
+        for atom in atoms.iter().skip(matched) {
+            rows.push(ArchmapExtractionOnlyInCandidateV1 {
+                key: key.clone(),
+                candidate_atom_id: atom.id.clone(),
+                refs: atom.refs.clone(),
+            });
+        }
+    }
+    rows
+}
+
+fn context_diff(
+    pass_a: &[ArchmapCandidatePacketV1],
+    pass_b: &[ArchmapCandidatePacketV1],
+) -> ArchmapExtractionContextDiffV1 {
+    let pass_a_keys = context_keys(pass_a);
+    let pass_b_keys = context_keys(pass_b);
+    ArchmapExtractionContextDiffV1 {
+        matched: pass_a_keys.intersection(&pass_b_keys).count(),
+        only_in_pass_a: pass_a_keys.difference(&pass_b_keys).cloned().collect(),
+        only_in_pass_b: pass_b_keys.difference(&pass_a_keys).cloned().collect(),
+    }
+}
+
+fn context_keys(packets: &[ArchmapCandidatePacketV1]) -> BTreeSet<String> {
+    let mut keys = BTreeSet::new();
+    for packet in packets {
+        let atom_keys = packet
+            .candidate_atoms
+            .iter()
+            .map(|atom| (atom.id.clone(), atom_match_key(atom)))
+            .collect::<BTreeMap<_, _>>();
+        let context_members = packet
+            .candidate_contexts
+            .iter()
+            .map(|context| {
+                let mut members = context
+                    .atoms
+                    .iter()
+                    .map(|atom_id| {
+                        atom_keys
+                            .get(atom_id)
+                            .cloned()
+                            .unwrap_or_else(|| format!("unresolved-atom:{atom_id}"))
+                    })
+                    .collect::<Vec<_>>();
+                members.sort();
+                (context.id.clone(), members)
+            })
+            .collect::<BTreeMap<_, _>>();
+        let context_restricts = packet
+            .candidate_contexts
+            .iter()
+            .map(|context| (context.id.clone(), context.restricts_to.clone()))
+            .collect::<BTreeMap<_, _>>();
+        let mut memo = BTreeMap::new();
+        for context in &packet.candidate_contexts {
+            keys.insert(resolve_context_key(
+                &context.id,
+                &context_members,
+                &context_restricts,
+                &mut memo,
+                &mut BTreeSet::new(),
+            ));
+        }
+    }
+    keys
+}
+
+fn resolve_context_key(
+    context_id: &str,
+    context_members: &BTreeMap<String, Vec<String>>,
+    context_restricts: &BTreeMap<String, Vec<String>>,
+    memo: &mut BTreeMap<String, String>,
+    stack: &mut BTreeSet<String>,
+) -> String {
+    if let Some(key) = memo.get(context_id) {
+        return key.clone();
+    }
+    if !stack.insert(context_id.to_string()) {
+        return format!("cycle-context:{context_id}");
+    }
+    let members = context_members
+        .get(context_id)
+        .cloned()
+        .unwrap_or_else(|| vec![format!("unresolved-context:{context_id}")]);
+    let mut restricts = context_restricts
+        .get(context_id)
+        .cloned()
+        .unwrap_or_default()
+        .iter()
+        .map(|target| resolve_context_key(target, context_members, context_restricts, memo, stack))
+        .collect::<Vec<_>>();
+    restricts.sort();
+    stack.remove(context_id);
+    let key = format!(
+        "members=[{}]|restrictsTo=[{}]",
+        members.join(","),
+        restricts.join(",")
+    );
+    memo.insert(context_id.to_string(), key.clone());
+    key
+}
+
+fn atom_match_key(atom: &ArchMapAtomV2) -> String {
+    let normalized_subject = atom.subject.trim().nfc().collect::<String>();
+    [
+        atom.kind.as_str(),
+        normalized_subject.as_str(),
+        atom.axis.as_str(),
+        atom.predicate.as_deref().unwrap_or(""),
+        atom.object.as_deref().unwrap_or(""),
+    ]
+    .join("|")
 }
 
 fn reject_non_repo_relative_path(path: &str) -> Result<(), Box<dyn Error>> {
@@ -375,6 +636,14 @@ pub fn validate_candidate_packet_v1(packet: &ArchmapCandidatePacketV1) -> Result
     }
     for (index, atom) in packet.candidate_atoms.iter().enumerate() {
         validate_semantic_atom_object(index, atom, &mut errors);
+        validate_no_diagnostic_shortcut(index, atom, &mut errors);
+        for (ref_index, source_ref) in atom.refs.iter().enumerate() {
+            validate_public_text(
+                &format!("candidateAtoms[{index}].refs[{ref_index}]"),
+                source_ref,
+                &mut errors,
+            );
+        }
     }
     validate_self_review_gate(&packet.self_review, &mut errors);
     validation_result(errors)
@@ -476,6 +745,71 @@ fn validate_semantic_atom_object(index: usize, atom: &ArchMapAtomV2, errors: &mu
             index
         ));
     }
+}
+
+fn validate_no_diagnostic_shortcut(index: usize, atom: &ArchMapAtomV2, errors: &mut Vec<String>) {
+    if let Some(token) = diagnostic_shortcut_token(&atom.id) {
+        errors.push(format!(
+            "candidateAtoms[{index}].id must not pre-author diagnostic conclusion token {token}"
+        ));
+    }
+    if let Some(predicate) = atom.predicate.as_deref() {
+        if let Some(token) = diagnostic_shortcut_token(predicate) {
+            errors.push(format!(
+                "candidateAtoms[{index}].predicate must not pre-author diagnostic conclusion token {token}"
+            ));
+        }
+    }
+}
+
+fn diagnostic_shortcut_token(value: &str) -> Option<&'static str> {
+    let parts = diagnostic_shortcut_parts(value);
+    parts
+        .iter()
+        .find_map(|part| match part.as_str() {
+            "mismatch" => Some("mismatch"),
+            "obstruction" | "obstructive" => Some("obstruction"),
+            "violation" | "violate" | "violated" | "violates" | "violating" => Some("violation"),
+            "risk" | "risky" => Some("risk"),
+            "debt" => Some("debt"),
+            "unsafe" => Some("unsafe"),
+            "lawful" => Some("lawful"),
+            "nonzero" => Some("nonzero"),
+            "failure" | "fail" | "failed" | "failing" => Some("failure"),
+            _ => None,
+        })
+        .or_else(|| {
+            parts
+                .windows(2)
+                .any(|window| window[0] == "non" && window[1] == "zero")
+                .then_some("nonzero")
+        })
+}
+
+fn diagnostic_shortcut_parts(value: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut previous_was_lower_or_digit = false;
+    for character in value.chars() {
+        if character.is_ascii_alphanumeric() {
+            if character.is_ascii_uppercase() && previous_was_lower_or_digit && !current.is_empty()
+            {
+                parts.push(std::mem::take(&mut current));
+            }
+            current.push(character.to_ascii_lowercase());
+            previous_was_lower_or_digit =
+                character.is_ascii_lowercase() || character.is_ascii_digit();
+        } else {
+            if !current.is_empty() {
+                parts.push(std::mem::take(&mut current));
+            }
+            previous_was_lower_or_digit = false;
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current);
+    }
+    parts
 }
 
 fn validate_candidate_reason(field: &str, reason: &str, errors: &mut Vec<String>) {
@@ -767,7 +1101,10 @@ mod tests {
             pass_a_refs: vec!["packet:a".to_string()],
             pass_b_refs: vec!["packet:b".to_string()],
             atom_match_key_spec: "kind+subject+axis+predicate+object".to_string(),
-            matched: ArchmapExtractionMatchCountV1 { count: 1 },
+            matched: ArchmapExtractionMatchCountV1 {
+                count: 1,
+                rows: vec![],
+            },
             only_in_pass_a: vec![],
             only_in_pass_b: vec![],
             match_rate: 0.5,
