@@ -1588,3 +1588,64 @@ G2 / G3 / G4 audit summary:
   transition record の合成であり、新しい repair calculus、composition、一般 conflict-set calculus までは
   進まない。fail-closed に G4 の下限を採用し、base 35、evidence multiplier 2.0、penalty 10、
   final +60 とする。
+
+## Cycle 29 — Selected conflict-set interface
+
+candidate: `research/ideas/g-sft-conway-01-selected-conflict-set.md`
+candidate_type: `interface`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `conway-obstruction`, `selected-conflict-set`,
+  `repair-transition`, `finite-conflict-table`
+goal_delta: selected reorg/refactor edit shapes について、hard-coded finite conflict tables を
+  explicit selected table-obligation indices と hitting predicates へ factor した。selected hitting は
+  finite-table satisfaction と同値であり、selected repair-transition record existence とも同値である。
+  canonical repairs は selected obligation sets を hit し、missed-conflict edits は hit しない。
+project_value_delta: finite table の conjunction syntax から explicit selected table-obligation vocabulary へ移した。
+  これにより、後続 cycle で membership、refinement、conflict-set morphism を置ける bounded interface ができる。
+  ただし任意 conflict enumeration algorithm や general repair calculus ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  conflict を表として列挙できるが、この cycle は selected conflict indices、hitting predicate、repair-transition
+  existence criterion の接続を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwaySelectedConflictSet.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary conflict-set calculus、conflict-set morphism、transition composition、
+  selector-preserving refinement naturality、refactor-side two-owner obstruction witness は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwaySelectedConflictSet.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgSelectedConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditHitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgHitsSelectedConflictSet_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgRepairTransition_nonempty_iff_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorSelectedConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditHitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorHitsSelectedConflictSet_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorRepairTransition_nonempty_iff_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedConflictSetPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduce。selected finite table の各 conjunct を `ReorgSelectedConflict` /
+  `RefactorSelectedConflict` の finite index に移し、Cycle 26 finite table と Cycle 28
+  repair-transition criterion に接続する点は有用。ただし新しい obstruction receiver、一般 conflict-set
+  calculus、morphism/refinement theorem、enumeration algorithm ではない。G2 は base 30、multiplier 2.0、
+  penalty 10、final +50 を推奨。
+- G3 formalization quality: pass。reorg 側 hitting は `communication -> ownership` なので、通信がない
+  entry は vacuous に hit される。これは actual conflict membership ではなく selected table obligation と
+  読む限り bounded claim として問題ない。focused check、module build、`FormalAGResearch` は通過し、
+  `sorry/admit/unsafe/axiom` は対象 Lean にない。axiom audit は標準 `propext` と support-assignment
+  existence 由来の `Classical.choice` に収まる。
+- G4 score audit: reduce。明示的 carrier と hitting predicate を置いた点は Cycle 28 より少し前進だが、
+  中核は finite table との iff と repair-transition iff への合成であり、conflict enumeration、morphism、
+  refinement naturality、transition composition、一般 conflict-set calculus は未固定。fail-closed に
+  G2 の下限を採用し、base 30、evidence multiplier 2.0、penalty 10、final +50 とする。
