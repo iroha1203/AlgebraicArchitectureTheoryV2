@@ -2105,6 +2105,109 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
 }
 
 #[test]
+fn cli_analyze_v2_cech_surjectivity_witness_requires_edge_coverage() {
+    let out_dir = temp_dir("ag-measurement-cech-surjectivity-coverage");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    let right_context = archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts is array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:right")
+        .expect("right context exists");
+    right_context["restrictsTo"] = json!([]);
+    let bottom_section_value = archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:bottom-cech-section-value")
+        .expect("bottom section value atom exists");
+    bottom_section_value["object"] = json!("section=left-local");
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .extend([
+            json!({
+                "id": "atom:surj-top-left",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:left",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-top-left-duplicate",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:left",
+                "object": "finite-preimage-witness-duplicate",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-left-bottom",
+                "kind": "semantic",
+                "subject": "ctx:left->ctx:bottom",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+        ]);
+    let archmap_path = out_dir.join("archmap_v2_cech_duplicate_surj_witness.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionSurjectivityWitnesses"]
+            .as_array()
+            .expect("restriction witnesses are array")
+            .len(),
+        3,
+        "duplicate witnesses are retained for audit"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionMapsSurjective"]["status"], "not_discharged",
+        "witness count alone must not discharge missing selected edge coverage"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"],
+        false
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_ne!(
+        summary["conclusion"],
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
+    );
+}
+
+#[test]
 fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     let out_dir = temp_dir("ag-measurement-cech-triple-overlap");
     let root = ag_measurement_root();

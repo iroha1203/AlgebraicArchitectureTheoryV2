@@ -6176,9 +6176,17 @@ fn evaluate_cech_obstruction_v1(
     let has_triple_overlap_faces = cover_nerve_face_count > 0;
     let restriction_surjectivity_witnesses =
         restriction_surjectivity_witnesses_v1(normalized, &edges);
+    let selected_restriction_edges = edges
+        .iter()
+        .map(|edge| edge.edge_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let witnessed_restriction_edges = restriction_surjectivity_witnesses
+        .iter()
+        .filter_map(|witness| witness["edgeRef"].as_str())
+        .collect::<BTreeSet<_>>();
     let restriction_surjectivity_checked = !empty_selected_scope
         && !edges.is_empty()
-        && restriction_surjectivity_witnesses.len() == edges.len();
+        && witnessed_restriction_edges == selected_restriction_edges;
     let cover_shape_excludes_gluing_obstruction =
         nerve_is_forest && !has_triple_overlap_faces && restriction_surjectivity_checked;
     let h1_class_nonzero =
