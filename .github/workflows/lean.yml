@@ -17,6 +17,9 @@ jobs:
       - name: Set up Lean
         uses: leanprover/lean-action@v1
 
+      - name: Build AG research library
+        run: lake build FormalAGResearch
+
       - name: Kernel axiom audit
         run: lake env lean Formal/AG/AxiomAudit.lean
 
