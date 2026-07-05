@@ -91,6 +91,17 @@ Issue [#1959](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 AC15 scan status: `rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal/AG Formal/AG.lean`
 と `rg -n "Formal\.Arch|import Formal\.Arch" Formal/AG Formal/AG.lean` は no matches である。
 
+PRD-R AC19 validation status: `Formal/AG/AxiomAudit.lean` is the CI kernel
+axiom audit entrypoint and now includes the PRD-R completion-evidence surface
+through IX-2. The guarded `#print axioms` declarations depend only on the
+standard allowed axioms (`propext`, `Classical.choice`, `Quot.sound`) or a
+strict subset. Source keyword scan
+`rg -n "^\s*(axiom|unsafe)\b|\b(admit|sorry)\b" Formal/AG Formal/AG.lean`
+and `rg -n "native_decide" Formal/AG Formal/AG.lean` are no-match checks for
+the PRD-R body surface. `Formal/AG.lean` imports the body towers and examples
+but not `Formal.AG.Research`; research sandbox files remain outside this PRD-R
+completion audit boundary.
+
 AC 再判定: PRD-R R0 では AC11 / AC13 を `packaged (assumption-relative)` として読む。
 根拠宣言と再判定理由は末尾の「PRD-R R0 AC 再判定」集中表に置く。
 
