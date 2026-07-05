@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.Examples.DerivedPart5
 import Formal.AG.LawAlgebra.FiniteExamples
 
 /-!
