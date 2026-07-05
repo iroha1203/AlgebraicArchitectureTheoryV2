@@ -315,196 +315,6 @@ fn read_json(path: &Path) -> Value {
     serde_json::from_str(&contents).expect("json output parses")
 }
 
-fn write_json(path: &Path, value: &Value) {
-    fs::write(
-        path,
-        serde_json::to_string_pretty(value).expect("json serializes"),
-    )
-    .expect("json fixture writes");
-}
-
-#[test]
-fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
-    let out_dir = temp_dir("archsig-analysis-sft-input");
-    let packet = out_dir.join("archsig-analysis-packet-schema050.json");
-    let estimate = out_dir.join("operation-support-estimate.json");
-    let cone = out_dir.join("forecast-cone.json");
-    write_json(
-        &packet,
-        &serde_json::json!({
-            "schema": "archsig-analysis-packet/v0.5.0",
-            "analysisId": "analysis:test-schema050-handoff",
-            "inputRefs": {
-                "lawPolicy": "law-policy:test",
-                "normalizedArchMap": "normalized-archmap:test",
-                "typedEvaluatorResults": "typed-evaluator-results:test"
-            },
-            "typedEvaluatorResults": [
-                {
-                    "evaluator": "ag.cech-obstruction",
-                    "law": "cech-obstruction",
-                    "status": "blocked",
-                    "supportAtomRefs": ["atom:test"],
-                    "supportMoleculeRefs": [],
-                    "basisRefs": ["basis:test"],
-                    "detailRefs": ["detail:test"]
-                }
-            ],
-            "detailRefs": ["detail:test"],
-            "positiveBoundedConclusions": [],
-            "nonConclusions": [
-                "ArchSig v1 packet is bounded current structural state, not forecast truth"
-            ]
-        }),
-    );
-
-    run_sig0(&[
-        "archsig-analysis-sft-input",
-        "--analysis-packet",
-        packet.to_str().expect("analysis packet path is utf-8"),
-        "--out",
-        estimate.to_str().expect("estimate path is utf-8"),
-    ]);
-    run_sig0(&[
-        "forecast-cone-skeleton",
-        "--operation-support",
-        estimate.to_str().expect("estimate path is utf-8"),
-        "--out",
-        cone.to_str().expect("cone path is utf-8"),
-    ]);
-
-    let estimate_json = read_json(&estimate);
-    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
-    assert_eq!(
-        estimate_json["descriptorRef"]["artifactKind"],
-        "archsig-analysis-packet"
-    );
-    assert!(
-        estimate_json["candidateOperationFamilies"]
-            .as_array()
-            .expect("candidate families are array")
-            .iter()
-            .any(|family| family["supportKind"] == "typed-evaluator-result"),
-        "FieldSig must read typed evaluator results from ArchSig v1 analysis state"
-    );
-    let descriptor_source_refs = estimate_json["descriptorRef"]["sourceRefIds"]
-        .as_array()
-        .expect("descriptor source refs are array");
-    assert!(
-        descriptor_source_refs.iter().any(|source| {
-            source
-                .as_str()
-                .expect("source ref is string")
-                .starts_with("archsigV1Input:lawPolicy:")
-        }) && descriptor_source_refs.iter().any(|source| {
-            source
-                .as_str()
-                .expect("source ref is string")
-                .starts_with("archsigV1SupportAtom:")
-        }),
-        "FieldSig must preserve ArchSig v1 input refs and support refs"
-    );
-    assert!(
-        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
-            .as_array()
-            .expect("measurement boundary refs are array")
-            .iter()
-            .any(|source| {
-                source
-                    .as_str()
-                    .expect("measurement boundary ref is string")
-                    .starts_with("archsigV1EvaluatorStatus:")
-            }),
-        "FieldSig handoff must carry v1 typed evaluator status boundaries"
-    );
-    assert!(
-        estimate_json["evidenceBoundary"]["assumptions"]
-            .as_array()
-            .expect("assumptions are array")
-            .iter()
-            .any(|assumption| {
-                assumption
-                    .as_str()
-                    .expect("assumption is string")
-                    .contains("PR, diff, change-vector")
-            }),
-        "FieldSig handoff must keep PR / diff / change-vector evolution on the FieldSig side"
-    );
-    assert!(
-        estimate_json["knownForbiddenSupport"]
-            .as_array()
-            .expect("forbidden support entries are array")
-            .iter()
-            .any(|entry| entry["operationFamily"] == "raw-archmap-truth-promotion"),
-        "raw ArchMap observation must not be promoted to forecast truth"
-    );
-    assert!(
-        estimate_json["unknownRemainder"]
-            .as_array()
-            .expect("unknown remainder is array")
-            .iter()
-            .any(|entry| {
-                entry["treatment"]
-                    .as_str()
-                    .expect("treatment is string")
-                    .contains("not round to absence, measured zero, or forecast truth")
-            }),
-        "coverage gaps must remain unknown remainder"
-    );
-    assert!(
-        estimate_json["unknownRemainder"]
-            .as_array()
-            .expect("unknown remainder is array")
-            .iter()
-            .any(|entry| {
-                entry["reason"]
-                    .as_str()
-                    .expect("reason is string")
-                    .contains("ArchSig v1 typed evaluator")
-                    && entry["treatment"]
-                        .as_str()
-                        .expect("treatment is string")
-                        .contains("do not round to absence")
-            }),
-        "blocked ArchSig v1 evaluator status must remain unknown remainder"
-    );
-
-    let cone_json = read_json(&cone);
-    assert!(
-        cone_json["operationSupportRef"]["sourceRefIds"]
-            .as_array()
-            .expect("source refs are array")
-            .iter()
-            .any(|source| {
-                source
-                    .as_str()
-                    .expect("source ref is string")
-                    .starts_with("source:archsig-analysis-packet:")
-            }),
-        "forecast cone must carry the ArchSig analysis packet boundary forward"
-    );
-
-    let rejected = run_sig0_output(&[
-        "archsig-analysis-sft-input",
-        "--analysis-packet",
-        fixture_root()
-            .join("archmap.json")
-            .to_str()
-            .expect("archmap path is utf-8"),
-        "--out",
-        out_dir
-            .join("rejected.json")
-            .to_str()
-            .expect("rejected path is utf-8"),
-    ]);
-    assert!(!rejected.status.success());
-    assert!(
-        String::from_utf8_lossy(&rejected.stderr)
-            .contains("requires archsig-analysis-packet/v0.5.0"),
-        "raw ArchMap input must be rejected by the ArchSig analysis handoff command"
-    );
-}
-
 #[test]
 fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
     let out_dir = temp_dir("archsig-measurement-sft-input");
@@ -873,25 +683,50 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         "raw ArchMap input must be rejected by the measurement-packet handoff"
     );
 
-    let both = run_sig0_output(&[
+    let retired_packet = out_dir.join("retired-packet.json");
+    let retired_schema = ["archsig", "analysis", "packet/v0.5.0"].join("-");
+    fs::write(
+        &retired_packet,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schema": retired_schema
+        }))
+        .expect("retired packet serializes"),
+    )
+    .expect("retired packet fixture writes");
+    let retired_rejected = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
-        schema_only
+        retired_packet
             .to_str()
-            .expect("measurement packet path is utf-8"),
-        "--analysis-packet",
-        schema_only.to_str().expect("analysis packet path is utf-8"),
+            .expect("retired packet path is utf-8"),
         "--out",
         out_dir
-            .join("both.json")
+            .join("retired-rejected.json")
             .to_str()
-            .expect("both path is utf-8"),
+            .expect("retired rejection path is utf-8"),
     ]);
-    assert!(!both.status.success());
+    assert!(!retired_rejected.status.success());
     assert!(
-        String::from_utf8_lossy(&both.stderr)
-            .contains("--measurement-packet and --analysis-packet are mutually exclusive"),
-        "handoff inputs must be explicit and mutually exclusive"
+        String::from_utf8_lossy(&retired_rejected.stderr)
+            .contains("requires archsig-measurement-packet/v0.5.0"),
+        "retired packet schema must be rejected by the measurement-packet handoff"
+    );
+
+    let legacy_flag = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        &["--analysis", "packet"].join("-"),
+        schema_only.to_str().expect("legacy packet path is utf-8"),
+        "--out",
+        out_dir
+            .join(["legacy", "analysis", "packet.json"].join("-"))
+            .to_str()
+            .expect("legacy output path is utf-8"),
+    ]);
+    assert!(!legacy_flag.status.success());
+    assert!(
+        String::from_utf8_lossy(&legacy_flag.stderr).contains("unexpected argument")
+            || String::from_utf8_lossy(&legacy_flag.stderr).contains("unrecognized option"),
+        "legacy handoff flag must be rejected as an unknown argument"
     );
 
     let valid_measurement_packet = serde_json::json!({
@@ -1018,167 +853,6 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         String::from_utf8_lossy(&missing_evidence.stderr)
             .contains("requires certRef or matching computed invariant evidence"),
         "measurement-packet handoff must reject measured verdicts without evidence linkage"
-    );
-}
-
-#[test]
-fn cli_projects_archsig_v1_packet_refs_and_schema_compatibility() {
-    let out_dir = temp_dir("archsig-schema050-analysis-sft-input");
-    let packet = out_dir.join("archsig-analysis-packet-schema050.json");
-    let estimate = out_dir.join("operation-support-estimate.json");
-    let compatibility = out_dir.join("schema-compatibility-report.json");
-    let packet_json = serde_json::json!({
-        "schema": "archsig-analysis-packet/v0.5.0",
-        "analysisId": "analysis:test-schema050-handoff",
-        "inputRefs": {
-            "normalizedArchMap": "normalized-archmap.json",
-            "lawPolicy": "law-policy.json",
-            "typedEvaluatorResults": "typed-evaluator-results.json"
-        },
-        "typedEvaluatorResults": [
-            {
-                "evaluator": "state-effect-law",
-                "law": "law:state-effect",
-                "status": "measuredViolation",
-                "supportAtomRefs": ["atom:state"],
-                "supportMoleculeRefs": ["molecule:state-effect"],
-                "basisRefs": ["basis:state-effect"],
-                "detailRefs": ["/typedEvaluatorResults/0"]
-            }
-        ],
-        "generatedPacketRefs": {
-            "architectureSpectrumReport": "/architectureSpectrumReport",
-            "architectureHomotopyReport": "/architectureHomotopyReport",
-            "structuralReadingReviewSurface": "/structuralReadingReviewSurface",
-            "spectralAnalysisReadings": "/spectralAnalysisReadings",
-            "homotopyHolonomyReadings": "/homotopyHolonomyReadings"
-        },
-        "architectureSpectrumReport": {
-            "schema": "architecture-spectrum-report/v0.5.0",
-            "reportId": "architecture-spectrum-report:test"
-        },
-        "spectralAnalysisReadings": [
-            {
-                "spectralReadingId": "spectral-analysis:test",
-                "measurementStatus": "measuredNonzero"
-            }
-        ],
-        "architectureHomotopyReport": {
-            "schema": "architecture-homotopy-report/v0.5.0",
-            "reportId": "architecture-homotopy-report:test"
-        },
-        "homotopyHolonomyReadings": [
-            {
-                "holonomyReadingId": "homotopy-holonomy:test",
-                "holonomyStatus": "nonzeroHolonomy"
-            }
-        ],
-        "homotopyDistanceReadings": [
-            {
-                "homotopyDistanceReadingId": "homotopy-distance:test",
-                "measurementStatus": "measuredNonzero"
-            }
-        ],
-        "representationMetricReadings": [
-            {
-                "readingId": "representation-metric:test",
-                "measurementStatus": "measuredNonzero"
-            }
-        ],
-        "structuralReadingReviewSurface": {
-            "schema": "structural-reading-review-surface/v0.5.0",
-            "surfaceId": "structural-reading-review-surface:test",
-            "connectedReadingRefs": [
-                "/representationMetricReadings/0",
-                "/homotopyHolonomyReadings/0"
-            ]
-        },
-        "positiveBoundedConclusions": [
-            "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
-        ],
-        "detailRefs": ["/typedEvaluatorResults/0"],
-        "nonConclusions": [
-            "ArchSig v1 packet is a computation artifact, not a Lean proof object."
-        ]
-    });
-    fs::write(
-        &packet,
-        serde_json::to_string_pretty(&packet_json).expect("v1 packet serializes"),
-    )
-    .expect("v1 packet fixture is written");
-
-    run_sig0(&[
-        "archsig-analysis-sft-input",
-        "--analysis-packet",
-        packet.to_str().expect("analysis packet path is utf-8"),
-        "--out",
-        estimate.to_str().expect("estimate path is utf-8"),
-    ]);
-    run_sig0(&[
-        "schema-compatibility",
-        "--before",
-        packet.to_str().expect("before packet path is utf-8"),
-        "--after",
-        packet.to_str().expect("after packet path is utf-8"),
-        "--out",
-        compatibility.to_str().expect("compatibility path is utf-8"),
-    ]);
-
-    let estimate_json = read_json(&estimate);
-    let descriptor_source_refs = estimate_json["descriptorRef"]["sourceRefIds"]
-        .as_array()
-        .expect("descriptor source refs are array");
-    assert!(
-        descriptor_source_refs
-            .iter()
-            .any(|source| source == "archsigV1PacketRef:architectureSpectrumReport:/architectureSpectrumReport")
-            && descriptor_source_refs
-                .iter()
-                .any(|source| source == "archsigV1ArchitectureHomotopyReport:architecture-homotopy-report:test")
-            && descriptor_source_refs
-                .iter()
-                .any(|source| source == "archsigV1StructuralReadingReviewSurface:structural-reading-review-surface:test"),
-        "FieldSig must preserve v1 spectrum, homotopy, and structural packet refs"
-    );
-    let measurement_refs = estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
-        .as_array()
-        .expect("measurement boundary refs are array");
-    assert!(
-        measurement_refs
-            .iter()
-            .any(|source| source == "archsigV1SpectrumBoundary:spectral-analysis:test")
-            && measurement_refs
-                .iter()
-                .any(|source| source == "archsigV1HomotopyBoundary:homotopy-holonomy:test")
-            && measurement_refs
-                .iter()
-                .any(|source| source
-                    == "archsigV1StructuralBoundary:/representationMetricReadings/0"),
-        "FieldSig must carry v1 spectrum, homotopy, and structural boundaries into the evidence boundary"
-    );
-    assert!(
-        estimate_json["evidenceBoundary"]["assumptions"]
-            .as_array()
-            .expect("assumptions are array")
-            .iter()
-            .any(|assumption| {
-                assumption
-                    .as_str()
-                    .expect("assumption is string")
-                    .contains("PR, diff, change-vector")
-            }),
-        "FieldSig must keep evolution analysis on the FieldSig side"
-    );
-
-    let compatibility_json = read_json(&compatibility);
-    assert_eq!(compatibility_json["summary"]["result"], "pass");
-    assert_eq!(
-        compatibility_json["after"]["artifactId"],
-        "archsig-analysis-packet/v0.5.0"
-    );
-    assert_eq!(
-        compatibility_json["after"]["schemaName"],
-        "archsig-analysis-packet/v0.5.0"
     );
 }
 

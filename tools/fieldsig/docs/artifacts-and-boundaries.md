@@ -26,7 +26,6 @@ non-conclusions を落とさない。
 | Diff report | `signature-diff-report/v0.5.0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air/v0.5.0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | ArchSig measurement packet | `archsig-measurement-packet/v0.5.0` | FieldSig の現行 ArchSig handoff。structural verdict、computed invariants、analytic readings、assumption ledger、non-conclusions を bounded SFT input として読む。 |
-| ArchSig analysis packet | `archsig-analysis-packet/v0.5.0` | Legacy compatibility handoff。typed evaluator / obstruction / signature / repair / structural review refs を bounded SFT input として読むが、v0.4.0 の primary handoff ではない。 |
 | ArchMap validation report | `archmap-validation-report/v0.5.0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report/v0.5.0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report/v0.5.0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
@@ -84,7 +83,7 @@ non-conclusions を落とさない。
 | IntentMap validation report | `intentmap-validation-report/v0.5.0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
 | AlignmentMap | `intent-archmap-alignment/v0.5.0` | IntentMap item と ArchMap item の対応、preserves / forgets、unaligned / unsupported / ambiguous boundary、missing evidence を保持する。 |
 | AlignmentMap validation report | `intent-archmap-alignment-validation-report/v0.5.0` | IntentMap refs と ArchMap refs の dangling reference、alignment kind、measured zero への丸め、non-conclusions を検査する。 |
-| OperationSupportEstimate | `operation-support-estimate/v0.5.0` | descriptor refs、candidate operation families、ArchSig analysis refs、obstruction / signature / repair support refs、coverage gaps、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
+| OperationSupportEstimate | `operation-support-estimate/v0.5.0` | descriptor refs、candidate operation families、ArchSig measurement refs、structural verdict / computed invariant / analytic reading refs、coverage gaps、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
 | OperationSupportEstimate validation report | `operation-support-estimate-validation-report/v0.5.0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
 | ForecastConeSkeleton | `forecast-cone-skeleton/v0.5.0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
 | ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report/v0.5.0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
@@ -105,8 +104,7 @@ non-conclusions を落とさない。
 computed invariants、analytic readings、assumption ledger、non-conclusions は bounded refs /
 unknown remainder として残る。analytic readings や theorem-candidate readings は structural verdict
 へ変換しない。これは certified universal atoms、zero curvature proof、PR diff analysis、
-forecast correctness、future outcome probability ではない。`archsig-analysis-packet/v0.5.0` は
-legacy bounded compatibility input としてのみ読む。
+forecast correctness、future outcome probability ではない。
 `archmap-sft-input` は legacy bounded projection であり、raw ArchMap observation を forecast truth へ
 昇格してはならない。
 

@@ -1,7 +1,6 @@
 {
   "schema": "law-policy/v0.5.0",
   "id": "practical-rust-commerce-fulfillment-policy",
-  "distanceProfileRef": "distance-profile:practical-rust-service@1",
   "measurementProfileRef": "profile:commerce-fulfillment@1",
   "measurementProfiles": [
     {
@@ -26,28 +25,6 @@
     }
   ],
   "policies": [
-    {
-      "pack": "solid",
-      "basis": [
-        "policy-basis:solid"
-      ],
-      "scope": [
-        "tools/archsig/examples/practical-rust-service/sample/src/"
-      ],
-      "severity": "review"
-    },
-    {
-      "law": "domain.no-direct-infra-dependency",
-      "evaluator": "domain.no-direct-infra-dependency",
-      "basis": [
-        "policy-basis:layering"
-      ],
-      "scope": [
-        "tools/archsig/examples/practical-rust-service/sample/src/domain.rs",
-        "tools/archsig/examples/practical-rust-service/sample/src/app.rs"
-      ],
-      "severity": "warning"
-    },
     {
       "law": "ag.cech-obstruction",
       "evaluator": "ag.cech-obstruction",

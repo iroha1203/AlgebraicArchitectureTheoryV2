@@ -1,193 +1,48 @@
 # ArchSig Commands
 
-`archsig` is the ArchMap v1 + LawPolicy v1 analysis tool. The current route is:
-
-```text
-archmap/v0.5.0
-  + law-policy/v0.5.0
-  -> normalized-archmap/v0.5.0
-  -> typed-evaluator-results/v0.5.0
-  -> archsig-architecture-distance/v1
-  -> archsig-analysis-summary/v1
-  -> archsig-atom-viewer-data/v0.5.0
-  -> archsig-run-manifest/v0.5.0
-```
-
-ArchSig no longer exposes pre-Atom scan, projection, report, or legacy raw-diff
-PR-review commands. Git history is the archive for those workflows. The
-retained `pr-review` command reads ArchMap v1, PR-local ArchMapDelta refs, and
-LawPolicy v1 typed evaluator state. Raw diff is not an ArchSig PR-review input.
-FieldSig owns SFT forecast, IntentMap, operational feedback, governance, and
-calibration commands under `tools/fieldsig`.
-
-## Primary Workflow
+## Analyze
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --out-dir .archsig/analyze
 ```
 
-Use `analyze` in new docs, scripts, and CI.
+`analyze` validates ArchMap and LawPolicy, normalizes the finite-poset-site
+input, emits `archsig-measurement-packet.json`, and writes summary, insight,
+viewer, validation, and manifest artifacts.
 
-The command emits only:
-
-- `archmap-validation.json`
-- `law-policy-validation.json`
-- `normalized-archmap.json`
-- `typed-evaluator-results.json`
-- `architecture-distance.json`
-- `archsig-analysis-validation.json`
-- `archsig-analysis-summary.json`
-- `archsig-atom-viewer-data.json`
-- `archsig-run-manifest.json`
-
-`archsig-analysis-summary.json` is the LLM-readable compact reading surface. It
-is conclusion-first and includes typed evaluator diagnosis, architecture
-distance, `distanceDiagnosis`, action queue, and detail refs. Public summary /
-viewer / LLM wording uses architecture distance naming; raw metadata may retain
-source refs to the AAT mathematics documents.
-`archsig-atom-viewer-data.json` is a bounded visual projection for ArchView. It
-uses deterministic top-N priority selection for atom nodes and molecule groups,
-emits bounded molecule-to-atom edges, limits labels and source refs to count
-plus samples, carries bounded diagnostic distance overlays separately from
-viewer layout distance inputs, and records omitted counts / reasons.
-`archsig-run-manifest.json` records generated and omitted artifacts. For large
-ArchMaps, run `analyze` with `cargo run --release`.
-
-The release bundle includes `archview/archview.html`. The page loads CDN
-Three.js and reads `archsig-atom-viewer-data.json` through same-directory
-default fetch, file picker, or drag-and-drop. It does not read the raw analysis
-packet. Its report pane also reads same-directory
-`archsig-analysis-summary.json` and `archsig-run-manifest.json` when available
-to show the verdict, top findings, action queue, coverage boundaries, distance
-diagnosis, validation status, generated / omitted artifacts, and relative links
-to raw packet / detail-index files when raw artifacts were emitted.
-
-`--strict-distance` requires LawPolicy v1 to select a known `distanceProfileRef`
-and rejects blocked / unknown / unmeasured typed or architecture distance
-readings. LawPolicy v1 selects the profile ref only; it does not embed distance
-weights, operation costs, or a distance DSL.
-
-Raw evidence artifacts are opt-in:
+## Compare
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
-  --out-dir .archsig/analyze \
-  --emit-raw-artifacts
+cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
+  --base-run .archsig/base \
+  --head-run .archsig/head \
+  --out-dir .archsig/compare
 ```
 
-This additionally writes:
+`compare` reads two current run directories and emits
+`archsig-comparison-report.json` plus `archmap-diff.json`.
 
-- `archsig-analysis-packet.json`
-- `archsig-analysis-detail-index.json`
-- `llm-interpretation-packet.json`
-
-`archsig-analysis-packet.json` is a raw evidence artifact for deeper lookup.
-Current v1 does not expose a separate `analysis-summary` command; `analyze`
-always writes `archsig-analysis-summary.json` directly. Read
-`conclusion`, `typedEvaluatorDiagnosis`, `architectureDistance`,
-`distanceDiagnosis`, and `actionQueue` first. The summary does not replace the
-raw packet or validation reports.
-
-## Lightweight PR Review
+## Gate
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
-  --base-archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --after-archmap tools/archsig/tests/fixtures/archmap_v1/archmap_violation.json \
-  --path-archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --delta-archmap tools/archsig/tests/fixtures/pr_review/archmap_delta_v1_refs.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
-  --out .archsig/pr-review/archsig-pr-review.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+  --packet .archsig/head/archsig-measurement-packet.json \
+  --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
+  --comparison .archsig/compare/archsig-comparison-report.json \
+  --out .archsig/gate/archsig-gate-report.json
 ```
 
-`pr-review` is the CI-friendly ArchSig surface for small PR review. Its
-canonical inputs are base `archmap/v0.5.0`, optional head `archmap/v0.5.0`, optional
-intermediate `archmap/v0.5.0` snapshots, PR-local `archmap-delta/v0.5.0`, and required
-`law-policy/v0.5.0`. No LawPolicy, no ArchSig judgement. `pr-review` does not
-accept raw diff, `archmap-commit/v0.5.0`, or base/head
-`archsig-analysis-packet/v0.5.0` artifacts as inputs. The command internally
-generates report-local v1 analysis snapshots and emits `v1Analysis`,
-`deltaPacketRefIntersections`, and `prStructuralDiagnosis`: changed delta refs
-matched to typed / derived packet refs, endpoint architecture-distance
-movement, total path movement over supplied snapshots, hidden-excursion
-boundary, safe-change budget, and structural reading refs. Optional
-`--path-archmap` inputs may be supplied repeatedly to bound movement across
-intermediate ArchMap snapshots; without them, hidden-excursion absence remains
-blocked. Blocked / unknown / unmeasured support limits safe-change budget
-instead of becoming measured zero. The report remains a bounded PR review
-surface, not FieldSig longitudinal evolution analysis, merge approval, repair
-safety, or incident forecast.
-
-## Sharded ArchMap Authoring
-
-Large ArchMaps may be drafted in a sharded authoring layout documented in
-`tools/archsig/docs/sharded-archmap.md`:
-
-```text
-.archsig/archmap/
-  manifest.json
-  slices/
-    authority.archmap-slice.json
-    state.archmap-slice.json
-    effects.archmap-slice.json
-    providers.archmap-slice.json
-    runtime.archmap-slice.json
-```
-
-The manifest schema is historical `archmap-shard-manifest/v0.5.0`. This is an
-authoring-side layout, not a current analysis input. The primary sharding model
-is horizontal: each slice is a bounded observation slice over a repository
-surface or sub-agent assignment. Bundle/export must produce a monolithic
-`archmap/v0.5.0` file before running:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input .archsig/archmap/archmap.json \
-  --out .archsig/analyze/archmap-validation.json
-```
-
-Current commands intentionally keep the analysis contract monolithic. A future
-bundle/export command should validate slice paths, duplicate ids, dangling
-cross-slice refs, required/optional slice policy, allowed cross-slice
-references, and source refs before writing the exported ArchMap.
-
-## Validation Commands
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --out .archsig/analyze/archmap-validation.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
-  --input tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
-  --out .archsig/analyze/law-policy-validation.json
-```
-
-`archmap` validates `archmap/v0.5.0`. `law-policy` validates `law-policy/v0.5.0`.
-Standalone packet-builder, standalone summary, codebase-inspection, and
-archmap-generation commands are removed runtime surfaces; use `analyze` and
-the ArchSig skills instead.
+`gate` applies policy to the current measurement packet and optional comparison
+report. Use this command for CI pass/fail decisions.
 
 ## Schema Catalog
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
-  --out .archsig/schema/schema-version-catalog.json
+  --out .archsig/schema-version-catalog.json
 ```
 
-The catalog contains only current ArchSig artifacts:
-
-- `archmap`
-- `archmap-validation-report`
-- `law-policy`
-- `law-policy-validation-report`
-- `archsig-analysis-packet`
-- `archsig-analysis-packet-validation-report`
-
-Removed commands are not documented as active workflow variants. The CLI
-allowlist is fixed by the tests and by `archsig --help`.
+The catalog lists current ArchSig v0.5.0 artifact contracts.

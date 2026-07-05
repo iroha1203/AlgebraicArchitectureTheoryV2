@@ -73,7 +73,6 @@ pub use architecture_policy::{
 pub use archmap::{
     ArchMapSourceInventoryInput, build_air_from_archmap,
     build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_archsig_analysis_packet,
     build_operation_support_estimate_from_archsig_measurement_packet, validate_archmap_report,
 };
 pub use artifact_descriptor::{

@@ -1,0 +1,14 @@
+{
+  "schema": "archsig-measurement-packet/v0.5.0",
+  "packetId": "archsig-measurement-fixture",
+  "profile": {
+    "profileId": "profile:fieldsig-fixture"
+  },
+  "structuralVerdict": [],
+  "computedInvariants": [],
+  "analyticReadings": [],
+  "assumptions": [],
+  "nonConclusions": [
+    "FieldSig fixture reads ArchSig measurement state as bounded input only."
+  ]
+}

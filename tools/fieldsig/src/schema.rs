@@ -15,7 +15,6 @@ pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-repor
 pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap/v0.5.0";
 pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory/v0.5.0";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.0";
-pub const ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA: &str = "archsig-analysis-packet/v0.5.0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report/v0.5.0";
 pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness/v0.5.0";
 pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger/v0.5.0";
