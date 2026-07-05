@@ -2,6 +2,7 @@
 
 mod ag_measurement;
 mod archmap;
+pub mod authoring;
 mod compare;
 mod gate;
 mod law_policy;
@@ -19,6 +20,13 @@ pub use ag_measurement::{
 };
 pub use archmap::{
     compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
+};
+pub use authoring::{
+    ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,
+    ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
+    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ScopeManifestOptions, build_scope_manifest_v1,
+    validate_candidate_packet_v1, validate_coverage_ledger_v1, validate_extraction_consistency_v1,
+    validate_scope_manifest_v1,
 };
 pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
@@ -51,17 +59,23 @@ pub use schema::{
     ArchSigAtomViewerTruncationPolicyV0, ArchSigAtomViewerVisualV0, ArchSigMeasurementPacketV1,
     ArchSigRunManifestRawArtifactPathsV0, ArchSigRunManifestV0,
     ArchSigRunManifestValidationReportPathsV0, ArchSigRunManifestValidationResultSummaryV0,
-    BoundaryStatementV1, ExpandedLawPolicyEntryV1, LAW_POLICY_V1_SCHEMA,
-    LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawEvaluatorManifestV1, LawEvaluatorRegistryV1,
-    LawPolicyBasisLedgerEntryV1, LawPolicyBasisManifestV1, LawPolicyDocumentV1, LawPolicyEntryV1,
-    LawPolicyPackEntryV1, LawPolicyPackManifestV1, LawPolicyValidationInputV1,
-    LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
-    MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
-    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
-    RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1, RepairPlanPrimitiveV1,
-    RepairPlanProjectionRowV1, RepairPlanResidualV1, RepairPlanSemanticProjectionV1,
-    RepairPlanSupportV1, RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaVersionCatalogV0,
+    ArchmapCandidatePacketSelfReviewV1, ArchmapCandidatePacketSurveyRowV1,
+    ArchmapCandidatePacketV1, ArchmapCoverageLedgerRowV1, ArchmapCoverageLedgerV1,
+    ArchmapExtractionAdjudicationV1, ArchmapExtractionConsistencyV1,
+    ArchmapExtractionContextDiffV1, ArchmapExtractionMatchCountV1,
+    ArchmapExtractionOnlyInCandidateV1, ArchmapScopeManifestExclusionV1,
+    ArchmapScopeManifestRepositoryV1, ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1,
+    ArchmapScopeManifestWorklistEntryV1, BoundaryStatementV1, ExpandedLawPolicyEntryV1,
+    LAW_POLICY_V1_SCHEMA, LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawEvaluatorManifestV1,
+    LawEvaluatorRegistryV1, LawPolicyBasisLedgerEntryV1, LawPolicyBasisManifestV1,
+    LawPolicyDocumentV1, LawPolicyEntryV1, LawPolicyPackEntryV1, LawPolicyPackManifestV1,
+    LawPolicyValidationInputV1, LawPolicyValidationReportV1, LawPolicyValidationSummaryV1,
+    MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileFiniteBoundsV1, MeasurementProfileV1,
+    MeasurementProfileWitnessV1, NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2,
+    NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
+    RepairPlanComplexV1, RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1,
+    RepairPlanPrimitiveV1, RepairPlanProjectionRowV1, RepairPlanResidualV1,
+    RepairPlanSemanticProjectionV1, RepairPlanSupportV1, RepairPlanTripleOverlapV1,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;

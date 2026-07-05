@@ -122,6 +122,192 @@ pub struct ArchMapSource {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapScopeManifestV1 {
+    pub schema: String,
+    pub id: String,
+    pub repository: ArchmapScopeManifestRepositoryV1,
+    pub scope_spec: ArchmapScopeManifestScopeSpecV1,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub baseline_ref: Option<String>,
+    pub worklist: Vec<ArchmapScopeManifestWorklistEntryV1>,
+    #[serde(default)]
+    pub exclusions: Vec<ArchmapScopeManifestExclusionV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapScopeManifestRepositoryV1 {
+    pub root: String,
+    pub revision: Option<String>,
+    pub dirty: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapScopeManifestScopeSpecV1 {
+    pub include_globs: Vec<String>,
+    pub exclude_globs: Vec<String>,
+    #[serde(default)]
+    pub added_evidence: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requested_scope: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub approved_by: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapScopeManifestWorklistEntryV1 {
+    pub order: usize,
+    pub source_id: String,
+    pub path: String,
+    pub kind: String,
+    pub content_hash: String,
+    pub size_bytes: u64,
+    pub author_added: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapScopeManifestExclusionV1 {
+    pub path: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapCandidatePacketV1 {
+    pub schema: String,
+    pub id: String,
+    pub scope_manifest_ref: String,
+    pub pass_id: String,
+    pub chunk: BTreeMap<String, usize>,
+    #[serde(default)]
+    pub reviewed_sources: Vec<String>,
+    #[serde(default)]
+    pub candidate_sources: BTreeMap<String, ArchMapSource>,
+    #[serde(default)]
+    pub candidate_atoms: Vec<ArchMapAtomV2>,
+    #[serde(default)]
+    pub candidate_contexts: Vec<ArchMapContextV2>,
+    #[serde(default)]
+    pub candidate_covers: Vec<ArchMapCoverV2>,
+    #[serde(default)]
+    pub survey_rows: Vec<ArchmapCandidatePacketSurveyRowV1>,
+    #[serde(default)]
+    pub private_unavailable_notes: Vec<String>,
+    pub self_review: ArchmapCandidatePacketSelfReviewV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapCandidatePacketSurveyRowV1 {
+    pub source_id: String,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(default)]
+    pub surveyed_kinds: Vec<String>,
+    #[serde(default)]
+    pub candidate_atom_ids: Vec<String>,
+    #[serde(default)]
+    pub notes: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapCandidatePacketSelfReviewV1 {
+    pub not_script_generated: bool,
+    pub not_coarse_when_evidence_was_richer: bool,
+    pub semantic_atoms_have_use_evidence: bool,
+    pub no_diagnostic_shortcut_atoms: bool,
+    pub worklist_chunk_fully_read: bool,
+    pub alias_preserving_semantics: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionConsistencyV1 {
+    pub schema: String,
+    pub id: String,
+    pub scope_manifest_ref: String,
+    pub pass_a_refs: Vec<String>,
+    pub pass_b_refs: Vec<String>,
+    pub atom_match_key_spec: String,
+    pub matched: ArchmapExtractionMatchCountV1,
+    #[serde(default)]
+    pub only_in_pass_a: Vec<ArchmapExtractionOnlyInCandidateV1>,
+    #[serde(default)]
+    pub only_in_pass_b: Vec<ArchmapExtractionOnlyInCandidateV1>,
+    pub match_rate: f64,
+    pub context_diff: ArchmapExtractionContextDiffV1,
+    #[serde(default)]
+    pub adjudications: Vec<ArchmapExtractionAdjudicationV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionMatchCountV1 {
+    pub count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionOnlyInCandidateV1 {
+    pub key: String,
+    pub candidate_atom_id: String,
+    #[serde(default)]
+    pub refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionContextDiffV1 {
+    pub matched: usize,
+    #[serde(default)]
+    pub only_in_pass_a: Vec<String>,
+    #[serde(default)]
+    pub only_in_pass_b: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapExtractionAdjudicationV1 {
+    pub key: String,
+    pub decision: String,
+    pub basis: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapCoverageLedgerV1 {
+    pub schema: String,
+    pub id: String,
+    pub scope_manifest_ref: String,
+    pub archmap_ref: String,
+    #[serde(default)]
+    pub pass_refs: Vec<String>,
+    pub rows: Vec<ArchmapCoverageLedgerRowV1>,
+    pub claim_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArchmapCoverageLedgerRowV1 {
+    pub source_id: String,
+    pub survey_status: String,
+    #[serde(default)]
+    pub passes: Vec<String>,
+    #[serde(default)]
+    pub surveyed_kinds: Vec<String>,
+    #[serde(default)]
+    pub adopted_atom_ids: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapValidationReportV1 {
     #[serde(rename = "schema")]

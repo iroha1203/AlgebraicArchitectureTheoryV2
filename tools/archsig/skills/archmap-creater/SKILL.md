@@ -53,7 +53,7 @@ scope. Do not claim that all possible repository evidence was extracted.
 2. **Scope Manifest**
    - If `archsig scope-manifest` is available, run it to produce
      `<run-dir>/scope-manifest.json`.
-   - Until that CLI exists, create the same `archmap-scope-manifest/v1` shape by
+   - Until that CLI exists, create the same `archmap-scope-manifest/v0.5.0` shape by
      hand from a deterministic file list, repo-relative paths, sha256 hashes, and
      the approved scope spec.
    - Present exclusions to the user or author for approval. Do not start the
@@ -64,7 +64,7 @@ scope. Do not claim that all possible repository evidence was extracted.
 3. **Pass A Survey**
    - Split the worklist into deterministic contiguous chunks, default size 20.
    - Each sub-agent reads every source in its chunk and emits one
-     `archmap-candidate-packet/v1` with a `surveyRows` entry for every worklist
+     `archmap-candidate-packet/v0.5.0` with a `surveyRows` entry for every worklist
      row in the chunk.
    - Survey for components, relations, capabilities, state, effects, authority,
      contracts, semantic use, runtime traces, context boundaries, restriction
@@ -87,7 +87,7 @@ scope. Do not claim that all possible repository evidence was extracted.
 5. **Consistency**
    - If `archsig extraction-diff` is available, run it over Pass A and Pass B
      candidate packets.
-   - Until that CLI exists, build `archmap-extraction-consistency/v1` by applying
+   - Until that CLI exists, build `archmap-extraction-consistency/v0.5.0` by applying
      `atom-match-key@1` and the context key rules from the references. Mark this
      as hand-authored consistency in the run notes.
    - For every `onlyInPassA` or `onlyInPassB` entry, the integrator rereads the
@@ -106,7 +106,7 @@ scope. Do not claim that all possible repository evidence was extracted.
    - Choose contexts, `restrictsTo`, and covers using `mapping-guide.md`.
 
 7. **Coverage Ledger**
-   - Generate `archmap-coverage-ledger/v1` from candidate packet survey rows.
+   - Generate `archmap-coverage-ledger/v0.5.0` from candidate packet survey rows.
    - Ledger rows must span the worklist one-to-one. Extra rows and missing rows
      are errors.
    - Use only procedural survey reasons in ledger rows: `private`, `binary`,

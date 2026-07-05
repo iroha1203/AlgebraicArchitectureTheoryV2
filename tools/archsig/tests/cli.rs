@@ -25,6 +25,278 @@ fn ag_measurement_root() -> PathBuf {
 }
 
 #[test]
+fn cli_scope_manifest_is_deterministic_and_records_author_evidence() {
+    let repo = temp_dir("scope-manifest-repo");
+    fs::create_dir_all(repo.join("src/generated")).expect("generated dir");
+    fs::create_dir_all(repo.join("docs")).expect("docs dir");
+    fs::create_dir_all(repo.join("traces")).expect("traces dir");
+    fs::write(repo.join("src/b.rs"), "pub fn b() {}\n").expect("write b");
+    fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
+    fs::write(repo.join("src/generated/skip.rs"), "pub fn skip() {}\n").expect("write skip");
+    fs::write(repo.join("docs/arch.md"), "# Architecture\n").expect("write doc");
+    fs::write(repo.join("traces/happy.json"), "{\"ok\":true}\n").expect("write trace");
+
+    let first = repo.join("scope-first.json");
+    let second = repo.join("scope-second.json");
+    let common_args = vec![
+        "scope-manifest".to_string(),
+        "--repo-root".to_string(),
+        repo.to_string_lossy().to_string(),
+        "--include".to_string(),
+        "src/**/*.rs".to_string(),
+        "--include".to_string(),
+        "docs/**/*.md".to_string(),
+        "--exclude".to_string(),
+        "src/generated/**".to_string(),
+        "--add-evidence".to_string(),
+        "trace:happy=traces/happy.json".to_string(),
+        "--id".to_string(),
+        "scope:test".to_string(),
+        "--requested-scope".to_string(),
+        "scope manifest test".to_string(),
+        "--approved-by".to_string(),
+        "test".to_string(),
+        "--revision-override".to_string(),
+        "git:0000000000000000000000000000000000000000".to_string(),
+        "--dirty-override".to_string(),
+        "false".to_string(),
+    ];
+
+    let mut first_args = common_args.clone();
+    first_args.extend(["--out".to_string(), first.to_string_lossy().to_string()]);
+    let first_refs = first_args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&first_refs);
+
+    let mut second_args = common_args;
+    second_args.extend(["--out".to_string(), second.to_string_lossy().to_string()]);
+    let second_refs = second_args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&second_refs);
+
+    let first_json = read_json(&first);
+    let second_json = read_json(&second);
+    assert_eq!(first_json, second_json);
+    assert_eq!(
+        fs::read(&first).expect("first manifest bytes"),
+        fs::read(&second).expect("second manifest bytes"),
+        "scope-manifest must be byte-identical across repeated deterministic runs"
+    );
+    assert_eq!(first_json["schema"], "archmap-scope-manifest/v0.5.0");
+    assert_eq!(
+        first_json["repository"]["revision"],
+        "git:0000000000000000000000000000000000000000"
+    );
+    assert_eq!(first_json["repository"]["dirty"], false);
+    assert_eq!(
+        first_json["exclusions"][0],
+        json!({ "path": "src/generated/**", "reason": "user-excluded" })
+    );
+    let worklist = first_json["worklist"].as_array().expect("worklist array");
+    let paths = worklist
+        .iter()
+        .map(|entry| entry["path"].as_str().expect("path").to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        paths,
+        vec![
+            "docs/arch.md".to_string(),
+            "src/a.rs".to_string(),
+            "src/b.rs".to_string(),
+            "traces/happy.json".to_string()
+        ]
+    );
+    assert_eq!(worklist[3]["sourceId"], "trace:happy");
+    assert_eq!(worklist[3]["authorAdded"], true);
+    assert!(worklist.iter().all(|entry| {
+        entry["contentHash"]
+            .as_str()
+            .expect("hash")
+            .starts_with("sha256:")
+    }));
+}
+
+#[test]
+fn cli_scope_manifest_baseline_outputs_changed_sources_only() {
+    let repo = temp_dir("scope-manifest-baseline-repo");
+    fs::create_dir_all(repo.join("src")).expect("src dir");
+    fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
+    fs::write(repo.join("src/b.rs"), "pub fn b() {}\n").expect("write b");
+
+    let baseline = repo.join("baseline.json");
+    let baseline_args = vec![
+        "scope-manifest".to_string(),
+        "--repo-root".to_string(),
+        repo.to_string_lossy().to_string(),
+        "--include".to_string(),
+        "src/**/*.rs".to_string(),
+        "--id".to_string(),
+        "scope:baseline".to_string(),
+        "--revision-override".to_string(),
+        "git:baseline".to_string(),
+        "--dirty-override".to_string(),
+        "false".to_string(),
+        "--out".to_string(),
+        baseline.to_string_lossy().to_string(),
+    ];
+    let baseline_refs = baseline_args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&baseline_refs);
+
+    fs::write(repo.join("src/b.rs"), "pub fn b_changed() {}\n").expect("modify b");
+    let incremental = repo.join("incremental.json");
+    let incremental_args = vec![
+        "scope-manifest".to_string(),
+        "--repo-root".to_string(),
+        repo.to_string_lossy().to_string(),
+        "--include".to_string(),
+        "src/**/*.rs".to_string(),
+        "--baseline".to_string(),
+        baseline.to_string_lossy().to_string(),
+        "--id".to_string(),
+        "scope:incremental".to_string(),
+        "--revision-override".to_string(),
+        "git:incremental".to_string(),
+        "--dirty-override".to_string(),
+        "false".to_string(),
+        "--out".to_string(),
+        incremental.to_string_lossy().to_string(),
+    ];
+    let incremental_refs = incremental_args
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    run_sig0(&incremental_refs);
+
+    let incremental_json = read_json(&incremental);
+    assert_eq!(incremental_json["baselineRef"], "scope:baseline");
+    let worklist = incremental_json["worklist"]
+        .as_array()
+        .expect("worklist array");
+    assert_eq!(worklist.len(), 1);
+    assert_eq!(worklist[0]["order"], 1);
+    assert_eq!(worklist[0]["path"], "src/b.rs");
+}
+
+#[test]
+fn cli_scope_manifest_rejects_author_evidence_outside_repo() {
+    let repo = temp_dir("scope-manifest-outside-repo");
+    fs::create_dir_all(repo.join("src")).expect("src dir");
+    fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
+    let outside = temp_dir("scope-manifest-outside-file");
+    fs::write(outside.join("trace.json"), "{\"ok\":true}\n").expect("write outside trace");
+    let outside_spec = format!(
+        "trace:outside={}",
+        outside.join("trace.json").to_string_lossy()
+    );
+    let report = repo.join("scope.json");
+    run_sig0_expect_code(
+        &[
+            "scope-manifest",
+            "--repo-root",
+            repo.to_str().expect("path is utf-8"),
+            "--include",
+            "src/**/*.rs",
+            "--add-evidence",
+            &outside_spec,
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    run_sig0_expect_code(
+        &[
+            "scope-manifest",
+            "--repo-root",
+            repo.to_str().expect("path is utf-8"),
+            "--include",
+            "src/**/*.rs",
+            "--add-evidence",
+            "trace:outside=../outside-trace.json",
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_scope_manifest_rejects_duplicate_author_evidence_path() {
+    let repo = temp_dir("scope-manifest-duplicate-evidence");
+    fs::create_dir_all(repo.join("traces")).expect("traces dir");
+    fs::write(repo.join("traces/happy.json"), "{\"ok\":true}\n").expect("write trace");
+    let report = repo.join("scope.json");
+
+    run_sig0_expect_code(
+        &[
+            "scope-manifest",
+            "--repo-root",
+            repo.to_str().expect("path is utf-8"),
+            "--include",
+            "traces/*.json",
+            "--add-evidence",
+            "trace:happy=traces/happy.json",
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_scope_manifest_rejects_non_repo_relative_globs() {
+    let repo = temp_dir("scope-manifest-bad-globs");
+    fs::create_dir_all(repo.join("src")).expect("src dir");
+    fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
+    let report = repo.join("scope.json");
+    let absolute_glob = format!("{}/src/**/*.rs", repo.to_string_lossy());
+
+    run_sig0_expect_code(
+        &[
+            "scope-manifest",
+            "--repo-root",
+            repo.to_str().expect("path is utf-8"),
+            "--include",
+            &absolute_glob,
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    run_sig0_expect_code(
+        &[
+            "scope-manifest",
+            "--repo-root",
+            repo.to_str().expect("path is utf-8"),
+            "--include",
+            "../src/**/*.rs",
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_scope_manifest_records_unknown_git_state_as_null() {
+    let repo = temp_dir("scope-manifest-non-git-repo");
+    fs::create_dir_all(repo.join("src")).expect("src dir");
+    fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
+    let report = repo.join("scope.json");
+
+    run_sig0(&[
+        "scope-manifest",
+        "--repo-root",
+        repo.to_str().expect("path is utf-8"),
+        "--include",
+        "src/**/*.rs",
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let manifest = read_json(&report);
+    assert!(manifest["repository"]["revision"].is_null());
+    assert!(manifest["repository"]["dirty"].is_null());
+}
+
+#[test]
 fn cli_validates_archmap_v2_finite_poset_site_contract() {
     let out_dir = temp_dir("archmap-schema050-validation");
     let root = ag_measurement_root();
@@ -9503,6 +9775,10 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         vec![
             "archmap-current",
             "aat-atom-vocabulary/v0.5.0",
+            "archmap-scope-manifest/v0.5.0",
+            "archmap-candidate-packet/v0.5.0",
+            "archmap-extraction-consistency/v0.5.0",
+            "archmap-coverage-ledger/v0.5.0",
             "law-policy/v0.5.0",
             "measurement-profile/v0.5.0",
             "archsig-repair-plan/v0.5.0",
@@ -9520,11 +9796,14 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     for entry in artifacts {
         let artifact_id = entry["artifactId"].as_str().expect("artifact id");
-        assert_eq!(
-            entry["artifactRole"].as_str(),
-            Some("primary"),
-            "unexpected artifact role for {artifact_id}"
-        );
+        let expected_role = match artifact_id {
+            "archmap-scope-manifest/v0.5.0"
+            | "archmap-candidate-packet/v0.5.0"
+            | "archmap-extraction-consistency/v0.5.0"
+            | "archmap-coverage-ledger/v0.5.0" => "authoring",
+            _ => "primary",
+        };
+        assert_eq!(entry["artifactRole"].as_str(), Some(expected_role));
     }
     assert!(
         artifacts.iter().any(|entry| {
