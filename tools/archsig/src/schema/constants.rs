@@ -5,6 +5,7 @@ pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v0.5.0";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report/v0.5.0";
 pub const NORMALIZED_ARCHMAP_V2_SCHEMA: &str = "normalized-archmap/v0.5.0";
 pub const MEASUREMENT_PROFILE_V1_SCHEMA: &str = "measurement-profile/v0.5.0";
+pub const ARCHSIG_REPAIR_PLAN_V1_SCHEMA: &str = "archsig-repair-plan/v0.5.0";
 pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-statement/v0.5.0";
 pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v0.5.0";
 pub const ARCHSIG_GATE_POLICY_V1_SCHEMA: &str = "archsig-gate-policy/v0.5.0";

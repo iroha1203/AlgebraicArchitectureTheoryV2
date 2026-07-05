@@ -114,6 +114,34 @@
       }
     },
     {
+      "artifactId": "archsig-repair-plan/v0.5.0",
+      "artifactName": "ArchSig RepairPlan v1 SAGA supplied input artifact",
+      "schemaName": "archsig-repair-plan/v0.5.0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig v0.5.0 SAGA Stage 1",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd4-lawpolicy-saga"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "RepairPlan v1 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
+          "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
+          "Enumeration completeness is recorded as an author assumption, not mechanically verified."
+        ]
+      }
+    },
+    {
       "artifactId": "law-evaluator-registry/v0.5.0",
       "artifactName": "Law evaluator registry v1",
       "schemaName": "law-evaluator-registry/v0.5.0",

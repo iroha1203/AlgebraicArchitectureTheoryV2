@@ -13,7 +13,43 @@ pub fn ag_evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
         ag_manifest("ag.period-stokes", "ag.period-stokes"),
         ag_period_stokes_audit_manifest(),
         ag_manifest("ag.support-transfer", "ag.support-transfer"),
+        ag_saga_descent_manifest(),
     ]
+}
+
+fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
+    LawEvaluatorManifestV1 {
+        evaluator_id: "ag.saga-descent".to_string(),
+        law_id: "ag.saga-descent".to_string(),
+        required_atom_constructors: Vec::new(),
+        required_predicates: Vec::new(),
+        required_molecule_condition:
+            "archmap/v0.5.0 selected finite cover plus a checked archsig-repair-plan/v0.5.0 artifact"
+                .to_string(),
+        scope_filtering_rule:
+            "selected finite cover from MeasurementProfile and supplied RepairPlan complex"
+                .to_string(),
+        missing_blocker_rule:
+            "missing RepairPlan is not_computed with silence_by_design; invalid RepairPlan fails validation before measurement"
+                .to_string(),
+        pass_criteria:
+            "Stage 1 registers the SAGA descent input contract; concrete boundary-membership verdicts are follow-up work"
+                .to_string(),
+        violation_criteria:
+            "Stage 1 registers the SAGA descent input contract; concrete boundary-membership verdicts are follow-up work"
+                .to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
+        distance_contribution:
+            "SAGA descent rows remain selected-complex relative and never consume conclusion tokens from input"
+                .to_string(),
+        summary_output_refs: vec!["/structuralVerdict".to_string()],
+        detail_output_refs: vec![
+            "/assumptions".to_string(),
+            "/computedInvariants".to_string(),
+            "/boundaryStatements".to_string(),
+        ],
+        negative_fixtures: Vec::new(),
+    }
 }
 
 fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {

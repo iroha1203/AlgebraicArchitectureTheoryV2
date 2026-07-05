@@ -636,6 +636,216 @@ fn cli_law_policy_stage1_reserved_fields_fail_closed_and_basis_ledger_resolves()
 }
 
 #[test]
+fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
+    let out_dir = temp_dir("ag-repair-plan-stage1");
+    let root = ag_measurement_root();
+    let repair_plan_path = root.join("repair_plan_complete_support.json");
+    let valid_report = out_dir.join("repair-plan-valid.json");
+
+    run_sig0(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        repair_plan_path.to_str().expect("path is utf-8"),
+        "--out",
+        valid_report.to_str().expect("path is utf-8"),
+    ]);
+    let valid = read_json(&valid_report);
+    assert_eq!(valid["summary"]["result"], "warn");
+    assert_eq!(
+        check_by_id(&valid, "repair-plan-schema050-complete-support-cross-check")["result"],
+        "pass"
+    );
+    assert_eq!(
+        valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
+        "enumerationComplete is recorded as author assumption, not verified"
+    );
+
+    let mut reserved = read_json(&repair_plan_path);
+    reserved["trueSheafCertificate"] = json!({"claim": "future"});
+    reserved["faithfulness"]["mode"] = json!("supplied");
+    let reserved_path = out_dir.join("repair_plan_reserved.json");
+    fs::write(
+        &reserved_path,
+        serde_json::to_vec_pretty(&reserved).expect("repair plan serializes"),
+    )
+    .expect("reserved repair plan writes");
+    let reserved_report = out_dir.join("repair-plan-reserved.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            reserved_path.to_str().expect("path is utf-8"),
+            "--out",
+            reserved_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let reserved_json = read_json(&reserved_report);
+    assert_eq!(
+        check_by_id(&reserved_json, "repair-plan-schema050-reserved-fields")["result"],
+        "fail"
+    );
+
+    let mut conclusion_token = read_json(&repair_plan_path);
+    conclusion_token["semanticProjection"]["k"][0] = json!("glues");
+    let conclusion_path = out_dir.join("repair_plan_conclusion_token.json");
+    fs::write(
+        &conclusion_path,
+        serde_json::to_vec_pretty(&conclusion_token).expect("repair plan serializes"),
+    )
+    .expect("conclusion repair plan writes");
+    let conclusion_report = out_dir.join("repair-plan-conclusion-token.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            conclusion_path.to_str().expect("path is utf-8"),
+            "--out",
+            conclusion_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let conclusion_json = read_json(&conclusion_report);
+    assert_eq!(
+        check_by_id(
+            &conclusion_json,
+            "repair-plan-schema050-no-conclusion-tokens"
+        )["result"],
+        "fail"
+    );
+
+    let mut partial_support = read_json(&repair_plan_path);
+    partial_support["primitives"][0]["support"]["kind"] = json!("partial");
+    let partial_path = out_dir.join("repair_plan_partial_support.json");
+    fs::write(
+        &partial_path,
+        serde_json::to_vec_pretty(&partial_support).expect("repair plan serializes"),
+    )
+    .expect("partial repair plan writes");
+    let partial_report = out_dir.join("repair-plan-partial-support.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            partial_path.to_str().expect("path is utf-8"),
+            "--out",
+            partial_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let partial_json = read_json(&partial_report);
+    assert_eq!(
+        check_by_id(
+            &partial_json,
+            "repair-plan-schema050-complete-support-cross-check"
+        )["result"],
+        "fail"
+    );
+
+    let mut unresolved_archmap_ref = read_json(&repair_plan_path);
+    unresolved_archmap_ref["complex"]["charts"][0] = json!("ctx:not-in-archmap");
+    unresolved_archmap_ref["semanticProjection"]["lambda"][0] = json!("atom:not-in-archmap");
+    let unresolved_path = out_dir.join("repair_plan_unresolved_archmap_ref.json");
+    fs::write(
+        &unresolved_path,
+        serde_json::to_vec_pretty(&unresolved_archmap_ref).expect("repair plan serializes"),
+    )
+    .expect("unresolved repair plan writes");
+    let unresolved_report = out_dir.join("repair-plan-unresolved-archmap-ref.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            unresolved_path.to_str().expect("path is utf-8"),
+            "--out",
+            unresolved_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let unresolved_json = read_json(&unresolved_report);
+    assert_eq!(
+        check_by_id(&unresolved_json, "repair-plan-schema050-archmap-bindings")["result"],
+        "fail"
+    );
+}
+
+#[test]
+fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
+    let out_dir = temp_dir("ag-saga-descent-no-repair-plan");
+    let root = ag_measurement_root();
+    let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let policy_path = out_dir.join("law_policy_saga_descent.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let row = packet["structuralVerdict"]
+        .as_array()
+        .expect("structural verdict array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.saga-descent")
+        .expect("saga descent row exists");
+    assert_eq!(row["verdict"], "not_computed");
+    assert_eq!(
+        row["verdictData"]["methodStatus"],
+        "repair_plan_not_supplied"
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .expect("boundary statements")
+            .iter()
+            .any(|statement| {
+                statement["kind"] == "silence_by_design"
+                    && statement["reason"] == "repair_plan_not_supplied"
+            }),
+        "missing repair-plan must be modeled as silence_by_design, not validation failure"
+    );
+}
+
+#[test]
 fn cli_measurement_profile_finite_bounds_cap_and_effective_lowering() {
     let out_dir = temp_dir("ag-profile-finite-bounds");
     let root = ag_measurement_root();
@@ -7978,7 +8188,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
 
     for removed in removed_commands() {
         assert!(
-            !stdout.contains(removed),
+            !help_command_names(&stdout).contains(removed),
             "ArchSig help still exposes removed command {removed}\n{stdout}"
         );
     }
@@ -8229,6 +8439,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "aat-atom-vocabulary/v0.5.0",
             "law-policy/v0.5.0",
             "measurement-profile/v0.5.0",
+            "archsig-repair-plan/v0.5.0",
             "law-evaluator-registry/v0.5.0",
             "normalized-archmap-current",
             "archsig-measurement-packet/v0.5.0",
@@ -9535,6 +9746,17 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
         .args(args)
         .output()
         .expect("archsig command runs")
+}
+
+fn help_command_names(help: &str) -> BTreeSet<&str> {
+    help.lines()
+        .filter_map(|line| {
+            let trimmed = line.trim_start();
+            line.starts_with("  ")
+                .then(|| trimmed.split_whitespace().next())
+                .flatten()
+        })
+        .collect()
 }
 
 fn read_json(path: &Path) -> Value {
