@@ -246,7 +246,7 @@ docs/aat/proof_obligations_ag_aat.md
 | V-2 | `Intersection.lean` Tor0 bridge | 昇格 | R6 で Tor0 `LawConflict_0 ≃ O/(I_U+I_V)` bridge と Tor1 非零を同じ selected `Example56LawConflictPackageFiring` surface に束ねた。一般 Tor 計算や global derived category は非主張として残す。 |
 | V-3 | `TaylorResolution.lean` | 昇格 | 2生成 Taylor complex を実構成し一般形は packaged。 |
 | V-4 | `FreeResolution.lean` exact field | 実質化 | `Function.Exact` predicate へ。 |
-| V-5 | mislabeled / content-free theorems | 削除 | finite_trace_certificate 等。必要なら正しい theorem へ差し替え。 |
+| V-5 | mislabeled / content-free theorems | 実質化 / 宣言 | `sharedWitnessG5_window_interference_zero` は全次数 G5 identity 由来の finite-window audit surface として読み直し、`finite_trace_certificate` は selected synthesis output の trace-length certificate として境界化する。theorem-grade 主張は `sharedWitnessG5_all_degree_coefficient_identity` / synthesis package 側で読む。 |
 | V-6 | `HilbertSeries.lean` | 実質化 | `PowerSeries` または monomial basis count へ接続する。 |
 | VI-1 | Part VI toy models | 発火 | R7 で empty `TransportDescentToyModel` を `TransportDescentZeroToyModel` / `TransportDescentNonzeroToyModel` に分割し、selected finite zero/nonzero data から各 package が `Nonempty` になる surface と zero descent / nonzero non-descent を別々に読むように修正済み。AC5 の IX-2 force candidate 側は IX-2 行で `ForceIntegrabilityObstructionCandidateData` として実装済み。 |
 | VI-2 | `OperationHomotopy.lean` pi1 | 昇格 | R8 で `FreeEdgeWord.toFreeGroup` / `PresentedArchitectureFundamentalGroup.presentedRelators` / `pi1AAT` を追加し、Mathlib `PresentedGroup` の relator identity と `toGroup` universal property へ bridge 済み。既存 package API は compatibility surface として残る。 |
@@ -399,6 +399,62 @@ R11 conclusion: the required external-consistency checklist exists. No external
 numeric theorem-count drift was found in the checked surfaces. The concrete
 website snapshot drift found during the review is tracked separately as #3082;
 AC20 does not modify protected mathematical text or website content.
+
+## AC21 final closure ledger
+
+AC21 closes the PRD-R hardening inventory as a disposition ledger, not as a
+claim that every statement-shaped surface became an unconditional theorem.
+Rows below trace each R0 item I-* through IX-* either to a closed PRD-R
+sub-issue or to this AC21 boundary record. Items completed by `宣言`,
+`statement-only`, or `future proof obligation` remain explicit non-proved
+surfaces.
+
+| Items | Final disposition | Completion evidence | Tracking |
+| --- | --- | --- | --- |
+| I-1, I-2, I-3, I-4 | 昇格 / 実質化 / 宣言 | Part I concrete three-reading, AAT core realization, finite-support predicates, and frozen selected assumption slots are recorded in R2. | #2960 |
+| II-1 | 昇格 | Seed witness closure cover makes the closure construction load-bearing. | #2966 |
+| II-2 | 昇格 | Quotient finite-meet poset is constructed from preorder and meet data. | #2969 |
+| II-3 | 実質化 | Context morphism roles are external concrete predicates over support / axis readings. | #2972 |
+| II-4 | 昇格 | Standard finite-poset Čech route supplies the generated differential theorem. | #2977 |
+| II-5 | 発火 | Two-patch finite site, unit descent, sheafification gap, and nonzero Boolean Čech calculation fire. | #2981 |
+| II-6 | 発火 | Coverage-to-Grothendieck bridge fires on the selected finite equality-thin site. | #2986 |
+| III-1 | 昇格 | Lawfulness-Ideal Correspondence is connected to selected witness ideals and generated defects. | #2989 |
+| III-2 | 昇格 | Lawful-locus factorization is strengthened to the zeroLocus one-way theorem; the reverse radical gap remains non-claimed. | #2997 |
+| III-3 | 昇格 | Sheafification bridge is tied to Mathlib sheafification under explicit `HasSheafify`. | #3001 |
+| III-4 | 実質化 | Scheme chart compatibility is tied to selected affine `Spec` locally ringed surface. | #3004 |
+| III-5 | 実質化 | NSdepth is generated from selected generator certificates and display degree; general Nullstellensatz remains statement boundary. | #3007 |
+| IV-1 | 昇格 | Cover-relative cohomology gets additive `H^1 = Z^1 / B^1` and legacy bridge. | #3010 |
+| IV-2 | 発火 | Pseudo-circle nonzero `H^1` fires in Part IV vocabulary. | #3012 |
+| IV-3 | 昇格 | Local flatness gap uses finite pointwise restriction/coboundary soundness. | #3014 |
+| IV-4 | 昇格 | Flatness criterion is connected to finite `C^0` adjustment and additive vanishing. | #3016 |
+| IV-5 | 昇格 | Cover nerve debt uses finite cochain rank-nullity and forest absorption certificate. | #3020 |
+| IV-6 | 昇格 | `DerOb_U` is no longer opaque and is a selected cotangent-coefficient carrier. | #3028 |
+| IV-7 | 実質化 | Boundary residue is kept as theorem under explicit residue hypotheses; unconditional flatness criterion is not claimed. | #3086 |
+| IV-8 | 宣言 | Type-valued obstruction sheaf / module sheaf surfaces remain defined-only carriers with additive/module boundary. | #3086 |
+| V-1, V-2 | 昇格 | Example 5.6 Tor0/Tor1 readings fire on a selected `LawConflictPackage`. | #3033 |
+| V-3, V-4 | 昇格 / 実質化 | Taylor/free-resolution surfaces are recorded as proved under explicit Mathlib resolution / exactness data in the PRD-5 ledger. | #3086 |
+| V-5 | 実質化 / 宣言 | Former deletion candidates are retained only as bounded audit / synthesis-certificate surfaces; theorem-grade reading is delegated to all-degree G5 identity and synthesis package rows. | #3086 |
+| V-6 | 実質化 | Hilbert-series conflict accounting is coefficient-wise and package-relative, with finite-window audits derived from all-degree identities. | #3086 |
+| VI-1 | 発火 | Empty transport-descent toy package is split into zero/nonzero inhabitable selected fixtures. | #3036 |
+| VI-2 | 昇格 | `pi1^AAT` is bridged to Mathlib `PresentedGroup` and its universal property. | #3041 |
+| VI-3, VI-4 | 実質化 / 宣言 | Architecture stack, cotangent/tangent, and Kuranishi surfaces remain selected interfaces with explicit future boundaries for general theory. | #3086 |
+| VI-5 | 宣言 | B-level decomposition gerbe / non-abelian soundness remains supplied-boundary data; banded abelian bridge is explicitly conditional. | #3086 |
+| VII-1 | 発火済み | `AATSynthesisPackage` fires on the finite singleton predecessor tower. | #3046 |
+| VII-2 | 実装済み | `AATSch` has a `Category` instance and `AnalyticRepresentation.toFunctor` bridge. | #3051 |
+| VII-3, VII-4, VII-5, VII-6 | 昇格 / 実質化 / 宣言 | Period, analytic adequacy, metric GLB, and graph/matrix walk surfaces are closed by the Part VII ledger as selected theorem/accessor/boundary surfaces; general homology / measure / completeness remain future obligations. | #3086 |
+| VIII-1 | 実装済み | Finite Hodge decomposition, harmonic debt, and lower-bound fire on real finite inner-product complex data. | #3057 |
+| VIII-2 | 実装済み | Theorem 5.2 reuses PRD-3 Stanley-Reisner assets and finite Alexander dual / hitting-set bridge. | #3063 |
+| VIII-3, VIII-4, VIII-5 | 実質化 / 宣言 | Finite regime, computability, law-conflict, packet, and GAGA surfaces are ledgered as selected theorem packages or statement-only candidate boundaries. | #3086 |
+| VIII-6 | 実装済み | Hodge and Alexander dual fixtures fire as selected finite examples. | #3057 / #3063 |
+| IX-1 | 実装済み | Temporal descent theorem 4.2 fires through selected realization and nondegenerate replay fixture. | #3070 |
+| IX-2 | 実装済み | `IntegrableForce` is a selected integration interface, and candidate 7.2 has inhabitable concrete-value-backed data while the non-integrability theorem remains statement-only. | #3073 |
+| IX-3, IX-4, IX-5 | 昇格 / 実質化 / 発火 | Temporal product/coefficient/law surfaces and finite temporal examples are closed as selected fixtures and theorem/accessor surfaces in the Part IX ledger; general trace semantics and forecast claims remain future/non-goals. | #3086 |
+
+AC21 conclusion: every PRD-R inventory item I-* through IX-* has a final
+disposition in this table and either a closed sub-issue or this final closure
+Issue as its tracking record. B-level and high-cost items are not silently
+upgraded; they are recorded as `宣言`, `statement-only`, or explicit future
+proof-obligation boundaries where appropriate.
 
 ## R2 Atom hardening
 
