@@ -139,6 +139,18 @@ noncomputable def canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
   Derived.Intersection.canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
     A I_U I_V
 
+theorem twoGeneratorPrincipalTaylorExactVisible
+    {A : Type} [CommRing A] (a b : A)
+    (h : Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.PrincipalSyzygyExact a b) :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂ a b)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)).mkQ :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex a b h
+
 theorem partVISingularBoundaryConcrete :
     SingularityMonodromyStack.USingularBoundary
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
@@ -642,6 +654,12 @@ info: 'AAT.AG.AxiomAudit.canonicalSelectedTorBridgeLawConflict0LinearEquivMathli
 -/
 #guard_msgs in
 #print axioms canonicalSelectedTorBridgeLawConflict0LinearEquivMathlibTor
+
+/--
+info: 'AAT.AG.AxiomAudit.twoGeneratorPrincipalTaylorExactVisible' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms twoGeneratorPrincipalTaylorExactVisible
 
 /--
 info: 'AAT.AG.AxiomAudit.temporalPseudoCircleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]

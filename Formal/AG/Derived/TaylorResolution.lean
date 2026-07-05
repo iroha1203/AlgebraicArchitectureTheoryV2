@@ -201,6 +201,98 @@ theorem selected_pair_multidegree_eq_union
 
 end TwoGeneratorPresentation
 
+namespace TwoGeneratorPrincipalTaylor
+
+variable {A}
+
+/-- V-3: multiplication by a selected generator as an `A`-linear map. -/
+def mulLeft (c : A) : A →ₗ[A] A where
+  toFun x := c * x
+  map_add' x y := by simp [mul_add]
+  map_smul' r x := by
+    simp [smul_eq_mul, mul_left_comm]
+
+/--
+V-3: the degree-two differential of the concrete two-generator Taylor/Koszul
+surface for the ordered pair `(a,b)`.
+
+It sends `r` to `(-b*r, a*r)`, the principal syzygy generator.
+-/
+def d₂ (a b : A) : A →ₗ[A] A × A :=
+  (-(mulLeft b)).prod (mulLeft a)
+
+/--
+V-3: the degree-one differential of the concrete two-generator Taylor/Koszul
+surface for the ordered pair `(a,b)`.
+
+It sends `(p,q)` to `a*p + b*q`.
+-/
+def d₁ (a b : A) : A × A →ₗ[A] A :=
+  (mulLeft a).comp (LinearMap.fst A A A) +
+    (mulLeft b).comp (LinearMap.snd A A A)
+
+/-- V-3: readable form of the degree-one differential. -/
+theorem d₁_apply (a b : A) (x : A × A) :
+    d₁ a b x = a * x.1 + b * x.2 :=
+  rfl
+
+/-- V-3: readable form of the degree-two differential. -/
+theorem d₂_apply (a b : A) (r : A) :
+    d₂ a b r = (-b * r, a * r) := by
+  simp [d₂, mulLeft]
+
+/--
+V-3: principal-syzygy exactness condition for a concrete two-generator pair.
+
+This is the honest boundary of the current theorem: exactness at degree one is
+proved from this algebraic syzygy statement, rather than from a package field
+claiming that the Taylor complex resolves the quotient.
+-/
+def PrincipalSyzygyExact (a b : A) : Prop :=
+  ∀ x : A × A, d₁ a b x = 0 -> ∃ r : A, x = d₂ a b r
+
+/-- V-3: the concrete two-generator Taylor differential squares to zero. -/
+theorem d₁_comp_d₂_eq_zero (a b : A) :
+    (d₁ a b).comp (d₂ a b) = 0 := by
+  apply LinearMap.ext
+  intro r
+  simp [d₁, d₂, mulLeft]
+  ring
+
+/--
+V-3: exactness at the middle term of the concrete two-generator Taylor complex,
+assuming the principal-syzygy theorem for the selected pair `(a,b)`.
+-/
+theorem exact_d₂_d₁ (a b : A) (h : PrincipalSyzygyExact a b) :
+    Function.Exact (d₂ a b) (d₁ a b) := by
+  apply LinearMap.exact_of_comp_of_mem_range
+  · exact d₁_comp_d₂_eq_zero a b
+  · intro x hx
+    rcases h x hx with ⟨r, rfl⟩
+    exact ⟨r, rfl⟩
+
+/--
+V-3: exactness at the quotient by the image of the concrete two-generator
+Taylor differential.
+
+This is the actual cokernel exactness theorem for `d₁`; identifying this module
+quotient with the ideal quotient by `(a,b)` is a separate algebraic bridge.
+-/
+theorem exact_d₁_mkQ_range (a b : A) :
+    Function.Exact (d₁ a b) (LinearMap.range (d₁ a b)).mkQ :=
+  LinearMap.exact_map_mkQ_range (d₁ a b)
+
+/--
+V-3: the concrete two-generator Taylor complex is exact at the two visible
+spots once the selected pair satisfies the principal-syzygy theorem.
+-/
+theorem exact_visible_complex (a b : A) (h : PrincipalSyzygyExact a b) :
+    Function.Exact (d₂ a b) (d₁ a b) ∧
+      Function.Exact (d₁ a b) (LinearMap.range (d₁ a b)).mkQ :=
+  ⟨exact_d₂_d₁ a b h, exact_d₁_mkQ_range a b⟩
+
+end TwoGeneratorPrincipalTaylor
+
 /--
 V.R4(b) / AC6: selected finite-free resolution data identifying a Taylor
 complex with an exact quotient resolution.
