@@ -23,6 +23,8 @@ GitHub PR を、紐づく Issue の完了条件・実装内容・テスト・doc
 - PR ブランチを現在の作業ツリーへ checkout する必要がある場合は、作業ツリーが clean か確認する。dirty の場合は `/tmp` の一時 worktree を優先する。
 - Lean 変更を含む PR では、原則として `lake build` を確認する。既存 CI が既に同等の `lake build` を成功させていても、ローカルで実行できない場合はその理由を報告する。
 - 公開物に入る可能性がある code、fixture、docs、schema catalog、website、release asset、tool output contract では、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入していないかを必ず確認し、見つけた場合は原則 `Needs changes` の finding にする。
+- PR が PRD の完了条件、台帳 status、処置ラベル(昇格 / 実質化 / 宣言 / 削除 等)を更新する場合、記載の変更が実体(コード・Lean 宣言・テスト)と宣言単位で一致しているかを確認する。実装・証明・発火を要求する条件を docs 変更だけで完了側へ動かす PR は、PRD がその処置を許可していない限り `Needs changes` にする。
+- 処置種別の降格を含む PR は、PRD の降格許容リスト(等級リスト等)と照合する。許可外の降格は `Needs changes` とし、ユーザー判断事項として報告する。降格の可否を PR / Issue 本文の文言だけで判断しない(PRD が正)。
 
 ## 手順
 
