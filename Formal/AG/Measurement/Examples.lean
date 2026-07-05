@@ -677,6 +677,76 @@ def lowDegreeRealEssentialRepairLowerBound :
     cases r
     exact le_rfl
 
+/--
+R11(e) / AC15: a nonzero-boundary finite real inner-product complex.
+
+This fixture is still tiny, but `dPrev` is the identity map rather than the zero
+map, so theorem 8.5 is exercised on a nonzero differential.
+-/
+def nonzeroBoundaryRealComplex :
+    RealFiniteInnerProductComplex ℝ ℝ ℝ where
+  dPrev := LinearMap.id
+  dNext := 0
+  d_comp_d := rfl
+
+/-- R11(e) / AC15: the boundary differential in the nonzero fixture is nonzero. -/
+theorem nonzeroBoundaryRealComplex_dPrev_nonzero :
+    nonzeroBoundaryRealComplex.dPrev ≠ 0 := by
+  intro h
+  have h1 : (LinearMap.id : ℝ →ₗ[ℝ] ℝ) 1 = (0 : ℝ →ₗ[ℝ] ℝ) 1 :=
+    congrArg (fun f : ℝ →ₗ[ℝ] ℝ => f 1) h
+  have h10 : (1 : ℝ) = 0 := h1
+  exact (one_ne_zero : (1 : ℝ) ≠ 0) h10
+
+/--
+R11(e) / AC15: Hodge decomposition fired on the nonzero-boundary fixture.
+
+The exact part is the whole cochain, while the harmonic and coexact parts are
+zero. This is a nonzero differential example, not a singleton or `PUnit`
+carrier.
+-/
+def nonzeroBoundaryRealHodgeDecomposition :
+    RealFiniteHodgeDecomposition nonzeroBoundaryRealComplex where
+  exactPart := fun x => x
+  harmonicPart := fun _ => 0
+  coexactPart := fun _ => 0
+  exactPart_mem_range := by
+    intro x
+    exact ⟨x, rfl⟩
+  harmonicPart_mem_kernel := by
+    intro x
+    simp [RealFiniteInnerProductComplex.laplacian, nonzeroBoundaryRealComplex,
+      RealFiniteInnerProductComplex.dPrevAdjoint,
+      RealFiniteInnerProductComplex.dNextAdjoint]
+  coexactPart_mem_adjoint_range := by
+    intro x
+    exact ⟨0, by
+      simp [nonzeroBoundaryRealComplex, RealFiniteInnerProductComplex.dNextAdjoint]⟩
+  decomposition := by
+    intro x
+    simp
+  exact_harmonic_orthogonal := by
+    intro x y
+    simp
+  harmonic_coexact_orthogonal := by
+    intro x y
+    simp
+  exact_coexact_orthogonal := by
+    intro x y
+    simp
+  cohomologyClassOf := fun _ => 0
+  cohomologyClass_eq_harmonic := by
+    intro x
+    rfl
+
+/-- R11(e) / AC15: theorem 8.5 decomposition equality on a nonzero differential. -/
+theorem nonzeroBoundaryRealHodgeDecomposition_fires (x : ℝ) :
+    nonzeroBoundaryRealHodgeDecomposition.exactPart x +
+        nonzeroBoundaryRealHodgeDecomposition.harmonicPart x +
+        nonzeroBoundaryRealHodgeDecomposition.coexactPart x =
+      x :=
+  nonzeroBoundaryRealHodgeDecomposition.decomposition x
+
 /-- R11(e): low-degree cellular measurement model for the Hodge fixture. -/
 def lowDegreeCellularModel :
     CellularMeasurementModel pseudoCircleMeasurementProfile where

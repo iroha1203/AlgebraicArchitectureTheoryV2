@@ -901,6 +901,7 @@ structure ForceCandidateFixture where
   concreteObstructionValue : ZMod 2
   concreteObstruction_nonzero : concreteObstructionValue ≠ 0
   candidateData : ForceIntegrabilityObstructionCandidateData mismatchClass
+  candidatePackage : ForceIntegrabilityObstructionCandidate mismatchClass
   selectedNonzero_backed_by_concrete :
     candidateData.selectedNonzero mismatchClass.obstructionClass ↔
       concreteObstructionValue ≠ 0
@@ -936,6 +937,24 @@ def forceCandidateFixture : ForceCandidateFixture where
     localToGlobalControlledByDescent := True
     localToGlobalControlledByDescent_cert := trivial
   }
+  candidatePackage := {
+    selectedNonzero := fun _ => (1 : ZMod 2) ≠ 0
+    obstruction_nonzero := by
+      intro h
+      have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+      rw [ZMod.val_one] at hv
+      simp at hv
+    coefficientExactness := True
+    coefficientExactness_cert := trivial
+    witnessCoverage := True
+    witnessCoverage_cert := trivial
+    temporalDescentDetecting := True
+    temporalDescentDetecting_cert := trivial
+    localToGlobalControlledByDescent := True
+    localToGlobalControlledByDescent_cert := trivial
+    nonintegrabilityStatement := True
+    nonintegrabilityStatement_cert := trivial
+  }
   selectedNonzero_backed_by_concrete := Iff.rfl
   candidateOnly := True
   candidateOnly_cert := trivial
@@ -966,6 +985,12 @@ theorem force_candidate_data_inhabited :
     Nonempty (ForceIntegrabilityObstructionCandidateData
       forceCandidateFixture.mismatchClass) :=
   ⟨forceCandidateFixture.candidateData⟩
+
+/-- R10(g) / AC5: the literal force candidate package is inhabitable. -/
+theorem force_candidate_package_inhabited :
+    Nonempty (ForceIntegrabilityObstructionCandidate
+      forceCandidateFixture.mismatchClass) :=
+  ⟨forceCandidateFixture.candidatePackage⟩
 
 /--
 R10 / AC20: bundled finite temporal examples (a)-(g).

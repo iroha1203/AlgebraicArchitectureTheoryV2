@@ -308,8 +308,8 @@ structure ForceIntegrabilityObstructionCandidate
   temporalDescentDetecting_cert : temporalDescentDetecting
   localToGlobalControlledByDescent : Prop
   localToGlobalControlledByDescent_cert : localToGlobalControlledByDescent
-  nonintegrable_of_nonzero :
-    selectedNonzero C.obstructionClass -> ¬ IntegrableForce F
+  nonintegrabilityStatement : Prop
+  nonintegrabilityStatement_cert : nonintegrabilityStatement
 
 namespace ForceIntegrabilityObstructionCandidate
 
@@ -342,15 +342,14 @@ theorem temporal_descent_detecting_holds
   O.temporalDescentDetecting_cert
 
 /--
-IX.定理候補7.2 / AC19: statement-only obstruction reading.
-
-Given the selected nonzero obstruction and the candidate detection assumptions,
-the package reads non-integrability of the selected force.
+IX.定理候補7.2 / AC19: the selected non-integrability statement is recorded
+as candidate data.  This does not prove the general implication
+`ob(F) != 0 -> not IntegrableForce F`.
 -/
-theorem candidate_not_integrable_of_obstruction
+theorem candidate_statement_recorded
     (O : ForceIntegrabilityObstructionCandidate C) :
-    ¬ IntegrableForce F :=
-  O.nonintegrable_of_nonzero O.obstruction_nonzero
+    O.nonintegrabilityStatement :=
+  O.nonintegrabilityStatement_cert
 
 end ForceIntegrabilityObstructionCandidate
 

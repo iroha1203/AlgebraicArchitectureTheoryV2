@@ -339,6 +339,12 @@ def finiteSynthesisFires :=
 def lowDegreeRealKernelEquivHarmonic :=
   Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology
 
+def nonzeroBoundaryRealComplexDPrevNonzero :=
+  Measurement.nonzeroBoundaryRealComplex_dPrev_nonzero
+
+def nonzeroBoundaryRealHodgeDecompositionFires :=
+  Measurement.nonzeroBoundaryRealHodgeDecomposition_fires
+
 def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
   Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
 
@@ -353,6 +359,9 @@ def toyForceIntegrable :=
 
 def forceCandidateSelectedNonzeroBackedByConcrete :=
   Examples.EvolutionPart9.force_candidate_selected_nonzero_backed_by_concrete
+
+def forceCandidatePackageInhabited :=
+  Examples.EvolutionPart9.force_candidate_package_inhabited
 
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -625,6 +634,20 @@ info: 'AAT.AG.AxiomAudit.lowDegreeRealKernelEquivHarmonic' depends on axioms: [p
 #print axioms lowDegreeRealKernelEquivHarmonic
 
 /--
+info: 'AAT.AG.AxiomAudit.nonzeroBoundaryRealComplexDPrevNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms nonzeroBoundaryRealComplexDPrevNonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.nonzeroBoundaryRealHodgeDecompositionFires' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms nonzeroBoundaryRealHodgeDecompositionFires
+
+/--
 info: 'AAT.AG.AxiomAudit.squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -657,5 +680,11 @@ info: 'AAT.AG.AxiomAudit.forceCandidateSelectedNonzeroBackedByConcrete' depends 
 -/
 #guard_msgs in
 #print axioms forceCandidateSelectedNonzeroBackedByConcrete
+
+/--
+info: 'AAT.AG.AxiomAudit.forceCandidatePackageInhabited' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms forceCandidatePackageInhabited
 
 end AAT.AG.AxiomAudit
