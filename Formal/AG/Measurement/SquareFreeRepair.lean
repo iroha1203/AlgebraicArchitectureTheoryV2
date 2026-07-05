@@ -1,5 +1,6 @@
 import Formal.AG.Measurement.Computability
 import Formal.AG.LawAlgebra.StanleyReisner
+import Mathlib.Data.Finset.Lattice.Basic
 
 noncomputable section
 
@@ -44,6 +45,160 @@ structure SquareFreeRepairRegime (M : MeasurementProfile.{u, v}) where
   obstructionIdealGeneratedByMinimalForbidden_cert : obstructionIdealGeneratedByMinimalForbidden
   deltaAvoidsForbiddenSupports : Prop
   deltaAvoidsForbiddenSupports_cert : deltaAvoidsForbiddenSupports
+
+namespace SquareFreeRepairRegime
+
+variable {M : MeasurementProfile.{u, v}}
+
+/--
+VIII.Theorem 5.2 hardening: reuse the PRD-3 Stanley-Reisner ideal theorem for
+the selected source square-free witness regime.
+-/
+theorem source_obstructionIdeal_eq_stanleyReisnerIdeal
+    (R : SquareFreeRepairRegime M) [DecidableEq M.WitnessVariables]
+    (k : Type v) [CommRing k] :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal M.WitnessVariables k
+        R.sourceWitnessRegime =
+      LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.stanleyReisnerIdeal M.WitnessVariables k
+        (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta M.WitnessVariables R.sourceWitnessRegime) :=
+  LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal
+    M.WitnessVariables k R.sourceWitnessRegime
+
+/--
+VIII.Theorem 5.2 hardening: reuse the PRD-3 minimal generator / minimal forbidden
+support theorem for the selected source square-free witness regime.
+-/
+theorem source_minimalGeneratorSupport_iff_minimalForbidden
+    (R : SquareFreeRepairRegime M) [DecidableEq M.WitnessVariables]
+    (S : Finset M.WitnessVariables) :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.MinimalStanleyReisnerGeneratorSupport
+        M.WitnessVariables
+        (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta M.WitnessVariables R.sourceWitnessRegime) S ↔
+      LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.MinimalForbidden
+        M.WitnessVariables R.sourceWitnessRegime S :=
+  LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.minimalGeneratorSupport_iff_minimalForbidden
+    M.WitnessVariables R.sourceWitnessRegime S
+
+end SquareFreeRepairRegime
+
+/-! ### Finset Alexander dual bridge -/
+
+/--
+VIII.Theorem 5.2 hardening: the Alexander dual face predicate
+`S ∈ Δ*` iff `Sᶜ ∉ Δ.faces`, relative to a finite selected witness universe.
+-/
+def finiteAlexanderDualFaces (E : Type u) [Fintype E] [DecidableEq E]
+    (Delta : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex E) :
+    Set (Finset E) :=
+  {S | (Finset.univ \ S) ∉ Delta.faces}
+
+/-- VIII.Theorem 5.2 hardening: membership in the finite Alexander dual. -/
+theorem mem_finiteAlexanderDualFaces_iff
+    (E : Type u) [Fintype E] [DecidableEq E]
+    (Delta : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex E)
+    (S : Finset E) :
+    S ∈ finiteAlexanderDualFaces E Delta ↔ (Finset.univ \ S) ∉ Delta.faces :=
+  Iff.rfl
+
+/-- VIII.Theorem 5.2 hardening: finite Alexander dual complex. -/
+def finiteAlexanderDual (E : Type u) [Fintype E] [DecidableEq E]
+    (Delta : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex E) :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex E where
+  faces := finiteAlexanderDualFaces E Delta
+  downward_closed := by
+    intro S T hT hST hScomp
+    exact hT (Delta.downward_closed hScomp (by
+      intro x hx
+      simp at hx ⊢
+      intro hxS
+      exact hx (hST hxS)))
+
+/-- VIII.Theorem 5.2 hardening: finite support `H` hits every forbidden support. -/
+def FinsetHitsForbidden (E : Type u) [DecidableEq E]
+    (R : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime E) (H : Finset E) : Prop :=
+  ∀ F : Finset E, R.Forb F -> (H.filter fun x => x ∈ F).Nonempty
+
+/--
+VIII.Theorem 5.2 hardening: inclusion-minimal finite hitting set for the selected
+forbidden support family.
+-/
+def MinimalHittingSetForForbidden (E : Type u) [DecidableEq E]
+    (R : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime E) (H : Finset E) : Prop :=
+  FinsetHitsForbidden E R H ∧
+    ∀ K : Finset E, FinsetHitsForbidden E R K -> K ⊆ H -> H ⊆ K
+
+theorem not_subset_compl_iff_inter_nonempty
+    (E : Type u) [Fintype E] [DecidableEq E]
+    (F H : Finset E) :
+    ¬ F ⊆ Finset.univ \ H ↔ (H.filter fun x => x ∈ F).Nonempty := by
+  constructor
+  · intro h
+    by_contra hEmpty
+    apply h
+    intro x hxF
+    simp
+    intro hxH
+    exact hEmpty ⟨x, by simp [hxH, hxF]⟩
+  · intro h hsubset
+    rcases h with ⟨x, hx⟩
+    simp at hx
+    have hxComp := hsubset hx.2
+    simp at hxComp
+    exact hxComp hx.1
+
+/--
+VIII.Theorem 5.2 hardening: nonfaces of the Alexander dual of `Δ_R` are exactly
+hitting sets for the forbidden supports of `R`.
+-/
+theorem not_mem_finiteAlexanderDual_iff_hitsForbidden
+    (E : Type u) [Fintype E] [DecidableEq E]
+    (R : LawAlgebra.StanleyReisner.SquareFreeWitnessRegime E) (H : Finset E) :
+    H ∉ (finiteAlexanderDual E
+        (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta E R)).faces ↔
+      FinsetHitsForbidden E R H := by
+  classical
+  unfold finiteAlexanderDual finiteAlexanderDualFaces FinsetHitsForbidden
+  change ¬ ((Finset.univ \ H) ∉
+        (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta E R).faces) ↔
+      ∀ F : Finset E, R.Forb F -> (H.filter fun x => x ∈ F).Nonempty
+  rw [not_not]
+  constructor
+  · intro h F hF
+    exact (not_subset_compl_iff_inter_nonempty E F H).mp (h F hF)
+  · intro h F hF
+    exact (not_subset_compl_iff_inter_nonempty E F H).mpr (h F hF)
+
+/--
+VIII.Theorem 5.2 hardening: concrete bridge from repair targets to minimal finite
+hitting sets.  This keeps repair as a combinatorial target, not operation
+semantics.
+-/
+structure FiniteAlexanderDualRepairBridge {M : MeasurementProfile.{u, v}}
+    (R : SquareFreeRepairRegime M) [Fintype M.WitnessVariables]
+    [DecidableEq M.WitnessVariables] where
+  RepairTarget : Type u
+  repairSupport : RepairTarget -> Finset M.WitnessVariables
+  minimalRepairTarget : RepairTarget -> Prop
+  minimalRepairTarget_iff :
+    ∀ target,
+      minimalRepairTarget target ↔
+        MinimalHittingSetForForbidden M.WitnessVariables R.sourceWitnessRegime
+          (repairSupport target)
+
+namespace FiniteAlexanderDualRepairBridge
+
+variable {M : MeasurementProfile.{u, v}} {R : SquareFreeRepairRegime M}
+variable [Fintype M.WitnessVariables] [DecidableEq M.WitnessVariables]
+
+/-- VIII.Theorem 5.2 hardening: expose the minimal hitting-set bridge. -/
+theorem minimalRepairTarget_iff_minimalHitting
+    (B : FiniteAlexanderDualRepairBridge R) (target : B.RepairTarget) :
+    B.minimalRepairTarget target ↔
+      MinimalHittingSetForForbidden M.WitnessVariables R.sourceWitnessRegime
+        (B.repairSupport target) :=
+  B.minimalRepairTarget_iff target
+
+end FiniteAlexanderDualRepairBridge
 
 /-- VIII.Theorem 5.2 supporting data: Alexander dual complex of a square-free regime. -/
 structure AlexanderDualComplex {M : MeasurementProfile.{u, v}}
