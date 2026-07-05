@@ -196,3 +196,43 @@ document.querySelectorAll("[data-copy-code]").forEach((button) => {
     }
   });
 });
+
+const fabSidebar = document.querySelector(".article-sidebar");
+if (fabSidebar) {
+  const fab = document.createElement("button");
+  fab.type = "button";
+  fab.className = "sidebar-fab";
+  fab.setAttribute("aria-label", "Open page navigation");
+  fab.setAttribute("aria-expanded", "false");
+  fab.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="14" y2="18"></line></svg>';
+  document.body.appendChild(fab);
+
+  const setDrawer = (open) => {
+    document.body.classList.toggle("sidebar-open", open);
+    fab.setAttribute("aria-expanded", String(open));
+    if (open) {
+      fabSidebar.querySelectorAll(".sidebar-toggle").forEach((button) => {
+        button.setAttribute("aria-expanded", "true");
+        const panel = button.closest(".toc-panel, .source-panel, .version-panel, .boundary-note");
+        const content = panel?.querySelector(".sidebar-panel-content");
+        panel?.classList.add("is-open");
+        if (content) content.hidden = false;
+      });
+    }
+  };
+
+  fab.addEventListener("click", () => {
+    setDrawer(!document.body.classList.contains("sidebar-open"));
+  });
+
+  fabSidebar.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setDrawer(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("sidebar-open")) {
+      setDrawer(false);
+    }
+  });
+}

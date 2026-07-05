@@ -257,3 +257,20 @@
       justify-self: start;
     }
 }
+
+/* long Lean identifiers wrap instead of overflowing their cards */
+.theorem-card code,
+.lean-status-card code,
+.formal-anchor-card code {
+  overflow-wrap: anywhere;
+}
+
+/* wide declaration tables scroll inside their card */
+.formal-anchor-card {
+  overflow-x: auto;
+}
+
+.formal-anchor-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
