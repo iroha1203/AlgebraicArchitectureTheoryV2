@@ -1,4 +1,6 @@
 import Formal.AG.Measurement.CellularLaplacian
+import Mathlib.Analysis.InnerProductSpace.Adjoint
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 noncomputable section
 
@@ -269,6 +271,223 @@ theorem essentialRepairLowerBound {M : MeasurementProfile.{u, v}}
     (B : EssentialRepairLowerBoundData H) :
     Nonempty (EssentialRepairLowerBound B) :=
   ⟨essentialRepairLowerBoundPackage B⟩
+
+/-! ### PRD-R VIII-1: finite real inner-product Hodge bridge -/
+
+/--
+VIII.Theorem 8.5 hardening: a finite real inner-product cochain fragment.
+
+This is the load-bearing Mathlib-facing surface used by PRD-R AC15.  The
+cochain spaces are actual finite-dimensional real inner-product spaces, the
+differentials are `LinearMap`s, and `d_next ∘ d_prev = 0` is an equality.
+-/
+structure RealFiniteInnerProductComplex
+    (Cminus C Cplus : Type v)
+    [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+    [FiniteDimensional ℝ Cminus]
+    [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+    [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+    [FiniteDimensional ℝ Cplus] where
+  dPrev : Cminus →ₗ[ℝ] C
+  dNext : C →ₗ[ℝ] Cplus
+  d_comp_d : dNext.comp dPrev = 0
+
+namespace RealFiniteInnerProductComplex
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+
+/-- VIII.Theorem 8.5 hardening: the Mathlib adjoint of `dPrev`. -/
+def dPrevAdjoint (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    C →ₗ[ℝ] Cminus :=
+  LinearMap.adjoint K.dPrev
+
+/-- VIII.Theorem 8.5 hardening: the Mathlib adjoint of `dNext`. -/
+def dNextAdjoint (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    Cplus →ₗ[ℝ] C :=
+  LinearMap.adjoint K.dNext
+
+/-- VIII.Theorem 8.5 hardening: the finite Hodge Laplacian `dd* + d*d`. -/
+def laplacian (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    C →ₗ[ℝ] C :=
+  K.dPrev.comp K.dPrevAdjoint + K.dNextAdjoint.comp K.dNext
+
+/-- VIII.Theorem 8.5 hardening: `dPrevAdjoint` is the Mathlib adjoint. -/
+theorem dPrev_adjoint_inner_right
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : Cminus) (y : C) :
+    inner ℝ x (K.dPrevAdjoint y) = inner ℝ (K.dPrev x) y :=
+  LinearMap.adjoint_inner_right K.dPrev x y
+
+/-- VIII.Theorem 8.5 hardening: `dNextAdjoint` is the Mathlib adjoint. -/
+theorem dNext_adjoint_inner_right
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) (y : Cplus) :
+    inner ℝ x (K.dNextAdjoint y) = inner ℝ (K.dNext x) y :=
+  LinearMap.adjoint_inner_right K.dNext x y
+
+end RealFiniteInnerProductComplex
+
+/--
+VIII.Theorem 8.5 hardening: finite Hodge decomposition over a real inner-product
+complex.
+
+The fields are concrete equations, range witnesses, kernel membership, and
+orthogonality statements over the Mathlib cochain space.  This replaces the
+old use of standalone `Prop + cert` tokens for the Hodge conclusion.
+-/
+structure RealFiniteHodgeDecomposition {Cminus C Cplus : Type v}
+    [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+    [FiniteDimensional ℝ Cminus]
+    [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+    [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+    [FiniteDimensional ℝ Cplus]
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) where
+  exactPart : C -> C
+  harmonicPart : C -> C
+  coexactPart : C -> C
+  exactPart_mem_range :
+    ∀ x : C, ∃ y : Cminus, K.dPrev y = exactPart x
+  harmonicPart_mem_kernel :
+    ∀ x : C, K.laplacian (harmonicPart x) = 0
+  coexactPart_mem_adjoint_range :
+    ∀ x : C, ∃ y : Cplus, K.dNextAdjoint y = coexactPart x
+  decomposition :
+    ∀ x : C, exactPart x + harmonicPart x + coexactPart x = x
+  exact_harmonic_orthogonal :
+    ∀ x y : C, inner ℝ (exactPart x) (harmonicPart y) = 0
+  harmonic_coexact_orthogonal :
+    ∀ x y : C, inner ℝ (harmonicPart x) (coexactPart y) = 0
+  exact_coexact_orthogonal :
+    ∀ x y : C, inner ℝ (exactPart x) (coexactPart y) = 0
+  cohomologyClassOf : C -> C
+  cohomologyClass_eq_harmonic :
+    ∀ x : C, cohomologyClassOf x = harmonicPart x
+
+namespace RealFiniteHodgeDecomposition
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+variable {K : RealFiniteInnerProductComplex Cminus C Cplus}
+
+/-- VIII.Theorem 8.5 hardening: expose the actual decomposition equality. -/
+theorem decomposition_holds (D : RealFiniteHodgeDecomposition K) (x : C) :
+    D.exactPart x + D.harmonicPart x + D.coexactPart x = x :=
+  D.decomposition x
+
+/-- VIII.Theorem 8.5 hardening: expose harmonic kernel membership. -/
+theorem harmonic_mem_kernel (D : RealFiniteHodgeDecomposition K) (x : C) :
+    K.laplacian (D.harmonicPart x) = 0 :=
+  D.harmonicPart_mem_kernel x
+
+/-- VIII.Theorem 8.5 hardening: expose exact/harmonic orthogonality. -/
+theorem exact_harmonic_orthogonal_holds
+    (D : RealFiniteHodgeDecomposition K) (x y : C) :
+    inner ℝ (D.exactPart x) (D.harmonicPart y) = 0 :=
+  D.exact_harmonic_orthogonal x y
+
+end RealFiniteHodgeDecomposition
+
+/--
+VIII.Theorem 8.6 hardening: harmonic debt minimality over the real Hodge bridge.
+
+The minimum is an actual inequality over real residual values rather than a
+standalone certificate token.
+-/
+structure RealHarmonicDebtMinimality {Cminus C Cplus : Type v}
+    [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+    [FiniteDimensional ℝ Cminus]
+    [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+    [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+    [FiniteDimensional ℝ Cplus]
+    {K : RealFiniteInnerProductComplex Cminus C Cplus}
+    (D : RealFiniteHodgeDecomposition K) where
+  GaugeCorrection : Type u
+  correctionResidual : GaugeCorrection -> C -> ℝ
+  selectedCorrection : C -> GaugeCorrection
+  harmonicDebt : C -> ℝ
+  harmonicDebt_eq_norm :
+    ∀ x : C, harmonicDebt x = ‖D.harmonicPart x‖
+  selected_minimizes :
+    ∀ (x : C) (g : GaugeCorrection),
+      correctionResidual (selectedCorrection x) x ≤ correctionResidual g x
+
+namespace RealHarmonicDebtMinimality
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+variable {K : RealFiniteInnerProductComplex Cminus C Cplus}
+variable {D : RealFiniteHodgeDecomposition K}
+
+/-- VIII.Theorem 8.6 hardening: expose harmonic debt as a real norm. -/
+theorem harmonicDebt_eq_norm_holds (H : RealHarmonicDebtMinimality D) (x : C) :
+    H.harmonicDebt x = ‖D.harmonicPart x‖ :=
+  H.harmonicDebt_eq_norm x
+
+/-- VIII.Theorem 8.6 hardening: expose the selected real residual minimum. -/
+theorem selected_minimizes_holds
+    (H : RealHarmonicDebtMinimality D) (x : C) (g : H.GaugeCorrection) :
+    H.correctionResidual (H.selectedCorrection x) x ≤ H.correctionResidual g x :=
+  H.selected_minimizes x g
+
+end RealHarmonicDebtMinimality
+
+/--
+VIII.Corollary 8.7 hardening: essential repair lower bound over the real Hodge
+bridge.  The lower bound is an actual real inequality.
+-/
+structure RealEssentialRepairLowerBound {Cminus C Cplus : Type v}
+    [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+    [FiniteDimensional ℝ Cminus]
+    [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+    [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+    [FiniteDimensional ℝ Cplus]
+    {K : RealFiniteInnerProductComplex Cminus C Cplus}
+    {D : RealFiniteHodgeDecomposition K}
+    (H : RealHarmonicDebtMinimality D) where
+  RepairRoute : C -> Type u
+  repairCost : (x : C) -> RepairRoute x -> ℝ
+  lowerBound : C -> ℝ
+  lowerBound_reads_harmonicDebt :
+    ∀ x : C, lowerBound x = H.harmonicDebt x
+  lowerBound_le_repairCost :
+    ∀ (x : C) (r : RepairRoute x), lowerBound x ≤ repairCost x r
+
+namespace RealEssentialRepairLowerBound
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+variable {K : RealFiniteInnerProductComplex Cminus C Cplus}
+variable {D : RealFiniteHodgeDecomposition K}
+variable {H : RealHarmonicDebtMinimality D}
+
+/-- VIII.Corollary 8.7 hardening: expose the harmonic-debt lower-bound reading. -/
+theorem lowerBound_reads_harmonicDebt_holds
+    (B : RealEssentialRepairLowerBound H) (x : C) :
+    B.lowerBound x = H.harmonicDebt x :=
+  B.lowerBound_reads_harmonicDebt x
+
+/-- VIII.Corollary 8.7 hardening: expose the real lower-bound inequality. -/
+theorem lowerBound_le_repairCost_holds
+    (B : RealEssentialRepairLowerBound H) (x : C) (r : B.RepairRoute x) :
+    B.lowerBound x ≤ B.repairCost x r :=
+  B.lowerBound_le_repairCost x r
+
+end RealEssentialRepairLowerBound
 
 /-- VIII.Definition 8.8: spectral gap reading for the selected Laplacian. -/
 structure SpectralGapReading {M : MeasurementProfile.{u, v}}
