@@ -145,13 +145,13 @@ ArchView also supports file picker / drag-and-drop and sequence mode through
 `archview-sequence/v0.5.0`. It uses CDN Three.js and projects measured AAT geometry
 without creating new structural verdicts.
 
-For large ArchMaps, prefer the optimized binary:
+For a larger sample fixture or release-mode smoke test, prefer the optimized binary:
 
 ```bash
 cargo run --release --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap .archsig/project/archmap.json \
-  --law-policy .archsig/project/law-policy.json \
-  --out-dir .archsig/analyze
+  --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
+  --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --out-dir .tmp/archsig-practical-service-analyze
 ```
 
 For FieldSig handoff or deep evidence lookup, emit raw artifacts explicitly:
