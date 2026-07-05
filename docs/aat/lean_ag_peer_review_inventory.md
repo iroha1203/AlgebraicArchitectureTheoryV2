@@ -253,7 +253,7 @@ docs/aat/proof_obligations_ag_aat.md
 | VI-3 | `ArchitectureStack.lean` | 実質化 | triple-overlap restriction と cocycle equality を実装する。 |
 | VI-4 | `CotangentInterface.lean` / `Kuranishi.lean` | 実質化 | cotangent data と IV-6 `DerOb_U` を接続する。 |
 | VI-5 | `Formal/AG/SingularityMonodromyStack/DecompositionGerbe.lean` | 宣言 | B項目。現 R0 では soundness / nonzero が supplied boundary であることを公理的境界として明示し、昇格可能性は後続 Issue の判断に残す。 |
-| VII-1 | `Synthesis.lean` theorem 16.1 | 発火 | finite model から complete assumptions instance を構成する。 |
+| VII-1 | `Synthesis.lean` theorem 16.1 | 発火済み | R9 で `Formal/AG/Examples/RepresentationAnalysisPart7.lean` に `finiteSynthesisAATSynthesisAssumptions` / `finiteSynthesisAATSynthesisPackage` / `finiteSynthesis_algebraicGeometricAATSynthesis_fires` を追加し、finite singleton model から complete predecessor tower と synthesis theorem application を発火させた。 |
 | VII-2 | `AATSch.lean` | 実質化 | morphism compatibility を fixed predicate へ移し category / functor bridge を作る。 |
 | VII-3 | `FiniteHomology.lean` strict period | 昇格 | concrete pairing の coboundary invariance。 |
 | VII-4 | `AnalyticContext.lean` theorem 15.4 | 実質化 | adequacy assumptions を load-bearing 化し zeroClass を actual zero へ。 |
@@ -290,7 +290,7 @@ docs/aat/proof_obligations_ag_aat.md
 | PRD-6 | AC10 / PRD-R AC11 | `pi1^AAT` universal property is bridged to Mathlib `PresentedGroup` and `PresentedGroup.toGroup` uniqueness. | `proved PresentedGroup bridge` / `compatibility package` | `Formal/AG/SingularityMonodromyStack/OperationHomotopy.lean`, `PresentedArchitectureFundamentalGroup.pi1AAT`, `presentedGroupLift_unique` |
 | PRD-6 | AC20 | five finite toy models are selected finite witness packages. R7 で transport descent の空型 package は zero/nonzero case へ分割し、selected finite zero/nonzero data から `Nonempty` になる surface を追加済み。 | `proved example theorem` / `selected witness package` | `Formal/AG/Examples/SingularityMonodromyStackPart6.lean`, `TransportDescentZeroToyModel`, `TransportDescentNonzeroToyModel` |
 | PRD-7 | AC8 | strict period well-definedness is selected finite homology data relative. | `packaged (assumption-relative)` | `Formal/AG/RepresentationAnalysis/FiniteHomology.lean` |
-| PRD-7 | AC19 | AAT synthesis theorem is package-relative and lacks finite model firing. | `packaged (assumption-relative)` | `Formal/AG/RepresentationAnalysis/Synthesis.lean`, `AATSynthesisPackage` |
+| PRD-7 | AC19 | AAT synthesis theorem package now has finite model firing. | `proved finite synthesis firing` / `packaged theorem` | `Formal/AG/RepresentationAnalysis/Synthesis.lean`, `AATSynthesisPackage`, `Formal/AG/Examples/RepresentationAnalysisPart7.lean`, `finiteSynthesisAATSynthesisPackage` |
 | PRD-8 | AC8 / AC14 / AC15 | theorem 5.2 and Hodge theorem package are certified-field/package relative. | `packaged (assumption-relative)` | `Formal/AG/Measurement/SquareFreeRepair.lean`, `Formal/AG/Measurement/Hodge.lean` |
 | PRD-8 | AC9 / AC10 / AC16 / AC17 | stability / spectral / base-change candidates remain statement-only. | `statement-only` | `Formal/AG/Measurement/Stability.lean`, `Formal/AG/Measurement/Hodge.lean`, `Formal/AG/Measurement/LawConflict.lean` |
 | PRD-9 | AC13 | theorem 4.2 Temporal Descent Criterion is selected temporal package relative. | `packaged (assumption-relative)` | `Formal/AG/Evolution/ReplayDescent.lean`, `TemporalDescentCriterion` |

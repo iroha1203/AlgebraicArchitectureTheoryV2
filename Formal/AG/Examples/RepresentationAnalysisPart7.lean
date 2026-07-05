@@ -8,6 +8,9 @@ namespace FiniteModel
 namespace RepresentationAnalysisPart7
 
 open AAT.AG.RepresentationAnalysis
+open CategoryTheory
+open CategoryTheory.Limits
+open Opposite
 
 /-!
 Finite witness examples for PRD-7 / R13.
@@ -639,6 +642,422 @@ theorem detectingRepresentation_toy_zero_conservative :
   detectingRepresentation_toy_all_zero_imp_zero ToyObstructionClass.zero (by
     intro i
     cases i <;> trivial)
+
+/-! ### (g) finite synthesis package firing -/
+
+def finiteSynthesisPartI : Site.PartIPrerequisites where
+  carrier := carrier
+  core := corePackage
+
+def finiteSynthesisGeometry : Site.ArchitectureGeometry finiteSynthesisPartI where
+  site := site
+
+abbrev FiniteSynthesisAlgCat :=
+  LawAlgebra.AATCommAlgCat.{0, 0} PUnit
+
+noncomputable def finiteSynthesisAlgTerminal : FiniteSynthesisAlgCat :=
+  CommRingCat.mkUnder (CommRingCat.of (ULift PUnit)) PUnit
+
+noncomputable def finiteSynthesisAlgPresheaf :
+    LawAlgebra.AlgebraValuedAATPresheaf site PUnit :=
+  (CategoryTheory.Functor.const site.categoryᵒᵖ).obj finiteSynthesisAlgTerminal
+
+noncomputable def finiteSynthesisAlgSheaf :
+    LawAlgebra.LawAlgebraSheaf site PUnit where
+  val := finiteSynthesisAlgPresheaf
+  cond :=
+    CategoryTheory.Presheaf.isSheaf_of_isTerminal site.topology
+      (IsTerminal.ofUniqueHom
+        (fun _ => Under.homMk (CommRingCat.ofHom {
+          toFun := fun _ => PUnit.unit
+          map_one' := rfl
+          map_mul' := fun _ _ => rfl
+          map_zero' := rfl
+          map_add' := fun _ _ => rfl
+        }) (by
+          ext x
+          rfl))
+        (by
+          intro _Y _f
+          ext x
+          rfl))
+
+def finiteSynthesisCoordFamily (W : Site.ArchitectureContext object) :
+    LawAlgebra.CoordinateFamily W where
+  Coord := Empty
+  label := Empty.elim
+  LocalData := Empty.elim
+
+def finiteSynthesisRelations (W : Site.ArchitectureContext object) :
+    LawAlgebra.StructuralRelationFamily (finiteSynthesisCoordFamily W) PUnit where
+  Relation := LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit
+  polynomial r := r
+
+theorem finiteSynthesisRelations_JStruct_top (W : Site.ArchitectureContext object) :
+    (finiteSynthesisRelations W).JStruct = ⊤ := by
+  apply top_unique
+  intro q _hq
+  rw [LawAlgebra.StructuralRelationFamily.JStruct,
+    LawAlgebra.StructuralRelationFamily.RelStruct]
+  rw [show Set.range (finiteSynthesisRelations W).polynomial =
+      (Set.univ :
+        Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit)) by
+    ext p
+    constructor
+    · intro _h
+      exact Set.mem_univ p
+    · intro _h
+      exact ⟨p, rfl⟩]
+  exact Ideal.subset_span (Set.mem_univ q)
+
+def finiteSynthesisRestrictionStable
+    {source target : Site.ArchitectureContext object}
+    (f : Site.ContextMorphism source target) :
+    LawAlgebra.RestrictionStableStructuralRelations
+      (finiteSynthesisRelations source) (finiteSynthesisRelations target) f where
+  restriction := {
+    variableImage := Empty.elim
+  }
+  maps_JStruct := by
+    intro p _hp
+    rw [finiteSynthesisRelations_JStruct_top source]
+    change _ ∈
+      (Set.univ :
+        Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily source) PUnit))
+    exact Set.mem_univ _
+
+private theorem finiteSynthesisQuotientTop_eq
+    {W : Site.ArchitectureContext object}
+    (x y : (finiteSynthesisRelations W).RawAmbientLawAlgebra) :
+    x = y := by
+  refine Quotient.inductionOn x ?_
+  intro p
+  refine Quotient.inductionOn y ?_
+  intro q
+  apply Ideal.Quotient.eq.2
+  rw [finiteSynthesisRelations_JStruct_top W]
+  change p - q ∈
+    (Set.univ : Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit))
+  exact Set.mem_univ _
+
+noncomputable def finiteSynthesisRawAmbient :
+    LawAlgebra.RawAmbientPresheafBridge (A := object) PUnit where
+  coordFamilySpec := finiteSynthesisCoordFamily
+  relationFamily := finiteSynthesisRelations
+  restrictionStable := finiteSynthesisRestrictionStable
+  identity_law := by
+    intro W _id
+    ext x
+    · exact finiteSynthesisQuotientTop_eq _ _
+    · exact Empty.elim x
+  composition_law := by
+    intro _source _middle _target _f _g _comp
+    ext x
+    · exact finiteSynthesisQuotientTop_eq _ _
+    · exact Empty.elim x
+
+noncomputable def punitRingEquivOfSubsingleton
+    (R : Type) [CommRing R] [Subsingleton R] : R ≃+* PUnit where
+  toFun _ := PUnit.unit
+  invFun _ := 0
+  left_inv _ := Subsingleton.elim _ _
+  right_inv x := by cases x; rfl
+  map_mul' _ _ := rfl
+  map_add' _ _ := rfl
+
+noncomputable def finiteSynthesisRawAmbientAlgebra :
+    LawAlgebra.RawAmbientAlgebraPresheafBridge site PUnit where
+  rawAmbient := finiteSynthesisRawAmbient
+  rawPresheaf := finiteSynthesisAlgPresheaf
+  identifiesObject := by
+    intro _W
+    exact punitRingEquivOfSubsingleton _
+  restriction_naturality := by
+    intro _source _target _h _x
+    rfl
+
+noncomputable def finiteSynthesisSheafification :
+    LawAlgebra.LawAlgebraSheafificationBridge site PUnit where
+  raw := finiteSynthesisAlgPresheaf
+  plus := finiteSynthesisAlgSheaf
+  canonical := 𝟙 finiteSynthesisAlgPresheaf
+  isSheafification := by
+    intro _F η
+    refine ⟨η, ?_, ?_⟩
+    · simp
+    · intro lift hlift
+      simpa using hlift
+
+noncomputable def finiteSynthesisPresentation
+    (W : site.category) :
+    LawAlgebra.SelectedLawAlgebraPresentation finiteSynthesisSheafification W where
+  Generator := PUnit
+  Relation := PUnit
+  rawGenerator _ := PUnit.unit
+  sheafifiedGenerator _ := PUnit.unit
+  rawRelation _ := PUnit.unit
+  sheafifiedRelation _ := PUnit.unit
+  presentsRaw := True
+  presentsSheafified := True
+  canonical_preserves_generator := by
+    intro _g
+    rfl
+  canonical_preserves_relation := by
+    intro _r
+    rfl
+
+noncomputable def finiteSynthesisPresentationStable :
+    LawAlgebra.PresentationStableAATSite finiteSynthesisSheafification where
+  presentation := finiteSynthesisPresentation
+  stable := by
+    intro _W
+    exact ⟨trivial, trivial⟩
+
+noncomputable def finiteSynthesisLawAlgebraSheafPackage :
+    LawAlgebra.LawAlgebraSheafPackage site PUnit where
+  rawAmbient := finiteSynthesisRawAmbientAlgebra
+  sheafification := finiteSynthesisSheafification
+  raw_eq := rfl
+  presentationStable := finiteSynthesisPresentationStable
+
+noncomputable def finiteSynthesisTypeSheaf : Site.AATSh site where
+  val := (CategoryTheory.Functor.const site.categoryᵒᵖ).obj PUnit
+  cond :=
+    CategoryTheory.Presheaf.isSheaf_of_isTerminal site.topology
+      (IsTerminal.ofUniqueHom
+        (fun _ => fun _ => PUnit.unit)
+        (by
+          intro _X f
+          funext x
+          cases f x
+          rfl))
+
+noncomputable def finiteSynthesisAffineChart :
+    LawAlgebra.AffineChart.AffineAATChart.{0, 0, 0} PUnit where
+  AlgebraCarrier := PUnit
+  commRing := inferInstance
+  algebra := inferInstance
+  spec := {
+    Decoration := PUnit
+    decoration := PUnit.unit
+    obstructionIdeal := ⊥
+  }
+
+noncomputable def finiteSynthesisRingedTopos :
+    LawAlgebra.Scheme.RingedAATTopos.{0, 0, 0} site PUnit where
+  aatSheafObject := finiteSynthesisTypeSheaf
+  structureSheaf := finiteSynthesisLawAlgebraSheafPackage
+  locallyRingedSpace :=
+    LawAlgebra.Scheme.affineChartMathlibSpecLocallyRingedSpace
+      PUnit finiteSynthesisAffineChart
+
+noncomputable def finiteSynthesisArchitectureScheme :
+    LawAlgebra.Scheme.ArchitectureScheme.{0, 0, 0, 0, 0} site PUnit :=
+  LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec site PUnit
+    finiteSynthesisRingedTopos finiteSynthesisAffineChart rfl
+
+noncomputable def finiteSynthesisLawfulSection :
+    LawAlgebra.LawfulLocus.LawfulSectionData.{0, 0} PUnit (⊥ : Ideal PUnit) where
+  SectionRing := PUnit
+  commRing := inferInstance
+  pullback := RingHom.id PUnit
+
+def finiteSynthesisCover : Cohomology.CoverRelativeCechCover site where
+  base := siteBase
+  Index := PUnit
+  chart _ := siteBase
+  inclusion _ := 𝟙 siteBase
+  simplex _ := PUnit
+  overlap _ _ := siteBase
+  face _ _ _ := PUnit.unit
+  faceRestriction _ _ _ := 𝟙 siteBase
+
+def finiteSynthesisObstructionSheaf : Cohomology.ObstructionSheaf site where
+  carrier := Site.AATSh.toAATSheaf finiteSynthesisTypeSheaf
+  addCommGroup := by
+    intro _W
+    change AddCommGroup PUnit
+    infer_instance
+  map_zero := by
+    intro _source _target _f
+    rfl
+  map_add := by
+    intro _source _target _f x y
+    cases x
+    cases y
+    rfl
+
+def finiteSynthesisCechComplex :
+    Cohomology.CoverRelativeCechComplex finiteSynthesisCover
+      finiteSynthesisObstructionSheaf where
+  cochainAddCommGroup := by
+    intro _n
+    change AddCommGroup (PUnit -> PUnit)
+    infer_instance
+  alternatingFaceCombination := fun _n _faces _σ => PUnit.unit
+  differential := by
+    intro _n
+    change (PUnit -> PUnit) →+ (PUnit -> PUnit)
+    exact {
+      toFun := fun _ _ => PUnit.unit
+      map_zero' := by
+        funext _σ
+        rfl
+      map_add' := by
+        intro x y
+        funext σ
+        cases x σ
+        cases y σ
+        rfl
+    }
+  differential_eq_alternatingFaceCombination := by
+    intro _n c
+    funext σ
+    cases c σ
+    rfl
+  differential_comp := by
+    intro _n c
+    funext σ
+    cases c σ
+    rfl
+
+def finiteSynthesisRepairProfile :
+    Derived.RepairProfile.RepairComparisonProfile.{0} where
+  Section := PUnit
+  Geometry := PUnit
+  sectionComparison _ _ := True
+  geometryComparison _ _ := True
+  sectionImproves _ _ := True
+  geometryImproves _ _ := True
+  section_improves_implies_comparison := by
+    intro _s' _s _h
+    trivial
+  geometry_improves_implies_comparison := by
+    intro _X' _X _h
+    trivial
+
+def finiteSynthesisStratumParameter :
+    SingularityMonodromyStack.StratumReadingParameter site where
+  signatureAxes := toySignatureAxes
+  Coeff := PUnit
+  selectedCoeff := PUnit.unit
+
+noncomputable def finiteSynthesisArchitectureStratum :
+    SingularityMonodromyStack.ArchitectureStratum.{0, 0, 0, 0, 0}
+      finiteSynthesisStratumParameter PUnit where
+  geometry := finiteSynthesisArchitectureScheme
+  Point := PUnit
+  carrier := Set.univ
+  role := SingularityMonodromyStack.StratumRole.component
+  label := "finite-synthesis-singleton"
+  selectedSubobject := True
+  selectedSubobject_cert := trivial
+  locallyClosed := True
+  locallyClosed_cert := trivial
+  decorationCompatible := True
+  decorationCompatible_cert := trivial
+  readingCompatible := True
+  readingCompatible_cert := trivial
+
+def finiteSynthesisReadingParameter :
+    AATSchReadingParameter.{0, 0, 0, 0, 0} site PUnit where
+  SchemeMorphism _ _ := PUnit
+  id _ := PUnit.unit
+  comp _ _ := PUnit.unit
+  AtomLabelReading := PUnit
+  LawReading := PUnit
+  ObstructionIdealReading := PUnit
+  SignatureReading := PUnit
+  InterpretationMapReading := PUnit
+
+def finiteSynthesisAnalyticRepresentation :
+    AnalyticRepresentation finiteSynthesisReadingParameter PUnit where
+  targetCategory := toyTargetCategory
+  obj _ := PUnit.unit
+  map _ := PUnit.unit
+  map_id _ := rfl
+  map_comp _ := rfl
+
+def finiteSynthesisRepresentationFamily :
+    RepresentationFamily finiteSynthesisReadingParameter where
+  Index := ToyRepIndex
+  Target _ := PUnit
+  representation _ := finiteSynthesisAnalyticRepresentation
+
+def finiteSynthesisDetectingFamily :
+    UDetectingRepresentationFamily finiteSynthesisRepresentationFamily where
+  ObstructionClass := ToyObstructionClass
+  analyticZeroReading
+    | ToyRepIndex.graph, ToyObstructionClass.zero => True
+    | ToyRepIndex.graph, ToyObstructionClass.syncGap => False
+    | ToyRepIndex.graph, ToyObstructionClass.semanticGap => True
+    | ToyRepIndex.semantic, ToyObstructionClass.zero => True
+    | ToyRepIndex.semantic, ToyObstructionClass.syncGap => True
+    | ToyRepIndex.semantic, ToyObstructionClass.semanticGap => False
+  WitnessZero_U alpha := alpha = ToyObstructionClass.zero
+  detects := by
+    intro alpha hzero
+    cases alpha with
+    | zero => rfl
+    | syncGap => exact False.elim (hzero ToyRepIndex.graph)
+    | semanticGap => exact False.elim (hzero ToyRepIndex.semantic)
+  completenessLevel := CompletenessSpectrum.conservative
+
+def finiteSynthesisAnalyticReadingContext :
+    AnalyticReadingContext.{0, 0, 0, 0, 0, 0} object
+      finiteSynthesisReadingParameter where
+  AtomVocabulary := PUnit
+  atomVocabularyOf _ := PUnit.unit
+  lawUniverse := lawUniverse
+  CoverageTopology := PUnit
+  selectedCoverage := PUnit.unit
+  coefficientSheaf := PUnit
+  representationFamily := finiteSynthesisRepresentationFamily
+  distanceMassContext := marginDistanceMassContext
+  selectedWitnessFamily := PUnit
+  selectedWitness := PUnit.unit
+  selectedSignatureAxes := toySignatureAxes
+  signatureProfile := SignatureReadingProfile.ofSignatureAxes toySignatureAxes
+  detectingFamily := finiteSynthesisDetectingFamily
+  coverageAdequacy := True
+  witnessExactness := True
+  axisExactness := True
+  coefficientDiscipline := True
+  completenessLevel := CompletenessSpectrum.conservative
+
+noncomputable def finiteSynthesisAATSynthesisAssumptions :
+    AATSynthesisAssumptions.{0, 0, 0, 0, 0, 0} finiteSynthesisPartI PUnit where
+  architectureGeometry := finiteSynthesisGeometry
+  ringedAATTopos := finiteSynthesisRingedTopos
+  architectureScheme := finiteSynthesisArchitectureScheme
+  ringedAATTopos_eq_scheme := rfl
+  LawCoordinateAlgebra := PUnit
+  lawCoordinateCommRing := inferInstance
+  obstructionIdeal := ⊥
+  lawfulLocus :=
+    LawAlgebra.LawfulLocus.lawfulLocus PUnit (⊥ : Ideal PUnit)
+  lawfulLocus_eq := rfl
+  lawfulSection := finiteSynthesisLawfulSection
+  cover := finiteSynthesisCover
+  obstructionSheaf := finiteSynthesisObstructionSheaf
+  obstructionCohomology := finiteSynthesisCechComplex
+  derivedLawGeometry := finiteSynthesisRepairProfile
+  stratumParameter := finiteSynthesisStratumParameter
+  singularityMonodromyStack := finiteSynthesisArchitectureStratum
+  readingParameter := finiteSynthesisReadingParameter
+  representationPeriodMetricAnalysis := finiteSynthesisAnalyticReadingContext
+
+noncomputable def finiteSynthesisAATSynthesisPackage :
+    AATSynthesisPackage finiteSynthesisPartI PUnit :=
+  finiteSynthesisAATSynthesisAssumptions.toPackage
+
+theorem finiteSynthesisAATSynthesisPackage_eq_toPackage :
+    finiteSynthesisAATSynthesisPackage =
+      finiteSynthesisAATSynthesisAssumptions.toPackage :=
+  rfl
+
+def finiteSynthesis_algebraicGeometricAATSynthesis_fires :=
+  algebraicGeometricAATSynthesis finiteSynthesisAATSynthesisAssumptions
 
 end RepresentationAnalysisPart7
 end FiniteModel
