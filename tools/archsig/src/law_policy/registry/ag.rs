@@ -21,13 +21,13 @@ fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
         evaluator_id: "ag.coherence-obstruction".to_string(),
         law_id: "ag.coherence-obstruction".to_string(),
         required_atom_constructors: Vec::new(),
-        required_predicates: vec!["coherence.tripleMismatch".to_string()],
+        required_predicates: vec!["cech.sectionValue".to_string()],
         required_molecule_condition:
             "archmap/v0.5.0 contexts and selected cover triple-overlap 2-skeleton".to_string(),
         scope_filtering_rule:
             "selected finite poset site and cover from MeasurementProfile".to_string(),
         missing_blocker_rule:
-            "missing coherence witness atoms are unmeasured; incomplete 2-skeleton is not_computed"
+            "missing section value witness atoms are unmeasured; incomplete 2-skeleton is not_computed"
                 .to_string(),
         pass_criteria:
             "selected-cover banded abelian F2 H2 coherence cocycle is a coboundary"
@@ -55,7 +55,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
         required_predicates: vec![
             "boundary-residue.patchRole".to_string(),
             "boundary-residue.restrictionColumn".to_string(),
-            "boundary-residue.mismatchSection".to_string(),
+            "boundary-residue.sectionValue".to_string(),
         ],
         required_molecule_condition:
             "archmap/v0.5.0 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"
@@ -63,7 +63,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
         scope_filtering_rule:
             "selected finite cover and witnessFamily from MeasurementProfile".to_string(),
         missing_blocker_rule:
-            "missing patch classification, mismatch section, or restriction matrix is not_computed"
+            "missing patch classification, boundary section value, or restriction matrix is not_computed"
                 .to_string(),
         pass_criteria:
             "selected boundary mismatch section lies in the F2 image of Mayer-Vietoris d0"
@@ -125,7 +125,7 @@ fn ag_section_manifest() -> LawEvaluatorManifestV1 {
         law_id: "ag.section-factorization".to_string(),
         required_atom_constructors: Vec::new(),
         required_predicates: vec![
-            "section-factorization.obstructionGenerator".to_string(),
+            "section-factorization.support".to_string(),
             "section-factorization.witnessAssignment".to_string(),
         ],
         required_molecule_condition:
@@ -134,7 +134,7 @@ fn ag_section_manifest() -> LawEvaluatorManifestV1 {
         scope_filtering_rule:
             "selected finite poset site and witness family from MeasurementProfile".to_string(),
         missing_blocker_rule:
-            "missing witnessAssignment or obstructionGenerator atoms are not_computed; partial undecidable assignment is unknown"
+            "missing witnessAssignment or raw support atoms are not_computed; partial undecidable assignment is unknown"
                 .to_string(),
         pass_criteria:
             "selected total section avoids every minimal forbidden support, so s^* I_Ob^U=0"

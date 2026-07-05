@@ -894,14 +894,6 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                     "status": "computed_for_selected_1_skeleton"
                 },
                 "status": "computed"
-            },
-            {
-                "evaluator": "witness-counting",
-                "invariantId": "witness-counting:profile:ag-default@1",
-                "nonConclusion": "Witness counting is reported as a fixture discriminator and does not determine Cech H1.",
-                "supportAtomRefs": [],
-                "verdict": "measured_zero",
-                "violationCount": 0
             }
         ]),
         "ledger transparency must not change computed invariants for the same Cech input"
@@ -986,13 +978,6 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             }),
         "surjective restriction must remain assumed even when other structural premises are visible"
     );
-    let witness_counting = invariant_by_id(&packet, "witness-counting:profile:ag-default@1");
-    assert_eq!(
-        witness_counting["invariantId"],
-        "witness-counting:profile:ag-default@1"
-    );
-    assert_eq!(witness_counting["verdict"], "measured_zero");
-
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],

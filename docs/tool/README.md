@@ -24,8 +24,8 @@ Current source-of-truth boundaries:
 - 観測と判定の責務境界の理論的根拠は
   [ArchMap・LawPolicy・ArchSig 責務憲章](archmap_lawpolicy_archsig_responsibility_charter.md) を見る。
   [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) は、旧 `extractionDoctrineRef` を
-  author 入力ではなく固定定数として扱い、AG 入力から判定語(`mismatch` / `obstructionGenerator` /
-  計算済み certificate)を排する改修を提案している。AAT 本文の A8 Essential Uniqueness 定理そのものは
+  author 入力ではなく固定定数として扱い、AG 入力を `sectionValue` / `support` などの
+  生の観測語彙へ寄せる改修を提案している。AAT 本文の A8 Essential Uniqueness 定理そのものは
   不変であり、tool 側の単一固定 doctrine 化はその一特殊化(compute 側の cross-doctrine 比較の退化)である。
 - MeasurementProfile v1 is the first-class selected measurement regime. It
   declares site / cover refs, coefficient, EffCoeff procedure, witness family,
