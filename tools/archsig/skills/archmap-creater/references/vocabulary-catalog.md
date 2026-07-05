@@ -35,7 +35,7 @@ ArchMap v2 atom kinds:
 | `transfer` | support transfer model evidence | yes |
 | `period` | period integral evidence | yes |
 | `laplacian` | cellular Laplacian evidence | yes |
-| `witness` | witness violation evidence | yes |
+| `witness` | descriptive witness note | no |
 | `boundary-residue` | boundary residue repair evidence | yes |
 | `restriction-compatibility` | finite support restriction evidence | yes |
 | `coherence` | coherence evaluator evidence | yes |
@@ -81,7 +81,6 @@ listed predicate fit the observed source use. This is not an axis extension.
 | `period` | `periodIntegral` |
 | `transfer` | `transferPairing`, `repairPath`, `groundCost` |
 | `tor` | `commonAmbient`, `lawIdealGenerator` |
-| `witness` | `violation` |
 | `boundary-residue` | `restrictionColumn`, `boundarySection`, `patchRole`, `patchClassification` |
 | `restriction-compatibility` | `restrictionIdealGenerator` |
 | `coherence` | evaluator-specific coherence predicates |

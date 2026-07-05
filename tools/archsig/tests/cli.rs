@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -1006,6 +1006,45 @@ fn cli_archmap_authoring_audit_rejects_duplicate_ledger_rows() {
 }
 
 #[test]
+fn cli_archmap_authoring_audit_rejects_incomplete_worklist_survey_rows() {
+    let out_dir = temp_dir("archmap-authoring-audit-incomplete-worklist-read");
+    let (archmap, mut scope, candidate, mut ledger) = authoring_audit_fixture();
+    scope["worklist"].as_array_mut().expect("worklist array").push(json!({
+        "order": 2,
+        "sourceId": "src:src/b.rs",
+        "path": "src/b.rs",
+        "kind": "file",
+        "contentHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "sizeBytes": 11,
+        "authorAdded": false
+    }));
+    ledger["rows"]
+        .as_array_mut()
+        .expect("ledger rows array")
+        .push(json!({
+            "sourceId": "src:src/b.rs",
+            "surveyStatus": "surveyed",
+            "passes": ["pass-a"],
+            "surveyedKinds": [],
+            "adoptedAtomIds": []
+        }));
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-provenance-closure")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(
+        &json,
+        "candidate survey rows must cover every scope worklist row"
+    ));
+    assert!(json_contains_substring(
+        &json,
+        "candidate reviewedSources must cover every scope worklist row"
+    ));
+}
+
+#[test]
 fn cli_archmap_authoring_audit_rejects_cite_before_read() {
     let out_dir = temp_dir("archmap-authoring-audit-read-before-cite");
     let (mut archmap, scope, candidate, ledger) = authoring_audit_fixture();
@@ -1064,6 +1103,7 @@ fn cli_archmap_authoring_audit_allows_doc_section_partial_read() {
     archmap["atoms"][0]["refs"] = json!(["doc:docs/arch.md#routing"]);
     scope["worklist"][0]["sourceId"] = json!("src:docs/arch.md");
     scope["worklist"][0]["path"] = json!("docs/arch.md");
+    candidate["reviewedSources"] = json!(["doc:docs/arch.md#routing"]);
     candidate["surveyRows"][0]["sourceId"] = json!("doc:docs/arch.md#routing");
     candidate["surveyRows"][0]["status"] = json!("partial");
     candidate["surveyRows"][0]["reason"] = json!("unreadable");
@@ -10615,6 +10655,101 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
 }
 
 #[test]
+fn cli_locks_archmap_creater_vocabulary_catalog_against_ag_filters() {
+    let catalog = include_str!("../skills/archmap-creater/references/vocabulary-catalog.md");
+    let ag_source = include_str!("../src/ag_measurement.rs");
+    let fixture: Value = serde_json::from_str(include_str!(
+        "fixtures/ag_measurement/vocabulary_catalog_ag_pairs.json"
+    ))
+    .expect("vocabulary catalog lint fixture parses");
+    assert_eq!(
+        fixture["schema"],
+        "archsig-vocabulary-catalog-ag-lint/v0.5.0"
+    );
+
+    let axis_table = markdown_table_rows(catalog, "## Axis Table", "## Predicate Table");
+    let ag_consumed_axes = axis_table
+        .iter()
+        .filter_map(|row| {
+            (row.len() >= 3 && row[2] == "yes").then(|| strip_code_ticks(&row[0]).to_string())
+        })
+        .collect::<BTreeSet<_>>();
+    let fixture_axes = fixture["agConsumedAxes"]
+        .as_array()
+        .expect("agConsumedAxes is array")
+        .iter()
+        .map(|value| value.as_str().expect("axis is string").to_string())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        ag_consumed_axes, fixture_axes,
+        "vocabulary-catalog AG-consumed axis table must match the lint fixture"
+    );
+    assert!(
+        !ag_consumed_axes.contains("support"),
+        "support must not re-enter the vocabulary-catalog axis table"
+    );
+
+    let pair_table = markdown_table_rows(
+        catalog,
+        "## AG Axis Predicate Pairs",
+        "## Semantic Object Rule",
+    );
+    let catalog_pairs = pair_table
+        .iter()
+        .filter_map(|row| {
+            (row.len() >= 2).then(|| {
+                (
+                    strip_code_ticks(&row[0]).to_string(),
+                    predicate_tokens(&row[1]).collect::<BTreeSet<_>>(),
+                )
+            })
+        })
+        .collect::<BTreeMap<_, _>>();
+    for pair in fixture["agAxisPredicatePairs"]
+        .as_array()
+        .expect("agAxisPredicatePairs is array")
+    {
+        let axis = pair["axis"].as_str().expect("axis is string");
+        let expected_predicates = pair["predicates"]
+            .as_array()
+            .expect("predicates is array")
+            .iter()
+            .map(|value| value.as_str().expect("predicate is string").to_string())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            catalog_pairs.get(axis),
+            Some(&expected_predicates),
+            "vocabulary-catalog AG predicate row must match fixture for axis {axis}"
+        );
+        for snippet in pair["sourceSnippets"]
+            .as_array()
+            .expect("sourceSnippets is array")
+        {
+            let snippet = snippet.as_str().expect("source snippet is string");
+            assert!(
+                ag_source.contains(snippet),
+                "ag_measurement.rs must contain vocabulary-catalog filter snippet for {axis}: {snippet}"
+            );
+        }
+    }
+
+    for predicate in fixture["nonAxisPredicates"]
+        .as_array()
+        .expect("nonAxisPredicates is array")
+    {
+        let predicate = predicate.as_str().expect("predicate is string");
+        assert!(
+            !ag_consumed_axes.contains(predicate),
+            "{predicate} must remain a predicate, not an AG-consumed axis"
+        );
+        assert!(
+            catalog.contains(&format!("`{predicate}` is not an axis")),
+            "vocabulary catalog must explicitly document that {predicate} is not an axis"
+        );
+    }
+}
+
+#[test]
 fn archview_static_app_is_packaged_asset() {
     let viewer_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -11913,6 +12048,54 @@ fn write_json_fixture(out_dir: &Path, name: &str, value: &Value) -> PathBuf {
     )
     .expect("json fixture writes");
     path
+}
+
+fn markdown_table_rows(markdown: &str, start_heading: &str, end_heading: &str) -> Vec<Vec<String>> {
+    let section = markdown
+        .split_once(start_heading)
+        .unwrap_or_else(|| panic!("missing markdown heading {start_heading}"))
+        .1
+        .split_once(end_heading)
+        .unwrap_or_else(|| panic!("missing markdown heading {end_heading}"))
+        .0;
+    section
+        .lines()
+        .filter_map(|line| {
+            let trimmed = line.trim();
+            if !trimmed.starts_with('|') || trimmed.contains("---") {
+                return None;
+            }
+            let cells = trimmed
+                .trim_matches('|')
+                .split('|')
+                .map(|cell| cell.trim().to_string())
+                .collect::<Vec<_>>();
+            (cells
+                .first()
+                .is_some_and(|first| *first != "axis" && *first != "kind"))
+            .then_some(cells)
+        })
+        .collect()
+}
+
+fn strip_code_ticks(value: &str) -> &str {
+    value.trim().trim_matches('`')
+}
+
+fn code_tokens(value: &str) -> impl Iterator<Item = String> + '_ {
+    value
+        .split('`')
+        .enumerate()
+        .filter_map(|(index, token)| (index % 2 == 1).then(|| token.to_string()))
+}
+
+fn predicate_tokens(value: &str) -> Box<dyn Iterator<Item = String> + '_> {
+    let tokens = code_tokens(value).collect::<Vec<_>>();
+    if tokens.is_empty() {
+        Box::new(std::iter::once(value.trim().to_string()))
+    } else {
+        Box::new(tokens.into_iter())
+    }
 }
 
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {

@@ -1,0 +1,141 @@
+{
+  "schema": "archsig-vocabulary-catalog-ag-lint/v0.5.0",
+  "agConsumedAxes": [
+    "boundary-residue",
+    "cech",
+    "coherence",
+    "laplacian",
+    "period",
+    "refactor",
+    "restriction-compatibility",
+    "section-factorization",
+    "square-free",
+    "tor",
+    "transfer"
+  ],
+  "nonAxisPredicates": [
+    "support"
+  ],
+  "agAxisPredicatePairs": [
+    {
+      "axis": "boundary-residue",
+      "predicates": [
+        "boundarySection",
+        "patchClassification",
+        "patchRole",
+        "restrictionColumn"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"boundary-residue\"",
+        "matches!(atom.predicate.as_str(), \"patchRole\" | \"patchClassification\")",
+        "atom.axis == \"boundary-residue\" && atom.predicate == \"restrictionColumn\"",
+        "atom.axis == \"boundary-residue\" && atom.predicate == \"boundarySection\""
+      ]
+    },
+    {
+      "axis": "cech",
+      "predicates": [
+        "sectionValue"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"cech\" && atom.predicate == \"sectionValue\""
+      ]
+    },
+    {
+      "axis": "coherence",
+      "predicates": [
+        "evaluator-specific coherence predicates"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"coherence\""
+      ]
+    },
+    {
+      "axis": "laplacian",
+      "predicates": [
+        "cellularBoundary",
+        "cellularCochain"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"laplacian\" && atom.predicate == \"cellularCochain\"",
+        "atom.axis == \"laplacian\" && atom.predicate == \"cellularBoundary\""
+      ]
+    },
+    {
+      "axis": "period",
+      "predicates": [
+        "periodIntegral"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"period\" && atom.predicate == \"periodIntegral\""
+      ]
+    },
+    {
+      "axis": "refactor",
+      "predicates": [
+        "evaluator-specific refactor predicates"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"refactor\""
+      ]
+    },
+    {
+      "axis": "restriction-compatibility",
+      "predicates": [
+        "restrictionIdealGenerator"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"restriction-compatibility\"",
+        "atom.predicate == \"restrictionIdealGenerator\""
+      ]
+    },
+    {
+      "axis": "section-factorization",
+      "predicates": [
+        "cooccurrence",
+        "support",
+        "witnessAssignment"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"section-factorization\" && is_raw_support_predicate(atom)",
+        "atom.axis == \"section-factorization\" && atom.predicate == \"witnessAssignment\"",
+        "matches!(atom.predicate.as_str(), \"support\" | \"cooccurrence\")"
+      ]
+    },
+    {
+      "axis": "square-free",
+      "predicates": [
+        "cooccurrence",
+        "support"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"square-free\" && is_raw_support_predicate(atom)",
+        "matches!(atom.predicate.as_str(), \"support\" | \"cooccurrence\")"
+      ]
+    },
+    {
+      "axis": "tor",
+      "predicates": [
+        "commonAmbient",
+        "lawIdealGenerator"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"tor\" && atom.predicate == \"commonAmbient\"",
+        "atom.axis == \"tor\" && atom.predicate == \"lawIdealGenerator\""
+      ]
+    },
+    {
+      "axis": "transfer",
+      "predicates": [
+        "groundCost",
+        "repairPath",
+        "transferPairing"
+      ],
+      "sourceSnippets": [
+        "atom.axis == \"transfer\" && atom.predicate == \"transferPairing\"",
+        "atom.axis == \"transfer\" && atom.predicate == \"repairPath\"",
+        "atom.axis == \"transfer\" && atom.predicate == \"groundCost\""
+      ]
+    }
+  ]
+}
