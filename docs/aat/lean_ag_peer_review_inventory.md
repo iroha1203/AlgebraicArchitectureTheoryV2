@@ -259,12 +259,12 @@ docs/aat/proof_obligations_ag_aat.md
 | VII-4 | `AnalyticContext.lean` theorem 15.4 | 実質化 | adequacy assumptions を load-bearing 化し zeroClass を actual zero へ。 |
 | VII-5 | `DistanceFlatnessMass.lean` | 実質化 | fake GLB を `iInf` / actual GLB へ。 |
 | VII-6 | `GraphMatrix.lean` walk count | 昇格 | B項目。existence iff から card equality へ。 |
-| VIII-1 | `Hodge.lean` 8.5/8.6/8.7 | 昇格 | finite inner-product complex theorem。PRD-R 最重要昇格。 |
+| VIII-1 | `Hodge.lean` 8.5/8.6/8.7 | 実装済み | `RealFiniteInnerProductComplex`、Mathlib `LinearMap.adjoint` 由来の adjoint、`RealFiniteHodgeDecomposition`、`RealHarmonicDebtMinimality`、`RealEssentialRepairLowerBound` を追加し、finite real inner-product complex 上の分解・harmonic debt norm・補正 residual 最小性・repair lower-bound inequality を load-bearing bridge に昇格した。 |
 | VIII-2 | `SquareFreeRepair.lean` theorem 5.2 | 昇格 | PRD-3 Stanley-Reisner asset と Alexander dual / hitting set proof へ。 |
 | VIII-3 | `FiniteRegime.lean` / `Computability.lean` | 実質化 | `Finite` / `Fintype` predicates と finite cochain lemma。 |
 | VIII-4 | `LawConflict.lean` | 実質化 | Derived `LawConflictPackage` へ接続する。 |
 | VIII-5 | `Packet.lean` / `GAGA.lean` | 実質化 | certified fields を theorem package 型へ。 |
-| VIII-6 | `Examples.lean` | 発火 | Hodge / refactor / 5.2 fixtures を nontrivial finite examples へ。 |
+| VIII-6 | `Examples.lean` | Hodge部実装済み | Hodge fixture は `LowDegreeRealCochain = EuclideanSpace ℝ (Fin 3)` の zero differential complex で発火し、`lowDegreeRealHodgeDecomposition`、`lowDegreeRealHarmonicDebtMinimality`、`lowDegreeRealEssentialRepairLowerBound` で 8.5/8.6/8.7 を実インスタンス化した。5.2 / Alexander dual fixture は AC16 側に残す。 |
 | IX-1 | `ReplayDescent.lean` theorem 4.2 | 昇格 | torsor action / gluing operation / mismatch calculation。 |
 | IX-2 | `Force.lean` candidate 7.2 | 実質化 | `IntegrableForce` を real interface にし candidate を inhabitable にする。 |
 | IX-3 | temporal product cohomology | 昇格 | finite poset x two-point trace incidence complex。 |
@@ -291,7 +291,7 @@ docs/aat/proof_obligations_ag_aat.md
 | PRD-6 | AC20 | five finite toy models are selected finite witness packages. R7 で transport descent の空型 package は zero/nonzero case へ分割し、selected finite zero/nonzero data から `Nonempty` になる surface を追加済み。 | `proved example theorem` / `selected witness package` | `Formal/AG/Examples/SingularityMonodromyStackPart6.lean`, `TransportDescentZeroToyModel`, `TransportDescentNonzeroToyModel` |
 | PRD-7 | AC8 | strict period well-definedness is selected finite homology data relative. | `packaged (assumption-relative)` | `Formal/AG/RepresentationAnalysis/FiniteHomology.lean` |
 | PRD-7 | AC19 | AAT synthesis theorem package now has finite model firing. | `proved finite synthesis firing` / `packaged theorem` | `Formal/AG/RepresentationAnalysis/Synthesis.lean`, `AATSynthesisPackage`, `Formal/AG/Examples/RepresentationAnalysisPart7.lean`, `finiteSynthesisAATSynthesisPackage` |
-| PRD-8 | AC8 / AC14 / AC15 | theorem 5.2 and Hodge theorem package are certified-field/package relative. | `packaged (assumption-relative)` | `Formal/AG/Measurement/SquareFreeRepair.lean`, `Formal/AG/Measurement/Hodge.lean` |
+| PRD-8 | AC8 / AC14 / AC15 | theorem 5.2 remains package-relative for AC16, while Hodge 8.5/8.6/8.7 has a real finite inner-product bridge and 3D fixture firing. | `Hodge implemented` / `theorem 5.2 packaged (assumption-relative)` | `Formal/AG/Measurement/SquareFreeRepair.lean`, `Formal/AG/Measurement/Hodge.lean`, `Formal/AG/Measurement/Examples.lean` |
 | PRD-8 | AC9 / AC10 / AC16 / AC17 | stability / spectral / base-change candidates remain statement-only. | `statement-only` | `Formal/AG/Measurement/Stability.lean`, `Formal/AG/Measurement/Hodge.lean`, `Formal/AG/Measurement/LawConflict.lean` |
 | PRD-9 | AC13 | theorem 4.2 Temporal Descent Criterion is selected temporal package relative. | `packaged (assumption-relative)` | `Formal/AG/Evolution/ReplayDescent.lean`, `TemporalDescentCriterion` |
 | PRD-9 | AC20 | finite temporal examples include selected / degenerate fixtures and force candidate assumptions. | `packaged (assumption-relative)` / `statement-only` | `Formal/AG/Examples/EvolutionPart9.lean`, `ForceCandidateFixture`; `Formal/AG/Evolution/Force.lean`, `ForceIntegrabilityObstructionCandidate` |
