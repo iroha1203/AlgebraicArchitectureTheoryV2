@@ -1027,3 +1027,59 @@ G2 / G3 audit summary:
 - G3 axiom check: pass。reported declarations は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
   `sorryAx` はない。
 - G4 score confirmation: base 30、evidence multiplier 2.0、penalty 0、final +60。
+
+## Cycle 20 — Owner-uniform selected finite quotient carrier
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-true-quotient-object.md`
+candidate_type: `unification`
+evidence_stage: `proved-in-research`
+base_score: 40
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 80
+category: `selected-finite-quotient-carrier`, `finite-quotient-shadow`,
+  `presentation-comparison`, `conway-obstruction`
+goal_delta: Cycle 17 の boundary-generator membership predicate と Cycle 19 の selector /
+  quotient-style bridge を、selected finite quotient carrier 上の class theorem として固定した。
+  `OwnerUniformConwayClass family = 0` は boundary membership および owner-uniform span selector
+  existence と同値であり、selected singleton subfamily は zero、full restricted two-fork family は
+  nonzero class を持つ。
+project_value_delta: Conway obstruction receiver spine に、明示的な quotient carrier と class API を追加した。
+  これは universal quotient theorem、arbitrary-cover naturality、canonical selector、true sheaf `H^1` ではなく、
+  selected finite quotient carrier である。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は owner mismatch や
+  local repair story を返せるが、selector、boundary-generator、local-zero、full-family-nonzero presentation を
+  一つの Lean-checked finite quotient class として保存しない。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformTrueQuotient.lean`、
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformTrueQuotient`、`lake build FormalAGResearch` が通過。
+  `#print axioms` は reported declarations について `propext`, `Classical.choice`, `Quot.sound` のみで
+  `sorryAx` はない。
+open_questions: arbitrary-cover naturality、universal quotient property、true sheaf `H^1`、
+  relative nerve / Cech shadow は未固定。Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformTrueQuotient.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformConwayQuotient`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformConwayClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_eq_zero_iff_familyClassVanishes`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_eq_zero_iff_spanSelector`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_ne_zero_iff_selectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_ne_zero_iff_familyNonzeroClass`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_ownerUniformConwayClass_zero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_ownerUniformConwayClass_nonzero`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_conwayClass_nonzero_iff_selectorObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformTrueQuotientPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: A は revise / base 40。selected finite quotient carrier としてなら厳密だが、
+  Cycle 17/19 の quotient API restatement に近いと指摘。B/C/D は accept で base 65-75。
+  `true quotient object` label は強すぎるため、card と report は selected finite quotient carrier に修正。
+- G3 axiom audit: pass。reported declarations は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
+  `sorryAx` はない。
+- G3 formalization quality: pass。actual quotient carrier、class zero iff boundary / selector、
+  singleton zero、full-family nonzero を主張し、universal quotient / arbitrary-cover naturality / true sheaf `H^1`
+  へ overclaim していない。
+- G4 score audit: reduce。G2 A の low bound を採用し、base 40、evidence multiplier 2.0、
+  penalty 0、final +80。
