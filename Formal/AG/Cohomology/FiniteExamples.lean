@@ -169,6 +169,26 @@ theorem no_global_lawful_section_by_localFlatnessGap
   localFlatnessGap_no_globalLawfulSection H Hyp W.hiddenCouplingClass_nonzero
 
 /--
+R5 / IV-3: finite pseudo-circle specialization of Theorem 7.1 through a
+selected overlap-wise global-restriction/coboundary soundness package.
+
+Compared with `no_global_lawful_section_by_localFlatnessGap`, this route does
+not take an already-packaged `LocalFlatnessGapHypotheses`; it consumes finite
+overlap-wise checks and assembles them into the selected restriction surface.
+-/
+theorem no_global_lawful_section_by_finiteGlobalRestrictionPointwiseSoundness
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {𝒰 : CoverRelativeCechCover S}
+    {Ob : ObstructionSheaf S} {R : Type v} [CommRing R] {IOb : Ideal R}
+    {D : LocalFlatnessData 𝒰 R IOb} {M : GluingMismatchData Ob D}
+    {K : CoverRelativeCechComplex 𝒰 Ob} {H : HiddenCouplingData M K}
+    (W : CoverRelativeH1NonzeroWitness H)
+    (P : FiniteGlobalRestrictionPointwiseSoundness.{u, v, w} H) :
+    ¬ Nonempty (CompatibleGlobalLawfulSection.{u, v, w} H) :=
+  localFlatnessGap_no_globalLawfulSection_of_finiteGlobalRestrictionPointwiseSoundness H
+    P W.hiddenCouplingClass_nonzero
+
+/--
 IV.R10 / AC13: the pseudo-circle golden example combines the two readings.
 
 The H0-style witness count is zero, while the selected H1 class is nonzero and
