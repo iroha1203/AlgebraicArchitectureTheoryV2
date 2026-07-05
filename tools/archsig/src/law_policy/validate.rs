@@ -1,5 +1,5 @@
 use super::registry::{
-    expand_law_policy_v1, is_known_v1_basis, is_known_v1_distance_profile, is_known_v1_evaluator,
+    expand_law_policy_v1, is_known_evaluator, is_known_v1_basis, is_known_v1_distance_profile,
     is_known_v1_pack, static_law_evaluator_registry_v1,
 };
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
@@ -199,7 +199,7 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
             }
         }
         if let Some(evaluator) = entry.evaluator.as_deref() {
-            if !is_known_v1_evaluator(evaluator) {
+            if !is_known_evaluator(evaluator) {
                 examples.push(generic_validation_example(
                     &format!("policies[{index}].evaluator"),
                     evaluator,
