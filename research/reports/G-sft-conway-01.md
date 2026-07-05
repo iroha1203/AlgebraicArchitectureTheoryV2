@@ -1649,3 +1649,56 @@ G2 / G3 / G4 audit summary:
   中核は finite table との iff と repair-transition iff への合成であり、conflict enumeration、morphism、
   refinement naturality、transition composition、一般 conflict-set calculus は未固定。fail-closed に
   G2 の下限を採用し、base 30、evidence multiplier 2.0、penalty 10、final +50 とする。
+
+## Cycle 30 — Selected conflict bridge
+
+candidate: `research/ideas/g-sft-conway-01-selected-conflict-bridge.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 25
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 40
+category: `conway-obstruction`, `selected-conflict-set`,
+  `support-assignment`, `repair-transition`
+goal_delta: Cycle 29 の selected conflict-set hitting を、Cycle 23 の operation-shaped hitting、
+  Cycle 25 の support-assignment existence、Cycle 28 の repair-transition existence と接続した。
+  selected conflict-set hitting は post-edit selected Conway obstruction を消す十分条件としても使える。
+project_value_delta: selected conflict-set vocabulary を孤立した finite index ではなく、既存の repair
+  existence criteria と同じ truth condition を持つ bounded bridge point にした。後続 cycle で
+  membership、selector-preservation、refinement statement を置く入口になる。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  mismatch や owner incidence を可視化できるが、この cycle は selected conflict hitting が
+  support-assignment / repair-transition existence と同値に読め、no-obstruction を含意することを Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwaySelectedConflictMorphism.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: general conflict-set morphism category、arbitrary conflict enumeration、repair composition、
+  selector-preserving refinement naturality、refactor-side two-owner obstruction witness は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwaySelectedConflictMorphism.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgHitsSelectedConflictSet_iff_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorHitsSelectedConflictSet_iff_hitsEveryConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgHitsSelectedConflictSet_iff_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorHitsSelectedConflictSet_iff_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgNoConwayObstruction_of_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorNoConwayObstruction_of_hitsSelectedConflictSet`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedConflictBridgePackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: pass。Cycle 29 の selected conflict-set interface を operation-shaped hitting、
+  support-assignment existence、repair-transition existence、no-obstruction consequence に接続する bounded
+  bridge として有用。ただし中核は既存 iff の合成であり、一般 conflict-set morphism category、arbitrary
+  enumeration、repair composition、selector-preserving refinement naturality ではない。G2 は base 30、
+  multiplier 2.0、penalty 10、final +50 を推奨。
+- G3 formalization quality: pass。focused check と module build は通過し、`sorry/admit/unsafe/axiom` は
+  対象 Lean にない。axiom audit は hitting bridge / no-obstruction bridge が標準 `propext`、
+  support-assignment bridge と package が support-assignment existence 由来の `Classical.choice` を継承する。
+  ファイル名 `Morphism` はやや強いが、本文と theorem は selected finite bridge に限定される。
+- G4 score audit: reduce。`no-obstruction` は selected hitting からの帰結であり、同値 criterion ではないため
+  wording を修正した。新規性は Cycle 29 predicate と Cycle 23/25/28 の既存 iff を finite table 経由で
+  合成した bounded bridge に留まる。fail-closed に G4 の下限を採用し、base 25、
+  evidence multiplier 2.0、penalty 10、final +40 とする。
