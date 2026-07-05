@@ -319,17 +319,63 @@ sitemap / llms.txt は新ルートのみ列挙する。
 発火条件: ArchSig v0.5.0 出荷(compare / gate 一本化、単一契約版数 `<name>/v0.5.0`、
 SAGA evaluator、`archsig-repair-plan/v1`)。
 
-マニュアル構成(現行 6 ページ+concepts を発展させる):
+### 7.1 位置づけ(2026-07-05 理想系議論で更新)
+
+website の理想系議論の結論: 進行中の研究の記録は GitHub(Issue / PR / research loop)に
+委譲し、website 固有の理想は「確定した主張の忠実な鏡」+「**実行できる理論**」の 2 つに
+絞る。後者の本体は ArchView のような可視化デモではなく、**第三者が ArchSig を自分の
+リポジトリで完走できるマニュアル**である。理論が計算可能であるという主張は、他人の
+環境で再現されたときに初めて公開面として完成する。Wave 3 はこの「器官」を作る波であり、
+単なるドキュメント増強ではない。
+
+現状評価(2026-07-05): archsig セクションは 6 ページ合計約 640 行で、性格は
+ショーケース(紹介文)。ツールマニュアルの定番骨格——インストール、保証された初回実行、
+入力 contract の作り方、出力の完全な読み方、タスク別レシピ、トラブルシューティング——が
+欠けている。
+
+### 7.2 三層読者構造と抽象化原則
+
+**抽象化原則(2026-07-05 ユーザー確定)**: 一般のエンジニアが代数幾何を習得しなくて
+よいこと。AAT / ArchSig は Agent SKILL によって抽象化され、人間エンジニアは
+エージェントに「分析して」と言うだけでよい。したがって:
+
+- マニュアルの主経路(getting-started / manual)は、層・コホモロジー・descent の
+  語彙を**前提にしない**。診断はエンジニアの語彙(依存、隠れ結合、修理案、
+  ゲート判定)で読めること。
+- 理論語彙は theory anchor リンクの背後に置く。深く知りたい読者だけが AAT 本文へ
+  降りる一方通行の導線とし、逆方向(理論を読まないと診断が読めない)を作らない。
+- これは責務境界の再述でもある: ArchSig は選ばれた語彙内の肯定的な diagnostic
+  conclusion を返すツールであり、数学の理解を入力として要求しない。
+
+ArchSig は Skill-first であり、一次オペレーターは LLM エージェント。マニュアルは
+読者を三層に分けて設計する:
+
+1. **機械(エージェント)** — 正式マニュアルはリポジトリ内の SKILL 文書+schema
+   (cli.rs smoke テストでロック済み)。website は llms.txt で入口だけ供給する。
+   理論の重みはこの層が引き受ける。
+2. **人間の監督者(主対象)** — 「分析して」と頼み、返ってきた診断をどう検証し、
+   どこで疑うべきか。理論語彙なしで完結する。現行 getting-started の発展形。
+3. **人間の実行者(再現者・査読者)** — エージェント抜きで CLI を叩いて完走したい
+   読者。現状すっぽり空いている層で Wave 3 で新設するが、主経路ではなく
+   検証経路として書く(コピペ完走の保証はこの層の受け入れ基準)。
+
+### 7.3 マニュアル構成(現行 6 ページ+concepts を発展させる)
 
 ```text
-/archsig/                  landing: Skill-first、何が返ってくるか
-/archsig/getting-started/  動く Quick Start(v0.5.0 fixture / example ベース)
+/archsig/                  landing: Skill-first、何が返ってくるか、三分業図
+/archsig/getting-started/  動く Quick Start(v0.5.0 fixture / example ベース)。
+                           インストール・前提条件から「最初の 10 分」を保証する一本道
 /archsig/concepts/         Wave 1 で先行した責務境界・verdict 語彙(v0.5.0 語彙に更新)
+/archsig/contracts/        入力 contract の作り方: 自分のリポジトリの ArchMap を
+                           どう作るか、LawPolicy に何を書くか、validator での検証。
+                           最大の参入障壁を正面から扱う(新設)
 /archsig/analyses/         evaluator カタログ+理論 anchor(SAGA evaluator 3 種を追加)
 /archsig/manual/           artifact の読み方: measurement packet、summary、viewer、
-                           repair-plan、gate 結果。「SAFE_WITHIN_POLICY を読む」を中心に
+                           repair-plan、gate 結果。「SAFE_WITHIN_POLICY を読む」を中心に。
+                           タスク別レシピ(CI ゲート / PR レビュー / リファクタ計画)を含む
 /archsig/reference/        CLI(archmap / law-policy / analyze / compare / gate /
-                           schema-catalog)、schema、移行表(旧版との互換なしの明記)
+                           schema-catalog)、schema、移行表(旧版との互換なしの明記)、
+                           トラブルシューティングと既知の限界
 /archsig/archview/         ArchView デモページ(Wave 1 で同梱済みのものを v0.5.0 幾何へ更新)
 ```
 
@@ -340,6 +386,17 @@ SAGA evaluator、`archsig-repair-plan/v1`)。
 - FieldSig は製品マニュアル化しない。ArchSig / ArchView / FieldSig の三分業図を
   landing に置き、FieldSig は「進化計測レイヤー」として 1 節の予告に留める
   (SFT v2 と同期して育てる)。
+
+### 7.4 v0.5.0 PRD 群との結合(推奨)
+
+v0.4.0 準拠の詳細マニュアルは v0.5.0 再設計で書き捨てになるため書かない(従来方針の
+維持)。その上で、Wave 3 を v0.5.0 の後始末ではなく**受け入れ面**として結合する:
+
+- v0.5.0 PRD 群(4 本予定)の最終 PRD に「website マニュアル完全版」を置き、
+  v0.5.0 の完成定義に「getting-started の手順が fixture 上でコピペ完走すること」を
+  含める(マニュアル駆動の受け入れテスト)。
+- 情報アーキテクチャ(§7.2 三層・§7.3 構成)は本ノートで確定済みとし、v0.5.0 出荷後は
+  流し込みだけで済む状態を保つ。
 
 ## 8. docs/website/ 改訂プラン
 
