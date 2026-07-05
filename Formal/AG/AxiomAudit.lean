@@ -73,6 +73,14 @@ theorem example56LawConflictPackageFiringTor1Nonzero
       x ≠ 0 :=
   FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero E
 
+theorem example56ZMod2MathlibTor1Nonzero :
+    ∃ x : Derived.Intersection.mathlibTor
+        Derived.Counterexample.SharedWitnessCoord.R2
+        (Derived.Counterexample.SharedWitnessCoord.idealU (ZMod 2))
+        (Derived.Counterexample.SharedWitnessCoord.idealV (ZMod 2)) 1,
+      x ≠ 0 :=
+  Derived.Counterexample.SharedWitnessCoord.example56_zmod2_mathlibTor1_nonzero
+
 theorem example56LawConflictPackageFiringDerivedNonTransverse
     {k : Type} [CommRing k]
     (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
@@ -511,6 +519,12 @@ info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringTor1Nonzero' depends o
 -/
 #guard_msgs in
 #print axioms example56LawConflictPackageFiringTor1Nonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.example56ZMod2MathlibTor1Nonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56ZMod2MathlibTor1Nonzero
 
 /--
 info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringDerivedNonTransverse' depends on axioms: [propext,

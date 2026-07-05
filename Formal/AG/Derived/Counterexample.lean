@@ -1,4 +1,9 @@
 import Formal.AG.Derived.RepairProfile
+import Formal.AG.Derived.FreeResolution
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.RingTheory.Regular.Category
+import Mathlib.Algebra.Category.ModuleCat.Projective
+import Mathlib.Algebra.Homology.QuasiIso
 import Mathlib.Algebra.MvPolynomial.Basic
 
 noncomputable section
@@ -82,6 +87,343 @@ pass through the support `x = 0`.
 theorem sharedWitness_fixed_to_one :
     sectionFamily k (X SharedWitnessCoord.x) = 1 :=
   section_x k
+
+section ZMod2PrincipalResolution
+
+open CategoryTheory
+open CategoryTheory.Limits
+open TensorProduct
+open scoped Pointwise
+
+/-- V-1: concrete coefficient ring used by the certificate-free example 5.6 calculation. -/
+abbrev R2 := ChartRing (ZMod 2)
+
+/-- V-1: zero module used above degree one in the concrete principal resolution. -/
+abbrev ZeroMod2 := ModuleCat.of R2 PUnit
+
+/-- V-1: concrete quotient target `R/⟨xz⟩` for the principal resolution. -/
+abbrev QV2 := ModuleCat.of R2 (R2 ⧸ idealV (ZMod 2))
+
+/-- V-1: concrete quotient `R/⟨xy⟩` used as the left tensor factor. -/
+abbrev QU2 := ModuleCat.of R2 (R2 ⧸ idealU (ZMod 2))
+
+/-- V-1: multiplication by `xz` as the principal-resolution differential. -/
+def dXZ : ModuleCat.of R2 R2 ⟶ ModuleCat.of R2 R2 :=
+  ModuleCat.ofHom ((xz (ZMod 2)) • (LinearMap.id : R2 →ₗ[R2] R2))
+
+/-- V-1: quotient projection `R -> R/⟨xz⟩`. -/
+def quotientVπBase : ModuleCat.of R2 R2 ⟶ QV2 :=
+  ModuleCat.ofHom (idealV (ZMod 2)).mkQ
+
+/-- V-1: the differential lands in the kernel of the quotient projection. -/
+lemma dXZ_comp_quotientVπBase : dXZ ≫ quotientVπBase = 0 := by
+  rw [ModuleCat.hom_ext_iff]
+  apply LinearMap.ext
+  intro a
+  change (idealV (ZMod 2)).mkQ ((xz (ZMod 2)) * (a : R2)) = 0
+  rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+  rw [idealV]
+  exact Ideal.mem_span_singleton'.mpr ⟨a, by ring⟩
+
+/--
+V-1: concrete two-term principal complex
+`... -> 0 -> R --xz--> R -> 0`.
+-/
+def principalComplexV2 : ChainComplex (ModuleCat.{0} R2) ℕ :=
+  ChainComplex.mk' (ModuleCat.of R2 R2) (ModuleCat.of R2 R2) dXZ
+    (fun {X0 X1} f => ⟨ZeroMod2, 0, by simp⟩)
+
+/-- V-1: degree-zero augmentation of the concrete principal complex. -/
+def quotientVπ0 : principalComplexV2.X 0 ⟶ QV2 :=
+  quotientVπBase
+
+/-- V-1: the augmentation is a chain-map-compatible quotient projection. -/
+lemma principalComplexV2_d_comp_π0 : principalComplexV2.d 1 0 ≫ quotientVπ0 = 0 := by
+  simpa [principalComplexV2, quotientVπ0] using dXZ_comp_quotientVπBase
+
+/-- V-1: augmentation to the single complex on `R/⟨xz⟩`. -/
+def principalPiV2 : principalComplexV2 ⟶ (ChainComplex.single₀ (ModuleCat.{0} R2)).obj QV2 := by
+  refine (ChainComplex.toSingle₀Equiv _ _).symm ?_
+  exact ⟨quotientVπ0, principalComplexV2_d_comp_π0⟩
+
+/-- V-1: all degrees at least two are isomorphic to the selected zero module. -/
+def principalComplexV2_X_succ_succ_iso_zero (n : ℕ) :
+    principalComplexV2.X (n + 2) ≅ ZeroMod2 := by
+  let succ' : ∀ {X₀ X₁ : ModuleCat.{0} R2} (f : X₁ ⟶ X₀),
+      Σ' (X₂ : ModuleCat.{0} R2) (_d : X₂ ⟶ X₁), _d ≫ f = 0 :=
+    fun {X₀ X₁} f => ⟨ZeroMod2, 0, by simp⟩
+  exact ChainComplex.mk'XIso (ModuleCat.of R2 R2) (ModuleCat.of R2 R2) dXZ succ' n
+
+/-- V-1: each term of the concrete principal complex is projective. -/
+lemma principalComplexV2_projective (n : ℕ) : CategoryTheory.Projective (principalComplexV2.X n) := by
+  cases n with
+  | zero =>
+      simpa [principalComplexV2] using
+        (inferInstance : CategoryTheory.Projective (ModuleCat.of R2 R2))
+  | succ n =>
+      cases n with
+      | zero =>
+          simpa [principalComplexV2] using
+            (inferInstance : CategoryTheory.Projective (ModuleCat.of R2 R2))
+      | succ n =>
+          exact CategoryTheory.Projective.of_iso
+            (principalComplexV2_X_succ_succ_iso_zero n).symm
+            (inferInstance : CategoryTheory.Projective ZeroMod2)
+
+/-- V-1: `xz` is nonzero in the concrete polynomial ring. -/
+lemma xz_ne_zero_zmod2 : (xz (ZMod 2) : R2) ≠ 0 := by
+  rw [xz]
+  exact mul_ne_zero (X_ne_zero x) (X_ne_zero z)
+
+/-- V-1: multiplication by `xz` is injective in the concrete polynomial ring. -/
+lemma dXZ_injective : Function.Injective dXZ.hom := by
+  exact smul_right_injective (M := R2) xz_ne_zero_zmod2
+
+/-- V-1: exactness at degree one of the concrete principal complex. -/
+lemma principalComplexV2_exactAt_one : principalComplexV2.ExactAt 1 := by
+  rw [HomologicalComplex.exactAt_iff' _ 2 1 0 (by simp) (by simp)]
+  rw [ShortComplex.moduleCat_exact_iff_ker_sub_range]
+  intro y hy
+  change dXZ.hom (y : R2) = 0 at hy
+  have hz : (y : R2) = 0 := dXZ_injective (by simpa using hy)
+  subst hz
+  exact ⟨0, by simp [principalComplexV2]⟩
+
+/-- V-1: degrees at least two of the concrete principal complex are zero. -/
+lemma principalComplexV2_isZero_X_succ_succ (n : ℕ) :
+    IsZero (principalComplexV2.X (n + 2)) := by
+  exact (ModuleCat.isZero_of_subsingleton ZeroMod2).of_iso
+    (principalComplexV2_X_succ_succ_iso_zero n)
+
+/-- V-1: positive-degree exactness of the concrete principal complex. -/
+lemma principalComplexV2_exactAt_succ (n : ℕ) : principalComplexV2.ExactAt (n + 1) := by
+  cases n with
+  | zero => simpa using principalComplexV2_exactAt_one
+  | succ n =>
+      rw [HomologicalComplex.exactAt_iff' _ (n + 3) (n + 2) (n + 1) (by simp) (by simp)]
+      apply ShortComplex.exact_of_isZero_X₂
+      exact principalComplexV2_isZero_X_succ_succ n
+
+/-- V-1: exactness of `R --xz--> R -> R/⟨xz⟩`. -/
+lemma dXZ_quotientVπBase_exact :
+    (ShortComplex.mk dXZ quotientVπBase dXZ_comp_quotientVπBase).Exact := by
+  rw [ShortComplex.moduleCat_exact_iff_range_eq_ker]
+  apply le_antisymm
+  · intro y hy
+    rcases hy with ⟨a, ha⟩
+    subst ha
+    change (idealV (ZMod 2)).mkQ ((xz (ZMod 2)) * (a : R2)) = 0
+    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero, idealV]
+    exact Ideal.mem_span_singleton'.mpr ⟨a, by ring⟩
+  · intro y hy
+    change (idealV (ZMod 2)).mkQ (y : R2) = 0 at hy
+    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero, idealV, Ideal.mem_span_singleton'] at hy
+    rcases hy with ⟨a, ha⟩
+    refine ⟨a, ?_⟩
+    rw [← ha]
+    change dXZ.hom a = a * xz (ZMod 2)
+    simp [dXZ]
+    ring
+
+/-- V-1: the quotient projection is an epimorphism. -/
+lemma quotientVπBase_epi : Epi quotientVπBase := by
+  rw [ModuleCat.epi_iff_surjective]
+  exact Submodule.mkQ_surjective _
+
+/-- V-1: degree-zero quasi-isomorphism of the concrete principal resolution. -/
+lemma principalPiV2_quasiIsoAt_zero : QuasiIsoAt principalPiV2 0 := by
+  rw [ChainComplex.quasiIsoAt₀_iff]
+  rw [ShortComplex.quasiIso_iff_of_zeros']
+  constructor
+  · simpa [quotientVπ0, principalComplexV2] using dXZ_quotientVπBase_exact
+  · simpa [principalPiV2, quotientVπ0] using quotientVπBase_epi
+  all_goals simp [principalComplexV2]
+
+/-- V-1: positive-degree quasi-isomorphism of the concrete principal resolution. -/
+lemma principalPiV2_quasiIsoAt_succ (n : ℕ) : QuasiIsoAt principalPiV2 (n + 1) := by
+  rw [quasiIsoAt_iff_exactAt' _ _ (ChainComplex.exactAt_succ_single_obj QV2 n)]
+  exact principalComplexV2_exactAt_succ n
+
+/-- V-1: the augmentation is a quasi-isomorphism. -/
+lemma principalPiV2_quasiIso : QuasiIso principalPiV2 where
+  quasiIsoAt i := by
+    cases i with
+    | zero => exact principalPiV2_quasiIsoAt_zero
+    | succ n => exact principalPiV2_quasiIsoAt_succ n
+
+/--
+V-1: concrete Mathlib projective resolution of `R/⟨xz⟩` over
+`R = (ZMod 2)[x,y,z]`.
+-/
+noncomputable def principalProjectiveResolutionV2 : ProjectiveResolution QV2 where
+  complex := principalComplexV2
+  projective := principalComplexV2_projective
+  π := principalPiV2
+  quasiIso := principalPiV2_quasiIso
+
+/-- V-1: concrete tensor-applied complex computing `Tor₁(R/⟨xy⟩, R/⟨xz⟩)`. -/
+abbrev tensorComplexV2 : ChainComplex (ModuleCat.{0} R2) ℕ :=
+  ((((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat.{0} R2)).obj QU2).mapHomologicalComplex _).obj
+    principalComplexV2)
+
+/-- V-1: the explicit tensor-cycle representative `[y] ⊗ 1`. -/
+def yTensorCycleRepresentative : tensorComplexV2.X 1 :=
+  TensorProduct.tmul R2 (Submodule.Quotient.mk (X y : R2) : R2 ⧸ idealU (ZMod 2)) (1 : R2)
+
+/-- V-1: the class `y` is not killed in `R/⟨xy⟩`. -/
+lemma y_not_mem_idealU_zmod2 : (X y : R2) ∉ idealU (ZMod 2) := by
+  intro hy
+  let evalX0Y1Z0 : R2 →+* ZMod 2 :=
+    MvPolynomial.eval₂Hom (RingHom.id (ZMod 2)) fun
+      | x => 0
+      | y => 1
+      | z => 0
+  rw [idealU, Ideal.mem_span_singleton'] at hy
+  rcases hy with ⟨a, ha⟩
+  have hmap := congrArg evalX0Y1Z0 ha
+  simp [evalX0Y1Z0, xy] at hmap
+
+/-- V-1: `[y] ⊗ 1` is nonzero before passing to homology. -/
+lemma yTensorCycleRepresentative_ne_zero : yTensorCycleRepresentative ≠ 0 := by
+  intro h
+  have hmap :
+      (TensorProduct.rid R2 (R2 ⧸ idealU (ZMod 2))).toLinearMap
+          yTensorCycleRepresentative = 0 := by
+    rw [h]
+    exact (TensorProduct.rid R2 (R2 ⧸ idealU (ZMod 2))).toLinearMap.map_zero
+  have hcalc :
+      (TensorProduct.rid R2 (R2 ⧸ idealU (ZMod 2))).toLinearMap
+          yTensorCycleRepresentative =
+        (Submodule.Quotient.mk (X y : R2) : R2 ⧸ idealU (ZMod 2)) := by
+    simp [yTensorCycleRepresentative]
+  rw [hcalc] at hmap
+  apply y_not_mem_idealU_zmod2
+  rw [← Submodule.Quotient.mk_eq_zero]
+  simpa using hmap
+
+/-- V-1: `[y] ⊗ 1` is killed by the tensor-applied differential. -/
+lemma yTensorCycleRepresentative_is_cycle :
+    tensorComplexV2.d 1 0 yTensorCycleRepresentative = 0 := by
+  change (((xz (ZMod 2)) • (LinearMap.id : R2 →ₗ[R2] R2)).lTensor
+      (R2 ⧸ idealU (ZMod 2)))
+      (TensorProduct.tmul R2 (Submodule.Quotient.mk (X y : R2) : R2 ⧸ idealU (ZMod 2)) (1 : R2)) = 0
+  rw [LinearMap.lTensor_tmul]
+  change TensorProduct.tmul R2
+      (Submodule.Quotient.mk (X y : R2) : R2 ⧸ idealU (ZMod 2))
+      ((xz (ZMod 2)) * 1) = 0
+  rw [mul_one]
+  have hxzone : (xz (ZMod 2) : R2) = (xz (ZMod 2)) • (1 : R2) := by simp
+  rw [hxzone]
+  rw [TensorProduct.tmul_smul]
+  change TensorProduct.tmul R2
+      ((xz (ZMod 2)) • (Submodule.Quotient.mk (X y : R2) : R2 ⧸ idealU (ZMod 2)))
+      (1 : R2) = 0
+  rw [← Submodule.Quotient.mk_smul]
+  change TensorProduct.tmul R2
+      ((Submodule.Quotient.mk ((xz (ZMod 2)) * (X y : R2)) : R2 ⧸ idealU (ZMod 2)))
+      (1 : R2) = 0
+  rw [show ((Submodule.Quotient.mk ((xz (ZMod 2)) * (X y : R2)) : R2 ⧸ idealU (ZMod 2))) = 0 by
+    rw [Submodule.Quotient.mk_eq_zero]
+    rw [idealU, xz, xy]
+    exact Ideal.mem_span_singleton'.mpr ⟨X z, by ring⟩]
+  simp
+
+/-- V-1: short complex at tensor degree one. -/
+abbrev tensorShortComplexV2At1 : ShortComplex (ModuleCat.{0} R2) :=
+  tensorComplexV2.sc 1
+
+/-- V-1: `[y] ⊗ 1` as an actual kernel element in degree one. -/
+def yTensorKernelAt1 : LinearMap.ker tensorShortComplexV2At1.g.hom where
+  val := yTensorCycleRepresentative
+  property := by
+    rw [LinearMap.mem_ker]
+    unfold tensorShortComplexV2At1
+    change tensorComplexV2.d 1 ((ComplexShape.down ℕ).next 1) yTensorCycleRepresentative = 0
+    rw [show (ComplexShape.down ℕ).next 1 = 0 by
+      simp]
+    exact yTensorCycleRepresentative_is_cycle
+
+/-- V-1: concrete degree-one homology class represented by `[y] ⊗ 1`. -/
+noncomputable def yTensorConcreteHomologyAt1 :
+    tensorShortComplexV2At1.moduleCatLeftHomologyData.H :=
+  Submodule.Quotient.mk yTensorKernelAt1
+
+/-- V-1: the concrete degree-one homology class represented by `[y] ⊗ 1` is nonzero. -/
+lemma yTensorConcreteHomologyAt1_ne_zero : yTensorConcreteHomologyAt1 ≠ 0 := by
+  intro h
+  have hmem : yTensorKernelAt1 ∈ LinearMap.range tensorShortComplexV2At1.moduleCatToCycles := by
+    rw [← Submodule.Quotient.mk_eq_zero]
+    simpa [yTensorConcreteHomologyAt1] using h
+  rcases hmem with ⟨b, hb⟩
+  have hbzero : tensorShortComplexV2At1.moduleCatToCycles b = 0 := by
+    have hsource_zero : IsZero tensorShortComplexV2At1.X₁ := by
+      dsimp [tensorShortComplexV2At1, tensorComplexV2, HomologicalComplex.sc,
+        HomologicalComplex.shortComplexFunctor, HomologicalComplex.shortComplexFunctor']
+      rw [show (ComplexShape.down ℕ).prev 1 = 2 by
+        simp]
+      change IsZero
+        (((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat.{0} R2)).obj QU2).obj
+          (principalComplexV2.X 2))
+      refine Functor.map_isZero _ ?_
+      exact (ModuleCat.isZero_of_subsingleton ZeroMod2).of_iso
+        (principalComplexV2_X_succ_succ_iso_zero 0)
+    haveI : Subsingleton tensorShortComplexV2At1.X₁ :=
+      ModuleCat.subsingleton_of_isZero hsource_zero
+    have hb_src : b = 0 := by
+      apply Subsingleton.elim
+    rw [hb_src]
+    exact tensorShortComplexV2At1.moduleCatToCycles.map_zero
+  have hyzero : yTensorCycleRepresentative = 0 := by
+    have hkernel : yTensorKernelAt1 = 0 := by
+      exact hb.symm.trans hbzero
+    exact congrArg Subtype.val hkernel
+  exact yTensorCycleRepresentative_ne_zero hyzero
+
+/-- V-1: `[y] ⊗ 1` as an actual degree-one homology class of the tensor complex. -/
+noncomputable def yTensorHomologyAt1 : tensorComplexV2.homology 1 :=
+  tensorShortComplexV2At1.moduleCatHomologyIso.inv yTensorConcreteHomologyAt1
+
+/-- V-1: the actual degree-one homology class of the tensor complex is nonzero. -/
+lemma yTensorHomologyAt1_ne_zero : yTensorHomologyAt1 ≠ 0 := by
+  intro h
+  apply yTensorConcreteHomologyAt1_ne_zero
+  have hmap := congrArg tensorShortComplexV2At1.moduleCatHomologyIso.hom h
+  simpa [yTensorHomologyAt1] using hmap
+
+/--
+V-1: the concrete `ZMod 2` Mathlib Tor class obtained from the constructed
+principal projective resolution of `R/⟨xz⟩`.
+-/
+noncomputable def example56ZMod2Tor1Class :
+    Intersection.mathlibTor R2 (idealU (ZMod 2)) (idealV (ZMod 2)) 1 :=
+  (FreeResolution.MathlibResolution.torIsoProjectiveResolutionHomology R2
+    (idealU (ZMod 2)) principalProjectiveResolutionV2 1).inv yTensorHomologyAt1
+
+/--
+V-1: the concrete `ZMod 2` Mathlib Tor class is nonzero.  This theorem uses the
+constructed principal resolution and the explicit `[y] ⊗ 1` non-boundary proof;
+it does not assume a selected equivalence, package field, or pre-certified
+nonzero Tor class.
+-/
+theorem example56ZMod2Tor1Class_ne_zero : example56ZMod2Tor1Class ≠ 0 := by
+  intro h
+  apply yTensorHomologyAt1_ne_zero
+  have hmap := congrArg
+    (FreeResolution.MathlibResolution.torIsoProjectiveResolutionHomology R2
+      (idealU (ZMod 2)) principalProjectiveResolutionV2 1).hom h
+  simpa [example56ZMod2Tor1Class] using hmap
+
+/--
+V-1: concrete counterexample theorem for example 5.6 over `k = ZMod 2`.
+The boundary is explicit: this theorem does not assert the corresponding
+nonvanishing for arbitrary `CommRing k`.
+-/
+theorem example56_zmod2_mathlibTor1_nonzero :
+    ∃ x : Intersection.mathlibTor R2 (idealU (ZMod 2)) (idealV (ZMod 2)) 1,
+      x ≠ 0 :=
+  ⟨example56ZMod2Tor1Class, example56ZMod2Tor1Class_ne_zero⟩
+
+end ZMod2PrincipalResolution
 
 end SharedWitnessCoord
 
