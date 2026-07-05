@@ -518,6 +518,33 @@ theorem boundaryResidueTwoChartBoundaryAgreementSoundness
     Cohomology.BoundaryHolonomyVanishes D b :=
   D.boundaryHolonomy_zero_of_twoChartBoundaryAgreement s hb hs
 
+theorem boundaryResidueTwoChartBoundaryResolvedCompleteness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (hexact : D.HolonomyKernelExactAtBoundary)
+    (hzero : Cohomology.BoundaryHolonomyVanishes D b) :
+    Cohomology.TwoChartBoundaryResolved D b :=
+  D.boundaryResolved_of_boundaryHolonomy_zero_of_kernelExact hexact hzero
+
+theorem boundaryResidueTwoChartBoundaryResolvedSoundness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (hkill : D.DeltaKillsTwoChartBoundaries)
+    (hresolved : Cohomology.TwoChartBoundaryResolved D b) :
+    Cohomology.BoundaryHolonomyVanishes D b :=
+  D.boundaryHolonomy_zero_of_boundaryResolved_of_deltaKillsBoundaries
+    hkill hresolved
+
 theorem finiteIntervalStokesBasis
     (ω : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
     (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
@@ -897,6 +924,18 @@ info: 'AAT.AG.AxiomAudit.boundaryResidueTwoChartBoundaryAgreementSoundness' depe
 -/
 #guard_msgs in
 #print axioms boundaryResidueTwoChartBoundaryAgreementSoundness
+
+/--
+info: 'AAT.AG.AxiomAudit.boundaryResidueTwoChartBoundaryResolvedCompleteness' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms boundaryResidueTwoChartBoundaryResolvedCompleteness
+
+/--
+info: 'AAT.AG.AxiomAudit.boundaryResidueTwoChartBoundaryResolvedSoundness' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms boundaryResidueTwoChartBoundaryResolvedSoundness
 
 /--
 info: 'AAT.AG.AxiomAudit.finiteIntervalStokesBasis' depends on axioms: [propext, Classical.choice, Quot.sound]
