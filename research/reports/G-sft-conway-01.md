@@ -1473,3 +1473,62 @@ G2 / G3 / G4 audit summary:
   `Module.api/db` の finite case split と既存 theorem の合成であり、assignment-preserving transition や
   一般 conflict-set calculus までは進まない。fail-closed に G2 の下限を採用し、base 30、
   evidence multiplier 2.0、penalty 10、final +50 とする。
+
+## Cycle 27 — Repair transition objects
+
+candidate: `research/ideas/g-sft-conway-01-repair-transition.md`
+candidate_type: `transition`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `conway-obstruction`, `repair-transition`,
+  `communication-support`, `finite-operation`
+goal_delta: canonical Conway mismatch から canonical one-sided repairs への before/after
+  transition object を追加した。`ConwayRepairTransition` は before atlas の obstruction、after atlas の
+  support-assignment existence、after atlas の zero selected obstruction を同時に保持する。canonical
+  reorg/refactor repairs は `mismatchedAtlas` から各 post-edit atlas への transition として固定される。
+  missed-conflict edits は transition failure として固定し、reorg miss は post-edit obstruction も保持する。
+project_value_delta: Cycle 25/26 の assignment/table interface を、selected before/after transition
+  vocabulary へ packaging した。これは単なる compatibility restatement ではなく、repair success と
+  missed-hit failure を同じ transition vocabulary で扱うための基礎 interface である。ただし任意 repair
+  calculus、transition law、composition、optimality theorem ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  repair narrative を出せるが、この cycle は selected finite Conway mismatch から repair / failure
+  post-state への transition object を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayRepairTransition.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary repair calculus、assignment-preserving transition composition、general conflict-set
+  hitting predicate、selector-preserving refinement naturality、refactor-side two-owner obstruction witness は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayRepairTransition.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ConwayRepairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ConwayAssignmentFailedTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ConwayObstructionPreservingTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation.repairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation.repairTransition_before`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation.repairTransition_after`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_assignmentFailedTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_obstructionPreservingTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_assignmentFailedTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedRepairTransitionPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduce。first transition vocabulary として価値はあるが、中核は Cycle 25 の
+  support-assignment existence と obstruction-killing theorem を record に束ね、Cycle 24/25 の
+  missed-conflict negative facts を failure record に入れ直したもの。新しい repair calculus、composition、
+  minimality、一般 conflict hitting、または repair impossibility theorem ではない。G2 は base 30、
+  multiplier 2.0、penalty 10、final +50 を推奨。
+- G3 formalization quality: pass with minor revisions。Lean statement は selected finite Conway vocabulary に
+  留まり、任意 repair calculus、optimality、empirical causality、general conflict-set calculus までは主張しない。
+  focused check、module build、`FormalAGResearch` は通過し、`sorry/admit/unsafe/axiom` は対象 Lean にない。
+  axiom audit は標準 `propext` のみ。
+- G4 score audit: reduce。Cycle 23/25/26 の単なる restatement ではないが、before/after transition
+  object の第一歩であり、transition composition、assignment-preserving transition、一般 conflict-set
+  calculus には未達。fail-closed に G2 の下限を採用し、base 30、evidence multiplier 2.0、
+  penalty 10、final +50 とする。
