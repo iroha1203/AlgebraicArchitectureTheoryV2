@@ -104,7 +104,9 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 
 1. `lake build FormalAGResearch` が通る。
 2. 独立サブエージェントの公理検査が通る。
-3. 独立サブエージェントの Lean 形式化品質監査を通る。
+3. 独立サブエージェントの Lean 形式化品質監査を通る。品質監査では、`True` で充足可能な
+   フィールド、退化 witness(PUnit / 自明群 / singleton)、instance の無い仮定パッケージ、
+   結論相当前提の field 逃がしを finding として扱う。
 
 ローカルでは対象範囲に応じて次を実行または同等に確認する。
 
@@ -118,6 +120,8 @@ rg -n "$HOME|${TMPDIR%/}" <changed-files>
 ```
 
 反例、orientation result、計算例は Lean proof だけを要求しないが、最小反例、計算手順、対象 family、仮定、既存理論との対応を証拠 artifact に固定する。
+
+足場衛生を保つ。受理ルートが名前参照するスパイン宣言と、サイクル足場(premise 順列帯、再入口変種、checkpoint 帯)を、ファイル分割または命名で区別できる状態に保ち、足場の量産を避ける。研究 evidence は将来の蒸留移植(正典化)の入力になるため、スパインが行範囲でも時系列でも切り出せない状態を作らない。
 
 ### G3.5 候補カード同期
 

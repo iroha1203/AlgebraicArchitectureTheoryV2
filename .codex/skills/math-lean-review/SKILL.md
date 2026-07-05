@@ -94,7 +94,8 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 ## 厳格判定ポイント
 
-次を疑う。
+次を疑う。パターン語彙(結論射影 / `True` 充足 / instance 実在 / 非退化発火)は
+`prd-completion-review` の Lean 反証チェックリストと共有し、判定基準を skill 間でずらさない。
 
 - 主張一致: 本文 theorem / GOAL claim が Lean theorem statement と同じ強さか。Lean が片方向、弱い predicate、選択済み witness、有限例、特殊ケースだけになっていないか。
 - 仮定過多: theorem の仮定に結論相当の情報、ready-made certificate、lawfulness、nonempty witness、decidable equality、finite support、compatibility が埋め込まれていないか。
@@ -102,10 +103,11 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 - certificate provenance: certificate が主張の入力境界から Lean theorem / construction / finite witness で作られているか。単に explicit argument として渡されているだけなら放電ではない。
 - unused premise: theorem statement の material premise が proof body で使われているか。未使用 premise は、同値や構成を支える条件ではなく、近傍 package の飾りになっている可能性がある。
 - 定義の薄さ: predicate が `True`、structure field が実質 marker、theorem が definitional unfolding だけ、example が実 witness ではなく wrapper になっていないか。
+- 未発火: 主張された theorem / package の非退化 instance / witness がリポジトリに実在するか。`(E : …)` 前提の条件文だけで `E` の concrete instance が無い場合は未発火として扱う。発火例の係数・担体が PUnit、自明群、singleton site、`True` 充填なら、本文が退化例を明示的に許容しない限り発火と認めない。
 - structure-field escape: quotient relation、exactness、descent、effectivity、compatibility、naturality、comparison、global coherence の主要部分が structure field として供給されていないか。供給 field から accessor theorem を出しているだけなら、構成証明ではなく conditional surface と判定する。
 - 依存補題: 対象 theorem は clean でも、依存補題が未証明、過大仮定、特殊化、または本文 claim と違う universe / coefficient / topology / site / category を使っていないか。
 - 反例可能性: 本文主張に必要な separatedness、base change、descent、cover stability、functoriality、cohomology coefficient、stack quotient、finite/infinite distinctionが抜けていないか。
-- 台帳整合: `lean_theorem_index.md`、`proof_obligations.md`、GOAL card、candidate card、report が Lean 実体と同じ rigor label を持つか。
+- 台帳整合: `lean_theorem_index.md`、`proof_obligations.md`、GOAL card、candidate card、report が Lean 実体と同じ rigor label を持つか。theorem 系 status は三分化語彙(`proved` / `packaged (assumption-relative)` / `statement-only`)と整合するか。仮定パッケージの帰結が `proved` を名乗っていないか。
 - 範囲外の切り分け: AAT の theorem claim が要求していない ArchMap 抽出完全性、source coverage、tooling evidence completeness、外部実証 completeness を、証明未達の finding と混同していないか。
 
 ## Material Premise Discharge Audit
