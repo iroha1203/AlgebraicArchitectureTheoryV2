@@ -265,11 +265,11 @@ docs/aat/proof_obligations_ag_aat.md
 | VIII-4 | `LawConflict.lean` | 実質化 | Derived `LawConflictPackage` へ接続する。 |
 | VIII-5 | `Packet.lean` / `GAGA.lean` | 実質化 | certified fields を theorem package 型へ。 |
 | VIII-6 | `Examples.lean` | Hodge / Alexander dual 実装済み | Hodge fixture は `LowDegreeRealCochain = EuclideanSpace ℝ (Fin 3)` の zero differential complex で発火し、`lowDegreeRealHodgeDecomposition`、`lowDegreeRealHarmonicDebtMinimality`、`lowDegreeRealEssentialRepairLowerBound` で 8.5/8.6/8.7 を実インスタンス化した。5.2 / Alexander dual fixture は `{p,q}` / `{q,r}` forbidden supports と `{q}` / `{p,r}` minimal finite hitting-set proofs で発火する。 |
-| IX-1 | `ReplayDescent.lean` theorem 4.2 | 昇格 | torsor action / gluing operation / mismatch calculation。 |
+| IX-1 | `ReplayDescent.lean` theorem 4.2 | 実装済み | `TemporalDescentRealization` と `TemporalDescentCriterion.ofRealization` を追加し、class vanishing と adjusted replay compatibility から selected global replay transition を構成する bridge として発火する。 |
 | IX-2 | `Force.lean` candidate 7.2 | 実質化 | `IntegrableForce` を real interface にし candidate を inhabitable にする。 |
 | IX-3 | temporal product cohomology | 昇格 | finite poset x two-point trace incidence complex。 |
 | IX-4 | `TemporalLaw.lean` definition 3.3 | 実質化 | kind-specific canonical constructors and equations。 |
-| IX-5 | `Examples/EvolutionPart9.lean` | 発火 | nondegenerate replay / PRD-10 circle instance connection。 |
+| IX-5 | `Examples/EvolutionPart9.lean` | replay 発火済み | two-chart finite replay fixture が `zeroReplayAdjustedCompatible` と `zeroReplayTemporalDescentRealization` から theorem 4.2 を発火し、pseudo-circle nonzero mismatch fixture は global failure claim と分離して保持する。 |
 
 ## Old PRD AC reclassification
 
@@ -293,7 +293,7 @@ docs/aat/proof_obligations_ag_aat.md
 | PRD-7 | AC19 | AAT synthesis theorem package now has finite model firing. | `proved finite synthesis firing` / `packaged theorem` | `Formal/AG/RepresentationAnalysis/Synthesis.lean`, `AATSynthesisPackage`, `Formal/AG/Examples/RepresentationAnalysisPart7.lean`, `finiteSynthesisAATSynthesisPackage` |
 | PRD-8 | AC8 / AC14 / AC15 / AC16 | theorem 5.2 is connected to PRD-3 Stanley-Reisner assets and finite Alexander dual / hitting-set proofs; Hodge 8.5/8.6/8.7 has a real finite inner-product bridge and 3D fixture firing. | `Hodge implemented` / `theorem 5.2 SR-Alexander bridge implemented` | `Formal/AG/Measurement/SquareFreeRepair.lean`, `Formal/AG/Measurement/Hodge.lean`, `Formal/AG/Measurement/Examples.lean` |
 | PRD-8 | AC9 / AC10 / AC17 | stability / spectral / base-change candidates remain statement-only. | `statement-only` | `Formal/AG/Measurement/Stability.lean`, `Formal/AG/Measurement/Hodge.lean`, `Formal/AG/Measurement/LawConflict.lean` |
-| PRD-9 | AC13 | theorem 4.2 Temporal Descent Criterion is selected temporal package relative. | `packaged (assumption-relative)` | `Formal/AG/Evolution/ReplayDescent.lean`, `TemporalDescentCriterion` |
+| PRD-9 | AC13 / PRD-R AC17 | theorem 4.2 Temporal Descent Criterion is selected temporal realization relative and fires on a finite two-chart adjusted replay fixture. | `proved selected realization bridge` / `proved finite fixture` | `Formal/AG/Evolution/ReplayDescent.lean`, `Formal/AG/Examples/EvolutionPart9.lean`, `TemporalDescentRealization`, `zeroReplayTemporalDescentRealization` |
 | PRD-9 | AC20 | finite temporal examples include selected / degenerate fixtures and force candidate assumptions. | `packaged (assumption-relative)` / `statement-only` | `Formal/AG/Examples/EvolutionPart9.lean`, `ForceCandidateFixture`; `Formal/AG/Evolution/Force.lean`, `ForceIntegrabilityObstructionCandidate` |
 
 ## R0 completion note
