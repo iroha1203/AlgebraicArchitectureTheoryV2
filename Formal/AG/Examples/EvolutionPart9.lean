@@ -816,6 +816,37 @@ def toyForce : Force statePresheaf where
   selectedForce := True
   selectedForce_cert := trivial
 
+/-- R10(g) / AC18: theorem-4.2 replay data integrates the selected toy force. -/
+def toyForceIntegrationData : ForceIntegrationData toyForce where
+  globalTemporalLaw := temporalLaw
+  coefficient := temporalCoefficient
+  replayData := zeroReplayDescentData
+  descentCriterion := zeroReplayTemporalDescentCriterion
+  globalReplayTransition := zeroReplayTemporalDescentRealization.globalReplay
+  replaySource_eq := rfl
+  replayTarget_eq := rfl
+  globalReplay_hits_force := rfl
+  localLawData := zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData
+  localLawData_cert := zeroReplayAdjustedCompatible_cert
+  descendsToGlobalTemporalLaw := Nonempty zeroReplayDescentData.GlobalReplayTransition
+  descendsToGlobalTemporalLaw_cert := replay_zero_theorem42_global_transition_exists
+  lawWitness := ()
+  lawSource_eq := rfl
+  lawTarget_eq := rfl
+  forceRespectsGlobalLaw := ⟨rfl, rfl⟩
+
+/-- R10(g) / AC18: the selected global replay transition realizes the toy force. -/
+theorem toy_force_global_replay_hits_force :
+    toyForceIntegrationData.globalReplayTransition
+        (toyForceIntegrationData.replaySource_eq ▸ toyForce.sourceState) =
+      (toyForceIntegrationData.replayTarget_eq ▸ toyForce.targetState) :=
+  toyForceIntegrationData.global_replay_hits_force
+
+/-- R10(g) / AC18: the toy force has concrete selected integration data. -/
+theorem toy_force_integrable :
+    IntegrableForce toyForce :=
+  toyForceIntegrationData.integrable
+
 /-- R10(g): toy force mismatch cochain on the selected temporal bridge. -/
 def toyForceMismatch :
     TemporalMismatch temporalCoefficient temporalLaw where
@@ -853,31 +884,35 @@ theorem toy_force_mismatch_degree_one :
     toyForceMismatchClass.mismatch.degree = 1 :=
   toyForceMismatchClass.mismatch_degree_one
 
-/-- R10(g): force fixture keeps statement-only theorem-candidate assumptions explicit. -/
+/--
+R10(g): force fixture keeps statement-only theorem-candidate assumptions explicit
+and backs the selected nonzero marker by a concrete `ZMod 2` obstruction value.
+-/
 structure ForceCandidateFixture where
   forceSelected : toyForce.selectedForce
+  integrationData : ForceIntegrationData toyForce
+  forceIntegrable : IntegrableForce toyForce
+  globalReplayHitsForce :
+    integrationData.globalReplayTransition
+        (integrationData.replaySource_eq ▸ toyForce.sourceState) =
+      (integrationData.replayTarget_eq ▸ toyForce.targetState)
   mismatchClass :
     ForceMismatchClass (Coeff := temporalCoefficient) (Law := temporalLaw) toyForce
   concreteObstructionValue : ZMod 2
   concreteObstruction_nonzero : concreteObstructionValue ≠ 0
-  selectedNonzero :
-    mismatchClass.mismatch.bridge.siteComplex.CoverRelativeHn
-      mismatchClass.mismatch.degree -> Prop
-  selectedNonzero_cert : selectedNonzero mismatchClass.obstructionClass
-  coefficientExactness : Prop
-  coefficientExactness_cert : coefficientExactness
-  witnessCoverage : Prop
-  witnessCoverage_cert : witnessCoverage
-  temporalDescentDetecting : Prop
-  temporalDescentDetecting_cert : temporalDescentDetecting
-  localToGlobalControlledByDescent : Prop
-  localToGlobalControlledByDescent_cert : localToGlobalControlledByDescent
+  candidateData : ForceIntegrabilityObstructionCandidateData mismatchClass
+  selectedNonzero_backed_by_concrete :
+    candidateData.selectedNonzero mismatchClass.obstructionClass ↔
+      concreteObstructionValue ≠ 0
   candidateOnly : Prop
   candidateOnly_cert : candidateOnly
 
-/-- R10(g): concrete force obstruction candidate fixture. -/
+/-- R10(g): concrete force obstruction candidate data fixture. -/
 def forceCandidateFixture : ForceCandidateFixture where
   forceSelected := toyForce.selected
+  integrationData := toyForceIntegrationData
+  forceIntegrable := toy_force_integrable
+  globalReplayHitsForce := toy_force_global_replay_hits_force
   mismatchClass := toyForceMismatchClass
   concreteObstructionValue := 1
   concreteObstruction_nonzero := by
@@ -885,16 +920,23 @@ def forceCandidateFixture : ForceCandidateFixture where
     have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
     rw [ZMod.val_one] at hv
     simp at hv
-  selectedNonzero := fun _ => True
-  selectedNonzero_cert := trivial
-  coefficientExactness := True
-  coefficientExactness_cert := trivial
-  witnessCoverage := True
-  witnessCoverage_cert := trivial
-  temporalDescentDetecting := True
-  temporalDescentDetecting_cert := trivial
-  localToGlobalControlledByDescent := True
-  localToGlobalControlledByDescent_cert := trivial
+  candidateData := {
+    selectedNonzero := fun _ => (1 : ZMod 2) ≠ 0
+    obstruction_nonzero := by
+      intro h
+      have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+      rw [ZMod.val_one] at hv
+      simp at hv
+    coefficientExactness := True
+    coefficientExactness_cert := trivial
+    witnessCoverage := True
+    witnessCoverage_cert := trivial
+    temporalDescentDetecting := True
+    temporalDescentDetecting_cert := trivial
+    localToGlobalControlledByDescent := True
+    localToGlobalControlledByDescent_cert := trivial
+  }
+  selectedNonzero_backed_by_concrete := Iff.rfl
   candidateOnly := True
   candidateOnly_cert := trivial
 
@@ -905,9 +947,25 @@ theorem force_candidate_obstruction_nonzero :
 
 /-- R10(g): the selected force obstruction class is marked nonzero in the fixture. -/
 theorem force_candidate_selected_nonzero :
-    forceCandidateFixture.selectedNonzero
+    forceCandidateFixture.candidateData.selectedNonzero
       forceCandidateFixture.mismatchClass.obstructionClass :=
-  forceCandidateFixture.selectedNonzero_cert
+  forceCandidateFixture.candidateData.obstruction_nonzero_holds
+
+/--
+R10(g) / AC18: the selected nonzero marker in the force candidate fixture is
+backed by the concrete `ZMod 2` obstruction value.
+-/
+theorem force_candidate_selected_nonzero_backed_by_concrete :
+    forceCandidateFixture.candidateData.selectedNonzero
+        forceCandidateFixture.mismatchClass.obstructionClass ↔
+      forceCandidateFixture.concreteObstructionValue ≠ 0 :=
+  forceCandidateFixture.selectedNonzero_backed_by_concrete
+
+/-- R10(g) / AC18: the selected force candidate data is inhabitable. -/
+theorem force_candidate_data_inhabited :
+    Nonempty (ForceIntegrabilityObstructionCandidateData
+      forceCandidateFixture.mismatchClass) :=
+  ⟨forceCandidateFixture.candidateData⟩
 
 /--
 R10 / AC20: bundled finite temporal examples (a)-(g).
@@ -928,14 +986,23 @@ theorem finite_temporal_examples_verified :
                 terminalState.terminal p1 nonlawfulTerminal1 ∧
                   (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
                     oneStepPath.PathwiseNonIncrease ∧
-                      forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
-                        forceCandidateFixture.selectedNonzero
-                          forceCandidateFixture.mismatchClass.obstructionClass ∧
-                        forceCandidateFixture.coefficientExactness ∧
-                          forceCandidateFixture.witnessCoverage ∧
-                            forceCandidateFixture.temporalDescentDetecting ∧
-                              forceCandidateFixture.localToGlobalControlledByDescent ∧
-                                forceCandidateFixture.candidateOnly := by
+                      IntegrableForce toyForce ∧
+                        forceCandidateFixture.integrationData.globalReplayTransition
+                            (forceCandidateFixture.integrationData.replaySource_eq ▸
+                              toyForce.sourceState) =
+                          (forceCandidateFixture.integrationData.replayTarget_eq ▸
+                            toyForce.targetState) ∧
+                          forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
+                            forceCandidateFixture.candidateData.selectedNonzero
+                              forceCandidateFixture.mismatchClass.obstructionClass ∧
+                              (forceCandidateFixture.candidateData.selectedNonzero
+                                  forceCandidateFixture.mismatchClass.obstructionClass ↔
+                                forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
+                              forceCandidateFixture.candidateData.coefficientExactness ∧
+                                forceCandidateFixture.candidateData.witnessCoverage ∧
+                                  forceCandidateFixture.candidateData.temporalDescentDetecting ∧
+                                    forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
+                                      forceCandidateFixture.candidateOnly := by
   exact ⟨twoStep_step_selected,
     replay_zero_theorem42_applied,
     replayDescentZeroExample.adjustedCompatibilityWitness_cert,
@@ -946,12 +1013,15 @@ theorem finite_temporal_examples_verified :
     nonlawful_terminal_is_terminal,
     nonlawful_terminal_not_lawful,
     lyapunov_path_nonIncreasing,
+    toy_force_integrable,
+    forceCandidateFixture.globalReplayHitsForce,
     force_candidate_obstruction_nonzero,
     force_candidate_selected_nonzero,
-    forceCandidateFixture.coefficientExactness_cert,
-    forceCandidateFixture.witnessCoverage_cert,
-    forceCandidateFixture.temporalDescentDetecting_cert,
-    forceCandidateFixture.localToGlobalControlledByDescent_cert,
+    force_candidate_selected_nonzero_backed_by_concrete,
+    forceCandidateFixture.candidateData.coefficientExactness_cert,
+    forceCandidateFixture.candidateData.witnessCoverage_cert,
+    forceCandidateFixture.candidateData.temporalDescentDetecting_cert,
+    forceCandidateFixture.candidateData.localToGlobalControlledByDescent_cert,
     forceCandidateFixture.candidateOnly_cert⟩
 
 end EvolutionPart9
