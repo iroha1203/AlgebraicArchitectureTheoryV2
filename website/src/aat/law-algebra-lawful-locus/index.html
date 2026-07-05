@@ -1,0 +1,1681 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part III. Law Algebra, Obstruction Ideal, and the Lawful Locus",
+  "description": "The law algebra sheaf, the obstruction ideal sheaf, affine AAT charts, and the lawful locus: how architecture laws become equations whose zero locus defines lawfulness on an architecture scheme.",
+  "order": 4,
+  "llmsLabel": "AAT Part III: Law Algebra and the Lawful Locus",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part III</span>
+          </nav>
+          <p class="eyebrow">Part III</p>
+          <h1>Law Algebra, Obstruction Ideal, and the Lawful Locus</h1>
+          <p class="lede">
+            Part II produced the AAT site and its sheaf category. Part III makes
+            it algebraic geometry: a sheaf of commutative rings
+            \(\mathcal{O}_X^U\) is placed on the architecture geometry, law
+            failure is collected into an obstruction ideal sheaf
+            \(\mathcal{I}_{\mathrm{Ob}}^U \subset \mathcal{O}_X^U\), and the
+            lawful locus is defined as its zero set
+            \(\mathrm{Flat}_U(X) = V(\mathcal{I}_{\mathrm{Ob}}^U)\). Law is read
+            as equation, obstruction as ideal, and lawfulness as vanishing.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#from-site-to-ring">From site to ring</a></li>
+                <li><a href="#structure-sheaf">Structure sheaf</a></li>
+                <li><a href="#coordinates">Architectural coordinates</a></li>
+                <li><a href="#ambient-algebra">Ambient law algebra</a></li>
+                <li><a href="#law-as-equation">Law as equation</a></li>
+                <li><a href="#stanley-reisner">Stanley-Reisner regime</a></li>
+                <li><a href="#law-condition-types">Law condition types</a></li>
+                <li><a href="#obstruction-ideal">Obstruction ideal sheaf</a></li>
+                <li><a href="#lawful-locus">Lawful locus</a></li>
+                <li><a href="#nullstellensatz">Architecture Nullstellensatz</a></li>
+                <li><a href="#affine-charts">Affine AAT charts</a></li>
+                <li><a href="#architecture-scheme">Architecture scheme</a></li>
+                <li><a href="#gluing">Restriction and gluing</a></li>
+                <li><a href="#correspondence">Lawfulness-Ideal Correspondence</a></li>
+                <li><a href="#law-equation-realization">Law equation realization</a></li>
+                <li><a href="#worked-example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#conclusion">Conclusion of Part III</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6f31db96b7e412f8dbbfff5247c267a67dd80498/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md">
+                    Part III canonical text (commit-pinned)
+                  </a>
+                </li>
+              </ul>
+              <p>
+                This page renders the canonical Part III of the
+                algebraic-geometric AAT monograph. Labels such as Theorem III.11.1
+                refer to the numbered statements of that text.
+              </p>
+            </div>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../sites-and-sheaves/">Part II. Sites and Sheaves</a></li>
+                <li><a href="./" aria-current="page">Part III. Law Algebra and the Lawful Locus</a></li>
+                <li><a href="../obstruction-cohomology/">Part IV. Obstruction Cohomology</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                Can architectural laws be read as equations on a geometric
+                object, so that lawfulness becomes the vanishing of an ideal
+                rather than a checklist of natural-language principles?
+              </p>
+              <p>
+                Part II built the architecture geometry as a site with a sheaf
+                category:
+              </p>
+              <pre><code>ArchitectureObject A_S^V
+  -&gt; ArchitectureGeometry X_S^(V,U,J)
+  -&gt; AATSite(S,V,U,J)
+  -&gt; AATSh(A_S^V,U,J)</code></pre>
+              <p>
+                A site and a sheaf category are a stage for local data and
+                gluing, but they are not yet algebraic geometry. The theory
+                becomes algebraic geometry when the geometric object carries a
+                sheaf of commutative rings. Part III supplies that ring: it
+                constructs the law algebra sheaf \(\mathcal{O}_X^U\), collects
+                law failure into the obstruction ideal sheaf
+                \(\mathcal{I}_{\mathrm{Ob}}^U\), and cuts out the lawful locus
+                as the zero set of that ideal. The central diagram of Part III
+                is
+              </p>
+              <pre><code>AATSh(A,U,J)
+  -&gt; O_X^U
+  -&gt; I_Ob^U subset O_X^U
+  -&gt; Flat_U(X) = V(I_Ob^U)
+  -&gt; affine AAT charts
+  -&gt; ArchitectureScheme</code></pre>
+              <p>
+                Under this structure, a law is not a design slogan. It is an
+                equation, or a family of equations, on the architecture
+                geometry.
+              </p>
+            </section>
+
+            <section id="from-site-to-ring" class="article-section">
+              <h2>From Part II to Part III</h2>
+              <p>
+                The sheaf category obtained in Part II is
+                \(\mathrm{AATSh}(A,U,J) = \mathrm{Sh}(\mathrm{ArchCtx}(A), J_U)\).
+                On this stage, each context \(W\) is first assigned a
+                commutative ring of architecture coordinates readable on
+                \(W\):
+              </p>
+              \[
+                W \;\longmapsto\; \mathcal{O}_{\mathrm{raw}}^U(W).
+              \]
+              <p>
+                A context morphism \(i : W' \to W\) induces a restriction
+                homomorphism of commutative rings
+                \(\mathrm{res}_i : \mathcal{O}_{\mathrm{raw}}^U(W) \to \mathcal{O}_{\mathrm{raw}}^U(W')\).
+                Sheafifying this presheaf yields the sheaf of commutative rings
+                on the AAT site:
+              </p>
+              \[
+                \mathcal{O}_X^U \;=\; \bigl(\mathcal{O}_{\mathrm{raw}}^U\bigr)^{+}.
+              \]
+              <p>
+                The pair \(\bigl(\mathrm{AATSh}(A,U,J),\, \mathcal{O}_X^U\bigr)\)
+                is the ringed AAT topos of Definition III.9.1 below. Everything
+                in Part III — witness ideals, obstruction ideals, affine
+                charts, the lawful locus, and the architecture scheme — lives
+                on this ringed foundation.
+              </p>
+            </section>
+
+            <section id="structure-sheaf" class="article-section">
+              <h2>Structure sheaf of architecture geometry</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition III.2.1 (Law Algebra Sheaf).</a>
+                For an architecture geometry \(X = X_S^{V,U,J,k}\), the law
+                algebra sheaf \(\mathcal{O}_X^U\) is the sheaf of commutative
+                rings on the AAT site obtained by sheafifying the raw ambient
+                presheaf:
+                \(\mathcal{O}_X^U \in \mathrm{Sh}(\mathrm{ArchCtx}(A), J_U;\ \mathrm{CommAlg}_k)\).
+                For each context \(W\), the section ring \(\mathcal{O}_X^U(W)\)
+                is the commutative ring generated by the architecture
+                coordinates readable on \(W\).
+              </p>
+              <p>
+                This ring is the function algebra for reading Atoms,
+                signatures, state, effects, semantic facts, and runtime
+                interactions as coordinates. The division of labor is exact:
+              </p>
+              <pre><code>Atom is ontology.
+Coordinate is a reading of Atom.
+Ring is algebra of such readings.</code></pre>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle III.2.2 (Commutative Base).</a>
+                The base ring that cuts out the lawful locus is commutative. A
+                coefficient ring \(k \in \mathrm{CommRing}\) is fixed, and each
+                coordinate algebra is read as a commutative \(k\)-algebra:
+                \(\mathcal{O}_X^U(W) \in \mathrm{CommAlg}_k\). Changing \(k\)
+                changes the readings of cancellation, rank, dimension, and
+                derived tensor.
+              </p>
+              <p>
+                State transition, effect composition, runtime interaction, and
+                operation algebras may be noncommutative. The lawful locus,
+                however, is defined as a zero set, and the coordinate ring that
+                carries zero sets is taken commutative first. Noncommutative
+                structure lives over this base:
+              </p>
+              <pre><code>noncommutative operation
+  may exist over
+commutative law-coordinate geometry.</code></pre>
+              <p>
+                Noncommutative operations are read as modules, algebra objects,
+                or operation sheaves over the commutative structure sheaf, or
+                as later extensions.
+              </p>
+            </section>
+
+            <section id="coordinates" class="article-section">
+              <h2>Architectural coordinates</h2>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition III.3.1 (Coordinate).</a>
+                An architecture coordinate on a context \(W\) is a function
+                \(c : \text{local architecture data on } W \to R\) that reads an
+                Atom configuration, or a derived structure, as a value in a
+                selected coefficient ring \(R\).
+              </p>
+              <p>
+                Typical coordinate families are atom, signature, law witness,
+                state, effect, authority, semantic, runtime, and boundary
+                coordinates. A coordinate reads structures that were already
+                constructed from the Atom axioms of Part I; it does not create
+                them.
+              </p>
+              <p id="example-3-2" class="statement">
+                <a class="statement-anchor" href="#example-3-2">Example III.3.2 (Atom Coordinate).</a>
+                An atom coordinate \(x_a(W)\) reads whether, or with which
+                weight, an Atom \(a\) appears on \(W\). Instances include
+                \(x_{\mathrm{component}}(C)\), \(x_{\mathrm{relation}}(A,B)\),
+                \(x_{\mathrm{capability}}(C,\kappa)\), \(x_{\mathrm{effect}}(e)\),
+                \(x_{\mathrm{authority}}(\mathrm{actor},\mathrm{action},\mathrm{resource})\),
+                \(x_{\mathrm{semantic}}(t,s)\), and \(x_{\mathrm{runtime}}(u,v,h)\).
+              </p>
+              <p id="example-3-3" class="statement">
+                <a class="statement-anchor" href="#example-3-3">Example III.3.3 (Signature Coordinate).</a>
+                A signature coordinate reads the value of a selected signature
+                axis: \(\mathrm{sig}_{\mathrm{cycle}}\),
+                \(\mathrm{sig}_{\mathrm{projection}}\),
+                \(\mathrm{sig}_{\mathrm{substitution}}\),
+                \(\mathrm{sig}_{\mathrm{state\ transition}}\),
+                \(\mathrm{sig}_{\mathrm{effect}}\),
+                \(\mathrm{sig}_{\mathrm{authority}}\),
+                \(\mathrm{sig}_{\mathrm{semantic}}\),
+                \(\mathrm{sig}_{\mathrm{runtime}}\), and
+                \(\mathrm{sig}_{\mathrm{boundary}}\). A vanishing signature
+                coordinate is a zero condition on the selected axis, and only
+                on it:
+              </p>
+              <pre><code>selected zero != total zero
+unselected axis != zero
+unmeasured axis != zero</code></pre>
+              <p id="example-3-4" class="statement">
+                <a class="statement-anchor" href="#example-3-4">Example III.3.4 (Semantic Coordinate).</a>
+                Following the Semantic Atom of Part I, a semantic coordinate
+                \(\mathrm{sem}_{\Gamma,R,\rho}(t,s)\) is relativized to a
+                UseContext \(\Gamma\), a UseRuleSet \(R\), and a resolution
+                \(\rho\). Agreement of semantic coordinates means agreement of
+                use-rules inside a fixed language game, not agreement of
+                strings or names.
+              </p>
+            </section>
+
+            <section id="ambient-algebra" class="article-section">
+              <h2>Ambient law algebra</h2>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition III.4.1 (Free Typed Commutative Algebra).</a>
+                Write \(\mathrm{Coord}_X(W)\) for the set of architecture
+                coordinates visible on \(W\). The free typed commutative
+                algebra over the coefficient ring \(k\) is
+                \(\mathrm{FreeCommAlg}_k(\mathrm{Coord}_X(W))\) — intuitively,
+                the polynomial ring
+                \(k[x_{\mathrm{atom}}, x_{\mathrm{signature}}, x_{\mathrm{state}},
+                x_{\mathrm{effect}}, x_{\mathrm{authority}}, x_{\mathrm{semantic}},
+                x_{\mathrm{runtime}}, x_{\mathrm{boundary}}]\)
+                in the coordinates readable on \(W\).
+              </p>
+              <p id="definition-4-2" class="statement">
+                <a class="statement-anchor" href="#definition-4-2">Definition III.4.2 (Structural Relation).</a>
+                Independently of laws, coordinates carry structural relations
+                \(\mathrm{Rel}_{\mathrm{struct}}(W)\): typing relations, source
+                identity consistency, projection and restriction
+                compatibility, boundary incidence, semantic resolution
+                compatibility, state coordinate typing, and runtime trace
+                typing. Structural relations are not there to erase law
+                failure; they make the coordinates cohere as readings of one
+                architecture object. The basic object is the ideal they
+                generate,
+                \(J_{\mathrm{struct}}(W) \subset \mathrm{FreeCommAlg}_k(\mathrm{Coord}_X(W))\),
+                and the text distinguishes the relation polynomials
+                \(\mathrm{Rel}_{\mathrm{struct}}(W)\) from the generated ideal
+                \(J_{\mathrm{struct}}(W)\).
+              </p>
+              <p id="definition-4-3" class="statement">
+                <a class="statement-anchor" href="#definition-4-3">Definition III.4.3 (Raw Ambient Law Algebra).</a>
+                The raw ambient law algebra on \(W\) is the quotient
+              </p>
+              \[
+                \mathcal{O}_{\mathrm{raw}}^U(W)
+                \;=\;
+                \mathrm{FreeCommAlg}_k(\mathrm{Coord}_X(W)) \,/\, J_{\mathrm{struct}}(W).
+              \]
+              <p>
+                The superscript \(U\) records relativization to the law
+                universe: it selects the coordinates, witnesses, signature
+                axes, and coverage reading. Crucially, selected law witness
+                ideals are <em>not</em> set to zero at the ambient stage. If
+                every law were quotiented out from the start, the obstruction
+                ideal generated by law failure would become invisible. Part III
+                therefore separates two roles:
+              </p>
+              <pre><code>structural relations:
+  coordinate system itself must satisfy them.
+
+law witness ideals:
+  they cut out lawful locus as zeros.</code></pre>
+              <p>
+                The structure sheaf is the sheafification
+                \(\mathcal{O}_X^U = (\mathcal{O}_{\mathrm{raw}}^U)^{+}\).
+              </p>
+              <p id="condition-4-4" class="statement">
+                <a class="statement-anchor" href="#condition-4-4">Condition III.4.4 (Restriction-Stable Structural Relations).</a>
+                For \(\mathcal{O}_{\mathrm{raw}}^U\) to be a presheaf of
+                commutative \(k\)-algebras, the structural relation ideal must
+                be stable under context restriction: for each
+                \(i : W' \to W\), the typed coordinate restriction induces
+                \(\mathrm{res}_i : \mathrm{FreeCommAlg}_k(\mathrm{Coord}_X(W)) \to \mathrm{FreeCommAlg}_k(\mathrm{Coord}_X(W'))\)
+                with
+                \(\mathrm{res}_i\bigl(J_{\mathrm{struct}}(W)\bigr) \subset J_{\mathrm{struct}}(W')\).
+                Under this restriction-stability, \(\mathrm{res}_i\) descends
+                to the quotients
+                \(\mathcal{O}_{\mathrm{raw}}^U(W) \to \mathcal{O}_{\mathrm{raw}}^U(W')\).
+              </p>
+              <p id="condition-4-5" class="statement">
+                <a class="statement-anchor" href="#condition-4-5">Condition III.4.5 (Presentation-Stable AAT Site).</a>
+                To use the sheafified sections \(\mathcal{O}_X^U(W)\) as the
+                coordinate algebra of the same local configuration functor,
+                the selected finite presentation must survive sheafification:
+                if the canonical map
+                \(\mathcal{O}_{\mathrm{raw}}^U(W) \to \mathcal{O}_X^U(W)\)
+                preserves the selected coordinate generators, structural
+                relations, and local functor representation, the AAT site is
+                called presentation-stable. Without this condition
+                \(\mathcal{O}_X^U\) is still a sheaf of commutative rings, but
+                reading \(\mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W), D_W^U)\)
+                as the affine moduli chart of the raw local configuration
+                functor requires presentation-stability to be stated
+                explicitly.
+              </p>
+              <p id="principle-4-6" class="statement">
+                <a class="statement-anchor" href="#principle-4-6">Principle III.4.6 (Law Does Not Create Coordinates).</a>
+                The law universe \(U\) selects which witness ideals and defect
+                representatives are read, which signature axes are required,
+                and which witness families are chosen. It is not the ground of
+                existence of Atoms or coordinates:
+              </p>
+              <pre><code>law does not create atoms
+law does not create coordinates
+law cuts out loci</code></pre>
+            </section>
+
+            <section id="law-as-equation" class="article-section">
+              <h2>Law as equation</h2>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition III.5.1 (Violation Witness Family).</a>
+                For a law \(L\) and a context \(W\), the selected family of
+                violation witnesses is \(\mathrm{Viol}_L(W)\): the selected
+                coordinate family witnessing failure of \(L\). A cycle law
+                contributes cycle witnesses, an authority law contributes
+                authority/effect mismatch witnesses, a semantic law contributes
+                use-rule mismatch witnesses. Each witness
+                \(v \in \mathrm{Viol}_L(W)\) has a coordinate
+                \(x_v \in \mathcal{O}_X^U(W)\).
+              </p>
+              <p id="definition-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-5-2">Definition III.5.2 (Law Witness Ideal).</a>
+                The local law witness ideal of \(L\) is
+              </p>
+              \[
+                \mathcal{I}_L(W)
+                \;=\;
+                \bigl\langle\, x_v \;\big|\; v \in \mathrm{Viol}_L(W) \,\bigr\rangle
+                \;\subset\; \mathcal{O}_X^U(W).
+              \]
+              <p>
+                \(\mathcal{I}_L(W)\) collects the equations that kill the
+                selected violation witnesses. Inside the ambient ring
+                \(\mathcal{I}_L(W)\) need not be the zero ideal; lawfulness is
+                read as the vanishing of this ideal along a point, a section,
+                or a quotient. This ideal-theoretic encoding <em>is</em> the
+                body of law failure.
+              </p>
+              <p id="definition-5-3" class="statement">
+                <a class="statement-anchor" href="#definition-5-3">Definition III.5.3 (Defect Section).</a>
+                For a law \(L\) and a context \(W\), a defect section
+                \(\delta_L(W) \in \mathcal{O}_X^U(W)\) is a coordinate function
+                or witness-ideal representative measuring how far \(L\) fails
+                on \(W\). The law \(L\) holds along a point
+                \(p \in \mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W), D_W^U)\)
+                or a section \(s\) when
+                \(\mathcal{I}_L(W) \subset p\) or \(s^{*}\mathcal{I}_L = 0\).
+                In coefficient systems with a no-cancellation discipline —
+                Boolean coordinates or independently readable witness
+                coordinates — the representative reading
+                \(L \text{ holds on } s \iff s^{*}(\delta_L) = 0\)
+                is available. In general, cancellation from characteristic or
+                signed coefficients is possible (Principle III.5.6), so the
+                vanishing of \(\mathcal{I}_L(W)\) is the primary encoding. A
+                law is thereby read as a family of equations, or as an ideal,
+                on the architecture geometry.
+              </p>
+              <p id="example-5-4" class="statement">
+                <a class="statement-anchor" href="#example-5-4">Example III.5.4 (Representative Defects).</a>
+                Representative defect sections are
+                \(\delta_{\mathrm{cycle}}\), \(\delta_{\mathrm{projection}}\),
+                \(\delta_{\mathrm{substitution}}\),
+                \(\delta_{\mathrm{state\ transition}}\),
+                \(\delta_{\mathrm{effect\ replay}}\),
+                \(\delta_{\mathrm{authority}}\), \(\delta_{\mathrm{semantic}}\),
+                \(\delta_{\mathrm{runtime}}\), and
+                \(\delta_{\mathrm{boundary}}\).
+              </p>
+              <pre><code>depends(A,B)
+depends(B,C)
+depends(C,A)
+----------------
+delta_cycle != 0
+
+contract(Base, returns NonNull)
+contract(Impl, returns Nullable)
+substitutes(Impl, Base)
+----------------
+delta_substitution != 0
+
+same name
+different use-rule
+----------------
+delta_semantic != 0</code></pre>
+              <p>
+                The semantic defect is read against a fixed language game: it
+                witnesses a mismatch of use-rules, not a mismatch of spelling.
+              </p>
+              <p id="example-5-5" class="statement">
+                <a class="statement-anchor" href="#example-5-5">Example III.5.5 (Defect Encoding).</a>
+                With a fixed coefficient ring \(k\) and selected witness
+                family, the safe encoding of the cycle defect is the ideal
+                generated by the selected cycle witness coordinates:
+              </p>
+              \[
+                \mathcal{I}_{\mathrm{cycle}}(W)
+                \;=\;
+                \bigl\langle\, x_c \;\big|\; c \in \mathrm{CycleWitness}_U(W) \,\bigr\rangle
+                \;\subset\; \mathcal{O}_X^U(W).
+              \]
+              <p>
+                Then \(s^{*}\mathcal{I}_{\mathrm{cycle}}(W) = 0\), or
+                \(\mathcal{I}_{\mathrm{cycle}}(W) \subset p\), reads that every
+                selected cycle witness vanishes along the section or point.
+                Only under a fixed no-cancellation discipline may the
+                representative
+                \(\delta_{\mathrm{cycle}}(W) = \sum_{c \in \mathrm{CycleWitness}_U(W)} x_c\)
+                be used, because the sum of witnesses may cancel in positive
+                characteristic or with signed coefficients; lawfulness is
+                therefore defined by \(s^{*}\mathcal{I}_{\mathrm{cycle}} = 0\)
+                or \(\mathcal{I}_{\mathrm{cycle}} \subset p\), not by
+                \(\delta_{\mathrm{cycle}} = 0\). The substitution defect is
+                encoded the same way, as
+                \(\mathcal{I}_{\mathrm{substitution}}(W) =
+                \langle\, x_m \mid m \in \mathrm{SubstitutionMismatch}_U(W) \,\rangle\).
+                A defect section is not the law predicate itself; it is the
+                selected witnesses encoded as ring elements or ideals.
+              </p>
+              <p id="principle-5-6" class="statement">
+                <a class="statement-anchor" href="#principle-5-6">Principle III.5.6 (No-Cancellation Discipline).</a>
+                Reading witness vanishing in a coordinate algebra requires a
+                no-cancellation discipline on the coefficient system and the
+                encoding. The safe basic forms are Boolean evaluation
+                \(\mathrm{ev}_s(x_v) \in \lbrace 0,1 \rbrace\), monomial witness
+                ideals
+                \(\mathcal{I}_L(W) = \langle\, x_v \mid v \in \mathrm{Viol}_L(W) \,\rangle\),
+                and product witnesses such as
+                \(c_{ABC} = e_{AB}\, e_{BC}\, e_{CA}\). For example:
+              </p>
+              <pre><code>I_cycle = &lt; c_ABC &gt;
+I_auth  = &lt; effect_capture * (1 - has_authority) &gt;
+I_sub   = &lt; substitutes_Impl_Base * contract_mismatch &gt;</code></pre>
+              <p>
+                Under this discipline, a zero witness ideal keeps the meaning
+                "the selected violation witnesses vanished" and additive
+                cancellation is never misread as lawfulness.
+              </p>
+              <p id="principle-5-7" class="statement">
+                <a class="statement-anchor" href="#principle-5-7">Principle III.5.7 (Equation Relativity).</a>
+                A law equation is relativized to the Atom vocabulary \(V\), the
+                law universe \(U\), the coverage topology \(J\), the selected
+                witness family, the selected signature axes, the UseContext
+                \(\Gamma\), the UseRuleSet \(R\), and the resolution \(\rho\).
+                Consequently \(\delta_L = 0\) within the selected reading
+                asserts nothing about readings that were not selected.
+              </p>
+            </section>
+
+            <section id="stanley-reisner" class="article-section">
+              <h2>Idempotent collapse and the Stanley-Reisner regime</h2>
+              <p>
+                Two structural results make the Boolean-flavored witness
+                algebra fully computable: idempotent coordinates collapse to a
+                product of copies of \(k\), and square-free witness regimes
+                identify the obstruction ideal with a Stanley-Reisner ideal.
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lemma III.5.6A</span>
+                      <h3>Idempotent Coordinate Collapse</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">Lean: proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        For finitely many selected coordinates over a field
+                        \(k\), let
+                        \(A = k[x_v \mid v \in E] \,/\, \langle x_v^2 - x_v \mid v \in E \rangle\).
+                        Then \(A\) is a finite product of copies of \(k\), and
+                        \(\mathrm{Tor}_i^A(M,N) = 0\) for \(i &gt; 0\),
+                        \(I/I^2 = 0\) for every ideal \(I \subset A\), and
+                        \(\Omega_{A/k} = 0\).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>IdempotentCollapse.quotientAlgEquivPi</code>,
+                        <code>IdempotentCollapse.module_flat</code>,
+                        <code>IdempotentCollapse.isZero_Tor_succ</code>,
+                        <code>IdempotentCollapse.ideal_square_comap_eq_top</code>,
+                        <code>IdempotentCollapse.kaehler_subsingleton</code>
+                        in <code>Formal/AG/LawAlgebra/IdempotentCollapse.lean</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite coordinate set \(E\); \(k\) a field; idempotency relations \(x_v^2 = x_v\) imposed on all selected coordinates.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The collapse holds for the idempotent quotient algebra; it is not a claim about the ambient polynomial ring or non-Boolean coefficient regimes.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="definition-5-6b" class="statement">
+                <a class="statement-anchor" href="#definition-5-6b">Definition III.5.6B (Square-Free Witness Regime).</a>
+                On a context \(W\), fix a finite set of selected primitive
+                witness coordinates \(E_W = \lbrace e_1, \dots, e_n \rbrace\)
+                and keep the deformation side of the coordinate algebra as
+                \(k[e_1, \dots, e_n]\). The context \(W\) is in a square-free
+                witness regime when the law universe \(U\) selects a family of
+                forbidden witness supports
+                \(\mathrm{Forb}_U(W) \subset \mathrm{FinSubsets}(E_W)\) and
+                assigns to each forbidden support \(S\) the square-free
+                monomial \(x_S = \prod_{e \in S} e\). The obstruction ideal is
+                then
+              </p>
+              \[
+                \mathcal{I}_{\mathrm{Ob}}^U(W)
+                \;=\;
+                \bigl\langle\, x_S \;\big|\; S \in \mathrm{Forb}_U(W) \,\bigr\rangle
+                \;\subset\; k[E_W].
+              \]
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem III.5.6C</span>
+                      <h3>Stanley-Reisner Obstruction Theorem</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">Lean: defined / proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        If \(W\) is in a square-free witness regime and
+                        \(\mathrm{Forb}_U(W)\) is a family of inclusion-minimal
+                        forbidden supports, the simplicial complex
+                        \(\Delta_U(W) = \lbrace T \subset E_W \mid \text{no } S \in \mathrm{Forb}_U(W) \text{ satisfies } S \subset T \rbrace\)
+                        is defined, and
+                        \(\mathcal{I}_{\mathrm{Ob}}^U(W) = I_{\Delta_U(W)}\):
+                        the obstruction ideal is the Stanley-Reisner ideal of
+                        \(\Delta_U(W)\). The lawful chart
+                        \(\mathrm{Flat}_U(W) = V(I_{\Delta_U(W)})\) is read as a
+                        coordinate subspace arrangement whose subspaces avoid
+                        the forbidden supports. If \(\mathrm{Forb}_U(W)\) is
+                        not minimal, reducing to inclusion-minimal supports
+                        yields the same radical obstruction ideal.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal</code>,
+                        <code>SquareFreeWitnessRegime.minimalReduction_obstructionIdeal_eq</code>,
+                        <code>SquareFreeWitnessRegime.radical_minimalReduction_obstructionIdeal_eq</code>,
+                        <code>SquareFreeWitnessRegime.face_iff_admissibleSupport</code>
+                        in <code>Formal/AG/LawAlgebra/StanleyReisner.lean</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Square-free witness regime; minimality of the forbidden family for the exact identity; finite witness type for the minimal-reduction equalities.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The identification is chart-local and relative to the selected forbidden family; it does not classify unselected witness vocabularies.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="corollary-5-6d" class="statement">
+                <a class="statement-anchor" href="#corollary-5-6d">Corollary III.5.6D (Obstruction Invariants).</a>
+                In a square-free witness regime the following are read as
+                obstruction invariants: minimal forbidden supports are minimal
+                law obstruction patterns; faces of \(\Delta_U(W)\) are
+                simultaneously admissible witness supports; links and
+                restrictions of \(\Delta_U(W)\) are context refinements and
+                boundary-local readings; and the minimal monomial generators of
+                \(\mathcal{I}_{\mathrm{Ob}}^U(W)\) are the irreducible selected
+                obstruction witnesses.
+              </p>
+              <p id="example-5-6e" class="statement">
+                <a class="statement-anchor" href="#example-5-6e">Example III.5.6E (Three-Witness Stanley-Reisner Chart).</a>
+                Let \(E_W = \lbrace x, y, z \rbrace\) and
+                \(\mathrm{Forb}_U(W) = \lbrace \lbrace x,y \rbrace \rbrace\).
+                Then
+                \(\Delta_U(W) = \lbrace T \subset \lbrace x,y,z \rbrace \mid \lbrace x,y \rbrace \not\subset T \rbrace\)
+                and \(\mathcal{I}_{\mathrm{Ob}}^U(W) = \langle x y \rangle \subset k[x,y,z]\).
+                Similarly, \(\mathrm{Forb}_V(W) = \lbrace \lbrace x,z \rbrace \rbrace\)
+                gives \(\mathcal{I}_{\mathrm{Ob}}^V(W) = \langle x z \rangle\).
+                This chart is reused in the monomial law-conflict computations
+                of Part V. In Lean, the chart is fixed as
+                <code>FiniteExamples.StanleyReisnerChart</code> with
+                <code>obstructionIdeal_eq_span_xy</code> and the face and
+                non-face witnesses proved.
+              </p>
+            </section>
+
+            <section id="law-condition-types" class="article-section">
+              <h2>Law condition types</h2>
+              <p id="principle-5-8" class="statement">
+                <a class="statement-anchor" href="#principle-5-8">Principle III.5.8 (Law Condition Types).</a>
+                The general form of a law condition is a subfunctor of the
+                functor of points
+                \(h_X : \mathrm{CommAlg}_k \to \mathrm{Set}\) of the
+                architecture scheme, \(L \subset h_X\); when isomorphism data
+                must be retained — decomposition, refactor equivalence,
+                semantic identification — the law condition is read as a
+                substack \(L \subset \mathcal{X}\). The core of Part III reads
+                <em>closed equational</em> laws as zero sets of ideals, and
+                only those. The typology is:
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Closed equational law</dt>
+                  <dd>Read as the vanishing of a selected witness ideal \(\mathcal{I}_L\).</dd>
+                </div>
+                <div>
+                  <dt>Open / inequational law</dt>
+                  <dd>Nonzero capability, enabled provider, available path: a \(D(f)\)-type open condition.</dd>
+                </div>
+                <div>
+                  <dt>Constructible law</dt>
+                  <dd>A Boolean combination of closed and open conditions.</dd>
+                </div>
+                <div>
+                  <dt>Descent law</dt>
+                  <dd>Local lawful sections must glue along a cover with gluing data.</dd>
+                </div>
+                <div>
+                  <dt>Temporal / trace law</dt>
+                  <dd>Relativized to runtime trace sheaves, state transitions, automata, and temporal predicates.</dd>
+                </div>
+                <div>
+                  <dt>Higher / stacky law</dt>
+                  <dd>Decomposition, semantic identification, refactor equivalence: groupoid- or stack-valued data.</dd>
+                </div>
+              </dl>
+              <p>The slogan of the canonical text is read accordingly:</p>
+              <pre><code>closed law is equation.
+general law is a geometric condition.
+obstruction ideal is the closed defect envelope
+of selected witnesses.</code></pre>
+              <p>
+                \(\mathcal{I}_{\mathrm{Ob}}^U\) collects the part of the
+                selected witness family that is readable as a closed
+                equational envelope. Open, constructible, descent, temporal,
+                and stacky laws are handled as open subobjects, locally closed
+                subobjects, descent conditions, trace conditions, or stack
+                conditions once the required extra structure is fixed. This
+                classification is a claim boundary: it fixes exactly where
+                closed defects may be treated as ideals and refuses to force
+                other law types into ideals unnaturally. How the closed
+                equational vocabulary <em>generates</em> the coefficients and
+                restrictions of obstruction is fixed as a theorem in the Law
+                Equation Realization below.
+              </p>
+            </section>
+
+            <section id="obstruction-ideal" class="article-section">
+              <h2>Obstruction ideal sheaf</h2>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition III.6.1 (Local Obstruction Ideal).</a>
+                For a context \(W\), let
+                \(\mathrm{Def}_U(W) = \lbrace \mathcal{I}_L(W) \mid L \in U \text{ and } L \text{ is selected on } W \rbrace\)
+                be the law witness ideals selected by the law universe. The
+                local obstruction ideal is their sum:
+              </p>
+              \[
+                \mathcal{I}_{\mathrm{Ob}}^U(W)
+                \;=\;
+                \sum_{L \,\in\, U \text{ selected on } W} \mathcal{I}_L(W)
+                \;\subset\; \mathcal{O}_X^U(W).
+              \]
+              <p id="definition-6-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-2">Definition III.6.2 (Obstruction Ideal Sheaf).</a>
+                When \(\mathcal{I}_{\mathrm{Ob}}^U\) is compatible with
+                restriction and satisfies the sheaf condition on covers, it is
+                called the obstruction ideal sheaf:
+                \(\mathcal{I}_{\mathrm{Ob}}^U \subset \mathcal{O}_X^U\), an
+                ideal sheaf of the structure sheaf, with
+                \(\mathrm{res}_i\bigl(\mathcal{I}_{\mathrm{Ob}}^U(W)\bigr) \subset \mathcal{I}_{\mathrm{Ob}}^U(W')\)
+                for each context morphism \(i : W' \to W\). Law failure thus
+                restricts coherently across local contexts. When an
+                unconditional construction is preferred, one defines
+                \(\mathcal{I}_{\mathrm{Ob}}^U\) as the sheaf image of the map
+                \(\bigoplus_L \mathcal{I}_L \to \mathcal{O}_X^U\)
+                from the direct sum of selected local witness ideals; then
+                \(\mathcal{I}_{\mathrm{Ob}}^U \subset \mathcal{O}_X^U\) is an
+                ideal sheaf by definition, and restriction compatibility is
+                the functoriality of the sheaf image. The local-sum notation
+                is used exactly where it agrees with this sheaf-image
+                construction.
+              </p>
+              <p id="principle-6-3" class="statement">
+                <a class="statement-anchor" href="#principle-6-3">Principle III.6.3 (Obstruction Is Ideal-Theoretic).</a>
+                An obstruction is not a failure label. The algebro-geometric
+                condition of lawfulness is that \(\mathcal{I}_{\mathrm{Ob}}^U\)
+                is zero, or pulls back to zero along a section.
+              </p>
+              <p class="statement-status">
+                <span class="statement-status-label">Lean status</span>
+                <span>
+                  <code>SelectedLawWitnessIdealFamily.localObstructionIdeal</code>
+                  with minimality lemma
+                  <code>localObstructionIdeal_le_iff</code>, restriction surface
+                  <code>map_localObstructionIdeal_le</code>, and
+                  <code>SheafImageConstruction.imageIdeal_eq_localObstructionIdeal</code>
+                  in <code>Formal/AG/LawAlgebra/ObstructionIdeal.lean</code> —
+                  defined, and proved under explicit restriction-compatibility
+                  and sheaf-image agreement assumptions.
+                </span>
+              </p>
+            </section>
+
+            <section id="lawful-locus" class="article-section">
+              <h2>Lawful locus</h2>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition III.7.1 (Lawful Locus).</a>
+                For the architecture geometry \(X\) and the obstruction ideal
+                sheaf \(\mathcal{I}_{\mathrm{Ob}}^U\), the lawful locus is the
+                zero set
+              </p>
+              \[
+                \mathrm{Flat}_U(X) \;=\; V\bigl(\mathcal{I}_{\mathrm{Ob}}^U\bigr),
+              \]
+              <p>
+                so that \(x \in \mathrm{Flat}_U(X)\) exactly when all selected
+                law witness ideals vanish at \(x\); that is,
+                \(\delta(x) = 0\) for all
+                \(\delta \in \mathcal{I}_{\mathrm{Ob}}^U\).
+              </p>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition III.7.2 (Lawful Section).</a>
+                An architecture section \(s : T \to X\) is lawful for \(U\)
+                when it factors through the lawful locus; equivalently, when
+                \(s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0\):
+              </p>
+              \[
+                \mathrm{Lawful}_U(s)
+                \;\iff\;
+                s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0.
+              \]
+              <p class="statement-status">
+                <span class="statement-status-label">Lean status</span>
+                <span>
+                  <code>LawfulLocus.lawfulLocus</code> as
+                  <code>PrimeSpectrum.zeroLocus</code>,
+                  <code>LawfulSectionData.lawful_iff_pulledObstructionIdeal_eq_bot</code>,
+                  <code>lawful_iff_factorsThroughLawfulLocus</code>, and the
+                  one-directional prime-map theorems
+                  <code>sectionPrimeMap_mem_lawfulLocus_of_lawful</code> in
+                  <code>Formal/AG/LawAlgebra/LawfulLocus.lean</code> — defined,
+                  with a proved bridge. The converse from set-theoretic image
+                  containment to ideal vanishing is not claimed, because of the
+                  radical gap.
+                </span>
+              </p>
+              <p id="principle-7-3" class="statement">
+                <a class="statement-anchor" href="#principle-7-3">Principle III.7.3 (Lawful Locus Is Not Total Correctness).</a>
+                \(\mathrm{Flat}_U(X)\) is a zero set relativized to the
+                selected law universe \(U\), coverage topology \(J\), witness
+                family, and signature axes: \(\mathrm{Flat}_U(X)\) is lawful
+                within \(U\). The flatness here is AAT-flatness —
+                factorization through the lawful locus — and is distinct from
+                the flatness of morphisms in ordinary algebraic geometry. It
+                is not total correctness over all possible law universes. AAT
+                defines the lawfulness that can be spoken inside a fixed
+                geometry.
+              </p>
+            </section>
+
+            <section id="nullstellensatz" class="article-section">
+              <h2>Architecture Nullstellensatz and certificate depth</h2>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem candidate III.7.2A</span>
+                      <h3>Architecture Nullstellensatz</h3>
+                    </div>
+                    <span class="status-badge status-badge-future">Lean: statement only</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        Fix the affine chart \(X_W = \mathrm{Spec}\, k[E_W]\)
+                        with \(k\) algebraically closed. Let
+                        \(E_{\mathrm{bool}} \subset E_W\) carry Boolean
+                        evaluation and set
+                        \(B_W = \langle e^2 - e \mid e \in E_{\mathrm{bool}} \rangle\),
+                        and let
+                        \(I_U(W) = \mathcal{I}_{\mathrm{Ob}}^U(W) \subset k[E_W]\)
+                        be the closed equational obstruction ideal. Emptiness
+                        of the selected Boolean affine lawful points is
+                        \(V(I_U(W) + B_W)(k) = \varnothing\), which by the
+                        Hilbert Nullstellensatz is equivalent to
+                        \(1 \in \sqrt{I_U(W) + B_W}\). If \(I_U(W) + B_W\) is
+                        radical, this is equivalent to
+                        \(1 \in I_U(W) + B_W\), and a presentation
+                        \(1 = \sum_i a_i f_i\) over the chosen generators is an
+                        unlawfulness certificate, of minimal display degree
+                        \(\mathrm{NSdeg}_U(W)\).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>Nullstellensatz.ArchitectureNullstellensatzCandidate</code>,
+                        <code>Nullstellensatz.RadicalUnitCertificate</code>,
+                        <code>Nullstellensatz.UnlawfulnessCertificate</code> in
+                        <code>Formal/AG/LawAlgebra/Nullstellensatz.lean</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>\(k\) algebraically closed; Boolean relations imposed on the selected subset; radicality for the certificate form.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Fixed as a statement-only proposition in Lean; the AG index explicitly records that no proof promotion is made.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="definition-7-2b" class="statement">
+                <a class="statement-anchor" href="#definition-7-2b">Definition III.7.2B (Nullstellensatz Depth).</a>
+                For the chosen generators
+                \(F_U(W) = \mathrm{generators}(I_U(W)) \cup \mathrm{generators}(B_W)\)
+                and a presentation \(1 = \sum_{f \in F_U(W)} a_f f\), define
+                the display degree
+                \(\deg_F = \max_f \deg(a_f f)\). When
+                \(V(I_U(W) + B_W)(k) = \varnothing\), the Nullstellensatz depth
+                is the minimum over all such presentations:
+              </p>
+              \[
+                \mathrm{NSdepth}_U(W)
+                \;:=\;
+                \min \deg_F\Bigl(1 = \textstyle\sum a_f f\Bigr).
+              \]
+              <p id="proposition-7-2c" class="statement">
+                <a class="statement-anchor" href="#proposition-7-2c">Proposition III.7.2C (Nullstellensatz Depth Monotonicity).</a>
+                Fix the chosen generators and suppose
+                \(U \subset U'\) with \(I_U(W) \subset I_{U'}(W)\), where
+                \(F_{U'}(W)\) is obtained from \(F_U(W)\) by adding
+                generators. If both selected Boolean lawful point sets are
+                empty, then
+                \(\mathrm{NSdepth}_{U'}(W) \le \mathrm{NSdepth}_U(W)\):
+                enlarging the law universe can only shorten the shortest
+                unlawfulness certificate.
+              </p>
+              <p class="statement-status">
+                <span class="statement-status-label">Lean status</span>
+                <span>
+                  <code>NSdepthProfile.NSdepth</code>,
+                  <code>NSdepthProfile.NSdepth_mono_of_generatorExtension</code>,
+                  and the generator-level
+                  <code>GeneratorNSdepthProfile.NSdepth_mono_of_generatorCertificateExtension</code>
+                  — defined, with the monotonicity proved on certificate
+                  profiles.
+                </span>
+              </p>
+              <p id="example-7-2d" class="statement">
+                <a class="statement-anchor" href="#example-7-2d">Example III.7.2D (Unit Certificate).</a>
+                If \(I_U(W) = \langle x \rangle\) and
+                \(B_W = \langle x - 1 \rangle\), then \(1 = x - (x - 1)\) and
+                \(\mathrm{NSdepth}_U(W) = 1\). In Lean the concrete
+                certificate is fixed by
+                <code>NSdepthExample.one_eq_x_sub_x_minus_one</code> and
+                <code>NSdepthExample.nsdepth_eq_one</code>, as proved examples.
+              </p>
+            </section>
+
+            <section id="affine-charts" class="article-section">
+              <h2>Affine AAT charts</h2>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition III.8.1 (Affine AAT Chart).</a>
+                For a context \(W\), the affine AAT chart is
+              </p>
+              \[
+                \mathrm{AffAAT}(W,U)
+                \;=\;
+                \mathrm{Spec}_{\mathrm{AAT}}\bigl(\mathcal{O}_X^U(W),\, D_W^U\bigr),
+              \]
+              <p>
+                the spectrum of the architecture coordinate ring on \(W\),
+                where \(D_W^U\) is the decoration: typed coordinate labels,
+                selected law readings, signature axis readings, the
+                obstruction ideal, and AAT interpretation maps.
+                \(\mathrm{Spec}_{\mathrm{AAT}}\) is <em>not</em> a new
+                spectrum. It is the ordinary affine scheme
+                \(\mathrm{Spec}(A)\) with decoration attached:
+                \(\mathrm{Spec}_{\mathrm{AAT}}(A,D) := (\mathrm{Spec}\,A,\ \mathcal{O}_{\mathrm{Spec}\,A},\ D)\),
+                using the ordinary topological space, prime ideals, and
+                structure sheaf.
+              </p>
+              <p id="definition-8-2" class="statement">
+                <a class="statement-anchor" href="#definition-8-2">Definition III.8.2 (R-Valued Local Configuration Functor).</a>
+                For a context \(W\) and law universe \(U\), the local
+                architecture configuration functor is
+                \(h_W^U : \mathrm{CommAlg}_k \to \mathrm{Set}\), where
+                \(h_W^U(R)\) is the set of \(R\)-valued \(W\)-local
+                architecture configurations: assignments of \(R\)-values to
+                the typed coordinates readable on \(W\) that satisfy the
+                structural relations. At this stage the selected law witness
+                ideals are not required to vanish; the lawful locus is cut out
+                afterwards by \(\mathcal{I}_{\mathrm{Ob}}^U\).
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem III.8.3</span>
+                      <h3>Raw Affine Chart Representability</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">Lean: proved (raw)</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        Suppose \(W\) has finitely presented coordinate and
+                        structural relation families and restriction preserves
+                        typed coordinates and structural relations. Then
+                        \(A_{\mathrm{raw},W}^U := \mathcal{O}_{\mathrm{raw}}^U(W)\)
+                        represents \(h_W^U\):
+                        \(h_W^U(R) \cong \mathrm{Hom}_{k\text{-}\mathrm{Alg}}(A_{\mathrm{raw},W}^U, R)\).
+                        Hence
+                        \(\mathrm{AffAAT}_{\mathrm{raw}}(W,U) = \mathrm{Spec}_{\mathrm{AAT}}(A_{\mathrm{raw},W}^U, D_{\mathrm{raw},W}^U)\)
+                        is the affine scheme representing the moduli functor of
+                        typed local architecture configurations, carrying AAT
+                        labels and the selected reading.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Read off the universal property of the presentation:
+                        the free commutative algebra quotiented by the
+                        structural relation ideal. A configuration is exactly
+                        an algebra map killing \(J_{\mathrm{struct}}(W)\).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>RawAffinePresentation.rawQuotientRepresentability</code>,
+                        <code>RawAffinePresentation.hWUConfigurationRepresentability</code>,
+                        <code>RawAffinePresentation.quotientAlgHomOfConfiguration</code>
+                        in <code>Formal/AG/LawAlgebra/AffineChart.lean</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions / boundary</dt>
+                      <dd>
+                        Proved for the raw quotient representability, and under
+                        selected presentation assumptions on the sheafified
+                        side. The sheafified statement is separate, per
+                        Assumption III.8.4.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="assumption-8-4" class="statement">
+                <a class="statement-anchor" href="#assumption-8-4">Assumption III.8.4 (Sheafified Chart Presentation).</a>
+                To use the sheafified section ring
+                \(A_W^U := \mathcal{O}_X^U(W)\) as the coordinate algebra of
+                the same local configuration functor, the
+                presentation-stability of Condition III.4.5 is fixed: the
+                canonical map
+                \(\mathcal{O}_{\mathrm{raw}}^U(W) \to \mathcal{O}_X^U(W)\)
+                preserves the selected finite presentation for \(h_W^U\), or
+                induces an isomorphism on the represented local functor. Only
+                under this assumption does one read
+                \(h_W^U(R) \cong \mathrm{Hom}_{k\text{-}\mathrm{Alg}}(A_W^U, R)\)
+                and call
+                \(\mathrm{AffAAT}(W,U) = \mathrm{Spec}_{\mathrm{AAT}}(A_W^U, D_W^U)\)
+                the sheafified affine AAT chart. Raw representability and the
+                condition under which the sheafified chart preserves it are
+                read separately.
+              </p>
+              <p id="definition-8-5" class="statement">
+                <a class="statement-anchor" href="#definition-8-5">Definition III.8.5 (Local Lawful Chart).</a>
+                The local lawful chart on \(W\) is
+              </p>
+              \[
+                \mathrm{Flat}_U(W)
+                \;=\;
+                V\bigl(\mathcal{I}_{\mathrm{Ob}}^U(W)\bigr)
+                \;=\;
+                \bigl\lbrace\, p \in \mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W), D_W^U)
+                \;\big|\; \mathcal{I}_{\mathrm{Ob}}^U(W) \subset p \,\bigr\rbrace,
+              \]
+              <p>
+                the locus on the affine chart where every selected law witness
+                ideal vanishes.
+              </p>
+              <p id="example-8-6" class="statement">
+                <a class="statement-anchor" href="#example-8-6">Example III.8.6 (Boundary Chart).</a>
+                On a boundary context \(W_{\mathrm{boundary}}\) the coordinates
+                \(x_{\mathrm{core}}, x_{\mathrm{feature}}, x_{\mathrm{overlap}},
+                x_{\mathrm{authority}}, x_{\mathrm{effect}},
+                x_{\mathrm{semantic}}, x_{\mathrm{runtime}}\) appear. If \(U\)
+                requires boundary consistency, authority/effect compatibility,
+                and semantic/runtime compatibility, the local obstruction
+                ideal takes the shape
+                \(\mathcal{I}_{\mathrm{Ob}}^U(W_{\mathrm{boundary}})
+                = \mathcal{I}_{\mathrm{boundary}} + \mathcal{I}_{\mathrm{authority}}
+                + \mathcal{I}_{\mathrm{effect}} + \mathcal{I}_{\mathrm{semantic\ runtime}}\),
+                and the local lawful chart is
+                \(V(\mathcal{I}_{\mathrm{boundary}} + \mathcal{I}_{\mathrm{authority}}
+                + \mathcal{I}_{\mathrm{effect}} + \mathcal{I}_{\mathrm{semantic\ runtime}})\).
+              </p>
+            </section>
+
+            <section id="architecture-scheme" class="article-section">
+              <h2>Ringed AAT topos and architecture scheme</h2>
+              <p id="definition-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-9-1">Definition III.9.1 (Ringed AAT Topos).</a>
+                The sheaf-theoretic foundation of the architecture scheme is
+                the ringed AAT topos
+                \(T_X^U = \bigl(\mathrm{AATSh}(A,U,J),\ \mathcal{O}_X^U\bigr)\),
+                with
+                \(\mathrm{AATSh}(A,U,J) = \mathrm{Sh}(\mathrm{ArchCtx}(A), J_U)\).
+                It is Part II's site-and-sheaf structure equipped with Part
+                III's sheaf of commutative rings, and it is the base floor on
+                which affine charts, the lawful locus, and derived
+                intersections are placed.
+              </p>
+              <p id="definition-9-2" class="statement">
+                <a class="statement-anchor" href="#definition-9-2">Definition III.9.2 (Chart Compatibility).</a>
+                A family of affine AAT charts
+                \(\mathrm{AffAAT}(W_i,U) = \mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W_i), D_{W_i}^U)\)
+                is chart-compatible when at least the following hold:
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Open immersion</dt>
+                  <dd>Chart transition maps are open immersions of the underlying affine spectra.</dd>
+                </div>
+                <div>
+                  <dt>Overlap representability</dt>
+                  <dd>Overlaps are represented by affine AAT charts, typically localizations or the chart of \(W_i \times_W W_j\).</dd>
+                </div>
+                <div>
+                  <dt>Restriction compatibility</dt>
+                  <dd>\(\mathcal{O}_X^U(W_i) \to \mathcal{O}_X^U(W_i \times_W W_j)\) agrees with the restriction of coordinate rings.</dd>
+                </div>
+                <div>
+                  <dt>Ideal compatibility</dt>
+                  <dd>\(\mathcal{I}_{\mathrm{Ob}}^U\) restricts to the obstruction ideal on overlaps.</dd>
+                </div>
+                <div>
+                  <dt>Decoration compatibility</dt>
+                  <dd>\(D_{W_i}^U\) restricts to the selected AAT decoration on overlaps, including Atom labels, law readings, signature axes, obstruction ideals, and interpretation maps.</dd>
+                </div>
+                <div>
+                  <dt>Cocycle condition</dt>
+                  <dd>Triple-overlap chart transitions agree.</dd>
+                </div>
+                <div>
+                  <dt>Locally ringed condition</dt>
+                  <dd>After forgetting AAT labels, the resulting structure sheaf is locally ringed.</dd>
+                </div>
+              </dl>
+              <p id="definition-9-3" class="statement">
+                <a class="statement-anchor" href="#definition-9-3">Definition III.9.3 (Architecture Scheme).</a>
+                An architecture scheme is a decorated locally ringed
+                architecture geometry locally presented by chart-compatible
+                affine AAT charts:
+              </p>
+              \[
+                X = \bigl(\,|X|,\ \mathcal{O}_X^U,\ D_X\,\bigr),
+                \qquad
+                D_X = \bigl(\mathcal{I}_{\mathrm{Ob}}^U,\ \mathrm{At}_X,\ \mathrm{Sig}_U,\ \mathrm{LawRead}_U,\ \mathrm{Flat}_U,\ \lambda_X\bigr).
+              \]
+              <p>
+                Each point \(x \in |X|\) has a context \(W\) and a
+                neighborhood
+                \(N_x \cong \mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W), D_W^U)\),
+                with chart overlaps satisfying Definition III.9.2. Under the
+                forgetful reading that drops the AAT decoration, an ordinary
+                locally ringed space with a scheme atlas remains. The
+                underlying space \(|X|\) is not the space of the source
+                itself; it is the underlying space of the architecture
+                geometry relativized to the Atom vocabulary, law universe, and
+                coverage topology. <em>ArchitectureScheme</em> is the strong
+                object: decorated \(\mathrm{Spec}_{\mathrm{AAT}}\) charts glued
+                by open immersions and the cocycle condition on the scheme
+                side, preserving Atom labels, law readings, obstruction
+                ideals, and signature axis readings on the decoration side.
+              </p>
+              <p class="statement-status">
+                <span class="statement-status-label">Lean status</span>
+                <span>
+                  <code>Scheme.RingedAATTopos</code>,
+                  <code>RingedAATTopos.forgetfulLocallyRingedSpace</code>,
+                  <code>Scheme.ChartCompatibility</code>,
+                  <code>Scheme.ArchitectureScheme</code> with
+                  <code>ArchitectureScheme.singleAffineSpec</code> and its
+                  compatibility theorems in
+                  <code>Formal/AG/LawAlgebra/Scheme.lean</code> — defined, with
+                  the forgetful bridge and single-affine compatibility proved.
+                </span>
+              </p>
+              <p id="principle-9-4" class="statement">
+                <a class="statement-anchor" href="#principle-9-4">Principle III.9.4 (Scheme Relativity).</a>
+                An architecture scheme is relativized to the source \(S\), the
+                Atom vocabulary \(V\), the law universe \(U\), the coverage
+                topology \(J\), the coefficient ring \(k\), and the chart
+                atlas. The same source generally yields different architecture
+                schemes when any of these change:
+                \(X_S^{V,U,J,k} \ne X_S^{W,U,J,k}\),
+                \(X_S^{V,U,J,k} \ne X_S^{V,U',J,k}\),
+                \(X_S^{V,U,J,k} \ne X_S^{V,U,J',k}\) in general.
+              </p>
+            </section>
+
+            <section id="gluing" class="article-section">
+              <h2>Restriction of rings and gluing of schemes</h2>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition III.10.1 (Ring Restriction).</a>
+                A context morphism \(i : W' \to W\) gives a ring homomorphism
+                \(\mathrm{res}_i : \mathcal{O}_X^U(W) \to \mathcal{O}_X^U(W')\),
+                restricting coordinates on \(W\) to \(W'\). Under projection, a
+                forgotten coordinate does not become zero; it merely ceases to
+                be read in the restricted ring:
+              </p>
+              <pre><code>forgotten coordinate != zero coordinate</code></pre>
+              <p id="definition-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-10-2">Definition III.10.2 (Ideal Restriction).</a>
+                The obstruction ideal sheaf is compatible with restriction:
+                \(\mathrm{res}_i\bigl(\mathcal{I}_{\mathrm{Ob}}^U(W)\bigr) \subset \mathcal{I}_{\mathrm{Ob}}^U(W')\).
+                The reading of law failure restricts along context
+                restriction. A projection may hide a defect from view, and
+                that is all it does:
+              </p>
+              <pre><code>unread defect != zero defect
+unmeasured obstruction != vanished obstruction</code></pre>
+              <p id="definition-10-3" class="statement">
+                <a class="statement-anchor" href="#definition-10-3">Definition III.10.3 (Scheme Gluing).</a>
+                For a coverage family
+                \(\lbrace W_i \to W \rbrace_{i \in I}\), a family of affine
+                AAT charts
+                \(\mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W_i), D_{W_i}^U)\)
+                that is compatible on overlaps
+                \(\mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W_i \times_W W_j), D_{W_i \times_W W_j}^U)\)
+                glues — in the same sense as standard scheme gluing — to a
+                locally ringed architecture geometry \(X_{\mathrm{glue}}\) in
+                general. The glued object need not coincide with
+                \(\mathrm{Spec}_{\mathrm{AAT}}(\mathcal{O}_X^U(W), D_W^U)\): in
+                ordinary algebraic geometry, too, a scheme glued from affine
+                charts need not be the Spec of its global section ring.
+                Returning to a single affine chart on \(W\) requires explicit
+                additional hypotheses:
+              </p>
+              <pre><code>the glued underlying scheme is affine.
+the canonical comparison X_glue -&gt; Spec Gamma(X_glue, O_X) is an isomorphism.
+O_X^U(W) identifies with Gamma(X_glue, O_X).
+the glued decoration D_glue identifies with D_W^U.</code></pre>
+              <p>
+                Calling the result an <em>ArchitectureScheme</em> gluing
+                requires not just section compatibility but the full chart
+                compatibility of Definition III.9.2: open immersions, joint
+                coverage, cocycle, and decoration compatibility. The sheaf
+                descent of Part II reappears in Part III as the gluing of
+                ringed geometry, and affine representability is an additional
+                consequence of gluing, never an unconditional one.
+              </p>
+              <p id="principle-10-4" class="statement">
+                <a class="statement-anchor" href="#principle-10-4">Principle III.10.4 (Local Lawful Sections Need Not Glue).</a>
+                Independently selected local lawful sections do not by
+                themselves yield a global lawful section; overlap
+                compatibility and descent are required:
+              </p>
+              <pre><code>forall i, exists s_i : W_i -&gt; Flat_U(X)
+does not automatically imply
+exists s : W -&gt; Flat_U(X)
+with s|W_i = s_i</code></pre>
+              <p>
+                This local-global gap is the entrance to obstruction
+                cohomology in Part IV.
+              </p>
+            </section>
+
+            <section id="correspondence" class="article-section">
+              <h2>Lawfulness-Ideal Correspondence</h2>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem III.11.1</span>
+                      <h3>Lawfulness-Ideal Correspondence</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">Lean: proved under explicit assumptions</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        Assume obstruction soundness, obstruction
+                        completeness, axis exactness, witness coverage, a
+                        \(U\)-adequate cover when a cover is used, sheaf
+                        descent for \(\mathrm{Ob}_U\), and ring restriction
+                        compatibility. Then for an architecture section
+                        \(s : T \to X\), the following are equivalent:
+                        \(\mathrm{Lawful}_U(s)\);
+                        \(s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0\);
+                        \(s\) factors through
+                        \(\mathrm{Flat}_U(X) = V(\mathcal{I}_{\mathrm{Ob}}^U)\);
+                        \(\omega_U(s) = 0\); and the required
+                        \(\mathrm{Sig}_U\) axes vanish.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Each law \(L\) holds on \(s\) exactly when
+                        \(s^{*}\mathcal{I}_L = 0\); vanishing of all selected
+                        witness ideals equals vanishing of their sum
+                        \(s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0\); ideal
+                        pullback vanishing equals factorization through the
+                        zero locus; soundness and completeness identify
+                        section-wise witness vanishing with zero obstruction
+                        valuation; axis exactness and witness coverage
+                        identify it with required-signature zero.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>Correspondence.LawfulnessIdealCorrespondencePackage</code>,
+                        <code>lawful_iff_pulledObstructionIdeal_eq_bot</code>,
+                        <code>pulledObstructionIdeal_eq_bot_iff_factorsThroughLawfulLocus</code>,
+                        <code>factorsThroughLawfulLocus_iff_omegaU_zero</code>,
+                        <code>omegaU_zero_iff_requiredSignatureAxesZero</code>,
+                        <code>Correspondence.lawfulnessIdealCorrespondence</code>
+                        in <code>Formal/AG/LawAlgebra/Correspondence.lean</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions / boundary</dt>
+                      <dd>
+                        The correspondence assumptions are explicit structure
+                        fields, not background axioms. The package also carries
+                        the one-directional bridges
+                        <code>lawful_of_selectedWitnessIdeals_le_ker</code> and
+                        <code>lawful_of_generatedLawWitnessIdeals_le_ker</code>.
+                        This is a certified bounded inference, not an
+                        unconditional universal claim.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p>
+                This is a defect representation theorem: when the selected
+                witness ideals represent law failure soundly and completely,
+                lawfulness is exactly the section-wise vanishing of the
+                obstruction ideal —
+              </p>
+              <pre><code>lawfulness
+  &lt;-&gt; obstruction ideal vanishing
+  &lt;-&gt; factorization through lawful locus
+  &lt;-&gt; zero obstruction valuation
+  &lt;-&gt; required signature zero</code></pre>
+              <p id="principle-11-2" class="statement">
+                <a class="statement-anchor" href="#principle-11-2">Principle III.11.2 (Exactness Is Assumption).</a>
+                The correspondence is not an unconditional universal claim. It
+                is relativized to the selected law universe, witness family,
+                signature axes, coverage, descent, and exactness. Without
+                soundness, a zero defect may fail to imply lawfulness; without
+                completeness, a law failure may fail to produce a selected
+                defect; without coverage, local vanishing may miss a required
+                witness; without descent, local lawful data may fail to glue.
+                This relativity is not a weakness of AAT: it is what makes
+                explicit in which geometry, for which laws, and under which
+                coverage the theory speaks.
+              </p>
+            </section>
+
+            <section id="law-equation-realization" class="article-section">
+              <h2>Law equation realization</h2>
+              <p>
+                Theorem III.11.1 gives the correspondence between lawfulness
+                and ideal vanishing. The realization theory strengthens it by
+                one level: the witness-ideal vocabulary does not merely
+                express the correspondence — it <em>generates</em> the
+                coefficients, restrictions, and interpretations of
+                obstruction.
+              </p>
+              <p id="definition-11-3" class="statement">
+                <a class="statement-anchor" href="#definition-11-3">Definition III.11.3 (Law Equation Realization).</a>
+                A law equation realization presents each law as a family of
+                equations rather than a predicate. It consists of an
+                observable presheaf assigning a commutative ring
+                \(\mathcal{O}(W)\) to each context and a ring homomorphism
+                \(\mathrm{res}_i : \mathcal{O}(W) \to \mathcal{O}(W')\) to each
+                context morphism, preserving identities and composition;
+                violation coordinates
+                \(v_{L,a}(W) \in \mathcal{O}(W)\) for each law \(L\) and Atom
+                \(a\) — the Atom-indexed realization of Definition III.5.1;
+                restriction compatibility
+                \(\mathrm{res}_i(v_{L,a}(W)) = v_{L,a}(W')\); the witness
+                ideal \(\mathcal{I}_L(W) = \langle v_{L,a}(W) \mid a \rangle\)
+                realizing Definition III.5.2; and the obstruction ideal
+                \(\mathcal{I}_{\mathrm{Ob}}(W) = \sum_{L\ \mathrm{required}} \mathcal{I}_L(W)\)
+                realizing Definition III.6.1. In addition, a family of
+                displayed local readings is fixed: a base context
+                \(W_{\mathrm{base}}\) and, for each index \(i\), a local
+                context \(W_i \to W_{\mathrm{base}}\), an architecture object
+                \(A_i\), a nonempty finite law support of required laws, and a
+                defect observable \(d_i \in \mathcal{O}(W_i)\).
+                <em>Displayed</em> names the components explicitly presented in
+                the input data (synonymous with <em>selected</em>). The family
+                is subject to one chart-local tie:
+              </p>
+              <pre><code>law-defect tie:
+  if L belongs to the law support of i,
+  and L holds on A_i,
+  then d_i in I_L(W_i).</code></pre>
+              <p>
+                The tie mentions one law, one chart, one displayed reading.
+                Overlap equations, coefficient restrictions, and vanishing
+                conclusions appear nowhere in the input. Satisfaction of the
+                displayed required laws means: for each \(i\), every law in
+                the law support of \(i\) holds on \(A_i\) — and since the
+                support is nonempty and consists of required laws, this
+                satisfaction is never vacuous.
+              </p>
+
+              <div class="theorem-card-list">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem III.11.4 — Certified bounded inference</span>
+                      <h3>Generated Obstruction Quotient and Restriction Evaluator</h3>
+                    </div>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Statement</dt>
+                      <dd>
+                        Fix a law equation realization. Then:
+                        <em>ideal restriction</em> — the ideal generated by
+                        \(\mathrm{res}_i(\mathcal{I}_L(W))\) lies in
+                        \(\mathcal{I}_L(W')\), and likewise for
+                        \(\mathcal{I}_{\mathrm{Ob}}\); the restriction
+                        conditions of Definitions III.6.2 and III.10.2 follow
+                        from the construction rather than being assumed.
+                        <em>Generated coefficient</em> — the quotient
+                        \(Q(W) = \mathcal{O}(W) / \mathcal{I}_{\mathrm{Ob}}(W)\)
+                        inherits restriction by the universal property and
+                        \(W \mapsto Q(W)\) is a presheaf of abelian groups,
+                        with the functor laws proved.
+                        <em>Generated interpretation</em> — the interpretation
+                        of a displayed reading is the quotient class
+                        \(\mathrm{interpret}(i) = [d_i] \in Q(W_i)\);
+                        interpretation is constructed, not free data.
+                        <em>Vanishing</em> — if the displayed required laws are
+                        satisfied, then \([d_i] = 0\) for every \(i\).
+                        <em>Faithfulness</em> — \([d_i] = 0\) iff
+                        \(d_i \in \mathcal{I}_{\mathrm{Ob}}(W_i)\); vanishing
+                        is ideal membership itself, not definitional collapse.
+                        <em>Nondegeneracy</em> — if
+                        \(d_i \notin \mathcal{I}_{\mathrm{Ob}}(W_i)\) then
+                        \([d_i] \ne 0\).
+                        <em>Restriction evaluator</em> — if the displayed
+                        required laws are satisfied, then on any common
+                        refinement \(Z\) (maps \(g_i : Z \to W_i\),
+                        \(g_j : Z \to W_j\) commuting with the maps to
+                        \(W_{\mathrm{base}}\)),
+                        \(\mathrm{res}_{g_i}([d_i]) = \mathrm{res}_{g_j}([d_j])\).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Proof idea</dt>
+                      <dd>
+                        Ideal restriction is a computation of images from the
+                        restriction compatibility of violation coordinates.
+                        The functor laws follow from the universal property of
+                        the quotient. Vanishing is three steps: pick
+                        \(L\) in the nonempty law support; the law-defect tie
+                        gives \(d_i \in \mathcal{I}_L\); \(L\) is required, so
+                        \(\mathcal{I}_L \subset \mathcal{I}_{\mathrm{Ob}}\) and
+                        the class dies in the quotient — no overlap equations
+                        or descent are consumed. Faithfulness is general
+                        quotient-ring theory. The evaluator follows because
+                        both sides are restrictions of zero classes. What
+                        matters is that this proof exists at all: in a
+                        vocabulary where interpretation is free data, the
+                        agreement is underivable in principle (Principle
+                        III.11.6).
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>
+                        Exactly the realization data of Definition III.11.3,
+                        including the chart-local law-defect tie and nonempty
+                        required law supports. The evaluator is a conclusion of
+                        the theorem, not an input hypothesis.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        A certified bounded inference relative to the fixed
+                        realization. On the Lean side, the AG Part III index
+                        row for Theorem III.11.1 records the bridge
+                        <code>Correspondence.displayedRequiredLawsHoldOn_defect_mem_localObstructionIdeal</code>
+                        from displayed required laws to generated obstruction
+                        ideal membership; no separate III.11.4 index row is
+                        claimed here.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+
+              <p id="corollary-11-5" class="statement">
+                <a class="statement-anchor" href="#corollary-11-5">Corollary III.11.5 (Defect Class Detector).</a>
+                Under a law equation realization, if \([d_i] \ne 0\), then no
+                law in the law support of \(i\) holds on \(A_i\). A nonzero
+                class is a certificate of failure of the displayed required
+                laws. The converse is not claimed: what is equivalent to
+                vanishing is not the holding of the law but the ideal
+                membership of the defect (faithfulness).
+              </p>
+              <p id="principle-11-6" class="statement">
+                <a class="statement-anchor" href="#principle-11-6">Principle III.11.6 (Predicate Vocabulary Does Not Generate).</a>
+                In a vocabulary where laws are opaque predicates and
+                interpretation is free data, there is no uniform construction
+                of a restriction evaluator for the totality of reading data:
+              </p>
+              <pre><code>predicate does not determine the equation.
+no coefficient, no cohomology.</code></pre>
+              <p>
+                This absence is not the claim that an individual reading can
+                never have an evaluator; it is the absence of a uniform
+                construction. The witness-ideal discipline of the fifth
+                section and the realization of Definition III.11.3 are the
+                vocabulary that fills this absence.
+              </p>
+            </section>
+
+            <section id="worked-example" class="article-section">
+              <h2>Worked example: the cycle correspondence in Lean</h2>
+              <p>
+                The finite examples fixed for Part III exercise the whole
+                chain on concrete data. The Stanley-Reisner chart of Example
+                III.5.6E fixes \(\mathcal{I}_{\mathrm{Ob}} = \langle xy \rangle\)
+                over \(k[x,y,z]\), with faces and non-faces proved. The unit
+                certificate of Example III.7.2D fixes
+                \(1 = x - (x-1)\) with \(\mathrm{NSdepth} = 1\). The cycle
+                correspondence example fixes a cycle witness coordinate
+                \(c_{ABC}\), the ideal
+                \(\mathcal{I}_{\mathrm{cycle}} = \langle c_{ABC} \rangle\), and
+                two pullbacks:
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Acyclic section</strong>
+                  <span>
+                    The pulled obstruction ideal is zero
+                    (<code>acyclic_pulledObstructionIdeal_eq_bot</code>), the
+                    section is lawful from its witness ideals, its prime map
+                    lands in the local lawful locus, and the pulled lawful
+                    locus has a point.
+                  </span>
+                </li>
+                <li>
+                  <strong>Cyclic section</strong>
+                  <span>
+                    The pulled obstruction ideal is the unit ideal
+                    (<code>cyclic_pulledObstructionIdeal_eq_top</code>) and the
+                    pulled lawful locus has no point.
+                  </span>
+                </li>
+              </ul>
+              <p class="statement-status">
+                <span class="statement-status-label">Lean status</span>
+                <span>
+                  <code>FiniteExamples.CycleCorrespondenceExample</code> with
+                  the acyclic and cyclic correspondence packages for Theorem
+                  III.11.1, in
+                  <code>Formal/AG/LawAlgebra/FiniteExamples.lean</code> —
+                  proved examples.
+                </span>
+              </p>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p class="statement">
+                <a class="statement-anchor" href="#counterexamples">Counterexample (cancellation).</a>
+                Over a coefficient system without the no-cancellation
+                discipline, a sum of witness coordinates can vanish while the
+                individual witnesses do not — in characteristic 2, two present
+                cycle witnesses sum to zero. This is why lawfulness is defined
+                by \(s^{*}\mathcal{I}_L = 0\), not by
+                \(s^{*}(\delta_L) = 0\) (Definition III.5.3, Principle
+                III.5.6).
+              </p>
+              <p class="statement">
+                <a class="statement-anchor" href="#counterexamples">Counterexample (gluing).</a>
+                Local lawful sections on each \(W_i\) do not force a global
+                lawful section on \(W\) (Principle III.10.4), and a scheme
+                glued from affine charts need not be the Spec of its global
+                section ring (Definition III.10.3). Both failures are genuine
+                geometric phenomena, not bookkeeping defects.
+              </p>
+              <p class="statement">
+                <a class="statement-anchor" href="#counterexamples">Non-conclusion (projection).</a>
+                A coordinate forgotten by projection is not a zero coordinate,
+                an unread defect is not a zero defect, and an unmeasured
+                obstruction is not a vanished obstruction (Definitions
+                III.10.1 and III.10.2). Restriction limits what is read; it
+                proves nothing about what is unread.
+              </p>
+              <p class="statement">
+                <a class="statement-anchor" href="#counterexamples">Non-conclusion (totality).</a>
+                \(\mathrm{Flat}_U(X)\) is lawfulness within the selected
+                \(U\), \(J\), witness family, and signature axes (Principle
+                III.7.3). Zero on a selected axis is not total zero, and no
+                claim is made about unselected law universes or unselected
+                readings (Example III.3.3, Principle III.5.7).
+              </p>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                Part III corresponds to the PRD-3 entrypoint
+                <code>Formal/AG/LawAlgebra</code> in the AG Lean index, built
+                on the PRD-1 <code>Formal/AG/Atom</code> and PRD-2
+                <code>Formal/AG/Site</code> layers. The module files are:
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors (PRD-3, Part III)</figcaption>
+                <pre><code>Formal/AG/LawAlgebra.lean
+Formal/AG/LawAlgebra/Coordinate.lean          III.3.1 coordinates
+Formal/AG/LawAlgebra/AmbientAlgebra.lean      III.4.1 free typed algebra
+Formal/AG/LawAlgebra/StructuralRelation.lean  III.4.2-4.4, 10.1
+Formal/AG/LawAlgebra/StructureSheaf.lean      III.2.1, 4.5 sheafification
+Formal/AG/LawAlgebra/WitnessIdeal.lean        III.5.1-5.3
+Formal/AG/LawAlgebra/IdempotentCollapse.lean  III.5.6A (proved)
+Formal/AG/LawAlgebra/StanleyReisner.lean      III.5.6B-5.6D
+Formal/AG/LawAlgebra/ObstructionIdeal.lean    III.6.1, 6.2, 10.2
+Formal/AG/LawAlgebra/LawfulLocus.lean         III.7.1, 7.2
+Formal/AG/LawAlgebra/Nullstellensatz.lean     III.7.2A-7.2C
+Formal/AG/LawAlgebra/AffineChart.lean         III.8.1-8.5
+Formal/AG/LawAlgebra/Scheme.lean              III.9.1-9.3, 10.3
+Formal/AG/LawAlgebra/Correspondence.lean      III.11.1
+Formal/AG/LawAlgebra/FiniteExamples.lean      III.5.6E, 7.2D, cycle example</code></pre>
+              </figure>
+              <p>
+                The status vocabulary follows the index: <em>defined only</em>
+                for structures without theorem content, <em>proved</em> for
+                unconditional theorems (Lemma III.5.6A, the Stanley-Reisner
+                identities, the finite examples), <em>proved under explicit
+                assumptions</em> where the canonical text itself places
+                explicit hypotheses (restriction-stability, sheafification
+                bridge, presentation-stability, restriction-compatibility, the
+                correspondence assumptions), and <em>statement only</em> for
+                the Architecture Nullstellensatz candidate, whose proof
+                promotion is explicitly not made. Theorem labels of this page
+                without an index row are mathematical statements of the
+                canonical text and are not read as current Lean proved claims.
+              </p>
+            </section>
+
+            <section id="conclusion" class="article-section">
+              <h2>Conclusion of Part III</h2>
+              <p>
+                Part III added a sheaf of commutative rings to the
+                architecture geometry of Part II, defined the obstruction
+                ideal sheaf as the sum of selected law witness ideals, and
+                defined the lawful locus as its zero set:
+              </p>
+              \[
+                X \longmapsto (X, \mathcal{O}_X^U),
+                \qquad
+                \mathcal{I}_{\mathrm{Ob}}^U \subset \mathcal{O}_X^U,
+                \qquad
+                \mathrm{Flat}_U(X) = V\bigl(\mathcal{I}_{\mathrm{Ob}}^U\bigr).
+              \]
+              <p>AAT thereby acquires the tower</p>
+              <pre><code>ArchitectureGeometry
+  -&gt; Ringed AAT Topos
+  -&gt; Affine AAT Charts
+  -&gt; ArchitectureScheme
+  -&gt; LawfulLocus</code></pre>
+              <p>and its core reads:</p>
+              <pre><code>law is equation.
+obstruction is ideal.
+lawfulness is vanishing.
+the equation generates coefficient and restriction.
+architecture scheme is chart-compatible ringed geometry.</code></pre>
+              <p>
+                The remaining question is whether local lawful sections glue
+                to a global lawful section. That question is Part IV:
+                obstruction cohomology.
+              </p>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../sites-and-sheaves/">
+                <span>Previous</span>
+                <strong>Part II. Architecture Geometry, Sites, and Sheaves</strong>
+              </a>
+              <a class="page-nav-next" href="../obstruction-cohomology/">
+                <span>Next</span>
+                <strong>Part IV. Obstruction Cohomology</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

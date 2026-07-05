@@ -3,6 +3,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/robots.txt");
   eleventyConfig.addPassthroughCopy("src/CNAME");
   eleventyConfig.addPassthroughCopy("src/.nojekyll");
+  eleventyConfig.addPassthroughCopy("src/_redirects");
 
   // Relative prefix from a page URL back to the site root ("./", "../", ...).
   eleventyConfig.addFilter("relprefix", (url) => {

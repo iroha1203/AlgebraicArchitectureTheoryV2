@@ -11,7 +11,6 @@
 - [guideline.md](guideline.md): website 編集方針、claim boundary、stack / path rule、CSS 分割規律、preview / 検証を管理する。
 - [SITEMAP.md](SITEMAP.md): 公開 route と役割の一覧(人間向け)。`sitemap.xml` / `llms.txt` は Eleventy collections から自動生成。
 - [DESIGN.md](DESIGN.md): website の設計方針、読者導線、ページネーション、本文成熟度、source mapping を管理する。
-- [AAT_RENEWAL_PLAN.md](AAT_RENEWAL_PLAN.md): Atom refoundation 後の AAT website 再構成計画(旧世代。AG 版リライトは下記設計ノートが正)。
 - [ARCHSIG_RENEWAL_PLAN.md](ARCHSIG_RENEWAL_PLAN.md): ArchSig website を LLM Skill-first の Web PR 面 & マニュアルとして章立てから書き直すための計画書。
 - [archsig_website_improvement_policy.md](archsig_website_improvement_policy.md): ArchSig website を公開製品マニュアルとして改善するための方針メモ。
 

@@ -916,3 +916,46 @@
       padding: 20px 14px 24px;
     }
 }
+
+/* diagram-figure: inline SVG diagrams (AAT central chain) */
+.diagram-figure {
+  margin: 26px 0 8px;
+}
+
+.diagram-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.diagram-figure .chain-group rect {
+  fill: var(--surface);
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+}
+
+.diagram-figure .chain-title {
+  fill: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.diagram-figure .chain-items {
+  fill: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.diagram-figure .chain-arrow {
+  stroke: var(--rule-strong);
+  stroke-width: 2;
+  marker-end: none;
+}
+
+.diagram-figure figcaption {
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
