@@ -220,15 +220,49 @@ def pushforwardCarrier (P : CanonicalPackage A) : Type v :=
 end CanonicalPackage
 
 /--
-IV.定義2.4 placeholder: derived obstruction object.
+IV.定義2.4: selected naive derived obstruction carrier.
 
-This is only the type signature for `DerOb_U(M)`.  The cotangent complex,
-`Ext^1`, and derived-category construction are intentionally delegated to the
-Part V PRD and are not constructed here.
+`DerOb_U(F, M)` is made transparent as the selected cotangent-coefficient
+surface built from `ConDef_U = I_U / I_U^2` and a coefficient module `M`.
+This removes the former opaque placeholder while preserving the boundary:
+it does not construct a general cotangent complex, derived category object,
+or `Ext^1` calculation.
 -/
-opaque DerOb_U
+structure DerOb_U
     (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} A)
-    (M : Type w) [AddCommGroup M] [Module A M] : Type (max v w)
+    (M : Type w) [AddCommGroup M] [Module A M] where
+  conDefClass : ConDef_U A F
+  coefficient : M
+
+namespace DerOb_U
+
+variable {A}
+
+/-- IV.定義2.4: construct a selected derived obstruction carrier element. -/
+def ofConDefCoefficient
+    {F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} A}
+    {M : Type w} [AddCommGroup M] [Module A M]
+    (c : ConDef_U A F) (m : M) : DerOb_U A F M where
+  conDefClass := c
+  coefficient := m
+
+@[simp]
+theorem ofConDefCoefficient_conDefClass
+    {F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} A}
+    {M : Type w} [AddCommGroup M] [Module A M]
+    (c : ConDef_U A F) (m : M) :
+    (ofConDefCoefficient (A := A) c m).conDefClass = c :=
+  rfl
+
+@[simp]
+theorem ofConDefCoefficient_coefficient
+    {F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} A}
+    {M : Type w} [AddCommGroup M] [Module A M]
+    (c : ConDef_U A F) (m : M) :
+    (ofConDefCoefficient (A := A) c m).coefficient = m :=
+  rfl
+
+end DerOb_U
 
 end StandardObstruction
 

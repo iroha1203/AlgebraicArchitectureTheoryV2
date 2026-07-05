@@ -232,6 +232,24 @@ theorem finiteForestEdgeAbsorptionVanishing
     ∀ x : F.H1, x = 0 :=
   Cohomology.FiniteForestEdgeAbsorptionData.forestVanishing F
 
+theorem derObUOfConDefCoefficientConDefClass
+    {A : Type} [CommRing A]
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily A)
+    {M : Type} [AddCommGroup M] [Module A M]
+    (c : Cohomology.StandardObstruction.ConDef_U A F) (m : M) :
+    (Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient
+      (A := A) c m).conDefClass = c :=
+  Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_conDefClass c m
+
+theorem derObUOfConDefCoefficientCoefficient
+    {A : Type} [CommRing A]
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily A)
+    {M : Type} [AddCommGroup M] [Module A M]
+    (c : Cohomology.StandardObstruction.ConDef_U A F) (m : M) :
+    (Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient
+      (A := A) c m).coefficient = m :=
+  Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_coefficient c m
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -413,5 +431,17 @@ info: 'AAT.AG.AxiomAudit.finiteForestEdgeAbsorptionVanishing' depends on axioms:
 -/
 #guard_msgs in
 #print axioms finiteForestEdgeAbsorptionVanishing
+
+/--
+info: 'AAT.AG.AxiomAudit.derObUOfConDefCoefficientConDefClass' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms derObUOfConDefCoefficientConDefClass
+
+/--
+info: 'AAT.AG.AxiomAudit.derObUOfConDefCoefficientCoefficient' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms derObUOfConDefCoefficientCoefficient
 
 end AAT.AG.AxiomAudit
