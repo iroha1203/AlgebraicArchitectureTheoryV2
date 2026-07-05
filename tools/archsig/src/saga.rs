@@ -319,11 +319,18 @@ fn closure_diagnostics(
         .map(String::as_str)
         .collect::<BTreeSet<_>>();
     let residual_variables = residual_variables(plan);
+    let residual_variable_set = residual_variables
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
     let residual_component_covered = residual_variables
         .iter()
         .all(|variable| k.contains(variable.as_str()));
     let mut by_subject = BTreeMap::<&str, Vec<&str>>::new();
     for row in &plan.semantic_projection.pi {
+        if !residual_variable_set.contains(row.subject.as_str()) {
+            continue;
+        }
         by_subject
             .entry(row.subject.as_str())
             .or_default()
