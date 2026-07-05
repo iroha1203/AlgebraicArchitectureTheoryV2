@@ -20,17 +20,13 @@
           <p class="eyebrow">Part IX</p>
           <h1>Evolution Geometry</h1>
           <p class="lede">
-            Part VIII fixed the conditions under which AAT geometry is read
-            measurably inside a fixed finite measurement profile. An
-            architecture, however, also appears as a sequence of selected
-            geometries under selected operations, repairs, migrations, and
-            state transitions. Part IX defines the minimal structure that
-            handles the time direction while staying inside the purely
-            mathematical scope of the AAT text: a fixed trace category, a
-            state transition presheaf, a temporal coefficient, temporal laws
-            and obstructions, a temporal descent criterion, dissipative
-            policies with finite stopping, a Lyapunov reading, and a force
-            integrability reading.
+            An architecture is not one geometry: it appears as a sequence
+            of selected geometries under selected operations, repairs,
+            migrations, and state transitions. Part IX defines the minimal
+            structure that handles the time direction inside the purely
+            mathematical scope of AAT: a trace category, a state
+            transition presheaf, temporal laws and obstructions, and a
+            temporal descent criterion.
           </p>
         </div>
       </section>
@@ -41,7 +37,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-guide">How to read the claims</a></li>
                 <li><a href="#from-part8">1. From static to evolution geometry</a></li>
                 <li><a href="#trace-category">2. Trace category</a></li>
                 <li><a href="#state-transition-presheaf">3. State transition presheaf</a></li>
@@ -65,45 +60,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-guide" class="article-section">
-              <h2>How to read the claims</h2>
-              <p>
-                AAT states its claims relative to a fixed vocabulary, law
-                universe, coverage topology, coefficient sheaf, and
-                representation family. Three claim grades are kept distinct
-                throughout the monograph.
-              </p>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>Formal theorem</dt>
-                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
-                </div>
-                <div>
-                  <dt>Certified bounded inference</dt>
-                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
-                </div>
-                <div>
-                  <dt>Analytic reading</dt>
-                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
-                </div>
-              </dl>
-              <p>
-                A theorem candidate is a candidate for a future definition and
-                proof design; it becomes a central Lean proof obligation only
-                when a corresponding ledger row exists. A principle fixes a
-                claim boundary, a way of reading, or a non-claim. Theorem
-                labels on this page follow the canonical text. A label carries
-                a Lean status badge only when the AG Lean index has a
-                corresponding ledger row.
-              </p>
-              <p>
-                The claims of Part IX are confined to the selected trace
-                category, state transition presheaf, and temporal coefficient.
-                About events, transitions, and state spaces outside that
-                selection, the text is silent.
-              </p>
-            </section>
-
             <section id="from-part8" class="article-section">
               <h2>1. From static to evolution geometry</h2>
               <p>
@@ -272,7 +228,7 @@ migrate(project_old(s)) = project_new(migrateEvents(s))</code></pre>
                 </div>
                 <dl>
                   <dt>Temporal incidence site and coefficient (IX.&sect;3 / R2)</dt>
-                  <dd><code>AAT.AG.Evolution.TemporalSite</code> with <code>Point</code>, <code>IncidenceLeg</code>, <code>idLeg</code>, <code>compLeg</code>, finiteness and soundness accessors; <code>TemporalCover</code> and <code>TemporalCoverToSiteCover</code> comparing temporal covers to Part IV site covers; <code>TemporalCechBridge</code> and <code>FinitePosetTemporalCechBridge</code> into the cover-relative &Ccaron;ech complex; <code>TemporalCoefficient</code> / <code>TempCoeff_A</code> with incidence restriction laws (<code>restrict_identity</code>, <code>restrict_composition</code>); <code>FiniteTemporalCoefficientRegime</code> backing the coefficient by a Part VIII finite measurement.</dd>
+                  <dd><code>AAT.AG.Evolution.TemporalSite</code> with <code>Point</code>, <code>IncidenceLeg</code>, <code>idLeg</code>, <code>compLeg</code>, finiteness and soundness accessors; <code>TemporalCover</code> and <code>TemporalCoverToSiteCover</code> comparing temporal covers to Part IV site covers; <code>TemporalCechBridge</code> and <code>FinitePosetTemporalCechBridge</code> into the cover-relative &#268;ech complex; <code>TemporalCoefficient</code> / <code>TempCoeff_A</code> with incidence restriction laws (<code>restrict_identity</code>, <code>restrict_composition</code>); <code>FiniteTemporalCoefficientRegime</code> backing the coefficient by a Part VIII finite measurement.</dd>
                   <dt>State transition presheaf (IX.&sect;3 / R3)</dt>
                   <dd><code>StateTransitionPresheaf</code> with <code>StateAt</code>, <code>TransitionAt</code>, <code>contextRestriction</code>, <code>traceTransport</code>, identity / composition functoriality, the <code>context_trace_commutes</code> square, <code>StateTransitionSheaf</code> with <code>descent_section_compatible</code>, and the <code>TemporalLawKind</code> / <code>TemporalLaw</code> vocabulary with <code>holdsStateEquation</code>, <code>holdsTransition</code>, <code>holdsDescent</code>.</dd>
                 </dl>
@@ -290,7 +246,7 @@ migrate(project_old(s)) = project_new(migrateEvents(s))</code></pre>
                   <dt>Lean names</dt>
                   <dd><code>TemporalMismatch</code> with <code>asCochain</code> and <code>supported_by_law</code>, <code>TemporalCocycle</code> with <code>asCechCocycle</code>, <code>differential_zero_holds</code>, <code>cohomologyClass</code>, <code>TemporalClass</code> with <code>class_matches_selected_cocycle</code>, and <code>ConcreteTemporalObstructionClass</code> with <code>selected_nonzero_holds</code>.</dd>
                   <dt>Boundary</dt>
-                  <dd>Mismatch cochains, cocycles, and cover-relative cohomology classes are relativized to the selected temporal law, <code>TempCoeff_A</code>, and temporal &Ccaron;ech bridge; concrete obstruction evidence takes a selected class and an explicit nonzero predicate as arguments.</dd>
+                  <dd>Mismatch cochains, cocycles, and cover-relative cohomology classes are relativized to the selected temporal law, <code>TempCoeff_A</code>, and temporal &#268;ech bridge; concrete obstruction evidence takes a selected class and an explicit nonzero predicate as arguments.</dd>
                 </dl>
               </article>
             </section>
@@ -424,7 +380,7 @@ selected operation policy is strictly dissipative outside terminal states.</code
                     endpoints therefore ends at a terminal state.
                   </dd>
                   <dt>Lean anchors</dt>
-                  <dd><code>no_infinite_descending_sequence</code>, <code>InfiniteSelectedEvolutionPath</code> with <code>StaysOutsideTerminal</code> and <code>sourceValue_strict_decrease</code>, <code>FiniteDissipationStopping</code> with <code>no_infinite_nonterminal_path</code>, and <code>SelectedEvolutionPath.maximal_path_reaches_terminal</code> &mdash; a proved theorem package (IX.&#x5B9A;&#x7406;5.3 / R7), on top of the defined-only surface <code>EvolutionFunctional</code>, <code>DissipativePolicy</code>, <code>TerminalState</code>, <code>StrictlyDissipativeOutsideTerminal</code>, <code>SelectedEvolutionPath</code> with pathwise non-increase and strict-decrease predicates (IX.&sect;5.1-5.2 / R6, defined only with proved accessors).</dd>
+                  <dd><code>no_infinite_descending_sequence</code>, <code>InfiniteSelectedEvolutionPath</code> with <code>StaysOutsideTerminal</code> and <code>sourceValue_strict_decrease</code>, <code>FiniteDissipationStopping</code> with <code>no_infinite_nonterminal_path</code>, and <code>SelectedEvolutionPath.maximal_path_reaches_terminal</code> &mdash; a proved theorem package (IX.Theorem 5.3 / R7), on top of the defined-only surface <code>EvolutionFunctional</code>, <code>DissipativePolicy</code>, <code>TerminalState</code>, <code>StrictlyDissipativeOutsideTerminal</code>, <code>SelectedEvolutionPath</code> with pathwise non-increase and strict-decrease predicates (IX.&sect;5.1-5.2 / R6, defined only with proved accessors).</dd>
                   <dt>Claim boundary</dt>
                   <dd>
                     Reaching a terminal state and the terminal state being
@@ -530,7 +486,7 @@ dissipative outside the selected trace category.</code></pre>
                     canonical text, read through Theorem IX.4.2 as its
                     intended proof route.
                   </dd>
-                  <dt>Lean anchors (IX.&#x5B9A;&#x7FA9;7.1 / &#x5B9A;&#x7406;&#x5019;&#x88DC;7.2 / R9)</dt>
+                  <dt>Lean anchors (IX.Definition 7.1 / Theorem candidate 7.2 / R9)</dt>
                   <dd><code>Force</code> with <code>selectedIncidence</code>, <code>maps_source_to_target</code>, <code>selected</code>; <code>ForceIntegrationData</code> / <code>IntegrableForce</code> with <code>local_law_data_holds</code>, <code>descends_to_global_temporal_law</code>; <code>ForceMismatchClass</code> with <code>obstructionClass</code>, <code>mismatch_degree_one</code>, <code>trace_product_site_fixed</code>, <code>mismatch_constructed_from_force</code>; and <code>ForceIntegrabilityObstructionCandidate</code> whose <code>candidate_not_integrable_of_obstruction</code> is a statement-only accessor reading the package's explicit assumptions &mdash; it proves no general force integrability theorem.</dd>
                   <dt>Finite fixture</dt>
                   <dd>The toy force fixture (<code>toyForce</code>, <code>toyForceMismatchClass</code>, <code>toy_force_mismatch_degree_one</code>, <code>forceCandidateFixture</code>, <code>force_candidate_obstruction_nonzero</code>) instantiates the candidate surface with an explicit nonzero obstruction assumption on a selected finite model (IX.R10).</dd>
@@ -564,7 +520,7 @@ global temporal obstruction remains</code></pre>
                 transitions, or arbitrary future paths. Its conclusions are
                 read only inside the fixed temporal and evolution geometry.
                 Part X connects the law equations of Part III, the
-                cover-relative &Ccaron;ech \( H^1 \) of Part IV, and the
+                cover-relative &#268;ech \( H^1 \) of Part IV, and the
                 repair theory of Part V into one theorem chain inside selected
                 finite data.
               </p>
