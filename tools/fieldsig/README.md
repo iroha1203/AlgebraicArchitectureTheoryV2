@@ -17,8 +17,8 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- fieldsig-run-manifest --f
 
 `archsig-analysis-sft-input` is the current ArchSig handoff command. Its primary
 input is `--measurement-packet archsig-measurement-packet/v1`; legacy
-`--analysis-packet archsig-analysis-packet/v1` and `archsig-analysis-packet-v0`
-remain accepted as bounded compatibility inputs. The command rejects raw ArchMap
+`--analysis-packet archsig-analysis-packet/v1` remains accepted as a bounded
+compatibility input. The command rejects raw ArchMap
 JSON and preserves structural verdicts, computed invariants, analytic readings,
 assumption ledger entries, and legacy packet refs as bounded SFT input refs /
 unknown remainder. It does not treat ArchSig current-state telemetry as forecast

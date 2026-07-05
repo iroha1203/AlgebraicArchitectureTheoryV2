@@ -561,7 +561,7 @@ enum Command {
         #[arg(long = "measurement-packet")]
         measurement_packet: Option<PathBuf>,
 
-        /// Legacy input archsig-analysis-packet/v1 or archsig-analysis-packet-v0 JSON path.
+        /// Legacy input archsig-analysis-packet/v1 JSON path.
         #[arg(long = "analysis-packet")]
         analysis_packet: Option<PathBuf>,
 

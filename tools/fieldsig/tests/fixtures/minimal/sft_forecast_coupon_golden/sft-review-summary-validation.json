@@ -2,7 +2,7 @@
   "schemaVersion": "sft-review-summary-validation-report-v0",
   "input": {
     "schemaVersion": "sft-review-summary-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/sft_forecast_coupon_golden/sft-review-summary.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/sft_forecast_coupon_golden/sft-review-summary.json",
     "summaryId": "summary:envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline",
     "envelopeId": "envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline"
   },

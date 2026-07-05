@@ -39,37 +39,37 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 pub fn static_pr_force_report() -> PrForceReportV0 {
     let before_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
         Some(SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION),
         Some("fixture-pr-force-before-signature"),
     );
     let after_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
         Some(SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION),
         Some("fixture-pr-force-after-signature"),
     );
     let diff_ref = artifact_ref(
         "signature-diff-report",
-        "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
         Some(SIGNATURE_DIFF_REPORT_SCHEMA_VERSION),
         Some("fixture-pr-force-signature-diff"),
     );
     let empirical_ref = artifact_ref(
         "empirical-signature-dataset",
-        "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/empirical_signature_dataset.json",
         Some("empirical-signature-dataset-v0"),
         Some("fixture-pr-force-empirical-dataset"),
     );
     let feature_ref = artifact_ref(
         "feature-extension-report",
-        "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
         Some(FEATURE_EXTENSION_REPORT_SCHEMA_VERSION),
         Some("fixture-feature-extension-report"),
     );
     let theorem_ref = artifact_ref(
         "theorem-precondition-check-report",
-        "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/theorem_precondition_check_report.json",
         Some(THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION),
         Some("fixture-theorem-precondition-check"),
     );

@@ -2,7 +2,7 @@
   "schemaVersion": "artifact-descriptor-validation-report-v0",
   "input": {
     "schemaVersion": "artifact-descriptor-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/sft_forecast_coupon_golden/artifact-descriptor.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/sft_forecast_coupon_golden/artifact-descriptor.json",
     "descriptorId": "descriptor:coupon-prd-forecast-pipeline",
     "artifactKind": "prd"
   },
@@ -15,7 +15,7 @@
       {
         "sourceRefId": "source:markdown:coupon-prd-forecast-pipeline",
         "sourceKind": "markdown",
-        "pathOrUrl": "tools/archsig/tests/fixtures/minimal/coupon_prd.md",
+        "pathOrUrl": "tools/fieldsig/tests/fixtures/minimal/coupon_prd.md",
         "stableRef": "Coupon PRD Forecast Pipeline",
         "evidenceRole": "primary markdown artifact input",
         "retainedFields": [

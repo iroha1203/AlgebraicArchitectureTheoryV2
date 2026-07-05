@@ -112,7 +112,7 @@
     {
       "sourceRef": "daily-ledger:fixture-b10-report-outcome-daily-ledger",
       "sourceKind": "report-outcome-daily-ledger",
-      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
       "boundary": "operationalFeedback",
       "nonConclusions": [
         "daily ledger input does not prove boundary erosion causality"
@@ -121,7 +121,7 @@
     {
       "sourceRef": "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0",
       "sourceKind": "team-threshold-policy",
-      "path": "tools/archsig/tests/fixtures/minimal/team_threshold_policy.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/team_threshold_policy.json",
       "boundary": "teamLocalEmpiricalCalibration",
       "nonConclusions": [
         "team-local thresholds are policy context, not global invariants"

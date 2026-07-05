@@ -44,14 +44,14 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
                 "source:archmap:coupon",
                 "archmap",
                 ARCHMAP_SCHEMA_VERSION,
-                "tools/archsig/tests/fixtures/minimal/archmap.json",
+                "tools/fieldsig/tests/fixtures/minimal/archmap.json",
                 &["sourceUniverse", "mapItems", "coverage", "conflicts"],
             ),
             source_ref(
                 "source:feature-report:coupon",
                 "feature-extension-report",
                 FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
-                "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+                "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
                 &[
                     "introducedObstructionWitnesses",
                     "semanticPathSummary",

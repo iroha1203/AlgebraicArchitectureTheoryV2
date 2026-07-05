@@ -114,7 +114,7 @@
   "suggestionRefs": [
     {
       "suggestionRef": "repair-suggestion:split-runtime-adapter-boundary",
-      "sourceReportRef": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "sourceReportRef": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
       "obstructionWitnessRef": "obstruction-witness:private-runtime-evidence",
       "repairRuleRef": "repair-rule:extract-runtime-adapter",
       "targetComponentRefs": [

@@ -106,7 +106,7 @@ pub fn static_software_field_measurement() -> SoftwareFieldMeasurementV0 {
             "archsig:archmap:minimal",
             "archmap",
             "archmap-v0",
-            "tools/archsig/tests/fixtures/minimal/archmap.json",
+            "tools/fieldsig/tests/fixtures/minimal/archmap.json",
             "archsig",
             "AAT structural evidence ref; not architecture ground truth",
         )],

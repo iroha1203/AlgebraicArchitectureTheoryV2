@@ -2,7 +2,7 @@
   "schemaVersion": "operation-support-estimate-validation-report-v0",
   "input": {
     "schemaVersion": "operation-support-estimate-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/sft_forecast_coupon_golden/operation-support-estimate.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/sft_forecast_coupon_golden/operation-support-estimate.json",
     "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
     "descriptorId": "descriptor:coupon-prd-forecast-pipeline"
   },

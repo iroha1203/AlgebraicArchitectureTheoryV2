@@ -37,13 +37,13 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 pub fn static_dynamics_measurement_contract() -> DynamicsMeasurementContractV0 {
     let source_ref = artifact_ref(
         "signature-snapshot-store",
-        "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
         Some("signature-snapshot-store-v0"),
         Some("fixture-signature-snapshot"),
     );
     let pr_ref = artifact_ref(
         "pr-history-dataset",
-        "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+        "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
         Some("pr-history-dataset-v0"),
         Some("fixture-pr-history"),
     );

@@ -14,13 +14,13 @@
   },
   "signatureBeforeRef": {
     "kind": "signature-snapshot-store",
-    "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
     "schemaVersion": "signature-snapshot-store-v0",
     "artifactId": "fixture-pr-force-before-signature"
   },
   "signatureAfterRef": {
     "kind": "signature-snapshot-store",
-    "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
     "schemaVersion": "signature-snapshot-store-v0",
     "artifactId": "fixture-pr-force-after-signature"
   },
@@ -34,19 +34,19 @@
       "sourceRefs": [
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-pr-force-before-signature"
         },
         {
           "kind": "signature-snapshot-store",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
           "schemaVersion": "signature-snapshot-store-v0",
           "artifactId": "fixture-pr-force-after-signature"
         },
         {
           "kind": "signature-diff-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
           "schemaVersion": "signature-diff-report-v0",
           "artifactId": "fixture-pr-force-signature-diff"
         }
@@ -59,19 +59,19 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-pr-force-before-signature"
           },
           {
             "kind": "signature-snapshot-store",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
             "schemaVersion": "signature-snapshot-store-v0",
             "artifactId": "fixture-pr-force-after-signature"
           },
           {
             "kind": "signature-diff-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
             "schemaVersion": "signature-diff-report-v0",
             "artifactId": "fixture-pr-force-signature-diff"
           }
@@ -142,13 +142,13 @@
       "sourceRefs": [
         {
           "kind": "signature-diff-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
           "schemaVersion": "signature-diff-report-v0",
           "artifactId": "fixture-pr-force-signature-diff"
         },
         {
           "kind": "empirical-signature-dataset",
-          "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/external/empirical_signature_dataset.json",
           "schemaVersion": "empirical-signature-dataset-v0",
           "artifactId": "fixture-pr-force-empirical-dataset"
         }
@@ -161,13 +161,13 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-diff-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
             "schemaVersion": "signature-diff-report-v0",
             "artifactId": "fixture-pr-force-signature-diff"
           },
           {
             "kind": "empirical-signature-dataset",
-            "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/empirical_signature_dataset.json",
             "schemaVersion": "empirical-signature-dataset-v0",
             "artifactId": "fixture-pr-force-empirical-dataset"
           }
@@ -249,7 +249,7 @@
           "sourceRefs": [
             {
               "kind": "feature-extension-report",
-              "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
               "schemaVersion": "feature-extension-report-v0",
               "artifactId": "fixture-feature-extension-report"
             }
@@ -262,7 +262,7 @@
             "sourceArtifactRefs": [
               {
                 "kind": "feature-extension-report",
-                "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
                 "schemaVersion": "feature-extension-report-v0",
                 "artifactId": "fixture-feature-extension-report"
               }
@@ -299,7 +299,7 @@
         "evidenceRefs": [
           {
             "kind": "feature-extension-report",
-            "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
             "schemaVersion": "feature-extension-report-v0",
             "artifactId": "fixture-feature-extension-report"
           }
@@ -320,7 +320,7 @@
           "sourceRefs": [
             {
               "kind": "theorem-precondition-check-report",
-              "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+              "path": "tools/fieldsig/tests/fixtures/minimal/external/theorem_precondition_check_report.json",
               "schemaVersion": "theorem-precondition-check-report-v0",
               "artifactId": "fixture-theorem-precondition-check"
             }
@@ -333,7 +333,7 @@
             "sourceArtifactRefs": [
               {
                 "kind": "theorem-precondition-check-report",
-                "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+                "path": "tools/fieldsig/tests/fixtures/minimal/external/theorem_precondition_check_report.json",
                 "schemaVersion": "theorem-precondition-check-report-v0",
                 "artifactId": "fixture-theorem-precondition-check"
               }
@@ -369,7 +369,7 @@
         "evidenceRefs": [
           {
             "kind": "theorem-precondition-check-report",
-            "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/external/theorem_precondition_check_report.json",
             "schemaVersion": "theorem-precondition-check-report-v0",
             "artifactId": "fixture-theorem-precondition-check"
           }
@@ -394,7 +394,7 @@
   "featureExtensionReportRefs": [
     {
       "kind": "feature-extension-report",
-      "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/feature_extension_report.json",
       "schemaVersion": "feature-extension-report-v0",
       "artifactId": "fixture-feature-extension-report"
     }
@@ -402,7 +402,7 @@
   "theoremPreconditionRefs": [
     {
       "kind": "theorem-precondition-check-report",
-      "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/external/theorem_precondition_check_report.json",
       "schemaVersion": "theorem-precondition-check-report-v0",
       "artifactId": "fixture-theorem-precondition-check"
     }
@@ -417,25 +417,25 @@
     "sourceArtifactRefs": [
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_before.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-pr-force-before-signature"
       },
       {
         "kind": "signature-snapshot-store",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_after.json",
         "schemaVersion": "signature-snapshot-store-v0",
         "artifactId": "fixture-pr-force-after-signature"
       },
       {
         "kind": "signature-diff-report",
-        "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_diff_report.json",
         "schemaVersion": "signature-diff-report-v0",
         "artifactId": "fixture-pr-force-signature-diff"
       },
       {
         "kind": "empirical-signature-dataset",
-        "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+        "path": "tools/fieldsig/tests/fixtures/minimal/external/empirical_signature_dataset.json",
         "schemaVersion": "empirical-signature-dataset-v0",
         "artifactId": "fixture-pr-force-empirical-dataset"
       }

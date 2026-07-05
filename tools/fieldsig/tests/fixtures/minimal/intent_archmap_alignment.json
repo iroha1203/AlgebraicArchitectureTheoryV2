@@ -4,7 +4,7 @@
   "intentMapRef": {
     "schemaVersion": "intentmap-v0",
     "intentMapId": "fixture-intentmap-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/intentmap.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/intentmap.json",
     "intentItemIds": [
       "intent:coupon-apply-operation",
       "intent:coupon-acceptance-test",
@@ -21,7 +21,7 @@
   "archmapRef": {
     "schemaVersion": "archmap-v0",
     "mapId": "fixture-archmap-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
     "mapItemIds": [
       "object-route-users",
       "policy-layered-route-service",

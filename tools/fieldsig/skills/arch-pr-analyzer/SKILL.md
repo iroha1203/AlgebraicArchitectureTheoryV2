@@ -13,7 +13,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 
 - `signature-diff-report-v0`
 - Sig0 and validation reports
-- `archmap-observation-map-v0` and `archmap-validation-report-v0`
+- ArchMap observation artifact and ArchMap validation report
 - AIR, AIR validation, theorem-check, feature-report
 - `aat-observable-bundle-v0` and validation report when the PR review asks for AAT concept coverage
 - `architecture-policy-v0` and `law-violation-report-v0`
