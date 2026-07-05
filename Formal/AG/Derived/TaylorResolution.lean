@@ -1,4 +1,6 @@
 import Formal.AG.Derived.FreeResolution
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Algebra.MvPolynomial.Division
 import Mathlib.Data.Finset.Lattice.Basic
 
 noncomputable section
@@ -420,6 +422,59 @@ theorem exact_visible_complex_of_isRegularPair
   ⟨exact_d₂_d₁ a b (principalSyzygyExact_of_isRegularPair a b hreg),
     exact_d₁_mkQ_range a b,
     ⟨quotientLinearEquivIdealSpanPair a b⟩⟩
+
+/-- V-3 concrete coefficient ring for the nondegenerate two-generator example. -/
+abbrev ZMod2XYRing : Type :=
+  MvPolynomial (Fin 2) (ZMod 2)
+
+/-- V-3 concrete first coordinate generator in `(ZMod 2)[x₀,x₁]`. -/
+abbrev zmod2X : ZMod2XYRing :=
+  MvPolynomial.X (0 : Fin 2)
+
+/-- V-3 concrete second coordinate generator in `(ZMod 2)[x₀,x₁]`. -/
+abbrev zmod2Y : ZMod2XYRing :=
+  MvPolynomial.X (1 : Fin 2)
+
+/--
+V-3 concrete nondegenerate regular-pair instance.
+
+This proves the regular-pair hypothesis for `(X 0, X 1)` in
+`(ZMod 2)[x₀,x₁]` using Mathlib's `MvPolynomial.X` regularity/divisibility
+lemmas. It is not a theorem for arbitrary coefficient rings.
+-/
+theorem zmod2XY_isRegularPair : IsRegularPair zmod2X zmod2Y := by
+  constructor
+  · intro x hx
+    rw [← MvPolynomial.X_mul_cancel_left_iff (i := (0 : Fin 2)) (p := x) (q := 0)]
+    simpa [zmod2X] using hx
+  · intro x hdiv
+    have hx0 : zmod2X ∣ x * zmod2Y := by
+      simpa [zmod2X, zmod2Y, mul_comm] using hdiv
+    have hx_or :=
+      (MvPolynomial.X_dvd_mul_iff
+        (i := (0 : Fin 2)) (p := x)
+        (q := (MvPolynomial.X (1 : Fin 2) : ZMod2XYRing))).mp hx0
+    rcases hx_or with hx | hxy
+    · exact hx
+    · exfalso
+      have hnot : ¬ zmod2X ∣ zmod2Y := by
+        rw [zmod2X, zmod2Y, MvPolynomial.X_dvd_X]
+        decide
+      exact hnot hxy
+
+/--
+V-3 concrete exact two-generator Taylor/Koszul complex for
+`(X 0, X 1)` over `(ZMod 2)[x₀,x₁]`, including the quotient bridge to
+`A/(X 0, X 1)`.
+-/
+theorem zmod2XY_exact_visible_complex :
+    Function.Exact (d₂ zmod2X zmod2Y) (d₁ zmod2X zmod2Y) ∧
+      Function.Exact (d₁ zmod2X zmod2Y)
+        (LinearMap.range (d₁ zmod2X zmod2Y)).mkQ ∧
+        Nonempty
+          ((ZMod2XYRing ⧸ (LinearMap.range (d₁ zmod2X zmod2Y))) ≃ₗ[ZMod2XYRing]
+            (ZMod2XYRing ⧸ idealSpanPair zmod2X zmod2Y)) :=
+  exact_visible_complex_of_isRegularPair zmod2X zmod2Y zmod2XY_isRegularPair
 
 end TwoGeneratorPrincipalTaylor
 

@@ -168,6 +168,35 @@ theorem twoGeneratorPrincipalTaylorExactVisibleOfRegularPair
   Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex_of_isRegularPair
     a b h
 
+theorem twoGeneratorPrincipalTaylorZMod2XYExactVisible :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+          Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+            Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+            Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)).mkQ ∧
+        Nonempty
+          ((Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing ⧸
+              (LinearMap.range
+                (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁
+                  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+                  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y))) ≃ₗ[
+              Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing]
+            (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.ZMod2XYRing ⧸
+              Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.idealSpanPair
+                Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2X
+                Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2Y)) :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.zmod2XY_exact_visible_complex
+
 theorem partVISingularBoundaryConcrete :
     SingularityMonodromyStack.USingularBoundary
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
@@ -730,6 +759,14 @@ info: 'AAT.AG.AxiomAudit.twoGeneratorPrincipalTaylorExactVisibleOfRegularPair' d
 -/
 #guard_msgs in
 #print axioms twoGeneratorPrincipalTaylorExactVisibleOfRegularPair
+
+/--
+info: 'AAT.AG.AxiomAudit.twoGeneratorPrincipalTaylorZMod2XYExactVisible' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms twoGeneratorPrincipalTaylorZMod2XYExactVisible
 
 /--
 info: 'AAT.AG.AxiomAudit.temporalPseudoCircleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
