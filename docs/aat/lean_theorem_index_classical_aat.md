@@ -3393,6 +3393,9 @@ zero 性 は主張しない。
 
 File: `Formal/Arch/Signature/MonodromyMeasurement.lean`
 
+Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+現行の ArchSig measurement path はこの Lean file を import しない。
+
 この節は ArchSig の monodromy / boundary-holonomy reading を Lean 側で読むための
 minimal guardrail である。完全な monodromy 理論ではなく、finite family、selected axis、
 axis-local defect、nonnegative weighted aggregate に相対化した bounded theorem package を置く。
@@ -3423,6 +3426,9 @@ zero-weight entry や unmeasured square の zero には読まない。
 ## ACTS Minimal Theorem Guardrail
 
 File: `Formal/Arch/Signature/CurvatureTransferSpectrum.lean`
+
+Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+現行の ArchSig measurement path はこの Lean file を import しない。
 
 この節は Architecture Curvature Transfer Spectrum (ACTS) を Lean 側で読むための
 minimal guardrail である。ArchSig implementation correctness ではなく、finite
@@ -3462,6 +3468,9 @@ support として読むだけで、future incident prediction や repair safety 
 ## Homotopy-Holonomy Stokes Minimal Guardrail
 
 File: `Formal/Arch/Signature/HomotopyHolonomyStokes.lean`
+
+Retired: この v1 reading-family guardrail は ArchSig PRD-3 により削除された。
+現行の ArchSig measurement path はこの Lean file を import しない。
 
 この節は Homotopy / Holonomy / Stokes readings を Lean 側で読むための minimal
 guardrail である。ArchSig implementation correctness や一般 homology 理論ではなく、
