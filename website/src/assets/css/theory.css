@@ -1,0 +1,259 @@
+/* theory.css — theorem environments: theorem-card, lean-status-card, status badges, formal anchors. */
+
+.theorem-card-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.statement-status .status-badge {
+  font-size: 0.66rem;
+  padding: 5px 8px;
+}
+
+.theorem-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent-blue);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.lean-status-card {
+  border-left-color: var(--accent);
+}
+
+.theorem-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.theorem-card-label {
+  display: block;
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.theorem-card h3 {
+  margin-top: 4px;
+  font-size: 1.24rem;
+  line-height: 1.18;
+}
+
+.status-badge {
+  flex: 0 0 auto;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+  padding: 7px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-badge-proved {
+  border-color: var(--accent-decoration);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-strong);
+}
+
+.status-badge-defined {
+  border-color: color-mix(in srgb, var(--accent-blue) 44%, transparent);
+  background: color-mix(in srgb, var(--accent-blue) 14%, transparent);
+  color: var(--accent-blue);
+}
+
+.status-badge-future {
+  border-color: color-mix(in srgb, var(--accent-warm) 42%, transparent);
+  background: color-mix(in srgb, var(--accent-warm) 13%, transparent);
+  color: var(--accent-warm);
+}
+
+.theorem-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.theorem-card-grid > div {
+  min-width: 0;
+}
+
+.theorem-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.theorem-card dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.96rem;
+  line-height: 1.46;
+}
+
+.theorem-card code {
+  overflow-wrap: anywhere;
+}
+
+.formal-anchor-cards {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.formal-anchor-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent-blue);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.formal-anchor-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.formal-anchor-card-label {
+  display: block;
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.formal-anchor-card h3 {
+  margin-top: 4px;
+  font-size: 1.22rem;
+  line-height: 1.18;
+}
+
+.formal-anchor-audits {
+  margin: 0 0 14px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.48;
+}
+
+.formal-anchor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  margin: 0;
+}
+
+.formal-anchor-grid > div {
+  min-width: 0;
+}
+
+.formal-anchor-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.formal-anchor-card dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.96rem;
+  line-height: 1.46;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.formal-anchor-card code,
+.formal-anchor-card a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.formal-anchor-details {
+  border-top: 1px solid var(--rule);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.formal-anchor-details summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.formal-anchor-details summary:hover {
+  color: var(--accent-blue);
+}
+
+.formal-anchor-code-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.formal-anchor-code-list li {
+  min-width: 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.36;
+}
+
+@media (max-width: 880px) {
+  .theorem-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+  .formal-anchor-grid,
+    .formal-anchor-code-list {
+      grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+  .theorem-card {
+      padding: 16px 14px;
+    }
+
+  .theorem-card-header {
+      display: grid;
+    }
+
+  .formal-anchor-card {
+      padding: 16px 14px;
+    }
+
+  .formal-anchor-card-header {
+      display: grid;
+    }
+
+  .status-badge {
+      justify-self: start;
+    }
+}

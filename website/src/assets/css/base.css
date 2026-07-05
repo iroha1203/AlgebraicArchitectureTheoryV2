@@ -1,0 +1,86 @@
+/* base.css — element defaults: typography, links, selection, reduced motion. */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.68;
+}
+
+body::selection {
+  background: var(--selection-bg);
+}
+
+a {
+  color: var(--accent-strong);
+  text-decoration-color: var(--accent-decoration);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+a:hover {
+  color: var(--accent-warm);
+  text-decoration-color: var(--accent-hover-decoration);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+h1 {
+  max-width: 880px;
+  font-size: clamp(3rem, 6.4vw, 5.45rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.62rem);
+}
+
+p {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 880px) {
+  body {
+      font-size: 17px;
+    }
+
+  h1 {
+      font-size: clamp(2.62rem, 12vw, 4.2rem);
+    }
+}

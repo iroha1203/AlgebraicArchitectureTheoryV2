@@ -1,0 +1,298 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "SFT 3-1: Field Shaping",
+  "description": "SFT Part 3-1: field shaping through review, CI, type systems, architecture rules, runtime guards, ownership boundaries, and feedback update.",
+  "order": 28,
+  "llmsLabel": "SFT 3-1, Field Shaping",
+  "ogDescription": "How governance interventions reshape support, policy, observation, and feedback in a software field.",
+  "twitterDescription": "How governance interventions reshape support, policy, observation, and feedback.",
+  "navSection": "sft"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Software Evolution</a>
+            <span>3-1</span>
+          </nav>
+          <p class="eyebrow">SFT Part 3-1</p>
+          <h1>Field Shaping</h1>
+          <p class="lede">
+            Field shaping treats governance as a transformation of the field:
+            review, CI, type systems, runtime guards, ownership, and feedback
+            change support, policy, observation, and memory.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#governance">Governance as field shaping</a></li>
+                <li><a href="#channels">Intervention channels</a></li>
+                <li><a href="#levers">Governance levers</a></li>
+                <li><a href="#moves">Shaping moves</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../../field-and-force/governance/">1-4. Governance</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/interface/">2-1. Interface</a></li>
+                <li><a href="../../computation/computational-core/">2-2. Computational Core</a></li>
+                <li><a href="../../computation/forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../../computation/workbench/">2-4. Workbench</a></li>
+                <li><a href="../">3. Software Evolution</a></li>
+                <li><a href="./" aria-current="page">3-1. Field Shaping</a></li>
+                <li><a href="../attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="governance" class="article-section">
+              <p class="research-question">
+                Can governance be designed as a transformation of future operation support?
+              </p>
+              <h2>Governance as field shaping</h2>
+              <p>
+                Review, CI, type checking, architecture rules, runtime guards,
+                and ownership boundaries change what the field supports. They
+                can remove unsafe support, redirect ambiguous proposals, add
+                observation axes, and store outcomes as field memory.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-governance-intervention-3">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-governance-intervention-3">GovernanceIntervention</h3>
+                <p>
+                  A bounded transformation of support, policy, observation, and
+                  feedback update in a selected field model.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Examples</dt>
+                    <dd>Review, CI, type systems, architecture rules, runtime guards, ownership boundaries, and AI policy.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Changes which future paths are available, cheap, visible, escalated, or remembered.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Governance transformation</figcaption>
+                <pre><code>GovernanceIntervention
+  = support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Field effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Restrictive</th>
+                      <td>Removes unsafe support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Redirective</th>
+                      <td>Raises shortcut cost and lowers lawful path cost.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Instrumenting</th>
+                      <td>Adds observation axes, tests, traces, or runtime checks.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Escalating</th>
+                      <td>Converts proposal pressure into review, design, or incident records.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Learning</th>
+                      <td>Updates field memory after observed outcome.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="channels" class="article-section">
+              <h2>Intervention channels</h2>
+              <p>
+                Governance becomes field shaping when it changes more than the
+                merge decision. A gate accepts or rejects a proposed path. A
+                field intervention also changes the support, policy,
+                observation, feedback, escalation, or deferral state that later
+                proposals inherit.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Channel</th>
+                      <th scope="col">Transformation</th>
+                      <th scope="col">Field-shaping reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Support</th>
+                      <td>Adds, removes, or redirects operation families.</td>
+                      <td>Changes which paths can be proposed or justified.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Policy</th>
+                      <td>Changes cost, priority, ordering, escalation, or review burden.</td>
+                      <td>Changes which supported paths are selected or delayed.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Observation</th>
+                      <td>Adds tests, traces, witnesses, runtime checks, or signature axes.</td>
+                      <td>Changes what the field can see before and after a proposal.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Feedback</th>
+                      <td>Stores review, CI, incident, rollback, and acceptance outcomes.</td>
+                      <td>Changes what later estimates and proposals remember.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Capacity</th>
+                      <td>Changes ownership routes, staffing boundary, migration room, or lifecycle options.</td>
+                      <td>Changes what the field can sustain over a horizon.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="levers" class="article-section">
+              <h2>Governance levers</h2>
+              <p>
+                The practical work is to choose the intervention channel and
+                state its field effect. Field shaping records what changed, what
+                evidence supports the change, and which later cone or envelope
+                should see the update.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Support transformation</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Change the operation families available to proposal,
+                    review, or implementation by modifying boundaries,
+                    templates, ownership, or issue decomposition.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Policy transformation</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Change the cost, ordering, review burden, escalation path,
+                    or deferral rule applied to supported operations.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Observation enrichment</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Add tests, traces, signature axes, witness checks, runtime
+                    guards, or missing-boundary reports to the observation
+                    boundary.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Feedback update</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Preserve review outcomes, CI results, incidents, rejected
+                    proposals, and accepted changes as field memory.
+                  </p>
+                </article>
+              </div>
+            </section>
+            <section id="moves" class="article-section">
+              <h2>Shaping moves</h2>
+              <figure class="code-panel">
+                <figcaption>Field shaping surface</figcaption>
+                <pre><code>GovernanceIntervention
+  = support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule
+  + lifecycle capacity change</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3-1.</a>
+                A governance intervention changes reachable architecture
+                futures by transforming support, policy, observation, feedback
+                update, or lifecycle capacity in the selected field model.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof idea.</a>
+                The ForecastCone is generated from the starting field, support,
+                step relation, and horizon. A governance intervention changes
+                one of those inputs or changes the observation boundary through
+                which the cone is projected. Therefore it changes either the
+                reachable path set, the policy ordering over paths, or the
+                envelope visible to reviewers.
+              </p>
+              <p id="example-3-1" class="statement">
+                <a class="statement-anchor" href="#example-3-1">Example 3-1.</a>
+                A coupon review rule that requires discount composition and
+                refund semantics lowers the cost of the DiscountPolicy path
+                and raises the cost of UI-only drift. Field shaping records
+                that change as a support and policy update visible to later
+                cone and envelope generation.
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 3. Software Evolution</strong></a>
+              <a class="page-nav-next" href="../attractor-engineering/"><span>Next</span><strong>3-2. Attractor Engineering</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

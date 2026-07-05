@@ -1,0 +1,535 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Architecture Signature",
+  "description": "Architecture Signature in Algebraic Architecture Theory: multi-axis diagnostics, required zero axes, measurement status, and the AATCore bridge.",
+  "order": 7,
+  "llmsLabel": "AAT Architecture Signature",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Architecture Signature</span>
+          </nav>
+          <p class="eyebrow">Part II. Key Concepts</p>
+          <h1>Architecture Signature</h1>
+          <p class="lede">
+            An architecture signature reads an architecture across selected
+            diagnostic axes. It keeps required zero-law axes, measured diagnostic
+            axes, unavailable axes, and non-conclusions separate, so a report can
+            say exactly what has been shown.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#signature-axis">Signature axis</a></li>
+                <li><a href="#signature-function">Signature function</a></li>
+                <li><a href="#required-zero">Required zero axes</a></li>
+                <li><a href="#measurement-status">Measurement status</a></li>
+                <li><a href="#aatcore-bridge">AATCore bridge</a></li>
+                <li><a href="#archsig-boundary">ArchSig boundary</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="./" aria-current="page">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                How can the condition of an architecture be summarized across
+                many concerns without hiding uncertainty or reducing it to one
+                score?
+              </p>
+              <p>
+                AAT answers by treating each diagnostic coordinate as a typed
+                reading. The coordinate names an axis, a value when one is
+                available, the evidence boundary, the claim level, and the
+                non-conclusions. The signature is therefore not a verdict by
+                itself. It is the structured surface on which lawfulness,
+                obstruction absence, diagnostics, runtime readings, and empirical
+                readings can be compared without confusing their status.
+              </p>
+            </section>
+
+            <section id="signature-axis" class="article-section">
+              <h2>Signature axis</h2>
+              <p>
+                A signature axis is a diagnostic coordinate selected from a law,
+                invariant, obstruction family, metric, or representation. It is
+                not the same thing as the primitive <code>axis</code> field of an
+                Atom. An Atom axis classifies an indivisible architectural fact:
+                structural, behavioral, semantic, operational, organizational,
+                or another primitive dimension. A signature axis is a later
+                report coordinate built from configurations of such atoms.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Two levels of axis</figcaption>
+                <pre><code>Atom axis:
+  primitive dimension of one architectural fact
+
+Signature axis:
+  law-relative diagnostic coordinate over an object</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A signature axis is a selected coordinate for reading an
+                architecture object through a law, invariant, obstruction family,
+                measurement rule, or analytic representation.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Atom axes are source-level primitive classifications; signature
+                axes are object-level diagnostic readings. A signature axis may
+                depend on many atoms and many atom families.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
+                A dependency-cycle axis is not a single dependency atom. It is
+                computed from a relation family, a selected finite universe, and
+                a reachability rule. Likewise, a substitution axis reads component,
+                relation, contract, semantic, and observation atoms together.
+              </p>
+            </section>
+
+            <section id="signature-function" class="article-section">
+              <h2>Signature function</h2>
+              <p>
+                The mathematical shape of a signature is a partial vector of
+                coordinates. For a selected architecture object \(A\), a signature
+                reads each selected axis into a value or an unavailable status.
+                The values may be Booleans, natural-number counts, ordered risks,
+                proof-backed zero claims, runtime measurements, or empirical
+                measurements, depending on the axis.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Signature reading</figcaption>
+                <pre><code>Sig(A) : SignatureAxis -> AxisReading
+
+AxisReading
+  = available zero
+  + available nonzero(value)
+  + unmeasured
+  + unavailable / private
+  + out of scope
+  + not comparable</code></pre>
+              </figure>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                An <code>ArchitectureSignature</code> is a family of typed
+                coordinates indexed by selected signature axes. Each coordinate
+                is read with its value, measurement status, claim level, evidence
+                universe, proof support when present, and non-conclusions.
+              </p>
+              <p>
+                The finite Lean v0 schema uses natural-number risk coordinates:
+                <code>hasCycle</code>, <code>sccMaxSize</code>,
+                <code>maxDepth</code>, <code>fanoutRisk</code>,
+                <code>boundaryViolationCount</code>, and
+                <code>abstractionViolationCount</code>. Signature v1 embeds v0
+                and adds core axes such as <code>sccExcessSize</code>,
+                <code>maxFanout</code>, and <code>reachableConeSize</code>,
+                plus optional axes for weighted SCC risk, projection soundness,
+                LSP, nilpotency, runtime propagation, relation complexity, and
+                empirical change cost.
+              </p>
+            </section>
+
+            <section id="required-zero" class="article-section">
+              <h2>Required zero axes</h2>
+              <p>
+                Some axes participate in the current required zero-law bridge.
+                Those axes are not chosen because they are the only interesting
+                diagnostics. They are chosen because the current theorem package
+                connects their available-and-zero readings to the selected
+                architecture lawfulness predicate.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Selected required axes</figcaption>
+                <pre><code>selectedRequiredLawAxes
+  = hasCycle
+  + projectionSoundnessViolation
+  + lspViolationCount
+  + boundaryViolationCount
+  + abstractionViolationCount
+
+ArchitectureLawful(X)
+  iff RequiredSignatureAxesAvailableAndZero(signatureOf X)</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3.1.</a>
+                In the current Signature-integrated lawfulness bridge,
+                lawfulness is equivalent to all selected required signature axes
+                being available and zero.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof.</a>
+                Lean defines <code>ArchitectureLawful</code> as the conjunction
+                of walk acyclicity, projection soundness, LSP compatibility,
+                boundary policy soundness, and abstraction policy soundness.
+                It proves <code>architectureLawful_iff_requiredSignatureAxesZero</code>
+                by composing the exactness theorem for each required axis.
+              </p>
+              <p id="non-conclusion-3-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-3-2">Non-conclusion 3.2.</a>
+                Runtime propagation, matrix nilpotency, relation complexity,
+                empirical change cost, and other diagnostic axes are not
+                required zero-law axes merely because they appear in a signature.
+              </p>
+            </section>
+
+            <section id="measurement-status" class="article-section">
+              <h2>Measurement status</h2>
+              <p>
+                A signature must preserve the difference between measured zero
+                and missing evidence. The optional axis value
+                <code>none</code> can mean that a policy-dependent or empirical
+                coordinate was not measured. It is not a zero theorem and it is
+                not absence of obstruction.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Strong zero guard</figcaption>
+                <pre><code>axisMeasuredZero(axis)
+  weak: no positive value is present
+
+axisAvailableAndZero(axis)
+  strong: axisValue = some 0</code></pre>
+              </figure>
+              <p id="proposition-4-1" class="statement">
+                <a class="statement-anchor" href="#proposition-4-1">Proposition 4.1.</a>
+                A missing signature axis value is not available-and-zero evidence.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                Lean proves <code>not_axisAvailableAndZero_of_axisValue_none</code>.
+                The strong predicate requires an available value equal to
+                <code>0</code>. A missing value cannot satisfy that predicate.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Measured zero</dt>
+                  <dd>The selected axis was measured and the value is zero under the recorded evidence boundary.</dd>
+                </div>
+                <div>
+                  <dt>Measured nonzero</dt>
+                  <dd>The selected axis was measured and carries a nonzero witness, count, risk value, or obstruction reading.</dd>
+                </div>
+                <div>
+                  <dt>Unmeasured</dt>
+                  <dd>The axis belongs to the selected vocabulary, but the evidence needed to read it is absent.</dd>
+                </div>
+                <div>
+                  <dt>Out of scope</dt>
+                  <dd>The selected law package or report intentionally does not claim that axis.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section id="aatcore-bridge" class="article-section">
+              <h2>AATCore bridge</h2>
+              <p>
+                The signature bridge is downstream of the Atom-generated AAT
+                core. It consumes a <code>ZeroCurvaturePackage</code> and an
+                <code>ArchitectureLawModel</code>. It derives selected signature
+                lawfulness from pure AAT zero curvature; it does not define AAT,
+                create atoms, or turn validation artifacts into Lean theorem
+                discharge.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Bridge direction</figcaption>
+                <pre><code>AATCore
+  + ZeroCurvaturePackage
+  + ArchitectureLawModel
+  -&gt; ArchitectureLawful
+  -&gt; RequiredSignatureAxesZero
+
+not:
+  ArchSig output -&gt; Atom existence
+  validation report -&gt; Lean theorem discharge</code></pre>
+              </figure>
+              <p id="proposition-5-1" class="statement">
+                <a class="statement-anchor" href="#proposition-5-1">Proposition 5.1.</a>
+                The bridge derives required signature axes zero from pure AAT
+                zero curvature through architecture lawfulness.
+              </p>
+              <p id="proof-5-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-1">Proof.</a>
+                <code>AATCoreSignatureLawfulnessBridge.architectureLawful</code>
+                applies the package's
+                <code>lawfulWithinMoleculeConfiguration</code>.
+                <code>AATCoreSignatureLawfulnessBridge.requiredSignatureAxesZero</code>
+                then applies <code>architectureLawful_iff_requiredSignatureAxesZero</code>.
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                The signature bridge preserves Atom priority: analysis output
+                does not create primitive architectural facts.
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof.</a>
+                The bridge carries <code>archSigDoesNotCreateAtomsEvidence</code>
+                and exposes it through <code>archsig_does_not_create_atoms</code>.
+                It also exposes <code>archsig_does_not_define_aat</code> and
+                <code>unknown_rejected_unmeasured_separated</code>.
+              </p>
+            </section>
+
+            <section id="archsig-boundary" class="article-section">
+              <h2>ArchSig boundary</h2>
+              <p>
+                ArchSig is the analysis layer that reads a source-grounded
+                ArchMap together with one selected interpretation profile. The
+                profile selects laws, witness rules, signature axes, coverage
+                requirements, exactness assumptions, and measurement profiles.
+                ArchSig can compute bounded analysis packets and human-readable
+                summaries. It is not the AAT core and not a Lean proof engine.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Analysis-layer flow</figcaption>
+                <pre><code>ArchMap
+  law-independent Atom observations
+
+Interpretation profile
+  selected LawUniverse + witness rules + signature axes
+
+ArchSig analysis packet
+  bounded AAT-based readings, signature axes, evidence boundary,
+  excluded readings, and non-conclusions</code></pre>
+              </figure>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition 6.1.</a>
+                An ArchSig signature reading is a bounded, policy-relative
+                analysis result produced from supplied observation evidence and a
+                selected interpretation profile.
+              </p>
+              <p id="non-conclusion-6-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-6-2">Non-conclusion 6.2.</a>
+                ArchSig validation does not prove extractor completeness, global
+                architecture truth, semantic correctness, universal quality,
+                zero curvature, merge safety, or Lean theorem discharge.
+              </p>
+              <p>
+                This boundary is what makes signatures useful in practice. A
+                report can place a nonzero obstruction axis, an unmeasured runtime
+                axis, a proved static axis, and an empirical cost axis next to one
+                another while still preserving the distinct claim level of each
+                coordinate.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Consider a payment capture architecture with services
+                <code>Checkout</code>, <code>PaymentGateway</code>,
+                <code>Ledger</code>, and <code>ReceiptEmail</code>. The object is
+                represented by component, relation, effect, contract, semantic,
+                and runtime-interaction atoms. A selected law package asks whether
+                payment capture is acyclic, respects dependency boundaries,
+                preserves substitution through the payment interface, and avoids
+                replaying the charge effect.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Payment signature sketch</figcaption>
+                <pre><code>axis.hasCycle = 0
+axis.boundaryViolationCount = 1
+axis.projectionSoundnessViolation = 0
+axis.lspViolationCount = 0
+axis.runtimePropagation = unmeasured
+axis.semanticChargeOnce = measured_nonzero(retry can charge twice)
+axis.empiricalChangeCost = out_of_scope</code></pre>
+              </figure>
+              <p>
+                The signature does not say "payment architecture score: 83." It
+                says that the static cycle axis is zero, the boundary axis has one
+                measured witness, the substitution and projection axes are zero
+                under the selected evidence, the runtime propagation axis was not
+                measured, and the semantic charge-once axis has a nonzero defect.
+                Those readings support different actions: remove the forbidden
+                boundary edge, add idempotency or a transaction guard, and measure
+                runtime retry propagation before making runtime flatness claims.
+              </p>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-8-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-1">Counterexample 8.1.</a>
+                All measured required axes can be zero while a non-required
+                runtime axis remains unmeasured. The signature supports the
+                selected static lawfulness claim, not runtime safety.
+              </p>
+              <p id="counterexample-8-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-2">Counterexample 8.2.</a>
+                A clean ArchSig packet can be valid as a packet and still fail to
+                discharge a theorem if the selected Lean preconditions are not
+                supplied.
+              </p>
+              <p id="counterexample-8-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-3">Counterexample 8.3.</a>
+                A dependency graph may have no cycle while a semantic diagram does
+                not commute. The static signature axis and semantic signature
+                axis are different coordinates.
+              </p>
+              <p id="counterexample-8-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-4">Counterexample 8.4.</a>
+                A single aggregate quality score can improve while a required
+                axis becomes nonzero. AAT therefore keeps the axis-local witness
+                instead of replacing the signature by a scalar.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The main Lean files for this chapter are
+                <code>Formal/Arch/Signature/Signature.lean</code>,
+                <code>Formal/Arch/Signature/SignatureLawfulness.lean</code>, and
+                <code>Formal/Arch/Signature/AATCoreBridge.lean</code>. They define
+                finite signature schemas, axis values, required-axis selection,
+                lawfulness equivalences, and the bridge from Atom-AAT zero
+                curvature to signature lawfulness.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/Signature/Signature.lean
+  ArchitectureSignature
+  ArchitectureSignatureV1
+  ArchitectureSignatureV1Axis
+  selectedRequiredLawAxes
+  ArchitectureSignatureV1.axisValue
+  ArchitectureSignatureV1.axisAvailableAndZero
+  not_axisAvailableAndZero_of_axisValue_none
+  v1OfFiniteWithRequiredLawAxes
+
+Formal/Arch/Signature/SignatureLawfulness.lean
+  ArchitectureLawModel
+  ArchitectureLawModel.signatureOf
+  ArchitectureLawful
+  RequiredSignatureAxesAvailableAndZero
+  RequiredSignatureAxesZero
+  architectureLawful_iff_requiredSignatureAxesZero
+  architecture_requiredAxisFamilyExact
+
+Formal/Arch/Signature/AATCoreBridge.lean
+  AATCoreSignatureLawfulnessBridge
+  AATCoreSignatureLawfulnessBridge.architectureLawful
+  AATCoreSignatureLawfulnessBridge.requiredSignatureAxesZero
+  archsig_does_not_define_aat
+  archsig_does_not_create_atoms
+  unknown_rejected_unmeasured_separated</code></pre>
+              </figure>
+              <p id="formal-status-9-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-1">Formal status 9.1.</a>
+                The finite Signature v0 and v1 schemas, selected required axes,
+                optional-axis availability predicates, and finite graph metrics
+                are defined in Lean.
+              </p>
+              <p id="formal-status-9-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-2">Formal status 9.2.</a>
+                The selected required-axis bridge is proved: architecture
+                lawfulness is equivalent to selected required signature axes
+                being available and zero.
+              </p>
+              <p id="formal-status-9-3" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-3">Formal status 9.3.</a>
+                The AATCore bridge is defined and proves that signature
+                lawfulness is downstream of Atom-AAT zero curvature, while ArchSig
+                analysis does not define AAT or create atoms.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                An architecture signature is a multi-axis diagnostic object. It
+                does not replace atoms, laws, obstruction circuits, or theorem
+                packages. It collects their readings into a coordinate system that
+                preserves axis, value, evidence boundary, claim level, and
+                non-conclusion.
+              </p>
+              <p>
+                The current required zero-law bridge is intentionally narrow:
+                selected static lawfulness is tied to selected available-and-zero
+                axes. Other axes may be diagnostically important, but they remain
+                runtime, semantic, matrix, tooling, or empirical readings until a
+                bridge theorem or measurement boundary says otherwise.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Signature axis</dt>
+                  <dd>A selected diagnostic coordinate over an architecture object.</dd>
+                </div>
+                <div>
+                  <dt>Required zero axis</dt>
+                  <dd>An axis whose available-and-zero reading participates in the selected lawfulness theorem package.</dd>
+                </div>
+                <div>
+                  <dt>Available-and-zero</dt>
+                  <dd>The strong zero predicate requiring an available value equal to zero.</dd>
+                </div>
+                <div>
+                  <dt>Unmeasured axis</dt>
+                  <dd>An axis for which the selected report has no usable evidence; it is not measured zero.</dd>
+                </div>
+                <div>
+                  <dt>AATCore bridge</dt>
+                  <dd>The downstream bridge from Atom-AAT zero curvature to signature lawfulness.</dd>
+                </div>
+                <div>
+                  <dt>ArchSig boundary</dt>
+                  <dd>The analysis-layer boundary for reading supplied ArchMap evidence through a selected interpretation profile.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../zero-curvature/">
+                <span>Previous</span>
+                <strong>Flatness and Zero Curvature</strong>
+              </a>
+              <a class="page-nav-next" href="../design-principle-layers/">
+                <span>Next</span>
+                <strong>Design Principle Layers</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

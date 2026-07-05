@@ -87,10 +87,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --out-dir .tmp/archsig-analyze
 ```
 
-website の preview:
+website の preview(Eleventy。初回は `cd website && npm install`):
 
 ```bash
-python3 -m http.server 0 --directory website
+cd website && npx @11ty/eleventy --serve
 ```
 
 docs-only 変更でも Lean status、tool schema、website copy への影響を確認する。

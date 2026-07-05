@@ -1,0 +1,253 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "SFT 2-3: ForecastCone",
+  "description": "SFT Part 2-3: ForecastCone as the bounded reachable future opened by a field, support relation, step semantics, and horizon.",
+  "order": 25,
+  "llmsLabel": "SFT 2-3, ForecastCone",
+  "ogDescription": "SFT computes bounded reachable futures as ForecastCones generated from support, step semantics, and horizon.",
+  "twitterDescription": "SFT computes bounded reachable futures as ForecastCones.",
+  "navSection": "sft"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Computation</a>
+            <span>2-3</span>
+          </nav>
+          <p class="eyebrow">SFT Part 2-3</p>
+          <h1>ForecastCone</h1>
+          <p class="lede">
+            A ForecastCone is the bounded reachable future opened by a field:
+            the paths supported from a starting state under selected support,
+            step semantics, and horizon.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#cone">ForecastCone</a></li>
+                <li><a href="#reachability">Reachability regions</a></li>
+                <li><a href="#safety">Support safety</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../../field-and-force/governance/">1-4. Governance</a></li>
+                <li><a href="../">2. The Computation</a></li>
+                <li><a href="../interface/">2-1. Interface</a></li>
+                <li><a href="../computational-core/">2-2. Computational Core</a></li>
+                <li><a href="./" aria-current="page">2-3. ForecastCone</a></li>
+                <li><a href="../workbench/">2-4. Workbench</a></li>
+                <li><a href="../../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../../software-evolution/field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="../../software-evolution/attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../../software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../../software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="cone" class="article-section">
+              <p class="research-question">
+                Which futures become reachable when a field, support relation,
+                and horizon are fixed?
+              </p>
+              <h2>ForecastCone</h2>
+              <aside class="vocabulary-card" aria-labelledby="vocab-forecast-cone-2">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-forecast-cone-2">ForecastCone</h3>
+                <p>
+                  The bounded set of reachable field paths generated from a
+                  starting field, a support relation, step semantics, and a
+                  finite horizon.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Shape</dt>
+                    <dd>Bounded path set from a selected starting field.</dd>
+                  </div>
+                  <div>
+                    <dt>Use</dt>
+                    <dd>Turns reachability, widening, narrowing, and safety into theorem-shaped questions.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Bounded cone core</figcaption>
+                <pre><code>ForecastCone(F, U, h)
+  = { field paths starting at F
+      with length <= h
+      whose adjacent steps are witnessed
+      by supported operations in U }</code></pre>
+              </figure>
+              <p>
+                The cone is the central mathematical image of SFT. It gathers
+                the futures a field can reach under stated support, step
+                semantics, and horizon. A broad prompt can widen it; a precise
+                constraint can narrow it; governance can change the support
+                from which the next cone is generated.
+              </p>
+              <p>
+                Cone narrowing gives the first theorem-shaped control over this
+                object. A constraint that preserves the intended feature
+                direction and removes a selected witness family changes support.
+                When the narrower support simulates into the wider support, the
+                narrower cone projects into the wider cone over the same
+                horizon.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Cone narrowing schema</figcaption>
+                <pre><code>PointwiseSupportInclusion(U2, U1)
+  + StepSimulation(U2, U1, relation)
+  + matching start fields
+  -> ForecastCone(F2, U2, h)
+     projects into ForecastCone(F1, U1, h)</code></pre>
+              </figure>
+            </section>
+            <section id="reachability" class="article-section">
+              <h2>Reachability regions</h2>
+              <p>
+                Once the cone is explicit, SFT separates reachability questions
+                that ordinary review often compresses into one risk judgment.
+                May-reach, must-reach, stable-region, and reachable preimage
+                become different computational objects.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-stable-region">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-stable-region">StableRegion</h3>
+                <p>
+                  A region of field states closed under selected accepted steps.
+                </p>
+                <dl>
+                  <div>
+                    <dt>May reach</dt>
+                    <dd>At least one supported path reaches the target region within horizon.</dd>
+                  </div>
+                  <div>
+                    <dt>Must reach</dt>
+                    <dd>Every selected supported path reaches the target region within horizon.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Reachability vocabulary</figcaption>
+                <pre><code>MayReach_h(F, U, A)
+  = exists U-accepted path from F reaching A within h
+
+MustReach_h(F, U, A)
+  = every U-accepted path from F reaches A within h
+
+StableRegion(U, A)
+  = every U-accepted step from A stays inside A
+
+ReachablePreimage_h(U, A)
+  = { F | MayReach_h(F, U, A) }</code></pre>
+              </figure>
+              <p>
+                This gives attractor language a disciplined reading. A field
+                can have stability, recurrence, policy preference, probability
+                mass, or a visible default path; SFT asks which structure
+                carries the word in the selected model.
+              </p>
+            </section>
+            <section id="safety" class="article-section">
+              <h2>Support safety</h2>
+              <p id="definition-2-3" class="statement">
+                <a class="statement-anchor" href="#definition-2-3">Definition 2-3.</a>
+                Support safety studies selected supported steps against a
+                selected safe region or a simulated safer transition system over
+                a bounded horizon.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Safe-region preservation</figcaption>
+                <pre><code>SupportOperationsPreserveSafeRegion(U, O, R)
+  = selected operations in U realize only steps
+    that preserve region R under observation O
+
+StateInSafeRegion(O, R, F)
+  + accepted steps are selected from U
+  + SupportOperationsPreserveSafeRegion(U, O, R)
+  -> accepted trajectory remains in R</code></pre>
+              </figure>
+              <p class="plain-reading">
+                <strong>Computation habit.</strong> Compute supported paths
+                first; then identify which constraints narrow, preserve, or
+                redirect the paths that matter.
+              </p>
+              <p id="proposition-2-3" class="statement">
+                <a class="statement-anchor" href="#proposition-2-3">Proposition 2-3.</a>
+                Pointwise support inclusion plus step simulation gives a
+                projection from the narrower ForecastCone into the wider
+                ForecastCone over the same bounded horizon.
+              </p>
+              <p id="proof-2-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-3">Proof sketch.</a>
+                Induct on the horizon. At horizon zero, the starting fields are
+                related by assumption. At the successor horizon, take a
+                supported step in the narrower system. Step simulation supplies
+                a corresponding step in the wider system and preserves the
+                field relation. Apply the induction hypothesis to the remaining
+                suffix.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lean-facing package</span>
+                      <h3>Support and cone core</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">formal core</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Carrier</dt>
+                      <dd><code>SoftwareField</code>, operation type, and bounded horizon.</dd>
+                    </div>
+                    <div>
+                      <dt>Relation</dt>
+                      <dd><code>OperationSupport</code> and <code>StepRelation</code> generate field paths.</dd>
+                    </div>
+                    <div>
+                      <dt>Cone</dt>
+                      <dd><code>ForecastCone</code> is a bounded reachable path set.</dd>
+                    </div>
+                    <div>
+                      <dt>Safety</dt>
+                      <dd>Safe-region preservation is a separate selected theorem package.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../computational-core/"><span>Previous</span><strong>2-2. Computational Core</strong></a>
+              <a class="page-nav-next" href="../workbench/"><span>Next</span><strong>2-4. Workbench</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

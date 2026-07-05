@@ -1,0 +1,16 @@
+{%- set isHome = page.url == '/' -%}
+{%- set prefix = '' if isHome else (page.url | relprefix) -%}
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="{{ '#top' if isHome else prefix }}" aria-label="AAT SFT home">
+          <img class="brand-icon" src="{{ prefix }}assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+{%- for item in nav %}
+          <a{% if navSection == item.key %} class="is-active"{% endif %} href="{% if item.key == 'home' %}{{ '#top' if isHome else prefix }}{% else %}{{ prefix }}{{ item.path }}{% endif %}">{{ item.label }}</a>
+{%- endfor %}
+        </nav>
+      </div>
+    </header>

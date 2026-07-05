@@ -1,0 +1,275 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "SFT 1-2: Force",
+  "description": "SFT Part 1-2: force as artifact-mediated change, where PRDs, issues, pull requests, reviews, incidents, and AI proposals reshape operation support.",
+  "order": 19,
+  "llmsLabel": "SFT 1-2, Force",
+  "ogDescription": "SFT reads artifacts, including pull requests, as forces that reshape what can be proposed, reviewed, selected, observed, and remembered.",
+  "navSection": "sft"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Field and Force</a>
+            <span>1-2</span>
+          </nav>
+          <p class="eyebrow">SFT Part 1-2</p>
+          <h1>Force</h1>
+          <p class="lede">
+            Force names how the field begins to move. A PRD, issue, pull
+            request, review comment, incident report, or AI proposal can pull
+            one future near while pushing another out of view.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#force">Force</a></li>
+                <li><a href="#artifact-force">Artifact force</a></li>
+                <li><a href="#mathematical-spine">Mathematical spine</a></li>
+                <li><a href="#coupon">Coupon PRD</a></li>
+                <li><a href="#force-reading">Force reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../">1. Field and Force</a></li>
+                <li><a href="../field/">1-1. Field</a></li>
+                <li><a href="./" aria-current="page">1-2. Force</a></li>
+                <li><a href="../organization/">1-3. Organization</a></li>
+                <li><a href="../governance/">1-4. Governance</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/interface/">2-1. Interface</a></li>
+                <li><a href="../../computation/computational-core/">2-2. Computational Core</a></li>
+                <li><a href="../../computation/forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../../computation/workbench/">2-4. Workbench</a></li>
+                <li><a href="../../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../../software-evolution/field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="../../software-evolution/attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../../software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../../software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="force" class="article-section">
+              <p class="research-question">
+                Can we interpret the change a pull request exerts on a
+                codebase as force?
+              </p>
+              <h2>Force</h2>
+              <p>
+                A force is a field-level pressure that changes how a codebase
+                is prepared to move. A pull request makes one path concrete. It
+                gives reviewers a shape to accept, reject, amend, remember, or
+                copy.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-force">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-force">Force</h3>
+                <p>
+                  The field-level pressure that changes which software
+                  evolution paths become nearby, costly, visible, reviewable,
+                  or natural.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Acts on</dt>
+                    <dd>Operation support, selection policy, observation boundaries, and field memory.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask how a new artifact changes the direction the codebase is prepared to move.</dd>
+                  </div>
+                </dl>
+              </aside>
+            </section>
+            <section id="artifact-force" class="article-section">
+              <h2>Artifact force</h2>
+              <p>
+                Other artifacts carry the same kind of pressure through
+                ordinary software work: a PRD makes one decomposition obvious,
+                an issue hides a boundary, a design memo names a missing
+                invariant, a review comment becomes precedent, and an incident
+                report adds a new observation axis.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Artifact action</figcaption>
+                <pre><code>Artifact
+  -> candidate field updates
+  -> operation support changes
+  -> observation boundary changes
+  -> selection policy changes
+  -> reachable architecture futures</code></pre>
+              </figure>
+              <p>
+                SFT uses force to describe this change while preserving many
+                possible next diffs. The artifact reshapes the space of
+                possible next changes.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-artifact-force">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-artifact-force">Artifact force</h3>
+                <p>
+                  The field-level action by which an artifact changes what can
+                  be proposed, seen, reviewed, selected, or remembered.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Carrier</dt>
+                    <dd>PRD, issue, spec, pull request, review comment, incident report, AI proposal.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Candidate field updates, support shifts, policy shifts, and observation changes.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <p>
+                In ordinary process language, artifacts coordinate work: a PRD
+                explains the feature, an issue tracks work, a pull request
+                proposes a concrete path, a review comment asks for a revision,
+                and an incident report records what happened. SFT gives them a
+                stronger role. Each artifact can change field support. It can
+                make a lawful path easier to discover, a shortcut harder to
+                justify, or a missing invariant visible enough to become a
+                future test.
+              </p>
+            </section>
+            <section id="mathematical-spine" class="article-section">
+              <h2>Mathematical spine</h2>
+              <p>
+                The force language carries mathematics. Force becomes a
+                set-valued action: an artifact produces candidate field
+                updates, and each update changes the support and policy from
+                which future paths are drawn.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Force as artifact action</figcaption>
+                <pre><code>ArtifactAction(a)
+  alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
+
+applyUpdate
+  : FieldSpace -> FieldSpaceUpdateHypothesis -> FieldSpace
+
+OperationSupport(F)
+  = admissible operations after constraints and governance
+
+OperationPolicy(F)
+  = cost, preorder, or selection relation on that support</code></pre>
+              </figure>
+              <p>
+                This gives SFT a computational question. Given a field and an
+                artifact, which supported operation families move closer, which
+                become harder, and which architecture projection will those
+                families touch?
+              </p>
+            </section>
+            <section id="coupon" class="article-section">
+              <h2>Coupon PRD</h2>
+              <p>
+                A coupon PRD in a checkout system is the smallest running
+                example. The request can open a lawful discount-policy path, a
+                payment-adapter shortcut, a UI-only drift, or a rounding
+                semantic obstruction. Before code changes, the PRD has already
+                changed the field of plausible implementations.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Artifact wording</th>
+                      <th scope="col">Field effect</th>
+                      <th scope="col">Likely PR shape</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">"Allow coupons at checkout."</th>
+                      <td>Feature is named, but ownership and invariants are left implicit.</td>
+                      <td>Nearby patch, adapter modification, or UI-only state.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Coupons are discount policies composed before tax and payment authorization."</th>
+                      <td>Boundary, order, and semantic responsibility become visible.</td>
+                      <td>Policy insertion with tests for composition and rounding.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Refunds and cancellations must preserve the original discount semantics."</th>
+                      <td>Runtime and lifecycle observations enter the field before implementation.</td>
+                      <td>Checkout, payment, refund, and accounting paths are reviewed together.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="plain-reading">
+                <strong>Reading habit.</strong> Read the artifact by the
+                operation families it makes visible, cheap, hidden, or
+                reviewable.
+              </p>
+            </section>
+            <section id="force-reading" class="article-section">
+              <h2>Force reading</h2>
+              <p id="definition-1-2" class="statement">
+                <a class="statement-anchor" href="#definition-1-2">Definition 1-2.</a>
+                Artifact force is the field-level action by which artifacts
+                reshape operation support, policy, and observation boundary.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1-2">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 turns selected support and observation boundaries into computable objects.</span>
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1-2.</a>
+                If two artifacts name the same feature but expose different
+                boundaries, responsibilities, or observations, SFT may assign
+                different operation support to their resulting fields.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
+                Operation support is field-relative. Artifact wording changes
+                the candidate field update: it can expose a lawful path,
+                hide a boundary, add an observation axis, or make a shortcut
+                costly to justify.
+              </p>
+              <p id="example-1-2" class="statement">
+                <a class="statement-anchor" href="#example-1-2">Example 1-2.</a>
+                The artifact "allow coupons at checkout" opens a broader cone
+                than "coupons are discount policies composed before tax and
+                payment authorization." The second artifact applies more
+                specific force to operation support.
+              </p>
+              <p class="formal-audit-link">
+                <span>Formal direction</span>
+                <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../field/"><span>Previous</span><strong>1-1. Field</strong></a>
+              <a class="page-nav-next" href="../organization/"><span>Next</span><strong>1-3. Organization</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
