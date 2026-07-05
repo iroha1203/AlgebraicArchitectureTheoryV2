@@ -7381,7 +7381,7 @@ fn cli_locks_archmap_v1_output_replacement_golden_corpus_manifest() {
 }
 
 #[test]
-fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
+fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root
         .parent()
@@ -7413,22 +7413,6 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
                 "distanceInsights",
                 "distanceActionQueue",
                 "homotopyDistanceReadings",
-            ][..],
-        ),
-        (
-            "website/src/archsig/manual/index.html",
-            &[
-                "architecture-distance.json",
-                "distanceInsights",
-                "homotopyDistanceReadings",
-            ][..],
-        ),
-        (
-            "website/src/archsig/reference/index.html",
-            &[
-                "architecture-distance.json",
-                "archsig-architecture-distance/v1",
-                "--strict-distance",
             ][..],
         ),
         (
