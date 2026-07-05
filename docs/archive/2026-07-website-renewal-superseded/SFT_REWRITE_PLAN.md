@@ -1,5 +1,8 @@
 # SFT Website Rewrite Plan
 
+> **Archived 2026-07-05**: v1 三部構成前提の計画。SFT v2 リライトは
+> `docs/note/website_renewal_design_note.md` の Wave 2 が後継。
+
 この文書は、`website/sft/**` を全面的に作り直すための作業計画である。
 複数セッションにまたがって作業しても意図が失われないように、構成思想、
 削除方針、route、各ページの責務、書く範囲、書かない範囲、検証手順をここに固定する。

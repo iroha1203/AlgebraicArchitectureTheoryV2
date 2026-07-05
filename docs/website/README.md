@@ -8,13 +8,15 @@
 
 ## 文書の分担
 
-- [guideline.md](guideline.md): website 編集方針、claim boundary、path rule、preview / 検証を管理する。
-- [SITEMAP.md](SITEMAP.md): 公開 route、production `sitemap.xml`、`robots.txt` の対応を管理する。
+- [guideline.md](guideline.md): website 編集方針、claim boundary、stack / path rule、CSS 分割規律、preview / 検証を管理する。
+- [SITEMAP.md](SITEMAP.md): 公開 route と役割の一覧(人間向け)。`sitemap.xml` / `llms.txt` は Eleventy collections から自動生成。
 - [DESIGN.md](DESIGN.md): website の設計方針、読者導線、ページネーション、本文成熟度、source mapping を管理する。
-- [AAT_RENEWAL_PLAN.md](AAT_RENEWAL_PLAN.md): Atom refoundation 後の AAT website を web-native monograph として再構成するための計画書。
-- [SFT_REWRITE_PLAN.md](SFT_REWRITE_PLAN.md): SFT website を既存 Part 構成から削除して三部構成で書き直すための複数セッション向け計画書。
+- [AAT_RENEWAL_PLAN.md](AAT_RENEWAL_PLAN.md): Atom refoundation 後の AAT website 再構成計画(旧世代。AG 版リライトは下記設計ノートが正)。
 - [ARCHSIG_RENEWAL_PLAN.md](ARCHSIG_RENEWAL_PLAN.md): ArchSig website を LLM Skill-first の Web PR 面 & マニュアルとして章立てから書き直すための計画書。
 - [archsig_website_improvement_policy.md](archsig_website_improvement_policy.md): ArchSig website を公開製品マニュアルとして改善するための方針メモ。
+
+リニューアル全体(Eleventy 化、AG 版 AAT リライト、ウェーブ設計)の設計文書は
+[docs/note/website_renewal_design_note.md](../note/website_renewal_design_note.md) に置く。
 
 ## 公開サイトの位置づけ
 
@@ -54,23 +56,22 @@ SFT treats ... as ...
 ## 公開設定
 
 - 公開ドメインは `iroha1203.dev`。
-- custom domain は `website/CNAME` に記録する。
-- production sitemap は `website/sitemap.xml` に置き、`https://iroha1203.dev/` を URL base とする。
-- `website/robots.txt` は production sitemap を指す。
-- Cloudflare Pages は `website/` を公開ディレクトリとして deploy する。
+- custom domain は `website/src/CNAME` に記録する(passthrough copy)。
+- production sitemap / llms.txt は Eleventy collections から自動生成し、
+  `https://iroha1203.dev/` を URL base とする。
+- `website/src/robots.txt` は production sitemap を指す。
+- Cloudflare Pages は root directory `website`、build command `npx @11ty/eleventy`、
+  output directory `_site` でビルド配信する。ブランチには自動プレビュー URL が出る。
 
 ## ローカル preview
 
-repository root から次を実行する。
-
 ```bash
-python3 -m http.server 8000 --directory website
+cd website && npm install        # 初回のみ
+npx @11ty/eleventy --serve
 ```
 
-その後、`http://localhost:8000/` を開く。
-
 directory route や `sitemap.xml` / `robots.txt` を確認する場合は、直接 HTML を開くより
-local server で確認する。
+dev server で確認する。
 
 ## path rules
 
@@ -82,12 +83,9 @@ local server で確認する。
 
 ## stack
 
-現在の website は no-build static stack として扱う。
+配信 artifact は純静的(HTML / CSS / 小さな JavaScript / MathJax CDN / Google Fonts)。
+authoring は Eleventy(SSG)で行い、Node 依存は `website/` 配下に限定する。
+詳細は [guideline.md](guideline.md) の stack / path 節を正とする。
 
-- HTML
-- CSS
-- 小さな JavaScript
-- MathJax CDN
-- Google Fonts
-
-重い frontend framework は、静的 HTML / CSS / 小さな JavaScript では足りない明確な理由がある場合だけ導入する。
+重い frontend framework(クライアントランタイム)は、静的 HTML / CSS /
+小さな JavaScript では足りない明確な理由がある場合だけ導入する。
