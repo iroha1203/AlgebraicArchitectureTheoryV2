@@ -96,6 +96,116 @@ def to_obstruction_section (C : TemporalCoefficient T) (p : T.Point) :
             (T.siteRegime.context p.2))) :=
   C.toObstructionSection p
 
+/-- IX.§3 / AC5: fiber-valued temporal zero-cochains on the product site. -/
+abbrev FiberZeroCochain (C : TemporalCoefficient T) : Type (max u y) :=
+  (p : T.Point) -> C.fiber p
+
+/-- IX.§3 / AC5: fiber-valued temporal one-cochains on selected incidence legs. -/
+abbrev FiberIncidenceOneCochain (C : TemporalCoefficient T) : Type (max u y z) :=
+  {p q : T.Point} -> T.IncidenceLeg p q -> C.fiber p
+
+/--
+IX.§3 / AC5: product-site incidence differential on temporal fiber cochains.
+
+For a selected leg `f : p -> q`, the differential is the actual formula
+`δ c f = restrict f (c q) - c p`.
+-/
+def incidenceDifferential (C : TemporalCoefficient T)
+    (c : C.FiberZeroCochain) : C.FiberIncidenceOneCochain :=
+  fun {p} {q} (f : T.IncidenceLeg p q) => C.restriction f (c q) - c p
+
+/-- IX.§3 / AC5: the incidence differential vanishes on identity legs. -/
+theorem incidenceDifferential_id (C : TemporalCoefficient T)
+    (c : C.FiberZeroCochain) (p : T.Point) :
+    C.incidenceDifferential c (T.idLeg p) = 0 := by
+  change C.restriction (T.idLeg p) (c p) - c p = 0
+  rw [C.restrict_identity]
+  simp
+
+/--
+IX.§3 / AC5: the selected product-site incidence complex for temporal
+coefficients.
+
+Degree zero consists of fiber-valued functions on selected trace/context
+points; degree one consists of fiber-valued functions on selected incidence
+legs.  The differential is the actual incidence formula `δ c f =
+restrict f (c q) - c p`.
+-/
+structure ProductIncidenceComplex (C : TemporalCoefficient T) where
+  zeroCochain : Type (max u y)
+  oneCochain : Type (max u y z)
+  zero_eq : zeroCochain = C.FiberZeroCochain
+  one_eq : oneCochain = C.FiberIncidenceOneCochain
+  d0 : C.FiberZeroCochain -> C.FiberIncidenceOneCochain
+  d0_eq : d0 = C.incidenceDifferential
+
+namespace ProductIncidenceComplex
+
+variable {C : TemporalCoefficient T}
+
+/-- IX.§3 / AC5: the selected zero-cochain carrier is the temporal fiber carrier. -/
+theorem zeroCochain_eq_fiber
+    (K : ProductIncidenceComplex C) :
+    K.zeroCochain = C.FiberZeroCochain :=
+  K.zero_eq
+
+/-- IX.§3 / AC5: the selected one-cochain carrier is the incidence-leg carrier. -/
+theorem oneCochain_eq_incidence
+    (K : ProductIncidenceComplex C) :
+    K.oneCochain = C.FiberIncidenceOneCochain :=
+  K.one_eq
+
+/-- IX.§3 / AC5: the selected differential is the incidence formula. -/
+theorem d0_eq_incidenceDifferential
+    (K : ProductIncidenceComplex C) :
+    K.d0 = C.incidenceDifferential :=
+  K.d0_eq
+
+/-- IX.§3 / AC5: the selected product-incidence differential kills identity legs. -/
+theorem d0_id
+    (K : ProductIncidenceComplex C)
+    (c : C.FiberZeroCochain) (p : T.Point) :
+    K.d0 c (T.idLeg p) = 0 := by
+  rw [K.d0_eq_incidenceDifferential]
+  exact C.incidenceDifferential_id c p
+
+end ProductIncidenceComplex
+
+/--
+IX.§3 / AC5--AC6: product-incidence temporal coefficient data together with
+the finite-poset PRD-4 comparison bridge.
+
+This is the explicit finite poset x trace bridge used by IX-3: it keeps the
+product incidence complex and the PRD-4 finite-poset comparison package in one
+object, without asserting a general product-site cohomology theorem.
+-/
+structure ProductIncidencePRD4Comparison
+    (C : TemporalCoefficient T) where
+  incidenceComplex : ProductIncidenceComplex C
+  finitePosetBridge : FinitePosetTemporalCechBridge T C.obstructionSheaf
+
+namespace ProductIncidencePRD4Comparison
+
+variable {C : TemporalCoefficient T}
+
+/-- IX.§3 / AC5--AC6: expose the product incidence differential formula. -/
+theorem incidence_d0_eq
+    (P : ProductIncidencePRD4Comparison C) :
+    P.incidenceComplex.d0 = C.incidenceDifferential :=
+  P.incidenceComplex.d0_eq_incidenceDifferential
+
+/-- IX.§3 / AC5--AC6: expose PRD-4 finite-poset differential compatibility. -/
+theorem prd4_differential_compatible
+    (P : ProductIncidencePRD4Comparison C)
+    (n : Nat) (c : P.finitePosetBridge.comparison.generalComplex.Cn n) :
+    P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCochain (n + 1)
+        (P.finitePosetBridge.comparison.generalComplex.d n c) =
+      P.finitePosetBridge.finitePosetComplex.differential n
+        (P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCochain n c) :=
+  P.finitePosetBridge.differential_compatible n c
+
+end ProductIncidencePRD4Comparison
+
 end TemporalCoefficient
 
 /--

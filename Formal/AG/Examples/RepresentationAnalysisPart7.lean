@@ -89,6 +89,17 @@ theorem dependencyDAG_matrixWalkReading_ab :
       matrixWalkCount dependencyDAG 1 DAGVertex.a DAGVertex.b :=
   adjacencyMatrixPower_apply_eq_matrixWalkCount dependencyDAG 1 DAGVertex.a DAGVertex.b
 
+theorem dependencyDAG_length_one_walkCount_eq_edgeFiber_card :
+    matrixWalkCount dependencyDAG 1 DAGVertex.a DAGVertex.b =
+      edgeFiberCard dependencyDAG DAGVertex.a DAGVertex.b :=
+  matrixWalkCount_one_eq_edgeFiber_card dependencyDAG DAGVertex.a DAGVertex.b
+
+theorem dependencyDAG_ab_edgeFiber_card :
+    edgeFiberCard dependencyDAG DAGVertex.a DAGVertex.b = 1 := by
+  have hcard : Fintype.card DAGEdge = 1 := by
+    decide
+  simpa [edgeFiberCard, dependencyDAG] using hcard
+
 theorem dependencyDAG_nilpotent_at_card :
     adjacencyMatrixPower dependencyDAG (Fintype.card DAGVertex) = 0 :=
   adjacencyMatrixPower_eq_zero_at_card_of_acyclic dependencyDAG_acyclic
@@ -333,25 +344,28 @@ abbrev marginOperationDistance : OperationDistanceProfile object where
     intro A B
     cases A <;> cases B <;> exact ⟨PUnit.unit, rfl⟩
 
-def natInfimumDomain : CostInfimumDomain Nat where
-  infimum _ := 0
-  isLowerBound _ _ := True
-  isGreatestLowerBound _ _ := True
-  infimum_isGreatestLowerBound _ := trivial
+def enatInfimumDomain : CostInfimumDomain ℕ∞ :=
+  CostInfimumDomain.completeLatticeInfimumDomain
 
 abbrev marginDistanceToFlatness :
     DistanceToFlatnessProfile marginOperationDistance where
-  Cost := Nat
-  costDomain := natInfimumDomain
-  costToDistanceValue n := DistanceValue.measured n
+  Cost := ℕ∞
+  costDomain := enatInfimumDomain
+  costToDistanceValue _ := DistanceValue.measured 0
   FlatCandidate _ := PUnit
   flatState A _ := A
   factorsThroughFlat _ _ := True
-  candidateDistance _ _ := 0
+  candidateDistance _ _ := (0 : ℕ∞)
   candidateDistance_reads_d_op := by
     intro A candidate
     cases A <;> rfl
   candidateFactorsThroughFlat _ _ := trivial
+
+theorem marginDistanceToFlatness_dist_flat_glb (A : marginOperationDistance.GeometryState) :
+    marginDistanceToFlatness.costDomain.isGreatestLowerBound
+      (marginDistanceToFlatness.candidateDistance A)
+      (marginDistanceToFlatness.dist_flat A) :=
+  marginDistanceToFlatness.dist_flat_isGreatestLowerBound A
 
 def marginObstructionMeasure : SelectedObstructionMeasure object where
   ObstructionSupport := PUnit
@@ -631,6 +645,8 @@ def toyAnalyticReadingContext :
 def toyConservativity :
     RepresentationConservativityUnderAdequacy toyAnalyticReadingContext where
   zeroClass := ToyObstructionClass.zero
+  IsZeroClass alpha := alpha = ToyObstructionClass.zero
+  zeroClass_isZero := rfl
   coverageAdequate := trivial
   witnessExact := trivial
   axisExact := trivial
@@ -661,6 +677,19 @@ theorem detectingRepresentation_toy_all_zero_imp_zero
 theorem detectingRepresentation_toy_zero_conservative :
     ToyObstructionClass.zero = toyConservativity.zeroClass :=
   detectingRepresentation_toy_all_zero_imp_zero ToyObstructionClass.zero (by
+    intro i
+    cases i <;> trivial)
+
+theorem detectingRepresentation_toy_all_zero_actual_zero
+    (alpha : toyDetectingFamily.ObstructionClass)
+    (hzero : ∀ i : toyRepresentationFamily.Index,
+      toyDetectingFamily.analyticZeroReading i alpha) :
+    toyConservativity.IsZeroClass alpha :=
+  toyConservativity.representation_zero_under_adequacy alpha hzero
+
+theorem detectingRepresentation_toy_zero_is_actual_zero :
+    toyConservativity.IsZeroClass ToyObstructionClass.zero :=
+  detectingRepresentation_toy_all_zero_actual_zero ToyObstructionClass.zero (by
     intro i
     cases i <;> trivial)
 

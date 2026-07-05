@@ -154,13 +154,62 @@ theorem multidegree_pair_eq_union (T : TaylorComplex A E P)
 end TaylorComplex
 
 /--
+V.R4(b) / V-3: selected two-generator square-free monomial presentation.
+
+This is the finite combinatorial surface of the two-generator Taylor complex:
+all Taylor faces have cardinality at most two, and the distinguished
+two-generator face has multidegree equal to the union of the two selected
+forbidden supports.
+-/
+structure TwoGeneratorPresentation {I : Ideal A}
+    (P : SquareFreeMonomialIdealPresentation A E I) where
+  generatorEquivFin2 : P.Generator ≃ Fin 2
+
+namespace TwoGeneratorPresentation
+
+variable {A E}
+variable {I : Ideal A} {P : SquareFreeMonomialIdealPresentation A E I}
+
+/-- V.R4(b) / V-3: the first selected generator of a two-generator presentation. -/
+def leftGenerator (D : TwoGeneratorPresentation A E P) : P.Generator :=
+  D.generatorEquivFin2.symm 0
+
+/-- V.R4(b) / V-3: the second selected generator of a two-generator presentation. -/
+def rightGenerator (D : TwoGeneratorPresentation A E P) : P.Generator :=
+  D.generatorEquivFin2.symm 1
+
+omit [DecidableEq E] in
+/-- V.R4(b) / V-3: every Taylor face in a two-generator presentation has size at most two. -/
+theorem face_card_le_two (D : TwoGeneratorPresentation A E P)
+    (S : Finset P.Generator) :
+    S.card ≤ 2 := by
+  classical
+  have hle : S.card ≤ Fintype.card P.Generator := Finset.card_le_univ S
+  have hcard : Fintype.card P.Generator = 2 :=
+    Fintype.card_congr D.generatorEquivFin2
+  simpa [hcard] using hle
+
+/--
+V.R4(b) / V-3: the two selected Taylor generators have the expected lcm
+multidegree.
+-/
+theorem selected_pair_multidegree_eq_union
+    (D : TwoGeneratorPresentation A E P) (T : TaylorComplex A E P) :
+    T.multidegree ({D.leftGenerator} ∪ {D.rightGenerator}) =
+      P.forbiddenSupport D.leftGenerator ∪ P.forbiddenSupport D.rightGenerator :=
+  T.multidegree_pair_eq_union D.leftGenerator D.rightGenerator
+
+end TwoGeneratorPresentation
+
+/--
 V.R4(b) / AC6: selected finite-free resolution data identifying a Taylor
 complex with an exact quotient resolution.
 
 This package keeps the construction relative to explicit selected data. The
-theorem below reads quotient-resolution of the Taylor complex from exactness of
-the selected finite-free resolution, instead of merely projecting the
-`TaylorComplex.resolvesQuotient` field.
+field `resolvesQuotient_of_exact` is the selected bridge from exactness of the
+finite-free resolution to the Taylor quotient-resolution predicate; this file
+does not derive that bridge from a universal chain-map exactness-transfer
+theorem.
 -/
 structure TaylorSelectedFreeResolutionData {I : Ideal A}
     (P : SquareFreeMonomialIdealPresentation A E I) where
@@ -172,7 +221,9 @@ structure TaylorSelectedFreeResolutionData {I : Ideal A}
   differentialCompatible : Prop
   differentialCompatible_holds : differentialCompatible
   resolvesQuotient_of_exact :
-    quotientResolution.exact -> taylor.resolvesQuotient
+    (Function.Exact (quotientResolution.d 0) quotientResolution.augmentation ∧
+      ∀ n, Function.Exact (quotientResolution.d n.succ) (quotientResolution.d n)) ->
+      taylor.resolvesQuotient
 
 namespace TaylorSelectedFreeResolutionData
 
@@ -192,15 +243,86 @@ theorem differentialCompatible_certificate
   D.differentialCompatible_holds
 
 /--
-V.R4(b) / AC6: the Taylor complex resolves the quotient because the selected
-finite-free resolution is exact.
+V.R4(b) / AC6: the Taylor complex resolves the quotient through the selected
+assumption-relative bridge from finite-free exactness.
 -/
-theorem resolvesQuotient_from_selectedResolution
+theorem resolvesQuotient_from_selectedResolutionBridge
     (D : TaylorSelectedFreeResolutionData.{u, v} A E P) :
     D.taylor.resolvesQuotient :=
   D.resolvesQuotient_of_exact D.quotientResolution.exact_certificate
 
+/--
+V.R4(b) / AC6: compatibility alias for the selected exactness bridge.
+The theorem remains assumption-relative to `resolvesQuotient_of_exact`.
+-/
+theorem resolvesQuotient_from_selectedResolution
+    (D : TaylorSelectedFreeResolutionData.{u, v} A E P) :
+    D.taylor.resolvesQuotient :=
+  D.resolvesQuotient_from_selectedResolutionBridge
+
 end TaylorSelectedFreeResolutionData
+
+/--
+V.R4(b) / V-3: two-generator Taylor resolution package.
+
+The package ties the two-generator combinatorics to a selected exact
+finite-free quotient resolution. The quotient-resolution theorem remains
+assumption-relative to the selected `resolvesQuotient_of_exact` bridge in
+`TaylorSelectedFreeResolutionData`.
+-/
+structure TwoGeneratorTaylorResolutionPackage {I : Ideal A}
+    (P : SquareFreeMonomialIdealPresentation A E I) where
+  twoGenerator : TwoGeneratorPresentation A E P
+  resolutionData : TaylorSelectedFreeResolutionData.{u, v} A E P
+
+namespace TwoGeneratorTaylorResolutionPackage
+
+variable {A E}
+variable {I : Ideal A} {P : SquareFreeMonomialIdealPresentation A E I}
+
+/-- V.R4(b) / V-3: the selected Taylor complex in the two-generator package. -/
+abbrev taylor (D : TwoGeneratorTaylorResolutionPackage.{u, v} A E P) :
+    TaylorComplex A E P :=
+  D.resolutionData.taylor
+
+/-- V.R4(b) / V-3: every selected Taylor face has cardinality at most two. -/
+theorem face_card_le_two
+    (D : TwoGeneratorTaylorResolutionPackage.{u, v} A E P)
+    (S : Finset P.Generator) :
+    S.card ≤ 2 :=
+  D.twoGenerator.face_card_le_two S
+
+/--
+V.R4(b) / V-3: the distinguished two-generator face has multidegree equal to
+the union of the two selected forbidden supports.
+-/
+theorem selected_pair_multidegree_eq_union
+    (D : TwoGeneratorTaylorResolutionPackage.{u, v} A E P) :
+    D.taylor.multidegree
+        ({D.twoGenerator.leftGenerator} ∪ {D.twoGenerator.rightGenerator}) =
+      P.forbiddenSupport D.twoGenerator.leftGenerator ∪
+        P.forbiddenSupport D.twoGenerator.rightGenerator :=
+  D.twoGenerator.selected_pair_multidegree_eq_union D.taylor
+
+/--
+V.R4(b) / V-3: the two-generator Taylor surface resolves the quotient through
+the selected exactness bridge.
+-/
+theorem resolvesQuotient_from_selectedExactBridge
+    (D : TwoGeneratorTaylorResolutionPackage.{u, v} A E P) :
+    D.taylor.resolvesQuotient :=
+  D.resolutionData.resolvesQuotient_from_selectedResolution
+
+/--
+V.R4(b) / V-3: compatibility alias for the selected two-generator exactness
+bridge. The theorem is not a universal construction of the Taylor resolution.
+-/
+theorem resolvesQuotient_from_selectedExact
+    (D : TwoGeneratorTaylorResolutionPackage.{u, v} A E P) :
+    D.taylor.resolvesQuotient :=
+  D.resolvesQuotient_from_selectedExactBridge
+
+end TwoGeneratorTaylorResolutionPackage
 
 /--
 V.R4(b) / AC6: Taylor complex together with a Mathlib finite-free projective

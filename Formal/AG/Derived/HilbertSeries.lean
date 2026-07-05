@@ -186,6 +186,31 @@ theorem eulerCharacteristic_eq (E : DegreewiseEulerCharacteristicPackage) :
 
 end DegreewiseEulerCharacteristicPackage
 
+/--
+V.R10 / V-6: Hilbert series justified by degree-wise finite basis carriers.
+
+This is the monomial-basis-count route used when a rational `PowerSeries`
+presentation is not part of the claim boundary.  The carrier may be a selected
+finite monomial basis or a finite quotient of such a basis; the theorem only
+reads the coefficient as its cardinality in each degree.
+-/
+structure HilbertSeriesBasisCountPackage where
+  Basis : Nat -> Type u
+  [basisFintype : (n : Nat) -> Fintype (Basis n)]
+  hilbertSeries : HilbertSeries
+  coeff_eq_card : ∀ n, hilbertSeries.coeff n = (Fintype.card (Basis n) : Int)
+
+attribute [instance] HilbertSeriesBasisCountPackage.basisFintype
+
+namespace HilbertSeriesBasisCountPackage
+
+/-- V.R10 / V-6: the Hilbert coefficient is the selected finite basis cardinality. -/
+theorem coefficient_eq_basis_card (B : HilbertSeriesBasisCountPackage.{u}) (n : Nat) :
+    B.hilbertSeries.coeff n = (Fintype.card (B.Basis n) : Int) :=
+  B.coeff_eq_card n
+
+end HilbertSeriesBasisCountPackage
+
 /-- V.R10: short exact sequence Hilbert series additivity package. -/
 structure HilbertSeriesShortExactPackage where
   left : HilbertSeries

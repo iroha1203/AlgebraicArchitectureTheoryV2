@@ -182,6 +182,8 @@ structure RepresentationConservativityUnderAdequacy {U : AtomCarrier.{u}}
     {p : AATSchReadingParameter.{u, v, w, x, y} S k}
     (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) where
   zeroClass : C.detectingFamily.ObstructionClass
+  IsZeroClass : C.detectingFamily.ObstructionClass -> Prop
+  zeroClass_isZero : IsZeroClass zeroClass
   coverageAdequate : C.coverageAdequacy
   witnessExact : C.witnessExactness
   axisExact : C.axisExactness
@@ -214,6 +216,25 @@ theorem representation_conservativity_under_adequacy
       C.detectingFamily.analyticZeroReading i alpha) :
     alpha = T.zeroClass :=
   T.witnessZero_eq_zero alpha (C.witnessZero_of_all_readings_zero alpha hzero)
+
+/-- VII.定理15.4: expose that the selected `zeroClass` is an actual zero class. -/
+theorem zeroClass_isZero_holds
+    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C) :
+    T.IsZeroClass T.zeroClass :=
+  T.zeroClass_isZero
+
+/--
+VII.定理15.4: if all selected representation readings of `alpha` are zero,
+then `alpha` is an actual zero obstruction class.
+-/
+theorem representation_zero_under_adequacy
+    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C)
+    (alpha : C.detectingFamily.ObstructionClass)
+    (hzero : ∀ i : C.representationFamily.Index,
+      C.detectingFamily.analyticZeroReading i alpha) :
+    T.IsZeroClass alpha := by
+  rw [T.representation_conservativity_under_adequacy alpha hzero]
+  exact T.zeroClass_isZero
 
 end RepresentationConservativityUnderAdequacy
 

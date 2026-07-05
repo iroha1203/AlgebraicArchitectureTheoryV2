@@ -19,42 +19,49 @@ sites, sheaves, rings, or modules.
 /-- VIII.Theorem 4.2 object: a finite Cech complex representation. -/
 structure FiniteCechComplexRepresentation (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteRepresentation : Prop
   finiteRepresentation_cert : finiteRepresentation
 
 /-- VIII.Theorem 4.2 object: a finite cocycle representative. -/
 structure FiniteCocycleRepresentative (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteRepresentative : Prop
   finiteRepresentative_cert : finiteRepresentative
 
 /-- VIII.Theorem 4.2 object: a finite verdict computation object. -/
 structure FiniteVerdictComputationObject (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   computesSelectedVerdict : Prop
   computesSelectedVerdict_cert : computesSelectedVerdict
 
 /-- VIII.Theorem 4.2 object: a finite square-free obstruction ideal. -/
 structure FiniteSquareFreeObstructionIdeal (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteSquareFree : Prop
   finiteSquareFree_cert : finiteSquareFree
 
 /-- VIII.Theorem 4.2 object: a finite Stanley-Reisner complex. -/
 structure FiniteStanleyReisnerComplex (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteComplex : Prop
   finiteComplex_cert : finiteComplex
 
 /-- VIII.Theorem 4.2 object: a finite monomial Tor complex. -/
 structure FiniteMonomialTorComplex (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteTorComplex : Prop
   finiteTorComplex_cert : finiteTorComplex
 
 /-- VIII.Theorem 4.2 object: finite support for a selected conflict class. -/
 structure FiniteConflictSupport (M : MeasurementProfile.{u, v}) where
   carrier : Type v
+  carrierFintype : Fintype carrier
   finiteSupport : Prop
   finiteSupport_cert : finiteSupport
 
@@ -101,6 +108,81 @@ theorem conflictSupport_finite {M : MeasurementProfile.{u, v}}
     (P : FiniteAATComputability M) :
     P.conflictSupport.finiteSupport :=
   P.conflictSupport.finiteSupport_cert
+
+/-- VIII.Theorem 4.2: the selected Cech-complex carrier is an actual finite type. -/
+def cechComplexCarrierFintype {M : MeasurementProfile.{u, v}} (P : FiniteAATComputability M) :
+    Fintype P.cechComplex.carrier :=
+  P.cechComplex.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected cocycle-representative carrier is finite. -/
+def cocycleRepresentativeCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.cocycleRepresentative.carrier :=
+  P.cocycleRepresentative.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected verdict-computation carrier is finite. -/
+def verdictComputationCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.verdictComputation.carrier :=
+  P.verdictComputation.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected square-free ideal carrier is finite. -/
+def squareFreeObstructionIdealCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.squareFreeObstructionIdeal.carrier :=
+  P.squareFreeObstructionIdeal.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected Stanley-Reisner carrier is finite. -/
+def stanleyReisnerComplexCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.stanleyReisnerComplex.carrier :=
+  P.stanleyReisnerComplex.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected monomial Tor carrier is finite. -/
+def monomialTorComplexCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.monomialTorComplex.carrier :=
+  P.monomialTorComplex.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected conflict-support carrier is finite. -/
+def conflictSupportCarrierFintype {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Fintype P.conflictSupport.carrier :=
+  P.conflictSupport.carrierFintype
+
+/-- VIII.Theorem 4.2: the selected Cech cochain carrier is finite. -/
+theorem cechComplexCarrier_finite {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Finite P.cechComplex.carrier := by
+  letI := P.cechComplex.carrierFintype
+  infer_instance
+
+/-- VIII.Theorem 4.2: the selected cocycle-representative carrier is finite. -/
+theorem cocycleRepresentativeCarrier_finite {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Finite P.cocycleRepresentative.carrier := by
+  letI := P.cocycleRepresentative.carrierFintype
+  infer_instance
+
+/-- VIII.Theorem 4.2: the selected finite computation carriers are finite. -/
+theorem computationCarriers_finite {M : MeasurementProfile.{u, v}}
+    (P : FiniteAATComputability M) :
+    Finite P.cechComplex.carrier ∧
+      Finite P.cocycleRepresentative.carrier ∧
+      Finite P.verdictComputation.carrier ∧
+      Finite P.squareFreeObstructionIdeal.carrier ∧
+      Finite P.stanleyReisnerComplex.carrier ∧
+      Finite P.monomialTorComplex.carrier ∧
+      Finite P.conflictSupport.carrier := by
+  letI := P.cechComplex.carrierFintype
+  letI := P.cocycleRepresentative.carrierFintype
+  letI := P.verdictComputation.carrierFintype
+  letI := P.squareFreeObstructionIdeal.carrierFintype
+  letI := P.stanleyReisnerComplex.carrierFintype
+  letI := P.monomialTorComplex.carrierFintype
+  letI := P.conflictSupport.carrierFintype
+  exact ⟨inferInstance, inferInstance, inferInstance, inferInstance,
+    inferInstance, inferInstance, inferInstance⟩
 
 end FiniteAATComputability
 

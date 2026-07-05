@@ -318,5 +318,48 @@ theorem lawEquation_constructs_groundedComparisonPacket
               package73.higherCoherenceVanishes,
               package73.stackEffectivelyVanishes⟩ } }
 
+/--
+X.定理7.5 generated-comparison form: a cochain realization generates the
+H1 comparison used by the end-to-end packet.
+
+This keeps theorem 7.5 from taking `SemanticRepairCoverRelativeH1Comparison`
+as a material premise.  The returned dependent pair exposes the generated
+comparison together with the usual ten-conclusion packet.
+-/
+theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {Ulaw : AtomCarrier.{u}}
+    {Alaw : ArchitectureObject Ulaw}
+    {Slaw : Site.AATSite.{u} Alaw}
+    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    (D : LawAlgebra.LawEquationDefectSource.{u} G)
+    (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
+    {U : AtomCarrier.{r}}
+    {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (F : Site.AATPresheaf S)
+    {base : S.category}
+    (cover : Sieve base)
+    (certificate : data.TrueSheafConditionCertificate S F cover)
+    (gluingData : Site.AATGluingData S F cover)
+    {coverRel : Cohomology.CoverRelativeCechCover S}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {K : Cohomology.CoverRelativeCechComplex coverRel Ob}
+    (realization :
+      SemanticRepairCoverRelativeCochainRealization data.toAdditiveH1Surface K) :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepairCoverRelativeH1Comparison data.toAdditiveH1Surface K =>
+          SemanticRepairGeneratedEndToEndSAGAPacket
+            data D S F cover gluingData comparison) := by
+  let comparison := realization.toH1Comparison
+  rcases
+    lawEquation_constructs_groundedComparisonPacket
+      data D hDisplayedRequiredLaws S F cover certificate gluingData comparison with
+    ⟨packet⟩
+  exact ⟨⟨comparison, packet⟩⟩
+
 end SemanticRepair
 end AAT.AG

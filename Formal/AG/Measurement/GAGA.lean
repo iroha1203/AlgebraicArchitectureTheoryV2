@@ -15,6 +15,92 @@ data-source fidelity, external procedure correctness, or truth across arbitrary
 law universes.
 -/
 
+/-- VIII.Theorem 12.3: selected finite Hodge theorem package used by GAGA. -/
+structure SelectedFiniteHodgeTheoremPackage (M : MeasurementProfile.{u, v}) where
+  cellularModel : CellularMeasurementModel M
+  laplacianReading : SheafLaplacianReading cellularModel
+  hodgeData : FiniteHodgeDecompositionData laplacianReading
+  hodgePackage : FiniteHodgeDecomposition hodgeData
+
+namespace SelectedFiniteHodgeTheoremPackage
+
+/-- VIII.Theorem 12.3: expose the carried finite Hodge decomposition theorem. -/
+theorem decomposition_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedFiniteHodgeTheoremPackage M) :
+    P.hodgeData.finiteHodgeDecomposition :=
+  P.hodgePackage.decomposition_holds
+
+/-- VIII.Theorem 12.3: expose the carried harmonic-cohomology theorem. -/
+theorem harmonic_cohomology_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedFiniteHodgeTheoremPackage M) :
+    P.hodgeData.harmonicKernelIdentifiesCohomology :=
+  P.hodgePackage.harmonic_cohomology_holds
+
+end SelectedFiniteHodgeTheoremPackage
+
+/-- VIII.Theorem 12.3: selected Period/Stokes theorem package used by GAGA. -/
+structure SelectedPeriodStokesTheoremPackage (M : MeasurementProfile.{u, v}) where
+  selectedAccounting : M.Domain
+  measuredAccounting : M.Measured_M selectedAccounting
+
+namespace SelectedPeriodStokesTheoremPackage
+
+/-- VIII.Theorem 12.3: expose the selected Period/Stokes artifact as in-scope measured data. -/
+theorem period_stokes_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedPeriodStokesTheoremPackage M) :
+    M.InScope P.selectedAccounting :=
+  P.measuredAccounting.inScope
+
+/-- VIII.Theorem 12.3: expose the selected Period/Stokes measurement certificate. -/
+def period_stokes_measurement {M : MeasurementProfile.{u, v}}
+    (P : SelectedPeriodStokesTheoremPackage M) :
+    M.Measured_M P.selectedAccounting :=
+  P.measuredAccounting
+
+end SelectedPeriodStokesTheoremPackage
+
+/-- VIII.Theorem 12.3: selected topological-debt theorem package used by GAGA. -/
+structure SelectedTopologicalDebtTheoremPackage (M : MeasurementProfile.{u, v}) where
+  selectedDebtData : M.Domain
+  measuredDebtData : M.Measured_M selectedDebtData
+
+namespace SelectedTopologicalDebtTheoremPackage
+
+/-- VIII.Theorem 12.3: expose the selected topological-debt artifact as in-scope measured data. -/
+theorem topological_debt_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedTopologicalDebtTheoremPackage M) :
+    M.InScope P.selectedDebtData :=
+  P.measuredDebtData.inScope
+
+/-- VIII.Theorem 12.3: expose the selected topological-debt measurement certificate. -/
+def topological_debt_measurement {M : MeasurementProfile.{u, v}}
+    (P : SelectedTopologicalDebtTheoremPackage M) :
+    M.Measured_M P.selectedDebtData :=
+  P.measuredDebtData
+
+end SelectedTopologicalDebtTheoremPackage
+
+/-- VIII.Theorem 12.3: selected derived-conflict theorem package used by GAGA. -/
+structure SelectedDerivedConflictTheoremPackage (M : MeasurementProfile.{u, v}) where
+  commonAmbient : CommonAmbientPair M
+  lawConflictMeasurement : LawConflictMeasurement commonAmbient
+
+namespace SelectedDerivedConflictTheoremPackage
+
+/-- VIII.Theorem 12.3: expose the carried LawConflict Tor reading theorem. -/
+theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedDerivedConflictTheoremPackage M) :
+    P.lawConflictMeasurement.lawConflictTorReading :=
+  P.lawConflictMeasurement.lawConflictTorReading_holds
+
+/-- VIII.Theorem 12.3: expose the carried common-ambient requirement theorem. -/
+theorem commonAmbientRequired_holds {M : MeasurementProfile.{u, v}}
+    (P : SelectedDerivedConflictTheoremPackage M) :
+    P.lawConflictMeasurement.commonAmbientRequired :=
+  P.lawConflictMeasurement.commonAmbientRequired_holds
+
+end SelectedDerivedConflictTheoremPackage
+
 /-- VIII.Theorem 12.3: certified comparison fields. -/
 structure AATGAGACertifiedFields (M : MeasurementProfile.{u, v}) where
   HodgeComparison : Type v
@@ -27,6 +113,10 @@ structure AATGAGACertifiedFields (M : MeasurementProfile.{u, v}) where
   selectedPeriodStokesAccounting : PeriodStokesAccounting
   selectedTopologicalDebtCapacity : TopologicalDebtCapacity
   selectedDerivedConflictAccounting : DerivedConflictAccounting
+  finiteHodgeTheoremPackage : SelectedFiniteHodgeTheoremPackage M
+  periodStokesTheoremPackage : SelectedPeriodStokesTheoremPackage M
+  topologicalDebtTheoremPackage : SelectedTopologicalDebtTheoremPackage M
+  derivedConflictTheoremPackage : SelectedDerivedConflictTheoremPackage M
   hodgeComparisonCertified : Prop
   hodgeComparisonCertified_cert : hodgeComparisonCertified
   harmonicDecompositionCertified : Prop
@@ -49,6 +139,36 @@ theorem hodgeComparisonCertified_holds {M : MeasurementProfile.{u, v}}
 theorem derivedConflictAccountingCertified_holds {M : MeasurementProfile.{u, v}}
     (C : AATGAGACertifiedFields M) : C.derivedConflictAccountingCertified :=
   C.derivedConflictAccountingCertified_cert
+
+/-- VIII.Theorem 12.3: certified harmonic decomposition is backed by a theorem package. -/
+theorem finiteHodgeDecomposition_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    C.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition :=
+  C.finiteHodgeTheoremPackage.decomposition_holds
+
+/-- VIII.Theorem 12.3: harmonic representatives identify cohomology in the package. -/
+theorem finiteHodgeHarmonicCohomology_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    C.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology :=
+  C.finiteHodgeTheoremPackage.harmonic_cohomology_holds
+
+/-- VIII.Theorem 12.3: Period/Stokes certified field is backed by a theorem package. -/
+theorem periodStokesTheorem_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    M.InScope C.periodStokesTheoremPackage.selectedAccounting :=
+  C.periodStokesTheoremPackage.period_stokes_holds
+
+/-- VIII.Theorem 12.3: topological-debt certified field is backed by a theorem package. -/
+theorem topologicalDebtTheorem_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    M.InScope C.topologicalDebtTheoremPackage.selectedDebtData :=
+  C.topologicalDebtTheoremPackage.topological_debt_holds
+
+/-- VIII.Theorem 12.3: derived-conflict certified field is backed by LawConflict data. -/
+theorem derivedConflictLawConflictTorReading_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    C.derivedConflictTheoremPackage.lawConflictMeasurement.lawConflictTorReading :=
+  C.derivedConflictTheoremPackage.lawConflictTorReading_holds
 
 end AATGAGACertifiedFields
 

@@ -24,6 +24,55 @@ def BoundaryHolonomyVanishes {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   D.boundaryHolonomy b = 0
 
 /--
+IV.定理9.2 / IV-7: concrete two-chart global U-flatness predicate.
+
+The selected global section is represented by a core/feature degree-zero
+cochain, and global flatness means that the two restrictions agree on the
+boundary, i.e. the concrete two-chart differential is zero.
+-/
+def TwoChartGloballyUFlat {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {Ob : ObstructionSheaf S}
+    {E : TwoChartFeatureExtensionCover S}
+    {𝒰 : CoverRelativeCechCover S}
+    {K : CoverRelativeCechComplex 𝒰 Ob}
+    (D : TwoChartConnectingHomomorphism Ob E K) : Prop :=
+  letI := Ob.addCommGroup E.core
+  letI := Ob.addCommGroup E.feature
+  letI := Ob.addCommGroup E.boundary
+  ∃ s : D.twoChartCech.C0, D.twoChartCech.d0 s = 0
+
+namespace TwoChartGloballyUFlat
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {Ob : ObstructionSheaf S}
+variable {E : TwoChartFeatureExtensionCover S}
+variable {𝒰 : CoverRelativeCechCover S}
+variable {K : CoverRelativeCechComplex 𝒰 Ob}
+variable {D : TwoChartConnectingHomomorphism Ob E K}
+
+/-- IV-7: expose the selected two-chart global section and boundary agreement. -/
+theorem exists_boundary_agreement
+    (h : TwoChartGloballyUFlat D) :
+    letI := Ob.addCommGroup E.core
+    letI := Ob.addCommGroup E.feature
+    letI := Ob.addCommGroup E.boundary
+    ∃ s : D.twoChartCech.C0, D.twoChartCech.d0 s = 0 :=
+  h
+
+/-- IV-7: build concrete global U-flatness from a zero two-chart boundary. -/
+theorem of_boundary_agreement
+    (s : D.twoChartCech.C0)
+    (hs :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      D.twoChartCech.d0 s = 0) :
+    TwoChartGloballyUFlat D :=
+  ⟨s, hs⟩
+
+end TwoChartGloballyUFlat
+
+/--
 IV.定理9.2: explicit hypothesis block for the Boundary Residue theorem.
 
 This package records exactly the assumptions used to read boundary holonomy as

@@ -110,11 +110,6 @@ namespace SoundRepairSynthesisPackage
 
 variable {P : RepairComparisonProfile.{u}}
 
-/-- V.定理13.4: the selected synthesis trace is finite because it is a `List`. -/
-theorem finite_trace_certificate (S : SoundRepairSynthesisPackage P) :
-    ∃ n : Nat, S.trace.length = n :=
-  ⟨S.trace.length, rfl⟩
-
 /-- V.定理13.4: the synthesis rule emits only selected sound steps or certificates. -/
 theorem emitsOnlySoundStepsOrNoSolutionCertificate_certificate
     (S : SoundRepairSynthesisPackage P) :

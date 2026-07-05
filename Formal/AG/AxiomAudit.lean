@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
 
 /-!
@@ -18,6 +19,30 @@ tactic removal. Later PRD-R hardening PRs can extend this list additively.
 namespace AAT.AG.AxiomAudit
 
 open CategoryTheory
+
+/-
+PRD-10 / PRD-R R1: Part X [CBI] theorem constants audited by direct alias.
+The aliases keep the original dependent theorem types intact while making the
+kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
+-/
+
+def semanticRepairTheorem34FiniteDescentPackage :=
+  @SemanticRepair.finiteSemanticRepairGluingDescent_package
+
+def semanticRepairTheorem48TrueSheafH1Gluing :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
+
+def semanticRepairTheorem72H1ComparisonPackage :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+
+def semanticRepairTheorem73GroundedGlobalGluingPackage :=
+  @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
+
+def semanticRepairTheorem75GeneratedEndToEndFromRealization :=
+  @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromRealization
+
+def semanticRepairTheorem81DegreeZeroLawContribution :=
+  @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
@@ -47,6 +72,60 @@ theorem example56LawConflictPackageFiringTor1Nonzero
         (Derived.Counterexample.SharedWitnessCoord.idealV k) 1,
       x ≠ 0 :=
   FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero E
+
+theorem partVISingularBoundaryConcrete :
+    SingularityMonodromyStack.USingularBoundary
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteSingularBoundaryToyModel_fires
+
+theorem partVIOperationSquareConcrete :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquareFillingProblem.SelectedAxisFilling :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteOperationSquareToyModel_fires
+
+theorem partVITransportZeroConcrete :
+    ∃ Q : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.QuotientTransport,
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.FactorsThroughQuotient true Q :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteTransportDescentZero_descends
+
+theorem partVITransportNonzeroConcrete :
+    ¬ ∃ Q : AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.QuotientTransport,
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.FactorsThroughQuotient false Q :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteTransportDescentNonzero_not_descend
+
+theorem partVIRefactorGaloisConcrete :
+    SingularityMonodromyStack.RefactorMorphismFamilySubset
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedOperations
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Ops
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedInvariants) ↔
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.InvFamSubset
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedInvariants
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyGaloisData.Inv
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel.selectedOperations) :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteRefactorGaloisToyModel_fires
+
+theorem partVIDecompositionGerbeConcrete :
+    ¬ AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecompositionData.globalCanonicalDecomposition :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.concreteDecompositionGerbeToyModel_fires
+
+theorem partVICotangentConDefBridge
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily k) :
+    (SingularityMonodromyStack.CotangentData.ofConDef (X := X) F).CotangentComplex =
+      Cohomology.StandardObstruction.ConDef_U k F :=
+  SingularityMonodromyStack.CotangentData.ofConDef_cotangentComplex_eq (X := X) F
+
+theorem partVIDerObObstructionTargetBridge
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily k) :
+    (SingularityMonodromyStack.TangentData.ofDerOb (X := X) F).ObstructionTarget =
+      Cohomology.StandardObstruction.DerOb_U k F k :=
+  SingularityMonodromyStack.TangentData.ofDerOb_obstructionTarget_eq (X := X) F
 
 theorem temporalPseudoCircleNonzero :
     Examples.EvolutionPart9.pseudoCircleMismatch
@@ -603,7 +682,7 @@ info: 'AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToy
  Quot.sound]
 -/
 #guard_msgs in
-#print axioms FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero
+#print axioms AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero
 
 /--
 info: 'AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero' depends on axioms: [propext,
@@ -611,7 +690,7 @@ info: 'AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzero
  Quot.sound]
 -/
 #guard_msgs in
-#print axioms FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
+#print axioms AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
 
 /--
 info: 'AAT.AG.AxiomAudit.finiteSynthesisAATSynthesisPackageEqToPackage' depends on axioms: [propext,

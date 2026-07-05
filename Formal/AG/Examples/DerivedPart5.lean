@@ -237,6 +237,46 @@ theorem sharedWitnessTorOneCoeff_three :
     sharedWitnessTorOneCoeff 3 = 1 :=
   rfl
 
+/-- V.R11(c) / V-6: selected finite monomial basis carrier for ambient degree `n`. -/
+abbrev SharedWitnessAmbientDegreeBasis (n : Nat) : Type :=
+  Fin (sharedWitnessAmbientCoeff n)
+
+/-- V.R11(c) / V-6: selected finite monomial basis carrier for quotient degree `n`. -/
+abbrev SharedWitnessQuotientDegreeBasis (n : Nat) : Type :=
+  Fin (sharedWitnessQuotientCoeff n)
+
+/-- V.R11(c) / V-6: selected finite monomial basis carrier for joint quotient degree `n`. -/
+abbrev SharedWitnessJointDegreeBasis (n : Nat) : Type :=
+  Fin (sharedWitnessJointCoeff n)
+
+/-- V.R11(c) / V-6: selected finite monomial basis carrier for Tor-one degree `n`. -/
+abbrev SharedWitnessTorOneDegreeBasis (n : Nat) : Type :=
+  Fin (sharedWitnessTorOneCoeff n)
+
+/-- V.R11(c) / V-6: ambient Hilbert coefficients are selected monomial basis counts. -/
+def sharedWitnessAmbientBasisCountPackage : HilbertSeriesBasisCountPackage := by
+  refine ⟨SharedWitnessAmbientDegreeBasis, sharedWitnessAmbientHilbertSeries, ?_⟩
+  intro n
+  simp [sharedWitnessAmbientHilbertSeries, SharedWitnessAmbientDegreeBasis]
+
+/-- V.R11(c) / V-6: quotient Hilbert coefficients are selected monomial basis counts. -/
+def sharedWitnessQuotientBasisCountPackage : HilbertSeriesBasisCountPackage := by
+  refine ⟨SharedWitnessQuotientDegreeBasis, sharedWitnessQuotientHilbertSeries, ?_⟩
+  intro n
+  simp [sharedWitnessQuotientHilbertSeries, SharedWitnessQuotientDegreeBasis]
+
+/-- V.R11(c) / V-6: joint quotient Hilbert coefficients are selected monomial basis counts. -/
+def sharedWitnessJointBasisCountPackage : HilbertSeriesBasisCountPackage := by
+  refine ⟨SharedWitnessJointDegreeBasis, sharedWitnessJointHilbertSeries, ?_⟩
+  intro n
+  simp [sharedWitnessJointHilbertSeries, SharedWitnessJointDegreeBasis]
+
+/-- V.R11(c) / V-6: Tor-one Hilbert coefficients are selected monomial basis counts. -/
+def sharedWitnessTorOneBasisCountPackage : HilbertSeriesBasisCountPackage := by
+  refine ⟨SharedWitnessTorOneDegreeBasis, sharedWitnessTorOneHilbertSeries, ?_⟩
+  intro n
+  simp [sharedWitnessTorOneHilbertSeries, SharedWitnessTorOneDegreeBasis]
+
 /-- V.R11(c): quotient coefficient as an integer-valued linear function. -/
 private def sharedWitnessQuotientIntCoeff (n : Nat) : Int :=
   2 * (n : Int) + 1
@@ -596,11 +636,6 @@ def sharedWitnessG5WindowAuditPackage (k : Type v) [CommRing k] :
   coefficientIdentityOnWindow := by
     intro n hn
     exact sharedWitnessG5_window_identity hn
-
-/-- V.R11(c): the selected interference coefficient is zero on the checked G5 window. -/
-theorem sharedWitnessG5_window_interference_zero {n : Nat} (_hn : n ∈ Finset.range 10) :
-    (sharedWitnessJointHilbertSeries - sharedWitnessJointHilbertSeries).coeff n = 0 := by
-  simp
 
 /-- V.R11(d): a tiny Nat-valued well-founded repair profile. -/
 def smallRepairProfile : Derived.WellFoundedRepair.RepairComparisonProfile where

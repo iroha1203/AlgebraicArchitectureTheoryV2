@@ -61,9 +61,16 @@
 - ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
   形式化であり、ArchSig は別に `ArchMap + LawPolicy + evidence contract` から診断結論を出す tool である。
 
-## docs の claim discipline
+## Lean status discipline
 
 - Lean status は `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` を区別する。
+- PRD-R 以降の theorem 系 status では、必要に応じて `packaged (assumption-relative)` と
+  `statement-only` も使う。`packaged (assumption-relative)` は仮定 record / certificate /
+  selected package の field 合成から得る帰結、`statement-only` は型・candidate surface はあるが
+  証明済み theorem として数えないものを指す。
+- 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
+  導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
+  `packaged (assumption-relative)` または `statement-only` の境界として扱う。
 - Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
 - 完了レビューでは、対象文書が列挙した theorem、suite field、acceptance theorem、fixture、Issue closure を
   直接照合する。対象文書が要求していない無制限 claim を「未完了部分」として追加しない。

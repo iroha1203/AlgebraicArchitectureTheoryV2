@@ -477,6 +477,14 @@ def transitionMatrix {Vertex Edge RelationLabel : Type z}
     Matrix Vertex Vertex Prop :=
   fun i j => G.HasEdge i j
 
+/-- VII.定義3.5: cardinality of the selected edge fiber from `i` to `j`. -/
+def edgeFiberCard {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) (i j : Vertex) : Nat :=
+  by
+    classical
+    letI := G.edgeFintype
+    exact Fintype.card { e : Edge // G.source e = i ∧ G.target e = j }
+
 /-- VII.定義3.5: bundled matrix representation target attached to a graph. -/
 structure MatrixRepresentationTarget (Vertex Edge RelationLabel : Type z) where
   graph : FiniteDirectedGraphTarget Vertex Edge RelationLabel
@@ -587,6 +595,39 @@ theorem adjacencyMatrix_pos_iff_hasEdge {Vertex Edge RelationLabel : Type z}
         (Fintype.card_pos_iff.mpr
           (show Nonempty { e : Edge // G.source e = i ∧ G.target e = j } from
             ⟨⟨e, hsource, htarget⟩⟩))
+
+/-- VII.命題3.6: the selected adjacency entry is the cardinality of its edge fiber. -/
+theorem adjacencyMatrix_apply_eq_edgeFiber_card
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) (i j : Vertex) :
+    adjacencyMatrix G i j = edgeFiberCard G i j := by
+  classical
+  unfold adjacencyMatrix edgeFiberCard
+  rfl
+
+/--
+VII.命題3.6: length-one matrix walk count is the cardinality of the selected
+edge fiber.
+-/
+theorem matrixWalkCount_one_eq_edgeFiber_card
+    {Vertex Edge RelationLabel : Type z}
+    (G : FiniteDirectedGraphTarget Vertex Edge RelationLabel) (i j : Vertex) :
+    matrixWalkCount G 1 i j = edgeFiberCard G i j := by
+  classical
+  letI := G.vertexFintype
+  letI := G.vertexDecidableEq
+  rw [← adjacencyMatrix_apply_eq_edgeFiber_card G i j]
+  calc
+    matrixWalkCount G 1 i j =
+        ∑ k : Vertex, adjacencyMatrix G i k * (if k = j then 1 else 0) := by
+      simp [matrixWalkCount]
+    _ = adjacencyMatrix G i j := by
+      rw [Finset.sum_eq_single j]
+      · simp
+      · intro b _ hb
+        simp [hb]
+      · intro hnot
+        exact False.elim (hnot (Finset.mem_univ j))
 
 /--
 VII.命題3.6 precursor: positive recursive walk count has a concrete counted

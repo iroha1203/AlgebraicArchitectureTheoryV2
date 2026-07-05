@@ -24,6 +24,12 @@ structure EffCoeff (M : MeasurementProfile.{u, v}) where
   IdealMembershipObject : Type v
   FinitePresentationObject : Type v
   ResolutionObject : Type v
+  kernelObjectFintype : Fintype KernelObject
+  imageObjectFintype : Fintype ImageObject
+  quotientObjectFintype : Fintype QuotientObject
+  idealMembershipObjectFintype : Fintype IdealMembershipObject
+  finitePresentationObjectFintype : Fintype FinitePresentationObject
+  resolutionObjectFintype : Fintype ResolutionObject
   kernelFor : M.Domain -> KernelObject -> Prop
   imageFor : M.Domain -> ImageObject -> Prop
   quotientFor : M.Domain -> QuotientObject -> Prop
@@ -87,6 +93,38 @@ theorem finiteWitnessVariables_holds {M : MeasurementProfile.{u, v}}
 theorem selectedFiniteResolutions_holds {M : MeasurementProfile.{u, v}}
     (R : FiniteMeasurementRegime M) : R.selectedFiniteResolutions :=
   R.selectedFiniteResolutions_cert
+
+/-- VIII.R2/R3: the selected kernel objects form an actual finite type. -/
+def kernelObjectFintype {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.KernelObject :=
+  R.effCoeff.kernelObjectFintype
+
+/-- VIII.R2/R3: the selected image objects form an actual finite type. -/
+def imageObjectFintype {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.ImageObject :=
+  R.effCoeff.imageObjectFintype
+
+/-- VIII.R2/R3: the selected quotient objects form an actual finite type. -/
+def quotientObjectFintype {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.QuotientObject :=
+  R.effCoeff.quotientObjectFintype
+
+/-- VIII.R2/R3: the selected ideal-membership objects form an actual finite type. -/
+def idealMembershipObjectFintype {M : MeasurementProfile.{u, v}}
+    (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.IdealMembershipObject :=
+  R.effCoeff.idealMembershipObjectFintype
+
+/-- VIII.R2/R3: the selected finite-presentation objects form an actual finite type. -/
+def finitePresentationObjectFintype {M : MeasurementProfile.{u, v}}
+    (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.FinitePresentationObject :=
+  R.effCoeff.finitePresentationObjectFintype
+
+/-- VIII.R2/R3: the selected resolution objects form an actual finite type. -/
+def resolutionObjectFintype {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
+    Fintype R.effCoeff.ResolutionObject :=
+  R.effCoeff.resolutionObjectFintype
 
 end FiniteMeasurementRegime
 

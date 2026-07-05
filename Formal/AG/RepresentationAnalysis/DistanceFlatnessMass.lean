@@ -1,5 +1,7 @@
 import Formal.AG.RepresentationAnalysis.Metric
 import Formal.AG.LawAlgebra.LawfulLocus
+import Mathlib.Data.ENat.Lattice
+import Mathlib.Order.CompleteLattice.Basic
 
 noncomputable section
 
@@ -60,6 +62,28 @@ structure CostInfimumDomain (Cost : Type u) where
 namespace CostInfimumDomain
 
 variable {Cost : Type u}
+
+/--
+VII-5: actual complete-lattice infimum domain.
+
+The lower-bound and greatest-lower-bound predicates are the ordinary order
+predicates, and the infimum is Mathlib's `iInf`. This constructor is the
+load-bearing replacement for examples that previously filled the GLB slot with
+an arbitrary proposition.
+-/
+def completeLatticeInfimumDomain [CompleteLattice Cost] :
+    CostInfimumDomain Cost where
+  infimum values := iInf values
+  isLowerBound values c := ∀ i, c ≤ values i
+  isGreatestLowerBound values c :=
+    (∀ i, c ≤ values i) ∧ ∀ b, (∀ i, b ≤ values i) -> b ≤ c
+  infimum_isGreatestLowerBound := by
+    intro Index values
+    constructor
+    · intro i
+      exact iInf_le values i
+    · intro b hb
+      exact le_iInf hb
 
 /-- VII.定義10.2: expose the selected greatest-lower-bound certificate. -/
 theorem infimum_glb (D : CostInfimumDomain Cost)

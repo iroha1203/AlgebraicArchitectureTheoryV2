@@ -464,6 +464,26 @@ theorem semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
       _ = additive.zeroClass := comparison.from_to_semanticH1 additive.zeroClass
 
 /--
+X.定理7.4: selected cover-relative nonzero residual transfers back to the
+semantic additive H1 surface by contraposition of theorem 7.2.
+-/
+theorem semanticRepairAdditiveH1Nonzero_of_coverRelativeH1Nonzero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    ¬ comparison.CoverRelativeResidualH1Zero -> ¬ additive.H1Zero := by
+  intro hcover hsemantic
+  exact hcover ((comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero).1 hsemantic)
+
+/--
+X.定理7.4: selected semantic additive nonzero residual transfers to the
+cover-relative H1 surface by contraposition of theorem 7.2.
+-/
+theorem coverRelativeH1Nonzero_of_semanticRepairAdditiveH1Nonzero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    ¬ additive.H1Zero -> ¬ comparison.CoverRelativeResidualH1Zero := by
+  intro hsemantic hcover
+  exact hsemantic ((comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero).2 hcover)
+
+/--
 X.定理7.2 package: the generated comparison maps, H1 equivalence, same-class
 equivalence, and zero-predicate equivalence.
 -/
