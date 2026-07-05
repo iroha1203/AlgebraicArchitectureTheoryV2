@@ -102,6 +102,15 @@ the PRD-R body surface. `Formal/AG.lean` imports the body towers and examples
 but not `Formal.AG.Research`; research sandbox files remain outside this PRD-R
 completion audit boundary.
 
+PRD-R AC20 validation status: R11 external consistency is tracked in
+[`lean_ag_peer_review_inventory.md`](lean_ag_peer_review_inventory.md). The
+checklist covers repo top-level overview docs, docs overview pages, website
+planning notes, `website/src/aat/status/index.html`, and the AG Lean ledgers.
+No external numeric theorem-count drift was found in the checked surfaces. The
+website status page's commit-pinned canonical-source snapshot drift is recorded
+for separate follow-up as Issue #3082; this PRD-R validation does not edit
+protected mathematical text or website content.
+
 AC 再判定: PRD-R R0 では AC11 / AC13 を `packaged (assumption-relative)` として読む。
 根拠宣言と再判定理由は末尾の「PRD-R R0 AC 再判定」集中表に置く。
 

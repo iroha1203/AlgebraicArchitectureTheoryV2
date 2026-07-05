@@ -367,6 +367,39 @@ completion evidence surface through IX-2. Later PRD-R or post-PRD hardening PRs
 must add new wrappers when they promote theorem-package or firing-instance
 declarations into the kernel-audited surface.
 
+## R11 external consistency checklist
+
+R11 checks public / outreach-facing surfaces against the normalized AG Lean
+ledger vocabulary. It does not rewrite those surfaces in this PRD-R pass.
+When a drift is found, the required action is to record a follow-up Issue.
+
+Checklist execution scope:
+
+| Surface | Files checked | Check | Status | Follow-up |
+| --- | --- | --- | --- | --- |
+| Repo top-level overview | `README.md`, `PHILOSOPHY.md` | No standalone theorem-count number is advertised. Lean status is delegated to `docs/aat/lean_theorem_index.md` and proof-obligation ledgers. | aligned | none |
+| Docs overview | `docs/README.md`, `docs/aat/README.md` | The docs overview separates `proved`, `defined only`, `future proof obligation`, and `empirical hypothesis`, and does not publish a numeric theorem-count claim. | aligned | none |
+| Website planning notes | `docs/note/website_renewal_design_note.md`, `docs/note/website_renewal_w2_statement_wayfinding.md` | Planning notes require website Lean-status claims to trace to `lean_theorem_index_ag_aat.md`. They are not themselves external theorem-count claims. | aligned | none |
+| Website AAT status page | `website/src/aat/status/index.html` | The page exposes the PRD-R vocabulary and representative proved anchors, but its canonical-source links are pinned to commit `bd3a1152a7b7ac067ac4862c1dac91e99db66861`, predating the final PRD-R AC19 sync. | drift recorded | #3082 |
+| AG Lean ledgers | `docs/aat/lean_theorem_index_ag_aat.md`, `docs/aat/proof_obligations_ag_aat.md`, this inventory | The authoritative internal ledger vocabulary and R0 / R1 / AC19 validation are present and current through PRD-R AC19. | aligned | none |
+
+Targeted scan commands:
+
+```bash
+rg -n "[0-9]+\s*(theorem|定理|証明|proved|formalized)|定理[0-9０-９]+本|[0-9０-９]+本" \
+  README.md PHILOSOPHY.md docs/README.md docs/aat/README.md website/src/aat \
+  docs/note/website_renewal_design_note.md docs/note/website_renewal_w2_statement_wayfinding.md
+
+rg -n "bd3a1152|PRD-R|proved rows|theorems proved" \
+  website/src/aat/status/index.html docs/aat/lean_ag_peer_review_inventory.md \
+  docs/aat/proof_obligations_ag_aat.md docs/aat/lean_theorem_index_ag_aat.md
+```
+
+R11 conclusion: the required external-consistency checklist exists. No external
+numeric theorem-count drift was found in the checked surfaces. The concrete
+website snapshot drift found during the review is tracked separately as #3082;
+AC20 does not modify protected mathematical text or website content.
+
 ## R2 Atom hardening
 
 R2 closes the Part I PRD-R items additively, preserving Research-imported
