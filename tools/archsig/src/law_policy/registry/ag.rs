@@ -33,14 +33,14 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
             "missing RepairPlan is not_computed with silence_by_design; invalid RepairPlan fails validation before measurement"
                 .to_string(),
         pass_criteria:
-            "Stage 1 registers the SAGA descent input contract; concrete boundary-membership verdicts are follow-up work"
+            "supplied residual is a B1 boundary and complete-support faithfulness is satisfied inside the selected RepairPlan complex"
                 .to_string(),
         violation_criteria:
-            "Stage 1 registers the SAGA descent input contract; concrete boundary-membership verdicts are follow-up work"
+            "supplied residual is not a B1 boundary, or complete-support semantic projection exposes an alias witness"
                 .to_string(),
         typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
         distance_contribution:
-            "SAGA descent rows remain selected-complex relative and never consume conclusion tokens from input"
+            "SAGA descent emits selected-complex-relative boundary-membership and global-coherence verdicts without consuming conclusion tokens from input"
                 .to_string(),
         summary_output_refs: vec!["/structuralVerdict".to_string()],
         detail_output_refs: vec![

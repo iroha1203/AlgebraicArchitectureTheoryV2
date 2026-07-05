@@ -546,6 +546,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             )?;
             let measurement_packet = build_foundation_measurement_packet_v1(
                 &normalized_archmap,
+                &archmap_document,
                 &law_policy_document,
                 &measurement_profile_document,
                 repair_plan_document.as_ref(),
