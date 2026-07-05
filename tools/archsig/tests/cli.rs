@@ -7416,7 +7416,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             ][..],
         ),
         (
-            "website/archsig/manual/index.html",
+            "website/src/archsig/manual/index.html",
             &[
                 "architecture-distance.json",
                 "distanceInsights",
@@ -7424,7 +7424,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             ][..],
         ),
         (
-            "website/archsig/reference/index.html",
+            "website/src/archsig/reference/index.html",
             &[
                 "architecture-distance.json",
                 "archsig-architecture-distance/v1",
