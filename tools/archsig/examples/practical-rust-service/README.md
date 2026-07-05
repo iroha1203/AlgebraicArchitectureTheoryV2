@@ -73,6 +73,7 @@ Or run the core analysis directly:
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --archmap tools/archsig/examples/practical-rust-service/archmap/archmap.json \
   --law-policy tools/archsig/examples/practical-rust-service/law_policy/law_policy.json \
+  --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
   --out-dir .tmp/archsig-practical-rust-service
 ```
 

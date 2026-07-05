@@ -53,14 +53,12 @@ const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
     "not_applicable",
 ];
 
-pub fn selected_measurement_profile_v1(
+pub fn selected_measurement_profile_v1<'a>(
     policy: &LawPolicyDocumentV1,
-) -> Option<&MeasurementProfileV1> {
+    measurement_profile: &'a MeasurementProfileV1,
+) -> Option<&'a MeasurementProfileV1> {
     let profile_ref = policy.measurement_profile_ref.as_deref()?;
-    policy
-        .measurement_profiles
-        .iter()
-        .find(|profile| profile.profile_id == profile_ref)
+    (measurement_profile.profile_id == profile_ref).then_some(measurement_profile)
 }
 
 fn boundary_statements_for_measurement_packet(
@@ -226,10 +224,11 @@ fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacket
 pub fn build_foundation_measurement_packet_v1(
     normalized: &NormalizedArchMapV2,
     policy: &LawPolicyDocumentV1,
+    measurement_profile: &MeasurementProfileV1,
     archmap_ref: &str,
     law_policy_ref: &str,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
-    let profile = selected_measurement_profile_v1(policy)
+    let profile = selected_measurement_profile_v1(policy, measurement_profile)
         .ok_or_else(|| "AG measurement packet requires measurementProfileRef".to_string())?
         .clone();
     validate_profile_refs(&profile, normalized)?;
@@ -878,11 +877,15 @@ fn evaluate_coherence_obstruction_v1(
     let selected_contexts = selected_cover_contexts(normalized, profile);
     let selected_context_set = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
     let mut assumptions = coherence_assumptions(profile, "checked");
-    if selected_contexts.len() > MAX_COHERENCE_CONTEXTS {
+    let max_coherence_contexts = profile
+        .finite_bounds
+        .max_coherence_contexts
+        .min(MAX_COHERENCE_CONTEXTS);
+    if selected_contexts.len() > max_coherence_contexts {
         assumptions.push(AgAssumptionLedgerEntryV1 {
             theorem_ref: "part4/10.1-selected-cover-budget".to_string(),
             assumption: format!(
-                "selected cover has at most {MAX_COHERENCE_CONTEXTS} contexts for finite H2 coherence enumeration"
+                "selected cover has at most {max_coherence_contexts} contexts for finite H2 coherence enumeration"
             ),
             status: "violated".to_string(),
             checked_by: None,
@@ -895,7 +898,7 @@ fn evaluate_coherence_obstruction_v1(
             method_status: "selected_cover_too_large".to_string(),
             cert_ref: None,
             reason: format!(
-                "selected cover has {} contexts; ag.coherence-obstruction enumerates at most {MAX_COHERENCE_CONTEXTS}",
+                "selected cover has {} contexts; ag.coherence-obstruction enumerates at most {max_coherence_contexts}",
                 selected_contexts.len()
             ),
             computed_invariants: vec![coherence_invariant_json(
@@ -6604,6 +6607,14 @@ fn validate_section_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Str
             "ag.section-factorization supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
         ));
     }
+    if section_witness_variables(profile).len()
+        > profile.finite_bounds.max_square_free_witness_variables
+    {
+        return Err(format!(
+            "ag.section-factorization witness variables exceed MeasurementProfile finiteBounds.maxSquareFreeWitnessVariables={}",
+            profile.finite_bounds.max_square_free_witness_variables
+        ));
+    }
     Ok(())
 }
 
@@ -6708,6 +6719,14 @@ fn validate_boundary_residue_profile_v1(profile: &MeasurementProfileV1) -> Resul
             "ag.boundary-residue supports at most {MAX_BOUNDARY_RESIDUE_VARIABLES} witness variables for finite F2 image membership"
         ));
     }
+    if boundary_residue_witness_variables(profile).len()
+        > profile.finite_bounds.max_boundary_residue_variables
+    {
+        return Err(format!(
+            "ag.boundary-residue witness variables exceed MeasurementProfile finiteBounds.maxBoundaryResidueVariables={}",
+            profile.finite_bounds.max_boundary_residue_variables
+        ));
+    }
     Ok(())
 }
 
@@ -6756,6 +6775,14 @@ fn validate_square_free_profile_v1(profile: &MeasurementProfileV1) -> Result<(),
     if square_free_witness_variables(profile).len() > MAX_SQUARE_FREE_WITNESS_VARIABLES {
         return Err(format!(
             "ag.square-free-repair supports at most {MAX_SQUARE_FREE_WITNESS_VARIABLES} witness variables for finite support enumeration"
+        ));
+    }
+    if square_free_witness_variables(profile).len()
+        > profile.finite_bounds.max_square_free_witness_variables
+    {
+        return Err(format!(
+            "ag.square-free-repair witness variables exceed MeasurementProfile finiteBounds.maxSquareFreeWitnessVariables={}",
+            profile.finite_bounds.max_square_free_witness_variables
         ));
     }
     Ok(())
@@ -6820,6 +6847,12 @@ fn validate_tor_profile_v1(profile: &MeasurementProfileV1) -> Result<(), String>
             "ag.law-conflict-tor supports at most {MAX_TOR_WITNESS_VARIABLES} witness variables for finite monomial enumeration"
         ));
     }
+    if tor_witness_variables(profile).len() > profile.finite_bounds.max_tor_witness_variables {
+        return Err(format!(
+            "ag.law-conflict-tor witness variables exceed MeasurementProfile finiteBounds.maxTorWitnessVariables={}",
+            profile.finite_bounds.max_tor_witness_variables
+        ));
+    }
     Ok(())
 }
 
@@ -6881,6 +6914,12 @@ fn validate_laplacian_profile_v1(profile: &MeasurementProfileV1) -> Result<(), S
             "ag.sheaf-laplacian supports at most {MAX_LAPLACIAN_CELLS} witness cells for finite Laplacian enumeration"
         ));
     }
+    if laplacian_witness_variables(profile).len() > profile.finite_bounds.max_laplacian_cells {
+        return Err(format!(
+            "ag.sheaf-laplacian witness cells exceed MeasurementProfile finiteBounds.maxLaplacianCells={}",
+            profile.finite_bounds.max_laplacian_cells
+        ));
+    }
     Ok(())
 }
 
@@ -6929,6 +6968,12 @@ fn validate_period_profile_v1(profile: &MeasurementProfileV1) -> Result<(), Stri
     if period_witness_cycles(profile).len() > MAX_PERIOD_CYCLES {
         return Err(format!(
             "ag.period-stokes supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
+        ));
+    }
+    if period_witness_cycles(profile).len() > profile.finite_bounds.max_period_cycles {
+        return Err(format!(
+            "ag.period-stokes witness cycles exceed MeasurementProfile finiteBounds.maxPeriodCycles={}",
+            profile.finite_bounds.max_period_cycles
         ));
     }
     Ok(())
@@ -6992,6 +7037,12 @@ fn validate_period_audit_profile_v1(profile: &MeasurementProfileV1) -> Result<()
             "ag.period-stokes-audit supports at most {MAX_PERIOD_CYCLES} witness cycles for finite period enumeration"
         ));
     }
+    if period_audit_witness_cycles(profile).len() > profile.finite_bounds.max_period_cycles {
+        return Err(format!(
+            "ag.period-stokes-audit witness cycles exceed MeasurementProfile finiteBounds.maxPeriodCycles={}",
+            profile.finite_bounds.max_period_cycles
+        ));
+    }
     Ok(())
 }
 
@@ -7040,6 +7091,12 @@ fn validate_transfer_profile_v1(profile: &MeasurementProfileV1) -> Result<(), St
     if transfer_witness_targets(profile).len() > MAX_TRANSFER_TARGETS {
         return Err(format!(
             "ag.support-transfer supports at most {MAX_TRANSFER_TARGETS} witness targets for finite transfer enumeration"
+        ));
+    }
+    if transfer_witness_targets(profile).len() > profile.finite_bounds.max_transfer_targets {
+        return Err(format!(
+            "ag.support-transfer witness targets exceed MeasurementProfile finiteBounds.maxTransferTargets={}",
+            profile.finite_bounds.max_transfer_targets
         ));
     }
     Ok(())
@@ -11269,7 +11326,16 @@ mod tests {
                 "zeroPredicate": "rank-zero@1",
                 "nonZeroPredicate": "rank-positive@1",
                 "certSelector": "finite-certificate@1",
-                "verdictDiscipline": "five-valued-structural-verdict@1"
+                "verdictDiscipline": "five-valued-structural-verdict@1",
+                "finiteBounds": {
+                    "maxSquareFreeWitnessVariables": 12,
+                    "maxCoherenceContexts": 12,
+                    "maxTorWitnessVariables": 12,
+                    "maxBoundaryResidueVariables": 16,
+                    "maxLaplacianCells": 16,
+                    "maxPeriodCycles": 16,
+                    "maxTransferTargets": 16
+                }
             },
             "structuralVerdict": [{
                 "evaluator": "ag.cech-obstruction",

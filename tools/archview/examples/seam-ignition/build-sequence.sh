@@ -16,6 +16,7 @@ for f in 00 01 02; do
   cargo run -q --manifest-path "$ROOT/tools/archsig/Cargo.toml" -- analyze \
     --archmap   "$HERE/frame-$f.archmap.json" \
     --law-policy "$HERE/law_policy.json" \
+    --measurement-profile "$HERE/measurement_profile.json" \
     --out-dir   "$OUT/frame-$f"
 done
 

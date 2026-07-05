@@ -202,8 +202,8 @@
     },
     "policy:cover": {
       "kind": "policy",
-      "path": "tools/archsig/examples/practical-rust-service/law_policy/law_policy.json",
-      "section": "measurementProfiles[profile:commerce-fulfillment@1]"
+      "path": "tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json",
+      "section": "profileId:profile:commerce-fulfillment@1"
     },
     "ctx:domain": {
       "kind": "policy",

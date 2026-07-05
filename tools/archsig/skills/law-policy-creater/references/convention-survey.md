@@ -43,7 +43,7 @@ Do not translate evidence into witness rules, signature axes, coverage
 requirements, exactness assumptions, or distance profiles. Those are evaluator
 registry responsibilities in v1. For AG, put selected cover, coefficient,
 witness family, resolution selector, predicates, certificate selector, and
-verdict discipline in `measurementProfiles[]`.
+verdict discipline in the separate `measurement-profile/v0.5.0` artifact.
 
 ## Survey Output
 

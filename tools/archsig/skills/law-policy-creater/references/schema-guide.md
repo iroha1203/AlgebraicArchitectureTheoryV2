@@ -10,11 +10,29 @@ MeasurementProfile.
 {
   "schema": "law-policy/v0.5.0",
   "id": "policy-id",
+  "measurementProfileRef": "profile:ag-default@1",
+  "basisLedger": [],
   "policies": []
 }
 ```
 
-Unknown root fields fail validation.
+Unknown root fields fail validation. `lawSurfaceRef` is reserved for Stage 2
+and fails closed when present.
+
+## Basis Ledger
+
+Every `policies[].basis` entry must resolve to `basisLedger[].basisId`.
+ArchSig checks only ledger resolution and field shape. It does not check that a
+declared `path` exists.
+
+```json
+{
+  "basisId": "policy-basis:layering",
+  "kind": "repo-document",
+  "path": "docs/aat/algebraic_geometric_theory/README.md",
+  "revision": "aat-ag-current"
+}
+```
 
 ## Policy Entry
 
@@ -40,6 +58,9 @@ Or an individual evaluator selector:
   "severity": "error"
 }
 ```
+
+`policies[].profileRef` is reserved for multi-profile Stage 2 and fails closed
+when present.
 
 ## Known Built-In Selectors
 
@@ -67,15 +88,10 @@ Evaluator ids:
 - `ag.period-stokes-audit`
 - `ag.support-transfer`
 
-Basis refs:
-
-- `policy-basis:solid`
-- `policy-basis:layering`
-
 ## MeasurementProfile v1
 
-AG evaluator selectors require `measurementProfileRef` resolving to
-`measurementProfiles[].profileId`.
+AG evaluator selectors require `measurementProfileRef` resolving to the
+external `--measurement-profile` artifact's `profileId`.
 
 ```json
 {
@@ -96,7 +112,16 @@ AG evaluator selectors require `measurementProfileRef` resolving to
   "zeroPredicate": "rank-zero@1",
   "nonZeroPredicate": "rank-positive@1",
   "certSelector": "finite-certificate@1",
-  "verdictDiscipline": "five-valued-structural-verdict@1"
+  "verdictDiscipline": "five-valued-structural-verdict@1",
+  "finiteBounds": {
+    "maxSquareFreeWitnessVariables": 12,
+    "maxCoherenceContexts": 12,
+    "maxTorWitnessVariables": 12,
+    "maxBoundaryResidueVariables": 16,
+    "maxLaplacianCells": 16,
+    "maxPeriodCycles": 16,
+    "maxTransferTargets": 16
+  }
 }
 ```
 
@@ -108,6 +133,8 @@ Rules:
 - `verdictDiscipline` must be `five-valued-structural-verdict@1`.
 - `witnessFamily[]` entries carry law ids and evaluator-specific witness refs,
   such as square-free variables, cells, cycles, or support targets.
+- `finiteBounds` can only lower the registry hard caps shown above. Cap
+  exceedance fails validation.
 - Algebraic structural profiles commonly use `F2`, `rank-zero@1`,
   `rank-positive@1`, and `finite-certificate@1`; analytic profiles may use
   `R`, `analytic-zero@1`, `analytic-positive@1`, and
@@ -133,7 +160,8 @@ Do not emit:
 - `coverageRequirements`
 - `exactnessAssumptions`
 - `measurementProfile` as a root object
-- custom AG evaluator fields outside `measurementProfiles[]`
+- embedded `measurementProfiles[]`
+- custom AG evaluator fields inside LawPolicy
 
 ArchSig evaluator registry owns witness requirements, axes, missing blocker
 rules, distance contribution, and result status computation. MeasurementProfile

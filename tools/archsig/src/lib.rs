@@ -22,6 +22,7 @@ pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
     expand_law_policy_v1, static_law_evaluator_registry_v1, validate_law_policy_v1_report,
+    validate_measurement_profile_v1_checks,
 };
 pub use normalizer::normalize_archmap_v2;
 pub(crate) use schema::*;
@@ -47,11 +48,12 @@ pub use schema::{
     ArchSigRunManifestValidationReportPathsV0, ArchSigRunManifestValidationResultSummaryV0,
     BoundaryStatementV1, ExpandedLawPolicyEntryV1, LAW_POLICY_V1_SCHEMA,
     LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawEvaluatorManifestV1, LawEvaluatorRegistryV1,
-    LawPolicyBasisManifestV1, LawPolicyDocumentV1, LawPolicyEntryV1, LawPolicyPackEntryV1,
-    LawPolicyPackManifestV1, LawPolicyValidationInputV1, LawPolicyValidationReportV1,
-    LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1,
-    MeasurementProfileWitnessV1, NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2,
-    NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
+    LawPolicyBasisLedgerEntryV1, LawPolicyBasisManifestV1, LawPolicyDocumentV1, LawPolicyEntryV1,
+    LawPolicyPackEntryV1, LawPolicyPackManifestV1, LawPolicyValidationInputV1,
+    LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
+    MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
+    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;

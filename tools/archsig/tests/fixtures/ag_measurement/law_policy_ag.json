@@ -2,35 +2,25 @@
   "schema": "law-policy/v0.5.0",
   "id": "ag-measurement-policy",
   "measurementProfileRef": "profile:ag-default@1",
-  "measurementProfiles": [
-    {
-      "schema": "measurement-profile/v0.5.0",
-      "profileId": "profile:ag-default@1",
-      "siteRef": "archmap:/contexts",
-      "coverRef": "cover:order-inventory",
-      "coefficient": "F2",
-      "effCoeff": "finite-linear-algebra@1",
-      "witnessFamily": [
-        {
-          "law": "ag.cech-obstruction",
-          "variable": "x_order_inventory"
-        }
-      ],
-      "resolutionSelector": "taylor@1",
-      "domain": "finite-poset-site",
-      "zeroPredicate": "rank-zero@1",
-      "nonZeroPredicate": "rank-positive@1",
-      "certSelector": "finite-certificate@1",
-      "verdictDiscipline": "five-valued-structural-verdict@1"
-    }
-  ],
   "policies": [
     {
       "law": "ag.cech-obstruction",
       "evaluator": "ag.cech-obstruction",
-      "basis": ["policy-basis:layering"],
-      "scope": ["src/"],
+      "basis": [
+        "policy-basis:layering"
+      ],
+      "scope": [
+        "src/"
+      ],
       "severity": "high"
+    }
+  ],
+  "basisLedger": [
+    {
+      "basisId": "policy-basis:layering",
+      "kind": "repo-document",
+      "path": "docs/aat/algebraic_geometric_theory/README.md",
+      "revision": "aat-ag-current"
     }
   ]
 }

@@ -4,9 +4,21 @@
   "policies": [
     {
       "pack": "solid",
-      "basis": ["policy-basis:solid"],
-      "scope": ["src."],
+      "basis": [
+        "policy-basis:solid"
+      ],
+      "scope": [
+        "src."
+      ],
       "severity": "review"
+    }
+  ],
+  "basisLedger": [
+    {
+      "basisId": "policy-basis:solid",
+      "kind": "registry",
+      "path": "archsig-law-evaluator-registry",
+      "revision": "v0.5.0"
     }
   ]
 }
