@@ -2,6 +2,7 @@
 
 mod ag_measurement;
 mod archmap;
+mod gate;
 mod law_policy;
 mod normalizer;
 mod schema;
@@ -18,6 +19,7 @@ pub use archmap::{
     compare_archmap_v2_doctrine, static_aat_atom_vocabulary_v1, validate_archmap_v1_report,
     validate_archmap_v2_report,
 };
+pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
     REPLACEMENT_REGISTRY_REF, expand_law_policy_v1, static_law_evaluator_registry_v1,
     validate_law_policy_v1_report,
@@ -28,6 +30,7 @@ pub use schema::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_V1_SCHEMA,
     ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
+    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     AatAtomVocabularyEntryV1, AatAtomVocabularyV1, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
     AgStructuralVerdictV1, AgVerdictDataV1, ArchMapAtomV1, ArchMapAtomV2, ArchMapContextV2,

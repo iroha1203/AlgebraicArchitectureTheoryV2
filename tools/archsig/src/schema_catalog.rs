@@ -1,7 +1,8 @@
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_V1_SCHEMA,
     ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
-    ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
     ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
     NORMALIZED_ARCHMAP_V1_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
@@ -156,6 +157,34 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
                     "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero.",
+                ],
+            ),
+            artifact(
+                "archsig-gate-policy/v0.5.0",
+                "ArchSig gate policy v1",
+                ARCHSIG_GATE_POLICY_V1_SCHEMA,
+                "primary",
+                "ArchSig Output / CI workflow",
+                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                "Gate policy v1 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
+                vec![
+                    "Gate policy is authored institutional judgment, not a measurement packet verdict.",
+                    "Non-terminal measurement states and removed / other transitions cannot be mapped to plain pass.",
+                    "Gate policy does not introduce analytic thresholds or class transport.",
+                ],
+            ),
+            artifact(
+                "archsig-gate-report/v0.5.0",
+                "ArchSig gate report v1",
+                ARCHSIG_GATE_REPORT_V1_SCHEMA,
+                "primary",
+                "ArchSig Output / CI workflow",
+                vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
+                "Gate report v1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, or NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+                vec![
+                    "Gate report does not mutate measurement verdicts.",
+                    "Gate report does not infer improvement, repair, class identity, or transport between runs.",
+                    "Not evaluable is neither pass nor block.",
                 ],
             ),
             artifact(
@@ -343,6 +372,8 @@ mod tests {
                 "archsig-architecture-distance/v0.5.0",
                 "archsig-measurement-packet/v0.5.0",
                 "archsig-boundary-statement/v0.5.0",
+                "archsig-gate-policy/v0.5.0",
+                "archsig-gate-report/v0.5.0",
                 "archsig-analysis-packet/v0.5.0",
                 "archsig-run-manifest/v0.5.0",
                 "archsig-atom-viewer-data/v0.5.0",

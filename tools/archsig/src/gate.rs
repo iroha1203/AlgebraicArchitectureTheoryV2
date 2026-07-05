@@ -1,0 +1,663 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::error::Error;
+use std::path::Path;
+
+use serde_json::{Map, Value, json};
+use sha2::{Digest, Sha256};
+
+use crate::{
+    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ArchSigMeasurementPacketV1,
+    validate_measurement_packet_v1,
+};
+
+const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
+    "measured_zero",
+    "measured_nonzero",
+    "unmeasured",
+    "unknown",
+    "not_computed",
+    "violated_assumption_dependency",
+];
+const INTRODUCED_MAPPING_KEYS: [&str; 5] = ["new", "cleared", "preexisting", "removed", "other"];
+const ACTIONS: [&str; 3] = ["pass", "pass_with_boundary", "block"];
+const STRUCTURAL_VERDICT_KEYS: [&str; 5] = [
+    "measured_zero",
+    "measured_nonzero",
+    "unmeasured",
+    "unknown",
+    "not_computed",
+];
+const NON_TERMINAL_KEYS: [&str; 4] = [
+    "unmeasured",
+    "unknown",
+    "not_computed",
+    "violated_assumption_dependency",
+];
+
+pub fn validate_gate_policy_v1(policy: &Value) -> Vec<Value> {
+    let mut checks = Vec::new();
+    let mut fail_count = 0_usize;
+
+    push_check(
+        &mut checks,
+        &mut fail_count,
+        "gate-policy-schema",
+        policy.get("schema").and_then(Value::as_str) == Some(ARCHSIG_GATE_POLICY_V1_SCHEMA),
+        "gate-policy schema must be archsig-gate-policy/v0.5.0",
+    );
+    let rules = policy.get("rules").and_then(Value::as_array);
+    push_check(
+        &mut checks,
+        &mut fail_count,
+        "gate-policy-rules-present",
+        rules.is_some_and(|rules| !rules.is_empty()),
+        "rules must be a non-empty array",
+    );
+
+    if let Some(rules) = rules {
+        for (index, rule) in rules.iter().enumerate() {
+            let scope = rule.get("scope").and_then(Value::as_str).unwrap_or("");
+            push_check(
+                &mut checks,
+                &mut fail_count,
+                &format!("gate-policy-rule-{index}-scope"),
+                matches!(scope, "absolute" | "introduced-by-change"),
+                "rule scope must be absolute or introduced-by-change",
+            );
+            match scope {
+                "absolute" => validate_mapping(
+                    &mut checks,
+                    &mut fail_count,
+                    index,
+                    rule.get("verdictMapping"),
+                    &ABSOLUTE_MAPPING_KEYS,
+                    &NON_TERMINAL_KEYS,
+                    "verdictMapping",
+                ),
+                "introduced-by-change" => validate_mapping(
+                    &mut checks,
+                    &mut fail_count,
+                    index,
+                    rule.get("introducedByChangeMapping"),
+                    &INTRODUCED_MAPPING_KEYS,
+                    &["removed", "other"],
+                    "introducedByChangeMapping",
+                ),
+                _ => {}
+            }
+            if let Some(overrides) = rule.get("boundaryKindOverrides") {
+                validate_boundary_overrides(&mut checks, &mut fail_count, index, overrides);
+            }
+        }
+    }
+
+    checks.push(json!({
+        "id": "gate-policy-validation-summary",
+        "result": if fail_count == 0 { "pass" } else { "fail" },
+        "title": "Gate policy validation summary",
+        "failedCheckCount": fail_count
+    }));
+    checks
+}
+
+pub fn build_gate_report_v1(
+    packet_path: &Path,
+    policy_path: &Path,
+    comparison_path: Option<&Path>,
+) -> Result<(Value, i32), Box<dyn Error>> {
+    let packet: Value = read_json(packet_path)?;
+    let policy: Value = read_json(policy_path)?;
+    if packet.get("schema").and_then(Value::as_str) != Some(ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA) {
+        let report = not_evaluable_report(
+            packet_path,
+            policy_path,
+            comparison_path,
+            "measurement packet schema mismatch",
+        )?;
+        return Ok((report, 2));
+    }
+    let packet_checks = validate_gate_packet_v1(&packet);
+    if packet_checks.iter().any(|check| check["result"] == "fail") {
+        let mut report = not_evaluable_report(
+            packet_path,
+            policy_path,
+            comparison_path,
+            "measurement packet validation failed",
+        )?;
+        report["packetValidation"] = Value::Array(packet_checks);
+        return Ok((report, 2));
+    }
+    let policy_checks = validate_gate_policy_v1(&policy);
+    if policy_checks.iter().any(|check| check["result"] == "fail") {
+        let mut report = not_evaluable_report(
+            packet_path,
+            policy_path,
+            comparison_path,
+            "gate policy validation failed",
+        )?;
+        report["policyValidation"] = Value::Array(policy_checks);
+        return Ok((report, 2));
+    }
+    if let Some(comparison_path) = comparison_path {
+        match read_json(comparison_path) {
+            Ok(comparison) => {
+                if comparison.get("schema").and_then(Value::as_str)
+                    != Some("archsig-comparison-report/v0.5.0")
+                {
+                    let report = not_evaluable_report(
+                        packet_path,
+                        policy_path,
+                        Some(comparison_path),
+                        "comparison report schema validation failed",
+                    )?;
+                    return Ok((report, 2));
+                }
+            }
+            Err(_) => {
+                let report = not_evaluable_report(
+                    packet_path,
+                    policy_path,
+                    Some(comparison_path),
+                    "comparison report could not be read",
+                )?;
+                return Ok((report, 2));
+            }
+        }
+    }
+
+    let rules = policy["rules"]
+        .as_array()
+        .ok_or("validated gate policy unexpectedly has no rules")?;
+    let verdict_rows = structural_verdict_rows(&packet);
+    let boundary_statements = packet_boundary_statements_by_scope(&packet);
+    let violated_assumptions = violated_assumption_ids(&packet);
+    let mut rule_outcomes = Vec::new();
+    let mut any_block = false;
+    let mut any_not_evaluable = false;
+    for rule in rules {
+        let scope = rule["scope"].as_str().unwrap_or("");
+        match scope {
+            "absolute" => {
+                let mapping = rule
+                    .get("verdictMapping")
+                    .and_then(Value::as_object)
+                    .ok_or("absolute rule has no verdictMapping")?;
+                let overrides = rule.get("boundaryKindOverrides").and_then(Value::as_object);
+                let applied = verdict_rows
+                    .iter()
+                    .map(|row| {
+                        let key = mapping_key_for_row(row, &violated_assumptions);
+                        let boundary_override =
+                            override_action(row, &boundary_statements, overrides);
+                        let action = boundary_override
+                            .as_deref()
+                            .or_else(|| mapping.get(&key).and_then(Value::as_str))
+                            .unwrap_or("block")
+                            .to_string();
+                        if action == "block" {
+                            any_block = true;
+                        }
+                        json!({
+                            "rowRef": verdict_ref(row),
+                            "verdict": row.get("verdict").cloned().unwrap_or(Value::Null),
+                            "mappingKey": key,
+                            "action": action,
+                            "boundaryOverrideApplied": boundary_override.is_some()
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                rule_outcomes.push(json!({
+                    "ruleId": rule.get("ruleId").cloned().unwrap_or_else(|| json!("absolute")),
+                    "scope": "absolute",
+                    "status": "evaluated",
+                    "appliedMapping": applied
+                }));
+            }
+            "introduced-by-change" if comparison_path.is_some() => {
+                any_not_evaluable = true;
+                rule_outcomes.push(json!({
+                    "ruleId": rule.get("ruleId").cloned().unwrap_or_else(|| json!("introduced-by-change")),
+                    "scope": "introduced-by-change",
+                    "status": "not_evaluable",
+                    "reason": "comparison report support is implemented in PRD-2 compare follow-up"
+                }));
+            }
+            "introduced-by-change" => {
+                rule_outcomes.push(json!({
+                    "ruleId": rule.get("ruleId").cloned().unwrap_or_else(|| json!("introduced-by-change")),
+                    "scope": "introduced-by-change",
+                    "status": "not_applicable",
+                    "reason": "comparison report was not supplied; introduced-by-change rules are skipped, not passed"
+                }));
+            }
+            _ => {}
+        }
+    }
+
+    let decision = if any_not_evaluable {
+        "NOT_EVALUABLE"
+    } else if any_block {
+        "BLOCKED_BY_GATE_POLICY"
+    } else {
+        "PASS_WITHIN_GATE_POLICY"
+    };
+    let exit_code = if any_not_evaluable {
+        2
+    } else if any_block {
+        1
+    } else {
+        0
+    };
+    let report = json!({
+        "schema": ARCHSIG_GATE_REPORT_V1_SCHEMA,
+        "decision": decision,
+        "toolVersion": env!("CARGO_PKG_VERSION"),
+        "inputDigests": {
+            "measurementPacket": {
+                "path": artifact_input_ref(packet_path),
+                "sha256": canonical_json_file_digest(packet_path)?
+            },
+            "gatePolicy": {
+                "path": artifact_input_ref(policy_path),
+                "sha256": canonical_json_file_digest(policy_path)?
+            },
+            "comparisonReport": comparison_path.map(|path| json!({
+                "path": artifact_input_ref(path),
+                "sha256": canonical_json_file_digest(path).unwrap_or_default()
+            })).unwrap_or(Value::Null)
+        },
+        "policyValidation": policy_checks,
+        "ruleOutcomes": rule_outcomes,
+        "nonConclusions": [
+            "Gate report records institutional mapping from measurement verdicts to gate actions.",
+            "Gate report does not change measurement verdicts or infer class transport.",
+            "Introduced-by-change rules without a comparison report are not applicable, not pass."
+        ]
+    });
+    Ok((report, exit_code))
+}
+
+fn validate_gate_packet_v1(packet: &Value) -> Vec<Value> {
+    let mut checks = Vec::new();
+    let mut fail_count = 0_usize;
+    let typed_packet = match serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone()) {
+        Ok(typed_packet) => {
+            push_check(
+                &mut checks,
+                &mut fail_count,
+                "gate-packet-typed-shape",
+                true,
+                "measurement packet parses as ArchSigMeasurementPacketV1",
+            );
+            typed_packet
+        }
+        Err(error) => {
+            push_check(
+                &mut checks,
+                &mut fail_count,
+                "gate-packet-typed-shape",
+                false,
+                &format!("measurement packet shape is invalid: {error}"),
+            );
+            checks.push(json!({
+                "id": "gate-packet-validation-summary",
+                "result": "fail",
+                "title": "Gate packet validation summary",
+                "failedCheckCount": fail_count
+            }));
+            return checks;
+        }
+    };
+    for check in validate_measurement_packet_v1(&typed_packet) {
+        let passed = check.result != "fail";
+        if !passed {
+            fail_count += 1;
+        }
+        checks.push(serde_json::to_value(check).expect("validation check serializes"));
+    }
+    let rows = packet.get("structuralVerdict").and_then(Value::as_array);
+    push_check(
+        &mut checks,
+        &mut fail_count,
+        "gate-packet-profile-present",
+        packet.get("profile").is_some(),
+        "profile must be present",
+    );
+    push_check(
+        &mut checks,
+        &mut fail_count,
+        "gate-packet-non-conclusions-present",
+        packet
+            .get("nonConclusions")
+            .and_then(Value::as_array)
+            .is_some(),
+        "nonConclusions must be present",
+    );
+    push_check(
+        &mut checks,
+        &mut fail_count,
+        "gate-packet-structural-verdict-present",
+        rows.is_some(),
+        "structuralVerdict must be an array",
+    );
+    if let Some(rows) = rows {
+        push_check(
+            &mut checks,
+            &mut fail_count,
+            "gate-packet-structural-verdict-nonempty",
+            !rows.is_empty(),
+            "structuralVerdict must contain at least one row for gate mapping",
+        );
+        for (index, row) in rows.iter().enumerate() {
+            let verdict = row.get("verdict").and_then(Value::as_str);
+            push_check(
+                &mut checks,
+                &mut fail_count,
+                &format!("gate-packet-structural-verdict-{index}-verdict-vocabulary"),
+                verdict.is_some_and(|verdict| STRUCTURAL_VERDICT_KEYS.contains(&verdict)),
+                "structuralVerdict verdict must be one of the measurement packet verdict vocabulary values",
+            );
+            push_check(
+                &mut checks,
+                &mut fail_count,
+                &format!("gate-packet-structural-verdict-{index}-verdict-data-present"),
+                row.get("verdictData").is_some(),
+                "structuralVerdict verdictData must be present",
+            );
+        }
+    }
+    checks.push(json!({
+        "id": "gate-packet-validation-summary",
+        "result": if fail_count == 0 { "pass" } else { "fail" },
+        "title": "Gate packet validation summary",
+        "failedCheckCount": fail_count
+    }));
+    checks
+}
+
+fn validate_mapping(
+    checks: &mut Vec<Value>,
+    fail_count: &mut usize,
+    index: usize,
+    mapping: Option<&Value>,
+    required_keys: &[&str],
+    no_plain_pass_keys: &[&str],
+    field: &str,
+) {
+    let object = mapping.and_then(Value::as_object);
+    push_check(
+        checks,
+        fail_count,
+        &format!("gate-policy-rule-{index}-{field}-present"),
+        object.is_some(),
+        &format!("{field} must be an object"),
+    );
+    let Some(object) = object else {
+        return;
+    };
+    for key in object.keys() {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-{key}-known-key"),
+            required_keys.contains(&key.as_str()),
+            &format!("{field}.{key} is not in the closed mapping vocabulary"),
+        );
+    }
+    for key in required_keys {
+        let action = object.get(*key).and_then(Value::as_str);
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-{key}-present"),
+            action.is_some(),
+            &format!("{field}.{key} is required"),
+        );
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-{key}-action"),
+            action.is_some_and(|action| ACTIONS.contains(&action)),
+            &format!("{field}.{key} must be pass, pass_with_boundary, or block"),
+        );
+    }
+    for key in no_plain_pass_keys {
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-{field}-{key}-no-plain-pass"),
+            object.get(*key).and_then(Value::as_str) != Some("pass"),
+            &format!("{field}.{key} must not map to plain pass"),
+        );
+    }
+}
+
+fn validate_boundary_overrides(
+    checks: &mut Vec<Value>,
+    fail_count: &mut usize,
+    index: usize,
+    overrides: &Value,
+) {
+    let object = overrides.as_object();
+    push_check(
+        checks,
+        fail_count,
+        &format!("gate-policy-rule-{index}-boundary-overrides-object"),
+        object.is_some(),
+        "boundaryKindOverrides must be an object",
+    );
+    let Some(object) = object else {
+        return;
+    };
+    for (kind, action) in object {
+        let action = action.as_str();
+        push_check(
+            checks,
+            fail_count,
+            &format!("gate-policy-rule-{index}-boundary-override-{kind}-action"),
+            action.is_some_and(|action| matches!(action, "pass_with_boundary" | "block")),
+            "boundaryKindOverrides may only map to pass_with_boundary or block",
+        );
+    }
+}
+
+fn push_check(
+    checks: &mut Vec<Value>,
+    fail_count: &mut usize,
+    id: &str,
+    passed: bool,
+    reason: &str,
+) {
+    if !passed {
+        *fail_count += 1;
+    }
+    checks.push(json!({
+        "id": id,
+        "result": if passed { "pass" } else { "fail" },
+        "reason": reason
+    }));
+}
+
+fn structural_verdict_rows(packet: &Value) -> Vec<Value> {
+    packet["structuralVerdict"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .cloned()
+        .collect()
+}
+
+fn violated_assumption_ids(packet: &Value) -> BTreeSet<String> {
+    packet["assumptions"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|assumption| assumption["status"].as_str() == Some("violated"))
+        .filter_map(|assumption| {
+            assumption["assumptionId"]
+                .as_str()
+                .or_else(|| assumption["theoremRef"].as_str())
+                .map(str::to_string)
+        })
+        .collect()
+}
+
+fn mapping_key_for_row(row: &Value, violated_assumptions: &BTreeSet<String>) -> String {
+    let depends_on_violated = row["dependsOnAssumptions"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .any(|reference| violated_assumptions.contains(reference));
+    if depends_on_violated {
+        "violated_assumption_dependency".to_string()
+    } else {
+        row["verdict"].as_str().unwrap_or("unknown").to_string()
+    }
+}
+
+fn packet_boundary_statements_by_scope(packet: &Value) -> BTreeMap<String, Vec<String>> {
+    let mut by_scope = BTreeMap::<String, Vec<String>>::new();
+    for boundary in packet["boundaryStatements"]
+        .as_array()
+        .into_iter()
+        .flatten()
+    {
+        let Some(kind) = boundary["kind"].as_str() else {
+            continue;
+        };
+        for scope in boundary["scopeRefs"].as_array().into_iter().flatten() {
+            let Some(scope) = scope.as_str() else {
+                continue;
+            };
+            by_scope
+                .entry(scope.to_string())
+                .or_default()
+                .push(kind.to_string());
+        }
+    }
+    by_scope
+}
+
+fn override_action(
+    row: &Value,
+    boundaries_by_scope: &BTreeMap<String, Vec<String>>,
+    overrides: Option<&Map<String, Value>>,
+) -> Option<String> {
+    let overrides = overrides?;
+    let row_ref = verdict_ref_string(row);
+    boundaries_by_scope
+        .get(&row_ref)
+        .into_iter()
+        .flatten()
+        .map(String::as_str)
+        .find_map(|kind| {
+            overrides
+                .get(kind)
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        })
+}
+
+fn verdict_ref(row: &Value) -> Value {
+    json!(verdict_ref_string(row))
+}
+
+fn verdict_ref_string(row: &Value) -> String {
+    row["verdictRef"]
+        .as_str()
+        .or_else(|| row["structuralVerdictRef"].as_str())
+        .map(str::to_string)
+        .unwrap_or_else(|| {
+            format!(
+                "structuralVerdict/{}/{}/{}",
+                row["evaluator"].as_str().unwrap_or("unknown-evaluator"),
+                row["law"].as_str().unwrap_or("unknown-law"),
+                row["verdictData"]["methodStatus"]
+                    .as_str()
+                    .or_else(|| row["methodStatus"].as_str())
+                    .unwrap_or("unknown-status")
+            )
+        })
+}
+
+fn not_evaluable_report(
+    packet_path: &Path,
+    policy_path: &Path,
+    comparison_path: Option<&Path>,
+    reason: &str,
+) -> Result<Value, Box<dyn Error>> {
+    Ok(json!({
+        "schema": ARCHSIG_GATE_REPORT_V1_SCHEMA,
+        "decision": "NOT_EVALUABLE",
+        "toolVersion": env!("CARGO_PKG_VERSION"),
+        "inputDigests": {
+            "measurementPacket": {
+                "path": artifact_input_ref(packet_path),
+                "sha256": canonical_json_file_digest(packet_path).unwrap_or_default()
+            },
+            "gatePolicy": {
+                "path": artifact_input_ref(policy_path),
+                "sha256": canonical_json_file_digest(policy_path).unwrap_or_default()
+            },
+            "comparisonReport": comparison_path.map(|path| json!({
+                "path": artifact_input_ref(path),
+                "sha256": canonical_json_file_digest(path).unwrap_or_default()
+            })).unwrap_or(Value::Null)
+        },
+        "reason": reason,
+        "ruleOutcomes": [],
+        "nonConclusions": [
+            "Not evaluable is neither pass nor block.",
+            "No measurement verdict was rounded into a gate decision."
+        ]
+    }))
+}
+
+fn artifact_input_ref(path: &Path) -> String {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| format!("input:{name}"))
+        .unwrap_or_else(|| "input:unnamed-json".to_string())
+}
+
+fn read_json(path: &Path) -> Result<Value, Box<dyn Error>> {
+    Ok(serde_json::from_slice(&std::fs::read(path)?)?)
+}
+
+fn canonical_json_file_digest(path: &Path) -> Result<String, Box<dyn Error>> {
+    let value: Value = read_json(path)?;
+    Ok(sha256_hex(&canonical_json_bytes(&value)?))
+}
+
+fn canonical_json_bytes(value: &Value) -> Result<Vec<u8>, Box<dyn Error>> {
+    Ok(serde_json::to_vec(&canonical_json_value(value))?)
+}
+
+fn canonical_json_value(value: &Value) -> Value {
+    match value {
+        Value::Array(items) => Value::Array(items.iter().map(canonical_json_value).collect()),
+        Value::Object(object) => {
+            let sorted = object
+                .iter()
+                .map(|(key, value)| (key.clone(), canonical_json_value(value)))
+                .collect::<BTreeMap<_, _>>();
+            let mut map = Map::new();
+            for (key, value) in sorted {
+                map.insert(key, value);
+            }
+            Value::Object(map)
+        }
+        _ => value.clone(),
+    }
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    let mut output = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        output.push_str(&format!("{byte:02x}"));
+    }
+    output
+}
