@@ -3,11 +3,12 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_V2_SCHEMA, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
-    MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, SchemaVersionCatalogV0,
-    build_comparison_artifacts_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
-    build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
-    build_measurement_viewer_data_v1, normalize_archmap_v2, static_schema_version_catalog,
+    ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
+    LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
+    SchemaVersionCatalogV0, build_comparison_artifacts_v1, build_foundation_measurement_packet_v1,
+    build_gate_report_v1, build_insight_brief_v1, build_insight_report_v1,
+    build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    build_repair_plan_validation_report_v1, normalize_archmap_v2, static_schema_version_catalog,
     validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
     validate_measurement_profile_v1_checks,
 };
@@ -66,6 +67,21 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Validate a standalone RepairPlan v1 artifact.
+    RepairPlan {
+        /// Input RepairPlan v1 JSON path.
+        #[arg(long = "repair-plan")]
+        repair_plan: PathBuf,
+
+        /// Optional residual measurement packet JSON path for measured residual binding.
+        #[arg(long = "residual-packet")]
+        residual_packet: Option<PathBuf>,
+
+        /// Output RepairPlan validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Run the primary ArchMap + LawPolicy -> ArchSig analysis workflow.
     Analyze {
         /// Input ArchMap observation artifact path.
@@ -79,6 +95,14 @@ enum Command {
         /// Input MeasurementProfile artifact path.
         #[arg(long = "measurement-profile")]
         measurement_profile: PathBuf,
+
+        /// Optional SAGA RepairPlan artifact path.
+        #[arg(long = "repair-plan")]
+        repair_plan: Option<PathBuf>,
+
+        /// Optional residual packet path used by measured RepairPlan residuals.
+        #[arg(long = "residual-packet")]
+        residual_packet: Option<PathBuf>,
 
         /// Output directory for ArchSig analysis workflow artifacts.
         #[arg(long = "out-dir")]
@@ -203,6 +227,24 @@ fn validate_measurement_profile_command_input(
     ))
 }
 
+fn validate_repair_plan_command_input(
+    input: &PathBuf,
+    residual_packet: Option<&PathBuf>,
+) -> Result<(serde_json::Value, RepairPlanDocumentV1, bool), Box<dyn Error>> {
+    let raw: serde_json::Value = read_json(input)?;
+    require_schema(&raw, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, "--repair-plan")?;
+    let plan: RepairPlanDocumentV1 = serde_json::from_value(raw)?;
+    let residual_packet_json: Option<serde_json::Value> =
+        residual_packet.map(read_json).transpose()?;
+    let report = build_repair_plan_validation_report_v1(
+        &plan,
+        &input.display().to_string(),
+        residual_packet_json.as_ref(),
+    );
+    let failed = report["summary"]["result"] == "fail";
+    Ok((report, plan, failed))
+}
+
 fn json_schema(document: &serde_json::Value) -> Option<&str> {
     document.get("schema").and_then(|value| value.as_str())
 }
@@ -276,6 +318,20 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::RepairPlan {
+            repair_plan,
+            residual_packet,
+            out,
+        }) => {
+            let (report, _, failed) =
+                validate_repair_plan_command_input(&repair_plan, residual_packet.as_ref())?;
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
         Some(Command::Gate {
             packet,
             policy,
@@ -305,6 +361,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             archmap,
             law_policy,
             measurement_profile,
+            repair_plan,
+            residual_packet,
             out_dir,
             stamp,
         }) => {
@@ -318,18 +376,52 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let insight_report_path = out_dir.join("archsig-insight-report.json");
             let insight_brief_path = out_dir.join("archsig-insight-brief.md");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
+            let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
 
             let (archmap_preflight, archmap_failed) = validate_archmap_command_input(&archmap)?;
             let (_measurement_profile_preflight, measurement_profile_document, measurement_profile_failed) =
                 validate_measurement_profile_command_input(&measurement_profile)?;
             let (law_policy_preflight, law_policy_failed) =
                 validate_law_policy_command_input(&law_policy, &measurement_profile_document)?;
+            let repair_plan_preflight = repair_plan
+                .as_ref()
+                .map(|path| validate_repair_plan_command_input(path, residual_packet.as_ref()))
+                .transpose()?;
+            let repair_plan_document = repair_plan_preflight
+                .as_ref()
+                .map(|(_, document, _)| document.clone());
+            let repair_plan_failed = repair_plan_preflight
+                .as_ref()
+                .is_some_and(|(_, _, failed)| *failed);
             let archmap_input_ref = artifact_input_ref(&archmap);
             let law_policy_input_ref = artifact_input_ref(&law_policy);
             let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
             let measurement_profile_contract_input: Value = read_json(&measurement_profile)?;
+            let mut validation_generated_artifacts =
+                vec!["archmap-validation.json", "law-policy-validation.json"];
+            if repair_plan_preflight.is_some() {
+                validation_generated_artifacts.push("repair-plan-validation.json");
+            }
+            let mut failure_generated_artifacts = validation_generated_artifacts.clone();
+            failure_generated_artifacts.extend([
+                "archsig-insight-report.json",
+                "archsig-insight-brief.md",
+                "archsig-atom-viewer-data.json",
+                "archsig-run-manifest.json",
+            ]);
+            let mut measurement_generated_artifacts = validation_generated_artifacts.clone();
+            measurement_generated_artifacts.extend([
+                "normalized-archmap.json",
+                "archsig-measurement-packet.json",
+                "archsig-analysis-validation.json",
+                "archsig-analysis-summary.json",
+                "archsig-insight-report.json",
+                "archsig-insight-brief.md",
+                "archsig-atom-viewer-data.json",
+                "archsig-run-manifest.json",
+            ]);
             let run_contract = AnalyzeRunContract::from_inputs(
                 &archmap,
                 &law_policy,
@@ -351,10 +443,19 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 Some(law_policy_validation_path),
                 &with_run_contract(&law_policy_preflight, &run_contract)?,
             )?;
-            if archmap_failed || law_policy_failed || measurement_profile_failed {
+            if let Some((repair_plan_report, _, _)) = &repair_plan_preflight {
+                write_json(
+                    Some(repair_plan_validation_path),
+                    &with_run_contract(repair_plan_report, &run_contract)?,
+                )?;
+            }
+            if archmap_failed || law_policy_failed || measurement_profile_failed || repair_plan_failed {
                 let mut insight_report = build_validation_failure_insight_report(
                     &archmap_preflight,
                     &law_policy_preflight,
+                    repair_plan_preflight
+                        .as_ref()
+                        .map(|(report, _, _)| report),
                 );
                 let insight_brief = build_insight_brief_v1(&insight_report);
                 attach_run_contract(&mut insight_report, &run_contract);
@@ -377,14 +478,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "lawPolicyInputPath": law_policy_input_ref,
                         "measurementProfileInputPath": measurement_profile_input_ref,
                         "rawArtifactRetention": "not-computed",
-                        "generatedArtifacts": [
-                            "archmap-validation.json",
-                            "law-policy-validation.json",
-                            "archsig-insight-report.json",
-                            "archsig-insight-brief.md",
-                            "archsig-atom-viewer-data.json",
-                            "archsig-run-manifest.json"
-                        ],
+                        "generatedArtifacts": failure_generated_artifacts,
                         "omittedArtifacts": [
                             "normalized-archmap.json",
                             "archsig-measurement-packet.json",
@@ -399,12 +493,14 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "validationReports": {
                             "archmap": "archmap-validation.json",
                             "lawPolicy": "law-policy-validation.json",
+                            "repairPlan": repair_plan_preflight.as_ref().map(|_| "repair-plan-validation.json"),
                             "analysis": null
                         },
                         "rawArtifactPaths": null,
                         "validationResultSummary": {
                             "archmap": validation_result_summary(&archmap_preflight),
                             "lawPolicy": validation_result_summary(&law_policy_preflight),
+                            "repairPlan": repair_plan_preflight.as_ref().map(|(report, _, _)| validation_result_summary(report)),
                             "analysis": validation_result_summary_from_counts("not_computed", 0, 0)
                         },
                         "nonConclusions": [
@@ -430,6 +526,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &normalized_archmap,
                 &law_policy_document,
                 &measurement_profile_document,
+                repair_plan_document.as_ref(),
                 &archmap_input_ref,
                 &law_policy_input_ref,
             )
@@ -501,18 +598,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "lawPolicyInputPath": law_policy_input_ref,
                     "measurementProfileInputPath": measurement_profile_input_ref,
                     "rawArtifactRetention": "omitted",
-                    "generatedArtifacts": [
-                        "archmap-validation.json",
-                        "law-policy-validation.json",
-                        "normalized-archmap.json",
-                        "archsig-measurement-packet.json",
-                        "archsig-analysis-validation.json",
-                        "archsig-analysis-summary.json",
-                        "archsig-insight-report.json",
-                        "archsig-insight-brief.md",
-                        "archsig-atom-viewer-data.json",
-                        "archsig-run-manifest.json"
-                    ],
+                    "generatedArtifacts": measurement_generated_artifacts,
                     "omittedArtifacts": [],
                     "artifactLinks": {
                         "measurementPacket": "archsig-measurement-packet.json",
@@ -524,12 +610,14 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "validationReports": {
                         "archmap": "archmap-validation.json",
                         "lawPolicy": "law-policy-validation.json",
+                        "repairPlan": repair_plan_preflight.as_ref().map(|_| "repair-plan-validation.json"),
                         "analysis": "archsig-analysis-validation.json"
                     },
                     "rawArtifactPaths": null,
                     "validationResultSummary": {
                         "archmap": validation_result_summary(&archmap_preflight),
                         "lawPolicy": validation_result_summary(&law_policy_preflight),
+                        "repairPlan": repair_plan_preflight.as_ref().map(|(report, _, _)| validation_result_summary(report)),
                         "analysis": validation_result_summary_from_counts(
                             if packet_failed { "fail" } else { "pass" },
                             packet_failed_check_count,
@@ -567,6 +655,7 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
         "archsig-insight-report.json".to_string(),
         "archsig-insight-brief.md".to_string(),
         "archsig-analysis-validation.json".to_string(),
+        "repair-plan-validation.json".to_string(),
     ];
     artifacts.extend([
         ["typed", "evaluator", "results.json"].join("-"),
@@ -589,8 +678,13 @@ fn remove_analyze_success_artifacts(out_dir: &PathBuf) -> Result<(), Box<dyn Err
 fn build_validation_failure_insight_report(
     archmap_validation: &Value,
     law_policy_validation: &Value,
+    repair_plan_validation: Option<&Value>,
 ) -> Value {
-    let failed_refs = validation_failure_refs(archmap_validation, law_policy_validation);
+    let failed_refs = validation_failure_refs(
+        archmap_validation,
+        law_policy_validation,
+        repair_plan_validation,
+    );
     let primary_ref = failed_refs
         .first()
         .cloned()
@@ -616,7 +710,7 @@ fn build_validation_failure_insight_report(
         "readThisFirst": {
             "heading": "Read this first",
             "conclusion": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
-            "whatItMeans": "No measurement packet or AG invariant was computed. Fix the failing ArchMap or LawPolicy validation first.",
+            "whatItMeans": "No measurement packet or AG invariant was computed. Fix the failing ArchMap, LawPolicy, or RepairPlan validation first.",
             "whereToLookFirst": failed_refs,
             "nextAction": "Inspect failed validation checks",
             "boundary": "Pre-normalization validation failed; no structural verdict is available.",
@@ -796,6 +890,7 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
 fn validation_failure_refs(
     archmap_validation: &Value,
     law_policy_validation: &Value,
+    repair_plan_validation: Option<&Value>,
 ) -> Vec<String> {
     let mut refs = Vec::new();
     refs.extend(validation_report_failure_refs(
@@ -806,6 +901,12 @@ fn validation_failure_refs(
         "law-policy-validation",
         law_policy_validation,
     ));
+    if let Some(repair_plan_validation) = repair_plan_validation {
+        refs.extend(validation_report_failure_refs(
+            "repair-plan-validation",
+            repair_plan_validation,
+        ));
+    }
     if refs.is_empty() {
         refs.push("validation:failed".to_string());
     }

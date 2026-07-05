@@ -3,11 +3,11 @@ use crate::{
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
+    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -70,6 +70,20 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",
+                ],
+            ),
+            artifact(
+                "archsig-repair-plan/v0.5.0",
+                "ArchSig RepairPlan v1 SAGA supplied input artifact",
+                ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
+                "primary",
+                "ArchSig v0.5.0 SAGA Stage 1",
+                vec!["archsig-contract:v0.5.0-prd4-lawpolicy-saga"],
+                "RepairPlan v1 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
+                vec![
+                    "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
+                    "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
+                    "Enumeration completeness is recorded as an author assumption, not mechanically verified.",
                 ],
             ),
             artifact(
@@ -348,6 +362,7 @@ mod tests {
                 "law-policy/v0.5.0",
                 "law-evaluator-registry/v0.5.0",
                 "measurement-profile/v0.5.0",
+                "archsig-repair-plan/v0.5.0",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.0",
                 "archsig-boundary-statement/v0.5.0",

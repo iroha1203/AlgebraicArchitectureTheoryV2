@@ -6,6 +6,7 @@ mod compare;
 mod gate;
 mod law_policy;
 mod normalizer;
+mod repair_plan;
 mod schema;
 mod schema_catalog;
 mod validation;
@@ -25,6 +26,7 @@ pub use law_policy::{
     validate_measurement_profile_v1_checks,
 };
 pub use normalizer::normalize_archmap_v2;
+pub use repair_plan::{build_repair_plan_validation_report_v1, validate_repair_plan_v1_checks};
 pub(crate) use schema::*;
 pub use schema::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -35,9 +37,9 @@ pub use schema::{
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, AatAtomVocabularyEntryV1, AatAtomVocabularyV1,
-    AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
-    ArchMapAtomV2, ArchMapContextV2, ArchMapCoverV2, ArchMapDocumentV2,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, AatAtomVocabularyEntryV1,
+    AatAtomVocabularyV1, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1,
+    AgVerdictDataV1, ArchMapAtomV2, ArchMapContextV2, ArchMapCoverV2, ArchMapDocumentV2,
     ArchMapExtractionDoctrineRefV2, ArchMapSource, ArchMapSourceRef, ArchMapValidationReportV1,
     ArchMapValidationReportV2, ArchMapValidationSummaryV1, ArchMapValidationSummaryV2,
     ArchSigArtifactValidationResultV0, ArchSigAtomViewerAtomNodeV0, ArchSigAtomViewerDataV0,
@@ -53,7 +55,10 @@ pub use schema::{
     LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
     MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
     NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
-    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0,
+    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
+    RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1, RepairPlanPrimitiveV1,
+    RepairPlanProjectionRowV1, RepairPlanResidualV1, RepairPlanSemanticProjectionV1,
+    RepairPlanSupportV1, RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;

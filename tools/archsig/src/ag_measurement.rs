@@ -7,7 +7,8 @@ use crate::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
     AgStructuralVerdictV1, AgVerdictDataV1, ArchSigMeasurementPacketV1, BoundaryStatementV1,
     LawPolicyDocumentV1, MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2,
-    NormalizedContextV2, NormalizedCoverV2, ValidationCheck, ValidationExample,
+    NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1, ValidationCheck,
+    ValidationExample,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -17,7 +18,7 @@ const VERDICTS: [&str; 5] = [
     "unknown",
     "not_computed",
 ];
-const STRUCTURAL_VERDICT_EVALUATORS: [&str; 9] = [
+const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
     "ag.cech-obstruction",
     "ag.restriction-compatibility",
     "ag.section-factorization",
@@ -27,6 +28,7 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 9] = [
     "ag.coherence-obstruction",
     "ag.sheaf-laplacian",
     "ag.period-stokes-audit",
+    "ag.saga-descent",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -91,7 +93,21 @@ fn boundary_statements_for_measurement_packet(
                 }),
             });
         }
-        if row.verdict == "not_computed" {
+        if row.verdict == "not_computed"
+            && row.evaluator == "ag.saga-descent"
+            && row.verdict_data.method_status == "repair_plan_not_supplied"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:saga-descent:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "ag.saga-descent is silent until a checked repair-plan artifact is supplied."
+                        .to_string()
+                }),
+            });
+        } else if row.verdict == "not_computed" {
             statements.push(BoundaryStatementV1 {
                 id: format!("boundary:blocked-method:{index}"),
                 kind: "blocked_method".to_string(),
@@ -225,6 +241,7 @@ pub fn build_foundation_measurement_packet_v1(
     normalized: &NormalizedArchMapV2,
     policy: &LawPolicyDocumentV1,
     measurement_profile: &MeasurementProfileV1,
+    repair_plan: Option<&RepairPlanDocumentV1>,
     archmap_ref: &str,
     law_policy_ref: &str,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
@@ -504,6 +521,58 @@ pub fn build_foundation_measurement_packet_v1(
             computed_invariants.extend(measurement.computed_invariants);
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
+        } else if evaluator == "ag.saga-descent" {
+            let (method_status, reason, repair_plan_id) = repair_plan
+                .map(|plan| {
+                    (
+                        "saga_descent_evaluator_stage_pending",
+                        "RepairPlan passed Stage 1 validation; boundary-membership computation is implemented by the follow-up SAGA evaluator issue.",
+                        Some(plan.id.clone()),
+                    )
+                })
+                .unwrap_or((
+                    "repair_plan_not_supplied",
+                    "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.",
+                    None,
+                ));
+            if let Some(plan) = repair_plan {
+                assumptions.push(AgAssumptionLedgerEntryV1 {
+                    theorem_ref: "part10/repair-plan-enumeration".to_string(),
+                    assumption: format!(
+                        "repair-plan complex enumeration completeness for {}",
+                        plan.id
+                    ),
+                    status: "assumed".to_string(),
+                    checked_by: None,
+                    assumed_by: Some("repair-plan author".to_string()),
+                });
+            }
+            computed_invariants.push(json!({
+                "invariantId": "saga-descent-stage1-input",
+                "evaluator": "ag.saga-descent",
+                "status": "not_computed",
+                "methodStatus": method_status,
+                "repairPlanRef": repair_plan_id
+            }));
+            structural_verdict.push(AgStructuralVerdictV1 {
+                evaluator: evaluator.to_string(),
+                law: entry
+                    .law
+                    .clone()
+                    .unwrap_or_else(|| "ag.saga-descent".to_string()),
+                verdict: "not_computed".to_string(),
+                verdict_data: AgVerdictDataV1 {
+                    in_scope: true,
+                    zero: false,
+                    non_zero: false,
+                    method_status: method_status.to_string(),
+                    cert_ref: None,
+                },
+                depends_on_assumptions: repair_plan
+                    .map(|_| vec!["part10/repair-plan-enumeration".to_string()])
+                    .unwrap_or_default(),
+                reason: Some(reason.to_string()),
+            });
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
