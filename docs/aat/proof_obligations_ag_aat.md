@@ -120,12 +120,6 @@ as `宣言`, `statement-only`, or explicit future proof-obligation boundaries.
 This is a closure of the peer-review hardening inventory, not a claim that
 every statement-shaped surface has been promoted to an unconditional theorem.
 
-PRD-R AC22 validation policy: `FormalAGResearch` is a heavy Lake target and is
-checked by CI, not by every local PRD-loop iteration. The Lean GitHub Actions
-workflow contains an explicit `lake build FormalAGResearch` step in addition to
-the kernel axiom audit. AC22 is considered satisfied only when that CI step is
-green on the AC22 PR and the parent tracking issue records the passing PR.
-
 AC 再判定: PRD-R R0 では AC11 / AC13 を `packaged (assumption-relative)` として読む。
 根拠宣言と再判定理由は末尾の「PRD-R R0 AC 再判定」集中表に置く。
 
@@ -658,7 +652,8 @@ Issue [#3051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では PRD-R VII-2 / AC14 を対象にし、morphism compatibility を
 `AATSchReadingParameter` 側の fixed predicate へ移し、`Category (AATSch p)` と
 `AnalyticRepresentation.toFunctor` bridge を追加した。ローカル検証は targeted
-Lean checks に限定し、full `lake build` / `FormalAGResearch` は PR CI gate で確認する。
+Lean checks に限定し、full `lake build` は PR CI gate で確認する。`FormalAGResearch`
+は regular CI ではなく、PRD 完了レビューや研究ループで必要な場合の明示検証として扱う。
 Issue [#2165](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2165)
 では AC3/R2 を対象にし、indexed `RepresentationFamily`、selected structural /
 analytic notion package、reflection assumption package、preservation / reflection /
