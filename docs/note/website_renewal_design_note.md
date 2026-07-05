@@ -244,7 +244,9 @@ DESIGN.md の既存の型を継承する。
 → Definition → Proposition / Theorem → Proof idea
 → Example → Counterexample / Non-conclusion
 → Lean status(theorem-card / lean-status-card で命題近接表示)
-→ canonical source link(正典 md への commit-pinned GitHub link)
+
+※ 正典への commit-pinned link は各章サイドバーに置かず、リファレンス面
+(当面は /aat/ landing の About this edition)に集約する(2026-07-05 ユーザー決定)
 ```
 
 規律(現行 DESIGN.md / guideline.md から継承、AG 版向けに再確認):
@@ -290,8 +292,8 @@ sitemap / llms.txt は新ルートのみ列挙する。
 
 ### 5.5 Wave 1 の受け入れ条件
 
-- `aat/` 全章が AG 正典第I〜X部+付録と 1:1 対応し、各章に正典 md への
-  commit-pinned link と Lean status 導線がある。
+- `aat/` 全章が AG 正典第I〜X部+付録と 1:1 対応し、各章に Lean status 導線がある。
+  正典への commit-pinned link はリファレンス面に集約されている。
 - scheme / sheaf / cohomology / descent / SAGA が本文語彙として存在し、
   旧定式化(古典 AAT)の記述が「歴史的位置づけ」以外に残っていない。
 - SAGA 章がトップ / AAT landing から 1 クリックで届く。

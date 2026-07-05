@@ -116,7 +116,6 @@ manual -> reference -> archview の順(W1c 以降)。
 - page title / description / OGP(front matter が供給)
 - article-hero(eyebrow、h1、lede)
 - local table of contents(toc-panel、長いページのみ)
-- canonical source link(source-panel、commit-pinned GitHub URL)
 - previous / next(page-nav、読書順に属するページのみ)
 - claim boundary note(formal / tooling / empirical の混同が起きうる箇所のみ)
 
@@ -140,7 +139,9 @@ Definition
 - Lean status バッジは `lean_theorem_index_ag_aat.md` に対応行がある場合だけ表示する。
   status 語彙は peer review inventory の三分化
   (`proved` / `packaged (assumption-relative)` / `statement-only`)+ `defined only` に従う。
-- 各章の source-panel は正典 part ファイルへの commit-pinned link を持つ。
+- 正典への commit-pinned link は各章のサイドバーに置かず、リファレンス面に集約する
+  (現在は `/aat/` landing の About this edition。W1b で status / formal-anchors を
+  AG 化する際に正式なリファレンス面へ引き継ぐ)。
 
 ## ArchSig page の参照元対応
 
