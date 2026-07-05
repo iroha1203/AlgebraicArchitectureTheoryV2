@@ -25,7 +25,7 @@ inductive SquareFreeSupportVertex where
   | p
   | q
   | r
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(b): the two minimal repair targets for `{p,q}` / `{q,r}`. -/
 inductive SquareFreeRepairTarget where
@@ -81,6 +81,14 @@ def pseudoCircleMeasurementProfile : MeasurementProfile where
   Undecided := fun _ => False
   NotRunOrUnavailable := fun _ => False
 
+instance pseudoCircleWitnessVariablesFintype :
+    Fintype pseudoCircleMeasurementProfile.WitnessVariables :=
+  inferInstanceAs (Fintype SquareFreeSupportVertex)
+
+instance pseudoCircleWitnessVariablesDecidableEq :
+    DecidableEq pseudoCircleMeasurementProfile.WitnessVariables :=
+  inferInstanceAs (DecidableEq SquareFreeSupportVertex)
+
 /-- R11(a): concrete pseudo-circle boundary cocycle is measured nonzero. -/
 def pseudoCircleBoundaryCocycleVerdict :
     MeasurementVerdict pseudoCircleMeasurementProfile
@@ -101,6 +109,21 @@ def forbiddenSupportPQ : List SquareFreeSupportVertex :=
 /-- R11(b): the `{q,r}` forbidden support. -/
 def forbiddenSupportQR : List SquareFreeSupportVertex :=
   [SquareFreeSupportVertex.q, SquareFreeSupportVertex.r]
+
+/-- R11(b): the `{p,q}` forbidden support as a Finset. -/
+def forbiddenSupportPQFinset : Finset SquareFreeSupportVertex :=
+  {SquareFreeSupportVertex.p, SquareFreeSupportVertex.q}
+
+/-- R11(b): the `{q,r}` forbidden support as a Finset. -/
+def forbiddenSupportQRFinset : Finset SquareFreeSupportVertex :=
+  {SquareFreeSupportVertex.q, SquareFreeSupportVertex.r}
+
+/-- R11(b): the concrete support carried by each selected repair target. -/
+def squareFreeRepairTargetSupport :
+    SquareFreeRepairTarget -> Finset SquareFreeSupportVertex
+  | SquareFreeRepairTarget.singletonQ => {SquareFreeSupportVertex.q}
+  | SquareFreeRepairTarget.pairPR =>
+      {SquareFreeSupportVertex.p, SquareFreeSupportVertex.r}
 
 /-- R11(b): the singleton `{q}` hits both forbidden supports. -/
 theorem squareFreeHittingSet_q_hits_forbiddenSupports :
@@ -219,7 +242,102 @@ theorem finiteComputabilityExample_verified :
 /-- R11(b): selected PRD-3 square-free witness regime for the repair fixture. -/
 def squareFreeSourceWitnessRegime :
     UsesSquareFreeWitnessRegime SquareFreeSupportVertex where
-  Forb := Set.univ
+  Forb := fun support =>
+    support = forbiddenSupportPQFinset ∨ support = forbiddenSupportQRFinset
+
+/-- R11(b): the PRD-3 simplicial complex selected by the repair fixture. -/
+def squareFreeSourceDelta :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex
+      SquareFreeSupportVertex :=
+  LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta
+    SquareFreeSupportVertex squareFreeSourceWitnessRegime
+
+/-- R11(b): the finite Alexander dual selected by the repair fixture. -/
+def squareFreeFiniteAlexanderDual :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex
+      SquareFreeSupportVertex :=
+  finiteAlexanderDual SquareFreeSupportVertex squareFreeSourceDelta
+
+/-- R11(b): a repair target support is an Alexander-dual nonface. -/
+def squareFreeRepairTargetAlexanderDualNonface
+    (target : SquareFreeRepairTarget) : Prop :=
+  squareFreeRepairTargetSupport target ∉ squareFreeFiniteAlexanderDual.faces
+
+/--
+R11(b): Alexander-dual nonfaces of the fixture are exactly supports hitting the
+selected forbidden supports.
+-/
+theorem squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
+    (target : SquareFreeRepairTarget) :
+    squareFreeRepairTargetAlexanderDualNonface target ↔
+      FinsetHitsForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+        (squareFreeRepairTargetSupport target) := by
+  unfold squareFreeRepairTargetAlexanderDualNonface squareFreeFiniteAlexanderDual
+    squareFreeSourceDelta
+  exact not_mem_finiteAlexanderDual_iff_hitsForbidden
+    SquareFreeSupportVertex squareFreeSourceWitnessRegime
+    (squareFreeRepairTargetSupport target)
+
+/-- R11(b): `{q}` hits the selected forbidden supports. -/
+theorem squareFree_singletonQ_hitsForbidden :
+    FinsetHitsForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport SquareFreeRepairTarget.singletonQ) := by
+  intro F hF
+  rcases hF with rfl | rfl
+  · exact ⟨SquareFreeSupportVertex.q, by
+      simp [squareFreeRepairTargetSupport, forbiddenSupportPQFinset]⟩
+  · exact ⟨SquareFreeSupportVertex.q, by
+      simp [squareFreeRepairTargetSupport, forbiddenSupportQRFinset]⟩
+
+/-- R11(b): `{p,r}` hits the selected forbidden supports. -/
+theorem squareFree_pairPR_hitsForbidden :
+    FinsetHitsForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport SquareFreeRepairTarget.pairPR) := by
+  intro F hF
+  rcases hF with rfl | rfl
+  · exact ⟨SquareFreeSupportVertex.p, by
+      simp [squareFreeRepairTargetSupport, forbiddenSupportPQFinset]⟩
+  · exact ⟨SquareFreeSupportVertex.r, by
+      simp [squareFreeRepairTargetSupport, forbiddenSupportQRFinset]⟩
+
+/-- R11(b): `{q}` is inclusion-minimal among selected finite hitting sets. -/
+theorem squareFree_singletonQ_minimalHitting :
+    MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport SquareFreeRepairTarget.singletonQ) := by
+  refine ⟨squareFree_singletonQ_hitsForbidden, ?_⟩
+  intro K hK hKsub x hx
+  simp [squareFreeRepairTargetSupport] at hx
+  subst hx
+  have hHit := hK forbiddenSupportPQFinset (Or.inl rfl)
+  rcases hHit with ⟨y, hyFilter⟩
+  have hyK : y ∈ K := (Finset.mem_filter.mp hyFilter).1
+  have hyForbidden : y ∈ forbiddenSupportPQFinset := (Finset.mem_filter.mp hyFilter).2
+  have hyTarget := hKsub hyK
+  cases y <;> simp [squareFreeRepairTargetSupport, forbiddenSupportPQFinset] at hyForbidden hyTarget hyK ⊢
+  exact hyK
+
+/-- R11(b): `{p,r}` is inclusion-minimal among selected finite hitting sets. -/
+theorem squareFree_pairPR_minimalHitting :
+    MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport SquareFreeRepairTarget.pairPR) := by
+  refine ⟨squareFree_pairPR_hitsForbidden, ?_⟩
+  intro K hK hKsub x hx
+  simp [squareFreeRepairTargetSupport] at hx
+  rcases hx with rfl | rfl
+  · have hHit := hK forbiddenSupportPQFinset (Or.inl rfl)
+    rcases hHit with ⟨y, hyFilter⟩
+    have hyK : y ∈ K := (Finset.mem_filter.mp hyFilter).1
+    have hyForbidden : y ∈ forbiddenSupportPQFinset := (Finset.mem_filter.mp hyFilter).2
+    have hyTarget := hKsub hyK
+    cases y <;> simp [squareFreeRepairTargetSupport, forbiddenSupportPQFinset] at hyForbidden hyTarget hyK ⊢
+    exact hyK
+  · have hHit := hK forbiddenSupportQRFinset (Or.inr rfl)
+    rcases hHit with ⟨y, hyFilter⟩
+    have hyK : y ∈ K := (Finset.mem_filter.mp hyFilter).1
+    have hyForbidden : y ∈ forbiddenSupportQRFinset := (Finset.mem_filter.mp hyFilter).2
+    have hyTarget := hKsub hyK
+    cases y <;> simp [squareFreeRepairTargetSupport, forbiddenSupportQRFinset] at hyForbidden hyTarget hyK ⊢
+    exact hyK
 
 /-- R11(b): Part VIII square-free repair regime for the `{p,q}` / `{q,r}` example. -/
 def squareFreeRepairRegime :
@@ -251,54 +369,112 @@ def squareFreeRepairRegime :
 /-- R11(b): selected Alexander dual carrier for the finite repair fixture. -/
 def squareFreeAlexanderDual :
     AlexanderDualComplex squareFreeRepairRegime where
-  Dual := SquareFreeRepairTarget
-  dualOfDelta := True
-  dualOfDelta_cert := trivial
+  Dual := Finset SquareFreeSupportVertex
+  dualOfDelta :=
+    ∀ S : Finset SquareFreeSupportVertex,
+      S ∈ squareFreeFiniteAlexanderDual.faces ↔
+        (Finset.univ \ S) ∉ squareFreeSourceDelta.faces
+  dualOfDelta_cert :=
+    mem_finiteAlexanderDualFaces_iff SquareFreeSupportVertex
+      squareFreeSourceDelta
 
 /-- R11(b): selected minimal vertex covers. -/
 def squareFreeMinimalVertexCovers :
     MinimalVertexCover squareFreeRepairRegime where
   Cover := SquareFreeRepairTarget
   minimalVertexCover := fun target =>
-    target = SquareFreeRepairTarget.singletonQ ∨
-      target = SquareFreeRepairTarget.pairPR
+    squareFreeRepairTargetAlexanderDualNonface target ∧
+      MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+        (squareFreeRepairTargetSupport target)
 
 /-- R11(b): selected minimal witness hitting sets. -/
 def squareFreeMinimalWitnessHittingSets :
     MinimalWitnessHittingSet squareFreeRepairRegime where
   HittingSet := SquareFreeRepairTarget
   minimalWitnessHittingSet := fun target =>
-    target = SquareFreeRepairTarget.singletonQ ∨
-      target = SquareFreeRepairTarget.pairPR
+    MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport target)
 
 /-- R11(b): selected minimal repair hitting sets `{q}` and `{p,r}`. -/
 def squareFreeMinimalRepairHittingSets :
     MinimalRepairHittingSet squareFreeRepairRegime where
   RepairTarget := SquareFreeRepairTarget
   minimalRepairHittingSet := fun target =>
-    target = SquareFreeRepairTarget.singletonQ ∨
-      target = SquareFreeRepairTarget.pairPR
+    MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+      (squareFreeRepairTargetSupport target)
   notOperationSemantics := True
   notOperationSemantics_cert := trivial
+
+/-- R11(b): concrete bridge from selected repair targets to finite minimal hitting sets. -/
+def squareFreeAlexanderDualRepairBridge :
+    FiniteAlexanderDualRepairBridge squareFreeRepairRegime where
+  RepairTarget := SquareFreeRepairTarget
+  repairSupport := squareFreeRepairTargetSupport
+  minimalRepairTarget := fun target =>
+    squareFreeMinimalRepairHittingSets.minimalRepairHittingSet target
+  minimalRepairTarget_iff := by
+    intro target
+    rfl
 
 /-- R11(b): theorem 5.2 instantiated on the finite repair hitting-set fixture. -/
 def squareFreeRepairExamplePackage :
     StanleyReisnerAlexanderDualRepair squareFreeRepairRegime :=
   stanleyReisnerAlexanderDualRepairPackage squareFreeAlexanderDual
     squareFreeMinimalVertexCovers squareFreeMinimalWitnessHittingSets
-    squareFreeMinimalRepairHittingSets True trivial True trivial True trivial True trivial
+    squareFreeMinimalRepairHittingSets
+    (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal
+        SquareFreeSupportVertex ℤ squareFreeSourceWitnessRegime =
+      LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.stanleyReisnerIdeal
+        SquareFreeSupportVertex ℤ
+        (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta
+          SquareFreeSupportVertex squareFreeSourceWitnessRegime))
+    (SquareFreeRepairRegime.source_obstructionIdeal_eq_stanleyReisnerIdeal
+      squareFreeRepairRegime ℤ)
+    (∀ S : Finset SquareFreeSupportVertex,
+      LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.MinimalStanleyReisnerGeneratorSupport
+          SquareFreeSupportVertex
+          (LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta
+            SquareFreeSupportVertex squareFreeSourceWitnessRegime) S ↔
+        LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.MinimalForbidden
+          SquareFreeSupportVertex squareFreeSourceWitnessRegime S)
+    (SquareFreeRepairRegime.source_minimalGeneratorSupport_iff_minimalForbidden
+      squareFreeRepairRegime)
+    (∀ target : SquareFreeRepairTarget,
+      squareFreeMinimalVertexCovers.minimalVertexCover target ↔
+        squareFreeMinimalWitnessHittingSets.minimalWitnessHittingSet target)
+    (by
+      intro target
+      constructor
+      · intro h
+        exact h.2
+      · intro h
+        exact ⟨(squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden target).mpr
+          h.1, h⟩)
+    (∀ target : SquareFreeRepairTarget,
+      squareFreeMinimalRepairHittingSets.minimalRepairHittingSet target ↔
+        squareFreeRepairTargetAlexanderDualNonface target ∧
+          MinimalHittingSetForForbidden SquareFreeSupportVertex squareFreeSourceWitnessRegime
+            (squareFreeRepairTargetSupport target))
+    (by
+      intro target
+      constructor
+      · intro h
+        exact ⟨(squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden target).mpr
+          h.1, h⟩
+      · intro h
+        exact h.2)
 
 /-- R11(b): `{q}` is a selected minimal repair hitting set. -/
 theorem squareFree_singletonQ_minimalRepairHittingSet :
     squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
       SquareFreeRepairTarget.singletonQ := by
-  exact Or.inl rfl
+  exact squareFree_singletonQ_minimalHitting
 
 /-- R11(b): `{p,r}` is a selected minimal repair hitting set. -/
 theorem squareFree_pairPR_minimalRepairHittingSet :
     squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
       SquareFreeRepairTarget.pairPR := by
-  exact Or.inr rfl
+  exact squareFree_pairPR_minimalHitting
 
 /-- R11(d): identity refactor of the pseudo-circle measurement profile. -/
 def pseudoCircleIdentityRefactor :
