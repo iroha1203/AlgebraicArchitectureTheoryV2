@@ -1412,3 +1412,64 @@ G2 / G3 / G4 audit summary:
   存在命題の carrier 化であり、canonical repair / missed-conflict への接続は既存 theorem を
   assignment 側へ流している。fail-closed に G4 の下限を採用し、base 30、evidence multiplier 2.0、
   penalty 10、final +50 とする。
+
+## Cycle 26 — Finite conflict table
+
+candidate: `research/ideas/g-sft-conway-01-finite-conflict-table.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `conway-obstruction`, `finite-conflict-table`,
+  `communication-support`, `reorg-refactor-duality`
+goal_delta: Cycle 23 の operation-shaped hitting predicates と Cycle 25 の
+  communication-support assignment interface を、selected two-module Conway vocabulary の finite
+  conflict table へ接続した。reorg/refactor それぞれについて、finite table は hitting predicate と同値であり、
+  post-edit atlas の support-assignment existence とも同値である。canonical repairs は table を満たし、
+  Cycle 24 の missed-conflict edits は table を満たさない。
+project_value_delta: `forall context` 型の hitting criterion を有限表の明示的な判定面へ落とし、
+  positive repairs / negative missed-hit witnesses / support assignments を一つの interface に揃えた。
+  一般 conflict-set calculus の前段として使えるが、任意 cover の conflict enumeration ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  conflict を表として列挙できるが、この cycle は selected Conway edit shapes 上で table 判定、
+  assignment existence、obstruction-killing criterion の接続を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayFiniteConflictTable.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayFiniteConflictTable`、`lake build FormalAGResearch` が通過。
+  `#print axioms` は reorg table 側で標準 `propext`、support-assignment existence 接続で
+  `Classical.choice` に依存する。`sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary-cover conflict-set calculus、assignment-preserving transition relation from
+  `mismatchedAtlas`、selector-preserving refinement naturality、refactor-side two-owner obstruction witness は未固定。
+  Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayFiniteConflictTable.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditFiniteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgCoverEditHitsEveryConflict_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEdit.supportAssignment_nonempty_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_not_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditFiniteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorOwnershipEditHitsEveryConflict_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEdit.supportAssignment_nonempty_iff_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_not_finiteConflictTable`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedFiniteConflictTablePackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduce。finite table interface は有用だが、中核は Cycle 23 の
+  `forall context` hitting predicate を selected two-module vocabulary 上で有限個の conjunct へ展開し、
+  Cycle 25 の support-assignment existence と接続するもの。新しい obstruction、一般 conflict-set
+  calculus、任意 cover enumeration、repair transition theorem ではない。G2 は base 30、multiplier 2.0、
+  penalty 10、final +50 を推奨。
+- G3 formalization quality: pass once tracked and committed。Lean statement は selected two-module
+  vocabulary に限定され、一般 conflict-set calculus や arbitrary cover までは主張しない。
+  focused check、module build、`FormalAGResearch` は通過し、`sorry/admit/unsafe/axiom` は対象 Lean にない。
+  axiom audit は `propext` と support-assignment existence 由来の `Classical.choice` に収まる。
+- G4 score audit: reduce。Cycle 23/25 の単なる restatement だけではないが、同値の中核は
+  `Module.api/db` の finite case split と既存 theorem の合成であり、assignment-preserving transition や
+  一般 conflict-set calculus までは進まない。fail-closed に G2 の下限を採用し、base 30、
+  evidence multiplier 2.0、penalty 10、final +50 とする。
