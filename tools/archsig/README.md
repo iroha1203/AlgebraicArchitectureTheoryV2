@@ -20,8 +20,10 @@ reading families, and preserves the measurement basis for human / LLM review.
 FieldSig owns forecast, governance, calibration, and operational feedback under
 `tools/fieldsig`.
 
-ArchSig's current primary workflow is complete-first authoring followed by v1
-analysis:
+ArchSig's current primary workflow is complete-first authoring followed by
+`analyze`. For the v0.5.0 preparation path, the CLI quick start uses the AG
+measurement runtime; the v1 structural path remains a bounded compatibility
+runtime:
 
 1. Build the fullest source-grounded ArchMap the selected source universe
    supports, usually through `archmap-creater`.
@@ -29,9 +31,9 @@ analysis:
    through `law-policy-creater`.
 3. Run `analyze` through `archsig-reader` or directly through the CLI.
 4. Let the skill read `archsig-analysis-summary.json`,
-   `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` first,
-   then inspect raw packet detail through `detailRefs` / `packetRefs` when
-   source-level evidence is needed.
+   `archsig-measurement-packet.json`, `archsig-atom-viewer-data.json`, and
+   `archsig-run-manifest.json` first, then inspect raw packet detail through
+   `detailRefs` / `packetRefs` when source-level evidence is needed.
 
 Coverage blockers such as `blockedByCoverageGap` are authoring repair targets
 unless the evidence is genuinely private, unavailable, or out of scope. They
@@ -43,7 +45,7 @@ are not measured zeros.
 | --- | --- | --- |
 | ArchMap validation and authoring | `archmap` | ArchMap v1 records source-grounded Atom observations and explicit molecule candidates. Removed v0 helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support and molecule candidates before handoff. ArchMap does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy` | LawPolicy v1 selects evaluator manifests, basis refs, selected laws, distance profile, and non-conclusions. It is an evaluator selector, not AAT itself. |
-| ArchSig analysis | `analyze` | `analyze` is the primary workflow from ArchMap v1 + LawPolicy v1 to validation reports, normalized ArchMap, typed evaluator results, architecture distance, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet, detail index, and LLM interpretation artifacts are emitted only with `--emit-raw-artifacts`. |
+| ArchSig structural analysis | `analyze` | The legacy v1 structural path reads ArchMap v1 + LawPolicy v1 and emits validation reports, normalized ArchMap, typed evaluator results, architecture distance, `archsig-analysis-summary.json`, `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json`. Raw packet, detail index, and LLM interpretation artifacts are emitted only with `--emit-raw-artifacts`. |
 | AG measurement | `analyze` | When `law-policy/v1` selects `measurementProfileRef` and the input is `archmap/v2`, `analyze` runs the v0.4.0 finite AG measurement path and emits `archsig-measurement-packet/v1`, conclusion-first summary, viewer data, and run manifest. This path is not backward-compatible with v1 ArchMap input, but the legacy v1 structural path remains a bounded compatibility runtime. |
 | Lightweight PR review | `pr-review` | Reads base `archmap/v1`, optional head / intermediate `archmap/v1`, PR-local `archmap-delta-v0`, and required `law-policy/v1`. It does not accept raw diff, ArchMapCommit, or base/head analysis packets as PR-review inputs. It internally computes report-local v1 snapshots and emits delta packet intersections, architecture-distance movement, hidden-excursion boundary, safe-change budget, and structural review focus. |
 | Schema | `schema-catalog` | The catalog lists the current ArchMap, LawPolicy, ArchSig analysis packet, and validation report artifacts. |
@@ -109,8 +111,8 @@ carry the packet-reading and source-comparison workflow.
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/archmap_v1/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/archmap_v1/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --out-dir .archsig/analyze
 ```
 
@@ -119,10 +121,11 @@ This writes:
 - `.archsig/analyze/archmap-validation.json`
 - `.archsig/analyze/law-policy-validation.json`
 - `.archsig/analyze/normalized-archmap.json`
-- `.archsig/analyze/typed-evaluator-results.json`
-- `.archsig/analyze/architecture-distance.json`
 - `.archsig/analyze/archsig-analysis-validation.json`
 - `.archsig/analyze/archsig-analysis-summary.json`
+- `.archsig/analyze/archsig-measurement-packet.json`
+- `.archsig/analyze/archsig-insight-report.json`
+- `.archsig/analyze/archsig-insight-brief.md`
 - `.archsig/analyze/archsig-atom-viewer-data.json`
 - `.archsig/analyze/archsig-run-manifest.json`
 
@@ -146,8 +149,8 @@ For large ArchMaps, prefer the optimized binary:
 
 ```bash
 cargo run --release --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap .archsig/hilda/archmap.json \
-  --law-policy .archsig/hilda/hilda-law-policy.json \
+  --archmap .archsig/project/archmap.json \
+  --law-policy .archsig/project/law-policy.json \
   --out-dir .archsig/analyze
 ```
 
