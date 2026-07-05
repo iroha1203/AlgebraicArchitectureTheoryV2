@@ -8785,6 +8785,18 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         }),
         "schema catalog must describe the BoundaryStatement v1 artifact boundary"
     );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-measurement-packet/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        description.contains(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)
+                            && description.contains(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)
+                    })
+        }),
+        "schema catalog must register SAGA conclusionCode values"
+    );
 }
 
 #[test]
