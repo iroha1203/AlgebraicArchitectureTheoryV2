@@ -5,12 +5,14 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{
+    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
-    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-    ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV0,
+    compare_archmap_v2_doctrine,
 };
 use serde_json::{Value, json};
 
@@ -1612,6 +1614,31 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             "atom:left-cech-section-value"
         ])
     );
+    assert_eq!(
+        cech["classSupport"]["edgeRefs"],
+        json!(["ctx:left->ctx:bottom"])
+    );
+    assert_eq!(
+        cech["classSupport"]["supportAtomRefs"],
+        json!([
+            "atom:bottom-cech-section-value",
+            "atom:left-cech-section-value"
+        ])
+    );
+    assert_eq!(cech["nerveShape"]["b1"], Value::from(1));
+    assert_eq!(cech["nerveShape"]["oneSkeletonB1"], Value::from(1));
+    assert_eq!(
+        cech["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"],
+        false
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["tripleOverlapsEmpty"]["status"],
+        "discharged_by_check"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionMapsSurjective"]["status"],
+        "not_discharged"
+    );
     assert!(
         cech["coverNerveProjection"]["faces"]
             .as_array()
@@ -1756,6 +1783,40 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                         }
                     ]
                 },
+                "classSupport": {
+                    "kind": "selected-cover-edge-support",
+                    "edgeRefs": ["ctx:left->ctx:bottom"],
+                    "supportAtomRefs": ["atom:bottom-cech-section-value", "atom:left-cech-section-value"]
+                },
+                "nerveShape": {
+                    "b1": 1,
+                    "oneSkeletonB1": 1,
+                    "capacityLowerBound": 0,
+                    "isForest": false,
+                    "eulerCharacteristic": 0
+                },
+                "theorem12_4Discharge": {
+                    "theoremRef": "part4/12.4",
+                    "isForest": {
+                        "holds": false,
+                        "status": "not_discharged",
+                        "checkedBy": Value::Null
+                    },
+                    "tripleOverlapsEmpty": {
+                        "holds": true,
+                        "status": "discharged_by_check",
+                        "checkedBy": "selected cover has no projected triple-overlap faces"
+                    },
+                    "restrictionMapsSurjective": {
+                        "holds": false,
+                        "status": "not_discharged",
+                        "checkedBy": Value::Null
+                    },
+                    "restrictionSurjectivityWitnesses": [],
+                    "coverShapeExcludesGluingObstruction": false,
+                    "conclusionCode": Value::Null
+                },
+                "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
                 "rankD0": 3,
                 "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
                 "restrictionEdgeCount": 4,
@@ -1869,6 +1930,45 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
         .find(|context| context["id"] == "ctx:right")
         .expect("right context exists");
     right_context["restrictsTo"] = json!([]);
+    let bottom_section_value = archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:bottom-cech-section-value")
+        .expect("bottom section value atom exists");
+    bottom_section_value["object"] = json!("section=left-local");
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .extend([
+            json!({
+                "id": "atom:surj-top-left",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:left",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-top-right",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:right",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-left-bottom",
+                "kind": "semantic",
+                "subject": "ctx:left->ctx:bottom",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+        ]);
     let archmap_path = out_dir.join("archmap_v2_cech_forest_no_triple.json");
     fs::write(
         &archmap_path,
@@ -1937,9 +2037,9 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
         assumptions.iter().any(|entry| {
             entry["theoremRef"] == "part4/12.4"
                 && entry["assumption"] == "restriction maps are surjective"
-                && entry["status"] == "assumed"
+                && entry["status"] == "checked"
         }),
-        "surjective restriction must remain assumed even for forest/no-triple covers"
+        "surjective restriction must be discharged by the finite selected restriction check"
     );
     assert!(
         assumptions.iter().any(|entry| {
@@ -1949,6 +2049,161 @@ fn cli_analyze_v2_cech_effectivity_ledger_checks_forest_no_triple_only() {
                 && entry["status"] == "checked"
         }),
         "forest/no-triple structural premise must be checked from the selected cover nerve"
+    );
+    assert_eq!(cech["nerveShape"]["isForest"], true);
+    assert_eq!(cech["nerveShape"]["b1"], Value::from(0));
+    assert_eq!(
+        cech["theorem12_4Discharge"]["isForest"]["status"],
+        "discharged_by_check"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["tripleOverlapsEmpty"]["status"],
+        "discharged_by_check"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionMapsSurjective"]["status"],
+        "discharged_by_check"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionSurjectivityWitnesses"]
+            .as_array()
+            .expect("restriction witnesses are array")
+            .len(),
+        3
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"],
+        true
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["conclusionCode"],
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
+    );
+    assert!(
+        cech["boundaryNote"].as_str().is_some_and(|text| {
+            text.contains("non-abelian torsor")
+                && text.contains("stacky descent")
+                && text.contains("gerbe obstructions")
+        }),
+        "cover-shape exclusion must keep the non-abelian boundary visible"
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        summary["conclusion"],
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
+    );
+    assert!(
+        summary["readThisFirst"]["whatItMeans"]
+            .as_str()
+            .is_some_and(|text| text.contains("restriction-surjectivity witnesses"))
+    );
+    assert!(
+        summary["readThisFirst"]["boundary"]
+            .as_str()
+            .is_some_and(|text| text.contains("Non-abelian torsor"))
+    );
+}
+
+#[test]
+fn cli_analyze_v2_cech_surjectivity_witness_requires_edge_coverage() {
+    let out_dir = temp_dir("ag-measurement-cech-surjectivity-coverage");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
+    let right_context = archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts is array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:right")
+        .expect("right context exists");
+    right_context["restrictsTo"] = json!([]);
+    let bottom_section_value = archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:bottom-cech-section-value")
+        .expect("bottom section value atom exists");
+    bottom_section_value["object"] = json!("section=left-local");
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms is array")
+        .extend([
+            json!({
+                "id": "atom:surj-top-left",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:left",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-top-left-duplicate",
+                "kind": "semantic",
+                "subject": "ctx:top->ctx:left",
+                "object": "finite-preimage-witness-duplicate",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+            json!({
+                "id": "atom:surj-left-bottom",
+                "kind": "semantic",
+                "subject": "ctx:left->ctx:bottom",
+                "object": "finite-preimage-witness",
+                "axis": "cech",
+                "predicate": "restrictionSurjectivityWitness",
+                "refs": ["src:cover"]
+            }),
+        ]);
+    let archmap_path = out_dir.join("archmap_v2_cech_duplicate_surj_witness.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+        ))
+        .to_str()
+        .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionSurjectivityWitnesses"]
+            .as_array()
+            .expect("restriction witnesses are array")
+            .len(),
+        3,
+        "duplicate witnesses are retained for audit"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["restrictionMapsSurjective"]["status"], "not_discharged",
+        "witness count alone must not discharge missing selected edge coverage"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"],
+        false
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_ne!(
+        summary["conclusion"],
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
     );
 }
 
@@ -2080,6 +2335,19 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     let faces = cech["coverNerveProjection"]["faces"]
         .as_array()
         .expect("cover nerve faces are array");
+    assert_eq!(
+        cech["theorem12_4Discharge"]["tripleOverlapsEmpty"]["status"],
+        "not_discharged"
+    );
+    assert_eq!(
+        cech["theorem12_4Discharge"]["coverShapeExcludesGluingObstruction"],
+        false
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_ne!(
+        summary["conclusion"],
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
+    );
     assert!(
         faces.iter().any(|face| {
             let contexts = face["contextRefs"]
@@ -4741,9 +5009,23 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_eq!(summary["conclusion"], ARCHSIG_REPAIR_TARGETS_IDENTIFIED);
     assert_eq!(
-        summary["conclusion"],
-        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+        summary["readThisFirst"]["conclusion"],
+        ARCHSIG_REPAIR_TARGETS_IDENTIFIED
+    );
+    assert!(
+        summary["readThisFirst"]["whatItMeans"]
+            .as_str()
+            .is_some_and(|text| text.contains("combinatorial repair target supports"))
+    );
+    assert!(
+        summary["readThisFirst"]["boundary"]
+            .as_str()
+            .is_some_and(|text| {
+                text.contains("Principle 5.3 boundary")
+                    && text.contains("not automatic semantic repairs")
+            })
     );
     let report = read_json(&out_dir.join("archsig-insight-report.json"));
     let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
@@ -8977,9 +9259,12 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     .is_some_and(|description| {
                         description.contains(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)
                             && description.contains(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)
+                            && description
+                                .contains(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION)
+                            && description.contains(ARCHSIG_REPAIR_TARGETS_IDENTIFIED)
                     })
         }),
-        "schema catalog must register SAGA conclusionCode values"
+        "schema catalog must register PRD-4 conclusionCode values"
     );
 }
 
