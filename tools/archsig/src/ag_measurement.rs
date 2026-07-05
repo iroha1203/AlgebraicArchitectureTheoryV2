@@ -6089,9 +6089,6 @@ fn evaluate_cech_obstruction_v1(
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect::<Vec<_>>();
-    let witness_support_refs = witness_violation_support_refs(normalized);
-    let witness_violation_count = witness_support_refs.len();
-
     let mut assumptions = vec![
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part8/B.8.2".to_string(),
@@ -6246,18 +6243,6 @@ fn evaluate_cech_obstruction_v1(
                 }
             }),
             topological_debt_capacity,
-            json!({
-                "invariantId": format!("witness-counting:{}", profile.profile_id),
-                "evaluator": "witness-counting",
-                "verdict": if witness_violation_count == 0 {
-                    "measured_zero"
-                } else {
-                    "measured_nonzero"
-                },
-                "violationCount": witness_violation_count,
-                "supportAtomRefs": witness_support_refs,
-                "nonConclusion": "Witness counting is reported as a fixture discriminator and does not determine Cech H1."
-            }),
         ],
         assumptions,
     }
@@ -10447,15 +10432,6 @@ fn valued_adjacency_map(
             .push((edge.source_context.clone(), edge.value));
     }
     adjacency
-}
-
-fn witness_violation_support_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
-    normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "witness" && atom.predicate == "violation")
-        .map(|atom| atom.normalized_atom_id.clone())
-        .collect()
 }
 
 pub fn build_measurement_viewer_data_v1(

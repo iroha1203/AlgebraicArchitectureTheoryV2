@@ -90,7 +90,7 @@ mod tests {
         assert_eq!(
             section_manifest.required_predicates,
             vec![
-                "section-factorization.obstructionGenerator".to_string(),
+                "section-factorization.support".to_string(),
                 "section-factorization.witnessAssignment".to_string(),
             ]
         );
