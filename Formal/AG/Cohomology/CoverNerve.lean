@@ -120,6 +120,110 @@ theorem topologicalDebtCapacity
 end FiniteDimensionalNerveCohomologyData
 
 /--
+R5 / IV-5: finite selected nerve cochain complex.
+
+This is a selected finite-dimensional cochain complex attached to the chosen
+cover nerve.  It records actual vector spaces and differentials `d0`, `d1`
+with `d1 ∘ d0 = 0`; the additive `H^1` below is then defined as
+`ker d1 / im d0`, not supplied as an unrelated field.  The attachment to
+`N.Chart` / `N.EdgeComponent` / `N.FaceComponent` is intentionally selected
+data; this theorem does not construct the complex from an arbitrary cover.
+-/
+structure FiniteNerveCochainComplex (N : CoverNerve.{u}) where
+  k : Type u
+  [field_k : Field k]
+  C0 : Type u
+  C1 : Type u
+  C2 : Type u
+  [add_C0 : AddCommGroup C0]
+  [add_C1 : AddCommGroup C1]
+  [add_C2 : AddCommGroup C2]
+  [module_C0 : Module k C0]
+  [module_C1 : Module k C1]
+  [module_C2 : Module k C2]
+  [finiteDimensional_C0 : FiniteDimensional k C0]
+  [finiteDimensional_C1 : FiniteDimensional k C1]
+  [finiteDimensional_C2 : FiniteDimensional k C2]
+  d0 : C0 →ₗ[k] C1
+  d1 : C1 →ₗ[k] C2
+  d1_comp_d0 : ∀ c : C0, d1 (d0 c) = 0
+
+namespace FiniteNerveCochainComplex
+
+attribute [instance] field_k add_C0 add_C1 add_C2
+attribute [instance] module_C0 module_C1 module_C2
+attribute [instance] finiteDimensional_C0 finiteDimensional_C1 finiteDimensional_C2
+
+variable {N : CoverNerve.{u}}
+
+/-- R5 / IV-5: degree-zero boundaries land in the degree-one cocycles. -/
+def boundaryToCycles (D : FiniteNerveCochainComplex N) :
+    D.C0 →ₗ[D.k] LinearMap.ker D.d1 where
+  toFun c := ⟨D.d0 c, by simpa using D.d1_comp_d0 c⟩
+  map_add' x y := by
+    ext
+    simp
+  map_smul' a x := by
+    ext
+    simp
+
+/-- R5 / IV-5: additive nerve `H^1 = ker d1 / im d0`. -/
+abbrev H1 (D : FiniteNerveCochainComplex N) : Type u :=
+  (LinearMap.ker D.d1) ⧸ LinearMap.range D.boundaryToCycles
+
+instance h1AddCommGroup (D : FiniteNerveCochainComplex N) :
+    AddCommGroup D.H1 := by
+  dsimp [H1]
+  infer_instance
+
+instance h1Module (D : FiniteNerveCochainComplex N) :
+    Module D.k D.H1 := by
+  dsimp [H1]
+  infer_instance
+
+instance h1FiniteDimensional (D : FiniteNerveCochainComplex N) :
+    FiniteDimensional D.k D.H1 := by
+  dsimp [H1]
+  infer_instance
+
+/--
+R5 / IV-5: rank-nullity inside the cocycle space:
+`dim H^1 + rank d0 = dim ker d1`.
+-/
+theorem finrank_H1_add_finrank_boundary
+    (D : FiniteNerveCochainComplex N) :
+    Module.finrank D.k D.H1 +
+        Module.finrank D.k (LinearMap.range D.boundaryToCycles) =
+      Module.finrank D.k (LinearMap.ker D.d1) := by
+  simpa [H1] using
+    (LinearMap.range D.boundaryToCycles).finrank_quotient_add_finrank
+
+/--
+R5 / IV-5: Topological Debt Capacity from the concrete finite cochain complex.
+
+This proves the theorem-12.2 lower-bound form from Mathlib rank-nullity and the
+definition `H^1 = ker d1 / im d0`.
+-/
+theorem topologicalDebtCapacity_fromComplex
+    (D : FiniteNerveCochainComplex N) :
+    Module.finrank D.k D.C1 <=
+      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
+        Module.finrank D.k D.C2 := by
+  have h_d1 := D.d1.finrank_range_add_finrank_ker
+  have h_h1 := D.finrank_H1_add_finrank_boundary
+  have h_boundary_le :
+      Module.finrank D.k (LinearMap.range D.boundaryToCycles) <=
+        Module.finrank D.k D.C0 :=
+    LinearMap.finrank_range_le D.boundaryToCycles
+  have h_d1_le :
+      Module.finrank D.k (LinearMap.range D.d1) <=
+        Module.finrank D.k D.C2 :=
+    (LinearMap.range D.d1).finrank_le
+  omega
+
+end FiniteNerveCochainComplex
+
+/--
 IV.系12.3: constant-coefficient comparison between the cover reading and the
 nerve reading.
 
@@ -212,6 +316,83 @@ theorem localGluingSufficiency_subsingleton (F : ForestCoverGluingData N) :
   ⟨fun x y => by rw [F.localGluingSufficiency x, F.localGluingSufficiency y]⟩
 
 end ForestCoverGluingData
+
+/--
+R5 / IV-5: finite forest edge-absorption certificate.
+
+Instead of assuming a single theorem-shaped field saying every `H^1` class is
+zero, this certificate gives a finite pruning order, an edge-support predicate,
+and a class trace through the pruning steps.  Each pruned edge is removed from
+the support of the traced class, the pruning order covers every edge component,
+and no edge support under the no-triple-face regime forces the class to be zero.
+-/
+structure FiniteForestEdgeAbsorptionData (N : CoverNerve.{u}) where
+  H1 : Type u
+  [add_H1 : AddCommGroup H1]
+  steps : Nat
+  prunedEdge : Fin steps -> N.EdgeComponent
+  noTripleFaces : IsEmpty N.FaceComponent
+  edgeSupport : H1 -> N.EdgeComponent -> Prop
+  classAt : H1 -> Nat -> H1
+  start_class : ∀ x : H1, classAt x 0 = x
+  edge_absorption_preserves :
+    ∀ (x : H1) (n : Nat), n < steps -> classAt x (n + 1) = classAt x n
+  edge_absorbed :
+    ∀ (x : H1) (i : Fin steps), ¬ edgeSupport (classAt x (i.1 + 1)) (prunedEdge i)
+  all_edges_pruned : ∀ e : N.EdgeComponent, ∃ i : Fin steps, prunedEdge i = e
+  zero_of_no_edgeSupport :
+    IsEmpty N.FaceComponent -> ∀ x : H1, (∀ e : N.EdgeComponent, ¬ edgeSupport x e) -> x = 0
+
+namespace FiniteForestEdgeAbsorptionData
+
+attribute [instance] add_H1
+
+variable {N : CoverNerve.{u}}
+
+/-- R5 / IV-5: the finite absorption trace preserves the original class. -/
+theorem classAt_eq_start
+    (F : FiniteForestEdgeAbsorptionData N) (x : F.H1) :
+    ∀ n : Nat, n <= F.steps -> F.classAt x n = x
+  | 0, _ => F.start_class x
+  | n + 1, hn => by
+      have hn_lt : n < F.steps := Nat.lt_of_succ_le hn
+      rw [F.edge_absorption_preserves x n hn_lt,
+        F.classAt_eq_start x n (Nat.le_of_lt hn_lt)]
+
+/-- R5 / IV-5: after all pruning steps, no selected edge support remains. -/
+theorem final_no_edgeSupport
+    (F : FiniteForestEdgeAbsorptionData N) (x : F.H1) :
+    ∀ e : N.EdgeComponent, ¬ F.edgeSupport (F.classAt x F.steps) e := by
+  intro e
+  rcases F.all_edges_pruned e with ⟨i, hi⟩
+  have hfinal := F.classAt_eq_start x F.steps le_rfl
+  have hi_le : i.1 + 1 <= F.steps := Nat.succ_le_of_lt i.2
+  have hstep := F.classAt_eq_start x (i.1 + 1) hi_le
+  have h_eq : F.classAt x F.steps = F.classAt x (i.1 + 1) :=
+    hfinal.trans hstep.symm
+  intro hs
+  have hs_step :
+      F.edgeSupport (F.classAt x (i.1 + 1)) (F.prunedEdge i) := by
+    simpa [h_eq, hi] using hs
+  exact F.edge_absorbed x i hs_step
+
+/-- R5 / IV-5: finite forest edge absorption forces selected `H^1` to vanish. -/
+theorem forestVanishing
+    (F : FiniteForestEdgeAbsorptionData N) :
+    ∀ x : F.H1, x = 0 := by
+  intro x
+  have hfinal := F.classAt_eq_start x F.steps le_rfl
+  refine F.zero_of_no_edgeSupport F.noTripleFaces x ?_
+  intro e hs
+  exact F.final_no_edgeSupport x e (by simpa [hfinal] using hs)
+
+/-- R5 / IV-5: finite forest absorption makes the selected class type subsingleton. -/
+theorem forestVanishing_subsingleton
+    (F : FiniteForestEdgeAbsorptionData N) :
+    Subsingleton F.H1 :=
+  ⟨fun x y => by rw [F.forestVanishing x, F.forestVanishing y]⟩
+
+end FiniteForestEdgeAbsorptionData
 
 /-- IV.系12.5: the Euler characteristic of the selected 0/1/2 cochain data. -/
 structure EulerCochainAccounting (N : CoverNerve.{u}) where
