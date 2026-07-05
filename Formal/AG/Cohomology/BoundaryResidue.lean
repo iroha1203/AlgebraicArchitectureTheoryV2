@@ -107,7 +107,6 @@ structure BoundaryResidueHypotheses {U : AtomCarrier.{u}}
     holonomyCompleteForGlobalObstruction
   noHigherBoundaryObstruction : Prop
   noHigherBoundaryObstruction_holds : noHigherBoundaryObstruction
-  globally_UFlat : Prop
   boundaryResidueSoundness :
     core_UFlat ->
       feature_UFlat ->
@@ -116,7 +115,7 @@ structure BoundaryResidueHypotheses {U : AtomCarrier.{u}}
             boundaryExactCoefficients ->
               ringRestrictionCompatibility ->
                 effectiveTorsorModuleDescent ->
-                  globally_UFlat ->
+                  TwoChartGloballyUFlat D ->
                     BoundaryHolonomyVanishes D b
   boundaryResidueCompleteness :
     core_UFlat ->
@@ -129,7 +128,7 @@ structure BoundaryResidueHypotheses {U : AtomCarrier.{u}}
                   holonomyCompleteForGlobalObstruction ->
                     noHigherBoundaryObstruction ->
                       BoundaryHolonomyVanishes D b ->
-                        globally_UFlat
+                        TwoChartGloballyUFlat D
 
 namespace BoundaryResidueHypotheses
 
@@ -144,7 +143,7 @@ variable {b : BoundaryMismatchSection Ob E}
 
 /-- IV.定理9.2: read the selected global flatness proposition. -/
 def globallyUFlat (_H : BoundaryResidueHypotheses D b) : Prop :=
-  _H.globally_UFlat
+  TwoChartGloballyUFlat D
 
 /-- IV.定理9.2: the selected assumption block records boundary witness coverage. -/
 theorem boundaryWitnessCoverage_holds (H : BoundaryResidueHypotheses D b) :

@@ -44,6 +44,22 @@ def semanticRepairTheorem75GeneratedEndToEndFromRealization :=
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
 
+theorem semanticRepairExample91GeneratedF2EndToEndFromRealization :
+    Nonempty
+      (Sigma fun comparison :
+        SemanticRepair.SemanticRepairCoverRelativeH1Comparison
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData.toAdditiveH1Surface
+          AAT.AG.Examples.SemanticRepairPart10.generatedF2CoverRelativeComplex =>
+          SemanticRepair.SemanticRepairGeneratedEndToEndSAGAPacket
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2BoundaryAdditiveData
+            AAT.AG.Examples.SemanticRepairPart10.defectSource
+            FiniteModel.site
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2QuotientPresheaf
+            (⊤ : Sieve FiniteModel.siteBase)
+            AAT.AG.Examples.SemanticRepairPart10.generatedF2GluingData
+            comparison) :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedF2_endToEndPacket_fromRealization
+
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
         Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠ 0 :=
@@ -181,6 +197,22 @@ theorem temporalPseudoCircleNonzero :
     Examples.EvolutionPart9.pseudoCircleMismatch
         Examples.EvolutionPart9.PseudoCircleEdge.ab ≠ 0 :=
   Examples.EvolutionPart9.pseudoCircleMismatch_ab_nonzero
+
+theorem temporalProductIncidencePRD4CohomologyToFrom
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology
+      FiniteModel.finitePosetCechComplex n
+      (FiniteModel.finitePosetCechCoboundaryRelation n)) :
+    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+      Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
+  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_to_from n h
+
+theorem temporalProductIncidencePRD4CohomologyFromTo
+    (n : Nat)
+    (h : Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.comparison.generalComplex.CoverRelativeHn n) :
+    Examples.EvolutionPart9.unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+      Examples.EvolutionPart9.unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
+  Examples.EvolutionPart9.unitProductIncidence_prd4_cohomology_from_to n h
 
 theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
@@ -434,6 +466,29 @@ theorem coverNerveTopologicalDebtCapacityFromComplex
       Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
         Module.finrank D.k D.C2 :=
   Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
+
+theorem gagaLowDegreePeriodStokesAccountingAdditive
+    (x y :
+      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
+    Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
+      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U x +
+        Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U y :=
+  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_accounting_additive x y
+
+theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
+    Module.finrank
+        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C1 <=
+      Module.finrank
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.H1 +
+        Module.finrank
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C0 +
+          Module.finrank
+            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
+            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C2 :=
+  Measurement.lowDegreeTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex
 
 theorem finiteForestEdgeAbsorptionVanishing
     {N : Cohomology.CoverNerve}
@@ -753,6 +808,22 @@ info: 'AAT.AG.AxiomAudit.coverNerveTopologicalDebtCapacityFromComplex' depends o
 -/
 #guard_msgs in
 #print axioms coverNerveTopologicalDebtCapacityFromComplex
+
+/--
+info: 'AAT.AG.AxiomAudit.gagaLowDegreePeriodStokesAccountingAdditive' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms gagaLowDegreePeriodStokesAccountingAdditive
+
+/--
+info: 'AAT.AG.AxiomAudit.gagaLowDegreeTopologicalDebtCapacityFromComplex' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms gagaLowDegreeTopologicalDebtCapacityFromComplex
 
 /--
 info: 'AAT.AG.AxiomAudit.finiteForestEdgeAbsorptionVanishing' depends on axioms: [propext]

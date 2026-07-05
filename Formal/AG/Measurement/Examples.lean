@@ -1235,6 +1235,15 @@ def lowDegreeSelectedHodgeTheoremPackage :
   hodgeData := lowDegreeHodgeData
   hodgePackage := lowDegreeHodgePackage
 
+/-- R11(g) / VIII-5: concrete extension accounting used by the GAGA Period/Stokes route. -/
+def lowDegreePeriodStokesAccounting :
+    Cohomology.ExtensionHolonomyAccounting where
+  ExtensionEvent := Unit
+  Accounting := Unit
+  eventAddCommGroup := inferInstance
+  accountingAddCommGroup := inferInstance
+  kappa_U := 0
+
 /-- R11(g) / VIII-5: selected Period/Stokes theorem package for GAGA. -/
 def lowDegreePeriodStokesTheoremPackage :
     SelectedPeriodStokesTheoremPackage pseudoCircleMeasurementProfile where
@@ -1244,6 +1253,51 @@ def lowDegreePeriodStokesTheoremPackage :
     method := ()
     certificate := ()
   }
+  extensionAccounting := lowDegreePeriodStokesAccounting
+
+/-- R11(g) / VIII-5: one-chart finite nerve used by the GAGA topological-debt route. -/
+def lowDegreeTopologicalDebtNerve :
+    Cohomology.CoverNerve where
+  Chart := Unit
+  EdgeComponent := Empty
+  FaceComponent := Empty
+  edgeLeft := Empty.elim
+  edgeRight := Empty.elim
+  faceEdge0 := Empty.elim
+  faceEdge1 := Empty.elim
+  faceEdge2 := Empty.elim
+  edgeOverlapComponent := fun e => nomatch e
+  faceTripleOverlapComponent := fun f => nomatch f
+  edgeOverlapComponent_holds := fun e => nomatch e
+  faceTripleOverlapComponent_holds := fun f => nomatch f
+
+/--
+R11(g) / VIII-5: concrete finite nerve cochain complex for topological debt.
+
+The example is intentionally low-degree and zero-differential; the certified
+field below is backed by `topologicalDebtCapacity_fromComplex`, not by an
+unrelated `True` field.
+-/
+def lowDegreeTopologicalDebtComplex :
+    Cohomology.FiniteNerveCochainComplex lowDegreeTopologicalDebtNerve where
+  k := ℚ
+  C0 := Unit
+  C1 := Unit
+  C2 := Unit
+  add_C0 := inferInstance
+  add_C1 := inferInstance
+  add_C2 := inferInstance
+  module_C0 := inferInstance
+  module_C1 := inferInstance
+  module_C2 := inferInstance
+  finiteDimensional_C0 := inferInstance
+  finiteDimensional_C1 := inferInstance
+  finiteDimensional_C2 := inferInstance
+  d0 := 0
+  d1 := 0
+  d1_comp_d0 := by
+    intro c
+    simp
 
 /-- R11(g) / VIII-5: selected topological-debt theorem package for GAGA. -/
 def lowDegreeTopologicalDebtTheoremPackage :
@@ -1254,6 +1308,8 @@ def lowDegreeTopologicalDebtTheoremPackage :
     method := ()
     certificate := ()
   }
+  nerve := lowDegreeTopologicalDebtNerve
+  nerveComplex := lowDegreeTopologicalDebtComplex
 
 /-- R11(g) / VIII-5: selected derived-conflict theorem package for GAGA. -/
 def lowDegreeDerivedConflictTheoremPackage :

@@ -1,3 +1,4 @@
+import Formal.AG.Cohomology.PeriodStokes
 import Formal.AG.Measurement.Packet
 
 noncomputable section
@@ -42,6 +43,7 @@ end SelectedFiniteHodgeTheoremPackage
 structure SelectedPeriodStokesTheoremPackage (M : MeasurementProfile.{u, v}) where
   selectedAccounting : M.Domain
   measuredAccounting : M.Measured_M selectedAccounting
+  extensionAccounting : Cohomology.ExtensionHolonomyAccounting.{v}
 
 namespace SelectedPeriodStokesTheoremPackage
 
@@ -57,12 +59,22 @@ def period_stokes_measurement {M : MeasurementProfile.{u, v}}
     M.Measured_M P.selectedAccounting :=
   P.measuredAccounting
 
+/-- VIII.Theorem 12.3: the selected Period/Stokes accounting uses the actual additive theorem. -/
+theorem period_stokes_accounting_additive {M : MeasurementProfile.{u, v}}
+    (P : SelectedPeriodStokesTheoremPackage M)
+    (x y : P.extensionAccounting.ExtensionEvent) :
+    P.extensionAccounting.kappa_U (x + y) =
+      P.extensionAccounting.kappa_U x + P.extensionAccounting.kappa_U y :=
+  P.extensionAccounting.kappa_U_additive x y
+
 end SelectedPeriodStokesTheoremPackage
 
 /-- VIII.Theorem 12.3: selected topological-debt theorem package used by GAGA. -/
 structure SelectedTopologicalDebtTheoremPackage (M : MeasurementProfile.{u, v}) where
   selectedDebtData : M.Domain
   measuredDebtData : M.Measured_M selectedDebtData
+  nerve : Cohomology.CoverNerve.{v}
+  nerveComplex : Cohomology.FiniteNerveCochainComplex nerve
 
 namespace SelectedTopologicalDebtTheoremPackage
 
@@ -77,6 +89,15 @@ def topological_debt_measurement {M : MeasurementProfile.{u, v}}
     (P : SelectedTopologicalDebtTheoremPackage M) :
     M.Measured_M P.selectedDebtData :=
   P.measuredDebtData
+
+/-- VIII.Theorem 12.3: the selected topological-debt package uses the finite nerve theorem. -/
+theorem topological_debt_capacity_from_complex {M : MeasurementProfile.{u, v}}
+    (P : SelectedTopologicalDebtTheoremPackage M) :
+    Module.finrank P.nerveComplex.k P.nerveComplex.C1 <=
+      Module.finrank P.nerveComplex.k P.nerveComplex.H1 +
+        Module.finrank P.nerveComplex.k P.nerveComplex.C0 +
+          Module.finrank P.nerveComplex.k P.nerveComplex.C2 :=
+  P.nerveComplex.topologicalDebtCapacity_fromComplex
 
 end SelectedTopologicalDebtTheoremPackage
 
@@ -158,11 +179,33 @@ theorem periodStokesTheorem_holds {M : MeasurementProfile.{u, v}}
     M.InScope C.periodStokesTheoremPackage.selectedAccounting :=
   C.periodStokesTheoremPackage.period_stokes_holds
 
+/-- VIII.Theorem 12.3: Period/Stokes certified field exposes additive accounting theorem. -/
+theorem periodStokesAccountingAdditive_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M)
+    (x y : C.periodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
+    C.periodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
+      C.periodStokesTheoremPackage.extensionAccounting.kappa_U x +
+        C.periodStokesTheoremPackage.extensionAccounting.kappa_U y :=
+  C.periodStokesTheoremPackage.period_stokes_accounting_additive x y
+
 /-- VIII.Theorem 12.3: topological-debt certified field is backed by a theorem package. -/
 theorem topologicalDebtTheorem_holds {M : MeasurementProfile.{u, v}}
     (C : AATGAGACertifiedFields M) :
     M.InScope C.topologicalDebtTheoremPackage.selectedDebtData :=
   C.topologicalDebtTheoremPackage.topological_debt_holds
+
+/-- VIII.Theorem 12.3: topological-debt certified field exposes the finite nerve theorem. -/
+theorem topologicalDebtCapacityFromComplex_holds {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACertifiedFields M) :
+    Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
+        C.topologicalDebtTheoremPackage.nerveComplex.C1 <=
+      Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
+          C.topologicalDebtTheoremPackage.nerveComplex.H1 +
+        Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
+          C.topologicalDebtTheoremPackage.nerveComplex.C0 +
+          Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
+            C.topologicalDebtTheoremPackage.nerveComplex.C2 :=
+  C.topologicalDebtTheoremPackage.topological_debt_capacity_from_complex
 
 /-- VIII.Theorem 12.3: derived-conflict certified field is backed by LawConflict data. -/
 theorem derivedConflictLawConflictTorReading_holds {M : MeasurementProfile.{u, v}}

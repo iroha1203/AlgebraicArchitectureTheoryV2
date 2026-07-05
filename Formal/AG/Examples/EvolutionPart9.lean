@@ -389,6 +389,131 @@ def temporalBridge :
   coverComparison := replayCoverComparison
   siteComplex := unitCechComplex
 
+/--
+IX-3 / #3100: concrete finite-poset comparison data for the two-point trace
+singleton coefficient instance.
+-/
+def unitFinitePosetTemporalCechComparisonData :
+    Cohomology.FinitePosetCechComparisonData
+      FiniteModel.finitePosetCechComplex unitObstructionSheaf where
+  cochainAddCommGroup := unitCechComplex.cochainAddCommGroup
+  alternatingFaceCombination := unitCechComplex.alternatingFaceCombination
+  differential := unitCechComplex.d
+  differential_eq_alternatingFaceCombination :=
+    unitCechComplex.differential_eq_alternatingFaceCombination
+  differential_comp := unitCechComplex.differential_comp
+  toFinitePosetCochain := fun _n _c _σ => PUnit.unit
+  fromFinitePosetCochain := fun _n _c _σ => PUnit.unit
+  to_from_finitePosetCochain := by
+    intro n c
+    funext σ
+    cases c σ
+    rfl
+  from_to_finitePosetCochain := by
+    intro n c
+    funext σ
+    cases c σ
+    rfl
+  differential_compat_toFinitePoset := by
+    intro n c
+    funext σ
+    cases n with
+    | zero => exact Empty.elim σ
+    | succ _ => exact Empty.elim σ
+  finitePosetCoboundaryRelation := FiniteModel.finitePosetCechCoboundaryRelation
+  toFinitePosetCohomology := by
+    intro n comparisonComplex _h
+    exact Quotient.mk
+      (Site.FinitePosetCechCoboundarySetoid
+        (FiniteModel.finitePosetCechCoboundaryRelation n))
+      ⟨(fun σ => PUnit.unit), by
+        funext σ
+        cases n with
+        | zero => exact Empty.elim σ
+        | succ _ => exact Empty.elim σ⟩
+  fromFinitePosetCohomology := by
+    intro n comparisonComplex _h
+    cases n with
+    | zero =>
+        exact ⟨(fun σ => PUnit.unit), by
+          funext σ
+          rfl⟩
+    | succ n =>
+        exact Quotient.mk (comparisonComplex.CechCoboundarySetoidSucc n)
+          ⟨(fun σ => PUnit.unit), by
+            funext σ
+            rfl⟩
+  to_from_finitePosetCohomology := by
+    intro n comparisonComplex h
+    refine Quotient.inductionOn h ?_
+    intro h
+    apply Quot.sound
+    apply Subtype.ext
+    funext σ
+    cases n with
+    | zero =>
+        cases h.1 σ
+        rfl
+    | succ _ =>
+        exact Empty.elim σ
+  from_to_finitePosetCohomology := by
+    intro n comparisonComplex h
+    cases n with
+    | zero =>
+        apply Subtype.ext
+        funext σ
+        cases h.1 σ
+        rfl
+    | succ n =>
+        refine Quotient.inductionOn h ?_
+        intro h
+        apply Quot.sound
+        refine ⟨0, ?_⟩
+        funext σ
+        cases h.1 σ
+        rfl
+
+/-- IX-3 / #3100: finite-poset temporal Čech bridge for the two-point trace fixture. -/
+def unitFinitePosetTemporalCechBridge :
+    FinitePosetTemporalCechBridge temporalSite unitObstructionSheaf where
+  temporalCover := replayTemporalCover
+  finitePosetComplex := FiniteModel.finitePosetCechComplex
+  coverComparison := replayCoverComparison
+  comparison := unitFinitePosetTemporalCechComparisonData
+
+/-- IX-3 / #3100: product incidence plus PRD-4 cohomology comparison instance. -/
+def unitProductIncidencePRD4Comparison :
+    TemporalCoefficient.ProductIncidencePRD4Comparison temporalCoefficient where
+  incidenceComplex := unitTemporalProductIncidenceComplex
+  finitePosetBridge := unitFinitePosetTemporalCechBridge
+
+/-- IX-3 / #3100: the product instance exposes PRD-4 differential compatibility. -/
+theorem unitProductIncidence_prd4_differential_compatible
+    (n : Nat)
+    (c : unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.Cn n) :
+    unitProductIncidencePRD4Comparison.prd4_differential_compatible n c =
+      unitFinitePosetTemporalCechBridge.differential_compatible n c :=
+  rfl
+
+/-- IX-3 / #3100: cohomology comparison is a left inverse on finite-poset cohomology. -/
+theorem unitProductIncidence_prd4_cohomology_to_from
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology
+      FiniteModel.finitePosetCechComplex n
+      (FiniteModel.finitePosetCechCoboundaryRelation n)) :
+    unitProductIncidencePRD4Comparison.prd4_cohomology_to_from n h =
+      unitFinitePosetTemporalCechBridge.cohomology_to_from n h :=
+  rfl
+
+/-- IX-3 / #3100: cohomology comparison is a right inverse on PRD-4 cohomology. -/
+theorem unitProductIncidence_prd4_cohomology_from_to
+    (n : Nat)
+    (h :
+      unitProductIncidencePRD4Comparison.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
+    unitProductIncidencePRD4Comparison.prd4_cohomology_from_to n h =
+      unitFinitePosetTemporalCechBridge.cohomology_from_to n h :=
+  rfl
+
 /-- R10(b/g): singleton zero cochain in every selected temporal degree. -/
 def unitTemporalCochain (n : Nat) : temporalBridge.siteComplex.Cn n :=
   fun _ => PUnit.unit

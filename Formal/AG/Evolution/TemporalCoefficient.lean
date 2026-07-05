@@ -204,6 +204,26 @@ theorem prd4_differential_compatible
         (P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCochain n c) :=
   P.finitePosetBridge.differential_compatible n c
 
+/-- IX-3 / #3100: product-incidence bridge exposes PRD-4 cohomology left inverse. -/
+theorem prd4_cohomology_to_from
+    (P : ProductIncidencePRD4Comparison C)
+    (n : Nat)
+    (h : Site.FinitePosetCechCohomology
+      P.finitePosetBridge.finitePosetComplex n
+      (P.finitePosetBridge.comparison.finitePosetCoboundaryRelation n)) :
+    P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCohomology n
+      (P.finitePosetBridge.comparison.comparisonTarget.fromFinitePosetCohomology n h) = h :=
+  P.finitePosetBridge.cohomology_to_from n h
+
+/-- IX-3 / #3100: product-incidence bridge exposes PRD-4 cohomology right inverse. -/
+theorem prd4_cohomology_from_to
+    (P : ProductIncidencePRD4Comparison C)
+    (n : Nat)
+    (h : P.finitePosetBridge.comparison.generalComplex.CoverRelativeHn n) :
+    P.finitePosetBridge.comparison.comparisonTarget.fromFinitePosetCohomology n
+      (P.finitePosetBridge.comparison.comparisonTarget.toFinitePosetCohomology n h) = h :=
+  P.finitePosetBridge.cohomology_from_to n h
+
 end ProductIncidencePRD4Comparison
 
 end TemporalCoefficient
