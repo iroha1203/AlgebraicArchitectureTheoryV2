@@ -1822,3 +1822,62 @@ G2 / G3 / G4 audit summary:
   finite cases を `simp` で分類するもの。canonical no-miss も既存 hit theorem からの帰結であり、
   +100 は過大。fail-closed に G4 の下限を採用し、base 30、evidence multiplier 2.0、
   penalty 10、final +50 とする。
+
+## Cycle 33 — Selected miss scanner
+
+candidate: `research/ideas/g-sft-conway-01-selected-miss-scanner.md`
+candidate_type: `selector`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `conway-obstruction`, `selected-conflict-set`,
+  `first-miss-scanner`, `miss-selector`
+goal_delta: selected reorg/refactor edit shapes について、bounded first-miss scanner predicate を追加した。
+  first-miss scanner は selected miss existence に対して sound かつ complete である。canonical reorg/refactor
+  edits は first miss を持たず、existing partial reorg edit は exactly `platformDb`、API-only partial
+  refactor edit は exactly `db` を first miss とする。
+project_value_delta: Cycle 32 の pointwise miss membership を、soundness / completeness / exact first
+  identity を持つ bounded finite scanner interface へ進めた。bare existence theorem よりも後続の
+  diagnostic extraction / refinement theorem へ接続しやすい。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  first failing conflict を返せるが、この cycle は selected finite Conway vocabulary 上で first miss
+  の soundness / completeness と exact selector を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwaySelectedMissScanner.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: runtime extraction algorithm、arbitrary conflict enumeration、selector-preserving refinement
+  naturality、general repair calculus は未固定。Issue #2962 の active threshold 3000 には
+  この cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwaySelectedMissScanner.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditFirstSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgFirstSelectedMiss_sound`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgFirstSelectedMiss_exists_iff_hasSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_noFirstSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_firstSelectedMiss_iff`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditFirstSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorFirstSelectedMiss_sound`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorFirstSelectedMiss_exists_iff_hasSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_noFirstSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_firstSelectedMiss_iff`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedMissScannerPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: reduce。Cycle 32 の pointwise miss membership を fixed finite order 上の
+  `FirstSelectedMiss` predicate に持ち上げ、soundness / existence completeness / canonical no-first-miss /
+  partial edit の exact first selector を Lean theorem として固定する点は有用。ただし中核は Cycle 32 の
+  miss predicate と exact selector の ordered wrapper であり、runtime extraction algorithm、任意 conflict
+  enumeration、selector-preserving refinement naturality、general repair calculus、新 obstruction / invariant
+  ではない。G2 は base 30、multiplier 2.0、penalty 10、final +50 を推奨。
+- G3 formalization quality: pass。focused check、module build、`FormalAGResearch` は通過し、
+  `sorry/admit/unsafe/axiom` は対象 Lean にない。axiom audit は reorg/refactor existence iff と
+  canonical no-first / package が `propext`、既存 infrastructure 由来の `Classical.choice` / `Quot.sound`
+  を継承し、exact first selector は標準 `propext` に収まる。
+- G4 score audit: reduce。bare pointwise miss membership から first-miss interface、sound/completeness、
+  canonical no-first、partial exact first selector まで進めた増分はあるが、中核は selected finite vocabulary の
+  Prop predicate と case split であり、+80 水準の新しい scanner calculus や実行可能診断ではない。
+  fail-closed に G2 の下限を採用し、base 30、evidence multiplier 2.0、penalty 10、final +50 とする。
