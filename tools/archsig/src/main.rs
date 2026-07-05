@@ -1,20 +1,28 @@
 use std::error::Error;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, ExtractionDiffOptions,
-    LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1,
-    RepairPlanDocumentV1, SchemaVersionCatalogV0, ScopeManifestOptions,
+    ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
+    ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, ArchMapValidationReportV2,
+    ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1,
+    ArchmapScopeManifestV1, AuthoringAuditInputV1, ExtractionDiffOptions, LAW_POLICY_V1_SCHEMA,
+    LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
+    SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
     build_comparison_artifacts_v1, build_extraction_consistency_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
     build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
     build_repair_plan_validation_report_v1, build_scope_manifest_v1, normalize_archmap_v2,
-    static_schema_version_catalog, validate_archmap_v2_report, validate_law_policy_v1_report,
-    validate_measurement_packet_v1, validate_measurement_profile_v1_checks,
+    static_schema_version_catalog, validate_archmap_v2_report, validate_authoring_audit_input_v1,
+    validate_law_policy_v1_report, validate_measurement_packet_v1,
+    validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
+use globset::{Glob, GlobSetBuilder};
 use serde_json::Value;
+use walkdir::WalkDir;
 
 mod cli;
 use cli::*;
@@ -36,6 +44,22 @@ enum Command {
         /// Input ArchMap JSON path.
         #[arg(long)]
         input: PathBuf,
+
+        /// Optional authoring scope manifest for survey traceability audit.
+        #[arg(long = "scope-manifest")]
+        scope_manifest: Option<PathBuf>,
+
+        /// Optional candidate packet path or glob for survey traceability audit. Repeat for multiple inputs.
+        #[arg(long = "candidate-packets")]
+        candidate_packets: Vec<String>,
+
+        /// Optional extraction consistency artifact path for adjudicated provenance closure. Repeat for multiple inputs.
+        #[arg(long = "extraction-consistency")]
+        extraction_consistency: Vec<PathBuf>,
+
+        /// Optional coverage ledger for survey traceability audit.
+        #[arg(long = "coverage-ledger")]
+        coverage_ledger: Option<PathBuf>,
 
         /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -240,12 +264,35 @@ fn main() -> ExitCode {
 
 fn validate_archmap_command_input(
     input: &PathBuf,
+    scope_manifest: &Option<PathBuf>,
+    candidate_packets: &[String],
+    extraction_consistency: &[PathBuf],
+    coverage_ledger: &Option<PathBuf>,
 ) -> Result<(serde_json::Value, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
     match json_schema(&raw) {
         Some(ARCHMAP_V2_SCHEMA) => {
             let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
-            let report = validate_archmap_v2_report(&document, &input.display().to_string());
+            let mut report = validate_archmap_v2_report(&document, &input.display().to_string());
+            if authoring_audit_requested(
+                scope_manifest,
+                candidate_packets,
+                extraction_consistency,
+                coverage_ledger,
+            ) {
+                let audit_input = load_authoring_audit_input(
+                    scope_manifest,
+                    candidate_packets,
+                    extraction_consistency,
+                    coverage_ledger,
+                )?;
+                validate_authoring_audit_input_v1(&audit_input)
+                    .map_err(|errors| errors.join("; "))?;
+                report
+                    .checks
+                    .extend(archmap_authoring_audit_checks_v1(&document, &audit_input));
+                refresh_archmap_report_summary(&mut report);
+            }
             let failed = report.summary.result == "fail";
             Ok((serde_json::to_value(report)?, failed))
         }
@@ -254,6 +301,146 @@ fn validate_archmap_command_input(
             unreachable!("require_schema returns on success for archmap/v0.5.0")
         }
     }
+}
+
+fn authoring_audit_requested(
+    scope_manifest: &Option<PathBuf>,
+    candidate_packets: &[String],
+    extraction_consistency: &[PathBuf],
+    coverage_ledger: &Option<PathBuf>,
+) -> bool {
+    scope_manifest.is_some()
+        || !candidate_packets.is_empty()
+        || !extraction_consistency.is_empty()
+        || coverage_ledger.is_some()
+}
+
+fn load_authoring_audit_input(
+    scope_manifest: &Option<PathBuf>,
+    candidate_packets: &[String],
+    extraction_consistency: &[PathBuf],
+    coverage_ledger: &Option<PathBuf>,
+) -> Result<AuthoringAuditInputV1, Box<dyn Error>> {
+    let scope_manifest_path = scope_manifest
+        .as_ref()
+        .ok_or("--scope-manifest is required when authoring audit flags are used")?;
+    let coverage_ledger_path = coverage_ledger
+        .as_ref()
+        .ok_or("--coverage-ledger is required when authoring audit flags are used")?;
+    if candidate_packets.is_empty() {
+        return Err("--candidate-packets is required when authoring audit flags are used".into());
+    }
+
+    let scope_manifest_raw: serde_json::Value = read_json(scope_manifest_path)?;
+    require_schema(
+        &scope_manifest_raw,
+        ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA,
+        "--scope-manifest",
+    )?;
+    let coverage_ledger_raw: serde_json::Value = read_json(coverage_ledger_path)?;
+    require_schema(
+        &coverage_ledger_raw,
+        ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
+        "--coverage-ledger",
+    )?;
+
+    let mut packet_paths = Vec::new();
+    for spec in candidate_packets {
+        packet_paths.extend(resolve_candidate_packet_spec(spec)?);
+    }
+    packet_paths.sort();
+    packet_paths.dedup();
+
+    let mut packets = Vec::new();
+    for path in packet_paths {
+        let raw: serde_json::Value = read_json(&path)?;
+        require_schema(
+            &raw,
+            ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
+            "--candidate-packets",
+        )?;
+        packets.push(serde_json::from_value::<ArchmapCandidatePacketV1>(raw)?);
+    }
+
+    let mut consistency_reports = Vec::new();
+    for path in extraction_consistency {
+        let raw: serde_json::Value = read_json(path)?;
+        require_schema(
+            &raw,
+            ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
+            "--extraction-consistency",
+        )?;
+        consistency_reports.push(serde_json::from_value::<ArchmapExtractionConsistencyV1>(
+            raw,
+        )?);
+    }
+
+    Ok(AuthoringAuditInputV1 {
+        scope_manifest: serde_json::from_value::<ArchmapScopeManifestV1>(scope_manifest_raw)?,
+        candidate_packets: packets,
+        extraction_consistency: consistency_reports,
+        coverage_ledger: serde_json::from_value::<ArchmapCoverageLedgerV1>(coverage_ledger_raw)?,
+    })
+}
+
+fn resolve_candidate_packet_spec(spec: &str) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+    if !contains_glob_meta(spec) {
+        return Ok(vec![PathBuf::from(spec)]);
+    }
+    let glob = Glob::new(spec)?;
+    let mut builder = GlobSetBuilder::new();
+    builder.add(glob);
+    let set = builder.build()?;
+    let root = glob_search_root(spec);
+    let mut paths = Vec::new();
+    for entry in WalkDir::new(&root).follow_links(false).into_iter() {
+        let entry = entry?;
+        if entry.file_type().is_file() && set.is_match(entry.path()) {
+            paths.push(entry.path().to_path_buf());
+        }
+    }
+    if paths.is_empty() {
+        return Err(format!("--candidate-packets matched no files: {spec}").into());
+    }
+    Ok(paths)
+}
+
+fn contains_glob_meta(spec: &str) -> bool {
+    spec.chars()
+        .any(|character| matches!(character, '*' | '?' | '[' | '{'))
+}
+
+fn glob_search_root(spec: &str) -> PathBuf {
+    let first_meta = spec.find(['*', '?', '[', '{']).unwrap_or(spec.len());
+    let prefix = &spec[..first_meta];
+    let root = Path::new(prefix)
+        .parent()
+        .filter(|path| !path.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    root.to_path_buf()
+}
+
+fn refresh_archmap_report_summary(report: &mut ArchMapValidationReportV2) {
+    let failed_check_count = report
+        .checks
+        .iter()
+        .filter(|check| check.result == "fail")
+        .count();
+    let warning_check_count = report
+        .checks
+        .iter()
+        .filter(|check| check.result == "warn")
+        .count();
+    report.summary.failed_check_count = failed_check_count;
+    report.summary.warning_check_count = warning_check_count;
+    report.summary.result = if failed_check_count > 0 {
+        "fail"
+    } else if warning_check_count > 0 {
+        "warn"
+    } else {
+        "pass"
+    }
+    .to_string();
 }
 
 fn validate_law_policy_command_input(
@@ -359,8 +546,21 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
     let args = Args::parse();
 
     match args.command {
-        Some(Command::Archmap { input, out }) => {
-            let (report, failed) = validate_archmap_command_input(&input)?;
+        Some(Command::Archmap {
+            input,
+            scope_manifest,
+            candidate_packets,
+            extraction_consistency,
+            coverage_ledger,
+            out,
+        }) => {
+            let (report, failed) = validate_archmap_command_input(
+                &input,
+                &scope_manifest,
+                &candidate_packets,
+                &extraction_consistency,
+                &coverage_ledger,
+            )?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -445,7 +645,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             residual_packet,
             out,
         }) => {
-            let (_, archmap_failed) = validate_archmap_command_input(&archmap)?;
+            let (_, archmap_failed) =
+                validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
             if archmap_failed {
                 return Err("--archmap validation failed before repair-plan validation".into());
             }
@@ -509,7 +710,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
 
-            let (archmap_preflight, archmap_failed) = validate_archmap_command_input(&archmap)?;
+            let (archmap_preflight, archmap_failed) =
+                validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let (_measurement_profile_preflight, measurement_profile_document, measurement_profile_failed) =
                 validate_measurement_profile_command_input(&measurement_profile)?;
