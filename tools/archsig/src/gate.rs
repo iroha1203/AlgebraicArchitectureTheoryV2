@@ -6,9 +6,9 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 use crate::{
-    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ArchSigMeasurementPacketV1,
-    validate_measurement_packet_v1,
+    ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ArchSigMeasurementPacketV1, validate_measurement_packet_v1,
 };
 
 const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
@@ -21,6 +21,15 @@ const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
 ];
 const INTRODUCED_MAPPING_KEYS: [&str; 5] = ["new", "cleared", "preexisting", "removed", "other"];
 const ACTIONS: [&str; 3] = ["pass", "pass_with_boundary", "block"];
+const COMPARISON_LEVELS: [&str; 3] = ["identical", "verdict-row", "not-comparable"];
+const COMPARISON_TRANSITIONS: [&str; 5] = [
+    "new_recorded_row",
+    "removed_recorded_row",
+    "measured_obstruction_no_longer_recorded",
+    "measured_obstruction_recorded_after_change",
+    "preexisting_recorded_row",
+];
+const COMPARISON_OTHER_TRANSITION: &str = "other_transition";
 const STRUCTURAL_VERDICT_KEYS: [&str; 5] = [
     "measured_zero",
     "measured_nonzero",
@@ -139,11 +148,12 @@ pub fn build_gate_report_v1(
         report["policyValidation"] = Value::Array(policy_checks);
         return Ok((report, 2));
     }
-    if let Some(comparison_path) = comparison_path {
+    let comparison_report = if let Some(comparison_path) = comparison_path {
         match read_json(comparison_path) {
             Ok(comparison) => {
                 if comparison.get("schema").and_then(Value::as_str)
-                    != Some("archsig-comparison-report/v0.5.0")
+                    != Some(ARCHSIG_COMPARISON_REPORT_V1_SCHEMA)
+                    || !comparison_report_shape_is_evaluable(&comparison)
                 {
                     let report = not_evaluable_report(
                         packet_path,
@@ -153,6 +163,7 @@ pub fn build_gate_report_v1(
                     )?;
                     return Ok((report, 2));
                 }
+                Some(comparison)
             }
             Err(_) => {
                 let report = not_evaluable_report(
@@ -164,7 +175,9 @@ pub fn build_gate_report_v1(
                 return Ok((report, 2));
             }
         }
-    }
+    } else {
+        None
+    };
 
     let rules = policy["rules"]
         .as_array()
@@ -174,7 +187,6 @@ pub fn build_gate_report_v1(
     let violated_assumptions = violated_assumption_ids(&packet);
     let mut rule_outcomes = Vec::new();
     let mut any_block = false;
-    let mut any_not_evaluable = false;
     for rule in rules {
         let scope = rule["scope"].as_str().unwrap_or("");
         match scope {
@@ -214,13 +226,46 @@ pub fn build_gate_report_v1(
                     "appliedMapping": applied
                 }));
             }
-            "introduced-by-change" if comparison_path.is_some() => {
-                any_not_evaluable = true;
+            "introduced-by-change" if comparison_report.is_some() => {
+                let comparison = comparison_report
+                    .as_ref()
+                    .expect("comparison report was checked above");
+                let mapping = rule
+                    .get("introducedByChangeMapping")
+                    .and_then(Value::as_object)
+                    .ok_or("introduced-by-change rule has no introducedByChangeMapping")?;
+                let applied = comparison["verdictTransitions"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|transition| {
+                        let key = transition["introducedByChangeCategory"]
+                            .as_str()
+                            .unwrap_or("other");
+                        let action = mapping
+                            .get(key)
+                            .and_then(Value::as_str)
+                            .unwrap_or("block")
+                            .to_string();
+                        if action == "block" {
+                            any_block = true;
+                        }
+                        json!({
+                            "rowKey": transition["rowKey"],
+                            "baseRowRef": transition["baseRowRef"],
+                            "headRowRef": transition["headRowRef"],
+                            "transition": transition["transition"],
+                            "mappingKey": key,
+                            "action": action,
+                            "deltaRefs": transition["deltaRefs"]
+                        })
+                    })
+                    .collect::<Vec<_>>();
                 rule_outcomes.push(json!({
                     "ruleId": rule.get("ruleId").cloned().unwrap_or_else(|| json!("introduced-by-change")),
                     "scope": "introduced-by-change",
-                    "status": "not_evaluable",
-                    "reason": "comparison report support is implemented in PRD-2 compare follow-up"
+                    "status": "evaluated",
+                    "appliedMapping": applied
                 }));
             }
             "introduced-by-change" => {
@@ -235,20 +280,12 @@ pub fn build_gate_report_v1(
         }
     }
 
-    let decision = if any_not_evaluable {
-        "NOT_EVALUABLE"
-    } else if any_block {
+    let decision = if any_block {
         "BLOCKED_BY_GATE_POLICY"
     } else {
         "PASS_WITHIN_GATE_POLICY"
     };
-    let exit_code = if any_not_evaluable {
-        2
-    } else if any_block {
-        1
-    } else {
-        0
-    };
+    let exit_code = if any_block { 1 } else { 0 };
     let report = json!({
         "schema": ARCHSIG_GATE_REPORT_V1_SCHEMA,
         "decision": decision,
@@ -460,6 +497,50 @@ fn validate_boundary_overrides(
             "boundaryKindOverrides may only map to pass_with_boundary or block",
         );
     }
+}
+
+fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
+    if comparison
+        .get("conclusionCode")
+        .and_then(Value::as_str)
+        .is_none()
+    {
+        return false;
+    }
+    let Some(level) = comparison
+        .get("comparability")
+        .and_then(|comparability| comparability.get("level"))
+        .and_then(Value::as_str)
+    else {
+        return false;
+    };
+    if !COMPARISON_LEVELS.contains(&level) {
+        return false;
+    }
+    let Some(transitions) = comparison
+        .get("verdictTransitions")
+        .and_then(Value::as_array)
+    else {
+        return false;
+    };
+    if transitions.is_empty() {
+        return false;
+    }
+    transitions.iter().all(|transition| {
+        let category = transition["introducedByChangeCategory"].as_str();
+        let transition_name = transition["transition"].as_str();
+        let refs_present = transition.get("baseRowRef").is_some()
+            && transition.get("headRowRef").is_some()
+            && transition["rowKey"]
+                .as_str()
+                .is_some_and(|row| !row.is_empty());
+        category.is_some_and(|category| INTRODUCED_MAPPING_KEYS.contains(&category))
+            && transition_name.is_some_and(|transition_name| {
+                COMPARISON_TRANSITIONS.contains(&transition_name)
+                    || transition_name == COMPARISON_OTHER_TRANSITION
+            })
+            && refs_present
+    })
 }
 
 fn push_check(
