@@ -120,8 +120,8 @@ ArchSig の現行一次 workflow は `analyze` である。
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
+  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
   --out-dir .tmp/archsig-analyze
 ```
 
