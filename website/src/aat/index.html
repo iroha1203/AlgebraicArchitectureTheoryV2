@@ -35,6 +35,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#relative-geometry">The geometry AAT studies</a></li>
+                <li><a href="#why-algebraic-geometry">Why algebraic geometry?</a></li>
                 <li><a href="#central-chain">The central chain</a></li>
                 <li><a href="#reading-claims">How to read claims</a></li>
                 <li><a href="#parts">The parts</a></li>
@@ -72,6 +73,102 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                 fixed parameters. When the coefficient ring is not displayed,
                 \( X_C^{V,U,J} \) abbreviates a geometry with \( k \) already
                 fixed.
+              </p>
+            </section>
+
+            <section id="why-algebraic-geometry" class="article-section">
+              <h2>Why algebraic geometry?</h2>
+              <p>
+                The machinery is not a metaphor. Each layer of algebraic
+                geometry answers a question that software architecture
+                actually poses.
+              </p>
+              <dl class="definition-list">
+                <div>
+                  <dt>Laws arrive as a system, not one at a time</dt>
+                  <dd>
+                    A real architecture is governed by many constraints at
+                    once &mdash; layering, dependency direction, authority
+                    boundaries, contracts &mdash; and they hold or fail
+                    together. Algebraic geometry is the mathematics of
+                    simultaneous equations: law failure is collected into an
+                    obstruction ideal, the lawful locus is its common zero set
+                    \( \mathrm{Flat}_U(X) = V(\mathcal{I}_{\mathrm{Ob}}^U) \),
+                    and interaction between laws becomes ideal arithmetic
+                    rather than an informal checklist.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Gluing failure is the central failure</dt>
+                  <dd>
+                    &ldquo;Every module is correct, yet the whole system
+                    breaks&rdquo; is a descent problem. Sheaf theory turns
+                    local sections that do not glue into a precise object,
+                    and the mismatch is measured by cohomology: visible
+                    failure in \( H^0 \), gluing failure in \( H^1 \),
+                    coherence failure in \( H^2 \).
+                  </dd>
+                </div>
+                <div>
+                  <dt>Failure has a grade, not just a flag</dt>
+                  <dd>
+                    An ordinary check reports violation or no violation. Here
+                    failure carries structure: the cohomological degree it
+                    lives in, the Tor degree of a law conflict, the type of a
+                    singularity. &ldquo;How badly, and in what way, is this
+                    broken&rdquo; becomes a mathematical object &mdash; the
+                    starting point for prioritizing repair
+                    (<a href="derived-geometry-repair/">Part V</a>,
+                    <a href="singularity-monodromy-stack/">Part VI</a>).
+                  </dd>
+                </div>
+                <div>
+                  <dt>A century of instruments applies unchanged</dt>
+                  <dd>
+                    Once architecture is a ringed geometry, existing tools do
+                    real work: derived intersections and Tor sheaves read
+                    latent law conflict, cotangent complexes read
+                    singularities, monodromy reads operation history, stacks
+                    and gerbes decide whether a canonical decomposition can
+                    exist. None of these had to be invented for software.
+                  </dd>
+                </div>
+                <div>
+                  <dt>The relative point of view is native</dt>
+                  <dd>
+                    Since Grothendieck, algebraic geometry studies objects
+                    relative to a base, not absolute ones. AAT&rsquo;s
+                    discipline &mdash; fix an atom vocabulary, a law universe,
+                    a coverage topology, a coefficient ring, and
+                    <a href="#reading-claims">stay silent about what was not
+                    selected</a> &mdash; is not a safety clause bolted onto
+                    the theory. It is the standard working posture of the
+                    mathematics itself.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Geometry admits motion</dt>
+                  <dd>
+                    Because the object is a geometry, further structure can
+                    be laid on top of it. Evolution geometry
+                    (<a href="evolution-geometry/">Part IX</a>) adds the time
+                    direction inside AAT, and
+                    <a href="../sft/">Software Field Theory</a> reads
+                    development as fields and forces over this substrate.
+                  </dd>
+                </div>
+              </dl>
+              <p>
+                Behind all six answers stands Grothendieck&rsquo;s image of
+                the rising sea: a problem is not cracked open by force &mdash;
+                the ambient theory rises until the problem is surrounded and
+                opens almost by itself. AAT takes the same posture toward
+                software architecture. Cyclic dependencies, hidden coupling,
+                repairs that break what they fix are not attacked one by one
+                as puzzles; the ambient level rises &mdash; atoms, sites,
+                ideals, cohomology &mdash; until each of them appears as a
+                familiar geometric phenomenon with instruments already
+                attached.
               </p>
             </section>
 

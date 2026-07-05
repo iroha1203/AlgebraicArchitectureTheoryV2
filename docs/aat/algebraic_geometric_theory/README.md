@@ -62,6 +62,56 @@ representation、measurement profile、trace category、semantic repair-gluing c
 この理論史における古典的な有限・構成的基礎である。この本文は、その先行体系への
 注釈書ではなく、Atom の公理から代数幾何的アーキテクチャ論を自立して構成する。
 
+## なぜ代数幾何か
+
+この本文が代数幾何を選ぶのは見立てではない。各階層が、ソフトウェアアーキテクチャが
+実際に立てる問いに対応するからである。
+
+```text
+連立方程式系:
+  現実のアーキテクチャは複数の law が同時に効き、同時に成立するか同時に破れる。
+  代数幾何は連立方程式の数学である。law failure は obstruction ideal に集められ、
+  lawful locus はその共通零点 Flat_U(X) = V(I_Ob^U) であり、
+  law の相互作用はイデアルの演算になる。
+
+貼り合わせの障害:
+  「各モジュールは正しいのに全体が壊れる」は descent 問題である。
+  貼り合わない局所 section は sheaf theory の正確な対象になり、
+  不整合は cohomology で測られる。可視の失敗は H^0、
+  貼り合わせの失敗は H^1、整合性の失敗は H^2。
+
+失敗の等級:
+  失敗は二値ではなく構造を持つ。住む cohomology 次数、
+  law conflict の Tor 次数、特異点の型。
+  「どれくらい・どの種類に壊れているか」が数学的対象になり、
+  repair の優先順位づけの出発点になる(第V部・第VI部)。
+
+道具の継承:
+  アーキテクチャを ringed geometry にした時点で、既存の道具がそのまま働く。
+  derived intersection と Tor sheaf は潜在的 law conflict を、
+  cotangent complex は特異性を、monodromy は操作履歴を読み、
+  stack と gerbe は標準分解の存在可否を判定する。
+  どれもソフトウェアのために発明し直す必要がなかった。
+
+相対性:
+  グロタンディーク以来、代数幾何は絶対的な対象ではなく base に相対的な対象を研究する。
+  vocabulary、law universe、coverage topology、係数環を固定し、
+  選ばれなかったものについて沈黙する本文の規律は、
+  理論に後付けした安全条項ではなく、この数学そのものの標準的な作業姿勢である。
+
+運動:
+  対象が幾何であるから、その上に構造を積める。
+  第IX部は trace category と temporal coefficient によって
+  AAT geometry の時間方向を扱う。
+```
+
+この六つの答えの背後にあるのは、グロタンディークの「上昇する海」の像である。
+問題は力ずくでこじ開けられない。理論の水位が上がり、問題が包囲され、
+ほとんどひとりでに開く。AAT はソフトウェアアーキテクチャに対して同じ姿勢を取る。
+循環依存、隠れた結合、修理が別の law を壊す現象は、
+個別のパズルとして各個撃破されない。Atom、site、ideal、cohomology と水位が
+上がるにつれて、それぞれは道具の備わった既知の幾何現象として現れる。
+
 ## 構成
 
 1. [第I部 Atom・対象・法則](part_1_atoms_objects_laws.md)
