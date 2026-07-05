@@ -1936,3 +1936,50 @@ G2 / G3 / G4 audit summary:
 - G4 score audit: reduce。canonical / partial examples は有用だが、汎用 iff の具体 edit への適用で、
   exact first selector 自体は Cycle 33 の成果。threshold 到達の都合で増点しない。fail-closed に
   G2/G4 の一致した下限を採用し、base 35、evidence multiplier 2.0、penalty 10、final +60 とする。
+
+## Cycle 35 — No-miss repair criterion
+
+candidate: `research/ideas/g-sft-conway-01-no-miss-repair-criterion.md`
+candidate_type: `criterion`
+evidence_stage: `proved-in-research`
+base_score: 20
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 30
+category: `conway-obstruction`, `first-miss-scanner`,
+  `repair-transition`, `positive-criterion`
+goal_delta: selected reorg/refactor edit shapes について、selected first miss がないこと、
+  selected miss がないこと、selected repair-transition record が存在することが同値であることを追加した。
+project_value_delta: Cycle 34 の negative miss criterion に対応する positive repair criterion を保存した。
+  downstream theorem が double negation を通らず no-miss から repair-transition existence を直接参照できる。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  no failing conflict を repair success と読めるが、この cycle は selected finite Conway vocabulary 上で
+  no-miss と repair-transition existence の同値を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayNoMissRepairCriterion.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。reported theorem は標準 `propext`、
+  既存 infrastructure 由来の `Classical.choice` / `Quot.sound` を継承する。
+open_questions: arbitrary repair calculus、runtime extraction algorithm、arbitrary conflict enumeration、
+  selector-preserving refinement naturality は未固定。この cycle 後の ledger は 2960 -> 2990 / 3000 で、
+  active threshold 3000 にはあと 10 残る。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayNoMissRepairCriterion.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgNoFirstSelectedMiss_iff_repairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorNoFirstSelectedMiss_iff_repairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgNoSelectedMiss_iff_repairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorNoSelectedMiss_iff_repairTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedNoMissRepairCriterionPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: pass。positive repair criterion として no-first-miss / no-selected-miss /
+  repair-transition existence を両 edit shape で直接参照できる増分を認め、base 25、multiplier 2.0、
+  penalty 10、final +40 を許容した。
+- G3 formalization quality: pass。focused check と module build は通過し、対象 theorem/package に
+  `sorry/admit/unsafe/axiom` はない。axiom audit は標準 `propext` と、既存 infrastructure 由来の
+  `Classical.choice` / `Quot.sound` 依存に収まる。
+- G4 score audit: reduce。主な増分は Cycle 34 の `first miss exists ↔ no repair-transition` を
+  positive side に反転し、既存 iff package と接続する点であり、新しい finite vocabulary、
+  scanner、example、repair calculus ではない。threshold close のために増点せず、fail-closed に
+  G4 の下限を採用し、base 20、evidence multiplier 2.0、penalty 10、final +30 とする。
