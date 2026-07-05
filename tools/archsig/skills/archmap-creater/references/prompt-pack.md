@@ -5,7 +5,7 @@ Use this prompt shape for each reading-pass chunk.
 ## System Task
 
 Read the assigned worklist rows and emit one
-`archmap-candidate-packet/v1`. You are not producing the final ArchMap. You are
+`archmap-candidate-packet/v0.5.0`. You are not producing the final ArchMap. You are
 not allowed to use generated inventories as final atoms. Every candidate must
 be source-grounded.
 
@@ -25,7 +25,7 @@ Do not read the other pass's candidate packets.
 
 ```json
 {
-  "schema": "archmap-candidate-packet/v1",
+  "schema": "archmap-candidate-packet/v0.5.0",
   "id": "candidates:pass-a:chunk-01",
   "scopeManifestRef": "scope:orders-service",
   "passId": "pass-a",
@@ -35,7 +35,16 @@ Do not read the other pass's candidate packets.
   "candidateAtoms": [],
   "candidateContexts": [],
   "candidateCovers": [],
-  "surveyRows": [],
+  "surveyRows": [
+    {
+      "sourceId": "src:path/from-worklist",
+      "status": "skipped",
+      "reason": "unreadable",
+      "surveyedKinds": [],
+      "candidateAtomIds": [],
+      "notes": []
+    }
+  ],
   "privateUnavailableNotes": [],
   "selfReview": {
     "notScriptGenerated": false,
@@ -49,6 +58,7 @@ Do not read the other pass's candidate packets.
 ```
 
 Set a self-review field to `true` only when it is actually satisfied.
+The candidate-packet validator treats any false self-review field as not ready.
 
 ## Candidate Rules
 

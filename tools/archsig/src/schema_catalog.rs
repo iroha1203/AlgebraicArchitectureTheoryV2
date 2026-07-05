@@ -1,5 +1,7 @@
 use crate::{
-    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
+    ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
+    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
     ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
@@ -44,6 +46,58 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",
+                ],
+            ),
+            artifact(
+                "archmap-scope-manifest/v0.5.0",
+                "ArchMap authoring scope manifest",
+                ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA,
+                "authoring",
+                "ArchSig v0.5.0 ArchMap authoring",
+                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                "Scope manifest v0.5.0 records the selected authoring scope, repository revision, deterministic worklist, content hashes, exclusions, and author-supplied evidence files before reading begins.",
+                vec![
+                    "Scope manifest records the selected scope only; it does not assert source extraction completeness.",
+                    "Scope manifest does not generate atoms or decide semantic meaning.",
+                ],
+            ),
+            artifact(
+                "archmap-candidate-packet/v0.5.0",
+                "ArchMap authoring candidate packet",
+                ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
+                "authoring",
+                "ArchSig v0.5.0 ArchMap authoring",
+                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                "Candidate packet v0.5.0 records one reading pass chunk: reviewed sources, candidate observations, survey rows, unavailable notes, and self-review gates.",
+                vec![
+                    "Candidate packets are not final ArchMap artifacts.",
+                    "Candidate packets do not adjudicate pass disagreement or automate semantic adoption.",
+                ],
+            ),
+            artifact(
+                "archmap-extraction-consistency/v0.5.0",
+                "ArchMap authoring extraction consistency report",
+                ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
+                "authoring",
+                "ArchSig v0.5.0 ArchMap authoring",
+                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                "Extraction consistency v0.5.0 records atom-match-key comparison between reading passes, unmatched queues, matchRate, context differences, and integrator adjudications.",
+                vec![
+                    "matchRate is a record, not a verdict.",
+                    "Unmatched rows are rereading queues, not evidence that a candidate is wrong.",
+                ],
+            ),
+            artifact(
+                "archmap-coverage-ledger/v0.5.0",
+                "ArchMap authoring coverage ledger",
+                ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
+                "authoring",
+                "ArchSig v0.5.0 ArchMap authoring",
+                vec!["archsig-contract:v0.5.0-prd5-archmap-skill"],
+                "Coverage ledger v0.5.0 records selected-scope survey rows and the fixed claim boundary for authoring provenance.",
+                vec![
+                    "Coverage ledger rows record authoring survey state; they do not assert extraction completeness.",
+                    "Coverage ledger is not read by analyze.",
                 ],
             ),
             artifact(
@@ -359,6 +413,10 @@ mod tests {
             BTreeSet::from([
                 "archmap-current",
                 "aat-atom-vocabulary/v0.5.0",
+                "archmap-scope-manifest/v0.5.0",
+                "archmap-candidate-packet/v0.5.0",
+                "archmap-extraction-consistency/v0.5.0",
+                "archmap-coverage-ledger/v0.5.0",
                 "law-policy/v0.5.0",
                 "law-evaluator-registry/v0.5.0",
                 "measurement-profile/v0.5.0",

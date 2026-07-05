@@ -60,6 +60,114 @@
       }
     },
     {
+      "artifactId": "archmap-scope-manifest/v0.5.0",
+      "artifactName": "ArchMap authoring scope manifest",
+      "schemaName": "archmap-scope-manifest/v0.5.0",
+      "artifactRole": "authoring",
+      "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd5-archmap-skill"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Scope manifest v0.5.0 records the selected authoring scope, repository revision, deterministic worklist, content hashes, exclusions, and author-supplied evidence files before reading begins.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Scope manifest records the selected scope only; it does not assert source extraction completeness.",
+          "Scope manifest does not generate atoms or decide semantic meaning."
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-candidate-packet/v0.5.0",
+      "artifactName": "ArchMap authoring candidate packet",
+      "schemaName": "archmap-candidate-packet/v0.5.0",
+      "artifactRole": "authoring",
+      "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd5-archmap-skill"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Candidate packet v0.5.0 records one reading pass chunk: reviewed sources, candidate observations, survey rows, unavailable notes, and self-review gates.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Candidate packets are not final ArchMap artifacts.",
+          "Candidate packets do not adjudicate pass disagreement or automate semantic adoption."
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-extraction-consistency/v0.5.0",
+      "artifactName": "ArchMap authoring extraction consistency report",
+      "schemaName": "archmap-extraction-consistency/v0.5.0",
+      "artifactRole": "authoring",
+      "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd5-archmap-skill"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Extraction consistency v0.5.0 records atom-match-key comparison between reading passes, unmatched queues, matchRate, context differences, and integrator adjudications.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "matchRate is a record, not a verdict.",
+          "Unmatched rows are rereading queues, not evidence that a candidate is wrong."
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-coverage-ledger/v0.5.0",
+      "artifactName": "ArchMap authoring coverage ledger",
+      "schemaName": "archmap-coverage-ledger/v0.5.0",
+      "artifactRole": "authoring",
+      "ownerPhase": "ArchSig v0.5.0 ArchMap authoring",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd5-archmap-skill"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Coverage ledger v0.5.0 records selected-scope survey rows and the fixed claim boundary for authoring provenance.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Coverage ledger rows record authoring survey state; they do not assert extraction completeness.",
+          "Coverage ledger is not read by analyze."
+        ]
+      }
+    },
+    {
       "artifactId": "law-policy/v0.5.0",
       "artifactName": "LawPolicy v1 selector artifact",
       "schemaName": "law-policy/v0.5.0",

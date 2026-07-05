@@ -5,12 +5,12 @@ use std::process::ExitCode;
 use archsig::{
     ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
     LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
-    SchemaVersionCatalogV0, build_comparison_artifacts_v1, build_foundation_measurement_packet_v1,
-    build_gate_report_v1, build_insight_brief_v1, build_insight_report_v1,
-    build_measurement_summary_v1, build_measurement_viewer_data_v1,
-    build_repair_plan_validation_report_v1, normalize_archmap_v2, static_schema_version_catalog,
-    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
-    validate_measurement_profile_v1_checks,
+    SchemaVersionCatalogV0, ScopeManifestOptions, build_comparison_artifacts_v1,
+    build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
+    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    build_repair_plan_validation_report_v1, build_scope_manifest_v1, normalize_archmap_v2,
+    static_schema_version_catalog, validate_archmap_v2_report, validate_law_policy_v1_report,
+    validate_measurement_packet_v1, validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -37,6 +37,53 @@ enum Command {
         input: PathBuf,
 
         /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build a deterministic authoring scope manifest worklist.
+    ScopeManifest {
+        /// Repository root to scan.
+        #[arg(long = "repo-root", default_value = ".")]
+        repo_root: PathBuf,
+
+        /// Include glob. Repeat for multiple patterns.
+        #[arg(long = "include", required = true)]
+        include: Vec<String>,
+
+        /// Exclude glob. Repeat for multiple patterns.
+        #[arg(long = "exclude")]
+        exclude: Vec<String>,
+
+        /// Author evidence file as <kind>:<name>=<repo-relative-path>.
+        #[arg(long = "add-evidence")]
+        add_evidence: Vec<String>,
+
+        /// Previous scope manifest. Emits only new or content-changed worklist rows.
+        #[arg(long)]
+        baseline: Option<PathBuf>,
+
+        /// Manifest id. Tests and reproducible runs should set this explicitly.
+        #[arg(long, default_value = "scope:archmap-authoring")]
+        id: String,
+
+        /// Requested scope text to record in scopeSpec.
+        #[arg(long = "requested-scope")]
+        requested_scope: Option<String>,
+
+        /// Scope approver to record in scopeSpec.
+        #[arg(long = "approved-by")]
+        approved_by: Option<String>,
+
+        /// Deterministic test override for repository.revision.
+        #[arg(long = "revision-override")]
+        revision_override: Option<String>,
+
+        /// Deterministic test override for repository.dirty.
+        #[arg(long = "dirty-override")]
+        dirty_override: Option<bool>,
+
+        /// Output scope manifest JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -296,6 +343,34 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::ScopeManifest {
+            repo_root,
+            include,
+            exclude,
+            add_evidence,
+            baseline,
+            id,
+            requested_scope,
+            approved_by,
+            revision_override,
+            dirty_override,
+            out,
+        }) => {
+            let manifest = build_scope_manifest_v1(&ScopeManifestOptions {
+                repo_root,
+                include_globs: include,
+                exclude_globs: exclude,
+                added_evidence: add_evidence,
+                requested_scope,
+                approved_by,
+                id,
+                baseline,
+                revision_override,
+                dirty_override,
+            })?;
+            write_json(out, &manifest)?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::LawPolicy {
             law_policy,
