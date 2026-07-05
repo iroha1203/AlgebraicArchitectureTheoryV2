@@ -120,6 +120,12 @@ as `宣言`, `statement-only`, or explicit future proof-obligation boundaries.
 This is a closure of the peer-review hardening inventory, not a claim that
 every statement-shaped surface has been promoted to an unconditional theorem.
 
+PRD-R AC22 validation policy: `FormalAGResearch` is a heavy Lake target and is
+checked by CI, not by every local PRD-loop iteration. The Lean GitHub Actions
+workflow contains an explicit `lake build FormalAGResearch` step in addition to
+the kernel axiom audit. AC22 is considered satisfied only when that CI step is
+green on the AC22 PR and the parent tracking issue records the passing PR.
+
 AC 再判定: PRD-R R0 では AC11 / AC13 を `packaged (assumption-relative)` として読む。
 根拠宣言と再判定理由は末尾の「PRD-R R0 AC 再判定」集中表に置く。
 
