@@ -57,6 +57,69 @@ theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
   Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero
 
+theorem presentedArchitectureFundamentalGroupRelatorMapsToIdentity
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    {w : Pi.FreeWord} (h : Pi.Relator w) :
+    SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedQuotientMap
+      Pi w = 1 :=
+  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelator_maps_to_identity
+    Pi h
+
+theorem presentedArchitectureFundamentalGroupLiftOf
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    {Y : Type*} [Group Y]
+    (f : SingularityMonodromyStack.FormalEdgeStep G -> Y)
+    (hrels : ∀ r ∈
+      SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelators Pi,
+        FreeGroup.lift f r = 1)
+    (step : SingularityMonodromyStack.FormalEdgeStep G) :
+    SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift
+      Pi f hrels (PresentedGroup.of step) = f step :=
+  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_of
+    Pi f hrels step
+
+theorem presentedArchitectureFundamentalGroupLiftUnique
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    {Y : Type*} [Group Y]
+    (f : SingularityMonodromyStack.FormalEdgeStep G -> Y)
+    (hrels : ∀ r ∈
+      SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelators Pi,
+        FreeGroup.lift f r = 1)
+    (g :
+      (SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pi1AAT Pi) →* Y)
+    (hg : ∀ step : SingularityMonodromyStack.FormalEdgeStep G,
+      g (PresentedGroup.of step) = f step)
+    (x : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pi1AAT Pi) :
+    g x =
+      SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift
+        Pi f hrels x :=
+  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_unique
+    Pi f hrels g hg x
+
 theorem concreteThreeReadingAgreementRequiredLaw {U : AtomCarrier}
     (A : ArchitectureObject U) (LU : LawUniverse U) :
     (SemanticLawful A LU ↔
@@ -306,6 +369,30 @@ info: 'AAT.AG.AxiomAudit.forceCandidateConcreteNonzero' depends on axioms: [prop
 -/
 #guard_msgs in
 #print axioms forceCandidateConcreteNonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupRelatorMapsToIdentity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms presentedArchitectureFundamentalGroupRelatorMapsToIdentity
+
+/--
+info: 'AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftOf' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms presentedArchitectureFundamentalGroupLiftOf
+
+/--
+info: 'AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms presentedArchitectureFundamentalGroupLiftUnique
 
 /--
 info: 'AAT.AG.AxiomAudit.concreteThreeReadingAgreementRequiredLaw' depends on axioms: [propext, Classical.choice, Quot.sound]
