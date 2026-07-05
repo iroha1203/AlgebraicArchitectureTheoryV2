@@ -157,7 +157,8 @@ gates; a false field means the packet is not ready for consistency comparison.
 
 ## archmap-extraction-consistency/v0.5.0
 
-Mechanical diff output plus integrator adjudication.
+Mechanical diff output plus integrator adjudication. `adjudications` is empty in
+the mechanical output and is filled only after source rereading.
 
 ```json
 {
@@ -166,8 +167,18 @@ Mechanical diff output plus integrator adjudication.
   "scopeManifestRef": "scope:orders-service",
   "passARefs": ["candidates:pass-a:chunk-01"],
   "passBRefs": ["candidates:pass-b:chunk-01"],
-  "atomMatchKeySpec": "atom-match-key@1",
-  "matched": { "count": 12 },
+  "atomMatchKeySpec": "kind | NFC(trim(subject)) | axis | predicate? | object?",
+  "matched": {
+    "count": 12,
+    "rows": [
+      {
+        "key": "semantic|orders.Handler|semantic|uses|cancel path",
+        "passAAtomIds": ["atom:pass-a:cancel-path"],
+        "passBAtomIds": ["atom:pass-b:cancel-path"],
+        "refs": ["src:src/orders/handler.rs", "src:src/orders/handler.rs:42"]
+      }
+    ]
+  },
   "onlyInPassA": [],
   "onlyInPassB": [],
   "matchRate": 1.0,

@@ -5,10 +5,10 @@ and pass differences auditable without turning them into semantic verdicts.
 
 ## Extraction Consistency
 
-`archmap-extraction-consistency/v0.5.0` is produced by `archsig extraction-diff`
-when that CLI is available. Until then, the integrator produces the same shape
-by hand from `atom-match-key@1` and marks the run notes as hand-authored. In
-both cases, the integrator completes adjudication by rereading sources.
+`archmap-extraction-consistency/v0.5.0` is produced by `archsig extraction-diff`.
+The command compares candidate packets by atom-match-key and leaves semantic
+adjudication to the integrator. The integrator completes adjudication by
+rereading sources.
 
 Required shape:
 
@@ -19,8 +19,18 @@ Required shape:
   "scopeManifestRef": "scope:orders-service",
   "passARefs": ["candidates:pass-a:chunk-01"],
   "passBRefs": ["candidates:pass-b:chunk-01"],
-  "atomMatchKeySpec": "atom-match-key@1",
-  "matched": { "count": 12 },
+  "atomMatchKeySpec": "kind | NFC(trim(subject)) | axis | predicate? | object?",
+  "matched": {
+    "count": 12,
+    "rows": [
+      {
+        "key": "semantic|orders.Handler|semantic|uses|cancel path",
+        "passAAtomIds": ["atom:pass-a:cancel-path"],
+        "passBAtomIds": ["atom:pass-b:cancel-path"],
+        "refs": ["src:src/orders/handler.rs", "src:src/orders/handler.rs:42"]
+      }
+    ]
+  },
   "onlyInPassA": [],
   "onlyInPassB": [],
   "matchRate": 1.0,

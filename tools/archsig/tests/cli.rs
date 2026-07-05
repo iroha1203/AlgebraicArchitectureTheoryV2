@@ -296,6 +296,448 @@ fn cli_scope_manifest_records_unknown_git_state_as_null() {
     assert!(manifest["repository"]["dirty"].is_null());
 }
 
+fn candidate_packet_fixture(id: &str, pass_id: &str, atoms: Vec<Value>) -> Value {
+    json!({
+        "schema": "archmap-candidate-packet/v0.5.0",
+        "id": id,
+        "scopeManifestRef": "scope:test",
+        "passId": pass_id,
+        "chunk": { "worklistOrderFrom": 1, "worklistOrderTo": 1 },
+        "reviewedSources": ["src:src/a.rs"],
+        "candidateSources": {
+            "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
+        },
+        "candidateAtoms": atoms,
+        "candidateContexts": [
+            {
+                "id": format!("ctx:{pass_id}:common"),
+                "atoms": ["atom:common"],
+                "restrictsTo": [],
+                "refs": ["src:src/a.rs"]
+            }
+        ],
+        "candidateCovers": [],
+        "surveyRows": [
+            {
+                "sourceId": "src:src/a.rs",
+                "status": "read",
+                "surveyedKinds": ["semantic"],
+                "candidateAtomIds": ["atom:common"],
+                "notes": []
+            }
+        ],
+        "privateUnavailableNotes": [],
+        "selfReview": {
+            "notScriptGenerated": true,
+            "notCoarseWhenEvidenceWasRicher": true,
+            "semanticAtomsHaveUseEvidence": true,
+            "noDiagnosticShortcutAtoms": true,
+            "worklistChunkFullyRead": true,
+            "aliasPreservingSemantics": true
+        }
+    })
+}
+
+fn write_candidate_packet(path: &Path, packet: &Value) {
+    fs::write(
+        path,
+        serde_json::to_vec_pretty(packet).expect("candidate packet serializes"),
+    )
+    .expect("candidate packet writes");
+}
+
+#[test]
+fn cli_extraction_diff_matches_atoms_by_normalized_key_without_adjudication() {
+    let out_dir = temp_dir("extraction-diff-match");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let pass_b_path = out_dir.join("pass-b.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![
+                json!({
+                    "id": "atom:common",
+                    "kind": "semantic",
+                    "subject": " Cafe\u{301} ",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "payments",
+                    "refs": ["src:src/a.rs"]
+                }),
+                json!({
+                    "id": "atom:only-a",
+                    "kind": "semantic",
+                    "subject": "Orders",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "inventory",
+                    "refs": ["src:src/a.rs"]
+                }),
+            ],
+        ),
+    );
+    write_candidate_packet(
+        &pass_b_path,
+        &candidate_packet_fixture(
+            "candidates:pass-b",
+            "pass-b",
+            vec![
+                json!({
+                    "id": "atom:common",
+                    "kind": "semantic",
+                    "subject": "Café",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "payments",
+                    "refs": ["src:src/a.rs:2"]
+                }),
+                json!({
+                    "id": "atom:only-b",
+                    "kind": "semantic",
+                    "subject": "Orders",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "tax",
+                    "refs": ["src:src/a.rs:3"]
+                }),
+            ],
+        ),
+    );
+
+    run_sig0(&[
+        "extraction-diff",
+        "--pass-a",
+        pass_a_path.to_str().expect("path is utf-8"),
+        "--pass-b",
+        pass_b_path.to_str().expect("path is utf-8"),
+        "--id",
+        "consistency:test",
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = read_json(&report_path);
+    assert_eq!(report["schema"], "archmap-extraction-consistency/v0.5.0");
+    assert_eq!(report["passARefs"], json!(["candidates:pass-a"]));
+    assert_eq!(report["passBRefs"], json!(["candidates:pass-b"]));
+    assert_eq!(report["matched"]["count"], 1);
+    assert_eq!(report["onlyInPassA"].as_array().map(Vec::len), Some(1));
+    assert_eq!(report["onlyInPassB"].as_array().map(Vec::len), Some(1));
+    assert_eq!(report["adjudications"].as_array().map(Vec::len), Some(0));
+    assert_eq!(
+        report["matched"]["rows"][0]["refs"],
+        json!(["src:src/a.rs", "src:src/a.rs:2"])
+    );
+    assert_eq!(report["contextDiff"]["matched"], 1);
+    assert!(
+        (report["matchRate"].as_f64().expect("matchRate is number") - (1.0 / 3.0)).abs() < 1e-12
+    );
+}
+
+#[test]
+fn cli_extraction_diff_records_single_pass_degraded_shape() {
+    let out_dir = temp_dir("extraction-diff-single-pass");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "payments",
+                "refs": ["src:src/a.rs"]
+            })],
+        ),
+    );
+
+    run_sig0(&[
+        "extraction-diff",
+        "--pass-a",
+        pass_a_path.to_str().expect("path is utf-8"),
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = read_json(&report_path);
+    assert_eq!(report["passBRefs"], json!([]));
+    assert_eq!(report["matched"]["count"], 0);
+    assert_eq!(report["onlyInPassA"].as_array().map(Vec::len), Some(1));
+    assert_eq!(report["matchRate"], 0.0);
+}
+
+#[test]
+fn cli_extraction_diff_rejects_diagnostic_shortcut_candidates() {
+    let out_dir = temp_dir("extraction-diff-diagnostic-shortcut");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "violatesLaw",
+                "object": "payments",
+                "refs": ["src:src/a.rs"]
+            })],
+        ),
+    );
+
+    run_sig0_expect_code(
+        &[
+            "extraction-diff",
+            "--pass-a",
+            pass_a_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_extraction_diff_rejects_semantic_candidates_without_object() {
+    let out_dir = temp_dir("extraction-diff-semantic-object");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "refs": ["src:src/a.rs"]
+            })],
+        ),
+    );
+
+    run_sig0_expect_code(
+        &[
+            "extraction-diff",
+            "--pass-a",
+            pass_a_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_extraction_diff_keeps_duplicate_key_multiplicity_auditable() {
+    let out_dir = temp_dir("extraction-diff-duplicate-key");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let pass_b_path = out_dir.join("pass-b.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![
+                json!({
+                    "id": "atom:common",
+                    "kind": "semantic",
+                    "subject": "Orders",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "payments",
+                    "refs": ["src:src/a.rs"]
+                }),
+                json!({
+                    "id": "atom:common-duplicate",
+                    "kind": "semantic",
+                    "subject": "Orders",
+                    "axis": "semantic",
+                    "predicate": "uses",
+                    "object": "payments",
+                    "refs": ["src:src/a.rs:duplicate"]
+                }),
+            ],
+        ),
+    );
+    write_candidate_packet(
+        &pass_b_path,
+        &candidate_packet_fixture(
+            "candidates:pass-b",
+            "pass-b",
+            vec![json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "payments",
+                "refs": ["src:src/a.rs"]
+            })],
+        ),
+    );
+
+    run_sig0(&[
+        "extraction-diff",
+        "--pass-a",
+        pass_a_path.to_str().expect("path is utf-8"),
+        "--pass-b",
+        pass_b_path.to_str().expect("path is utf-8"),
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = read_json(&report_path);
+    assert_eq!(report["matched"]["count"], 1);
+    assert_eq!(report["onlyInPassA"].as_array().map(Vec::len), Some(1));
+    assert_eq!(
+        report["onlyInPassA"][0]["candidateAtomId"],
+        "atom:common-duplicate"
+    );
+    assert!((report["matchRate"].as_f64().expect("matchRate") - 0.5).abs() < 1e-12);
+}
+
+#[test]
+fn cli_extraction_diff_context_key_includes_restricted_target_key() {
+    let out_dir = temp_dir("extraction-diff-context-key");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let pass_b_path = out_dir.join("pass-b.json");
+    let report_path = out_dir.join("consistency.json");
+    let mut pass_a = candidate_packet_fixture(
+        "candidates:pass-a",
+        "pass-a",
+        vec![
+            json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "payments",
+                "refs": ["src:src/a.rs"]
+            }),
+            json!({
+                "id": "atom:target-a",
+                "kind": "semantic",
+                "subject": "Target",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "a",
+                "refs": ["src:src/a.rs"]
+            }),
+        ],
+    );
+    pass_a["candidateContexts"] = json!([
+        { "id": "ctx:target", "atoms": ["atom:common"], "restrictsTo": ["ctx:leaf-a"], "refs": [] },
+        { "id": "ctx:leaf-a", "atoms": ["atom:target-a"], "restrictsTo": [], "refs": [] },
+        { "id": "ctx:parent", "atoms": ["atom:common"], "restrictsTo": ["ctx:target"], "refs": [] }
+    ]);
+    let mut pass_b = candidate_packet_fixture(
+        "candidates:pass-b",
+        "pass-b",
+        vec![
+            json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "payments",
+                "refs": ["src:src/a.rs"]
+            }),
+            json!({
+                "id": "atom:target-b",
+                "kind": "semantic",
+                "subject": "Target",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "b",
+                "refs": ["src:src/a.rs"]
+            }),
+        ],
+    );
+    pass_b["candidateContexts"] = json!([
+        { "id": "ctx:target", "atoms": ["atom:common"], "restrictsTo": ["ctx:leaf-b"], "refs": [] },
+        { "id": "ctx:leaf-b", "atoms": ["atom:target-b"], "restrictsTo": [], "refs": [] },
+        { "id": "ctx:parent", "atoms": ["atom:common"], "restrictsTo": ["ctx:target"], "refs": [] }
+    ]);
+    write_candidate_packet(&pass_a_path, &pass_a);
+    write_candidate_packet(&pass_b_path, &pass_b);
+
+    run_sig0(&[
+        "extraction-diff",
+        "--pass-a",
+        pass_a_path.to_str().expect("path is utf-8"),
+        "--pass-b",
+        pass_b_path.to_str().expect("path is utf-8"),
+        "--out",
+        report_path.to_str().expect("path is utf-8"),
+    ]);
+
+    let report = read_json(&report_path);
+    assert_eq!(report["contextDiff"]["matched"], 0);
+    assert_eq!(
+        report["contextDiff"]["onlyInPassA"]
+            .as_array()
+            .map(Vec::len),
+        Some(3)
+    );
+    assert_eq!(
+        report["contextDiff"]["onlyInPassB"]
+            .as_array()
+            .map(Vec::len),
+        Some(3)
+    );
+}
+
+#[test]
+fn cli_extraction_diff_rejects_local_markers_in_candidate_refs() {
+    let out_dir = temp_dir("extraction-diff-local-ref");
+    let pass_a_path = out_dir.join("pass-a.json");
+    let report_path = out_dir.join("consistency.json");
+    write_candidate_packet(
+        &pass_a_path,
+        &candidate_packet_fixture(
+            "candidates:pass-a",
+            "pass-a",
+            vec![json!({
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "Orders",
+                "axis": "semantic",
+                "predicate": "uses",
+                "object": "payments",
+                "refs": [format!("{}/example/worktree", ["", "Users"].join("/"))]
+            })],
+        ),
+    );
+
+    run_sig0_expect_code(
+        &[
+            "extraction-diff",
+            "--pass-a",
+            pass_a_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+}
+
 #[test]
 fn cli_validates_archmap_v2_finite_poset_site_contract() {
     let out_dir = temp_dir("archmap-schema050-validation");

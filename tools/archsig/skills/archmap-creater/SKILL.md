@@ -85,11 +85,9 @@ scope. Do not claim that all possible repository evidence was extracted.
    - Apply the same round-trip rule as Pass A.
 
 5. **Consistency**
-   - If `archsig extraction-diff` is available, run it over Pass A and Pass B
-     candidate packets.
-   - Until that CLI exists, build `archmap-extraction-consistency/v0.5.0` by applying
-     `atom-match-key@1` and the context key rules from the references. Mark this
-     as hand-authored consistency in the run notes.
+   - Run `archsig extraction-diff` over Pass A and Pass B candidate packets.
+   - The command applies atom-match-key and context key rules from the references
+     and leaves `adjudications` empty for integrator rereading.
    - For every `onlyInPassA` or `onlyInPassB` entry, the integrator rereads the
      cited source and records an adjudication: `adopted`, `merged`, or
      `not-adopted`.
