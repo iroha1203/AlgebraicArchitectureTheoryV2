@@ -339,6 +339,61 @@
       }
     },
     {
+      "artifactId": "archmap-diff/v0.5.0",
+      "artifactName": "ArchSig deterministic normalized ArchMap diff",
+      "schemaName": "archmap-diff/v0.5.0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / CI workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd2-artifact-ci"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "ArchMap diff v1 records deterministic added, removed, and modified sources, atoms, contexts, and covers computed from two normalized-archmap/v0.5.0 artifacts.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "ArchMap diff is a computed record artifact, not supplied observation evidence.",
+          "Diff entries are mechanical JSON differences and do not assign causality to verdict changes."
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-comparison-report/v0.5.0",
+      "artifactName": "ArchSig comparison report v1",
+      "schemaName": "archsig-comparison-report/v0.5.0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / CI workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd2-artifact-ci"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Comparison report v1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Comparison report does not implement class transport, obstruction identity transport, repair causality, or semantic equivalence.",
+          "Comparison report conclusion codes are record-level names only.",
+          "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-analysis-packet/v0.5.0",
       "artifactName": "ArchSig v1 typed evaluator analysis packet",
       "schemaName": "archsig-analysis-packet/v0.5.0",

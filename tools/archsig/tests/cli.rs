@@ -4,7 +4,13 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use archsig::{ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine};
+use archsig::{
+    ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
+    ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
+    ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
+    ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ArchMapDocumentV2,
+    ArchSigRunManifestV0, compare_archmap_v2_doctrine,
+};
 use serde_json::{Value, json};
 
 fn fixture_root() -> PathBuf {
@@ -9300,6 +9306,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-boundary-statement/v0.5.0",
             "archsig-gate-policy/v0.5.0",
             "archsig-gate-report/v0.5.0",
+            "archmap-diff/v0.5.0",
+            "archsig-comparison-report/v0.5.0",
             "archsig-analysis-packet/v0.5.0",
             "archsig-run-manifest/v0.5.0",
             "archsig-atom-viewer-data/v0.5.0",
@@ -10264,7 +10272,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.0"
+            "schema": "archsig-pr-review-report/v0.5.0"
         }))
         .expect("comparison serializes"),
     )
@@ -10286,13 +10294,82 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     );
     let comparison_gate = read_json(&comparison_report);
     assert_eq!(comparison_gate["decision"], "NOT_EVALUABLE");
-    assert!(
-        comparison_gate["ruleOutcomes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|outcome| outcome["scope"] == "introduced-by-change"
-                && outcome["status"] == "not_evaluable")
+    assert_eq!(
+        comparison_gate["reason"],
+        "comparison report schema validation failed"
+    );
+
+    let empty_comparison_path = out_dir.join("empty-comparison.json");
+    fs::write(
+        &empty_comparison_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-comparison-report/v0.5.0",
+            "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
+            "comparability": { "level": "identical" },
+            "verdictTransitions": []
+        }))
+        .expect("comparison serializes"),
+    )
+    .expect("comparison fixture can be written");
+    let empty_comparison_report = out_dir.join("empty-comparison-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            empty_comparison_path.to_str().expect("path is utf-8"),
+            "--out",
+            empty_comparison_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(
+        read_json(&empty_comparison_report)["decision"],
+        "NOT_EVALUABLE"
+    );
+
+    let unknown_category_comparison_path = out_dir.join("unknown-category-comparison.json");
+    fs::write(
+        &unknown_category_comparison_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-comparison-report/v0.5.0",
+            "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
+            "comparability": { "level": "identical" },
+            "verdictTransitions": [{
+                "rowKey": "ag.cech-obstruction|ag.cech-obstruction|finite_f2_cech_computed",
+                "baseRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+                "headRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+                "transition": "preexisting_recorded_row",
+                "introducedByChangeCategory": "alien",
+                "deltaRefs": []
+            }]
+        }))
+        .expect("comparison serializes"),
+    )
+    .expect("comparison fixture can be written");
+    let unknown_category_report = out_dir.join("unknown-category-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            unknown_category_comparison_path
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            unknown_category_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(
+        read_json(&unknown_category_report)["decision"],
+        "NOT_EVALUABLE"
     );
 }
 
@@ -10371,6 +10448,250 @@ fn cli_gate_report_is_byte_deterministic() {
     assert_eq!(
         fs::read(&first).expect("first report exists"),
         fs::read(&second).expect("second report exists")
+    );
+}
+
+#[test]
+fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_transition() {
+    let out_dir = temp_dir("archsig-compare-cover-change");
+    let root = ag_measurement_root();
+    let base_run = out_dir.join("base-run");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        base_run.to_str().expect("path is utf-8"),
+    ]);
+
+    let mut head_archmap = read_json(&root.join("archmap_v2.json"));
+    head_archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are array")
+        .push(json!({
+            "id": "ctx:audit",
+            "atoms": ["atom:order"],
+            "restrictsTo": [],
+            "refs": ["src:cover"]
+        }));
+    head_archmap["covers"][0]["contexts"] =
+        json!(["ctx:order", "ctx:inventory", "ctx:shared", "ctx:audit"]);
+    let head_archmap_path = out_dir.join("archmap_v2_cover_changed.json");
+    fs::write(
+        &head_archmap_path,
+        serde_json::to_vec_pretty(&head_archmap).expect("archmap serializes"),
+    )
+    .expect("head archmap can be written");
+    let head_run = out_dir.join("head-run");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        head_archmap_path.to_str().expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        head_run.to_str().expect("path is utf-8"),
+    ]);
+
+    let compare_a = out_dir.join("compare-a");
+    let compare_b = out_dir.join("compare-b");
+    for compare_out in [&compare_a, &compare_b] {
+        run_sig0(&[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("path is utf-8"),
+            "--head-run",
+            head_run.to_str().expect("path is utf-8"),
+            "--out-dir",
+            compare_out.to_str().expect("path is utf-8"),
+        ]);
+    }
+    assert_eq!(
+        fs::read(compare_a.join("archsig-comparison-report.json")).expect("first report exists"),
+        fs::read(compare_b.join("archsig-comparison-report.json")).expect("second report exists"),
+        "comparison report must be byte deterministic"
+    );
+    assert_eq!(
+        fs::read(compare_a.join("archmap-diff.json")).expect("first diff exists"),
+        fs::read(compare_b.join("archmap-diff.json")).expect("second diff exists"),
+        "archmap diff must be byte deterministic"
+    );
+
+    let comparison = read_json(&compare_a.join("archsig-comparison-report.json"));
+    let allowed_record_codes = BTreeSet::from([
+        ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
+        ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
+        ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
+        ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
+    ]);
+    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.0");
+    assert!(
+        allowed_record_codes.contains(
+            comparison["conclusionCode"]
+                .as_str()
+                .expect("comparison conclusionCode is a string")
+        ),
+        "comparison conclusionCode must come from the registered record-level const vocabulary"
+    );
+    assert_eq!(
+        comparison["conclusionCode"],
+        ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
+    );
+    assert_eq!(comparison["comparability"]["level"], "not-comparable");
+    assert!(
+        comparison["boundaryStatements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|boundary| boundary["kind"] == "cover_changed_between_runs")
+    );
+    assert!(
+        comparison["verdictTransitions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|transition| transition["transition"] == "other_transition"
+                && transition["introducedByChangeCategory"] == "other")
+    );
+    assert!(
+        !json_contains_substring(&comparison, "TRANSPORT")
+            && !json_contains_substring(&comparison, "INTRODUCED_BY_CHANGE")
+            && !json_contains_substring(&comparison, "CLEARED_BY_CHANGE")
+            && !json_contains_substring(&comparison, "ZERO_PRESERVED"),
+        "comparison report must not expose transport or causal conclusion names"
+    );
+
+    let diff = read_json(&compare_a.join("archmap-diff.json"));
+    assert_eq!(diff["schema"], "archmap-diff/v0.5.0");
+    assert!(
+        diff["contexts"]["added"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["id"] == "ctx:audit")
+    );
+    assert!(
+        diff["covers"]["modified"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["id"] == "cover:order-inventory")
+    );
+
+    let gate_policy_path = out_dir.join("introduced-policy.json");
+    fs::write(
+        &gate_policy_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-gate-policy/v0.5.0",
+            "policyId": "gate-policy:introduced@1",
+            "rules": [{
+                "ruleId": "introduced-change",
+                "scope": "introduced-by-change",
+                "introducedByChangeMapping": {
+                    "new": "block",
+                    "cleared": "pass",
+                    "preexisting": "pass",
+                    "removed": "pass_with_boundary",
+                    "other": "pass_with_boundary"
+                }
+            }]
+        }))
+        .expect("policy serializes"),
+    )
+    .expect("policy can be written");
+    let gate_report_path = out_dir.join("gate-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        head_run
+            .join("archsig-measurement-packet.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--policy",
+        gate_policy_path.to_str().expect("path is utf-8"),
+        "--comparison",
+        compare_a
+            .join("archsig-comparison-report.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        gate_report_path.to_str().expect("path is utf-8"),
+    ]);
+    let gate_report = read_json(&gate_report_path);
+    assert_eq!(gate_report["decision"], "PASS_WITHIN_GATE_POLICY");
+    assert!(
+        gate_report["ruleOutcomes"][0]["appliedMapping"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|mapping| mapping["transition"] == "other_transition"
+                && mapping["mappingKey"] == "other"
+                && mapping["action"] == "pass_with_boundary")
+    );
+}
+
+#[test]
+fn cli_compare_rejects_malformed_measurement_packet_runs() {
+    let out_dir = temp_dir("archsig-compare-malformed-packet");
+    let root = ag_measurement_root();
+    let base_run = out_dir.join("base-run");
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        base_run.to_str().expect("path is utf-8"),
+    ]);
+    let head_run = out_dir.join("head-run");
+    fs::create_dir_all(&head_run).expect("head run can be created");
+    for artifact in ["archsig-run-manifest.json", "normalized-archmap.json"] {
+        fs::copy(base_run.join(artifact), head_run.join(artifact)).expect("copy run artifact");
+    }
+    fs::write(
+        head_run.join("archsig-measurement-packet.json"),
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-measurement-packet/v0.5.0",
+            "packetId": "measurement:malformed",
+            "structuralVerdict": []
+        }))
+        .expect("packet serializes"),
+    )
+    .expect("malformed packet can be written");
+
+    let output = run_sig0_output(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.join("compare").to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("head measurement packet"),
+        "compare must identify the malformed packet side"
+    );
+    assert!(
+        !out_dir
+            .join("compare")
+            .join("archsig-comparison-report.json")
+            .exists(),
+        "malformed compare input must not emit success-looking report"
     );
 }
 
@@ -10478,6 +10799,19 @@ fn json_contains_exact_string(value: &Value, needle: &str) -> bool {
         Value::Object(object) => object
             .values()
             .any(|item| json_contains_exact_string(item, needle)),
+        _ => false,
+    }
+}
+
+fn json_contains_substring(value: &Value, needle: &str) -> bool {
+    match value {
+        Value::String(text) => text.contains(needle),
+        Value::Array(items) => items
+            .iter()
+            .any(|item| json_contains_substring(item, needle)),
+        Value::Object(object) => object
+            .values()
+            .any(|item| json_contains_substring(item, needle)),
         _ => false,
     }
 }

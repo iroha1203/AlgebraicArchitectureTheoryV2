@@ -217,6 +217,45 @@ jobs:
             and ([.ruleOutcomes[]? | select(.scope == "absolute" and .status == "evaluated")] | length == 1)
           ' "$archsig_measurement_dir/archsig-gate-report.json"
 
+          cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
+            --base-run "$archsig_measurement_dir/gate-smoke" \
+            --head-run "$archsig_measurement_dir/gate-smoke" \
+            --out-dir "$archsig_measurement_dir/compare-smoke"
+
+          jq -e '
+            .schema == "archsig-comparison-report/v0.5.0"
+            and .conclusionCode == "NO_NEW_MEASURED_OBSTRUCTION_RECORDED"
+            and .comparability.level == "identical"
+            and ([.verdictTransitions[]? | select(.introducedByChangeCategory == "preexisting")] | length >= 1)
+            and ([.. | strings | select(test("TRANSPORT|INTRODUCED_BY_CHANGE|CLEARED_BY_CHANGE|ZERO_PRESERVED"))] | length == 0)
+          ' "$archsig_measurement_dir/compare-smoke/archsig-comparison-report.json"
+
+          jq -e '
+            .schema == "archmap-diff/v0.5.0"
+            and ((.atoms.added | length) == 0)
+            and ((.contexts.added | length) == 0)
+            and ((.covers.added | length) == 0)
+          ' "$archsig_measurement_dir/compare-smoke/archmap-diff.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
+            --packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
+            --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
+            --comparison "$archsig_measurement_dir/compare-smoke/archsig-comparison-report.json" \
+            --out "$archsig_measurement_dir/archsig-gate-with-comparison-report.json"
+
+          jq -e '
+            .schema == "archsig-gate-report/v0.5.0"
+            and .decision == "PASS_WITHIN_GATE_POLICY"
+            and ([.ruleOutcomes[]? | select(.scope == "introduced-by-change" and .status == "evaluated")] | length == 1)
+            and ([.ruleOutcomes[]?.appliedMapping[]? | select(.mappingKey == "preexisting" and .action == "pass_with_boundary")] | length >= 1)
+          ' "$archsig_measurement_dir/archsig-gate-with-comparison-report.json"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- schema-catalog \
+            --out "$archsig_measurement_dir/schema-version-catalog.json"
+
+          cmp "$archsig_measurement_dir/schema-version-catalog.json" \
+            tools/archsig/tests/fixtures/ag_measurement/schema_version_catalog.json
+
           jq -e '
             .schema == "archsig-measurement-packet/v0.5.0"
             and .packetId == "measurement:ag-measurement-support-transfer-fixture"

@@ -6,15 +6,15 @@ use std::process::ExitCode;
 use archsig::{
     ARCHMAP_V1_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
     LawPolicyDocumentV1, SchemaVersionCatalogV0, build_architecture_distance_v1,
-    build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
-    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
-    build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
-    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
-    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1,
-    enrich_architecture_distance_with_part4_bundle_v1, evaluate_typed_v1, normalize_archmap_v1,
-    normalize_archmap_v2, static_law_evaluator_registry_v1, static_schema_version_catalog,
-    validate_archmap_v1_report, validate_archmap_v2_report, validate_law_policy_v1_report,
-    validate_measurement_packet_v1,
+    build_comparison_artifacts_v1, build_foundation_measurement_packet_v1, build_gate_report_v1,
+    build_insight_brief_v1, build_insight_report_v1, build_measurement_summary_v1,
+    build_measurement_viewer_data_v1, build_typed_analysis_packet_v1,
+    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
+    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
+    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
+    evaluate_typed_v1, normalize_archmap_v1, normalize_archmap_v2,
+    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
+    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -100,6 +100,21 @@ enum Command {
         /// Output archsig-gate-report/v0.5.0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
+    },
+
+    /// Compare two ArchSig analyze run directories at record level.
+    Compare {
+        /// Base run directory containing normalized-archmap, measurement packet, and run manifest.
+        #[arg(long = "base-run")]
+        base_run: PathBuf,
+
+        /// Head run directory containing normalized-archmap, measurement packet, and run manifest.
+        #[arg(long = "head-run")]
+        head_run: PathBuf,
+
+        /// Output directory for archmap-diff.json and archsig-comparison-report.json.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
     },
 
     /// Produce a lightweight ArchSig PR review report from base ArchMap v1, PR-local ArchMap delta, and LawPolicy v1.
@@ -639,6 +654,21 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let (report, exit_code) = build_gate_report_v1(&packet, &policy, comparison.as_deref())?;
             write_json(out, &report)?;
             Ok(ExitCode::from(exit_code as u8))
+        }
+        Some(Command::Compare {
+            base_run,
+            head_run,
+            out_dir,
+        }) => {
+            let (archmap_diff, comparison_report) =
+                build_comparison_artifacts_v1(&base_run, &head_run)?;
+            std::fs::create_dir_all(&out_dir)?;
+            write_json(Some(out_dir.join("archmap-diff.json")), &archmap_diff)?;
+            write_json(
+                Some(out_dir.join("archsig-comparison-report.json")),
+                &comparison_report,
+            )?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::PrReview {
             base_archmap,
