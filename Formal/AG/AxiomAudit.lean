@@ -151,6 +151,23 @@ theorem twoGeneratorPrincipalTaylorExactVisible
           (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)).mkQ :=
   Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex a b h
 
+theorem twoGeneratorPrincipalTaylorExactVisibleOfRegularPair
+    {A : Type} [CommRing A] (a b : A)
+    (h : Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.IsRegularPair a b) :
+    Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₂ a b)
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b) ∧
+      Function.Exact
+        (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)
+        (LinearMap.range
+          (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b)).mkQ ∧
+        Nonempty
+          ((A ⧸ (LinearMap.range
+              (Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.d₁ a b))) ≃ₗ[A]
+            (A ⧸ Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.idealSpanPair a b)) :=
+  Derived.TaylorResolution.TwoGeneratorPrincipalTaylor.exact_visible_complex_of_isRegularPair
+    a b h
+
 theorem partVISingularBoundaryConcrete :
     SingularityMonodromyStack.USingularBoundary
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDeformationTheory :=
@@ -660,6 +677,14 @@ info: 'AAT.AG.AxiomAudit.twoGeneratorPrincipalTaylorExactVisible' depends on axi
 -/
 #guard_msgs in
 #print axioms twoGeneratorPrincipalTaylorExactVisible
+
+/--
+info: 'AAT.AG.AxiomAudit.twoGeneratorPrincipalTaylorExactVisibleOfRegularPair' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms twoGeneratorPrincipalTaylorExactVisibleOfRegularPair
 
 /--
 info: 'AAT.AG.AxiomAudit.temporalPseudoCircleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
