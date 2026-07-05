@@ -69,6 +69,10 @@ enum Command {
 
     /// Validate a standalone RepairPlan v1 artifact.
     RepairPlan {
+        /// Input ArchMap observation artifact path used to resolve RepairPlan chart and semantic refs.
+        #[arg(long)]
+        archmap: PathBuf,
+
         /// Input RepairPlan v1 JSON path.
         #[arg(long = "repair-plan")]
         repair_plan: PathBuf,
@@ -229,6 +233,7 @@ fn validate_measurement_profile_command_input(
 
 fn validate_repair_plan_command_input(
     input: &PathBuf,
+    archmap: &ArchMapDocumentV2,
     residual_packet: Option<&PathBuf>,
 ) -> Result<(serde_json::Value, RepairPlanDocumentV1, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
@@ -238,6 +243,7 @@ fn validate_repair_plan_command_input(
         residual_packet.map(read_json).transpose()?;
     let report = build_repair_plan_validation_report_v1(
         &plan,
+        archmap,
         &input.display().to_string(),
         residual_packet_json.as_ref(),
     );
@@ -319,12 +325,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         Some(Command::RepairPlan {
+            archmap,
             repair_plan,
             residual_packet,
             out,
         }) => {
+            let (_, archmap_failed) = validate_archmap_command_input(&archmap)?;
+            if archmap_failed {
+                return Err("--archmap validation failed before repair-plan validation".into());
+            }
+            let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let (report, _, failed) =
-                validate_repair_plan_command_input(&repair_plan, residual_packet.as_ref())?;
+                validate_repair_plan_command_input(
+                    &repair_plan,
+                    &archmap_document,
+                    residual_packet.as_ref(),
+                )?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -379,13 +395,20 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
 
             let (archmap_preflight, archmap_failed) = validate_archmap_command_input(&archmap)?;
+            let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let (_measurement_profile_preflight, measurement_profile_document, measurement_profile_failed) =
                 validate_measurement_profile_command_input(&measurement_profile)?;
             let (law_policy_preflight, law_policy_failed) =
                 validate_law_policy_command_input(&law_policy, &measurement_profile_document)?;
             let repair_plan_preflight = repair_plan
                 .as_ref()
-                .map(|path| validate_repair_plan_command_input(path, residual_packet.as_ref()))
+                .map(|path| {
+                    validate_repair_plan_command_input(
+                        path,
+                        &archmap_document,
+                        residual_packet.as_ref(),
+                    )
+                })
                 .transpose()?;
             let repair_plan_document = repair_plan_preflight
                 .as_ref()
@@ -516,7 +539,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 return Ok(ExitCode::from(2));
             }
             let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
-            let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let normalized_archmap = normalize_archmap_v2(&archmap_document, &archmap_input_ref);
             write_json(
                 Some(normalized_archmap_path),

@@ -98,17 +98,17 @@
       "atom:inventory"
     ],
     "k": [
-      "svc:order",
-      "svc:inventory"
+      "src:order",
+      "src:inventory"
     ],
     "pi": [
       {
         "atomRef": "atom:order",
-        "subject": "svc:order"
+        "subject": "src:order"
       },
       {
         "atomRef": "atom:inventory",
-        "subject": "svc:inventory"
+        "subject": "src:inventory"
       }
     ]
   },

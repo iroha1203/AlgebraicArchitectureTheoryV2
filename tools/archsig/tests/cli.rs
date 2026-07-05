@@ -644,6 +644,10 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
 
     run_sig0(&[
         "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
         "--repair-plan",
         repair_plan_path.to_str().expect("path is utf-8"),
         "--out",
@@ -673,6 +677,10 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     run_sig0_expect_code(
         &[
             "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
             "--repair-plan",
             reserved_path.to_str().expect("path is utf-8"),
             "--out",
@@ -698,6 +706,10 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     run_sig0_expect_code(
         &[
             "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
             "--repair-plan",
             conclusion_path.to_str().expect("path is utf-8"),
             "--out",
@@ -726,6 +738,10 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     run_sig0_expect_code(
         &[
             "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
             "--repair-plan",
             partial_path.to_str().expect("path is utf-8"),
             "--out",
@@ -739,6 +755,36 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             &partial_json,
             "repair-plan-schema050-complete-support-cross-check"
         )["result"],
+        "fail"
+    );
+
+    let mut unresolved_archmap_ref = read_json(&repair_plan_path);
+    unresolved_archmap_ref["complex"]["charts"][0] = json!("ctx:not-in-archmap");
+    unresolved_archmap_ref["semanticProjection"]["lambda"][0] = json!("atom:not-in-archmap");
+    let unresolved_path = out_dir.join("repair_plan_unresolved_archmap_ref.json");
+    fs::write(
+        &unresolved_path,
+        serde_json::to_vec_pretty(&unresolved_archmap_ref).expect("repair plan serializes"),
+    )
+    .expect("unresolved repair plan writes");
+    let unresolved_report = out_dir.join("repair-plan-unresolved-archmap-ref.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            unresolved_path.to_str().expect("path is utf-8"),
+            "--out",
+            unresolved_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let unresolved_json = read_json(&unresolved_report);
+    assert_eq!(
+        check_by_id(&unresolved_json, "repair-plan-schema050-archmap-bindings")["result"],
         "fail"
     );
 }

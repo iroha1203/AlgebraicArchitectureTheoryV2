@@ -3,10 +3,13 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::Value;
 
 use crate::validation::{generic_validation_example, validation_check};
-use crate::{ARCHSIG_REPAIR_PLAN_V1_SCHEMA, RepairPlanDocumentV1, ValidationCheck};
+use crate::{
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
+};
 
 pub fn validate_repair_plan_v1_checks(
     plan: &RepairPlanDocumentV1,
+    archmap: &ArchMapDocumentV2,
     residual_packet: Option<&Value>,
 ) -> Vec<ValidationCheck> {
     vec![
@@ -14,6 +17,7 @@ pub fn validate_repair_plan_v1_checks(
         check_reserved_fields(plan),
         check_conclusion_tokens(plan),
         check_references(plan),
+        check_archmap_bindings(plan, archmap),
         check_measured_residual(plan, residual_packet),
         check_stage1_mode_and_coefficient(plan),
         check_restriction_difference_rule(plan),
@@ -25,10 +29,11 @@ pub fn validate_repair_plan_v1_checks(
 
 pub fn build_repair_plan_validation_report_v1(
     plan: &RepairPlanDocumentV1,
+    archmap: &ArchMapDocumentV2,
     input_path: &str,
     residual_packet: Option<&Value>,
 ) -> Value {
-    let checks = validate_repair_plan_v1_checks(plan, residual_packet);
+    let checks = validate_repair_plan_v1_checks(plan, archmap, residual_packet);
     let failed_check_count = checks.iter().filter(|check| check.result == "fail").count();
     let warning_check_count = checks.iter().filter(|check| check.result == "warn").count();
     serde_json::json!({
@@ -36,7 +41,8 @@ pub fn build_repair_plan_validation_report_v1(
         "input": {
             "schema": plan.schema,
             "path": input_path,
-            "id": plan.id
+            "id": plan.id,
+            "archmapRef": archmap.id
         },
         "checks": checks,
         "assumptionLedger": [{
@@ -162,6 +168,102 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     examples_check(
         "repair-plan-schema050-reference-resolution",
         "RepairPlan chart, overlap, primitive, and triple references resolve",
+        examples,
+    )
+}
+
+fn check_archmap_bindings(
+    plan: &RepairPlanDocumentV1,
+    archmap: &ArchMapDocumentV2,
+) -> ValidationCheck {
+    let context_ids = archmap
+        .contexts
+        .iter()
+        .map(|context| context.id.as_str())
+        .collect::<BTreeSet<_>>();
+    let atom_subjects = archmap
+        .atoms
+        .iter()
+        .map(|atom| (atom.id.as_str(), atom.subject.as_str()))
+        .collect::<BTreeMap<_, _>>();
+    let subjects = archmap
+        .atoms
+        .iter()
+        .map(|atom| atom.subject.as_str())
+        .collect::<BTreeSet<_>>();
+    let lambda = plan
+        .semantic_projection
+        .lambda
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let k = plan
+        .semantic_projection
+        .k
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+
+    let mut examples = Vec::new();
+    for chart in &plan.complex.charts {
+        if !context_ids.contains(chart.as_str()) {
+            examples.push(generic_validation_example(
+                "complex.charts",
+                chart,
+                "RepairPlan chart refs must resolve to ArchMap contexts",
+            ));
+        }
+    }
+    for atom_ref in &plan.semantic_projection.lambda {
+        if !atom_subjects.contains_key(atom_ref.as_str()) {
+            examples.push(generic_validation_example(
+                "semanticProjection.lambda",
+                atom_ref,
+                "RepairPlan lambda entries must resolve to ArchMap atoms",
+            ));
+        }
+    }
+    for subject in &plan.semantic_projection.k {
+        if !subjects.contains(subject.as_str()) {
+            examples.push(generic_validation_example(
+                "semanticProjection.k",
+                subject,
+                "RepairPlan K entries must be ArchMap atom subjects",
+            ));
+        }
+    }
+    for row in &plan.semantic_projection.pi {
+        match atom_subjects.get(row.atom_ref.as_str()) {
+            Some(subject) if *subject == row.subject => {}
+            Some(subject) => examples.push(generic_validation_example(
+                &format!("semanticProjection.pi[{}].subject", row.atom_ref),
+                &row.subject,
+                &format!("pi subject must equal ArchMap atom subject {subject}"),
+            )),
+            None => examples.push(generic_validation_example(
+                &format!("semanticProjection.pi[{}].atomRef", row.atom_ref),
+                &row.atom_ref,
+                "pi atomRef must resolve to an ArchMap atom",
+            )),
+        }
+        if !lambda.contains(row.atom_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("semanticProjection.pi[{}].atomRef", row.atom_ref),
+                &row.atom_ref,
+                "pi atomRef must be listed in semanticProjection.lambda",
+            ));
+        }
+        if !k.contains(row.subject.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("semanticProjection.pi[{}].subject", row.atom_ref),
+                &row.subject,
+                "pi subject must be listed in semanticProjection.k",
+            ));
+        }
+    }
+    examples_check(
+        "repair-plan-schema050-archmap-bindings",
+        "RepairPlan charts and semantic projection resolve against the supplied ArchMap",
         examples,
     )
 }

@@ -34,6 +34,7 @@ validation.
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- repair-plan \
+  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
   --repair-plan tools/archsig/tests/fixtures/ag_measurement/repair_plan_complete_support.json \
   --out .archsig/repair-plan-validation.json
 ```
