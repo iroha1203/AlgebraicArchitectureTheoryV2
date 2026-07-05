@@ -526,11 +526,29 @@ def toyReadingParameter :
   SchemeMorphism _ _ := PUnit
   id _ := PUnit.unit
   comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
   AtomLabelReading := PUnit
   LawReading := PUnit
   ObstructionIdealReading := PUnit
   SignatureReading := PUnit
   InterpretationMapReading := PUnit
+  atomLabelsCompatible _ _ _ := True
+  lawReadingCompatible _ _ _ := True
+  obstructionIdealCompatible _ _ _ := True
+  signatureReadingCompatible _ _ _ := True
+  interpretationMapCompatible _ _ _ := True
+  id_atomLabelsCompatible _ _ := trivial
+  id_lawReadingCompatible _ _ := trivial
+  id_obstructionIdealCompatible _ _ := trivial
+  id_signatureReadingCompatible _ _ := trivial
+  id_interpretationMapCompatible _ _ := trivial
+  comp_atomLabelsCompatible _ _ := trivial
+  comp_lawReadingCompatible _ _ := trivial
+  comp_obstructionIdealCompatible _ _ := trivial
+  comp_signatureReadingCompatible _ _ := trivial
+  comp_interpretationMapCompatible _ _ := trivial
 
 inductive ToyRepIndex where
   | graph
@@ -547,6 +565,9 @@ def toyTargetCategory : AnalyticTargetCategory PUnit where
   Hom _ _ := PUnit
   id _ := PUnit.unit
   comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
 
 def toyAnalyticRepresentation :
     AnalyticRepresentation toyReadingParameter PUnit where
@@ -964,11 +985,29 @@ def finiteSynthesisReadingParameter :
   SchemeMorphism _ _ := PUnit
   id _ := PUnit.unit
   comp _ _ := PUnit.unit
+  id_comp _ := rfl
+  comp_id _ := rfl
+  assoc _ _ _ := rfl
   AtomLabelReading := PUnit
   LawReading := PUnit
   ObstructionIdealReading := PUnit
   SignatureReading := PUnit
   InterpretationMapReading := PUnit
+  atomLabelsCompatible _ _ _ := True
+  lawReadingCompatible _ _ _ := True
+  obstructionIdealCompatible _ _ _ := True
+  signatureReadingCompatible _ _ _ := True
+  interpretationMapCompatible _ _ _ := True
+  id_atomLabelsCompatible _ _ := trivial
+  id_lawReadingCompatible _ _ := trivial
+  id_obstructionIdealCompatible _ _ := trivial
+  id_signatureReadingCompatible _ _ := trivial
+  id_interpretationMapCompatible _ _ := trivial
+  comp_atomLabelsCompatible _ _ := trivial
+  comp_lawReadingCompatible _ _ := trivial
+  comp_obstructionIdealCompatible _ _ := trivial
+  comp_signatureReadingCompatible _ _ := trivial
+  comp_interpretationMapCompatible _ _ := trivial
 
 def finiteSynthesisAnalyticRepresentation :
     AnalyticRepresentation finiteSynthesisReadingParameter PUnit where

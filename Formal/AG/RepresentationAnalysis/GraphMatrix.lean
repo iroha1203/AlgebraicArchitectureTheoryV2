@@ -258,6 +258,65 @@ theorem relationLabelCompatible_holds {Vertex Edge RelationLabel : Type z}
     f.relationLabelCompatible :=
   f.relationLabelCompatible_cert
 
+/-- VII.定義3.3: graph hom equality is determined by vertex / edge maps and
+the selected label-compatibility proposition. -/
+@[ext]
+theorem ext {Vertex Edge RelationLabel : Type z}
+    {G H : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    {f g : FiniteDirectedGraphHom G H}
+    (hV : f.vertexMap = g.vertexMap) (hE : f.edgeMap = g.edgeMap)
+    (hRel : f.relationLabelCompatible ↔ g.relationLabelCompatible) :
+    f = g := by
+  cases f
+  cases g
+  cases hV
+  cases hE
+  cases propext hRel
+  simp
+
+/-- VII.定義3.3: identity is a left unit for selected graph morphisms. -/
+theorem id_comp {Vertex Edge RelationLabel : Type z}
+    {G H : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (f : FiniteDirectedGraphHom G H) :
+    comp (id G) f = f := by
+  apply ext
+  · rfl
+  · rfl
+  · constructor
+    · intro h
+      exact h.2
+    · intro h
+      exact ⟨trivial, h⟩
+
+/-- VII.定義3.3: identity is a right unit for selected graph morphisms. -/
+theorem comp_id {Vertex Edge RelationLabel : Type z}
+    {G H : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (f : FiniteDirectedGraphHom G H) :
+    comp f (id H) = f := by
+  apply ext
+  · rfl
+  · rfl
+  · constructor
+    · intro h
+      exact h.1
+    · intro h
+      exact ⟨h, trivial⟩
+
+/-- VII.定義3.3: selected graph morphism composition is associative. -/
+theorem assoc {Vertex Edge RelationLabel : Type z}
+    {G H K L : FiniteDirectedGraphTarget Vertex Edge RelationLabel}
+    (f : FiniteDirectedGraphHom G H) (g : FiniteDirectedGraphHom H K)
+    (h : FiniteDirectedGraphHom K L) :
+    comp (comp f g) h = comp f (comp g h) := by
+  apply ext
+  · rfl
+  · rfl
+  · constructor
+    · intro hcomp
+      exact ⟨hcomp.1.1, ⟨hcomp.1.2, hcomp.2⟩⟩
+    · intro hcomp
+      exact ⟨⟨hcomp.1, hcomp.2.1⟩, hcomp.2.2⟩
+
 end FiniteDirectedGraphHom
 
 /-- VII.定義3.3: target-category interface for finite graph readings. -/
@@ -266,6 +325,9 @@ def finiteDirectedGraphTargetCategory (Vertex Edge RelationLabel : Type z) :
   Hom := FiniteDirectedGraphHom
   id := FiniteDirectedGraphHom.id
   comp := FiniteDirectedGraphHom.comp
+  id_comp := FiniteDirectedGraphHom.id_comp
+  comp_id := FiniteDirectedGraphHom.comp_id
+  assoc := FiniteDirectedGraphHom.assoc
 
 /--
 VII.定義3.3: selected relation profile used to build a graph reading.
@@ -731,6 +793,95 @@ theorem transitionCompatible_holds {Vertex Edge RelationLabel : Type z}
     f.transitionCompatible :=
   f.transitionCompatible_cert
 
+/-- VII.定義3.5: matrix hom equality is determined by the selected graph hom
+and the matrix-compatibility propositions. -/
+@[ext]
+theorem ext {Vertex Edge RelationLabel : Type z}
+    {M N : MatrixRepresentationTarget Vertex Edge RelationLabel}
+    {f g : MatrixRepresentationHom M N}
+    (hGraph : f.graphHom = g.graphHom)
+    (hAdj : f.adjacencyCompatible ↔ g.adjacencyCompatible)
+    (hInc : f.incidenceCompatible ↔ g.incidenceCompatible)
+    (hTrans : f.transitionCompatible ↔ g.transitionCompatible) :
+    f = g := by
+  cases f
+  cases g
+  cases hGraph
+  cases propext hAdj
+  cases propext hInc
+  cases propext hTrans
+  simp
+
+/-- VII.定義3.5: identity is a left unit for selected matrix morphisms. -/
+theorem id_comp {Vertex Edge RelationLabel : Type z}
+    {M N : MatrixRepresentationTarget Vertex Edge RelationLabel}
+    (f : MatrixRepresentationHom M N) :
+    comp (id M) f = f := by
+  apply ext
+  · exact FiniteDirectedGraphHom.id_comp f.graphHom
+  · constructor
+    · intro h
+      exact h.2
+    · intro h
+      exact ⟨trivial, h⟩
+  · constructor
+    · intro h
+      exact h.2
+    · intro h
+      exact ⟨trivial, h⟩
+  · constructor
+    · intro h
+      exact h.2
+    · intro h
+      exact ⟨trivial, h⟩
+
+/-- VII.定義3.5: identity is a right unit for selected matrix morphisms. -/
+theorem comp_id {Vertex Edge RelationLabel : Type z}
+    {M N : MatrixRepresentationTarget Vertex Edge RelationLabel}
+    (f : MatrixRepresentationHom M N) :
+    comp f (id N) = f := by
+  apply ext
+  · exact FiniteDirectedGraphHom.comp_id f.graphHom
+  · constructor
+    · intro h
+      exact h.1
+    · intro h
+      exact ⟨h, trivial⟩
+  · constructor
+    · intro h
+      exact h.1
+    · intro h
+      exact ⟨h, trivial⟩
+  · constructor
+    · intro h
+      exact h.1
+    · intro h
+      exact ⟨h, trivial⟩
+
+/-- VII.定義3.5: selected matrix morphism composition is associative. -/
+theorem assoc {Vertex Edge RelationLabel : Type z}
+    {M N O P : MatrixRepresentationTarget Vertex Edge RelationLabel}
+    (f : MatrixRepresentationHom M N) (g : MatrixRepresentationHom N O)
+    (h : MatrixRepresentationHom O P) :
+    comp (comp f g) h = comp f (comp g h) := by
+  apply ext
+  · exact FiniteDirectedGraphHom.assoc f.graphHom g.graphHom h.graphHom
+  · constructor
+    · intro hcomp
+      exact ⟨hcomp.1.1, ⟨hcomp.1.2, hcomp.2⟩⟩
+    · intro hcomp
+      exact ⟨⟨hcomp.1, hcomp.2.1⟩, hcomp.2.2⟩
+  · constructor
+    · intro hcomp
+      exact ⟨hcomp.1.1, ⟨hcomp.1.2, hcomp.2⟩⟩
+    · intro hcomp
+      exact ⟨⟨hcomp.1, hcomp.2.1⟩, hcomp.2.2⟩
+  · constructor
+    · intro hcomp
+      exact ⟨hcomp.1.1, ⟨hcomp.1.2, hcomp.2⟩⟩
+    · intro hcomp
+      exact ⟨⟨hcomp.1, hcomp.2.1⟩, hcomp.2.2⟩
+
 end MatrixRepresentationHom
 
 /-- VII.定義3.5: target-category interface for matrix readings. -/
@@ -739,6 +890,9 @@ def matrixRepresentationTargetCategory (Vertex Edge RelationLabel : Type z) :
   Hom := MatrixRepresentationHom
   id := MatrixRepresentationHom.id
   comp := MatrixRepresentationHom.comp
+  id_comp := MatrixRepresentationHom.id_comp
+  comp_id := MatrixRepresentationHom.comp_id
+  assoc := MatrixRepresentationHom.assoc
 
 /--
 VII.定義3.5: matrix representation profile over decorated architecture schemes.

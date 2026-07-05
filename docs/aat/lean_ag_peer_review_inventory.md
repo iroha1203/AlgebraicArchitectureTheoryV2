@@ -254,7 +254,7 @@ docs/aat/proof_obligations_ag_aat.md
 | VI-4 | `CotangentInterface.lean` / `Kuranishi.lean` | 実質化 | cotangent data と IV-6 `DerOb_U` を接続する。 |
 | VI-5 | `Formal/AG/SingularityMonodromyStack/DecompositionGerbe.lean` | 宣言 | B項目。現 R0 では soundness / nonzero が supplied boundary であることを公理的境界として明示し、昇格可能性は後続 Issue の判断に残す。 |
 | VII-1 | `Synthesis.lean` theorem 16.1 | 発火済み | R9 で `Formal/AG/Examples/RepresentationAnalysisPart7.lean` に `finiteSynthesisAATSynthesisAssumptions` / `finiteSynthesisAATSynthesisPackage` / `finiteSynthesis_algebraicGeometricAATSynthesis_fires` を追加し、finite singleton model から complete predecessor tower と synthesis theorem application を発火させた。 |
-| VII-2 | `AATSch.lean` | 実質化 | morphism compatibility を fixed predicate へ移し category / functor bridge を作る。 |
+| VII-2 | `AATSch.lean` | 実装済み | `AATSchReadingParameter` 側に fixed compatibility predicate と identity / composition closure を移し、`Category (AATSch p)`、target `Category` wrapper、`AnalyticRepresentation.toFunctor` bridge を追加した。ローカル検証は targeted Lean checks に限定し、full `lake build` / `FormalAGResearch` は PR CI gate で確認する。 |
 | VII-3 | `FiniteHomology.lean` strict period | 昇格 | concrete pairing の coboundary invariance。 |
 | VII-4 | `AnalyticContext.lean` theorem 15.4 | 実質化 | adequacy assumptions を load-bearing 化し zeroClass を actual zero へ。 |
 | VII-5 | `DistanceFlatnessMass.lean` | 実質化 | fake GLB を `iInf` / actual GLB へ。 |
