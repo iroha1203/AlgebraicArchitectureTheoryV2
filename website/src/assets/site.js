@@ -125,6 +125,17 @@ if ("IntersectionObserver" in window && tocSections.length > 0) {
 
   const tocVisibleIds = new Set();
 
+  const atPageBottom = () =>
+    window.innerHeight + window.scrollY >= document.scrollingElement.scrollHeight - 4;
+
+  const setActiveTocSection = (id) => {
+    const link = tocLinkById.get(id);
+    if (!link || link.classList.contains("is-active")) return;
+
+    tocLinks.forEach((other) => other.classList.remove("is-active"));
+    link.classList.add("is-active");
+  };
+
   const tocObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -135,16 +146,56 @@ if ("IntersectionObserver" in window && tocSections.length > 0) {
         }
       });
 
-      const current = tocSections.find((section) => tocVisibleIds.has(section.id));
-      if (!current) return;
+      // At the very end of the page the observer band never reaches a short
+      // final section, so bottom-out pins the last section instead.
+      const current = atPageBottom()
+        ? tocSections[tocSections.length - 1]
+        : tocSections.find((section) => tocVisibleIds.has(section.id));
 
-      tocLinks.forEach((link) => link.classList.remove("is-active"));
-      tocLinkById.get(current.id)?.classList.add("is-active");
+      if (current) {
+        setActiveTocSection(current.id);
+      } else {
+        // The band sits in the hero above the first section: nothing is current.
+        tocLinks.forEach((link) => link.classList.remove("is-active"));
+      }
     },
     { rootMargin: "-15% 0px -70% 0px", threshold: 0 }
   );
 
   tocSections.forEach((section) => tocObserver.observe(section));
+
+  // The sticky sidebar can be taller than the viewport. Let its scroll
+  // position follow the page's reading progress, so the end of the page
+  // also shows the end of the sidebar. Hover pauses the coupling so the
+  // reader can scroll the sidebar by hand.
+  const sidebarScroller = document.querySelector(".article-sidebar");
+  let sidebarSyncQueued = false;
+
+  const syncSidebarScroll = () => {
+    sidebarSyncQueued = false;
+    if (!sidebarScroller || document.body.classList.contains("sidebar-open")) return;
+    if (sidebarScroller.matches(":hover")) return;
+
+    const sidebarRange = sidebarScroller.scrollHeight - sidebarScroller.clientHeight;
+    const pageRange = document.scrollingElement.scrollHeight - window.innerHeight;
+    if (sidebarRange <= 0 || pageRange <= 0) return;
+
+    sidebarScroller.scrollTop = (window.scrollY / pageRange) * sidebarRange;
+  };
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (atPageBottom()) {
+        setActiveTocSection(tocSections[tocSections.length - 1].id);
+      }
+      if (!sidebarSyncQueued) {
+        sidebarSyncQueued = true;
+        window.requestAnimationFrame(syncSidebarScroll);
+      }
+    },
+    { passive: true }
+  );
 }
 
 const currentPath = window.location.pathname.replace(/index\.html$/, "");
