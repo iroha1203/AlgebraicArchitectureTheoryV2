@@ -1,0 +1,612 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Molecules and Architecture Objects",
+  "description": "Molecules and architecture objects in Algebraic Architecture Theory: finite atom configurations, selected presentations, coverage, and exactness.",
+  "order": 3,
+  "llmsLabel": "AAT Architecture Objects",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Architecture Objects</span>
+          </nav>
+          <p class="eyebrow">Part I. Foundations</p>
+          <h1>Molecules and Architecture Objects</h1>
+          <p class="lede">
+            Atoms become architectural only when they are arranged. A molecule
+            is a finite configuration of already-existing atoms, and an
+            architecture object is the structured object read from such
+            configurations through selected maps, quantities, and evidence
+            boundaries.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#from-atoms-to-configurations">From atoms to configurations</a></li>
+                <li><a href="#molecules">Molecules</a></li>
+                <li><a href="#roles-and-patterns">Roles and patterns</a></li>
+                <li><a href="#architecture-objects">Architecture objects</a></li>
+                <li><a href="#selected-presentation">Selected presentation</a></li>
+                <li><a href="#finite-universe">Finite universe</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="./" aria-current="page">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                What makes a collection of architectural facts into a coherent
+                object that can be analyzed and changed?
+              </p>
+              <p>
+                AAT answers this in two steps. First, atoms are assembled into
+                finite configurations called molecules. Second, selected
+                structure maps and quantities read those configurations as
+                architecture objects. This is where the theory moves from
+                individual facts to the architectural objects that later laws
+                evaluate.
+              </p>
+            </section>
+
+            <section id="from-atoms-to-configurations" class="article-section">
+              <h2>From atoms to configurations</h2>
+              <p>
+                An atom is a primitive fact, but a software architecture is not
+                a bag of unrelated facts. The first construction after Atom is
+                an atom configuration: a selected atom family together with the
+                relations, identifications, and restrictions that make those
+                atoms readable as one structure.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Configuration schema</figcaption>
+                <pre><code>AtomConfiguration
+  = AtomFamily F
+  + relations among atoms R
+  + equivalence / identification data E
+
+C = (F, R, E)</code></pre>
+              </figure>
+              <p>
+                The relation component is not limited to dependency edges. It
+                may record reference, realization, state update, emission,
+                substitution, contract attachment, semantic interpretation, or
+                runtime interaction. The identification component records the
+                selected abstractions under which two presentations are read as
+                the same architectural material.
+              </p>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                An atom configuration is a selected atom family equipped with
+                the relation and identification data needed to read it as
+                architecture, not merely as a list of facts.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Configuration is the first structure after Atom. It does not
+                create atoms; it arranges already-existing atoms so later
+                molecules, objects, laws, and signatures have something
+                structured to read.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
+                Atom existence is supplied by the atom axiom system. A
+                configuration selects atoms and adds relation or identification
+                data among them. Selection and arrangement can change the
+                architectural reading, but they do not change the primitive
+                status of the atoms being arranged.
+              </p>
+            </section>
+
+            <section id="molecules" class="article-section">
+              <h2>Molecules</h2>
+              <p>
+                A molecule is a finite atom configuration that can be handled
+                as one architectural unit. It is the first place where a
+                concern, feature slice, boundary, interaction, state transition,
+                or contract surface becomes a finite object of study.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Molecule schema</figcaption>
+                <pre><code>Molecule
+  = finite configuration of already-existing atoms
+  + selected membership predicate
+  + finiteConfiguration evidence
+  + nonConclusions boundary</code></pre>
+              </figure>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a>
+                A molecule is a finite configuration of atoms from a fixed
+                <code>AtomAxiomSystem</code>. It is not an observation artifact,
+                a role name, a design pattern, or a new atom family.
+              </p>
+              <p id="proposition-2-2" class="statement">
+                <a class="statement-anchor" href="#proposition-2-2">Proposition 2.2.</a>
+                Every atom contained in a pure AAT molecule remains a primitive
+                atom of the root atom axiom system.
+              </p>
+              <p id="proof-2-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-2">Proof.</a>
+                Lean defines <code>AAT.Molecule.Contains M atom</code> as
+                membership in the molecule's atom predicate. The theorem
+                <code>AAT.Molecule.atom_primitive</code> returns
+                <code>system.Primitive atom</code> for any contained atom by
+                calling <code>system.primitive atom</code>. Membership in a
+                molecule therefore preserves atom origin rather than replacing
+                it.
+              </p>
+              <p id="proposition-2-3" class="statement">
+                <a class="statement-anchor" href="#proposition-2-3">Proposition 2.3.</a>
+                Molecule inclusion supports local reasoning. If every atom in
+                molecule <code>M</code> is also in molecule <code>N</code>, then
+                <code>M</code> is a subconfiguration of <code>N</code> for the
+                atom surface being read.
+              </p>
+              <p id="proof-2-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-3">Proof.</a>
+                Lean spells molecule inclusion as
+                <code>AAT.MoleculeSubset M N</code>, a predicate saying that
+                every atom selected by <code>M</code> is selected by
+                <code>N</code>. Theorems <code>MoleculeSubset.refl</code> and
+                <code>MoleculeSubset.trans</code> provide the reflexive and
+                transitive structure needed to reason about nested molecule
+                surfaces.
+              </p>
+            </section>
+
+            <section id="roles-and-patterns" class="article-section">
+              <h2>Roles and patterns</h2>
+              <p>
+                A role or design pattern is not a primitive atom. It is an
+                interpretation placed on a molecule. The same finite atom
+                surface may be read as a repository, adapter, saga participant,
+                event handler, policy boundary, projection, or integration
+                point depending on which role vocabulary is selected.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Role interpretation</figcaption>
+                <pre><code>RoleInterpretation
+  = molecule
+  + role
+  + interpretation evidence
+  + interpretation boundary
+  + non-conclusions</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3.1.</a>
+                Role and pattern interpretation does not create atoms. It names
+                a reading of a molecule.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof.</a>
+                Lean provides <code>RoleInterpretation.toMolecule</code> and
+                <code>PatternInterpretation.toMolecule</code>, which forget the
+                interpretation and return the underlying molecule. Theorems
+                <code>RoleInterpretation.does_not_create_atoms</code> and
+                <code>PatternInterpretation.does_not_create_atoms</code> expose
+                the root system's non-generation boundary.
+              </p>
+              <p id="non-conclusion-3-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-3-2">Non-conclusion 3.2.</a>
+                Naming a molecule "repository", "adapter", "bounded context",
+                or "saga" does not prove that it satisfies the laws usually
+                associated with that role. Lawfulness is evaluated later by
+                selected design laws.
+              </p>
+            </section>
+
+            <section id="architecture-objects" class="article-section">
+              <h2>Architecture objects</h2>
+              <p>
+                An architecture object is generated from an atom configuration
+                when selected structure maps and selected quantities are added.
+                The structure maps may read the configuration as a graph,
+                category, algebra, diagram, state-transition system, semantic
+                surface, or runtime interaction model. The selected quantities
+                may include invariants, measures, signature axes, curvature
+                values, or witness requirements.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Architecture object schema</figcaption>
+                <pre><code>ArchitectureObject A
+  = AtomConfiguration C
+  + structure maps S
+  + selected quantities Q
+
+GeneratedObject:
+  F => A
+  means atom family F generates configuration C,
+  and C with S and Q is read as A</code></pre>
+              </figure>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition 4.1.</a>
+                An architecture object is a structured reading of an atom
+                configuration. It is not the atom family alone, and it is not
+                the selected presentation alone; it is the atom-generated
+                configuration together with the maps and quantities selected
+                for the claim.
+              </p>
+              <p id="proposition-4-2" class="statement">
+                <a class="statement-anchor" href="#proposition-4-2">Proposition 4.2.</a>
+                Architecture objects have atom origin. AAT's objects do not
+                appear independently of atoms; they are generated from atom
+                families through configurations and selected structure.
+              </p>
+              <p id="proof-4-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-2">Proof idea.</a>
+                The mathematical theory states the generated-object principle
+                as <code>F => A</code>: an atom family <code>F</code> generates
+                a configuration <code>C</code>, and <code>C</code> together
+                with selected structure maps and quantities is read as
+                <code>A</code>. The current Lean refoundation records the root
+                side of this principle through <code>AAT.PureTheory</code> and
+                <code>AAT.AATCore</code>: selected molecules in the theory
+                contain only primitive atoms from the root system.
+              </p>
+              <p id="proposition-4-3" class="statement">
+                <a class="statement-anchor" href="#proposition-4-3">Proposition 4.3.</a>
+                Object equivalence is structure-relative. Two presentations may
+                share the same atom family while differing as architecture
+                objects because they choose different structure maps or
+                selected quantities.
+              </p>
+              <p id="proof-4-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-3">Proof idea.</a>
+                A dependency graph forgets path counts; a matrix representation
+                keeps adjacency powers; a semantic diagram keeps commutativity
+                conditions; a state-transition reading keeps operation order.
+                These are different structure maps on related atom surfaces.
+                Object equivalence must therefore specify which maps and
+                quantities are preserved.
+              </p>
+            </section>
+
+            <section id="selected-presentation" class="article-section">
+              <h2>Selected presentation</h2>
+              <p>
+                A selected presentation is the bounded object-presentation
+                layer: the chosen carrier, policy, observation context, and
+                measurement universe through which an atom-generated object is
+                read.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Presentation schema</figcaption>
+                <pre><code>ArchitectureCarrier
+  = components
+  + static dependency relation
+  + runtime dependency relation
+
+ArchitecturePolicy
+  = boundary policy
+  + abstraction policy
+
+ArchitectureObservationContext
+  = observation model
+  + semantic diagram universe
+  + selected measurement universe
+
+selected presentation P
+claim phi : PresentationClaim
+
+P |-AAT phi
+  means AATJudgement P phi</code></pre>
+              </figure>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition 5.1.</a>
+                A selected presentation is the bounded reading context for an
+                architecture object. It says which carrier, policies,
+                observations, semantic diagrams, and measurements are in scope
+                for a claim.
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                Object claims are presentation-indexed claims. Changing the
+                selected carrier, policy, observation context, or measurement
+                universe changes the proposition being evaluated.
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof.</a>
+                In the compatibility surface inherited from Foundations,
+                <code>AATJudgement P phi</code> is defined as
+                <code>phi P</code>, and <code>aatJudgement_iff</code> records
+                that equivalence. For proof-carrying cores,
+                <code>ArchitectureCore.selectedPresentationJudgement_iff</code>
+                applies the same bridge to <code>X.selectedPresentation</code>.
+                Thus the claim is licensed at the selected presentation, not at
+                an unbounded repository.
+              </p>
+            </section>
+
+            <section id="finite-universe" class="article-section">
+              <h2>Finite universe, coverage, and exactness</h2>
+              <p>
+                A finite universe is a measurement scope. It records which
+                components, pairs, edges, diagrams, or witnesses have been
+                selected for a bounded theorem package. It is what lets a
+                finite computation or selected observation become a precise
+                claim about the object being read.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Finite universe boundary</figcaption>
+                <pre><code>ComponentUniverse
+  = finite component list
+  + coverage proofs
+  + edge closure / witness coverage
+  + selected graph evidence
+
+CompleteForRelation P edge
+  = every ambient edge endpoint is represented
+    by the selected presentation P</code></pre>
+              </figure>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition 6.1.</a>
+                Coverage says that the selected evidence contains the components
+                or witnesses required by the claim. Exactness says that the
+                measured value is the intended in-scope relation, witness, or
+                axis reading.
+              </p>
+              <p id="proposition-6-2" class="statement">
+                <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
+                A finite universe supports selected completeness, not ambient
+                extractor completeness. Complete extraction for an ambient
+                relation is an explicit extra premise.
+              </p>
+              <p id="proof-6-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-2">Proof.</a>
+                The bounded presentation surface proves that an
+                <code>ArchitectureCore</code> supplies selected relation and
+                graph completeness for its own selected presentation. It does
+                not conclude arbitrary ambient repository completeness. Lean's
+                <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>
+                constructs two ambient relations with the same selected
+                restriction while only one satisfies complete extraction.
+              </p>
+              <p id="non-conclusion-6-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-6-3">Non-conclusion 6.3.</a>
+                <code>ComponentUniverse</code> is not an extractor correctness
+                certificate. A zero result inside a selected universe is a
+                selected zero reading, not proof that no out-of-scope component,
+                edge, runtime interaction, semantic diagram, or effect exists.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Take the checkout atom surface from the Atom chapter. A molecule
+                can select the payment concern rather than the entire checkout
+                application.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Payment molecule</figcaption>
+                <pre><code>M_payment contains:
+  component(CheckoutService)
+  component(PaymentGateway)
+  relation_calls(CheckoutService, PaymentGateway)
+  capability(PaymentGateway, capture_payment)
+  effect(capture_payment)
+  authority(CheckoutService, capture, PaymentGateway)
+  contract(PaymentGateway, idempotent_capture)
+  runtime_interaction(CheckoutService, PaymentGateway, retry)
+  semantic(capture_payment, charges_customer_once)</code></pre>
+              </figure>
+              <p>
+                This molecule can be read through several object structures.
+                A static graph reading uses the component and call relation.
+                An effect reading uses capture and event atoms. An authority
+                reading uses the permission surface. A semantic reading uses
+                the "charges customer once" atom. A runtime reading uses retry
+                and timeout facts.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>As a molecule</strong>
+                  <span>The surface is a finite selected configuration of root atoms.</span>
+                </li>
+                <li>
+                  <strong>As a role</strong>
+                  <span>The same molecule may be interpreted as a payment adapter or external gateway boundary.</span>
+                </li>
+                <li>
+                  <strong>As an architecture object</strong>
+                  <span>Selected maps turn the molecule into graph, semantic, effect, or runtime structure.</span>
+                </li>
+                <li>
+                  <strong>As a presentation</strong>
+                  <span>Coverage and exactness say which selected evidence supports the claim.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples and non-conclusions</h2>
+              <p id="counterexample-8-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-1">Counterexample 8.1.</a>
+                A selected presentation may contain component <code>A</code>
+                while the ambient repository also contains component
+                <code>C</code>. The empty ambient relation and the relation
+                containing only <code>C -> A</code> have the same selected
+                restriction through the presentation that sees only
+                <code>A</code>, but they differ on ambient complete extraction.
+              </p>
+              <p id="counterexample-8-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-2">Counterexample 8.2.</a>
+                A molecule interpreted as "repository" may contain a state atom
+                and a persistence capability but lack the contract atoms needed
+                for a selected repository law. The role interpretation alone
+                does not prove the pattern law.
+              </p>
+              <p id="counterexample-8-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-3">Counterexample 8.3.</a>
+                Two architecture objects may be generated from overlapping atom
+                families but choose different structure maps. A graph object
+                may forget path count; a matrix object may keep adjacency power;
+                a semantic diagram may keep commutativity. They should not be
+                identified unless the selected equivalence preserves the maps
+                and quantities in question.
+              </p>
+              <p id="non-conclusion-8-4" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-8-4">Non-conclusion 8.4.</a>
+                Molecule membership, role interpretation, selected presentation,
+                and finite universe coverage do not by themselves prove
+                lawfulness, obstruction absence, zero curvature, or global
+                extraction completeness.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The current Lean refoundation represents the pure object layer
+                through <code>AAT.Molecule</code>, molecule inclusion,
+                role/pattern interpretation, and <code>AAT.PureTheory</code> /
+                <code>AAT.AATCore</code>. The bounded presentation surface is
+                the selected-presentation and finite-universe reading of
+                architecture objects, not the root of AAT.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/AAT/Molecule.lean
+  AAT.Molecule
+  AAT.MoleculeSubset
+  AAT.ProperSubmolecule
+  AAT.RoleInterpretation
+  AAT.PatternInterpretation
+
+Formal/Arch/AAT/Core.lean
+  AAT.PureTheory
+  AAT.AATCore
+  PureTheory.atom_of_selected_molecule
+  PureTheory.independent_of_observation
+  PureTheory.laws_do_not_create_atoms
+
+Legacy bounded presentation anchors:
+  AATJudgement
+  ArchitectureObject / ArchitectureFlatnessModel
+  ArchitectureCore
+  ComponentUniverse
+  CompleteForRelation
+  CompleteExtractionCounterexample</code></pre>
+              </figure>
+              <p id="formal-status-9-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-1">Formal status 9.1.</a>
+                Molecule, inclusion, proper submolecule, role interpretation,
+                pattern interpretation, pure theory, and AATCore are defined in
+                Lean. Accessors proving that selected molecule atoms remain
+                primitive and that pure AAT remains observation-independent are
+                proved.
+              </p>
+              <p id="formal-status-9-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-2">Formal status 9.2.</a>
+                The generated-object schema
+                <code>A = (C, S, Q)</code> is the mathematical theory reading.
+                The current Lean surface has the atom-rooted molecule/core API
+                and the bounded presentation API; the full object
+                equivalence calculus remains a later formalization target.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                The architecture object chapter moves AAT from primitive facts
+                to structured objects. Atoms are arranged into configurations;
+                finite configurations become molecules; roles and patterns
+                interpret molecules; selected maps and quantities read those
+                configurations as architecture objects.
+              </p>
+              <p>
+                The central boundary is now clear. Atom is the root. Selected
+                presentation is the bounded reading context for an object.
+                Finite universe is the measurement scope for a claim. None of
+                these later layers should be mistaken for extractor
+                completeness or global lawfulness.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Molecule</dt>
+                  <dd>A finite configuration of already-existing atoms.</dd>
+                </div>
+                <div>
+                  <dt>MoleculeSubset</dt>
+                  <dd>Inclusion between molecule atom surfaces.</dd>
+                </div>
+                <div>
+                  <dt>RoleInterpretation</dt>
+                  <dd>A role reading attached to a molecule, not a primitive atom kind.</dd>
+                </div>
+                <div>
+                  <dt>PatternInterpretation</dt>
+                  <dd>A design pattern reading attached to a molecule configuration.</dd>
+                </div>
+                <div>
+                  <dt>ArchitectureObject</dt>
+                  <dd>An atom-generated configuration read with selected structure maps and selected quantities.</dd>
+                </div>
+                <div>
+                  <dt>Selected presentation</dt>
+                  <dd>The bounded carrier, policy, observation, and measurement context in which a claim is evaluated.</dd>
+                </div>
+                <div>
+                  <dt>Coverage</dt>
+                  <dd>The premise that selected evidence contains the witnesses required by the claim.</dd>
+                </div>
+                <div>
+                  <dt>Exactness</dt>
+                  <dd>The premise that measured evidence can be read as the intended in-scope relation or quantity.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../atoms/">
+                <span>Previous</span>
+                <strong>Atoms and Primitive Architectural Facts</strong>
+              </a>
+              <a class="page-nav-next" href="../laws/">
+                <span>Next</span>
+                <strong>Design Laws and Invariants</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

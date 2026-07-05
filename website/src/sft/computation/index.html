@@ -1,0 +1,117 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "SFT Part 2: Making Software Evolution Computable",
+  "description": "SFT Part 2: making software evolution computable through interfaces, computational core, ForecastCones, and reviewer-facing workbench artifacts.",
+  "order": 22,
+  "llmsLabel": "SFT Part 2, Computation",
+  "ogDescription": "SFT makes software evolution computable by connecting field estimates to AAT and ArchSig, defining support and step semantics, computing ForecastCones, and projecting them into workbench artifacts.",
+  "twitterDescription": "Interfaces, computational core, ForecastCones, and workbench artifacts for software evolution.",
+  "navSection": "sft"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Computation</span>
+          </nav>
+          <p class="eyebrow">SFT Part 2</p>
+          <h1>Making Software Evolution Computable</h1>
+          <p class="lede">
+            Part 2 turns field language into computation. It builds the
+            interface, core, ForecastCone, and workbench needed to compute
+            reachable software-evolution paths.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#reference-notes">Chapters</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../">SFT Overview</a></li>
+                <li><a href="../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../field-and-force/governance/">1-4. Governance</a></li>
+                <li><a href="./" aria-current="page">2. The Computation</a></li>
+                <li><a href="interface/">2-1. Interface</a></li>
+                <li><a href="computational-core/">2-2. Computational Core</a></li>
+                <li><a href="forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="workbench/">2-4. Workbench</a></li>
+                <li><a href="../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../software-evolution/field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="../software-evolution/attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../references/">References</a></li>
+                <li><a href="../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="introduction" class="article-section">
+              <h2>Introduction</h2>
+              <p>
+                SFT makes software evolution computable by selecting a bounded
+                field estimate and keeping its boundary explicit. The
+                development field remains large; the computation names which
+                evidence, projection, support, policy, horizon, and observation
+                boundary have been selected.
+              </p>
+              <p>
+                A <code>SoftwareFieldEstimate</code> records selected evidence,
+                unavailable evidence, and unknown remainder. AAT supplies the
+                local algebra for the architecture projection. ArchSig supplies
+                bounded observations. SFT adds artifact action, support,
+                policy, step semantics, horizons, ForecastCones, workbench
+                projections, and feedback hooks.
+              </p>
+              <p>
+                This is how software evolution becomes a computable object. SFT
+                computes a bounded space of paths: which architecture futures
+                remain reachable when this field estimate, support relation,
+                policy, observation boundary, and horizon are selected.
+              </p>
+            </section>
+
+            <section id="reference-notes" class="article-section">
+              <h2>Chapters</h2>
+              <p>
+                Part 2 develops the computation in four steps: interface,
+                computational core, ForecastCone, and workbench.
+              </p>
+              <ul class="chapter-list">
+                <li><a href="interface/">2-1. Interface</a><span>Connects bounded field estimates to AAT projection, ArchSig observation, and explicit observation boundaries.</span></li>
+                <li><a href="computational-core/">2-2. Computational Core</a><span>Defines artifact action, operation support, policy, step relation, and bounded paths as the engine of SFT computation.</span></li>
+                <li><a href="forecast-cone/">2-3. ForecastCone</a><span>Computes bounded reachable futures, reachability regions, support safety, and cone narrowing from supported paths.</span></li>
+                <li><a href="workbench/">2-4. Workbench</a><span>Projects cones into reviewer-facing envelopes, proposal accounting records, ArchSig artifacts, computational problems, and calibration hooks.</span></li>
+              </ul>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../field-and-force/governance/"><span>Previous</span><strong>1-4. Governance</strong></a>
+              <a class="page-nav-next" href="interface/"><span>Next</span><strong>2-1. Interface</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

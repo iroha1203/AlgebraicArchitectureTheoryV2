@@ -1,0 +1,311 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Lean Status",
+  "description": "Lean status for Algebraic Architecture Theory: status vocabulary, current formal core, proved anchors, defined carriers, future proof obligations, and empirical hypotheses.",
+  "order": 14,
+  "llmsLabel": "AAT Lean Status",
+  "navSection": "aat"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Status</span>
+          </nav>
+          <p class="eyebrow">Appendix</p>
+          <h1>Lean Status</h1>
+          <p class="lede">
+            This page separates the mathematical reading from the formalization
+            ledger. It names the status vocabulary, current proved anchors,
+            defined carriers, future proof obligations, and empirical hypotheses.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#status-vocabulary">Status vocabulary</a></li>
+                <li><a href="#snapshot">Current snapshot</a></li>
+                <li><a href="#formal-core">Formal core</a></li>
+                <li><a href="#proved-surface">Proved surface</a></li>
+                <li><a href="#defined-surface">Defined carriers</a></li>
+                <li><a href="#obligations">Obligations and hypotheses</a></li>
+                <li><a href="#reading-order">Reading order</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="./" aria-current="page">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="status-vocabulary" class="article-section">
+              <h2>Status vocabulary</h2>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Reading</th>
+                      <th>Typical artifact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>proved</code></td>
+                      <td>A Lean theorem establishes the claim under its stated premises.</td>
+                      <td>Theorem, bridge, accessor, finite example, counterexample.</td>
+                    </tr>
+                    <tr>
+                      <td><code>defined only</code></td>
+                      <td>A carrier, schema, predicate, metric, or report shape exists.</td>
+                      <td>Structure, inductive type, definition, metadata package.</td>
+                    </tr>
+                    <tr>
+                      <td><code>future proof obligation</code></td>
+                      <td>A theorem-shaped statement belongs to the research plan.</td>
+                      <td>Proof obligation, issue, planned bridge theorem.</td>
+                    </tr>
+                    <tr>
+                      <td><code>empirical hypothesis</code></td>
+                      <td>A claim belongs to repository behavior, review quality, or operational evidence.</td>
+                      <td>Study design, dataset, CI report, pilot protocol.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="status-1-1" class="statement">
+                <a class="statement-anchor" href="#status-1-1">Status rule 1.1.</a>
+                A website statement with a Lean name should be read at the
+                status of that Lean declaration. A carrier gives vocabulary; a
+                theorem gives a conclusion; an example theorem demonstrates a
+                finite reading; an empirical hypothesis belongs to observed
+                repository behavior.
+              </p>
+            </section>
+
+            <section id="snapshot" class="article-section">
+              <h2>Current snapshot</h2>
+              <p>
+                The current public reading is an Atom-first AAT formalization
+                snapshot. It starts from primitive architectural facts, then
+                follows the checked Lean surface through molecules, laws,
+                obstruction circuits, signatures, operations, geometry,
+                representations, and examples.
+              </p>
+              <div class="article-table">
+                <table>
+                  <tbody>
+                    <tr>
+                      <th>Root</th>
+                      <td><code>AtomAxiomSystem</code> and <code>AAT.AATCore</code></td>
+                    </tr>
+                    <tr>
+                      <th>Reading surface</th>
+                      <td>Definitions, theorem packages, finite examples, counterexamples, and status notes.</td>
+                    </tr>
+                    <tr>
+                      <th>Formal status</th>
+                      <td>Each chapter distinguishes proved statements, defined carriers, future proof obligations, and empirical hypotheses.</td>
+                    </tr>
+                    <tr>
+                      <th>Scope</th>
+                      <td>Checked mathematical claims are separated from extraction quality, workflow usefulness, and operational evidence.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="formal-core" class="article-section">
+              <h2>Formal core</h2>
+              <p>
+                The current AAT formal core starts at <code>AtomAxiomSystem</code>
+                and <code>AAT.AATCore</code>, then builds molecules, laws,
+                obstruction circuits, zero-curvature packages, architecture
+                signatures, operation packages, path geometry, analytic
+                representation, and finite examples around that root.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Core chain</figcaption>
+                <pre><code>AtomAxiomSystem
+  -&gt; AATCore
+  -&gt; Molecule / DesignLaw / ObstructionCircuit
+  -&gt; ZeroCurvaturePackage
+  -&gt; ArchitectureSignature bridge
+  -&gt; Operation / Repair / Synthesis packages
+  -&gt; Path / Homotopy / Representation examples</code></pre>
+              </figure>
+              <p id="status-3-1" class="statement">
+                <a class="statement-anchor" href="#status-3-1">Status 3.1.</a>
+                The formal core is a family of checked carriers and theorem
+                packages. Each chapter names the package it uses, so the reader
+                can move from public explanation to the corresponding Lean
+                surface without changing the claim being read.
+              </p>
+            </section>
+
+            <section id="proved-surface" class="article-section">
+              <h2>Proved surface</h2>
+              <p>
+                The proved surface is broadest where the claim is finite,
+                selected, and theorem-package shaped. Representative proved
+                anchors include atom non-generation accessors, law-relative
+                obstruction circuits, finite witness-count zero bridges, required
+                signature-axis lawfulness bridges, selected repair measure
+                decrease, synthesis candidate soundness, path invariant
+                preservation, homotopy observation equality, diagram filler
+                refutation, analytic preservation/reflection accessors, and
+                canonical counterexamples.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Area</th>
+                      <th>Representative proved reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Atoms and pure AAT</td>
+                      <td>Non-generation accessors and finite obstruction-circuit examples.</td>
+                    </tr>
+                    <tr>
+                      <td>Signature / zero curvature</td>
+                      <td>Selected required lawfulness iff selected required signature axes zero.</td>
+                    </tr>
+                    <tr>
+                      <td>Operations</td>
+                      <td>Witness reflection, selected repair decrease, synthesis candidate soundness.</td>
+                    </tr>
+                    <tr>
+                      <td>Geometry</td>
+                      <td>Path invariant preservation, homotopy observation equality, filler refutation.</td>
+                    </tr>
+                    <tr>
+                      <td>Examples</td>
+                      <td>Static-flat semantic obstruction and DIP-compatible non-decomposable examples.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="defined-surface" class="article-section">
+              <h2>Defined carriers</h2>
+              <p>
+                Many AAT surfaces are intentionally defined before every intended
+                bridge theorem is proved. This includes operation kinds, role
+                schemas, calculus-law carriers, signature axes, report metadata,
+                analytic extension formula packages, selected continuation
+                readings, and some higher-level theorem-package registries.
+              </p>
+              <p id="status-4-1" class="statement">
+                <a class="statement-anchor" href="#status-4-1">Status 4.1.</a>
+                A defined carrier gives vocabulary and type-level discipline.
+                A proved theorem gives the corresponding conclusion.
+              </p>
+              <p id="status-4-2" class="statement">
+                <a class="statement-anchor" href="#status-4-2">Status 4.2.</a>
+                The expected pattern is carrier first, bridge theorem second,
+                example theorem third, and empirical evaluation separately. This
+                lets AAT publish vocabulary before overclaiming completeness.
+              </p>
+            </section>
+
+            <section id="obligations" class="article-section">
+              <h2>Obligations and hypotheses</h2>
+              <p>
+                Future proof obligations focus on broader completeness, richer
+                operation laws, extended geometry, representation strength, and
+                cross-package bridges. Empirical hypotheses belong to extraction
+                quality, review usefulness, operational prediction, cost, and
+                adoption evidence.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Lane</th>
+                      <th>Examples</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Future proof obligation</td>
+                      <td>Additional bounded completeness theorems, richer operation laws, stronger representation bridges, broader canonical examples.</td>
+                    </tr>
+                    <tr>
+                      <td>Empirical hypothesis</td>
+                      <td>Extractor quality, review focus improvement, incident prediction, maintainability correlation, team workflow effects.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="status-5-1" class="statement">
+                <a class="statement-anchor" href="#status-5-1">Status 5.1.</a>
+                Proof obligations extend theorem packages; empirical hypotheses
+                evaluate how those packages behave when attached to real
+                repositories, review workflows, and operational evidence.
+              </p>
+            </section>
+
+            <section id="reading-order" class="article-section">
+              <h2>Reading order</h2>
+              <p>
+                Use the concept chapters for the mathematical story, this status
+                page for claim labels, and the formal anchors page for
+                declaration-level audit. The Lean theorem index and proof
+                obligations document remain the source of detailed formal
+                accounting.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Audit path</figcaption>
+                <pre><code>concept page
+  -&gt; status label
+  -&gt; formal anchor
+  -&gt; Lean theorem index
+  -&gt; Lean source</code></pre>
+              </figure>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../related-work/">
+                <span>Previous</span>
+                <strong>Related Work</strong>
+              </a>
+              <a class="page-nav-next" href="../formal-anchors/">
+                <span>Next</span>
+                <strong>Formal Anchors</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

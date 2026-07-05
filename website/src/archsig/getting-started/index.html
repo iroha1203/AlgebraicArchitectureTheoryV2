@@ -1,0 +1,121 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "ArchSig Getting Started",
+  "description": "Start ArchSig through LLM Skills: ask for an architecture review, provide scope and evidence, then read findings, repair candidates, and confirmation checks.",
+  "order": 37,
+  "llmsLabel": "ArchSig Getting Started",
+  "navSection": "archsig"
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Getting Started</span></nav>
+          <p class="eyebrow">Run ArchSig through an LLM Skill</p>
+          <h1>Ask your LLM agent to review the design impact.</h1>
+          <p class="lede">Give the agent a repo, a PR, or a feature area, then have it run the ArchSig Skills. The agent builds the architecture reading, checks the relevant source, and returns what reviewers should inspect next.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#request">Ask the agent</a></li><li><a href="#skills">Three Skills</a></li><li><a href="#how">How ArchSig works</a></li><li><a href="#scope">Tell it what to inspect</a></li><li><a href="#builds">What the Skills build</a></li><li><a href="#returns">What the agent returns</a></li><li><a href="#improve">Improve the request</a></li><li><a href="#manual">When to open the manual</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="./" aria-current="page">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="request" class="article-section">
+              <h2>Ask the agent to run the Skills</h2>
+              <p>You do not need to begin with commands or schema names. Ask your LLM agent to use the ArchSig Skills, then state the architecture worry you want reviewed.</p>
+              <figure class="code-panel">
+                <figcaption>PR review request</figcaption>
+                <pre><code>Run the ArchSig Skills to review this PR.
+The code passes tests, but I want to know whether it weakens the payment boundary.
+Return findings with source refs, repair candidates, and checks I should run before approving.</code></pre>
+              </figure>
+              <figure class="code-panel">
+                <figcaption>Codebase inspection request</figcaption>
+                <pre><code>Run the ArchSig Skills to inspect the checkout codebase.
+Find where workflow responsibility and provider coupling are concentrating.
+Summarize the architecture tendencies and list the first files reviewers should open.</code></pre>
+              </figure>
+            </section>
+            <section id="skills" class="article-section">
+              <h2>Three Skills</h2>
+              <p>The ArchSig workflow is built around three Skills.</p>
+              <ul class="status-list">
+                <li><strong><code>archmap-creater</code></strong><span>Creates the source-backed ArchMap v1: sources, atoms, and explicit molecule membership.</span></li>
+                <li><strong><code>law-policy-creater</code></strong><span>Creates the LawPolicy v1 selector: policy pack or evaluator ids, basis refs, scope, and severity. If repository evidence does not justify a selector, the Skill should ask instead of silently choosing a generic policy.</span></li>
+                <li><strong><code>archsig-reader</code></strong><span>Runs ArchSig, reads the summary and packet detail, checks the relevant source again, and returns review findings, repair candidates, and confirmation points.</span></li>
+              </ul>
+            </section>
+            <section id="how" class="article-section">
+              <h2>How ArchSig works</h2>
+              <p>Behind the Skill workflow, ArchSig has a simple shape: feed ArchMap v1 and LawPolicy v1 into the CLI, then read typed evaluator results, the analysis packet, and the compact summary.</p>
+              <ol class="numbered-status-list">
+                <li><strong>ArchMap records atoms</strong><span>An ArchMap v1 is source-backed input: read sources, primitive atoms, and explicit molecule membership. It is evidence, not a verdict.</span></li>
+                <li><strong>LawPolicy selects evaluators</strong><span>A LawPolicy v1 says which policy pack or evaluator ids should run, with basis refs, scope, and severity. The evaluator registry owns witness and distance rules.</span></li>
+                <li><strong>The CLI runs typed analysis</strong><span>The agent passes ArchMap v1 and LawPolicy v1 to ArchSig <code>analyze</code>. ArchSig normalizes atoms, runs typed evaluators, and keeps blocked / unknown / unmeasured support out of measured zero.</span></li>
+                <li><strong>The summary becomes the review surface</strong><span><code>archsig-analysis-summary.json</code> exposes verdict, typed evaluator status counts, distance insights, distance diagnosis, dominant findings, action queue, detail refs, and measurement basis.</span></li>
+              </ol>
+              <figure class="code-panel">
+                <figcaption>Core shape</figcaption>
+                <pre><code>ArchMap v1
+  + LawPolicy v1
+  -> archsig analyze
+  -> typed-evaluator-results
+  -> archsig-analysis-packet
+  -> archsig-analysis-summary.json
+  -> LLM agent review findings</code></pre>
+              </figure>
+            </section>
+            <section id="scope" class="article-section">
+              <h2>Tell it what to inspect</h2>
+              <p>A good request gives the agent enough context to avoid a generic review. Name the scope, the design concern, and the evidence that should or should not count.</p>
+              <ul class="status-list">
+                <li><strong>Scope</strong><span>Repository, PR, branch, subsystem, package, service, feature area, or release window.</span></li>
+                <li><strong>Goal</strong><span>Boundary review, architecture drift check, feature extension review, repair planning, evidence audit, or current-state inspection.</span></li>
+                <li><strong>Risk focus</strong><span>Responsibility movement, hidden coupling, workflow ordering, provider contracts, cache access, authorization, retries, state transitions, or generated-code review.</span></li>
+                <li><strong>Available evidence</strong><span>Code, tests, docs, traces, PR description, architecture notes, ownership rules, or known missing evidence.</span></li>
+                <li><strong>Excluded readings</strong><span>Areas out of scope, private systems, stale docs, generic laws, or claims the team does not want inferred.</span></li>
+              </ul>
+            </section>
+            <section id="builds" class="article-section">
+              <h2>What the Skills build</h2>
+              <p>The LLM agent uses the Skills to turn the request into bounded analysis artifacts. You normally read the result, not every intermediate file.</p>
+              <ul class="status-list">
+                <li><strong>ArchMap</strong><span>A source-backed map of atoms and explicit molecule membership.</span></li>
+                <li><strong>LawPolicy</strong><span>The selected evaluator policy for this review: policy pack or evaluator ids, basis refs, scope, and severity.</span></li>
+                <li><strong>ArchSig output</strong><span>Typed evaluator results, analysis packet, compact summary, viewer data, and detail references.</span></li>
+                <li><strong>Source comparison</strong><span>The agent reopens the relevant code paths before turning packet readings into human-facing review work.</span></li>
+              </ul>
+            </section>
+            <section id="returns" class="article-section">
+              <h2>What the agent returns</h2>
+              <p>The useful result is not a raw score. It is a review queue that says what changed structurally, why it matters, and what should happen next.</p>
+              <ul class="status-list">
+                <li><strong>Findings</strong><span>Architecture issues or pressure points with code refs and the reason they matter for the selected review.</span></li>
+                <li><strong>Repair candidates</strong><span>Possible moves such as restoring a boundary, separating a workflow contract, adding an adapter, or collecting missing evidence first.</span></li>
+                <li><strong>Confirmation checks</strong><span>Tests, docs, traces, ownership rules, policy decisions, or source refs needed before the team trusts the reading.</span></li>
+                <li><strong>Trend summary</strong><span>Where pressure is concentrating, what responsibilities are drifting, and which parts of the codebase keep attracting review attention.</span></li>
+              </ul>
+            </section>
+            <section id="improve" class="article-section">
+              <h2>Improve the request</h2>
+              <p>Ask sharper questions when the first reading is too broad. ArchSig works best when the review goal is explicit.</p>
+              <ul class="chapter-list">
+                <li><strong>Broad inspection</strong><span>Find architecture pressure across a subsystem and rank what reviewers should inspect first.</span></li>
+                <li><strong>PR-local inspection</strong><span>Check whether one PR moved responsibility, crossed a boundary, or introduced hidden coupling.</span></li>
+                <li><strong>Boundary-focused inspection</strong><span>Ask whether a feature reaches into another feature, service, adapter, provider, or cache boundary.</span></li>
+                <li><strong>Path-focused inspection</strong><span>Ask whether two implementation paths preserve the same visible behavior or whether operation order matters.</span></li>
+              </ul>
+            </section>
+            <section id="manual" class="article-section">
+              <h2>When to open the manual</h2>
+              <p>Open the manual when you need to reproduce a run, inspect packet detail, debug coverage gaps, compare schema versions, or understand exactly which measurement family produced a finding.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../"><span>Previous</span><strong>Overview</strong></a><a class="page-nav-next" href="../analyses/"><span>Next</span><strong>Analyses</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>

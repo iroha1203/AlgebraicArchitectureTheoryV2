@@ -1,0 +1,75 @@
+{%- set isHome = page.url == '/' -%}
+{%- set prefix = '' if isHome else (page.url | relprefix) -%}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ description }}">
+    <title>{{ title }}</title>
+    <meta property="og:site_name" content="{{ site.name }}">
+    <meta property="og:type" content="{{ 'website' if isHome else 'article' }}">
+    <meta property="og:title" content="{{ title }}">
+    <meta property="og:description" content="{{ ogDescription or description }}">
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+    <meta property="og:image" content="{{ site.url }}{{ site.ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ title }}">
+    <meta name="twitter:description" content="{{ twitterDescription or ogDescription or description }}">
+    <meta name="twitter:image" content="{{ site.url }}{{ site.ogImage }}">
+    <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+    <link rel="icon" href="{{ prefix }}assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="{{ prefix }}assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="{{ prefix }}assets/site.css">
+{%- if mathjax %}
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+{%- endif %}
+    <script defer src="{{ prefix }}assets/site.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.gaId }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '{{ site.gaId }}');
+    </script>
+{%- if isHome %}
+    {% include "jsonld-home.njk" %}
+{%- endif %}
+  </head>
+  <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+{% include "site-header.njk" %}
+{{ content | safe }}
+{% include "site-footer.njk" %}
+  </body>
+</html>

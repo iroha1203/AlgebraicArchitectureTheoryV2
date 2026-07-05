@@ -1,0 +1,602 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Design Principle Layers",
+  "description": "Design Principle Layers in Algebraic Architecture Theory: SOLID, Layered Architecture, Event Sourcing, Saga, Circuit Breaker, and Replicated Log as bounded law packages.",
+  "order": 8,
+  "llmsLabel": "AAT Design Principle Layers",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Design Principle Layers</span>
+          </nav>
+          <p class="eyebrow">Part II. Key Concepts</p>
+          <h1>Design Principle Layers</h1>
+          <p class="lede">
+            Design principles become precise in AAT when they are read as
+            bounded law packages. SOLID, Layered Architecture, Event Sourcing,
+            Saga, Circuit Breaker, and Replicated Log live on different layers
+            because they preserve different invariants under different evidence
+            boundaries.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#research-question">Research question</a></li>
+                <li><a href="#law-package">Law package</a></li>
+                <li><a href="#layer-map">Layer map</a></li>
+                <li><a href="#local-contract">Local contract layer</a></li>
+                <li><a href="#global-structure">Global structure layer</a></li>
+                <li><a href="#state-transition">State-transition layer</a></li>
+                <li><a href="#runtime-distributed">Runtime and distributed layers</a></li>
+                <li><a href="#inter-layer">Inter-layer non-implications</a></li>
+                <li><a href="#example">Worked example</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
+              <ul>
+                <li><a href="../">Overview</a></li>
+                <li><a href="../atoms/">Atoms</a></li>
+                <li><a href="../architecture-objects/">Architecture Objects</a></li>
+                <li><a href="../laws/">Design Laws</a></li>
+                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
+                <li><a href="../zero-curvature/">Zero Curvature</a></li>
+                <li><a href="../architecture-signature/">Architecture Signature</a></li>
+                <li><a href="./" aria-current="page">Design Principle Layers</a></li>
+                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
+                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
+                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
+                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
+                <li><a href="../related-work/">Related Work</a></li>
+                <li><a href="../status/">Status</a></li>
+                <li><a href="../formal-anchors/">Formal Anchors</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="research-question" class="article-section">
+              <h2>Research question</h2>
+              <p class="research-question">
+                What does a design principle actually protect, and where in the
+                architecture does that protection apply?
+              </p>
+              <p>
+                AAT does not treat a principle name as a theorem. "SOLID",
+                "Clean Architecture", "Event Sourcing", "Saga", and "Circuit
+                Breaker" are not magic labels. Each becomes mathematical only
+                after selecting a state space, an operation family, an invariant
+                family, evidence boundaries, and non-conclusions. The layer tells
+                the reader which preservation problem is being solved.
+              </p>
+            </section>
+
+            <section id="law-package" class="article-section">
+              <h2>Law package</h2>
+              <p>
+                A design principle layer is a family of bounded law packages. A
+                package chooses the objects it talks about, the operations that
+                can change those objects, the invariants to preserve, and the
+                theorem boundary under which preservation is valid.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Design principle as law package</figcaption>
+                <pre><code>DesignPrincipleLayer
+  = State
+  + Operation family T
+  + Invariant family S
+  + holds : Invariant -&gt; State -&gt; Prop
+  + preservation law
+  + evidence boundary
+  + non-conclusions</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                A design principle layer is a bounded family of law packages that
+                share a state space, operation vocabulary, invariant vocabulary,
+                and evidence boundary.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                A law package is composable only through the invariants and
+                operations it explicitly selects. A principle name alone does not
+                supply a cross-layer theorem.
+              </p>
+              <p id="proof-1-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
+                The generic closure relation is operation-invariant preservation:
+                operations in \(T\) preserve invariants in \(S\). Lean states this
+                as <code>T subset Ops(S) iff S subset Inv(T)</code>. Nothing in
+                that closure says that an invariant from another layer is also
+                preserved.
+              </p>
+            </section>
+
+            <section id="layer-map" class="article-section">
+              <h2>Layer map</h2>
+              <p>
+                The same architecture may need several law packages at once. A
+                component replacement may be locally substitutable, a module graph
+                may be globally layered, a payment workflow may satisfy selected
+                replay and compensation laws, and a runtime dependency may be
+                protected by a circuit breaker. These are related readings, not
+                the same theorem.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Layer</th>
+                      <th>Principle families</th>
+                      <th>Selected invariant shape</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Local contract</td>
+                      <td>SOLID, SRP, ISP, LSP, DIP, local replacement</td>
+                      <td>Projection soundness, observation factorization, selected substitution, responsibility cohesion.</td>
+                    </tr>
+                    <tr>
+                      <td>Global structure</td>
+                      <td>Layered Architecture, Clean Architecture</td>
+                      <td>Strict layering, decomposability, boundary-policy soundness, abstraction-policy soundness.</td>
+                    </tr>
+                    <tr>
+                      <td>State-transition algebra</td>
+                      <td>Event Sourcing, Saga, CRUD when given a selected carrier</td>
+                      <td>Replay lawfulness, projection lawfulness, roundtrip laws, weak compensation.</td>
+                    </tr>
+                    <tr>
+                      <td>Runtime dependency</td>
+                      <td>Circuit Breaker, isolate, protect</td>
+                      <td>Path localization, interaction protection, bounded runtime flatness.</td>
+                    </tr>
+                    <tr>
+                      <td>Distributed convergence</td>
+                      <td>Replicated Log, quorum protocols</td>
+                      <td>Quorum evidence, ordering condition, conditional convergence for selected entries.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="non-conclusion-2-1" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-2-1">Non-conclusion 2.1.</a>
+                A layer assignment is not a ranking of principles. It is a scope
+                marker: each layer states which invariants are selected and
+                which conclusions remain outside the package.
+              </p>
+            </section>
+
+            <section id="local-contract" class="article-section">
+              <h2>Local contract layer</h2>
+              <p>
+                SOLID lives primarily at the local contract layer. SRP selects a
+                responsibility boundary and local cohesion condition. ISP refines
+                the projection visible to a client context. LSP states selected
+                observation equivalence under replacement. DIP records how
+                concrete dependency evidence travels through abstraction. OCP is
+                read as extension by operations that preserve the selected local
+                contract invariants.
+              </p>
+              <figure class="code-panel">
+                <figcaption>SOLID as local contract</figcaption>
+                <pre><code>LocalContractLayer
+  SRP: responsibility boundary + edge-local cohesion
+  ISP: projection refinement + observation boundary
+  LSP: same abstraction -&gt; equivalent selected observation
+  DIP: dependency evidence represented through abstraction
+  OCP: extension operation preserves selected contract invariants</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3.1.</a>
+                A proof-carrying local replacement operation preserves projection
+                soundness, LSP compatibility, and DIP compatibility at its target.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof.</a>
+                The Lean structure <code>LocalReplacementOperation</code> carries
+                a target-side <code>LocalReplacementContract</code>. Theorems
+                <code>localReplacementOperation_preserves_projectionSound</code>,
+                <code>localReplacementOperation_preserves_lspCompatible</code>,
+                and <code>localReplacementOperation_preserves_dipCompatible</code>
+                extract the selected local invariants from that contract.
+              </p>
+              <p id="proposition-3-2" class="statement">
+                <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
+                SRP and ISP are formalized as bounded packages, not natural
+                language judgements.
+              </p>
+              <p id="proof-3-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-2">Proof idea.</a>
+                SRP uses <code>ResponsibilityBoundary.Total</code>,
+                <code>ResponsibilityBoundary.Functional</code>, and
+                <code>ResponsibilityBoundary.EdgeCohesive</code>. ISP uses target
+                projection soundness and observation factorization. Both record
+                natural-language optimality and organizational quality as
+                non-conclusions.
+              </p>
+            </section>
+
+            <section id="global-structure" class="article-section">
+              <h2>Global structure layer</h2>
+              <p>
+                Layered Architecture and Clean Architecture are global structure
+                packages. Their invariants talk about the dependency graph as a
+                whole: whether a strict layer assignment exists, whether the graph
+                is decomposable, and whether boundary and abstraction policies are
+                respected.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Structural layer</figcaption>
+                <pre><code>StructuralLayerInvariant
+  = strictLayered
+  + decomposable
+  + boundaryPolicySound
+  + abstractionPolicySound</code></pre>
+              </figure>
+              <p id="proposition-4-1" class="statement">
+                <a class="statement-anchor" href="#proposition-4-1">Proposition 4.1.</a>
+                Edge-subset structural restrictions preserve strict layering,
+                decomposability, boundary-policy soundness, and
+                abstraction-policy soundness.
+              </p>
+              <p id="proof-4-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-4-1">Proof.</a>
+                <code>StructuralRestrictionOperation</code> carries an
+                <code>EdgeSubset target.G source.G</code>. The preservation
+                theorems apply existing edge-subset results for strict layering
+                and decomposability, and use the same edge-subset witness to
+                transport boundary and abstraction policy soundness.
+              </p>
+              <p id="non-conclusion-4-2" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-4-2">Non-conclusion 4.2.</a>
+                A global structural package does not classify practical layer
+                naming conventions, prove runtime or semantic decomposability, or
+                prove global flatness preservation unless those are supplied by
+                further packages.
+              </p>
+            </section>
+
+            <section id="state-transition" class="article-section">
+              <h2>State-transition layer</h2>
+              <p>
+                Event Sourcing and Saga are state-transition algebra packages.
+                They do not primarily assert that a dependency graph is layered.
+                They assert laws about replay, projection, roundtrip, and
+                compensation over selected finite cases and a selected semantics.
+              </p>
+              <figure class="code-panel">
+                <figcaption>State-transition laws</figcaption>
+                <pre><code>StateTransitionCarrier
+  = step
+  + observe
+  + replay
+  + project
+  + compensate
+  + semantics
+
+StateTransitionInvariant
+  = replayLawful
+  + roundtripLawful
+  + compensationLawful
+  + lawFamilyLawful</code></pre>
+              </figure>
+              <p id="proposition-5-1" class="statement">
+                <a class="statement-anchor" href="#proposition-5-1">Proposition 5.1.</a>
+                Event Sourcing is represented by event-sequence monoid laws plus
+                selected replay and projection lawfulness.
+              </p>
+              <p id="proof-5-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-1">Proof.</a>
+                Lean proves <code>eventSequenceMonoidLawful</code> for finite
+                event histories and defines
+                <code>EventSourcingLawFamilyLawful</code> as selected replay and
+                projection lawfulness. The design-pattern closure theorem then
+                records those selected invariants.
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                Saga is represented as selected weak recovery, not as a general
+                inverse law.
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof.</a>
+                <code>SagaWeakRecoveryLawful</code> is defined through selected
+                compensation cases. <code>SagaNonConclusionClause</code> records
+                that compensation is not claimed to be a general inverse, and that
+                all failure-mode coverage and operational recovery-cost
+                improvement remain outside the theorem package.
+              </p>
+              <p id="non-conclusion-5-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-5-3">Non-conclusion 5.3.</a>
+                CRUD is not automatically a design-pattern theorem. It becomes
+                part of this layer only after a selected state carrier, operation
+                family, invariant family, and evidence boundary are supplied.
+              </p>
+            </section>
+
+            <section id="runtime-distributed" class="article-section">
+              <h2>Runtime and distributed layers</h2>
+              <p>
+                Circuit Breaker, isolate, protect, and Replicated Log live beyond
+                static structure. Runtime protection packages are bounded by a
+                component universe and selected region. Distributed convergence
+                packages are bounded by a failure model, quorum predicate,
+                ordering relation, convergence predicate, and selected entries.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Runtime and convergence layers</figcaption>
+                <pre><code>RuntimeProtectionInvariant
+  = pathLocalized
+  + interactionProtected
+  + runtimeFlat
+
+ReplicatedLogInvariant
+  = quorumCondition
+  + orderingCondition
+  + conditionalConvergence
+  + lawFamilyLawful</code></pre>
+              </figure>
+              <p id="proposition-6-1" class="statement">
+                <a class="statement-anchor" href="#proposition-6-1">Proposition 6.1.</a>
+                Runtime protection operations preserve selected path
+                localization, runtime interaction protection, and bounded runtime
+                flatness only under the assumptions of the relevant
+                <code>isolate</code> or <code>protect</code> law package.
+              </p>
+              <p id="proof-6-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-1">Proof.</a>
+                The runtime package cases carry
+                <code>isolateRuntimeLocalizationLaw.AssumptionsHold</code> or
+                <code>protectRuntimeProtectionLaw.AssumptionsHold</code>. The
+                preservation theorems call the corresponding law-package
+                conclusion accessors.
+              </p>
+              <p id="proposition-6-2" class="statement">
+                <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
+                Replicated Log lawfulness is conditional convergence over
+                selected entries, not proof of an arbitrary consensus
+                implementation.
+              </p>
+              <p id="proof-6-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-2">Proof.</a>
+                <code>ReplicatedLogLawFamilyLawful</code> bundles quorum,
+                ordering, and convergence conditions for selected entries.
+                <code>ReplicatedLogNonConclusionClause</code> records that
+                unconditional availability, partition tolerance, unconditional
+                convergence, protocol completeness, and concrete implementation
+                correctness are outside the package.
+              </p>
+            </section>
+
+            <section id="inter-layer" class="article-section">
+              <h2>Inter-layer non-implications</h2>
+              <p>
+                The main value of layering is negative as well as positive. It
+                prevents a theorem from being read beyond its layer. A local LSP
+                theorem does not prove structural decomposability. A strict
+                dependency layer does not prove replay correctness. A circuit
+                breaker package does not prove semantic compensation. A quorum
+                package does not prove API usability.
+              </p>
+              <p id="counterexample-7-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-1">Counterexample 7.1.</a>
+                A local replacement can preserve selected LSP and DIP
+                compatibility while the abstract graph remains cyclic. Local
+                contract compatibility does not imply global structural
+                decomposition.
+              </p>
+              <p id="counterexample-7-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-2">Counterexample 7.2.</a>
+                A strict layered graph can still replay event histories
+                incorrectly. Static layer soundness does not imply Event Sourcing
+                replay lawfulness.
+              </p>
+              <p id="counterexample-7-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-3">Counterexample 7.3.</a>
+                A selected Saga compensation can be lawful for listed cases while
+                an unlisted failure mode remains uncovered. Weak recovery is not
+                failure-mode completeness.
+              </p>
+              <p id="counterexample-7-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-7-4">Counterexample 7.4.</a>
+                A replicated-log package can provide conditional convergence for
+                selected entries without proving unconditional availability or a
+                concrete protocol implementation.
+              </p>
+            </section>
+
+            <section id="example" class="article-section">
+              <h2>Worked example</h2>
+              <p>
+                Consider a payment capture service that is being split into a
+                <code>PaymentPort</code>, a <code>GatewayAdapter</code>, a
+                <code>Ledger</code>, and an asynchronous receipt workflow. AAT
+                reads this as several law packages, not one design slogan.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Layered package reading</figcaption>
+                <pre><code>Local contract:
+  PaymentPort projection is sound
+  GatewayAdapter preserves selected payment observations
+  responsibility labels are functional and locally cohesive
+
+Global structure:
+  adapter depends inward through the selected abstraction policy
+  forbidden boundary edges are zero
+
+State-transition:
+  payment events replay to selected ledger projection
+  compensation is weak recovery for selected failure cases
+
+Runtime:
+  retries are protected by idempotency and breaker policy
+  selected runtime paths are localized
+
+Distributed convergence:
+  replicated ledger entries converge under selected quorum model</code></pre>
+              </figure>
+              <p>
+                The page-level conclusion is precise: a review can ask which
+                package failed. If the adapter violates a boundary edge, the
+                structural package is nonzero. If retry can double-charge, the
+                state-transition or runtime package is nonzero. If a client sees
+                different selected observations after replacement, the local
+                contract package is nonzero. These failures may interact, but AAT
+                does not identify them without an explicit bridge.
+              </p>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The Lean surface for this chapter is spread across the
+                <code>Formal/Arch/Patterns</code> modules and the generic
+                operation-invariant closure. The modules define bounded
+                design-pattern schemas, preservation theorems, closure laws, and
+                recorded non-conclusions for each layer.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lean anchors</figcaption>
+                <pre><code>Formal/Arch/Operation/OperationInvariant.lean
+  Ops
+  Inv
+  operationInvariant_galois
+  DesignPattern
+  DesignPattern.closure_law
+
+Formal/Arch/Patterns/LocalContractDesignPattern.lean
+  LocalContractState
+  LocalReplacementOperation
+  LocalContractInvariant
+  localContractDesignPattern
+  localContractDesignPattern_closure_law
+  localContractDesignPattern_records_nonConclusion
+
+Formal/Arch/Patterns/SRPDesignPattern.lean
+  ResponsibilityBoundary
+  ResponsibilityCohesionInvariant
+  responsibilityCohesionDesignPattern
+
+Formal/Arch/Patterns/ISPDesignPattern.lean
+  InterfaceProjectionRefinementOperation
+  InterfaceProjectionRefinementInvariant
+  interfaceProjectionRefinementDesignPattern
+
+Formal/Arch/Patterns/StructuralDesignPattern.lean
+  StructuralLayerInvariant
+  structuralLayerDesignPattern
+
+Formal/Arch/Patterns/StateTransitionDesignPattern.lean
+  StateTransitionCarrier
+  StateTransitionInvariant
+  stateTransitionDesignPattern
+
+Formal/Arch/Patterns/EventSourcingSagaDesignPattern.lean
+  eventSequenceMonoidLawful
+  eventSourcingDesignPattern
+  sagaDesignPattern
+
+Formal/Arch/Patterns/RuntimeProtectionDesignPattern.lean
+  RuntimeProtectionInvariant
+  runtimeProtectionDesignPattern
+
+Formal/Arch/Patterns/ReplicatedLogDesignPattern.lean
+  ReplicatedLogInvariant
+  replicatedLogDesignPattern</code></pre>
+              </figure>
+              <p id="formal-status-9-1" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-1">Formal status 9.1.</a>
+                The local contract, SRP, ISP, structural, state-transition, Event
+                Sourcing, Saga, runtime protection, and replicated-log design
+                pattern schemas are defined in Lean.
+              </p>
+              <p id="formal-status-9-2" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-2">Formal status 9.2.</a>
+                Each pattern exposes closure-law theorems through the generic
+                <code>DesignPattern</code> schema and records explicit
+                non-conclusions.
+              </p>
+              <p id="formal-status-9-3" class="statement">
+                <a class="statement-anchor" href="#formal-status-9-3">Formal status 9.3.</a>
+                Cross-layer theorem identification is not asserted. Layer
+                boundaries remain part of the claim discipline unless a separate
+                bridge theorem is supplied.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Design principles become AAT objects when they are packaged as
+                selected invariant-preservation laws. The package records what is
+                preserved, which operations preserve it, which evidence supports
+                the claim, and which conclusions are deliberately excluded.
+              </p>
+              <p>
+                This is why the layers matter. SOLID belongs mainly to local
+                contracts; Layered and Clean Architecture belong to global
+                structure; Event Sourcing, Saga, and CRUD require
+                state-transition carriers; Circuit Breaker and Replicated Log
+                require runtime and distributed evidence. AAT keeps these claims
+                composable without pretending they are the same claim.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Law package</dt>
+                  <dd>A bounded theorem package naming state, operations, invariants, evidence boundary, conclusion, and non-conclusions.</dd>
+                </div>
+                <div>
+                  <dt>Local contract layer</dt>
+                  <dd>The layer for selected projection, observation, substitution, responsibility, and dependency-inversion invariants.</dd>
+                </div>
+                <div>
+                  <dt>Global structure layer</dt>
+                  <dd>The layer for strict layering, decomposability, and dependency policy soundness.</dd>
+                </div>
+                <div>
+                  <dt>State-transition layer</dt>
+                  <dd>The layer for replay, projection, roundtrip, and compensation lawfulness.</dd>
+                </div>
+                <div>
+                  <dt>Runtime protection layer</dt>
+                  <dd>The layer for selected path localization, interaction protection, and bounded runtime flatness.</dd>
+                </div>
+                <div>
+                  <dt>Distributed convergence layer</dt>
+                  <dd>The layer for quorum, ordering, and conditional convergence under a selected failure model.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../architecture-signature/">
+                <span>Previous</span>
+                <strong>Architecture Signature</strong>
+              </a>
+              <a class="page-nav-next" href="../operations-and-calculus/">
+                <span>Next</span>
+                <strong>Operations and Calculus</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

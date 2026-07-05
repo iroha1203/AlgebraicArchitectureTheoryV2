@@ -1,0 +1,87 @@
+---
+permalink: llms.txt
+eleventyExcludeFromCollections: true
+---
+# AAT / SFT Research Notes
+
+> Public reading surface for Algebraic Architecture Theory (AAT),
+> Software Field Theory (SFT), and Architecture Signature (ArchSig).
+
+This website presents a research program for reasoning about software
+architecture as an object of bounded change. The central topics are
+architecture operations, invariant preservation, obstruction witnesses,
+signature trajectories, and bounded software evolution.
+
+## Core concepts
+
+- Algebraic Architecture Theory (AAT) is an original research framework
+  by Hiroyuki Nakahata. It studies software architecture through selected
+  architecture objects, operations on those objects, invariant families,
+  obstruction witnesses, and theorem boundaries.
+- Software Field Theory (SFT) is an original research framework by
+  Hiroyuki Nakahata. It models software evolution as field-shaped
+  computation over field state, operation support, policy, forecast
+  cones, consequence envelopes, governance interventions, and feedback.
+- Architecture Signature (ArchSig) is a Skill-first architecture analysis
+  surface. An LLM agent can author source-grounded ArchMap evidence, select
+  a LawPolicy, run ArchSig, read the resulting packet and summary, inspect
+  the code again, and return review findings or repair candidates.
+
+## Relationship between AAT and SFT
+
+AAT is the base layer for the research program. It provides the formal
+architecture vocabulary: selected architecture objects, operations,
+invariant families, witnesses, signatures, and theorem boundaries.
+
+SFT is built on top of AAT. It extends the architecture-focused layer into
+a theory of software evolution, where architecture state, possible
+operations, policies, feedback, and consequence envelopes shape what
+changes become easier, harder, safer, or more costly.
+
+ArchSig is the bounded diagnostic and tooling layer that connects to both
+AAT and SFT. It should be read as source-grounded observation, selected
+policy analysis, and review support, not as a proof system.
+
+## Primary public pages
+{% for p in collections.pages %}
+- {{ p.data.llmsLabel }}: {{ site.url }}{{ p.url }}
+{%- endfor %}
+
+## Reading order
+
+1. Start with the home page for the overall project map.
+2. Read AAT for the algebraic account of architecture operations,
+   invariants, witnesses, theorem boundaries, and multi-axis signatures.
+3. Read SFT for the field-shaped model of software evolution,
+   forecast cones, consequence envelopes, governance interventions,
+   and feedback updates.
+4. Read ArchSig for Skill-first architecture analysis, ArchMap / LawPolicy
+   workflow, analysis packets, review findings, and measurement boundaries.
+
+## Outreach
+
+The Outreach section is the public communication area for the project. It
+is intended for accessible explanations, essays, talks, and entry points
+for readers who are not starting from the formal theory pages. Outreach
+material should not be treated as a replacement for the AAT, SFT, or
+ArchSig pages when precise claim boundaries matter.
+
+## Interpretation notes
+
+- Preserve claim boundaries when summarizing this site: formal claims,
+  tooling output, empirical observations, and outreach material are
+  different kinds of statements.
+- Treat Architecture Signature as a multi-axis diagnostic, not as a
+  single quality score or a proof of architecture correctness.
+
+## Repository
+
+GitHub repository: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
+
+## Author
+
+Author: Hiroyuki Nakahata
+
+GitHub: https://github.com/iroha1203
+
+Website: https://iroha1203.dev/
