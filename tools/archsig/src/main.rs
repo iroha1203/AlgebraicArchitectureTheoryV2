@@ -6,14 +6,15 @@ use std::process::ExitCode;
 use archsig::{
     ARCHMAP_V1_SCHEMA, ArchMapDocumentV1, ArchMapDocumentV2, LAW_POLICY_V1_SCHEMA,
     LawPolicyDocumentV1, SchemaVersionCatalogV0, build_architecture_distance_v1,
-    build_foundation_measurement_packet_v1, build_insight_brief_v1, build_insight_report_v1,
-    build_measurement_summary_v1, build_measurement_viewer_data_v1, build_typed_analysis_packet_v1,
-    build_typed_analysis_summary_v1, build_typed_analysis_validation_v1,
-    build_typed_atom_viewer_data_v1, build_typed_detail_index_v1,
-    build_typed_llm_interpretation_packet_v1, enrich_architecture_distance_with_part4_bundle_v1,
-    evaluate_typed_v1, normalize_archmap_v1, normalize_archmap_v2,
-    static_law_evaluator_registry_v1, static_schema_version_catalog, validate_archmap_v1_report,
-    validate_archmap_v2_report, validate_law_policy_v1_report, validate_measurement_packet_v1,
+    build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
+    build_insight_report_v1, build_measurement_summary_v1, build_measurement_viewer_data_v1,
+    build_typed_analysis_packet_v1, build_typed_analysis_summary_v1,
+    build_typed_analysis_validation_v1, build_typed_atom_viewer_data_v1,
+    build_typed_detail_index_v1, build_typed_llm_interpretation_packet_v1,
+    enrich_architecture_distance_with_part4_bundle_v1, evaluate_typed_v1, normalize_archmap_v1,
+    normalize_archmap_v2, static_law_evaluator_registry_v1, static_schema_version_catalog,
+    validate_archmap_v1_report, validate_archmap_v2_report, validate_law_policy_v1_report,
+    validate_measurement_packet_v1,
 };
 use clap::{Parser, Subcommand};
 use serde_json::Value;
@@ -80,6 +81,25 @@ enum Command {
         /// Append a wall-clock suffix to the deterministic run id. Omitted by default to keep byte-identical outputs.
         #[arg(long)]
         stamp: bool,
+    },
+
+    /// Apply a gate policy to an ArchSig measurement packet.
+    Gate {
+        /// Input archsig-measurement-packet/v0.5.0 JSON path.
+        #[arg(long)]
+        packet: PathBuf,
+
+        /// Input archsig-gate-policy/v0.5.0 JSON path.
+        #[arg(long)]
+        policy: PathBuf,
+
+        /// Optional archsig-comparison-report/v0.5.0 JSON path for introduced-by-change rules.
+        #[arg(long)]
+        comparison: Option<PathBuf>,
+
+        /// Output archsig-gate-report/v0.5.0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
 
     /// Produce a lightweight ArchSig PR review report from base ArchMap v1, PR-local ArchMap delta, and LawPolicy v1.
@@ -610,6 +630,16 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::Gate {
+            packet,
+            policy,
+            comparison,
+            out,
+        }) => {
+            let (report, exit_code) = build_gate_report_v1(&packet, &policy, comparison.as_deref())?;
+            write_json(out, &report)?;
+            Ok(ExitCode::from(exit_code as u8))
+        }
         Some(Command::PrReview {
             base_archmap,
             after_archmap,
@@ -880,7 +910,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "archsig analyze wrote validation insight artifacts to {} and stopped before normalization",
                     out_dir.display()
                 );
-                return Ok(ExitCode::from(1));
+                return Ok(ExitCode::from(2));
             }
             if !archmap_is_v1 {
                 let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
@@ -1039,7 +1069,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     return Ok(ExitCode::from(1));
                 }
                 return Ok(if packet_failed {
-                    ExitCode::from(1)
+                    ExitCode::from(2)
                 } else {
                     ExitCode::SUCCESS
                 });

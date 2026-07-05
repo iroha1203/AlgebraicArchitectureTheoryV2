@@ -127,7 +127,7 @@ fn cli_rejects_archmap_v2_atom_kind_outside_declared_vocabulary() {
     ]);
     assert_eq!(
         output.status.code(),
-        Some(1),
+        Some(2),
         "analyze must fail closed before measurement for vocabulary errors\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
@@ -442,7 +442,7 @@ fn cli_rejects_archmap_v2_custom_extraction_doctrine() {
     ]);
     assert_eq!(
         output.status.code(),
-        Some(1),
+        Some(2),
         "analyze must fail closed before measurement when ArchMap v2 declares a custom doctrine\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
@@ -9298,6 +9298,8 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-architecture-distance/v0.5.0",
             "archsig-measurement-packet/v0.5.0",
             "archsig-boundary-statement/v0.5.0",
+            "archsig-gate-policy/v0.5.0",
+            "archsig-gate-report/v0.5.0",
             "archsig-analysis-packet/v0.5.0",
             "archsig-run-manifest/v0.5.0",
             "archsig-atom-viewer-data/v0.5.0",
@@ -10021,6 +10023,387 @@ fn cli_analyze_current_strict_distance_accepts_practical_measurement_foundation(
     );
 }
 
+#[test]
+fn cli_gate_rejects_plain_pass_for_non_terminal_and_missing_mapping() {
+    let out_dir = temp_dir("archsig-gate-invalid-policy");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "unmeasured");
+    let policy_path = out_dir.join("bad-policy.json");
+    fs::write(
+        &policy_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-gate-policy/v0.5.0",
+            "policyId": "gate-policy:bad@1",
+            "rules": [{
+                "ruleId": "absolute-bad",
+                "scope": "absolute",
+                "verdictMapping": {
+                    "measured_zero": "pass",
+                    "measured_nonzero": "block",
+                    "unmeasured": "pass",
+                    "unknown": "pass_with_boundary",
+                    "not_computed": "pass_with_boundary"
+                }
+            }]
+        }))
+        .expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    let report_path = out_dir.join("gate-report.json");
+
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "NOT_EVALUABLE");
+    assert!(
+        report["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-verdictMapping-unmeasured-no-plain-pass"
+                && check["result"] == "fail")
+    );
+    assert!(
+        report["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-verdictMapping-violated_assumption_dependency-present"
+                && check["result"] == "fail")
+    );
+
+    let introduced_policy_path = out_dir.join("bad-introduced-policy.json");
+    fs::write(
+        &introduced_policy_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-gate-policy/v0.5.0",
+            "policyId": "gate-policy:bad-introduced@1",
+            "rules": [{
+                "ruleId": "introduced-bad",
+                "scope": "introduced-by-change",
+                "introducedByChangeMapping": {
+                    "new": "block",
+                    "cleared": "pass",
+                    "preexisting": "pass_with_boundary",
+                    "removed": "pass",
+                    "other": "pass_with_boundary"
+                }
+            }]
+        }))
+        .expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    let introduced_report_path = out_dir.join("introduced-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            introduced_policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            introduced_report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let introduced_report = read_json(&introduced_report_path);
+    assert!(
+        introduced_report["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-introducedByChangeMapping-removed-no-plain-pass"
+                && check["result"] == "fail")
+    );
+}
+
+#[test]
+fn cli_gate_rejects_unknown_packet_verdict_and_policy_mapping_keys() {
+    let out_dir = temp_dir("archsig-gate-unknown-vocabulary");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "alien_verdict");
+    let policy_path = ag_measurement_root().join("gate_policy_conservative.json");
+    let report_path = out_dir.join("unknown-verdict-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(report["decision"], "NOT_EVALUABLE");
+    assert!(
+        report["packetValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(
+                |check| check["id"] == "gate-packet-structural-verdict-0-verdict-vocabulary"
+                    && check["result"] == "fail"
+            )
+    );
+
+    let valid_packet_path = out_dir.join("valid-packet.json");
+    write_gate_packet(&valid_packet_path, "measured_zero");
+    let bad_policy_path = out_dir.join("bad-policy-key.json");
+    let mut bad_policy = read_json(&policy_path);
+    bad_policy["rules"][0]["verdictMapping"]["alien_verdict"] = json!("block");
+    fs::write(
+        &bad_policy_path,
+        serde_json::to_vec_pretty(&bad_policy).expect("policy serializes"),
+    )
+    .expect("policy fixture can be written");
+    let bad_policy_report = out_dir.join("bad-policy-key-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            valid_packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            bad_policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            bad_policy_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let bad_policy_json = read_json(&bad_policy_report);
+    assert!(
+        bad_policy_json["policyValidation"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["id"]
+                == "gate-policy-rule-0-verdictMapping-alien_verdict-known-key"
+                && check["result"] == "fail")
+    );
+}
+
+#[test]
+fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
+    let out_dir = temp_dir("archsig-gate-not-evaluable");
+    let policy_path = ag_measurement_root().join("gate_policy_conservative.json");
+    let malformed_packet = out_dir.join("malformed-packet.json");
+    fs::write(
+        &malformed_packet,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-measurement-packet/v0.5.0",
+            "packetId": "measurement:malformed",
+            "structuralVerdict": []
+        }))
+        .expect("packet serializes"),
+    )
+    .expect("packet fixture can be written");
+    let malformed_report = out_dir.join("malformed-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            malformed_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            malformed_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(read_json(&malformed_report)["decision"], "NOT_EVALUABLE");
+
+    let bad_minimal_packet = out_dir.join("bad-minimal-packet.json");
+    fs::write(
+        &bad_minimal_packet,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-measurement-packet/v0.5.0",
+            "packetId": "measurement:bad-minimal",
+            "profile": {},
+            "structuralVerdict": [{
+                "verdict": "measured_zero",
+                "verdictData": {}
+            }],
+            "nonConclusions": []
+        }))
+        .expect("packet serializes"),
+    )
+    .expect("packet fixture can be written");
+    let bad_minimal_report = out_dir.join("bad-minimal-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            bad_minimal_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            bad_minimal_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert_eq!(read_json(&bad_minimal_report)["decision"], "NOT_EVALUABLE");
+
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "measured_zero");
+    let comparison_path = out_dir.join("comparison.json");
+    fs::write(
+        &comparison_path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-comparison-report/v0.5.0"
+        }))
+        .expect("comparison serializes"),
+    )
+    .expect("comparison fixture can be written");
+    let comparison_report = out_dir.join("comparison-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            comparison_path.to_str().expect("path is utf-8"),
+            "--out",
+            comparison_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let comparison_gate = read_json(&comparison_report);
+    assert_eq!(comparison_gate["decision"], "NOT_EVALUABLE");
+    assert!(
+        comparison_gate["ruleOutcomes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|outcome| outcome["scope"] == "introduced-by-change"
+                && outcome["status"] == "not_evaluable")
+    );
+}
+
+#[test]
+fn cli_gate_records_applied_mapping_and_exit_codes_without_fail_vocab() {
+    let out_dir = temp_dir("archsig-gate-report");
+    let policy_path = ag_measurement_root().join("gate_policy_conservative.json");
+    let pass_packet = out_dir.join("pass-packet.json");
+    write_gate_packet(&pass_packet, "measured_zero");
+    let pass_report = out_dir.join("pass-report.json");
+    run_sig0(&[
+        "gate",
+        "--packet",
+        pass_packet.to_str().expect("path is utf-8"),
+        "--policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--out",
+        pass_report.to_str().expect("path is utf-8"),
+    ]);
+    let pass_json = read_json(&pass_report);
+    assert_eq!(pass_json["schema"], "archsig-gate-report/v0.5.0");
+    assert_eq!(pass_json["decision"], "PASS_WITHIN_GATE_POLICY");
+    assert_eq!(
+        pass_json["ruleOutcomes"][0]["appliedMapping"][0]["verdict"],
+        "measured_zero"
+    );
+    assert_eq!(
+        pass_json["ruleOutcomes"][0]["appliedMapping"][0]["action"],
+        "pass"
+    );
+    assert!(
+        !json_contains_exact_string(&pass_json, "fail"),
+        "gate output must not use fail as a mapping or output vocabulary"
+    );
+
+    let block_packet = out_dir.join("block-packet.json");
+    write_gate_packet(&block_packet, "measured_nonzero");
+    let block_report = out_dir.join("block-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            block_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            block_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        read_json(&block_report)["decision"],
+        "BLOCKED_BY_GATE_POLICY"
+    );
+}
+
+#[test]
+fn cli_gate_report_is_byte_deterministic() {
+    let out_dir = temp_dir("archsig-gate-determinism");
+    let policy_path = ag_measurement_root().join("gate_policy_conservative.json");
+    let packet_path = out_dir.join("packet.json");
+    write_gate_packet(&packet_path, "unknown");
+    let first = out_dir.join("gate-report-a.json");
+    let second = out_dir.join("gate-report-b.json");
+    for report in [&first, &second] {
+        run_sig0(&[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ]);
+    }
+    assert_eq!(
+        fs::read(&first).expect("first report exists"),
+        fs::read(&second).expect("second report exists")
+    );
+}
+
+#[test]
+fn cli_analyze_v2_validation_failure_uses_exit_code_2() {
+    let out_dir = temp_dir("archsig-analyze-validation-exit-code");
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["kind"] = json!("externalForecast");
+    let archmap_path = out_dir.join("archmap-vocabulary-error.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+
+    run_sig0_expect_code(
+        &[
+            "analyze",
+            "--archmap",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    assert!(!out_dir.join("archsig-measurement-packet.json").exists());
+}
+
 fn temp_dir(test_name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -10029,6 +10412,74 @@ fn temp_dir(test_name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("archsig-{test_name}-{nanos}"));
     fs::create_dir_all(&dir).expect("temporary directory can be created");
     dir
+}
+
+fn write_gate_packet(path: &Path, verdict: &str) {
+    fs::write(
+        path,
+        serde_json::to_vec_pretty(&json!({
+            "schema": "archsig-measurement-packet/v0.5.0",
+            "packetId": "measurement:gate-test",
+            "profile": {
+                "schema": "measurement-profile/v0.5.0",
+                "profileId": "profile:gate-test@1",
+                "siteRef": "site:gate-test",
+                "coverRef": "cover:gate-test",
+                "coefficient": "constant:Z",
+                "effCoeff": "constant",
+                "witnessFamily": [],
+                "resolutionSelector": "gate-test",
+                "domain": "gate-test",
+                "zeroPredicate": "gate-test-zero",
+                "nonZeroPredicate": "gate-test-nonzero",
+                "certSelector": "gate-test-cert",
+                "verdictDiscipline": "five-valued"
+            },
+            "structuralVerdict": [{
+                "evaluator": "ag.cech-obstruction",
+                "law": "ag.cech-h1",
+                "verdict": verdict,
+                "verdictData": {
+                    "inScope": true,
+                    "zero": verdict == "measured_zero",
+                    "nonZero": verdict == "measured_nonzero",
+                    "methodStatus": "computed",
+                    "certRef": "cert:gate-test"
+                },
+                "dependsOnAssumptions": []
+            }],
+            "computedInvariants": [],
+            "analyticReadings": [],
+            "assumptions": [],
+            "boundaryStatements": [{
+                "id": "boundary:gate-test",
+                "kind": "silence_by_design",
+                "scopeRefs": [
+                    "ag.cech-obstruction"
+                ],
+                "reason": "gate_test_fixture",
+                "text": "gate test packet is a minimal measurement packet fixture"
+            }],
+            "nonConclusions": [
+                "gate test packet is a minimal measurement packet fixture"
+            ]
+        }))
+        .expect("packet serializes"),
+    )
+    .expect("packet fixture can be written");
+}
+
+fn json_contains_exact_string(value: &Value, needle: &str) -> bool {
+    match value {
+        Value::String(text) => text == needle,
+        Value::Array(items) => items
+            .iter()
+            .any(|item| json_contains_exact_string(item, needle)),
+        Value::Object(object) => object
+            .values()
+            .any(|item| json_contains_exact_string(item, needle)),
+        _ => false,
+    }
 }
 
 fn run_sig0(args: &[&str]) {

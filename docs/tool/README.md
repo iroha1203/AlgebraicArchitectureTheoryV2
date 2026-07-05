@@ -109,6 +109,7 @@ Forward design PRDs:
 - [ArchSig v0.5.0 PRD-1 — レガシー破棄(前半)と契約基盤](archsig_v0_5_0_prd1_legacy_purge_and_foundation.md)
   (設計の正本は [v0.5.0 再設計ノート](../note/archsig_v0_5_0_redesign_note.md))
 - [ArchSig v0.5.0 PRD-2 — measurement packet 新形と CI 面(gate / compare)](archsig_v0_5_0_prd2_artifact_ci.md)
+- [ArchSig gate-policy authoring guide](archsig_gate_policy.md)
 - [ArchSig v0.5.0 PRD-3 — v1 path の破棄と全面同期(単一 path 宣言の成立)](archsig_v0_5_0_prd3_v1_retirement_and_sync.md)
 - [ArchSig v0.5.0 PRD-4 — LawPolicy Stage 1 と SAGA Stage 1(最初の SAGA 計測)](archsig_v0_5_0_prd4_lawpolicy_stage1_saga_stage1.md)
 - [ArchSig v0.5.0 PRD-5 — ArchMap 抽出 SKILL の再設計(漏れなく・再現性高く)](archsig_v0_5_0_prd5_archmap_skill.md)

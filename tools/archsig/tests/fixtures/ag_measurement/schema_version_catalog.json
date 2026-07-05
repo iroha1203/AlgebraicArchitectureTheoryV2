@@ -283,6 +283,62 @@
       }
     },
     {
+      "artifactId": "archsig-gate-policy/v0.5.0",
+      "artifactName": "ArchSig gate policy v1",
+      "schemaName": "archsig-gate-policy/v0.5.0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / CI workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd2-artifact-ci"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Gate policy v1 records institutional verdict-to-action mappings for absolute and introduced-by-change rules. Absolute rules must map measured_zero, measured_nonzero, unmeasured, unknown, not_computed, and violated_assumption_dependency; introduced-by-change rules must map new, cleared, preexisting, removed, and other.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Gate policy is authored institutional judgment, not a measurement packet verdict.",
+          "Non-terminal measurement states and removed / other transitions cannot be mapped to plain pass.",
+          "Gate policy does not introduce analytic thresholds or class transport."
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-gate-report/v0.5.0",
+      "artifactName": "ArchSig gate report v1",
+      "schemaName": "archsig-gate-report/v0.5.0",
+      "artifactRole": "primary",
+      "ownerPhase": "ArchSig Output / CI workflow",
+      "status": "implemented",
+      "primaryDocs": [
+        "archsig-contract:v0.5.0-prd2-artifact-ci"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Gate report v1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, or NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "Required fields, observation families, law refs, or analysis axes change.",
+          "Evidence boundaries or non-conclusions are removed or weakened."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage and exactness are artifact-local and do not imply semantic completeness."
+        ],
+        "nonConclusions": [
+          "Gate report does not mutate measurement verdicts.",
+          "Gate report does not infer improvement, repair, class identity, or transport between runs.",
+          "Not evaluable is neither pass nor block."
+        ]
+      }
+    },
+    {
       "artifactId": "archsig-analysis-packet/v0.5.0",
       "artifactName": "ArchSig v1 typed evaluator analysis packet",
       "schemaName": "archsig-analysis-packet/v0.5.0",
