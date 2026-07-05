@@ -346,6 +346,112 @@ fn write_candidate_packet(path: &Path, packet: &Value) {
     .expect("candidate packet writes");
 }
 
+fn authoring_audit_fixture() -> (Value, Value, Value, Value) {
+    let archmap = json!({
+        "schema": "archmap/v0.5.0",
+        "id": "archmap:authoring-audit",
+        "sources": {
+            "src:src/a.rs": { "kind": "file", "path": "src/a.rs" }
+        },
+        "atoms": [
+            {
+                "id": "atom:common",
+                "kind": "semantic",
+                "subject": "module:a",
+                "axis": "responsibility",
+                "predicate": "documents",
+                "object": "authoring survey provenance",
+                "refs": ["src:src/a.rs"]
+            }
+        ],
+        "contexts": [],
+        "covers": []
+    });
+    let scope = json!({
+        "schema": "archmap-scope-manifest/v0.5.0",
+        "id": "scope:test",
+        "repository": {
+            "root": ".",
+            "revision": "git:0000000000000000000000000000000000000000",
+            "dirty": false
+        },
+        "scopeSpec": {
+            "includeGlobs": ["src/**/*.rs"],
+            "excludeGlobs": [],
+            "addedEvidence": [],
+            "requestedScope": "authoring audit test",
+            "approvedBy": "test"
+        },
+        "worklist": [
+            {
+                "order": 1,
+                "sourceId": "src:src/a.rs",
+                "path": "src/a.rs",
+                "kind": "file",
+                "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+                "sizeBytes": 11,
+                "authorAdded": false
+            }
+        ],
+        "exclusions": []
+    });
+    let candidate = candidate_packet_fixture(
+        "candidates:pass-a",
+        "pass-a",
+        vec![archmap["atoms"][0].clone()],
+    );
+    let ledger = json!({
+        "schema": "archmap-coverage-ledger/v0.5.0",
+        "id": "coverage:test",
+        "scopeManifestRef": "scope:test",
+        "archmapRef": "archmap:authoring-audit",
+        "passRefs": ["candidates:pass-a"],
+        "rows": [
+            {
+                "sourceId": "src:src/a.rs",
+                "surveyStatus": "surveyed",
+                "passes": ["pass-a"],
+                "surveyedKinds": ["semantic"],
+                "adoptedAtomIds": ["atom:common"]
+            }
+        ],
+        "claimBoundary": "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness."
+    });
+    (archmap, scope, candidate, ledger)
+}
+
+fn run_authoring_audit_fixture(
+    out_dir: &Path,
+    archmap: Value,
+    scope: Value,
+    candidate: Value,
+    ledger: Value,
+    expected_code: i32,
+) -> PathBuf {
+    let archmap_path = write_json_fixture(out_dir, "archmap.json", &archmap);
+    let scope_path = write_json_fixture(out_dir, "scope.json", &scope);
+    let candidate_path = write_json_fixture(out_dir, "candidate.json", &candidate);
+    let ledger_path = write_json_fixture(out_dir, "ledger.json", &ledger);
+    let report = out_dir.join("report.json");
+    run_sig0_expect_code(
+        &[
+            "archmap",
+            "--input",
+            archmap_path.to_str().expect("path is utf-8"),
+            "--scope-manifest",
+            scope_path.to_str().expect("path is utf-8"),
+            "--candidate-packets",
+            candidate_path.to_str().expect("path is utf-8"),
+            "--coverage-ledger",
+            ledger_path.to_str().expect("path is utf-8"),
+            "--out",
+            report.to_str().expect("path is utf-8"),
+        ],
+        expected_code,
+    );
+    report
+}
+
 #[test]
 fn cli_extraction_diff_matches_atoms_by_normalized_key_without_adjudication() {
     let out_dir = temp_dir("extraction-diff-match");
@@ -771,6 +877,208 @@ fn cli_validates_archmap_v2_finite_poset_site_contract() {
                 && check["metric"] == "aat-atom-vocabulary:ag-archmap@1"
         }),
         "ArchMap v2 lint must expose the declared atom vocabulary pass conclusion"
+    );
+}
+
+#[test]
+fn cli_archmap_authoring_audit_accepts_traceable_scope_survey() {
+    let out_dir = temp_dir("archmap-authoring-audit-pass");
+    let (archmap, scope, candidate, ledger) = authoring_audit_fixture();
+    let archmap_path = write_json_fixture(&out_dir, "archmap.json", &archmap);
+    let scope_path = write_json_fixture(&out_dir, "scope.json", &scope);
+    let _candidate_path = write_json_fixture(&out_dir, "candidate-pass-a.json", &candidate);
+    let candidate_glob = out_dir.join("candidate-*.json");
+    let ledger_path = write_json_fixture(&out_dir, "ledger.json", &ledger);
+    let report = out_dir.join("report.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--scope-manifest",
+        scope_path.to_str().expect("path is utf-8"),
+        "--candidate-packets",
+        candidate_glob.to_str().expect("path is utf-8"),
+        "--coverage-ledger",
+        ledger_path.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    let conclusion = check_by_id(&json, "authoring-survey-traceable-within-scope");
+    assert_eq!(conclusion["result"], "pass");
+    assert!(
+        conclusion["title"]
+            .as_str()
+            .is_some_and(|title| title.starts_with("AUTHORING_SURVEY_TRACEABLE_WITHIN_SCOPE"))
+    );
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_worklist_ledger_mismatch() {
+    let out_dir = temp_dir("archmap-authoring-audit-ledger-span");
+    let (archmap, scope, candidate, mut ledger) = authoring_audit_fixture();
+    ledger["rows"] = json!([
+        {
+            "sourceId": "src:src/a.rs",
+            "surveyStatus": "surveyed",
+            "passes": ["pass-a"],
+            "surveyedKinds": ["semantic"],
+            "adoptedAtomIds": ["atom:common"]
+        },
+        {
+            "sourceId": "src:src/extra.rs",
+            "surveyStatus": "surveyed",
+            "passes": [],
+            "surveyedKinds": [],
+            "adoptedAtomIds": []
+        }
+    ]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-ledger-spans-worklist")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "src:src/extra.rs"));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_missing_ledger_row() {
+    let out_dir = temp_dir("archmap-authoring-audit-missing-ledger");
+    let (archmap, scope, candidate, mut ledger) = authoring_audit_fixture();
+    ledger["rows"] = json!([]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-ledger-spans-worklist")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(
+        &json,
+        "coverage ledger must contain every worklist source"
+    ));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_missing_atom_provenance() {
+    let out_dir = temp_dir("archmap-authoring-audit-provenance");
+    let (archmap, scope, mut candidate, ledger) = authoring_audit_fixture();
+    candidate["surveyRows"][0]["candidateAtomIds"] = json!([]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-provenance-closure")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "atom:common"));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_missing_candidate_atom_record() {
+    let out_dir = temp_dir("archmap-authoring-audit-missing-candidate-atom");
+    let (archmap, scope, mut candidate, ledger) = authoring_audit_fixture();
+    candidate["candidateAtoms"] = json!([]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-provenance-closure")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "atom:common"));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_duplicate_ledger_rows() {
+    let out_dir = temp_dir("archmap-authoring-audit-duplicate-ledger");
+    let (archmap, scope, candidate, mut ledger) = authoring_audit_fixture();
+    let row = ledger["rows"][0].clone();
+    ledger["rows"] = json!([row.clone(), row]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-ledger-spans-worklist")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "exactly one row"));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_rejects_cite_before_read() {
+    let out_dir = temp_dir("archmap-authoring-audit-read-before-cite");
+    let (mut archmap, scope, candidate, ledger) = authoring_audit_fixture();
+    archmap["sources"]["src:src/unread.rs"] = json!({ "kind": "file", "path": "src/unread.rs" });
+    archmap["atoms"][0]["refs"] = json!(["src:src/a.rs", "src:src/unread.rs"]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 1);
+    let json = read_json(&report);
+    assert_eq!(
+        check_by_id(&json, "authoring-read-before-cite")["result"],
+        "fail"
+    );
+    assert!(json_contains_substring(&json, "src:src/unread.rs"));
+}
+
+#[test]
+fn cli_archmap_authoring_audit_allows_grounding_context_exemption() {
+    let out_dir = temp_dir("archmap-authoring-audit-grounding-exempt");
+    let (mut archmap, scope, candidate, ledger) = authoring_audit_fixture();
+    archmap["sources"]["ctx:derived"] = json!({
+        "kind": "context",
+        "path": "docs/tool/policy.md",
+        "section": "derived grounding"
+    });
+    archmap["contexts"] = json!([
+        {
+            "id": "ctx:authoring-grounding",
+            "atoms": ["atom:common"],
+            "restrictsTo": [],
+            "refs": ["ctx:derived"]
+        }
+    ]);
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 0);
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(
+        check_by_id(&json, "authoring-sources-resolve")["result"],
+        "pass"
+    );
+    assert_eq!(
+        check_by_id(&json, "authoring-read-before-cite")["result"],
+        "pass"
+    );
+}
+
+#[test]
+fn cli_archmap_authoring_audit_allows_doc_section_partial_read() {
+    let out_dir = temp_dir("archmap-authoring-audit-doc-section");
+    let (mut archmap, mut scope, mut candidate, ledger) = authoring_audit_fixture();
+    archmap["sources"] = json!({
+        "doc:docs/arch.md#routing": {
+            "kind": "document",
+            "path": "docs/arch.md",
+            "section": "routing"
+        }
+    });
+    archmap["atoms"][0]["refs"] = json!(["doc:docs/arch.md#routing"]);
+    scope["worklist"][0]["sourceId"] = json!("src:docs/arch.md");
+    scope["worklist"][0]["path"] = json!("docs/arch.md");
+    candidate["surveyRows"][0]["sourceId"] = json!("doc:docs/arch.md#routing");
+    candidate["surveyRows"][0]["status"] = json!("partial");
+    candidate["surveyRows"][0]["reason"] = json!("unreadable");
+    let mut ledger = ledger;
+    ledger["rows"][0]["sourceId"] = json!("src:docs/arch.md");
+    let report = run_authoring_audit_fixture(&out_dir, archmap, scope, candidate, ledger, 0);
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(
+        check_by_id(&json, "authoring-sources-resolve")["result"],
+        "pass"
+    );
+    assert_eq!(
+        check_by_id(&json, "authoring-read-before-cite")["result"],
+        "pass"
     );
 }
 
@@ -11595,6 +11903,16 @@ fn help_command_names(help: &str) -> BTreeSet<&str> {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn write_json_fixture(out_dir: &Path, name: &str, value: &Value) -> PathBuf {
+    let path = out_dir.join(name);
+    fs::write(
+        &path,
+        serde_json::to_vec_pretty(value).expect("json fixture serializes"),
+    )
+    .expect("json fixture writes");
+    path
 }
 
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {

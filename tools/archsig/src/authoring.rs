@@ -12,11 +12,12 @@ use unicode_normalization::UnicodeNormalization;
 use walkdir::WalkDir;
 
 use crate::{
-    ArchMapAtomV2, ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1,
-    ArchmapExtractionConsistencyV1, ArchmapExtractionContextDiffV1, ArchmapExtractionMatchCountV1,
-    ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
-    ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
-    ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
+    ArchMapAtomV2, ArchMapDocumentV2, ArchMapSource, ArchmapCandidatePacketV1,
+    ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1, ArchmapExtractionContextDiffV1,
+    ArchmapExtractionMatchCountV1, ArchmapExtractionMatchedCandidateV1,
+    ArchmapExtractionOnlyInCandidateV1, ArchmapScopeManifestExclusionV1,
+    ArchmapScopeManifestRepositoryV1, ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1,
+    ArchmapScopeManifestWorklistEntryV1, ValidationCheck, ValidationExample,
 };
 
 pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.0";
@@ -45,6 +46,14 @@ pub struct ExtractionDiffOptions {
     pub pass_b: Vec<PathBuf>,
     pub id: String,
     pub scope_manifest_ref: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AuthoringAuditInputV1 {
+    pub scope_manifest: ArchmapScopeManifestV1,
+    pub candidate_packets: Vec<ArchmapCandidatePacketV1>,
+    pub extraction_consistency: Vec<ArchmapExtractionConsistencyV1>,
+    pub coverage_ledger: ArchmapCoverageLedgerV1,
 }
 
 pub fn build_scope_manifest_v1(
@@ -736,6 +745,461 @@ pub fn validate_coverage_ledger_v1(ledger: &ArchmapCoverageLedgerV1) -> Result<(
         }
     }
     validation_result(errors)
+}
+
+pub fn validate_authoring_audit_input_v1(input: &AuthoringAuditInputV1) -> Result<(), Vec<String>> {
+    let mut errors = Vec::new();
+    if let Err(scope_errors) = validate_scope_manifest_v1(&input.scope_manifest) {
+        errors.extend(
+            scope_errors
+                .into_iter()
+                .map(|error| format!("scopeManifest {error}")),
+        );
+    }
+    for (index, packet) in input.candidate_packets.iter().enumerate() {
+        if let Err(packet_errors) = validate_candidate_packet_v1(packet) {
+            errors.extend(
+                packet_errors
+                    .into_iter()
+                    .map(|error| format!("candidatePackets[{index}] {error}")),
+            );
+        }
+    }
+    if input.candidate_packets.is_empty() {
+        errors.push("candidatePackets must contain at least one packet".to_string());
+    }
+    for (index, consistency) in input.extraction_consistency.iter().enumerate() {
+        if let Err(consistency_errors) = validate_extraction_consistency_v1(consistency) {
+            errors.extend(
+                consistency_errors
+                    .into_iter()
+                    .map(|error| format!("extractionConsistency[{index}] {error}")),
+            );
+        }
+    }
+    if let Err(ledger_errors) = validate_coverage_ledger_v1(&input.coverage_ledger) {
+        errors.extend(
+            ledger_errors
+                .into_iter()
+                .map(|error| format!("coverageLedger {error}")),
+        );
+    }
+    validation_result(errors)
+}
+
+pub fn archmap_authoring_audit_checks_v1(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> Vec<ValidationCheck> {
+    vec![
+        check_authoring_revision_recorded(&input.scope_manifest),
+        check_authoring_sources_resolve(archmap, input),
+        check_authoring_provenance_closure(archmap, input),
+        check_authoring_ledger_spans_worklist(input),
+        check_authoring_read_before_cite(archmap, input),
+        check_authoring_survey_traceable_within_scope(archmap, input),
+    ]
+}
+
+fn check_authoring_revision_recorded(manifest: &ArchmapScopeManifestV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if manifest
+        .repository
+        .revision
+        .as_deref()
+        .unwrap_or_default()
+        .is_empty()
+    {
+        examples.push(validation_example(
+            "scopeManifest.repository.revision",
+            "missing",
+            "scope manifest must record the source revision used for authoring",
+        ));
+    }
+    let mut check = check_from_examples(
+        "authoring-revision-recorded",
+        "scope manifest records repository revision; dirty state is reported separately",
+        examples,
+    );
+    if let Some(dirty) = manifest.repository.dirty {
+        check.reason = Some(format!("repository.dirty={dirty}"));
+    }
+    check
+}
+
+fn check_authoring_sources_resolve(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> ValidationCheck {
+    let worklist = worklist_index(&input.scope_manifest);
+    let mut examples = Vec::new();
+    for (source_id, source) in &archmap.sources {
+        if source_is_grounding_exempt(source_id, source) {
+            continue;
+        }
+        if !source_resolves_to_worklist(source_id, source, &worklist) {
+            examples.push(validation_example(
+                "sources",
+                source_id,
+                "source must resolve through src: direct id, doc: path part, or authorAdded worklist evidence",
+            ));
+        }
+    }
+    check_from_examples(
+        "authoring-sources-resolve",
+        "ArchMap sources resolve inside the author-approved scope, with grounding-kind exemptions",
+        examples,
+    )
+}
+
+fn check_authoring_provenance_closure(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> ValidationCheck {
+    let ledger_atoms = ledger_adopted_atoms(&input.coverage_ledger);
+    let survey_atoms = survey_row_provenance_atoms(&input.candidate_packets);
+    let adjudicated_keys = adopted_adjudication_keys(&input.extraction_consistency);
+    let mut examples = Vec::new();
+    examples.extend(artifact_ref_examples(archmap, input));
+    for atom in &archmap.atoms {
+        if !ledger_atoms.contains(&atom.id) {
+            examples.push(validation_example(
+                &atom.id,
+                "coverageLedger.rows[].adoptedAtomIds",
+                "adopted ArchMap atom must be present in the coverage ledger",
+            ));
+        } else if !survey_atoms.contains(&atom.id)
+            && !adjudicated_keys.contains(&atom_match_key(atom))
+        {
+            examples.push(validation_example(
+                &atom.id,
+                "candidatePackets[].surveyRows[].candidateAtomIds",
+                "adopted ArchMap atom must trace to a survey row or adopted/merged adjudication",
+            ));
+        }
+    }
+    check_from_examples(
+        "authoring-provenance-closure",
+        "adopted ArchMap atoms close through candidate survey provenance, adjudications, and aligned artifact refs",
+        examples,
+    )
+}
+
+fn check_authoring_ledger_spans_worklist(input: &AuthoringAuditInputV1) -> ValidationCheck {
+    let worklist = source_id_counts(
+        input
+            .scope_manifest
+            .worklist
+            .iter()
+            .map(|entry| entry.source_id.as_str()),
+    );
+    let ledger = source_id_counts(
+        input
+            .coverage_ledger
+            .rows
+            .iter()
+            .map(|row| row.source_id.as_str()),
+    );
+    let worklist_ids = worklist.keys().copied().collect::<BTreeSet<_>>();
+    let ledger_ids = ledger.keys().copied().collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    for missing in worklist_ids.difference(&ledger_ids) {
+        examples.push(validation_example(
+            "scopeManifest.worklist[].sourceId",
+            missing,
+            "coverage ledger must contain every worklist source",
+        ));
+    }
+    for extra in ledger_ids.difference(&worklist_ids) {
+        examples.push(validation_example(
+            "coverageLedger.rows[].sourceId",
+            extra,
+            "coverage ledger must not include sources outside the worklist",
+        ));
+    }
+    for (source_id, count) in &ledger {
+        if *count != 1 {
+            examples.push(validation_example(
+                "coverageLedger.rows[].sourceId",
+                source_id,
+                "coverage ledger must contain exactly one row for each worklist source",
+            ));
+        }
+    }
+    check_from_examples(
+        "authoring-ledger-spans-worklist",
+        "coverage ledger spans exactly the scope manifest worklist",
+        examples,
+    )
+}
+
+fn check_authoring_read_before_cite(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for citation in cited_refs(archmap) {
+        if citation.owner_kind != "atom" {
+            if let Some(source) = archmap.sources.get(&citation.source_ref) {
+                if source_is_grounding_exempt(&citation.source_ref, source) {
+                    continue;
+                }
+            }
+        }
+        if !citation_was_surveyed(&citation.source_ref, input) {
+            examples.push(validation_example(
+                &citation.owner,
+                &citation.source_ref,
+                "source ref must have a read survey row, or an exact partial survey row for the cited section, before it is cited",
+            ));
+        }
+    }
+    check_from_examples(
+        "authoring-read-before-cite",
+        "ArchMap citations only use sources that were read in candidate survey rows; grounding exemptions apply to context and cover refs only",
+        examples,
+    )
+}
+
+fn check_authoring_survey_traceable_within_scope(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for check in [
+        check_authoring_revision_recorded(&input.scope_manifest),
+        check_authoring_sources_resolve(archmap, input),
+        check_authoring_provenance_closure(archmap, input),
+        check_authoring_ledger_spans_worklist(input),
+        check_authoring_read_before_cite(archmap, input),
+    ] {
+        if check.result == "fail" {
+            examples.push(validation_example(
+                &check.id,
+                "fail",
+                "authoring survey traceability requires this mechanical check to pass",
+            ));
+        }
+    }
+    check_from_examples(
+        "authoring-survey-traceable-within-scope",
+        "AUTHORING_SURVEY_TRACEABLE_WITHIN_SCOPE: ArchMap authoring survey is mechanically traceable within the recorded scope",
+        examples,
+    )
+}
+
+fn worklist_index(
+    manifest: &ArchmapScopeManifestV1,
+) -> BTreeMap<String, &ArchmapScopeManifestWorklistEntryV1> {
+    manifest
+        .worklist
+        .iter()
+        .map(|entry| (entry.source_id.clone(), entry))
+        .collect()
+}
+
+fn source_resolves_to_worklist(
+    source_id: &str,
+    source: &ArchMapSource,
+    worklist: &BTreeMap<String, &ArchmapScopeManifestWorklistEntryV1>,
+) -> bool {
+    if let Some(entry) = worklist.get(source_id) {
+        return source.path.as_deref().is_none_or(|path| path == entry.path);
+    }
+    if let Some(path) = source.path.as_deref() {
+        if worklist.values().any(|entry| entry.path == path) {
+            return true;
+        }
+        if let Some(doc_path) = source_id.strip_prefix("doc:") {
+            let doc_path = doc_path.split_once('#').map_or(doc_path, |(path, _)| path);
+            return doc_path == path && worklist.values().any(|entry| entry.path == doc_path);
+        }
+    }
+    worklist
+        .values()
+        .any(|entry| entry.author_added && entry.source_id == source_id)
+}
+
+fn source_is_grounding_exempt(source_id: &str, source: &ArchMapSource) -> bool {
+    let kind = source.kind.to_ascii_lowercase();
+    source_id.starts_with("ctx:")
+        || kind.contains("grounding")
+        || kind.contains("context")
+        || kind.contains("policy")
+        || kind.contains("profile")
+        || kind.contains("measurement")
+}
+
+fn ledger_adopted_atoms(ledger: &ArchmapCoverageLedgerV1) -> BTreeSet<String> {
+    ledger
+        .rows
+        .iter()
+        .flat_map(|row| row.adopted_atom_ids.iter().cloned())
+        .collect()
+}
+
+fn survey_row_provenance_atoms(packets: &[ArchmapCandidatePacketV1]) -> BTreeSet<String> {
+    let candidate_atom_ids = packets
+        .iter()
+        .flat_map(|packet| packet.candidate_atoms.iter())
+        .map(|atom| atom.id.clone())
+        .collect::<BTreeSet<_>>();
+    packets
+        .iter()
+        .flat_map(|packet| packet.survey_rows.iter())
+        .flat_map(|row| row.candidate_atom_ids.iter().cloned())
+        .filter(|atom_id| candidate_atom_ids.contains(atom_id))
+        .collect()
+}
+
+fn adopted_adjudication_keys(consistency: &[ArchmapExtractionConsistencyV1]) -> BTreeSet<String> {
+    consistency
+        .iter()
+        .flat_map(|report| report.adjudications.iter())
+        .filter(|adjudication| matches!(adjudication.decision.as_str(), "adopted" | "merged"))
+        .map(|adjudication| adjudication.key.clone())
+        .collect()
+}
+
+fn citation_was_surveyed(source_ref: &str, input: &AuthoringAuditInputV1) -> bool {
+    input
+        .candidate_packets
+        .iter()
+        .flat_map(|packet| packet.survey_rows.iter())
+        .any(|row| {
+            row.source_id == source_ref
+                && (row.status == "read" || (row.status == "partial" && source_ref.contains('#')))
+        })
+}
+
+fn source_id_counts<'a>(ids: impl Iterator<Item = &'a str>) -> BTreeMap<&'a str, usize> {
+    let mut counts = BTreeMap::new();
+    for id in ids {
+        *counts.entry(id).or_default() += 1;
+    }
+    counts
+}
+
+fn artifact_ref_examples(
+    archmap: &ArchMapDocumentV2,
+    input: &AuthoringAuditInputV1,
+) -> Vec<ValidationExample> {
+    let mut examples = Vec::new();
+    for packet in &input.candidate_packets {
+        if packet.scope_manifest_ref != input.scope_manifest.id {
+            examples.push(validation_example(
+                &packet.id,
+                &packet.scope_manifest_ref,
+                "candidate packet scopeManifestRef must match the supplied scope manifest id",
+            ));
+        }
+    }
+    if input.coverage_ledger.scope_manifest_ref != input.scope_manifest.id {
+        examples.push(validation_example(
+            "coverageLedger.scopeManifestRef",
+            &input.coverage_ledger.scope_manifest_ref,
+            "coverage ledger scopeManifestRef must match the supplied scope manifest id",
+        ));
+    }
+    if input.coverage_ledger.archmap_ref != archmap.id {
+        examples.push(validation_example(
+            "coverageLedger.archmapRef",
+            &input.coverage_ledger.archmap_ref,
+            "coverage ledger archmapRef must match the supplied ArchMap id",
+        ));
+    }
+    let packet_ids = input
+        .candidate_packets
+        .iter()
+        .map(|packet| packet.id.as_str())
+        .collect::<BTreeSet<_>>();
+    for pass_ref in &input.coverage_ledger.pass_refs {
+        if !packet_ids.contains(pass_ref.as_str()) {
+            examples.push(validation_example(
+                "coverageLedger.passRefs",
+                pass_ref,
+                "coverage ledger passRefs must resolve to supplied candidate packet ids",
+            ));
+        }
+    }
+    for report in &input.extraction_consistency {
+        if report.scope_manifest_ref != input.scope_manifest.id {
+            examples.push(validation_example(
+                &report.id,
+                &report.scope_manifest_ref,
+                "extraction consistency scopeManifestRef must match the supplied scope manifest id",
+            ));
+        }
+        for pass_ref in report.pass_a_refs.iter().chain(report.pass_b_refs.iter()) {
+            if !packet_ids.contains(pass_ref.as_str()) {
+                examples.push(validation_example(
+                    &report.id,
+                    pass_ref,
+                    "extraction consistency pass refs must resolve to supplied candidate packet ids",
+                ));
+            }
+        }
+    }
+    examples
+}
+
+struct CitationRef {
+    owner_kind: &'static str,
+    owner: String,
+    source_ref: String,
+}
+
+fn cited_refs(archmap: &ArchMapDocumentV2) -> Vec<CitationRef> {
+    let mut refs = Vec::new();
+    for atom in &archmap.atoms {
+        refs.extend(atom.refs.iter().map(|source_ref| CitationRef {
+            owner_kind: "atom",
+            owner: atom.id.clone(),
+            source_ref: source_ref.clone(),
+        }));
+    }
+    for context in &archmap.contexts {
+        refs.extend(context.refs.iter().map(|source_ref| CitationRef {
+            owner_kind: "context",
+            owner: context.id.clone(),
+            source_ref: source_ref.clone(),
+        }));
+    }
+    for cover in &archmap.covers {
+        refs.extend(cover.refs.iter().map(|source_ref| CitationRef {
+            owner_kind: "cover",
+            owner: cover.id.clone(),
+            source_ref: source_ref.clone(),
+        }));
+    }
+    refs
+}
+
+fn check_from_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
+    let mut check = ValidationCheck {
+        id: id.to_string(),
+        title: title.to_string(),
+        result: if examples.is_empty() { "pass" } else { "fail" }.to_string(),
+        reason: None,
+        count: None,
+        examples,
+        metric: None,
+        lean_boundary: None,
+    };
+    if !check.examples.is_empty() {
+        check.count = Some(check.examples.len());
+    }
+    check
+}
+
+fn validation_example(source: &str, target: &str, evidence: &str) -> ValidationExample {
+    ValidationExample {
+        component_id: None,
+        path: None,
+        source: Some(source.to_string()),
+        target: Some(target.to_string()),
+        evidence: Some(evidence.to_string()),
+    }
 }
 
 fn validate_semantic_atom_object(index: usize, atom: &ArchMapAtomV2, errors: &mut Vec<String>) {

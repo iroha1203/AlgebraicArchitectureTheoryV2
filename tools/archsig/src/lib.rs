@@ -24,8 +24,9 @@ pub use archmap::{
 pub use authoring::{
     ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,
     ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
-    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ExtractionDiffOptions, ScopeManifestOptions,
-    build_extraction_consistency_v1, build_scope_manifest_v1, validate_candidate_packet_v1,
+    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, AuthoringAuditInputV1, ExtractionDiffOptions,
+    ScopeManifestOptions, archmap_authoring_audit_checks_v1, build_extraction_consistency_v1,
+    build_scope_manifest_v1, validate_authoring_audit_input_v1, validate_candidate_packet_v1,
     validate_coverage_ledger_v1, validate_extraction_consistency_v1, validate_scope_manifest_v1,
 };
 pub use compare::build_comparison_artifacts_v1;
