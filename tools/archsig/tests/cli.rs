@@ -891,6 +891,20 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         global["verdictData"]["methodStatus"],
         "complete_support_global_coherent"
     );
+    let closure = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-descent:closure-diagnostics")
+        .expect("closure diagnostics invariant");
+    assert_eq!(
+        closure["closureDiagnostics"]["residualComponentCovered"],
+        true
+    );
+    assert_eq!(
+        closure["closureDiagnostics"]["residualComponentFaithful"],
+        true
+    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
@@ -899,6 +913,83 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     assert!(
         !json_contains_substring(&summary, "class"),
         "boundary-membership summary must not introduce layer C class vocabulary"
+    );
+}
+
+#[test]
+fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
+    let out_dir = temp_dir("ag-saga-descent-uncovered");
+    let root = ag_measurement_root();
+    let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
+    policy["policies"] = json!([{
+        "law": "ag.saga-descent",
+        "evaluator": "ag.saga-descent",
+        "basis": ["policy-basis:layering"],
+        "scope": ["src/"],
+        "severity": "high"
+    }]);
+    let policy_path = out_dir.join("law_policy_saga_descent.json");
+    write_test_policy_and_profile(&policy_path, policy, profile);
+    let mut repair_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    repair_plan["primitives"][0]["resL"] = json!(["repair:a"]);
+    repair_plan["primitives"][0]["resR"] = json!(["repair:b"]);
+    repair_plan["primitives"][0]["support"]["variables"] = json!(["repair:a", "repair:b"]);
+    repair_plan["primitives"][1]["resL"] = json!(["repair:b"]);
+    repair_plan["primitives"][1]["resR"] = json!(["repair:c"]);
+    repair_plan["primitives"][1]["support"]["variables"] = json!(["repair:b", "repair:c"]);
+    repair_plan["primitives"][2]["resL"] = json!(["repair:a"]);
+    repair_plan["primitives"][2]["resR"] = json!(["repair:c"]);
+    repair_plan["primitives"][2]["support"]["variables"] = json!(["repair:a", "repair:c"]);
+    let repair_plan_path = out_dir.join("repair_plan_uncovered.json");
+    fs::write(
+        &repair_plan_path,
+        serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
+    )
+    .expect("repair plan writes");
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        policy_path.to_str().expect("path is utf-8"),
+        "--measurement-profile",
+        test_measurement_profile_path(Path::new(policy_path.to_str().expect("path is utf-8")))
+            .to_str()
+            .expect("path is utf-8"),
+        "--repair-plan",
+        repair_plan_path.to_str().expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert_eq!(
+        saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
+        "measured_zero"
+    );
+    let global = saga_row(&packet, "saga.global-coherence");
+    assert_eq!(global["verdict"], "unmeasured");
+    assert_eq!(
+        global["verdictData"]["methodStatus"],
+        "residual_not_covered"
+    );
+    let closure = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-descent:closure-diagnostics")
+        .expect("closure diagnostics invariant");
+    assert_eq!(
+        closure["closureDiagnostics"]["residualComponentCovered"],
+        false
+    );
+    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+    assert_ne!(
+        summary["conclusion"],
+        ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
 }
 

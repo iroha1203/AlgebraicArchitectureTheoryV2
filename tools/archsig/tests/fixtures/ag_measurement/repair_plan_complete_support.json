@@ -44,16 +44,16 @@
       "id": "primitive:order-inventory",
       "overlapRef": "overlap:order-inventory",
       "resL": [
-        "repair:a"
+        "src:order"
       ],
       "resR": [
-        "repair:b"
+        "src:inventory"
       ],
       "support": {
         "kind": "complete",
         "variables": [
-          "repair:a",
-          "repair:b"
+          "src:inventory",
+          "src:order"
         ]
       }
     },
@@ -61,33 +61,30 @@
       "id": "primitive:inventory-shared",
       "overlapRef": "overlap:inventory-shared",
       "resL": [
-        "repair:b"
+        "src:inventory"
       ],
       "resR": [
-        "repair:c"
+        "src:inventory"
       ],
       "support": {
         "kind": "complete",
-        "variables": [
-          "repair:b",
-          "repair:c"
-        ]
+        "variables": []
       }
     },
     {
       "id": "primitive:order-shared",
       "overlapRef": "overlap:order-shared",
       "resL": [
-        "repair:a"
+        "src:order"
       ],
       "resR": [
-        "repair:c"
+        "src:inventory"
       ],
       "support": {
         "kind": "complete",
         "variables": [
-          "repair:a",
-          "repair:c"
+          "src:inventory",
+          "src:order"
         ]
       }
     }

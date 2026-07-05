@@ -67,7 +67,10 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "complete-support declaration or Stage 2 faithfulness data is required before global coherence can be stated".to_string(),
             ),
         });
-    } else if boundary.in_b1 && closure.residual_component_faithful {
+    } else if boundary.in_b1
+        && closure.residual_component_covered
+        && closure.residual_component_faithful
+    {
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
             law: "saga.global-coherence".to_string(),
@@ -83,6 +86,23 @@ pub(crate) fn evaluate_saga_descent_v1(
             reason: Some(
                 "residual is a B1 boundary inside the complete-support RepairPlan regime"
                     .to_string(),
+            ),
+        });
+    } else if boundary.in_b1 && !closure.residual_component_covered {
+        structural_verdict.push(AgStructuralVerdictV1 {
+            evaluator: "ag.saga-descent".to_string(),
+            law: "saga.global-coherence".to_string(),
+            verdict: "unmeasured".to_string(),
+            verdict_data: AgVerdictDataV1 {
+                in_scope: true,
+                zero: false,
+                non_zero: false,
+                method_status: "residual_not_covered".to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
+            },
+            depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
+            reason: Some(
+                "residual is a B1 boundary, but semantic projection does not cover every residual component for the selected RepairPlan complex".to_string(),
             ),
         });
     } else {
@@ -104,7 +124,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             },
             depends_on_assumptions: vec!["part10/repair-plan-enumeration".to_string()],
             reason: Some(if boundary.in_b1 {
-                "residual is covered but semantic projection is not faithful for the selected RepairPlan complex".to_string()
+                "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
             } else {
                 "global coherence is blocked because the supplied residual is not a B1 boundary".to_string()
             }),
