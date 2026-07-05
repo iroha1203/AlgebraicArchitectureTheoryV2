@@ -36,7 +36,14 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="{{ prefix }}assets/site.css">
+    <link rel="stylesheet" href="{{ prefix }}assets/css/tokens.css">
+    <link rel="stylesheet" href="{{ prefix }}assets/css/base.css">
+    <link rel="stylesheet" href="{{ prefix }}assets/css/layout.css">
+    <link rel="stylesheet" href="{{ prefix }}assets/css/components.css">
+    <link rel="stylesheet" href="{{ prefix }}assets/css/theory.css">
+{%- if isHome %}
+    <link rel="stylesheet" href="{{ prefix }}assets/css/home.css">
+{%- endif %}
 {%- if mathjax %}
     <script>
       window.MathJax = {
