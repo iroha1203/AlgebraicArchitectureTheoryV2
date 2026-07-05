@@ -1762,3 +1762,63 @@ G2 / G3 / G4 audit summary:
   bounded record であり、+70/+80 水準の新しい obstruction / invariant / general criterion ではない。
   fail-closed に G2/G4 の一致した下限を採用し、base 35、evidence multiplier 2.0、penalty 10、
   final +60 とする。
+
+## Cycle 32 — Selected conflict membership
+
+candidate: `research/ideas/g-sft-conway-01-selected-conflict-membership.md`
+candidate_type: `selector`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `conway-obstruction`, `selected-conflict-set`,
+  `membership`, `miss-selector`
+goal_delta: selected reorg/refactor edit shapes について、selected hitting が pointwise selected miss
+  の不存在と同値であることを追加した。canonical reorg/refactor edits は selected conflict を miss せず、
+  existing partial reorg edit は exactly `platformDb`、API-only partial refactor edit は exactly `db`
+  を miss する。
+project_value_delta: selected conflict-set を aggregate hitting predicate から pointwise membership /
+  exact miss selector へ進めた。後続の refinement / diagnostic theorem が failed finite table ではなく
+  selected conflict identity を参照できる。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  conflict miss を報告できるが、この cycle は selected miss の同値条件と exact one-entry selector を
+  Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwaySelectedConflictMembership.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary conflict enumeration、runtime diagnostic extraction、selector-preserving refinement
+  naturality、general repair calculus は未固定。Issue #2962 の active threshold 3000 には
+  この cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwaySelectedConflictMembership.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditActivatesSelectedConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ReorgCoverEditMissesSelectedConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgHitsSelectedConflictSet_iff_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_missesSelectedConflict_iff`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_hasSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorOwnershipEditMissesSelectedConflict`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorHitsSelectedConflictSet_iff_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_missesSelectedConflict_iff`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_hasSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedConflictMembershipPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: reduce。pointwise selected miss membership と exact miss selector は後続 diagnostic /
+  refinement theorem の参照点として有用。ただし中核は既存の aggregate hitting predicate を
+  `forall conflict, Not miss` に展開し、既存 partial edit の一箇所欠落を finite case split で固定したもの。
+  新しい conflict enumeration、runtime diagnostic extraction、selector-preserving refinement naturality、
+  general repair calculus、新 obstruction / invariant ではない。G2 は base 35、multiplier 2.0、
+  penalty 10、final +60 を推奨。
+- G3 formalization quality: pass。focused check、module build、`FormalAGResearch` は通過し、
+  `sorry/admit/unsafe/axiom` は対象 Lean にない。axiom audit は no-miss iff / canonical no-miss /
+  package が `propext`、既存 infrastructure 由来の `Classical.choice` / `Quot.sound` を継承し、
+  exact selector theorem は標準 `propext` に収まる。
+- G4 score audit: reduce。exact `platformDb` / `db` selector は便利だが、既存 partial edits の hard-coded
+  finite cases を `simp` で分類するもの。canonical no-miss も既存 hit theorem からの帰結であり、
+  +100 は過大。fail-closed に G4 の下限を採用し、base 30、evidence multiplier 2.0、
+  penalty 10、final +50 とする。
