@@ -192,6 +192,60 @@ theorem mismatch_adjust_eq (A : EffectiveTemporalAdjustment r) :
 end EffectiveTemporalAdjustment
 
 /--
+IX.§4 / AC13 / Theorem 4.2 hardening: realization data that constructs a
+global replay transition from class vanishing and adjusted replay compatibility.
+
+This keeps theorem 4.2 one-way and selected-data-relative, but separates the
+actual global transition construction from the outer theorem package.
+-/
+structure TemporalDescentRealization {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
+    {T : TemporalSite S E} {St : StateTransitionPresheaf T}
+    {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
+    (r : ReplayDescentData St Coeff Law)
+    (temporalClass : TemporalClass r.mismatch)
+    (adjustment : EffectiveTemporalAdjustment r)
+    (adjustedCompatible : ReplayDescentData St Coeff Law -> Prop) where
+  globalReplay : r.GlobalReplayTransition
+  globalReplay_from_vanishing_and_compatibility :
+    temporalClass.cohomologyClass = r.zeroMismatchClass ->
+      adjustedCompatible adjustment.adjustedData ->
+        r.GlobalReplayTransition
+
+namespace TemporalDescentRealization
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+variable {E : EvolutionProfile.{u, v, w, x, y, z}}
+variable {T : TemporalSite S E}
+variable {St : StateTransitionPresheaf T}
+variable {Coeff : TemporalCoefficient T}
+variable {Law : TemporalLaw St}
+variable {r : ReplayDescentData St Coeff Law}
+variable {temporalClass : TemporalClass r.mismatch}
+variable {adjustment : EffectiveTemporalAdjustment r}
+variable {adjustedCompatible : ReplayDescentData St Coeff Law -> Prop}
+
+/-- IX.§4 / AC13: expose the selected global replay transition. -/
+def globalReplay_holds
+    (R : TemporalDescentRealization r temporalClass adjustment adjustedCompatible) :
+    r.GlobalReplayTransition :=
+  R.globalReplay
+
+/--
+IX.§4 / AC13: class vanishing plus adjusted compatibility produce a global
+replay transition through the selected realization.
+-/
+def globalReplay_from_vanishing
+    (R : TemporalDescentRealization r temporalClass adjustment adjustedCompatible)
+    (hclass : temporalClass.cohomologyClass = r.zeroMismatchClass)
+    (hcompat : adjustedCompatible adjustment.adjustedData) :
+    r.GlobalReplayTransition :=
+  R.globalReplay_from_vanishing_and_compatibility hclass hcompat
+
+end TemporalDescentRealization
+
+/--
 IX.§4 / AC13: assumptions of the one-way Temporal Descent Criterion.
 
 This is the bounded theorem 4.2 surface: a selected finite temporal setup,
@@ -243,6 +297,33 @@ theorem class_vanishes (D : TemporalDescentCriterion r) :
 theorem adjusted_data_compatible (D : TemporalDescentCriterion r) :
     D.adjustedCompatible D.adjustment.adjustedData :=
   D.adjustedCompatible_cert
+
+/--
+IX.§4 / AC13 / Theorem 4.2 hardening: build the theorem package from an
+explicit realization of adjusted descent.
+-/
+def ofRealization
+    (mismatchCocycle : ReplayMismatchCocycle r)
+    (temporalClass : TemporalClass r.mismatch)
+    (temporalClass_matches_mismatch :
+      temporalClass.cocycle = mismatchCocycle.toTemporalCocycle)
+    (classVanishes_cert : temporalClass.cohomologyClass = r.zeroMismatchClass)
+    (adjustment : EffectiveTemporalAdjustment r)
+    (adjustedCompatible : ReplayDescentData St Coeff Law -> Prop)
+    (adjustedCompatible_cert : adjustedCompatible adjustment.adjustedData)
+    (realization :
+      TemporalDescentRealization r temporalClass adjustment adjustedCompatible) :
+    TemporalDescentCriterion r where
+  mismatchCocycle := mismatchCocycle
+  temporalClass := temporalClass
+  temporalClass_matches_mismatch := temporalClass_matches_mismatch
+  classVanishes_cert := classVanishes_cert
+  adjustment := adjustment
+  adjustedCompatible := adjustedCompatible
+  adjustedCompatible_cert := adjustedCompatible_cert
+  descends_from_adjusted := by
+    intro hclass hcompat
+    exact ⟨realization.globalReplay_from_vanishing hclass hcompat⟩
 
 /--
 IX.§4 / AC13 / Theorem 4.2: temporal descent criterion.

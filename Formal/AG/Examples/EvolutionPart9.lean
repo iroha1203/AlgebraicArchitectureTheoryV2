@@ -658,22 +658,52 @@ def zeroReplayTemporalClass :
     TemporalClass zeroReplayDescentData.mismatch where
   cocycle := zeroReplayMismatchCocycle.toTemporalCocycle
 
+/--
+R10(b): adjusted replay compatibility for the nontrivial two-chart fixture.
+Both selected charts read the corrected replay as `high -> mid`.
+-/
+def zeroReplayAdjustedCompatible
+    (data : ReplayDescentData statePresheaf temporalCoefficient temporalLaw) : Prop :=
+  data = zeroReplayAdjustment.adjustedData ∧
+    ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData false TinyState.high =
+      TinyState.mid ∧
+      ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData true TinyState.high =
+        TinyState.mid
+
+/-- R10(b): the zero adjustment satisfies the concrete adjusted replay compatibility. -/
+theorem zeroReplayAdjustedCompatible_cert :
+    zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData := by
+  refine ⟨?_, ?_, ?_⟩ <;> rfl
+
+/--
+R10(b): selected realization of theorem 4.2.  The global replay map is built
+from the vanishing-class and adjusted-compatibility inputs of the criterion.
+-/
+def zeroReplayTemporalDescentRealization :
+    TemporalDescentRealization zeroReplayDescentData zeroReplayTemporalClass
+      zeroReplayAdjustment zeroReplayAdjustedCompatible where
+  globalReplay := fun
+    | .high => .mid
+    | other => other
+  globalReplay_from_vanishing_and_compatibility := by
+    intro _hclass hcompat
+    have _hleft :
+        ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData false
+          TinyState.high = TinyState.mid := hcompat.2.1
+    have _hright :
+        ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData true
+          TinyState.high = TinyState.mid := hcompat.2.2
+    exact fun
+      | .high => .mid
+      | other => other
+
 /-- R10(b): concrete theorem-4.2 assumptions for the zero replay fixture. -/
 def zeroReplayTemporalDescentCriterion :
-    TemporalDescentCriterion zeroReplayDescentData where
-  mismatchCocycle := zeroReplayMismatchCocycle
-  temporalClass := zeroReplayTemporalClass
-  temporalClass_matches_mismatch := rfl
-  classVanishes_cert := by
-    rfl
-  adjustment := zeroReplayAdjustment
-  adjustedCompatible := fun _ => True
-  adjustedCompatible_cert := trivial
-  descends_from_adjusted := by
-    intro _hvanish _hadjusted
-    exact ⟨fun
-      | .high => .mid
-      | other => other⟩
+    TemporalDescentCriterion zeroReplayDescentData :=
+  TemporalDescentCriterion.ofRealization zeroReplayMismatchCocycle
+    zeroReplayTemporalClass rfl (by rfl) zeroReplayAdjustment
+    zeroReplayAdjustedCompatible zeroReplayAdjustedCompatible_cert
+    zeroReplayTemporalDescentRealization
 
 /-- R10(b): theorem 4.2 yields a global replay transition for the zero fixture. -/
 theorem replay_zero_theorem42_global_transition_exists :
@@ -687,10 +717,11 @@ structure ReplayDescentZeroExample where
   mismatch : ReplayMismatchValue
   mismatch_zero : mismatch = .zero
   replayData : ReplayDescentData statePresheaf temporalCoefficient temporalLaw
+  adjustedCompatibility : ReplayDescentData statePresheaf temporalCoefficient temporalLaw -> Prop
   theorem42Criterion : TemporalDescentCriterion replayData
   theorem42GlobalTransition : Nonempty replayData.GlobalReplayTransition
-  coboundaryWitness : Prop
-  coboundaryWitness_cert : coboundaryWitness
+  adjustedCompatibilityWitness : Prop
+  adjustedCompatibilityWitness_cert : adjustedCompatibilityWitness
   globalReplayTransition : TinyState -> TinyState
   globalReplayTransition_cert :
     globalReplayTransition TinyState.high = TinyState.mid
@@ -702,10 +733,11 @@ def replayDescentZeroExample : ReplayDescentZeroExample where
   mismatch := .zero
   mismatch_zero := rfl
   replayData := zeroReplayDescentData
+  adjustedCompatibility := zeroReplayAdjustedCompatible
   theorem42Criterion := zeroReplayTemporalDescentCriterion
   theorem42GlobalTransition := replay_zero_theorem42_global_transition_exists
-  coboundaryWitness := True
-  coboundaryWitness_cert := trivial
+  adjustedCompatibilityWitness := zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData
+  adjustedCompatibilityWitness_cert := zeroReplayAdjustedCompatible_cert
   globalReplayTransition := fun
     | .high => .mid
     | s => s
@@ -887,7 +919,7 @@ theorem finite_temporal_examples_verified :
     @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
       TinyTime.t0 TinyTime.t1 tinyStep ∧
       Nonempty replayDescentZeroExample.replayData.GlobalReplayTransition ∧
-        replayDescentZeroExample.coboundaryWitness ∧
+        replayDescentZeroExample.adjustedCompatibilityWitness ∧
           replayDescentZeroExample.globalReplayTransition TinyState.high = TinyState.mid ∧
             replayDescentNonzeroExample.selectedConcreteClassNonzero ∧
               (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
@@ -906,7 +938,7 @@ theorem finite_temporal_examples_verified :
                                 forceCandidateFixture.candidateOnly := by
   exact ⟨twoStep_step_selected,
     replay_zero_theorem42_applied,
-    replayDescentZeroExample.coboundaryWitness_cert,
+    replayDescentZeroExample.adjustedCompatibilityWitness_cert,
     replay_zero_has_global_transition,
     replayDescentNonzeroExample.selectedConcreteClassNonzero_cert,
     finite_dissipation_no_infinite_nonterminal_path,
