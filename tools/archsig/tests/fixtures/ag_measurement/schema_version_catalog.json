@@ -324,7 +324,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Run manifest records the analyze command name, input artifact paths, output mode, generated and omitted artifact lists, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
+        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated and omitted artifact lists, artifact links, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

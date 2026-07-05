@@ -4,14 +4,14 @@
 
 ## 境界
 
-- ArchMap v2 は supplied `archmap/v2` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。`molecules` は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
+- ArchMap finite-poset-site shape は supplied `archmap/v0.5.0` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。`molecules` は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
 - 現行 AAT は Atom 公理系から architecture object を構成し、それを site / sheaf /
   law algebra / obstruction ideal / lawful locus へ持ち上げる代数幾何的アーキテクチャ論である。
   ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
-- LawPolicy v1 は policy pack / evaluator / basis / scope / severity を選ぶ selector である。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v1` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
-- ArchSig v0.4.0 は ArchMap v2 + LawPolicy v1 + MeasurementProfile から `archsig-measurement-packet/v1` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
-- ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v1` の実測フレーム列だけを表示する。
+- LawPolicy selector は policy pack / evaluator / basis / scope / severity を選ぶ `law-policy/v0.5.0` artifact である。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.0` を選ぶ。cover、coefficient、witness family、exactness assumption、distance rule は evaluator registry または MeasurementProfile の責務である。AAT そのものではない。
+- ArchSig v0.5.0 は ArchMap + LawPolicy + MeasurementProfile から `archsig-measurement-packet/v0.5.0` を作る AG measurement layer である。Lean 証明器ではない。Rust と Lean の対応を tooling contract として要求しない。
+- ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v0.5.0` の実測フレーム列だけを表示する。
 - ArchSig は tool として肯定的な bounded diagnostic conclusion を出す。たとえば
   `SAFE_WITHIN_POLICY`、`NO_SELECTED_OBSTRUCTION`、`ACCEPTABLE_UNDER_EVIDENCE_CONTRACT`、
   `DISTANCE_WITHIN_THRESHOLD` のように、選ばれた LawPolicy、DistanceProfile、evidence contract の中で

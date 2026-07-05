@@ -76,6 +76,10 @@ enum Command {
         /// Fail when architecture distance would rely on missing profile selection or unmeasured rows.
         #[arg(long = "strict-distance")]
         strict_distance: bool,
+
+        /// Append a wall-clock suffix to the deterministic run id. Omitted by default to keep byte-identical outputs.
+        #[arg(long)]
+        stamp: bool,
     },
 
     /// Produce a lightweight ArchSig PR review report from base ArchMap v1, PR-local ArchMap delta, and LawPolicy v1.
@@ -187,6 +191,31 @@ fn json_schema(document: &serde_json::Value) -> Option<&str> {
 
 fn summary_result(document: &serde_json::Value) -> &str {
     document["summary"]["result"].as_str().unwrap_or("fail")
+}
+
+fn validation_result_summary(document: &serde_json::Value) -> serde_json::Value {
+    let result = summary_result(document);
+    validation_result_summary_from_counts(
+        result,
+        document["summary"]["failedCheckCount"]
+            .as_u64()
+            .unwrap_or_else(|| usize::from(result == "fail") as u64) as usize,
+        document["summary"]["warningCheckCount"]
+            .as_u64()
+            .unwrap_or(0) as usize,
+    )
+}
+
+fn validation_result_summary_from_counts(
+    result: &str,
+    failed_check_count: usize,
+    warning_check_count: usize,
+) -> serde_json::Value {
+    serde_json::json!({
+        "result": result,
+        "failedCheckCount": failed_check_count,
+        "warningCheckCount": warning_check_count
+    })
 }
 
 fn build_pr_review_v1_analysis(
@@ -736,6 +765,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out_dir,
             emit_raw_artifacts,
             strict_distance,
+            stamp,
         }) => {
             let archmap_validation_path = out_dir.join("archmap-validation.json");
             let law_policy_validation_path = out_dir.join("law-policy-validation.json");
@@ -759,17 +789,36 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             if !law_policy_is_v1 {
                 return Err("archsig analyze accepts only law-policy/v0.5.0".into());
             }
+            let archmap_input_ref = artifact_input_ref(&archmap);
+            let law_policy_input_ref = artifact_input_ref(&law_policy);
+            let archmap_contract_input: Value = read_json(&archmap)?;
+            let law_policy_contract_input: Value = read_json(&law_policy)?;
+            let run_contract = AnalyzeRunContract::from_inputs(
+                &archmap,
+                &law_policy,
+                contract_profile_fingerprint(&law_policy_contract_input, archmap_is_v1)?,
+                contract_site_cover_digest(&archmap_contract_input, archmap_is_v1)?,
+                stamp,
+            )?;
             std::fs::create_dir_all(&out_dir)?;
             remove_analyze_success_artifacts(&out_dir)?;
-            write_json(Some(archmap_validation_path), &archmap_preflight)?;
-            write_json(Some(law_policy_validation_path), &law_policy_preflight)?;
+            write_json(
+                Some(archmap_validation_path),
+                &with_run_contract(&archmap_preflight, &run_contract)?,
+            )?;
+            write_json(
+                Some(law_policy_validation_path),
+                &with_run_contract(&law_policy_preflight, &run_contract)?,
+            )?;
             if archmap_failed || law_policy_failed {
-                let insight_report = build_validation_failure_insight_report(
+                let mut insight_report = build_validation_failure_insight_report(
                     &archmap_preflight,
                     &law_policy_preflight,
                 );
                 let insight_brief = build_insight_brief_v1(&insight_report);
-                let viewer_data = build_validation_failure_viewer_data(&insight_report);
+                attach_run_contract(&mut insight_report, &run_contract);
+                let mut viewer_data = build_validation_failure_viewer_data(&insight_report);
+                attach_run_contract(&mut viewer_data, &run_contract);
                 write_json(Some(insight_report_path), &insight_report)?;
                 std::fs::write(insight_brief_path, insight_brief)?;
                 write_json(Some(atom_viewer_data_path), &viewer_data)?;
@@ -777,8 +826,15 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     Some(run_manifest_path),
                     &serde_json::json!({
                         "schema": "archsig-run-manifest/v0.5.0",
-                        "command": "analyze",
-                        "status": "validation_failed",
+                        "toolVersion": run_contract.tool_version.clone(),
+                        "runId": run_contract.run_id.clone(),
+                        "inputDigests": run_contract.input_digests.clone(),
+                        "commandName": "analyze",
+                        "mode": "validation-failure",
+                        "conclusionCode": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+                        "archmapInputPath": archmap_input_ref,
+                        "lawPolicyInputPath": law_policy_input_ref,
+                        "rawArtifactRetention": "not-computed",
                         "generatedArtifacts": [
                             "archmap-validation.json",
                             "law-policy-validation.json",
@@ -787,16 +843,32 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "archsig-atom-viewer-data.json",
                             "archsig-run-manifest.json"
                         ],
+                        "omittedArtifacts": [
+                            "normalized-archmap.json",
+                            "typed-evaluator-results.json",
+                            "architecture-distance.json",
+                            "archsig-measurement-packet.json",
+                            "archsig-analysis-validation.json",
+                            "archsig-analysis-summary.json",
+                            "archsig-analysis-packet.json",
+                            "archsig-analysis-detail-index.json",
+                            "llm-interpretation-packet.json"
+                        ],
                         "artifactLinks": {
-                            "archmapValidation": "archmap-validation.json",
-                            "lawPolicyValidation": "law-policy-validation.json",
                             "insightReport": "archsig-insight-report.json",
                             "insightBrief": "archsig-insight-brief.md",
                             "viewerData": "archsig-atom-viewer-data.json"
                         },
+                        "validationReports": {
+                            "archmap": "archmap-validation.json",
+                            "lawPolicy": "law-policy-validation.json",
+                            "analysis": null
+                        },
+                        "rawArtifactPaths": null,
                         "validationResultSummary": {
-                            "archmap": { "result": summary_result(&archmap_preflight) },
-                            "lawPolicy": { "result": summary_result(&law_policy_preflight) }
+                            "archmap": validation_result_summary(&archmap_preflight),
+                            "lawPolicy": validation_result_summary(&law_policy_preflight),
+                            "analysis": validation_result_summary_from_counts("not_computed", 0, 0)
                         },
                         "nonConclusions": [
                             "Validation failure insight is a pre-normalization projection and does not contain measurement packet claims.",
@@ -814,18 +886,32 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 let law_policy_document: LawPolicyDocumentV1 = read_json(&law_policy)?;
                 let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
                 let normalized_archmap =
-                    normalize_archmap_v2(&archmap_document, &archmap.display().to_string());
-                write_json(Some(normalized_archmap_path), &normalized_archmap)?;
+                    normalize_archmap_v2(&archmap_document, &archmap_input_ref);
+                write_json(
+                    Some(normalized_archmap_path),
+                    &with_run_contract(&normalized_archmap, &run_contract)?,
+                )?;
                 let measurement_packet = build_foundation_measurement_packet_v1(
                     &normalized_archmap,
                     &law_policy_document,
-                    &archmap.display().to_string(),
-                    &law_policy.display().to_string(),
+                    &archmap_input_ref,
+                    &law_policy_input_ref,
                 )
                 .map_err(|message| -> Box<dyn Error> { message.into() })?;
                 let packet_validation = validate_measurement_packet_v1(&measurement_packet);
                 let packet_failed = packet_validation.iter().any(|check| check.result == "fail");
-                write_json(Some(measurement_packet_path), &measurement_packet)?;
+                let packet_failed_check_count = packet_validation
+                    .iter()
+                    .filter(|check| check.result == "fail")
+                    .count();
+                let packet_warning_check_count = packet_validation
+                    .iter()
+                    .filter(|check| check.result == "warn")
+                    .count();
+                write_json(
+                    Some(measurement_packet_path),
+                    &with_run_contract(&measurement_packet, &run_contract)?,
+                )?;
                 let measurement_summary = build_measurement_summary_v1(&measurement_packet);
                 let insight_report = build_insight_report_v1(
                     &normalized_archmap,
@@ -841,36 +927,43 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 );
                 write_json(
                     Some(analysis_validation_path),
-                    &serde_json::json!({
+                    &with_run_contract(&serde_json::json!({
                         "schema": "archsig-measurement-packet-validation-report/v0.5.0",
                         "packetSchema": measurement_packet.schema,
                         "checks": packet_validation,
                         "summary": {
-                            "result": if packet_failed { "fail" } else { "pass" }
+                            "result": if packet_failed { "fail" } else { "pass" },
+                            "failedCheckCount": packet_failed_check_count,
+                            "warningCheckCount": packet_warning_check_count
                         }
-                    }),
+                    }), &run_contract)?,
                 )?;
                 write_json(
                     Some(analysis_summary_path),
-                    &measurement_summary,
+                    &with_run_contract(&measurement_summary, &run_contract)?,
                 )?;
                 write_json(
                     Some(atom_viewer_data_path),
-                    &measurement_viewer_data,
+                    &with_run_contract(&measurement_viewer_data, &run_contract)?,
                 )?;
                 write_json(
                     Some(insight_report_path),
-                    &insight_report,
+                    &with_run_contract(&insight_report, &run_contract)?,
                 )?;
                 std::fs::write(insight_brief_path, insight_brief)?;
                 write_json(
                     Some(run_manifest_path),
                     &serde_json::json!({
                         "schema": "archsig-run-manifest/v0.5.0",
+                        "toolVersion": run_contract.tool_version.clone(),
+                        "runId": run_contract.run_id.clone(),
+                        "inputDigests": run_contract.input_digests.clone(),
                         "commandName": "analyze",
-                        "outputMode": "v2-measurement-foundation",
-                        "archmapInputPath": archmap.display().to_string(),
-                        "lawPolicyInputPath": law_policy.display().to_string(),
+                        "mode": "measurement",
+                        "conclusionCode": null,
+                        "archmapInputPath": archmap_input_ref,
+                        "lawPolicyInputPath": law_policy_input_ref,
+                        "rawArtifactRetention": "omitted",
                         "generatedArtifacts": [
                             "archmap-validation.json",
                             "law-policy-validation.json",
@@ -883,6 +976,13 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "archsig-atom-viewer-data.json",
                             "archsig-run-manifest.json"
                         ],
+                        "omittedArtifacts": [
+                            "typed-evaluator-results.json",
+                            "architecture-distance.json",
+                            "archsig-analysis-packet.json",
+                            "archsig-analysis-detail-index.json",
+                            "llm-interpretation-packet.json"
+                        ],
                         "artifactLinks": {
                             "measurementPacket": "archsig-measurement-packet.json",
                             "summary": "archsig-analysis-summary.json",
@@ -890,13 +990,23 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "insightBrief": "archsig-insight-brief.md",
                             "viewerData": "archsig-atom-viewer-data.json"
                         },
+                        "validationReports": {
+                            "archmap": "archmap-validation.json",
+                            "lawPolicy": "law-policy-validation.json",
+                            "analysis": "archsig-analysis-validation.json"
+                        },
+                        "rawArtifactPaths": null,
                         "validationResultSummary": {
-                            "archmap": { "result": summary_result(&archmap_preflight) },
-                            "lawPolicy": { "result": summary_result(&law_policy_preflight) },
-                            "measurementPacket": { "result": if packet_failed { "fail" } else { "pass" } }
+                            "archmap": validation_result_summary(&archmap_preflight),
+                            "lawPolicy": validation_result_summary(&law_policy_preflight),
+                            "analysis": validation_result_summary_from_counts(
+                                if packet_failed { "fail" } else { "pass" },
+                                packet_failed_check_count,
+                                packet_warning_check_count
+                            )
                         },
                         "nonConclusions": [
-                            "v2 run manifest records the v0.4.0 AG measurement foundation artifacts.",
+                            "Finite-poset-site run manifest records the v0.5.0 AG measurement foundation artifacts.",
                             "Foundation packet rows are not completed AG invariant evaluator computation."
                         ]
                     }),
@@ -940,17 +1050,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 return Ok(ExitCode::from(1));
             }
             let archmap_document: ArchMapDocumentV1 = read_json(&archmap)?;
-            let normalized_archmap =
-                normalize_archmap_v1(&archmap_document, &archmap.display().to_string());
-            write_json(Some(normalized_archmap_path), &normalized_archmap)?;
+            let normalized_archmap = normalize_archmap_v1(&archmap_document, &archmap_input_ref);
+            write_json(
+                Some(normalized_archmap_path),
+                &with_run_contract(&normalized_archmap, &run_contract)?,
+            )?;
             let typed_results = evaluate_typed_v1(
                 &normalized_archmap,
                 &law_policy_document,
                 &static_law_evaluator_registry_v1(),
                 "normalized-archmap.json",
-                &law_policy.display().to_string(),
+                &law_policy_input_ref,
             );
-            write_json(Some(typed_evaluator_results_path), &typed_results)?;
+            write_json(
+                Some(typed_evaluator_results_path),
+                &with_run_contract(&typed_results, &run_contract)?,
+            )?;
             let base_architecture_distance = build_architecture_distance_v1(
                 &normalized_archmap,
                 &law_policy_document,
@@ -967,7 +1082,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &base_analysis_packet,
                 emit_raw_artifacts,
             );
-            write_json(Some(architecture_distance_path), &architecture_distance)?;
+            write_json(
+                Some(architecture_distance_path),
+                &with_run_contract(&architecture_distance, &run_contract)?,
+            )?;
             let analysis_packet = build_typed_analysis_packet_v1(
                 &normalized_archmap,
                 &typed_results,
@@ -985,35 +1103,51 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             );
             let analysis_validation =
                 build_typed_analysis_validation_v1(&analysis_packet, &typed_results);
-            write_json(Some(analysis_validation_path), &analysis_validation)?;
-            write_json(Some(analysis_summary_path.clone()), &analysis_summary)?;
-            write_json(Some(atom_viewer_data_path.clone()), &atom_viewer_data)?;
+            write_json(
+                Some(analysis_validation_path),
+                &with_run_contract(&analysis_validation, &run_contract)?,
+            )?;
+            write_json(
+                Some(analysis_summary_path.clone()),
+                &with_run_contract(&analysis_summary, &run_contract)?,
+            )?;
+            write_json(
+                Some(atom_viewer_data_path.clone()),
+                &with_run_contract(&atom_viewer_data, &run_contract)?,
+            )?;
             if emit_raw_artifacts {
-                write_json(Some(analysis_packet_path), &analysis_packet)?;
+                write_json(
+                    Some(analysis_packet_path),
+                    &with_run_contract(&analysis_packet, &run_contract)?,
+                )?;
                 write_json(
                     Some(out_dir.join("archsig-analysis-detail-index.json")),
-                    &build_typed_detail_index_v1(&typed_results, &analysis_packet),
+                    &with_run_contract(
+                        &build_typed_detail_index_v1(&typed_results, &analysis_packet),
+                        &run_contract,
+                    )?,
                 )?;
                 write_json(
                     Some(llm_interpretation_path),
-                    &build_typed_llm_interpretation_packet_v1(
+                    &with_run_contract(&build_typed_llm_interpretation_packet_v1(
                         &normalized_archmap,
                         &typed_results,
                         &architecture_distance,
-                    ),
+                    ), &run_contract)?,
                 )?;
             }
             write_json(
                 Some(run_manifest_path),
                 &build_analyze_run_manifest_v1(
+                    &run_contract,
                     &archmap,
                     &law_policy,
+                    "measurement",
+                    None,
                     emit_raw_artifacts,
-                    summary_result(&archmap_preflight),
-                    summary_result(&law_policy_preflight),
-                    analysis_validation["summary"]["result"]
-                        .as_str()
-                        .unwrap_or("fail"),
+                    validation_result_summary(&archmap_preflight),
+                    validation_result_summary(&law_policy_preflight),
+                    validation_result_summary(&analysis_validation),
                 ),
             )?;
             if strict_distance

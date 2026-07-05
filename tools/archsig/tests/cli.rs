@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use archsig::{ArchMapDocumentV2, compare_archmap_v2_doctrine};
+use archsig::{ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine};
 use serde_json::{Value, json};
 
 fn fixture_root() -> PathBuf {
@@ -741,10 +741,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         }),
         "ledger transparency must not change the Cech structural verdict payload except assumption refs"
     );
-    let cech_fixture_path = root
-        .join("archmap_v2_cech_h1_visible.json")
-        .to_string_lossy()
-        .to_string();
+    let cech_fixture_path = "input:archmap_v2_cech_h1_visible.json";
     let computed_without_capacity = Value::Array(
         packet["computedInvariants"]
             .as_array()
@@ -3285,7 +3282,19 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
         "VALIDATION_FAILED_BEFORE_MEASUREMENT"
     );
     assert_eq!(viewer["largeGraphStrategy"]["mode"], "validation_blocked");
-    assert_eq!(manifest["status"], "validation_failed");
+    assert_eq!(manifest["mode"], "validation-failure");
+    assert_eq!(
+        manifest["conclusionCode"],
+        "VALIDATION_FAILED_BEFORE_MEASUREMENT"
+    );
+    assert_eq!(manifest["toolVersion"], "0.5.0");
+    assert!(
+        manifest["runId"]
+            .as_str()
+            .is_some_and(|run_id| run_id.starts_with("run:") && run_id.len() == 16)
+    );
+    assert!(manifest["inputDigests"]["archmap"]["sha256"].is_string());
+    assert!(manifest["inputDigests"]["lawPolicy"]["sha256"].is_string());
     assert!(
         brief.contains("Validation failed before measurement")
             && brief.contains("Do not infer beyond the listed claims and boundaries."),
@@ -8175,9 +8184,11 @@ fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
     );
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
     assert_eq!(
-        manifest["architectureDistancePath"].as_str(),
+        manifest["artifactLinks"]["architectureDistance"].as_str(),
         Some("architecture-distance.json")
     );
+    assert_eq!(manifest["mode"], "measurement");
+    assert_eq!(manifest["toolVersion"], "0.5.0");
     assert!(
         manifest["generatedArtifacts"]
             .as_array()
@@ -8383,8 +8394,8 @@ fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
         "validation failure should replace stale insight report with a validation blocker projection"
     );
     assert_eq!(
-        read_json(&out_dir.join("archsig-run-manifest.json"))["status"],
-        "validation_failed"
+        read_json(&out_dir.join("archsig-run-manifest.json"))["mode"],
+        "validation-failure"
     );
 }
 
@@ -8485,7 +8496,14 @@ fn practical_rust_service_example_runs_current_analyze() {
     );
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.0");
-    assert_eq!(manifest["outputMode"], "v2-measurement-foundation");
+    assert_eq!(manifest["mode"], "measurement");
+    assert_eq!(manifest["toolVersion"], "0.5.0");
+    assert!(
+        manifest["runId"]
+            .as_str()
+            .is_some_and(|run_id| run_id.starts_with("run:") && run_id.len() == 16)
+    );
+    assert!(manifest["inputDigests"]["profileFingerprint"]["sha256"].is_string());
     assert!(
         manifest["generatedArtifacts"]
             .as_array()
@@ -8498,6 +8516,195 @@ fn practical_rust_service_example_runs_current_analyze() {
             .into_iter()
             .all(|name| artifacts.iter().any(|artifact| artifact == name))),
         "manifest must list the current practical demo artifacts"
+    );
+}
+
+#[test]
+fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_digests() {
+    let first_out = temp_dir("practical-rust-service-determinism-a");
+    let second_out = temp_dir("practical-rust-service-determinism-b");
+    let root = practical_rust_service_root();
+    let args = |out_dir: &Path| {
+        vec![
+            "analyze".to_string(),
+            "--archmap".to_string(),
+            root.join("archmap/archmap.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
+            "--law-policy".to_string(),
+            root.join("law_policy/law_policy.json")
+                .to_str()
+                .expect("path is utf-8")
+                .to_string(),
+            "--out-dir".to_string(),
+            out_dir.to_str().expect("path is utf-8").to_string(),
+        ]
+    };
+    let first_args = args(&first_out);
+    let second_args = args(&second_out);
+    let first_arg_refs = first_args.iter().map(String::as_str).collect::<Vec<_>>();
+    let second_arg_refs = second_args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&first_arg_refs);
+    run_sig0(&second_arg_refs);
+
+    for artifact in [
+        "archmap-validation.json",
+        "law-policy-validation.json",
+        "normalized-archmap.json",
+        "archsig-measurement-packet.json",
+        "archsig-analysis-validation.json",
+        "archsig-analysis-summary.json",
+        "archsig-insight-report.json",
+        "archsig-insight-brief.md",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        assert_eq!(
+            fs::read(first_out.join(artifact)).expect("first artifact is readable"),
+            fs::read(second_out.join(artifact)).expect("second artifact is readable"),
+            "{artifact} must be byte-identical across repeated analyze runs"
+        );
+    }
+
+    let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
+    assert_eq!(manifest["toolVersion"], "0.5.0");
+    assert_eq!(manifest["runId"], "run:30ed54c09091");
+    assert_eq!(
+        manifest["inputDigests"]["archmap"]["sha256"],
+        "f82eeac941529a9eadad8fd937d802f1c968fabb9d3564de0ef855ad85e82b82"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["lawPolicy"]["sha256"],
+        "1403d4a313ae976b3fd042b3e85070540bb3c538d9649b16546d1407cbe1de31"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["profileFingerprint"]["sha256"],
+        "b69247b43a8639d00a8c62676d4abfe8ea70e3bc0c4112197009e08abd0959c2"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["siteCoverDigest"]["sha256"],
+        "63fae16bdbb459237439f6ebea1dcddb70e1e8eeb9025ef3ba91716833ca1c9a"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["siteCoverDigest"]["basis"],
+        "normalized contexts + covers + derived finite cover nerve"
+    );
+}
+
+#[test]
+fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
+    let input_dir = temp_dir("practical-rust-service-absolute-inputs");
+    let first_out = temp_dir("practical-rust-service-absolute-output-a");
+    let second_out = temp_dir("practical-rust-service-absolute-output-b");
+    let root = practical_rust_service_root();
+    let archmap_path = input_dir.join("archmap.json");
+    let law_policy_path = input_dir.join("law_policy.json");
+    fs::copy(root.join("archmap/archmap.json"), &archmap_path)
+        .expect("archmap fixture copies to absolute temp path");
+    fs::copy(root.join("law_policy/law_policy.json"), &law_policy_path)
+        .expect("law policy fixture copies to absolute temp path");
+
+    let args = |out_dir: &Path| {
+        vec![
+            "analyze".to_string(),
+            "--archmap".to_string(),
+            archmap_path.to_str().expect("path is utf-8").to_string(),
+            "--law-policy".to_string(),
+            law_policy_path.to_str().expect("path is utf-8").to_string(),
+            "--out-dir".to_string(),
+            out_dir.to_str().expect("path is utf-8").to_string(),
+        ]
+    };
+    let first_args = args(&first_out);
+    let second_args = args(&second_out);
+    let first_arg_refs = first_args.iter().map(String::as_str).collect::<Vec<_>>();
+    let second_arg_refs = second_args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&first_arg_refs);
+    run_sig0(&second_arg_refs);
+
+    for artifact in [
+        "archmap-validation.json",
+        "law-policy-validation.json",
+        "normalized-archmap.json",
+        "archsig-measurement-packet.json",
+        "archsig-analysis-validation.json",
+        "archsig-analysis-summary.json",
+        "archsig-insight-report.json",
+        "archsig-insight-brief.md",
+        "archsig-atom-viewer-data.json",
+        "archsig-run-manifest.json",
+    ] {
+        let first = fs::read(first_out.join(artifact)).expect("first artifact is readable");
+        let second = fs::read(second_out.join(artifact)).expect("second artifact is readable");
+        assert_eq!(
+            first, second,
+            "{artifact} must be byte-identical across repeated absolute-path analyze runs"
+        );
+        let text = String::from_utf8_lossy(&first);
+        let forbidden_markers = [
+            format!("{}/", ["", "Users"].join("/")),
+            format!("{}/", ["", "private"].join("/")),
+            [".", "codex"].join(""),
+            ["Hello", "Lean"].join(""),
+            ["Algebraic", "Architecture", "TheoryV2"].join(""),
+        ];
+        for forbidden in forbidden_markers {
+            assert!(
+                !text.contains(&forbidden),
+                "{artifact} must not expose local workspace marker {forbidden}"
+            );
+        }
+    }
+
+    let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
+    let _: ArchSigRunManifestV0 =
+        serde_json::from_value(manifest.clone()).expect("v2 manifest matches schema struct");
+    assert_eq!(manifest["archmapInputPath"], "input:archmap.json");
+    assert_eq!(manifest["lawPolicyInputPath"], "input:law_policy.json");
+    assert_eq!(
+        manifest["inputDigests"]["archmap"]["path"],
+        "input:archmap.json"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["lawPolicy"]["path"],
+        "input:law_policy.json"
+    );
+    assert_eq!(
+        manifest["validationResultSummary"]["analysis"]["result"],
+        "pass"
+    );
+}
+
+#[test]
+fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
+    let out_dir = temp_dir("practical-rust-service-stamp");
+    let root = practical_rust_service_root();
+    let args = vec![
+        "analyze".to_string(),
+        "--archmap".to_string(),
+        root.join("archmap/archmap.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--law-policy".to_string(),
+        root.join("law_policy/law_policy.json")
+            .to_str()
+            .expect("path is utf-8")
+            .to_string(),
+        "--out-dir".to_string(),
+        out_dir.to_str().expect("path is utf-8").to_string(),
+        "--stamp".to_string(),
+    ];
+    let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
+    run_sig0(&arg_refs);
+
+    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
+    assert!(
+        manifest["runId"]
+            .as_str()
+            .is_some_and(|run_id| run_id.starts_with("run:30ed54c09091-stamp:")),
+        "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
 
