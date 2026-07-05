@@ -1,0 +1,1472 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part VII. Representation, Periods, and Analysis",
+  "description": "Part VII of Algebraic Architecture Theory: analytic representations as functors, period families and strict periods, period separation, signature and curvature readings, metric enrichment, distance to the lawful locus, obstruction mass, repair route geometry, and disciplined bounded analytic interpretation.",
+  "order": 8,
+  "llmsLabel": "AAT Part VII: Representation, Periods, and Analysis",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part VII</span>
+          </nav>
+          <p class="eyebrow">Part VII</p>
+          <h1>Representation, Periods, and Analysis</h1>
+          <p class="lede">
+            Parts I through VI construct the architecture geometry: atoms,
+            sites, sheaves, law algebras, lawful loci, obstruction cohomology,
+            derived law geometry, and singularity, monodromy, and stack
+            structure. Part VII asks how this geometry becomes readable.
+            Graphs, matrices, signatures, curvature, traces, and distances are
+            representations — windows opened on a constructed geometry.
+            Geometry comes first; representations are windows; periods are
+            readings; metrics are enrichments; analysis is disciplined
+            interpretation.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part VII page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#part6-to-part7">1. From Part VI to Part VII</a></li>
+                <li><a href="#representation-as-functor">2. Representation as functor</a></li>
+                <li><a href="#representation-family">3. Representation family</a></li>
+                <li><a href="#preservation-reflection">4. Preservation and reflection</a></li>
+                <li><a href="#period-family">5. Period family</a></li>
+                <li><a href="#period-separation">6. Period separation</a></li>
+                <li><a href="#signature-curvature">7. Signature and curvature readings</a></li>
+                <li><a href="#metric-enrichment">8. Metric enrichment</a></li>
+                <li><a href="#distance-values">9. Distance values</a></li>
+                <li><a href="#distance-to-lawful-locus">10. Distance to the lawful locus</a></li>
+                <li><a href="#obstruction-mass">11. Obstruction mass</a></li>
+                <li><a href="#repair-cost-route">12. Repair cost and route geometry</a></li>
+                <li><a href="#singularity-monodromy-readings">13. Analytic reading of singularity and monodromy</a></li>
+                <li><a href="#bounded-analytic-interpretation">14. Bounded analytic interpretation</a></li>
+                <li><a href="#completeness-spectrum">15. Representation completeness as a spectrum</a></li>
+                <li><a href="#final-synthesis">16. Final synthesis</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../singularity-monodromy-stack/">Part VI. Singularity, Monodromy, and Stack</a></li>
+                <li><a href="./" aria-current="page">Part VII. Representation, Periods, and Analysis</a></li>
+                <li><a href="../measurement-theory/">Part VIII. Measurement Theory</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed atom vocabulary, law
+                universe, coverage topology, coefficient sheaf, and selected
+                representation family. Three claim grades are kept distinct
+                throughout the monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                Part VII is the chapter where the analytic reading takes the
+                leading role. Most of its statements introduce readings —
+                representations, periods, metrics, masses, and costs — of the
+                geometry built in Parts I through VI, and the theorems of this
+                part are certified bounded inferences that say exactly when a
+                reading preserves or reflects structure. Theorem labels on this
+                page follow the canonical text. A label carries a Lean status
+                badge only when the AG Lean index has a corresponding ledger
+                row; a label without a badge is a mathematical statement in the
+                canonical text and is not read as a current Lean proved claim.
+              </p>
+            </section>
+
+            <section id="part6-to-part7" class="article-section">
+              <h2>1. From Part VI to Part VII</h2>
+              <p>
+                By the end of Part VI the theory has constructed the full
+                tower:
+              </p>
+              <pre><code>Atom
+  -> ArchitectureObject
+  -> ArchitectureGeometry
+  -> AATSite
+  -> Ringed AAT Topos
+  -> Affine AAT Charts
+  -> ArchitectureScheme
+  -> LawfulLocus
+  -> ObstructionCohomology
+  -> DerivedLawGeometry
+  -> Singularity / Monodromy / Stack</code></pre>
+              <p>
+                Part VI located singularity where obstruction concentrates,
+                monodromy where operation history leaves residue, and stacks
+                where refactor equivalence and decomposition non-uniqueness are
+                preserved. The question of Part VII is:
+              </p>
+              <pre><code>How does this geometry become readable?</code></pre>
+              <p>
+                The architecture geometry is read through graphs, matrices,
+                signatures, curvature, states, traces, and distances. The
+                governing discipline is:
+              </p>
+              <pre><code>geometry first.
+representations as windows.
+periods as readings.
+metrics as enrichments.
+analysis as disciplined interpretation.</code></pre>
+              <p>
+                The chapter organizes the plurality of readings: a graph is one
+                representation, a metric is one enrichment, a period is one
+                reading. Several readings taken together make the architecture
+                geometry analyzable:
+              </p>
+              <pre><code>architecture geometry
+  -> representation family
+  -> period family
+  -> metric enrichment
+  -> bounded analytic interpretation</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part VII bootstrap (ledger row VII.R0)</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>Formal.AG.RepresentationAnalysis</code>, <code>AAT.AG.RepresentationAnalysis.PartVIIDependencyStatus</code>, <code>currentDependencyStatus</code>, <code>PartVIINoMeasurementVerdictBoundary</code>, <code>noMeasurementVerdictBoundary</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The Part VII module is raised on the Parts III–VI Lean surfaces, with prerequisite availability confirmed against concrete Lean types (law algebra, cover-relative Čech cohomology, repair comparison profile, architecture stratum).</dd>
+                  <dt>Boundary</dt>
+                  <dd>Part VII is the representation / period / metric reading layer; the measurement verdict is reserved for Part VIII, and the Lean surface carries this boundary explicitly (<code>readingLayer_holds</code>, <code>measurementVerdictReservedForPartVIII_holds</code>).</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="representation-as-functor" class="article-section">
+              <h2>2. Representation as functor</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition VII.2.1 (Analytic representation).</a>
+                An analytic representation is a functor from architecture
+                schemes to a computable target:
+                \( R : \mathrm{AATSch} \to \mathrm{Target} \).
+              </p>
+              <p>The representative examples are:</p>
+              <pre><code>R_graph  : AATSch -> Graph
+R_matrix : AATSch -> Matrix
+R_sig    : AATSch -> SignatureSpace
+R_curv   : AATSch -> CurvatureValue
+R_state  : AATSch -> StateAlgebra
+R_trace  : AATSch -> RuntimeTrace
+R_sem    : AATSch -> SemanticSpace
+R_eff    : AATSch -> EffectSpace</code></pre>
+              <p>
+                Here <code>AATSch</code> is the category of AAT architecture
+                schemes. More precisely, for a fixed reading parameter
+                <code>p</code>, an object is a decorated architecture scheme
+                <code>X_AAT = (X, O_X, D_X)</code>, and a morphism
+                <code>f : X_AAT -&gt; Y_AAT</code> consists of an ordinary
+                scheme morphism <code>f : X -&gt; Y</code> together with
+                compatibility data that preserves — or restricts as specified —
+                the typed atom labels, the selected law reading, the
+                obstruction ideals, the signature readings, and the
+                interpretation maps. Fiber products are used when the
+                underlying scheme fiber product exists and the decoration is
+                coherently determined by pullback.
+              </p>
+              <p>
+                A representation sends a specific aspect of the architecture
+                geometry to a computable form:
+              </p>
+              <pre><code>architecture scheme
+  -> graph
+  -> matrix
+  -> signature
+  -> curvature
+  -> trace</code></pre>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle VII.2.2 (Representation is a reading).</a>
+                A representation is a reading of the architecture geometry: a
+                graph is a reading, a matrix is a reading, a signature is a
+                reading, a curvature is a reading, a trace is a reading. Every
+                representation is relativized to the fixed vocabulary, law
+                universe, coverage topology, coefficient sheaf, and
+                representation family: <code>R(X)</code> is a reading of
+                <code>X</code> under the selected representation family.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VII.2.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.AATSchReadingParameter</code>, <code>AATSch</code>, <code>AATSchMorphism</code> (with the five compatibility accessors), <code>AATSchIdentityData</code>, <code>AATSchCompositionData</code>, <code>AATSchFiberProductData</code>, <code>AnalyticTargetCategory</code>, <code>AnalyticRepresentation</code>, <code>AnalyticRepresentation.map_identity</code>, <code>map_composition</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The decorated scheme, selected morphism interface, optional fiber product data, and functor-like representation are relativized to a fixed reading parameter <code>p</code>. Identity and composition are carried as representation law fields; a Mathlib functor bridge is not yet claimed.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="representation-family" class="article-section">
+              <h2>3. Representation family</h2>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition VII.3.1 (Representation family).</a>
+                For an architecture geometry <code>X</code>, the representation
+                family <code>Rep(AAT)</code> is a family of functors sending
+                the AAT geometry to different target categories:
+              </p>
+              <pre><code>Rep(AAT)
+  =
+  { R_graph, R_matrix, R_sig, R_curv, R_state, R_trace, ... }</code></pre>
+              <p>
+                The family reads one geometry from several angles: same
+                geometry, many readings.
+              </p>
+              <p id="example-3-2" class="statement">
+                <a class="statement-anchor" href="#example-3-2">Example VII.3.2 (Main representations).</a>
+                The principal representations and what they read:
+              </p>
+              <pre><code>graph representation:
+  dependency, call, relation, service, context graph.
+
+matrix representation:
+  adjacency, incidence, transition, coupling matrix.
+
+signature representation:
+  selected signature axes.
+
+curvature representation:
+  obstruction valuation as curvature reading.
+
+state representation:
+  state transition algebra.
+
+trace representation:
+  runtime interaction trace.
+
+semantic representation:
+  language-game-relative semantic roles.
+
+effect representation:
+  effect and authority interactions.</code></pre>
+              <p>
+                These are the components of a period family that reads the
+                same architecture geometry from different directions.
+              </p>
+              <p id="definition-3-3" class="statement">
+                <a class="statement-anchor" href="#definition-3-3">Definition VII.3.3 (Graph representation).</a>
+                The graph representation
+                <code>R_graph : AATGeometry -&gt; Graph</code> sends the
+                selected relation data of the AAT geometry to the graph
+                category. Representative edges are dependency, call, ownership,
+                authority, state transition, and effect relations. Which
+                relation becomes an edge is part of the representation profile.
+              </p>
+
+              <div id="proposition-3-4" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition VII.3.4 — Certified bounded inference</span>
+                    <h3>Acyclicity preservation</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>R_graph is selected for dependency-axis reading.
+cycle obstruction witness is exact for the selected graph edges.
+structural dependency obstruction is zero.</code></pre>
+                <p>
+                  Then <code>R_graph(X)</code> is acyclic as the selected
+                  dependency graph.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Under witness exactness, any cycle in the selected graph
+                    reading would produce a selected cycle obstruction witness;
+                    zero structural dependency obstruction excludes every such
+                    witness, so no cycle exists.
+                  </dd>
+                  <dt>Non-conclusion</dt>
+                  <dd>
+                    Conversely, <code>R_graph(X)</code> being acyclic does not
+                    force the semantic, effect, or state transition
+                    obstructions to vanish. The inference runs on the selected
+                    dependency axis only.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile</code>, <code>acyclicityPreservation</code>, <code>selectedCycleObstructionWitness_of_graphCycle</code>, <code>no_selectedCycleObstructionWitness_of_obstructionZero</code> — <em>proved</em> under the one-directional exactness package.</dd>
+                </dl>
+              </div>
+
+              <p id="definition-3-5" class="statement">
+                <a class="statement-anchor" href="#definition-3-5">Definition VII.3.5 (Matrix representation).</a>
+                Given a finite graph representation, its adjacency, incidence,
+                or transition matrix is the matrix representation
+                <code>R_matrix(X)</code>. It is the linear-algebra form of the
+                graph reading, and reads walk counts, rank, nilpotence, and
+                spectral radius.
+              </p>
+
+              <div id="proposition-3-6" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition VII.3.6 — Certified bounded inference</span>
+                    <h3>Matrix walk reading</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  Fix a finite adjacency matrix
+                  \( A_X = R_{\mathrm{matrix}}(X) \). Then
+                  \( (A_X^n)_{ij} \) reads the length-\( n \) walk count in the
+                  selected graph representation. When the selected graph is a
+                  finite directed acyclic graph, there exists \( N \) with
+                  \( A_X^N = 0 \).
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    The walk-count identity is induction on \( n \) along the
+                    standard recursion of counted walks over the adjacency
+                    relation. In an acyclic graph the vertex list of a counted
+                    walk has no repetition, so walk length is bounded by the
+                    vertex count and the cutoff \( N = \) card of the vertex
+                    type annihilates the matrix power.
+                  </dd>
+                  <dt>Reading boundary</dt>
+                  <dd>
+                    This is a reading of the finite relation structure of the
+                    graph representation; it reads no unselected coefficient,
+                    law, or semantic axis.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.CountedDirectedWalk</code>, <code>adjacencyMatrixPower_apply_eq_matrixWalkCount</code>, <code>matrixWalkCount_pos_iff_countedDirectedWalk</code>, <code>adjacencyMatrixPower_eq_zero_at_card_of_acyclic</code>, <code>exists_adjacencyMatrixPower_eq_zero_of_acyclic</code>, <code>MatrixWalkReadingProfile.matrixWalkReading</code> — <em>proved</em>.</dd>
+                </dl>
+              </div>
+
+              <p id="principle-3-7" class="statement">
+                <a class="statement-anchor" href="#principle-3-7">Principle VII.3.7 (Graph / matrix boundary).</a>
+                Graph and matrix are representations that read the selected
+                relation of the AAT geometry. They give useful analytic
+                readings, and they do not automatically read unselected
+                coefficients, laws, or semantic axes.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.3.1 / VII.3.3 / VII.3.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.RepresentationFamily</code> with <code>Read</code> / <code>Rep</code> / <code>read_eq_obj</code>; <code>FiniteDirectedGraphTarget</code> (<code>HasEdge</code>, <code>DirectedWalk</code>, <code>DirectedCycle</code>, <code>Acyclic</code>), <code>GraphRepresentationProfile</code>, <code>adjacencyMatrix</code>, <code>incidenceMatrix</code>, <code>transitionMatrix</code>, <code>MatrixRepresentationTarget.ofGraph</code>, <code>MatrixRepresentationProfile</code> with their target categories and hom compatibility accessors.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The graph profile carries the selected relation-to-edge choice explicitly (<code>relationEdge_selected_holds</code>); the definition rows do not themselves claim the Proposition VII.3.6 walk-count theorem, which is carried by its own proved row above.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="preservation-reflection" class="article-section">
+              <h2>4. Preservation and reflection</h2>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition VII.4.1 (Preservation properties).</a>
+                For a representation <code>R</code>:
+              </p>
+              <pre><code>ZeroPreserving:
+  structural zero -> analytic zero
+
+ObstructionPreserving:
+  structural obstruction -> analytic obstruction</code></pre>
+              <p>
+                <code>ZeroPreserving</code> means the representation reads a
+                structural zero as zero; <code>ObstructionPreserving</code>
+                means it reads a structural obstruction as an obstruction.
+              </p>
+              <p id="definition-4-2" class="statement">
+                <a class="statement-anchor" href="#definition-4-2">Definition VII.4.2 (Reflection properties).</a>
+                The reverse directions:
+              </p>
+              <pre><code>ZeroReflecting:
+  analytic zero + assumptions -> structural zero
+
+ObstructionReflecting:
+  analytic obstruction + assumptions -> structural obstruction</code></pre>
+              <p>
+                Reflection is stronger than preservation. To conclude a
+                structural zero on the architecture geometry from a zero seen
+                on the representation, coverage, witness completeness, axis
+                exactness, and coefficient discipline are required:
+              </p>
+              <pre><code>analytic zero
+  + coverage
+  + exactness
+  + witness completeness
+  -----------------------
+  structural zero</code></pre>
+              <p id="definition-4-3" class="statement">
+                <a class="statement-anchor" href="#definition-4-3">Definition VII.4.3 (Conservative and faithful).</a>
+                A representation <code>R</code> is conservative,
+                <code>Conservative(R)</code>, when it reflects the selected
+                isomorphisms, zeros, and obstructions; it is faithful,
+                <code>Faithful(R)</code>, when it distinguishes the selected
+                morphisms. These properties grade the strength of a
+                representation:
+              </p>
+              <pre><code>weak reading
+preserving reading
+reflecting reading
+conservative reading
+faithful reading</code></pre>
+              <p>
+                Non-conclusion: an analytic zero taken alone, without the
+                stated assumption package, licenses no structural-zero
+                conclusion. The reflection predicates are usable exactly when
+                the assumption package holds.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.4.1–VII.4.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.RepresentationNotions</code> with <code>ZeroPreserving</code>, <code>ZeroReflecting</code>, <code>ObstructionPreserving</code>, <code>ObstructionReflecting</code>, <code>IsoPreserving</code> / <code>IsoReflecting</code>, <code>MorphismEqPreserving</code> / <code>MorphismEqReflecting</code>, <code>Conservative</code>, <code>Faithful</code>; <code>ReflectionAssumptions</code> with <code>coverage_holds</code>, <code>witnessCompleteness_holds</code>, <code>axisExactness_holds</code>, <code>coefficientDiscipline_holds</code>; and the directional lemmas <code>analyticZero_of_structuralZero</code>, <code>structuralZero_of_analyticZero</code>, <code>structuralZero_of_conservative</code>, <code>selectedMorphismEq_of_faithful</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Reflection lemmas fire only through <code>ReflectionAssumptions.Holds</code>; the assumption package is an explicit argument, never an implicit default.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="period-family" class="article-section">
+              <h2>5. Period family</h2>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition VII.5.1 (Representation reading).</a>
+                For a representation <code>R</code> and an architecture
+                geometry <code>X</code>, the reading is
+                <code>Read_R(X) = R(X)</code>. In the traditional broad sense
+                this reading may be called a broad period:
+              </p>
+              <pre><code>Period_R^{broad}(X)
+  :=
+Read_R(X)
+
+Period_R(X)
+  may be used as shorthand
+  only when broad-period convention is fixed.</code></pre>
+              <p>
+                Representative readings: graph reading, matrix reading,
+                signature reading, curvature reading, semantic reading, effect
+                reading, runtime reading.
+              </p>
+              <p id="definition-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-5-2">Definition VII.5.2 (Strict period).</a>
+                The strict period is a pairing with a cohomology class, cycle,
+                trace, or operation loop, not a bare representation value. An
+                obstruction cohomology class
+                \( \omega \in H^n(X, \mathrm{Ob}_U) \) and a cycle or test
+                object \( \gamma \in H_n(X, \mathbb{Z}) \) alone determine no
+                scalar-valued period. Fix an additive period target
+                \( \Lambda \) and a coefficient evaluation
+                \( \mathrm{tr}_U : \mathrm{Ob}_U \to \underline{\Lambda} \),
+                with induced map
+                \( \mathrm{tr}_{U,*} : H^n(X, \mathrm{Ob}_U) \to H^n(X, \underline{\Lambda}) \).
+                The strict obstruction period is
+              </p>
+              <p>\[ \mathrm{Per}^{\mathrm{tr}_U}_{\omega,\gamma}(X) := \big\langle \mathrm{tr}_{U,*}(\omega),\ \gamma \big\rangle \in \Lambda. \]</p>
+              <p>
+                The homology model \( H_n(X,\mathbb{Z}) \) and the target
+                \( \Lambda \) are fixed by the ambient: a standard topological
+                or analytic realization uses its singular homology; a finite
+                context poset uses the order complex of the poset or the
+                simplicial homology of the nerve of the chosen cover. The
+                strict period is defined only when this homology model and the
+                coefficient evaluation are fixed. When a monodromy
+                representation
+                \( \rho_U : \pi_1^{\mathrm{op}}(X) \to \mathrm{Aut}(F) \) is
+                fixed, the trace period along an operation loop
+                \( \gamma \) is
+                \( \mathrm{Per}_\rho(\gamma) := \mathrm{Tr}(\rho_U(\gamma)) \).
+              </p>
+              <p id="definition-5-2a" class="statement">
+                <a class="statement-anchor" href="#definition-5-2a">Definition VII.5.2A (Finite poset / Čech homology model).</a>
+                For a finite context poset <code>P = ArchCtx_min(A)</code>, the
+                order complex <code>Ord(P)</code> has \( n \)-simplices the
+                chains \( W_0 &lt; W_1 &lt; \dots &lt; W_n \), and
+                \( H_n^{\mathrm{poset}}(P,\mathbb{Z}) := H_n(C_*(\mathrm{Ord}(P),\mathbb{Z})) \).
+                For a finite context cover
+                <code>𝒰 = { W_i -&gt; W }</code>, the Čech nerve
+                <code>N(𝒰)</code> distinguishes overlap components; its
+                \( n \)-chains are the free abelian group on nonempty
+                \( (n{+}1) \)-fold overlap components, with boundary the
+                alternating sum of face restrictions
+                \( \partial = \sum_j (-1)^j d_j \), and
+                \( H_n^{\text{Čech}}(𝒰,\mathbb{Z}) := H_n(C_*(N(𝒰),\mathbb{Z})) \).
+                For a cochain
+                \( \omega \in C^n(𝒰, \mathrm{Ob}_U) \) and per-component
+                coefficient evaluations
+                \( \epsilon_{i_0 \dots i_n,\alpha} : \mathrm{Ob}_U(W_{i_0 \dots i_n,\alpha}) \to \Lambda \)
+                compatible with face restriction, the pairing with a chain
+                \( \gamma = \sum_\alpha m_\alpha\, W_{i_0 \dots i_n,\alpha} \)
+                is
+              </p>
+              <p>\[ \langle \omega, \gamma \rangle = \sum_\alpha m_\alpha\, \epsilon_{i_0 \dots i_n,\alpha}\big(\omega(W_{i_0 \dots i_n,\alpha})\big) \in \Lambda. \]</p>
+              <p>
+                When \( \omega \) is a cocycle, \( \gamma \) is a cycle, and
+                the coefficient evaluation is compatible with face
+                restriction, this gives the cohomology-homology pairing over
+                \( \Lambda \).
+              </p>
+              <p id="example-5-2b" class="statement">
+                <a class="statement-anchor" href="#example-5-2b">Example VII.5.2B (Pseudo-circle strict period).</a>
+                On the pseudo-circle boundary cover of Part IV:
+              </p>
+              <pre><code>C_1 = Z e_sync direct_sum Z e_async
+C_0 = Z v_0 direct_sum Z v_1
+partial(e_sync)  = v_1 - v_0
+partial(e_async) = v_1 - v_0</code></pre>
+              <p>
+                Hence \( \gamma = e_{\mathrm{sync}} - e_{\mathrm{async}} \) is
+                a 1-cycle, and for the obstruction cocycle
+                \( \omega = (r_{\mathrm{sync}}, r_{\mathrm{async}}) \),
+              </p>
+              <p>\[ \mathrm{Per}^{\epsilon}_{\omega,\gamma} = \langle \omega, \gamma \rangle = r_{\mathrm{sync}} - r_{\mathrm{async}}, \]</p>
+              <p>
+                and in particular \( \omega = (1,0) \) gives
+                \( \mathrm{Per}^{\epsilon}_{\omega,\gamma} = 1 \). Throughout,
+                three notions stay distinct:
+              </p>
+              <pre><code>reading:
+  R(X), the value under a representation.
+
+broad period:
+  a reading taken as a component of the period family.
+
+strict period:
+  a pairing with cohomology / cycle / trace / loop.</code></pre>
+              <p id="definition-5-3" class="statement">
+                <a class="statement-anchor" href="#definition-5-3">Definition VII.5.3 (Period family).</a>
+                The period family is
+                <code>Per(X) = { Read_R(X) | R in Rep(AAT) }</code> — the
+                many-faced analytic reading of the architecture geometry,
+                summing graph, matrix, signature, curvature, semantic, effect,
+                and runtime readings.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.5.1–VII.5.3 and VII.5.2A in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Definitions VII.5.1–5.3</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.RepresentationFamily.RepresentationReading</code>, <code>BroadPeriodConvention</code> (the broad-period alias is available only under the explicit convention), <code>StrictPeriodData</code> with <code>strictObstructionPeriod</code>, <code>boundaryCompatible_holds</code>, <code>coboundaryCompatible_holds</code>, <code>PeriodFamily</code> with <code>PeriodSet</code> and <code>mem_periodSet_iff</code> — <em>defined only / proved accessors</em>.</dd>
+                  <dt>Definition VII.5.2A</dt>
+                  <dd><code>FiniteCechStrictPeriodRepresentative</code> with <code>strictPeriodValue</code>, <code>representsCohomologyClass_holds</code>, <code>cycle_boundary_zero_holds</code>; <code>FiniteCechStrictPeriodRepresentativeCompatibility.strictPeriodValue_wellDefined</code>, <code>strictObstructionPeriod_wellDefined</code>; <code>FiniteCechBoundary.cech_d_comp_d_eq_zero</code>, <code>boundary_comp_zero</code>; <code>FinitePosetCechStrictPeriodContext</code> — <em>proved</em> under explicit finite Čech data and the selected pairing-invariance assumptions.</dd>
+                  <dt>Example VII.5.2B</dt>
+                  <dd><code>AAT.AG.FiniteModel.RepresentationAnalysisPart7.pseudoCircleChainComplex</code>, <code>pseudoCircle_cycle_boundary_zero</code>, <code>pseudoCircleStrictPeriodRepresentative</code>, <code>pseudoCircle_strictPeriodRepresentative_eq_one</code>, <code>pseudoCircle_strictPeriodData_reads_representative</code> — <em>proved</em> as selected finite examples.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="period-separation" class="article-section">
+              <h2>6. Period separation</h2>
+
+              <div id="theorem-6-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VII.6.1</span>
+                    <h3>Period separation</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved (selected finite witness)</span>
+                </div>
+                <p>
+                  Architecture geometries <code>X</code> and <code>Y</code> can
+                  share the same broad period / reading under one
+                  representation while carrying different broad periods under
+                  another:
+                </p>
+                <pre><code>Period_graph^{broad}(X) = Period_graph^{broad}(Y)
+
+Period_semantic^{broad}(X) != Period_semantic^{broad}(Y)
+  or
+Period_effect^{broad}(X) != Period_effect^{broad}(Y)</code></pre>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    The graph representation reads relation and dependency; the
+                    semantic representation reads meaning relativized to
+                    language games and use-rules; the effect representation
+                    reads authority, state, and runtime effect. These read
+                    different coordinate families, so equality in one
+                    coordinate family coexists with separation in another.
+                    Under the separation, each reading remains legitimate:
+                    graph is a legitimate broad period, semantic is another,
+                    effect is another.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.PeriodSeparationReadingFamily</code>, <code>PeriodSeparation</code>, <code>PeriodSeparationWitness.periodSeparation</code>, <code>RepresentationFamilyPeriodSeparationWitness</code>, <code>PeriodSeparationExample62.periodSeparation_theorem6_1</code> — <em>proved</em> under a selected finite witness.</dd>
+                </dl>
+              </div>
+
+              <p id="example-6-2" class="statement">
+                <a class="statement-anchor" href="#example-6-2">Example VII.6.2 (Same graph, different semantic / effect reading).</a>
+                Take <code>X</code> and <code>Y</code> with the same directed
+                graph reading:
+              </p>
+              <pre><code>R_graph(X) = R_graph(Y)
+
+components:
+  A, B
+
+edge:
+  A -> B</code></pre>
+              <p>The semantic readings differ:</p>
+              <pre><code>R_sem(X):
+  A uses B as query provider.
+
+R_sem(Y):
+  A uses B as command executor.</code></pre>
+              <p>and the effect readings differ:</p>
+              <pre><code>R_eff(X):
+  A -> B is read-only.
+
+R_eff(Y):
+  A -> B may mutate shared state.</code></pre>
+              <p>
+                Hence the graph broad periods agree while the semantic and
+                effect broad periods separate. This example is the concrete
+                counterweight to any single-representation reading: a
+                dependency diagram equality is a true statement about the
+                graph window and only about the graph window. In Lean, the
+                Example VII.6.2 finite model (<code>PeriodSeparationExample62</code>
+                with its card accessors, <code>sameGraphReading</code>,
+                <code>semanticSeparated</code>, <code>effectSeparated</code>,
+                <code>sameGraph_differentSemantic</code>,
+                <code>sameGraph_differentEffect</code>) is proved and feeds the
+                Theorem VII.6.1 witness.
+              </p>
+            </section>
+
+            <section id="signature-curvature" class="article-section">
+              <h2>7. Signature and curvature readings</h2>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition VII.7.1 (Signature reading).</a>
+                For a law universe <code>U</code>, the signature reading
+                <code>Sig_U(X)</code> reads the architecture geometry along the
+                selected signature axes. A selected axis being zero connects to
+                the lawful locus of Part III, the obstruction cohomology of
+                Part IV, and the law conflict of Part V:
+              </p>
+              <pre><code>required signature zero
+  reads
+selected law failure vanishing.</code></pre>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition VII.7.2 (Curvature reading).</a>
+                The curvature reading <code>kappa_U(X)</code> reads the
+                obstruction valuation geometrically. Under exactness,
+                soundness, completeness, and coverage, zero curvature
+                corresponds to factorization through the lawful locus:
+              </p>
+              <pre><code>kappa_U(X) = 0
+  corresponds to
+X factors through Flat_U</code></pre>
+              <p id="principle-7-3" class="statement">
+                <a class="statement-anchor" href="#principle-7-3">Principle VII.7.3 (Curvature as reading).</a>
+                Curvature does not replace lawfulness; it is the analytic
+                reading of the obstruction geometry. Lawfulness is
+                factorization through <code>Flat_U</code>; curvature is a
+                representation of the obstruction valuation.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.7.1 / VII.7.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.SignatureReadingProfile</code> (built from the Part I <code>SignatureAxes</code>, with <code>requiredSignatureReadingZero_iff_requiredSignatureAxesZero</code>), <code>CurvatureReadingProfile.ofOmegaU</code> with <code>curvatureZero_iff_omegaU_zero</code>, <code>curvatureZero_iff_requiredObstructionValuesZero</code>, <code>GluingObstructionCurvatureReading</code>, <code>LawConflictCurvatureReading</code>, and <code>SignatureCurvatureLawfulFactorizationContext</code> with <code>curvature_zero_iff_factorsThroughLawfulLocus</code>, <code>factorsThroughLawfulLocus_of_requiredSignatureReadingZero</code>.</dd>
+                  <dt>Status</dt>
+                  <dd><em>Defined handles / proved</em> under the explicit zero-reflecting aggregation and the Part III lawfulness-ideal correspondence assumptions.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The Part IV gluing obstruction class and the Part V law conflict are connected as selected reading handles; no general cohomology comparison and no new Tor computation is claimed.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="metric-enrichment" class="article-section">
+              <h2>8. Metric enrichment</h2>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition VII.8.1 (Metric AAT).</a>
+                Metric AAT is the structure of a metric enrichment on top of an
+                AAT geometry:
+              </p>
+              <pre><code>MetricAAT
+  =
+  AATGeometry
+  + AtomMetricBundle
+  + ConfigurationMetric
+  + SignatureMetric
+  + OperationCost
+  + PathLength
+  + HomotopyFillingCost
+  + ObstructionMeasure
+  + RepresentationMetric</code></pre>
+              <p>
+                The metric is enrichment, not ontology: metric is enrichment,
+                distance is reading.
+              </p>
+              <p id="principle-8-2" class="statement">
+                <a class="statement-anchor" href="#principle-8-2">Principle VII.8.2 (Metric discipline).</a>
+                The metric enrichment obeys:
+              </p>
+              <pre><code>distance does not create atoms
+distance does not define lawfulness
+distance does not remove obstruction cohomology
+distance does not turn unmeasured into zero</code></pre>
+              <p>
+                Under this discipline, the metric works as a means of reading
+                the architecture geometry — never as a source of architectural
+                facts or lawfulness.
+              </p>
+            </section>
+
+            <section id="distance-values" class="article-section">
+              <h2>9. Distance values</h2>
+              <p id="definition-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-9-1">Definition VII.9.1 (Distance value).</a>
+                Part VII treats the distance value domain as a partially
+                ordered enriched value object, not merely the reals:
+              </p>
+              <pre><code>DistanceValue =
+  measured(value)
+  zero
+  unmeasured
+  unavailable
+  incomparable
+  infinite</code></pre>
+              <p>
+                Here <code>zero</code> is a measured zero, and
+                <code>unmeasured != zero</code>.
+              </p>
+              <p id="principle-9-2" class="statement">
+                <a class="statement-anchor" href="#principle-9-2">Principle VII.9.2 (Aggregation discipline).</a>
+                When building an aggregate distance, <code>unmeasured</code> is
+                never added in as <code>0</code>: an unmeasured axis remains
+                unmeasured. Distance aggregation keeps measured, unmeasured,
+                and incomparable axes distinct:
+              </p>
+              <pre><code>measured:
+  can be aggregated under profile.
+
+unmeasured:
+  reported as outside measured support.
+
+incomparable:
+  kept outside scalar aggregation.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.8.1 / VII.9.1 and Principle VII.9.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.DistanceValue</code> (six constructors, with <code>unmeasured_ne_measuredZero</code>, <code>unavailable_not_measuredZero</code>, <code>incomparable_not_measuredZero</code>, <code>infinite_not_measuredZero</code>), <code>DistanceValuePartialOrder</code> with the discrete order, <code>DistanceAggregationProfile</code> and <code>ScalarDistanceAggregationProfile</code> (measured support, unmeasured support, and unmeasured-support report kept as separate fields), and <code>MetricAAT</code> bundling the eight enrichment components of Definition VII.8.1.</dd>
+                  <dt>Status</dt>
+                  <dd><em>Defined only</em> for the enrichment surface; the aggregation boundary is <em>proved</em>: an unmeasured axis never collapses into measured zero, measured support, or a measured scalar payload.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="distance-to-lawful-locus" class="article-section">
+              <h2>10. Distance to the lawful locus</h2>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition VII.10.1 (Operation distance).</a>
+                For architecture states or sections <code>A</code> and
+                <code>B</code>, the operation distance
+                <code>d_op(A,B)</code> is constructed from operation path
+                costs, path lengths, and homotopy filling costs.
+              </p>
+              <p id="definition-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-10-2">Definition VII.10.2 (Distance to flatness).</a>
+                The distance to the lawful locus is
+              </p>
+              <p>\[ \mathrm{dist\_flat}_U(A) = \inf \,\lbrace\, d_{\mathrm{op}}(A, F) \mid F \in \mathrm{Flat}_U(X) \,\rbrace, \]</p>
+              <p>
+                relativized to the range in which the
+                <code>DistanceValue</code> domain or the selected cost domain
+                possesses the infimum. It is the metric reading of the
+                proximity of the state <code>A</code> to the lawful locus for
+                <code>U</code>.
+              </p>
+              <p id="principle-10-3" class="statement">
+                <a class="statement-anchor" href="#principle-10-3">Principle VII.10.3 (Near flat is not flat).</a>
+                A small <code>dist_flat_U(A)</code> is a useful analytic
+                reading. Flatness itself is the Part III factorization
+                condition, defined as the vanishing of the obstruction ideal:
+              </p>
+              <pre><code>Flat_U(A)
+  iff
+A factors through V(I_U)</code></pre>
+              <p>
+                Non-conclusion: proximity readings license no flatness claim.
+                The factorization conclusion belongs to the ideal-theoretic
+                layer, and in the Lean surface the implication
+                <code>dist_flat = 0 -&gt; factorization</code> is carried as a
+                predicate to be supplied, never as an unconditional theorem.
+              </p>
+            </section>
+
+            <section id="obstruction-mass" class="article-section">
+              <h2>11. Obstruction mass</h2>
+              <p id="definition-11-1" class="statement">
+                <a class="statement-anchor" href="#definition-11-1">Definition VII.11.1 (Obstruction measure).</a>
+                A measure is placed on the obstruction sheaf or the
+                obstruction ideal sheaf:
+                <code>mu_Ob : Ob_U -&gt; MeasureValue</code> or
+                <code>mu_I : I_U -&gt; MeasureValue</code>.
+              </p>
+              <p id="definition-11-2" class="statement">
+                <a class="statement-anchor" href="#definition-11-2">Definition VII.11.2 (Obstruction mass).</a>
+                The obstruction mass of an architecture state <code>A</code>
+                is read as
+              </p>
+              <p>\[ \mathrm{Mass}_U(A) = \int_{X_A} \mu_{\mathrm{Ob}}, \]</p>
+              <p>
+                the measure reading of the obstruction geometry — an analytic
+                reading of the obstruction sheaf.
+              </p>
+              <p id="principle-11-3" class="statement">
+                <a class="statement-anchor" href="#principle-11-3">Principle VII.11.3 (Mass is support-relative).</a>
+                Obstruction mass is relativized to the measurement support:
+                to coverage, coefficient, measure, and selected axes.
+                Unmeasured regions and axes are never counted as zero mass.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.10.1 / VII.10.2 / VII.11.1 / VII.11.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.OperationDistanceProfile</code> (<code>d_op</code> with path witness), <code>CostInfimumDomain.infimum_glb</code>, <code>DistanceToFlatnessProfile</code> (<code>dist_flat</code>, <code>dist_flat_isGreatestLowerBound</code>, <code>candidateDistance_reads_d_op</code>, and the <code>DistanceZeroReflectsFactorization</code> predicate), <code>SelectedObstructionMeasure</code> (<code>muOb_supported</code>, <code>muI_supported</code>), <code>FiniteSupportObstructionMass</code> (<code>Mass_U</code>, <code>mass_eq_sum</code>, <code>finiteIntegral_eq_sum</code>, <code>contribution_zero_of_not_mem</code>), <code>DistanceFlatnessMassContext</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The operation distance is a reading relativized to the selected cost / length / filling profile; the mass is a finite-support sum and finite-integral interface over the selected support. <code>dist_flat = 0 -&gt; factorization</code> is placed only as a predicate, matching Principle VII.10.3.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="repair-cost-route" class="article-section">
+              <h2>12. Repair cost and route geometry</h2>
+              <p id="definition-12-1" class="statement">
+                <a class="statement-anchor" href="#definition-12-1">Definition VII.12.1 (Repair route).</a>
+                For an architecture state <code>A</code> and the lawful locus
+                <code>Flat_U(X)</code>, the repair route
+                <code>RepairRoute(A, Flat_U)</code> is the family of operation
+                paths from <code>A</code> toward <code>Flat_U(X)</code>. With a
+                fixed cost profile the minimal-cost route is read as
+                <code>argmin_P cost(P)</code>, where the cost may include path
+                length, operation risk, boundary transfer, derived conflict,
+                monodromy debt, and singularity contact.
+              </p>
+              <p id="definition-12-2" class="statement">
+                <a class="statement-anchor" href="#definition-12-2">Definition VII.12.2 (Repair profiles).</a>
+                Repair routes carry several readings:
+              </p>
+              <pre><code>shortest repair:
+  minimal operation cost.
+
+safest repair:
+  bounded side-effect and transfer.
+
+structural repair:
+  moves in normal cone direction toward vanishing of obstruction ideal.
+
+stable repair:
+  avoids increasing cohomology, derived conflict, monodromy debt.</code></pre>
+              <p id="principle-12-3" class="statement">
+                <a class="statement-anchor" href="#principle-12-3">Principle VII.12.3 (Shortest need not be best).</a>
+                The shortest repair is not always the best repair:
+              </p>
+              <pre><code>shortest path
+  may cross singular stratum.
+
+cheap repair
+  may create transferred obstruction.
+
+metric improvement
+  may miss normal cone direction.</code></pre>
+              <p>
+                Repair cost is relativized to both the metric reading and the
+                derived geometry.
+              </p>
+              <p id="definition-12-4" class="statement">
+                <a class="statement-anchor" href="#definition-12-4">Definition VII.12.4 (Margin).</a>
+                Under a metric profile <code>P</code>, the margin of a state
+                <code>A</code> is its distance to the selected unsafe
+                boundary: for the selected safe region <code>Safe_P</code>
+                with boundary <code>BoundaryUnsafe_P</code>,
+              </p>
+              <p>\[ \mathrm{margin}_P(A) = \mathrm{dist}_P(A, \mathrm{BoundaryUnsafe}_P), \]</p>
+              <p>
+                relativized to the selected measured axes, the metric, and the
+                selected unsafe predicate.
+              </p>
+
+              <div id="theorem-12-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VII.12.5 — Certified bounded inference</span>
+                    <h3>Margin stability</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>operation path p : A -> B is measured in P.
+length_P(p) < margin_P(A).
+dist_P satisfies the triangle inequality on the selected measured axes.
+path endpoint distance satisfies dist_P(A,B) <= length_P(p).
+margin_P(A) is the distance to the selected unsafe boundary.</code></pre>
+                <p>
+                  Then <code>B</code> does not cross the selected unsafe
+                  boundary:
+                  \( \mathrm{length}_P(p) &lt; \mathrm{margin}_P(A) \)
+                  implies that \( B \) remains inside the selected safe
+                  region.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Triangle inequality. If <code>B</code> lay on or beyond the
+                    selected unsafe boundary, then
+                    \( \mathrm{dist}_P(A,B) \ge \mathrm{margin}_P(A) \); but
+                    \( \mathrm{dist}_P(A,B) \le \mathrm{length}_P(p) &lt; \mathrm{margin}_P(A) \),
+                    a contradiction.
+                  </dd>
+                  <dt>Non-conclusion</dt>
+                  <dd>
+                    The theorem asserts no safety for unmeasured axes or
+                    unselected law universes.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.MarginStabilityProfile</code>, <code>marginStability_no_boundary_crossing</code> (contradiction proof), <code>marginStability_endpoint_safe</code>, <code>endpointDistance_lt_margin</code>, <code>marginBudget_reads_margin_holds</code> — <em>proved</em> under the explicit margin assumptions.</dd>
+                </dl>
+              </div>
+
+              <p id="definition-12-6" class="statement">
+                <a class="statement-anchor" href="#definition-12-6">Definition VII.12.6 (Architectural Dehn function).</a>
+                Fix a presentation two-complex <code>K_H(X,U)</code> and a
+                filling area reading. For a loop \( \ell \) with boundary
+                length \( |\ell| \) and minimal filling area
+                \( \mathrm{FillArea}(\ell) \), the architectural Dehn function
+                is
+              </p>
+              <p>\[ \mathrm{Dehn}_{X,U,H}(n) = \max \,\lbrace\, \mathrm{FillArea}(\ell) \mid |\ell| \le n \,\rbrace. \]</p>
+              <p>
+                It reads the growth of the 2-cell area needed to fill loops
+                inside the selected homotopy presentation.
+              </p>
+
+              <div id="theorem-12-7" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VII.12.7 — Certified bounded inference</span>
+                    <h3>Observation gap lower bound</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>O is L-Lipschitz with respect to selected filling generator cost.
+two operation paths P,Q have observation gap delta:
+  d_obs(O(P), O(Q)) = delta.</code></pre>
+                <p>
+                  Then the filling cost of the loop
+                  \( P \cdot Q^{-1} \) satisfies
+                </p>
+                <p>\[ \mathrm{fill\_cost}(P \cdot Q^{-1}) \ge \delta / L. \]</p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    The Lipschitz bound turns the observed gap into a lower
+                    bound on the generator cost of any filler, and the
+                    generator cost bounds the filling cost from below.
+                  </dd>
+                  <dt>Non-conclusion</dt>
+                  <dd>
+                    The bound is relativized to the selected observation
+                    reading and the Lipschitz constant; on axes where the
+                    observation gap is unmeasured, the conclusion does not
+                    apply.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.ObservationGapLowerBoundProfile</code>, <code>observationGap_le_lipschitz_fillCost</code>, <code>observationGap_div_lipschitz_le_fillCost</code> (Nat floor-division reading), <code>quotientLowerBound_certificate</code> — <em>proved</em> under the explicit Lipschitz filling assumptions.</dd>
+                </dl>
+              </div>
+
+              <p id="definition-12-8" class="statement">
+                <a class="statement-anchor" href="#definition-12-8">Definition VII.12.8 (Bi-Lipschitz representation).</a>
+                A representation <code>R</code> is bi-Lipschitz between metric
+                profiles <code>P</code> and <code>Q</code> when there exist
+                constants \( c, C &gt; 0 \) such that, for the selected
+                comparable state pairs,
+              </p>
+              <p>\[ c \cdot d_P(A,B) \;\le\; d_Q(R(A), R(B)) \;\le\; C \cdot d_P(A,B). \]</p>
+              <p>
+                A bi-Lipschitz representation reads the selected metric
+                geometry without coarsely crushing it; the comparable pairs,
+                coverage, and witness completeness belong to the profile.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.12.1–12.4 / 12.6 / 12.8 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.RepairRoute</code> (with <code>routeCost_eq_d_op_holds</code> and the Part III lawful-locus factorization certificate), <code>RepairOptimizationMode</code>, <code>RepairProfileReading</code> with the shortest / safest / structural / stable certificates, <code>MarginProfile.Margin</code> with <code>margin_has_boundary_witness</code> and <code>safeRegionMembership_iff</code>, <code>ArchitecturalDehnProfile</code> (<code>δ_AAT</code>, <code>fillingArea_le_dehn</code>), <code>BiLipschitzRepresentationProfile</code> (<code>lower_bound_holds</code>, <code>upper_bound_holds</code>), <code>RepairMarginDehnContext</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Structural repair carries a normal-cone reading carrier and stable repair carries cohomology / derived conflict / monodromy-debt control carriers; the theorems of this section (VII.12.5, VII.12.7) live on their own proved rows above. The finite toy witnesses <code>marginStability_toy_endpoint_safe</code>, <code>observationGap_toy_div_lipschitz_lower_bound</code> are proved as selected examples.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="singularity-monodromy-readings" class="article-section">
+              <h2>13. Analytic reading of singularity and monodromy</h2>
+              <p id="definition-13-1" class="statement">
+                <a class="statement-anchor" href="#definition-13-1">Definition VII.13.1 (Singularity profile).</a>
+                For an architecture stratum <code>S</code>, the singularity
+                profile <code>SingProfile_U(S)</code> is the family of
+                readings:
+              </p>
+              <pre><code>H^1(T_{S/U}) reading
+tangent rank reading
+normal cone reading
+local lifting failure reading
+derived conflict concentration reading
+repair difficulty reading</code></pre>
+              <p>
+                This reads the Part VI singularity through analytic
+                representations.
+              </p>
+              <p id="definition-13-2" class="statement">
+                <a class="statement-anchor" href="#definition-13-2">Definition VII.13.2 (Monodromy index).</a>
+                For an operation loop <code>gamma</code>, the monodromy index
+                <code>MonIndex_U(gamma)</code> is the bounded reading with
+                components:
+              </p>
+              <pre><code>Mon_gamma(Ob_U)
+Mon_gamma(Sem_U)
+Mon_gamma(Eff_U)
+period change along gamma
+obstruction residue after loop</code></pre>
+              <p>
+                Even when the endpoints agree under refactor equivalence, the
+                monodromy index reads the path-dependent residue: same
+                endpoint, different monodromy reading.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.13.1 / VII.13.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.SingularityProfile</code> (parameterized over the Part VI <code>ArchitectureStratum</code>, <code>CotangentData</code>, <code>TangentData</code>, <code>DeformationObstructionTheory</code>, <code>NormalConeReading</code>; with <code>liftingFailure</code>, <code>selectedDerivedConflict_supported_holds</code>, <code>selectedRepairDifficulty_certificate</code>), <code>MonodromyIndex</code> (relativized to the Part VI <code>MonodromyAction</code> and a selected loop, with <code>monodromyAction_eq_Mon_gamma_holds</code>, obstruction / semantic / effect action accessors, <code>loopResidueBound_le_holds</code>, <code>architecturalMonodromyIndex_value_eq_weighted_sum</code>).</dd>
+                  <dt>Boundary</dt>
+                  <dd>Both profiles carry a measurement-verdict-reserved carrier: they are Part VII readings of Part VI structure, and the verdict discipline stays in Part VIII.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="bounded-analytic-interpretation" class="article-section">
+              <h2>14. Bounded analytic interpretation</h2>
+              <p id="definition-14-1" class="statement">
+                <a class="statement-anchor" href="#definition-14-1">Definition VII.14.1 (Analytic reading context).</a>
+                Bounded analytic interpretation is relativized to the data:
+              </p>
+              <pre><code>AtomVocabulary V
+LawUniverse U
+CoverageTopology J
+coefficient sheaf
+representation family Rep
+distance profile P
+measure profile M
+selected witness family
+selected signature axes</code></pre>
+              <p>
+                Only with these fixed do representation, period, metric, mass,
+                and repair cost carry meaning.
+              </p>
+              <p id="principle-14-2" class="statement">
+                <a class="statement-anchor" href="#principle-14-2">Principle VII.14.2 (Read within the chosen geometry).</a>
+                Analytic interpretation reads inside the chosen geometry:
+              </p>
+              <pre><code>read what the representation preserves.
+reflect only under stated assumptions.
+keep unmeasured support explicit.</code></pre>
+              <p>
+                Under this discipline, analysis never strays outside the AAT
+                geometry; it functions as the disciplined reading of the
+                constructed object.
+              </p>
+            </section>
+
+            <section id="completeness-spectrum" class="article-section">
+              <h2>15. Representation completeness as a spectrum</h2>
+              <p id="definition-15-1" class="statement">
+                <a class="statement-anchor" href="#definition-15-1">Definition VII.15.1 (Completeness spectrum).</a>
+                The strength of a representation is read as a spectrum:
+              </p>
+              <pre><code>reading
+preserving
+reflecting
+conservative
+faithful
+complete for selected purpose</code></pre>
+              <p>
+                One representation can be faithful for graph structure while
+                coarse for semantic structure; another can separate semantic
+                broad periods well while reading no runtime interaction.
+              </p>
+              <p id="principle-15-2" class="statement">
+                <a class="statement-anchor" href="#principle-15-2">Principle VII.15.2 (Choose a representation family).</a>
+                One chooses a representation family suited to the purpose, not
+                a single representation:
+              </p>
+              <pre><code>dependency questions:
+  graph and matrix readings.
+
+semantic questions:
+  semantic and contract readings.
+
+effect questions:
+  authority and effect readings.
+
+runtime questions:
+  trace and state readings.
+
+repair questions:
+  distance, normal cone, derived conflict, monodromy readings.</code></pre>
+              <p>
+                Choosing a representation family is choosing through which
+                windows the AAT geometry is read.
+              </p>
+              <p id="definition-15-3" class="statement">
+                <a class="statement-anchor" href="#definition-15-3">Definition VII.15.3 (U-detecting representation family).</a>
+                For a law universe <code>U</code> and a selected obstruction
+                class family <code>Obs_U</code>, a representation family
+                <code>Rep</code> is <code>U</code>-detecting when the vanishing
+                of the selected readings detects selected witness vanishing:
+              </p>
+              <pre><code>for alpha in Obs_U,
+  (forall R in Rep, R(alpha) = 0)
+  implies
+  WitnessZero_U(alpha)</code></pre>
+              <p>
+                Here <code>R(alpha)</code> is the value of a cohomology class,
+                obstruction ideal section, derived conflict class, or
+                monodromy residue under the representation <code>R</code>, and
+                <code>WitnessZero_U(alpha)</code> says every obstruction
+                witness of <code>alpha</code> along the witness family chosen
+                by <code>U</code> reads as zero. The property is placed on the
+                family: a vanishing graph reading can coexist with a remaining
+                semantic obstruction, so detection is relativized to the
+                selected obstruction family and to the coverage / exactness
+                assumptions.
+              </p>
+
+              <div id="theorem-15-4" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VII.15.4</span>
+                    <h3>Representation conservativity under adequacy</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>Rep is U-detecting for selected Obs_U.
+the cover is U-adequate.
+witness exactness holds.
+axis exactness holds.
+coefficient discipline is fixed.</code></pre>
+                <p>
+                  Then for a selected obstruction class
+                  \( \alpha \in \mathrm{Obs}_U \),
+                  if \( R(\alpha) = 0 \) for every \( R \in \mathrm{Rep} \),
+                  then \( \alpha = 0 \). That is, under adequacy and
+                  exactness, <code>Rep</code> is <code>U</code>-conservative
+                  for the selected obstruction family:
+                </p>
+                <pre><code>all selected readings vanish
+  + detecting / adequacy / exactness
+  --------------------------------------
+selected obstruction vanishes</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Detection converts all-readings-zero into
+                    <code>WitnessZero_U(alpha)</code>; adequacy and witness
+                    exactness convert selected witness vanishing into the
+                    vanishing of the class itself.
+                  </dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    This is not a claim that any single metric or graph
+                    reading is complete. What is guaranteed is exactly the
+                    range of the fixed <code>Rep</code>, <code>Obs_U</code>,
+                    coverage, witness exactness, and axis exactness.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.RepresentationConservativityUnderAdequacy</code>, <code>representation_conservativity_under_adequacy</code>, over <code>UDetectingRepresentationFamily.witnessZero_of_all_readings_zero</code> and <code>AnalyticReadingContext</code> — <em>proved</em> under the explicit adequacy and witness-exactness assumptions. The finite detecting example (<code>toyDetectingFamily</code>, <code>detectingRepresentation_toy_all_zero_imp_zero</code>, <code>detectingRepresentation_toy_zero_conservative</code>) is proved as a selected example.</dd>
+                </dl>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VII.14.1 / VII.15.1 / VII.15.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.CompletenessSpectrum</code> (six selected labels), <code>UDetectingRepresentationFamily</code> with <code>selectedCompletenessLevel</code>, <code>AnalyticReadingContext</code> bundling atom vocabulary, law universe, coverage topology, coefficient sheaf, representation family, distance and obstruction mass profiles, selected witness family, selected signature axes, the U-detecting package, and the adequacy / exactness / coefficient discipline props (<code>coverageAdequacy_holds</code>, <code>witnessExactness_holds</code>, <code>axisExactness_holds</code>, <code>coefficientDiscipline_holds</code>).</dd>
+                  <dt>Boundary</dt>
+                  <dd>The context definitions carry the discipline props for the downstream theorem; Theorem VII.15.4 itself is claimed only on its own proved row.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="final-synthesis" class="article-section">
+              <h2>16. Final synthesis</h2>
+
+              <div id="theorem-16-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VII.16.1</span>
+                    <h3>Algebraic-geometric AAT synthesis</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved (theorem package)</span>
+                </div>
+                <p>
+                  AAT is the theory that starts from the Atom, constructs the
+                  architecture geometry, and opens it with disciplined
+                  readings:
+                </p>
+                <pre><code>Atom
+  -> AtomFamily
+  -> ArchitectureObject
+  -> ArchitectureGeometry
+  -> AATSite
+  -> RingedAATTopos
+  -> AffineAATCharts
+  -> ArchitectureScheme
+  -> LawfulLocus
+  -> ObstructionCohomology
+  -> DerivedLawGeometry
+  -> Singularity / Monodromy / Stack
+  -> Representation / Period / Metric / Analysis</code></pre>
+                <p>
+                  With this construction AAT handles, in one mathematical
+                  language: local lawfulness, global obstruction, law
+                  conflict, repair transfer, singular repair difficulty,
+                  history-dependent debt, decomposition non-uniqueness,
+                  analytic representation, and metric enrichment.
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions</code>, <code>AATSynthesisPackage</code> (with <code>aatSite_is_geometry_site</code>, <code>ringedAATTopos_is_scheme_ringedTopos</code>, <code>affineAATCharts_are_scheme_charts</code>, <code>lawfulLocus_is_zeroLocus</code>, <code>analyticReadingContext</code>), <code>AATSynthesisAssumptions.toPackage</code>, <code>algebraicGeometricAATSynthesis</code> — <em>proved</em> as a theorem package bundling the selected Parts I–VII tower.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    The package proves coherence of the selected tower — site,
+                    scheme ringed topos and atlas, lawful locus, cover-relative
+                    Čech obstruction cohomology, derived geometry, singularity
+                    stratum, and analytic reading context — for the selected
+                    construction; it is a synthesis of the constructed
+                    objects, not an unconditional claim about arbitrary
+                    codebases.
+                  </dd>
+                </dl>
+              </div>
+
+              <p id="principle-16-2" class="statement">
+                <a class="statement-anchor" href="#principle-16-2">Principle VII.16.2 (Geometry becomes readable).</a>
+                The conclusion of Part VII:
+              </p>
+              <pre><code>Representation is how geometry becomes readable.
+Period is a selected reading.
+Metric is an enrichment.
+Analysis is disciplined interpretation.</code></pre>
+              <p>
+                Graph, matrix, signature, curvature, trace, and distance are
+                legitimate readings of the AAT geometry, each opening a
+                different aspect of the constructed architecture geometry:
+              </p>
+              <pre><code>graph opens relation structure.
+signature opens selected law axes.
+curvature opens obstruction valuation.
+trace opens runtime interaction.
+metric opens proximity and cost.
+period family opens multiple readings at once.</code></pre>
+              <p>
+                With this the representation / period / metric / analysis
+                layer closes. AAT constructs software architecture as a
+                geometric object generated from atoms and treats its
+                local-global structure, laws, obstructions, repair,
+                singularity, history, decomposition, and analytic reading
+                inside one theory.
+              </p>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Part VII opens the geometry built in Parts I through VI
+                through disciplined readings. Analytic representations are
+                functors from decorated architecture schemes to computable
+                targets (Definition VII.2.1); a representation family reads
+                one geometry through many windows, with graph and matrix
+                readings certified on the dependency axis (Propositions
+                VII.3.4 and VII.3.6). Preservation, reflection, conservativity,
+                and faithfulness grade the strength of a reading (Section 4).
+                Broad periods are readings; strict periods are pairings of
+                obstruction cohomology classes with cycles over a fixed
+                homology model and coefficient evaluation, computed concretely
+                on the pseudo-circle (Section 5). Period separation shows the
+                same graph reading coexisting with different semantic and
+                effect readings (Theorem VII.6.1). Signature and curvature
+                read law axes and obstruction valuation (Section 7); metric
+                enrichment, enriched distance values, distance to the lawful
+                locus, obstruction mass, and repair route geometry read
+                proximity and cost without ever turning unmeasured into zero
+                (Sections 8–12), with margin stability and the observation gap
+                lower bound as certified bounded inferences (Theorems VII.12.5
+                and VII.12.7). Singularity and monodromy acquire analytic
+                profiles (Section 13); bounded analytic interpretation fixes
+                the data every reading is relative to (Section 14); and under
+                detection, adequacy, and exactness, a representation family is
+                conservative for the selected obstruction family (Theorem
+                VII.15.4). Theorem VII.16.1 packages the full tower — atom to
+                analysis — as the algebraic-geometric AAT synthesis.
+              </p>
+              <p>
+                Part VIII asks under which finiteness, stability,
+                functoriality, and verdict-discipline conditions these
+                readings can be treated as measurements.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Analytic representation</dt>
+                  <dd>A functor \( R : \mathrm{AATSch} \to \mathrm{Target} \) sending decorated architecture schemes to computable targets; a window on the geometry, not the geometry itself.</dd>
+                </div>
+                <div>
+                  <dt>Representation family</dt>
+                  <dd><code>Rep(AAT)</code>: the family of functors — graph, matrix, signature, curvature, state, trace, semantic, effect — reading one geometry from several angles.</dd>
+                </div>
+                <div>
+                  <dt>Broad period / strict period</dt>
+                  <dd>A broad period is a reading <code>Read_R(X)</code> under an explicit convention; a strict period is a pairing of a cohomology class with a cycle, trace, or loop over a fixed homology model, coefficient evaluation, and additive target.</dd>
+                </div>
+                <div>
+                  <dt>Curvature reading</dt>
+                  <dd><code>kappa_U(X)</code>: the obstruction valuation read geometrically; zero curvature corresponds to lawful-locus factorization under exactness, soundness, completeness, and coverage.</dd>
+                </div>
+                <div>
+                  <dt>Distance value</dt>
+                  <dd>A partially ordered enriched value object with measured, zero, unmeasured, unavailable, incomparable, and infinite; measured zero and unmeasured are never identified.</dd>
+                </div>
+                <div>
+                  <dt>Distance to flatness</dt>
+                  <dd>\( \mathrm{dist\_flat}_U(A) = \inf \,\lbrace\, d_{\mathrm{op}}(A,F) \mid F \in \mathrm{Flat}_U(X) \,\rbrace \): the metric reading of proximity to the lawful locus. Near flat is not flat.</dd>
+                </div>
+                <div>
+                  <dt>Margin</dt>
+                  <dd><code>margin_P(A)</code>: the distance of a state to the selected unsafe boundary; a measured path shorter than the margin keeps the endpoint inside the selected safe region (Theorem VII.12.5).</dd>
+                </div>
+                <div>
+                  <dt>U-detecting family</dt>
+                  <dd>A representation family whose all-readings-zero detects selected witness vanishing; under adequacy and exactness it is U-conservative for the selected obstruction family (Theorem VII.15.4).</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../singularity-monodromy-stack/">
+                <span>Previous</span>
+                <strong>Part VI. Singularity, Monodromy, and Stack</strong>
+              </a>
+              <a class="page-nav-next" href="../measurement-theory/">
+                <span>Next</span>
+                <strong>Part VIII. Measurement Theory</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

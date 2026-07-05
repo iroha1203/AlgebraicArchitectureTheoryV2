@@ -1,0 +1,1044 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Appendix. Mathematical Ambient, Claim Status, and a Finite Worked Example",
+  "description": "The appendix of Algebraic Architecture Theory: ambient conventions, the embedding into standard algebraic geometry via decorated schemes, the claim status ledger, and finite worked examples running from Čech H1 through Stanley-Reisner ideals, Tor conflicts, and period pairings to the circle-nerve SAGA instance.",
+  "order": 12,
+  "llmsLabel": "AAT Appendix: Ambient, Claim Status, and Worked Example",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Appendix</span>
+          </nav>
+          <p class="eyebrow">Appendix</p>
+          <h1>Mathematical Ambient, Claim Status, and a Finite Worked Example</h1>
+          <p class="lede">
+            The appendix collects the standardization layer of the monograph:
+            the ambient conventions the main text works in, the precise way AAT
+            geometry embeds into standard algebraic geometry, the ledger that
+            fixes the claim status of every major predicate and theorem label,
+            and finite worked examples small enough to verify by hand — a
+            pseudo-circle Čech class, a Stanley-Reisner obstruction ideal, a
+            monomial Tor conflict, a period pairing, an atom-family-to-geometry
+            toy reading, and the circle-nerve SAGA instance. The main sequence
+            of the theory starts from the Atom; this appendix is consulted when
+            needed. Its guiding statement: AAT geometry does not replace
+            algebraic geometry — AAT geometry is ordinary algebraic geometry
+            plus typed architectural decoration.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Appendix page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#a1-conventions">A.1 Size and coefficient conventions</a></li>
+                <li><a href="#a2-relative-parameters">A.2 Relative parameters</a></li>
+                <li><a href="#a3-decoration">A.3 Decoration principle</a></li>
+                <li><a href="#a4-spec-aat">A.4 Spec_AAT</a></li>
+                <li><a href="#a5-architecture-scheme">A.5 ArchitectureScheme</a></li>
+                <li><a href="#a6-law-subfunctors">A.6 Law conditions as subfunctors</a></li>
+                <li><a href="#a7-closed-equational-laws">A.7 Closed equational laws</a></li>
+                <li><a href="#a8-presentation">A.8 Presheaf and presentation conditions</a></li>
+                <li><a href="#a9-derived-stacky">A.9 Derived and stacky enhancements</a></li>
+                <li><a href="#b1-claim-status-ledger">B.1 Claim status ledger</a></li>
+                <li><a href="#b2-label-discipline">B.2 Label discipline</a></li>
+                <li><a href="#b3-square-free-example">B.3 Finite square-free worked example</a></li>
+                <li><a href="#b4-obstruction-ideal">B.4 Square-free obstruction ideal</a></li>
+                <li><a href="#b5-tor-conflict">B.5 Monomial Tor conflict</a></li>
+                <li><a href="#b6-period-pairing">B.6 Period pairing</a></li>
+                <li><a href="#b7-summary">B.7 Worked example summary</a></li>
+                <li><a href="#b8-toy-reading">B.8 Atom-family-to-geometry toy reading</a></li>
+                <li><a href="#b9-circle-nerve">B.9 Law-equation coefficient and circle nerve</a></li>
+              </ol>
+            </nav>
+            <nav class="source-panel" data-sidebar-open="true" aria-label="Reading sequence">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../semantic-repair-saga/">Part X. Semantic Repair Descent and SAGA</a></li>
+                <li><a href="./" aria-current="page">Appendix</a></li>
+                <li><a href="../related-work/">Related Work and Novelty</a></li>
+              </ul>
+            </nav>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed atom vocabulary, law
+                universe, coverage topology, coefficient sheaf, and selected
+                representation family. Three claim grades are kept distinct
+                throughout the monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                This appendix carries two audit instruments for that
+                discipline: the claim status ledger of Section B.1 assigns a
+                status to every major predicate and theorem label of the main
+                text, and the label discipline of Section B.2 fixes how those
+                labels are read. The ledger is an audit aid; the canonical
+                statements live in the main parts, and the ledger points back
+                to them rather than replacing them. Lean status badges on this
+                page appear only where the AG Lean index has a corresponding
+                ledger row; a statement without a badge is a mathematical
+                statement in the canonical text and is not read as a current
+                Lean proved claim.
+              </p>
+            </section>
+
+            <section id="a1-conventions" class="article-section">
+              <h2>A.1 Size and coefficient conventions</h2>
+              <p>
+                Where needed, sites are treated as small or essentially small.
+                When size issues arise, objects and morphisms are read inside a
+                fixed Grothendieck universe.
+              </p>
+              <p>The coefficient ring is fixed as</p>
+              <pre><code>k in CommRing</code></pre>
+              <p>
+                and from Part III onward the coordinate algebras are treated as
+                commutative <code>k</code>-algebras:
+              </p>
+              <pre><code>CommAlg_k</code></pre>
+              <p>
+                This convention is not a claim that architecture operations or
+                runtime effects commute. It means that the coordinate geometry
+                used to treat lawful loci as closed subschemes or derived zero
+                loci is placed over commutative algebra.
+              </p>
+            </section>
+
+            <section id="a2-relative-parameters" class="article-section">
+              <h2>A.2 Relative parameters</h2>
+              <p>
+                Algebro-geometric AAT is relativized to at least the following
+                choices:
+              </p>
+              <pre><code>V : AtomVocabulary
+U : LawUniverse
+J : CoverageTopology
+k : coefficient ring</code></pre>
+              <p>
+                This tuple is sometimes written symbolically as
+                \( p = (V, U, J, k) \). Even when the same architecture object
+                is being read, changing \( V \), \( U \), \( J \), or \( k \)
+                in general yields a different geometry. The superscripted form
+              </p>
+              <p>\[ X^{V,U,J,k} \]</p>
+              <p>
+                is the structure that makes explicit which vocabulary, laws,
+                coverage, and coefficients a statement speaks within. When the
+                main text handles finer readings, the parameter <code>p</code>
+                may also include:
+              </p>
+              <pre><code>selected witness family
+selected signature axes
+selected representation family
+selected profile / repair order</code></pre>
+              <p>
+                This extended parameter is called a <em>Reading</em>, written
+                <code>p : Reading</code>. Every theorem is relativized to its
+                explicit <code>p</code>. About vocabularies, witnesses, axes,
+                and profiles outside <code>p</code>, the theory claims neither
+                zero, nor lawful, nor complete.
+              </p>
+
+              <h3 id="a2-1-functoriality">A.2.1 Parameter functoriality</h3>
+              <p>
+                Relative parameters carry comparison morphisms when the
+                conditions line up. None of the following is automatic; each
+                holds only when the witness ideals, restrictions, coverage, and
+                coefficient base change are compatible.
+              </p>
+              <p>
+                <strong>Enlarging the law universe.</strong> When the law
+                universe grows, with
+              </p>
+              <pre><code>U subset U'
+I_U subset I_{U'}</code></pre>
+              <p>
+                the lawful loci form a tower of closed immersions:
+              </p>
+              <p>\[ \mathrm{Flat}_{U'}(X) \subset \mathrm{Flat}_U(X). \]</p>
+              <p>
+                Whether earlier conclusions survive an enlarged vocabulary or
+                law universe is therefore read as a pullback and restriction
+                problem along this closed immersion.
+              </p>
+              <p>
+                <strong>Refining the coverage.</strong> When a refinement
+                <code>J' refines J</code> preserves the chosen witnesses and
+                the coefficient sheaf, the Čech complexes and sheaf cohomology
+                acquire a comparison map
+              </p>
+              <p>\[ H^n_J(X, \mathrm{Ob}_U) \longrightarrow H^n_{J'}(X, \mathrm{Ob}_U), \]</p>
+              <p>
+                through which one can ask whether an obstruction class survives
+                cover refinement.
+              </p>
+              <p>
+                <strong>Base change of coefficients.</strong> For a base change
+                \( k \to k' \) satisfying a flatness condition, the coordinate
+                algebras, obstruction ideals, Tor conflicts, and cohomology
+                classes transport to \( k' \):
+              </p>
+              <pre><code>I_U ⊗_k k'
+LawConflict_i ⊗_k k'
+H^n(X, Ob_U) ⊗_k k'</code></pre>
+              <p>
+                This functoriality turns AAT's relativity into more than
+                silence about the unspoken outside: it is a tool for studying
+                the stability of conclusions when the reading changes.
+              </p>
+            </section>
+
+            <section id="a3-decoration" class="article-section">
+              <h2>A.3 Decoration principle</h2>
+              <p>
+                AAT-specific vocabulary never replaces standard geometric
+                objects. Typed architectural data rides on ordinary schemes,
+                locally ringed spaces, derived schemes, and stacks as
+                decoration. The representative decorations are:
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt><code>At_X</code></dt>
+                  <dd>Typed Atom / coordinate labels.</dd>
+                </div>
+                <div>
+                  <dt><code>Sig_U</code></dt>
+                  <dd>Selected signature axes and readings.</dd>
+                </div>
+                <div>
+                  <dt><code>LawRead_U</code></dt>
+                  <dd>The selected law universe and witness rules.</dd>
+                </div>
+                <div>
+                  <dt><code>I_U</code></dt>
+                  <dd>The closed equational obstruction ideal, when defined.</dd>
+                </div>
+                <div>
+                  <dt><code>lambda_X</code></dt>
+                  <dd>The AAT interpretation map from coordinates to architectural readings.</dd>
+                </div>
+              </dl>
+              <p>
+                Decoration never hides the underlying algebraic geometry. A
+                forgetful reading always returns to the standard scheme or
+                stack side.
+              </p>
+            </section>
+
+            <section id="a4-spec-aat" class="article-section">
+              <h2>A.4 Spec_AAT</h2>
+              <p>
+                <code>Spec_AAT</code> is not a new prime spectrum. Given a
+                commutative <code>k</code>-algebra <code>A</code> and an AAT
+                decoration <code>D_A</code>, the decorated affine scheme is
+              </p>
+              <pre><code>Spec_AAT(A, D_A)
+  :=
+  (Spec A, O_{Spec A}, D_A)</code></pre>
+              <p>
+                where the underlying topological space, the prime ideals, and
+                the structure sheaf are those of the ordinary
+                \( \operatorname{Spec} A \). The AAT-specific information —
+                typed coordinate labels, the selected law reading, signature
+                axis readings, the obstruction ideal, and the interpretation
+                map — is attached as decoration. Consequently,
+              </p>
+              <pre><code>point of Spec_AAT(A, D_A)
+  =
+prime ideal of A
+  + selected AAT reading metadata</code></pre>
+              <p>
+                and the definition of a prime ideal itself is untouched.
+                Morphisms are read the same way: a morphism
+              </p>
+              <p>\[ \mathrm{Spec}_{\mathrm{AAT}}(B, D_B) \longrightarrow \mathrm{Spec}_{\mathrm{AAT}}(A, D_A) \]</p>
+              <p>
+                corresponds to an ordinary <code>k</code>-algebra morphism
+                \( A \to B \), together with preservation — or the specified
+                restriction — of typed coordinates, the selected law reading,
+                the obstruction ideal, and the signature reading.
+              </p>
+            </section>
+
+            <section id="a5-architecture-scheme" class="article-section">
+              <h2>A.5 ArchitectureScheme</h2>
+              <p>
+                An ArchitectureScheme does not carve a new scheme notion away
+                from standard schemes. It is a standard locally ringed space or
+                scheme atlas carrying AAT decoration, read symbolically as
+              </p>
+              <pre><code>X_AAT
+  =
+  (X, O_X, D_X)</code></pre>
+              <p>
+                where \( (X, \mathcal{O}_X) \) is a standard locally ringed
+                space, called a scheme when its chart atlas is given by
+                ordinary affine schemes, and <code>D_X</code> is the AAT
+                decoration: atom labels, signature readings, law readings,
+                obstruction ideals, and interpretation maps. The affine atlas
+                satisfies
+              </p>
+              <pre><code>U_i ≅ Spec A_i</code></pre>
+              <p>and, as AAT charts,</p>
+              <pre><code>U_i^AAT ≅ Spec_AAT(A_i, D_i)</code></pre>
+              <p>
+                Transition maps are open immersions on the underlying scheme
+                side and preserve decoration on the AAT side:
+              </p>
+              <pre><code>open immersion:
+  U_i ∩ U_j -> U_i
+
+decoration preservation:
+  At, Sig, LawRead, I_U, lambda are compatible on overlaps.
+
+cocycle:
+  triple overlaps satisfy the usual scheme cocycle condition
+  and the selected decoration compatibility.</code></pre>
+              <p>
+                Under this definition, an ArchitectureScheme is not another
+                name for a ringed topos. The ringed AAT topos is the more
+                general sheaf-theoretic ambient; the ArchitectureScheme is the
+                strong object obtained when an affine chart atlas glues in the
+                standard scheme sense. Gluing affine AAT charts does not in
+                general return the <code>Spec_AAT</code> of the global section
+                ring:
+              </p>
+              <pre><code>glue_i Spec_AAT(A_i,D_i)
+  need not be
+Spec_AAT(Gamma(X,O_X), D_X)</code></pre>
+              <p>
+                Returning to a single affine chart requires separately assuming
+                that the underlying glued scheme is affine, that the standard
+                comparison morphism with the global section ring is an
+                isomorphism, and that the decoration agrees along that
+                comparison.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Spec_AAT and ArchitectureScheme in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined / proved accessors</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.LawAlgebra.AffineChart.SpecAAT</code> (with <code>pointSpace</code>, <code>localLawfulChart</code>) and <code>AAT.AG.LawAlgebra.Scheme.ArchitectureScheme</code> (with <code>RingedAATTopos</code>, <code>ChartCompatibility</code>, <code>forgetfulLocallyRingedSpace</code>, <code>singleAffineSpec</code>, <code>SchemeGluingData</code>, <code>AffineReturnConditions</code>), per the Part III rows of the AG Lean index.</dd>
+                  <dt>Meaning</dt>
+                  <dd><code>Spec_AAT(A, D)</code> is packaged over the ordinary Mathlib <code>PrimeSpectrum A</code> with decoration and obstruction ideal; the ArchitectureScheme carries a forgetful reading back to the underlying locally ringed space, and the affine-return conditions are explicit assumption fields, matching Section A.5.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Chart compatibility and affine return are relativized to explicitly supplied gluing and comparison data; no unconditional gluing claim is made.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="a6-law-subfunctors" class="article-section">
+              <h2>A.6 Law conditions as subfunctors</h2>
+              <p>
+                Write the functor of points of an architecture scheme
+                <code>X</code> as
+              </p>
+              <p>\[ h_X : \mathrm{CommAlg}_k \longrightarrow \mathrm{Set}. \]</p>
+              <p>
+                The general form of a law condition <code>L</code> is first
+                read as a subfunctor \( L \subset h_X \); when stacky
+                isomorphisms or descent data must be retained, it is read as a
+                substack \( L \subset \mathcal{X} \). This general form removes
+                any need to force every law into a closed ideal:
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Closed equational law</dt>
+                  <dd>Represented by a closed subscheme \( V(I_L) \).</dd>
+                </div>
+                <div>
+                  <dt>Open law</dt>
+                  <dd>Represented by an open subscheme \( D(f) \).</dd>
+                </div>
+                <div>
+                  <dt>Constructible law</dt>
+                  <dd>Represented by a constructible subfunctor.</dd>
+                </div>
+                <div>
+                  <dt>Descent law</dt>
+                  <dd>Represented by a descent condition on local sections.</dd>
+                </div>
+                <div>
+                  <dt>Temporal law</dt>
+                  <dd>Represented over a trace topos or trace category.</dd>
+                </div>
+                <div>
+                  <dt>Stacky law</dt>
+                  <dd>Represented by a substack or groupoid-valued condition.</dd>
+                </div>
+              </dl>
+              <p>The precise form of the main text's slogan is therefore:</p>
+              <pre><code>closed equational law is equation.
+general law is a geometric condition.</code></pre>
+            </section>
+
+            <section id="a7-closed-equational-laws" class="article-section">
+              <h2>A.7 Closed equational laws</h2>
+              <p>
+                A closed equational law <code>L</code> is represented by the
+                ideal generated from its selected witness family,
+                \( I_L \subset \mathcal{O}_X \), and its law locus is the
+                closed subscheme
+              </p>
+              <p>\[ V(I_L) \subset X. \]</p>
+              <p>
+                When the law universe <code>U</code> selects a family of closed
+                equational witnesses, the obstruction ideal is read as
+              </p>
+              <p>\[ I_U = \sum_{L \in U_{\mathrm{closed}}} I_L, \]</p>
+              <p>and the lawful locus is</p>
+              <p>\[ \mathrm{Flat}_U(X) = V(I_U). \]</p>
+              <p>
+                Open, temporal, descent, and stacky laws are handled outside
+                \( \mathrm{Flat}_U(X) \), or as additional subfunctor and
+                substack conditions.
+              </p>
+            </section>
+
+            <section id="a8-presentation" class="article-section">
+              <h2>A.8 Presheaf and presentation conditions</h2>
+              <p>
+                For the raw coordinate algebras to genuinely form a presheaf of
+                commutative <code>k</code>-algebras, the structural relation
+                ideal must be stable under restriction. For a context morphism
+                \( i : W' \to W \), when
+              </p>
+              <pre><code>res_i(J_struct(W)) subset J_struct(W')</code></pre>
+              <p>
+                holds, the restriction descends to the quotient algebras:
+              </p>
+              <pre><code>O_raw^U(W) -> O_raw^U(W')</code></pre>
+              <p>
+                Furthermore, to read the sheafified sections
+                <code>O_X^U(W)</code> as the coordinate algebra of the same
+                affine local moduli functor, one separately assumes that the
+                selected finite presentation is not destroyed by
+                sheafification. The main text calls this condition
+                <em>presentation-stability</em>.
+              </p>
+            </section>
+
+            <section id="a9-derived-stacky" class="article-section">
+              <h2>A.9 Derived and stacky enhancements</h2>
+              <p>
+                When the closed defect section takes values in a vector bundle
+                or perfect module \( E_U \),
+              </p>
+              <p>\[ \delta_U \in \Gamma(X, E_U^{\vee}), \]</p>
+              <p>
+                the lawful locus can be strengthened to a derived zero locus:
+              </p>
+              <pre><code>Flat_U^der(X)
+  :=
+derived zero locus of delta_U
+
+O_{Flat_U^der}
+  ≃
+Kosz(O_X; delta_U)</code></pre>
+              <p>
+                The classical lawful locus is read as its truncation:
+              </p>
+              <p>\[ t_0\, \mathrm{Flat}_U^{\mathrm{der}}(X) = \mathrm{Flat}_U(X). \]</p>
+              <p>
+                Where isomorphism data is essential — refactor equivalence,
+                decomposition, semantic identification — the object is treated
+                as a groupoid-valued descent object or a stack. The name
+                <em>algebraic architecture stack</em> is used only when
+                diagonal representability, an atlas, and descent of structure
+                hold.
+              </p>
+            </section>
+
+            <section id="b1-claim-status-ledger" class="article-section">
+              <h2>B.1 Claim status ledger</h2>
+              <p>
+                The major predicates and theorem labels of the main text are
+                read with the statuses below. The ledger is an audit aid for
+                the reader; it does not replace the canonical statements in the
+                main parts. A <em>local theorem candidate</em> is not a central
+                Lean obligation; upon registration it moves to the proof
+                obligations ledger.
+              </p>
+              <div style="overflow-x: auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Term</th>
+                      <th>Status</th>
+                      <th>Reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><code>obstruction soundness</code></td><td>defined predicate</td><td>Read as \( L(A) \rightarrow \omega_L(A) = 0 \). The contrapositive form \( \omega_L(A) &gt; 0 \rightarrow \neg L(A) \) is read under the selected reading's zero/positive dichotomy.</td></tr>
+                    <tr><td><code>obstruction completeness</code></td><td>defined predicate</td><td>Read as \( \neg L(A) \rightarrow \omega_L(A) &gt; 0 \). The form \( \omega_L(A) = 0 \rightarrow L(A) \) is read under the selected reading's zero/positive dichotomy.</td></tr>
+                    <tr><td><code>zero-reflecting aggregation</code></td><td>defined predicate</td><td>The aggregation condition guaranteeing \( \omega_U(A) = 0 \iff \forall L \in U,\ \omega_L(A) = 0 \).</td></tr>
+                    <tr><td><code>axis exactness</code></td><td>certified assumption</td><td>Assumes agreement between the zero of the selected signature axes and the selected obstruction reading.</td></tr>
+                    <tr><td><code>witness coverage</code></td><td>certified assumption</td><td>Assumes the needed witnesses appear in the chosen cover and reading.</td></tr>
+                    <tr><td><code>U-adequate cover</code></td><td>defined predicate</td><td>A cover that also preserves required support, witnesses, axes, boundaries, and restriction-stable ideals.</td></tr>
+                    <tr><td><code>effective Ob_U-torsor</code></td><td>defined predicate</td><td>Differences of local adjustments land in \( H^1(X, \mathrm{Ob}_U) \) as torsor classes of the abelian coefficient sheaf \( \mathrm{Ob}_U \).</td></tr>
+                    <tr><td><code>U-smooth</code></td><td>defined predicate</td><td>The lift / fill predicate holds for all selected deformation tests and the obstruction class vanishes.</td></tr>
+                    <tr><td><code>U-singular</code></td><td>defined predicate</td><td>A nonzero obstruction class appears among the selected deformation tests.</td></tr>
+                    <tr><td><code>tangent rank jumps</code></td><td>analytic / criterion</td><td>A reading that can serve as a sufficient condition for singularity; not the primary definition.</td></tr>
+                    <tr><td><code>normal cone is nontrivial</code></td><td>analytic / criterion</td><td>Used as a singularity criterion when a selected obstruction direction exists.</td></tr>
+                    <tr><td><code>LawConflict_i(U,V)</code></td><td>defined object</td><td>The Tor object reading the derived non-transversality of lawful loci over a common ambient.</td></tr>
+                    <tr><td><code>support-localized transfer predicate</code></td><td>defined predicate</td><td>The repair direction meets the support of the selected conflict class nontrivially, or the pairing is defined on that direction.</td></tr>
+                    <tr><td><code>measurement verdict</code></td><td>defined predicate family</td><td>The reporting discipline distinguishing <code>measured_zero</code> / <code>measured_nonzero</code> / <code>unmeasured</code> / <code>unknown</code> / <code>not_computed</code> within the selected profile.</td></tr>
+                    <tr><td><code>finite measurement regime</code></td><td>certified assumption</td><td>The computable regime fixing a finite site, finite cover, effective coefficient data, finite witness variables, and selected finite resolutions.</td></tr>
+                    <tr><td><code>Finite AAT Computability</code></td><td>certified bounded inference</td><td>Within the finite measurement regime and <code>EffCoeff_M</code>, reduces the selected invariants to finite linear algebra, finitely presented module computation, and finite combinatorics.</td></tr>
+                    <tr><td><code>Stanley-Reisner / Alexander Dual Repair Theorem</code></td><td>certified bounded inference</td><td>In the finite square-free witness regime, reads the obstruction ideal as a Stanley-Reisner ideal and the Alexander dual as repair hitting sets.</td></tr>
+                    <tr><td><code>Cech stability</code></td><td>local theorem candidate</td><td>A stability claim connecting witness perturbation with persistence / zigzag stability distances in the finite square-free regime.</td></tr>
+                    <tr><td><code>cellular sheaf Laplacian</code></td><td>analytic reading</td><td>A way of reading residual norm, spectrum, and distance-to-flatness on a finite cellular sheaf model; not structural lawfulness itself.</td></tr>
+                    <tr><td><code>Refactor Invariance under Equivalence</code></td><td>certified bounded inference</td><td>Preservation of measurement verdicts when the selected finite sites, ringed ambient, coefficients, law ideals, and witness reading are preserved isomorphically.</td></tr>
+                    <tr><td><code>LawConflict base change</code></td><td>local theorem candidate</td><td>A claim reading pullback preservation of Tor conflicts under a common ambient and a flat morphism of ringed sites.</td></tr>
+                    <tr><td><code>Support-Localized Transfer</code></td><td>certified bounded inference</td><td>A sufficient condition for transferred residue when the common ambient, conflict class, repair direction, pairing, and zero predicate are fixed.</td></tr>
+                    <tr><td><code>transfer lower bound</code></td><td>local theorem candidate</td><td>An analytic residue bound when the support-localized pairing, norm, and support weight are fixed.</td></tr>
+                    <tr><td><code>Finite Measurement Synthesis</code></td><td>certified bounded inference</td><td>Returns Part VIII's measurement packet as a bounded mathematical measurement within the finite measurement regime and selected assumptions.</td></tr>
+                    <tr><td><code>NoHigherBoundaryObstruction</code></td><td>future design obligation</td><td>The extra assumption needed to complete verdicts by boundary classes alone. Read within the main text as an unproved bounded assumption.</td></tr>
+                    <tr><td><code>operation homotopy</code></td><td>future design obligation</td><td>The homotopy predicate to be defined after an operation category / groupoid is fixed.</td></tr>
+                    <tr><td><code>trace topos</code></td><td>future design obligation</td><td>The later ambient for temporal laws, read separately from the core AAT site.</td></tr>
+                    <tr><td><code>homotopy generator family</code></td><td>defined predicate family</td><td>The 2-cell relation family generating the selected operation homotopy; the adopted generators are relativized to the law universe, operation family, and transport profile.</td></tr>
+                    <tr><td><code>presentation two-complex K_H</code></td><td>defined object</td><td>The finite / combinatorial presentation obtained by attaching the homotopy generator family's 2-cells to the selected operation graph.</td></tr>
+                    <tr><td><code>measured square monodromy</code></td><td>analytic reading</td><td>The coefficient transport defect along the selected square boundaries of <code>K_H</code>; not all-path monodromy completeness.</td></tr>
+                    <tr><td><code>Transport Descent Criterion</code></td><td>certified bounded inference</td><td>Detects that edge transport descends to \( \pi_1^{\mathrm{AAT}}(X, U, H, A) \) by zero monodromy defect on the selected generator 2-cells.</td></tr>
+                    <tr><td><code>Square Monodromy Nonfillability</code></td><td>certified bounded inference</td><td>With the selected square boundary, coefficient transport, and monodromy defect fixed, a nonzero defect detects the absence of the selected filler.</td></tr>
+                    <tr><td><code>AAT-GAGA</code></td><td>certified bounded inference bundle</td><td>The bundle comparing Hodge, period, topological capacity, and Tor readings inside a finite measurement profile. The candidate-dependent stability clauses are read as the interface of an additional regime.</td></tr>
+                    <tr><td><code>topological debt capacity</code></td><td>certified bounded inference</td><td>Reads an \( H^1 \) capacity from the finite cover nerve and cochain dimensions; distinguished from the existence of a concrete nonzero class.</td></tr>
+                    <tr><td><code>harmonic debt minimality</code></td><td>certified bounded inference</td><td>Reads the residual norm after local adjustment as the norm of the harmonic representative in a finite inner-product cochain model.</td></tr>
+                    <tr><td><code>Finite Hodge Decomposition</code></td><td>certified bounded inference</td><td>The orthogonal Hodge decomposition when a finite-dimensional inner product cochain complex and adjoint are fixed; not an unconditional decomposition of general sheaf cohomology.</td></tr>
+                    <tr><td><code>Margin Stability</code></td><td>certified bounded inference</td><td>Non-escape from the safe region when the selected metric, margin to the unsafe boundary, triangle inequality, and path length bound are fixed.</td></tr>
+                    <tr><td><code>Hilbert series conflict accounting</code></td><td>certified bounded inference</td><td>Reads the alternating Hilbert series of Tor conflicts as an audit reading in the graded monomial conflict regime.</td></tr>
+                    <tr><td><code>Repair Termination</code></td><td>certified bounded inference</td><td>Finite termination when a well-founded repair comparison profile and strictly decreasing repair steps are fixed; reaching lawfulness is a separate assumption.</td></tr>
+                    <tr><td><code>scale-stable debt</code></td><td>theorem candidate / defined reading</td><td>An \( H^1 \) class lifting from the coarse side along the selected aggregation family; not absolute invariance across all scales.</td></tr>
+                    <tr><td><code>discrete Morse repair reading</code></td><td>analytic reading / theorem candidate</td><td>Reads the collapse data of a square-free complex as a combinatorial repair route; operation semantics is a separate profile.</td></tr>
+                    <tr><td><code>Wasserstein transfer cost</code></td><td>analytic reading / theorem candidate</td><td>The transport distance of obstruction measures on a finite support graph, relativized to mass preservation and the ground metric.</td></tr>
+                    <tr><td><code>Monotone Witness Stability</code></td><td>theorem candidate</td><td>A persistence stability reading when a monotone forbidden-support filtration, comparison maps, and interleaving / correspondence are fixed.</td></tr>
+                    <tr><td><code>state transition presheaf</code></td><td>defined object</td><td>The presheaf assigning state spaces and transition monoids over the selected trace category and AAT site; called a sheaf in regimes where the descent condition has been verified.</td></tr>
+                    <tr><td><code>temporal coefficient</code></td><td>defined coefficient object</td><td>The abelian coefficient sheaf measuring the mismatch / gluing defect of temporal law data.</td></tr>
+                    <tr><td><code>Temporal Descent Criterion</code></td><td>certified bounded inference</td><td>Under a finite trace product site, a temporal coefficient, and a zero mismatch class, replay data after local adjustment glues to a global transition.</td></tr>
+                    <tr><td><code>Force Integrability Obstruction</code></td><td>theorem candidate</td><td>The non-integrability criterion when a force's associated temporal mismatch class is defined and descent detection is fixed.</td></tr>
+                    <tr><td><code>dissipative policy</code></td><td>certified bounded inference when finite</td><td>An operation family making the selected evolution functional non-increasing; not an unselected future state or external success condition.</td></tr>
+                    <tr><td><code>witness exactness</code></td><td>certified assumption</td><td>The selected witness family is sound / complete for the selected obstruction reading.</td></tr>
+                    <tr><td><code>semantic repair-gluing complex</code></td><td>defined object</td><td>The finite complex of fully enumerated charts, overlaps, repair primitives, and residual cochains with the restriction-difference differential.</td></tr>
+                    <tr><td><code>semantic closure</code></td><td>defined predicate</td><td>The repair support contains all selected residual atoms; decomposes into residual component coverage and residual component faithfulness.</td></tr>
+                    <tr><td><code>Finite Semantic Repair-Gluing Descent</code></td><td>certified bounded inference</td><td>Under the finite complex and the semantic faithfulness hypothesis, reads the equivalence between global semantic repair coherence and boundary membership of the residual. The necessity direction holds without assumption.</td></tr>
+                    <tr><td><code>semantic repair additive H^1</code></td><td>defined object</td><td>The \( Z^1 / B^1 \) quotient of additive Čech-type coefficient data attached to the selected finite repair cover; reads the zeroness of the selected residual class.</td></tr>
+                    <tr><td><code>True Sheaf H^1 Semantic Repair-Gluing</code></td><td>certified bounded inference</td><td>Under cover membership, the global sheaf condition, boundary-relation faithfulness data, and the additive regime, reads the equivalence between global semantic repair coherence and a zero \( H^1 \) class.</td></tr>
+                    <tr><td><code>law equation realization</code></td><td>defined object</td><td>Supplied data presenting a law as an equation family: an observable presheaf, restriction-compatible violation coordinates, and a displayed reading with nonempty required law support, with the chart-local law-defect tie (Part III, Definition 11.3).</td></tr>
+                    <tr><td><code>Generated Obstruction Quotient and Restriction Evaluator</code></td><td>certified bounded inference</td><td>Constructs the obstruction quotient presheaf and restriction evaluator from a law equation realization (Part III, Theorem 11.4).</td></tr>
+                    <tr><td><code>SAGA comparison</code></td><td>certified bounded inference</td><td>Under explicit comparison data, reads the comparison equivalence and zero-predicate equivalence between semantic repair additive \( H^1 \) and cover-relative Čech \( H^1 \). No unconditional identification with full sheaf cohomology is claimed.</td></tr>
+                    <tr><td><code>degree-zero law contribution</code></td><td>certified bounded inference</td><td>Reads the contribution of displayed required law satisfaction to the Čech complex as pointwise vanishing in degree zero; the grounded route's \( H^1 \)-side conclusions do not depend on the law premise.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="b2-label-discipline" class="article-section">
+              <h2>B.2 Label discipline</h2>
+              <p>The labels of the main text are read as follows.</p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Definition / Construction</dt>
+                  <dd>Introduces objects and predicates.</dd>
+                </div>
+                <div>
+                  <dt>Theorem / Proposition / Lemma</dt>
+                  <dd>A mathematical proposition read under explicitly stated assumptions. Those assuming exactness, coverage, or adequacy are certified bounded inferences.</dd>
+                </div>
+                <div>
+                  <dt>Theorem candidate</dt>
+                  <dd>A theorem candidate in the main text with an explicit future definition and proof design. It becomes a central Lean proof obligation only when a corresponding row is placed in the Lean theorem index or the proof obligations ledger.</dd>
+                </div>
+                <div>
+                  <dt>Principle</dt>
+                  <dd>A discipline fixing a claim boundary or a way of reading.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A representation, metric, period, or mass reading of a constructed geometric object.</dd>
+                </div>
+              </dl>
+              <p>
+                Thus, for example, <em>Lawfulness–Zero Obstruction</em> is a
+                certified bounded inference relativized to zero-reflecting
+                aggregation and soundness / completeness, not an absolute claim
+                about unselected law universes or metric aggregations.
+                Likewise, the <em>SAGA comparison</em> is a certified bounded
+                inference relativized to the selected finite cover, coefficient
+                data, and comparison data — not an unconditional cohomology
+                identification.
+              </p>
+            </section>
+
+            <section id="b3-square-free-example" class="article-section">
+              <h2>B.3 Finite square-free worked example</h2>
+              <p>
+                Fix a finite context site <code>X</code> as a pseudo-circle
+                cover with two charts <code>A, B</code> and two overlap
+                components <code>P, Q</code>:
+              </p>
+              <pre><code>U = {A, B}
+A ∩ B = P ⊔ Q</code></pre>
+              <p>
+                Take the coefficient sheaf to be the constant abelian sheaf
+                \( \mathbb{Z} \), with identity restrictions. The Čech complex
+                of this cover is
+              </p>
+              <pre><code>C^0(U,Z) = Z_A ⊕ Z_B
+C^1(U,Z) = Z_P ⊕ Z_Q
+d(a,b) = (b-a, b-a)</code></pre>
+              <p>and therefore</p>
+              <p>\[ H^1(U, \mathbb{Z}) = \big( \mathbb{Z}_P \oplus \mathbb{Z}_Q \big) / \mathrm{diagonal}(\mathbb{Z}) \cong \mathbb{Z}. \]</p>
+              <p>The cocycle</p>
+              <p>\[ g = (1, 0) \in \mathbb{Z}_P \oplus \mathbb{Z}_Q \]</p>
+              <p>
+                is not in the diagonal image, so it gives a nonzero obstruction
+                class. This is the minimal example reading the fact that when
+                local lawful sections carry different mismatches on the two
+                overlap components, they cannot be glued into a global section.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Pseudo-circle golden example in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved finite example</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden</code>: <code>Chart</code>, <code>BoundaryEdge</code>, <code>coverNerve</code>, <code>each_chart_lawful</code>, <code>h0_witness_counting_sees_no_obstruction</code>, <code>boundaryCocycle_AB_nonzero</code>, <code>CoverRelativeH1NonzeroWitness.concreteClass_nonzero</code>, <code>pseudoCircle_h0_invisible_h1_obstructed</code>, <code>PartIVCircleNonzeroH1Firing</code> (AG index row <code>IV.R10(a) / AC13</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>The selected pseudo-circle boundary model: each chart locally lawful, the H0-style witness count zero, the finite boundary cocycle visibly nonzero, and the cover-relative and additive H1 classes nonzero — the "invisible at H0, visible at H1" reading of this section, proved.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="b4-obstruction-ideal" class="article-section">
+              <h2>B.4 Square-free obstruction ideal</h2>
+              <p>
+                On the same finite example, place witness variables
+                <code>p, q, r</code> and take the two forbidden supports
+              </p>
+              <pre><code>{p,q}
+{q,r}</code></pre>
+              <p>The square-free obstruction ideal is then</p>
+              <p>\[ I_{\mathrm{Ob}} = \langle pq,\ qr \rangle \subset k[p, q, r]. \]</p>
+              <p>
+                The corresponding simplicial complex \( \Delta \) is the family
+                of simultaneously admissible witness supports, and
+              </p>
+              <p>\[ I_{\mathrm{Ob}} = I_{\Delta} \]</p>
+              <p>
+                is a Stanley-Reisner ideal. The minimal forbidden supports
+                coincide with the generators \( pq \) and \( qr \). The minimal
+                repair hitting sets are the hitting sets of these two forbidden
+                supports,
+              </p>
+              <pre><code>{q}
+{p,r}</code></pre>
+              <p>
+                which are the minimal candidates. On the Alexander dual side
+                this reads as: which witnesses must be removed to strike the
+                obstruction pattern.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Stanley-Reisner regime and hitting sets in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime</code> with <code>obstructionIdeal_eq_stanleyReisnerIdeal</code>, <code>face_iff_admissibleSupport</code>, <code>minimalGeneratorSupport_iff_minimalForbidden</code> (AG index row <code>III.定義5.6B / 定理5.6C / 系5.6D</code>); and the hitting-set example theorems <code>squareFreeHittingSet_q_hits_forbiddenSupports</code>, <code>squareFreeHittingSet_pr_hits_forbiddenSupports</code>, <code>squareFree_singletonQ_minimalRepairHittingSet</code>, <code>squareFree_pairPR_minimalRepairHittingSet</code> (AG index row <code>VIII.R11 finite examples</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>The identity \( I_{\mathrm{Ob}} = I_{\Delta} \) for square-free witness regimes, and the minimality of the hitting sets <code>{q}</code> and <code>{p,r}</code> for this example's forbidden supports, proved as selected finite examples.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="b5-tor-conflict" class="article-section">
+              <h2>B.5 Monomial Tor conflict</h2>
+              <p>
+                Read two law universes over the same ambient ring
+                \( R = k[p, q, r] \) as principal monomial ideals:
+              </p>
+              <pre><code>I_U = &lt;p q&gt;
+I_V = &lt;q r&gt;</code></pre>
+              <p>
+                Because of the shared witness factor <code>q</code>, the
+                derived intersection is not transverse. The standard principal
+                monomial calculation gives
+              </p>
+              <p>\[ \mathrm{Tor}_1^R(R/I_U,\ R/I_V) \cong \langle pqr \rangle / \langle pq^2r \rangle, \]</p>
+              <p>
+                showing that a law conflict residue exists on the support along
+                <code>q</code>. To claim that a concrete repair path triggers a
+                transfer, however, one must separately show that the path meets
+                this support nontrivially, or that the selected transfer
+                pairing returns a nonzero residue.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Principal monomial Tor nonzero example in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved under explicit selected data</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.FiniteModel.DerivedPart5.Example56TorCalculation</code> with <code>tor1_nonzero</code>, <code>Example56DirectTorCalculation.tor1_nonzero</code>, <code>Example56LawConflictPackageFiring</code> (<code>lawConflict1_nonzero</code>, <code>tor1_nonzero</code>) (AG index row <code>V.R11 finite examples</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>The Part V shared-witness principal monomial example of exactly this shape — two principal monomial ideals sharing one witness factor — with \( \mathrm{LawConflict}_1 \) and Mathlib \( \mathrm{Tor}_1 \) proved nonzero from the selected principal kernel quotient calculation and LawConflict package.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Relativized to the explicitly supplied resolution and bridge data; no certificate-free general Tor computation is claimed.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="b6-period-pairing" class="article-section">
+              <h2>B.6 Period pairing</h2>
+              <p>
+                Take the generator of \( H^1(U, \mathbb{Z}) \cong \mathbb{Z} \)
+                from Section B.3 to be
+              </p>
+              <p>\[ \omega = [(1, 0)], \]</p>
+              <p>
+                and read the formal 1-cycle of overlap components as
+                \( \gamma = P - Q \). The pairing is then
+              </p>
+              <p>\[ \langle \omega, \gamma \rangle = 1. \]</p>
+              <p>
+                This value is a period reading relativized to the selected
+                cover, coefficient sheaf, and cycle representative. It is the
+                finite mathematical model of the statement that inside a
+                constructed AAT geometry, a local mismatch class can be read
+                nontrivially along a cycle.
+              </p>
+            </section>
+
+            <section id="b7-summary" class="article-section">
+              <h2>B.7 Worked example summary</h2>
+              <p>
+                The example threads the following route through one finite
+                model:
+              </p>
+              <pre><code>finite context cover
+  -> Cech complex
+  -> H^1 obstruction class
+  -> square-free obstruction ideal
+  -> Stanley-Reisner reading
+  -> monomial Tor conflict
+  -> period pairing</code></pre>
+              <p>
+                Every construction is relativized to the selected finite site,
+                coefficient sheaf, witness variables, and law ideals. About
+                unselected laws, axes, traces, and data sources, nothing is
+                claimed.
+              </p>
+            </section>
+
+            <section id="b8-toy-reading" class="article-section">
+              <h2>B.8 Atom-family-to-geometry toy reading</h2>
+              <p>
+                Read the finite atom family of Part I, Example 1.4, under its
+                fixed atom vocabulary and reading doctrine. The atom family
+                used here is exactly the one displayed by the main text:
+              </p>
+              <pre><code>component(C)
+component(D)
+relation_imports(C, D)
+state(C, x : X)
+relation_calls(m, D.read)
+relation_writes(m, x)
+effect(e)
+relation_emits(m, e)
+authority(a, act, r)
+contract(m, P -> Q)
+semantic(q(y), denotes result-of-m)</code></pre>
+
+              <h3 id="b8-1-cover">B.8.1 Finite context cover</h3>
+              <p>
+                From this atom family, fix a finite cover with three charts:
+              </p>
+              <pre><code>W_dep:
+  component / dependency reading.
+
+W_state:
+  state transition reading.
+
+W_effect:
+  effect / authority reading.</code></pre>
+              <p>Place the overlap components as</p>
+              <pre><code>P = W_dep intersection W_state
+Q = W_state intersection W_effect
+R = W_dep intersection W_effect</code></pre>
+              <p>
+                The coefficient sheaf is the constant abelian sheaf
+                \( \mathbb{Z} \), with identity restrictions in this toy model.
+                The triple overlap
+                <code>W_dep intersection W_state intersection W_effect</code>
+                is empty, or is not adopted as a 2-face of the selected cover
+                nerve. The nerve is therefore not a filled 2-simplex but a
+                1-cycle of three edges.
+              </p>
+
+              <h3 id="b8-2-cech">B.8.2 Čech mismatch</h3>
+              <p>Set the mismatch of local lawful sections to</p>
+              <p>\[ g = (1, 0, 0) \in \mathbb{Z}_P + \mathbb{Z}_Q + \mathbb{Z}_R, \]</p>
+              <p>and take the orientation</p>
+              <pre><code>P : W_dep -> W_state
+Q : W_state -> W_effect
+R : W_dep -> W_effect</code></pre>
+              <p>
+                The coboundary of a 0-cochain
+                <code>s = (s_dep, s_state, s_effect)</code> is
+              </p>
+              <p>\[ d s = (s_{\mathrm{state}} - s_{\mathrm{dep}},\ s_{\mathrm{effect}} - s_{\mathrm{state}},\ s_{\mathrm{effect}} - s_{\mathrm{dep}}). \]</p>
+              <p>
+                The image of \( d^0 \) is therefore
+                \( \{ (u, v, u + v) \} \), and the functional detecting the
+                class is
+              </p>
+              <p>\[ g_P + g_Q - g_R. \]</p>
+              <p>In this example,</p>
+              <p>\[ 1 + 0 - 0 = 1, \]</p>
+              <p>
+                so <code>g</code> gives a nonzero class in \( H^1 \). This is
+                the toy model reading the fact that the local dependency,
+                state, and effect readings can each be individually coherent
+                while a mismatch class remains when all three are glued at
+                once.
+              </p>
+
+              <h3 id="b8-3-ideal">B.8.3 Obstruction ideal</h3>
+              <p>Place witness variables as</p>
+              <pre><code>p = dependency-state mismatch witness
+q = state-effect mismatch witness
+r = dependency-effect mismatch witness</code></pre>
+              <p>With forbidden supports</p>
+              <pre><code>{p,q}
+{q,r}</code></pre>
+              <p>one obtains</p>
+              <p>\[ I_{\mathrm{Ob}} = \langle pq,\ qr \rangle \subset k[p, q, r]. \]</p>
+              <p>
+                This is the same Stanley-Reisner chart as Section B.4, with
+                witness names assigned from the selected atom family.
+              </p>
+
+              <h3 id="b8-4-tor-period">B.8.4 Tor and period</h3>
+              <p>Take the law universes</p>
+              <pre><code>U = dependency-state law
+V = state-effect law</code></pre>
+              <p>and read, over the same ambient ring,</p>
+              <pre><code>I_U = &lt;p q&gt;
+I_V = &lt;q r&gt;</code></pre>
+              <p>
+                By the shared witness factor <code>q</code>,
+                \( \mathrm{Tor}_1^R(R/I_U, R/I_V) \) carries a derived conflict
+                residue on the support along <code>q</code>. And for the cycle
+              </p>
+              <p>\[ \gamma = P + Q - R, \]</p>
+              <p>the period pairing is</p>
+              <p>\[ \langle g, \gamma \rangle = g_P + g_Q - g_R = 1. \]</p>
+              <p>
+                This coincides with the functional that detects the Čech class,
+                and it reads the dependency/effect mismatch across the state
+                transition chart.
+              </p>
+
+              <h3 id="b8-5-verdict">B.8.5 Verdict boundary</h3>
+              <p>What this toy reading shows is:</p>
+              <pre><code>given selected Atom family
+  -> finite cover
+  -> Cech mismatch
+  -> square-free obstruction ideal
+  -> Tor conflict
+  -> period reading.</code></pre>
+              <p>
+                It claims neither unselected trace completeness nor the
+                correctness of an external authority model. It is a worked
+                example of finite AAT geometry whose input is the atom family
+                constructed inside the main text.
+              </p>
+            </section>
+
+            <section id="b9-circle-nerve" class="article-section">
+              <h2>B.9 Law-equation coefficient and circle nerve worked example</h2>
+              <p>
+                This section fixes the minimal nonzero instance of the SAGA
+                comparison theorem (Part X, Theorem 7.2) on a finite model with
+                a single context, built in the vocabulary of Parts I and II.
+              </p>
+
+              <h3 id="b9-1-coefficient">B.9.1 Generated coefficient</h3>
+              <p>
+                The finite model has exactly one context, written
+                <code>W</code>. Take the observable ring
+                \( O(W) = \mathbb{Z} \) with identity restriction, exactly one
+                required law, and violation coordinate \( 2 \) at every atom.
+                By the construction of Part III, Theorem 11.4,
+              </p>
+              <pre><code>I_L(W) = I_Ob(W) = (2) subset Z
+
+Q(W) = Z/(2) ≅ F_2</code></pre>
+              <p>The non-degeneracy ledger is:</p>
+              <pre><code>[1] != 0    (1 not in (2))
+[2] = 0</code></pre>
+              <p>
+                The quotient genuinely separates the lawful reading from the
+                non-lawful reading.
+              </p>
+
+              <h3 id="b9-2-nerve">B.9.2 Circle nerve</h3>
+              <p>
+                As the selected simplicial data (Part X, Definition 6.2), fix
+                the following circle nerve:
+              </p>
+              <pre><code>vertices: v_-, v_+
+
+edges:
+  e_+ : v_- -> v_+
+  e_- : v_+ -> v_-
+
+no simplices in degree >= 2</code></pre>
+              <p>
+                Every chart and overlap is <code>W</code>. This nerve is not
+                generated from chart intersections; it is selected simplicial
+                data over the single-element cover.
+              </p>
+
+              <h3 id="b9-3-complex">B.9.3 Complex and residual</h3>
+              <pre><code>C^0 = Map({v_-, v_+}, F_2) ≅ F_2^2
+C^1 = Map({e_+, e_-}, F_2) ≅ F_2^2
+C^2 = 0
+
+(d^0 p)(e) = p(target e) - p(source e)
+d^1 = 0</code></pre>
+              <p>Place the residual as</p>
+              <pre><code>r(e_+) = [1]
+r(e_-) = 0</code></pre>
+              <p>
+                Then <code>r</code> is a 1-cocycle: the selected complex has no
+                simplices in degree 2, so the cocycle condition holds
+                trivially.
+              </p>
+
+              <h3 id="b9-4-nonzero">B.9.4 Nonzero class and transfer</h3>
+              <p>
+                Suppose \( r = d^0 p \). The edge \( e_+ \) gives
+                \( p(v_+) - p(v_-) = [1] \), and the edge \( e_- \) gives
+                \( p(v_-) - p(v_+) = 0 \). The latter forces
+                \( p(v_-) = p(v_+) \); substituting into the former yields
+                \( [1] = 0 \), contradicting \( [1] \neq 0 \). Therefore
+                <code>r</code> is not a coboundary.
+              </p>
+              <p>
+                Read as an invariant: under this orientation, the sum of the
+                two edge values of any coboundary is \( 0 \), while the sum of
+                the two edge values of <code>r</code> is \( [1] \neq 0 \). The
+                nonzeroness reduces to the arithmetic fact of the law-equation
+                quotient, \( 1 \notin (2) \).
+              </p>
+              <p>
+                Under the semantic coefficient data carried by this complex,
+                the additive regime data, and the identity comparison,
+              </p>
+              <pre><code>the residual class of semantic additive H^1 != 0
+the class of cover-relative Cech H^1 != 0
+the zero-predicate equivalence transfers nonzeroness in both directions</code></pre>
+              <p>hold (Part X, Theorem 7.4).</p>
+
+              <h3 id="b9-5-summary">B.9.5 Example data summary</h3>
+              <p>
+                The site of this example is the single-element context, and the
+                generated topology is trivial. Every presheaf therefore
+                satisfies the sheaf condition; the sheaf condition on the
+                quotient coefficient holds as a theorem and need not be
+                supplied as an assumption. The comparison is the identity map
+                on definitionally equal carriers.
+              </p>
+              <p>
+                This worked example threads the following route through one
+                finite model:
+              </p>
+              <pre><code>witness ideal (2) subset Z
+  -> generated quotient F_2
+  -> circle nerve residual
+  -> non-coboundary computation
+  -> nonzero class on both sides
+  -> transfer through the comparison</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Circle-nerve nonzero transfer instance in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved nonzero transfer instance</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Examples.SemanticRepairPart10</code>: <code>circleF2Presheaf</code>, <code>circleF2IsSheaf</code>, <code>circleResidual</code>, <code>circleResidual_not_coboundary</code>, <code>circleSemanticH1_nonzero</code>, <code>circleCoverRelativeH1_nonzero</code>, <code>circleH1Comparison</code>, <code>circleTransferredCoverRelativeH1_nonzero</code>, <code>CircleNerveNonzeroTransferPacket</code>, <code>circleNerve_nonzeroClassTransfer_packet</code> (AG index row <code>X.例9.2</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>The selected three-edge circle-nerve witness site with the \( Q \cong \mathbb{F}_2 \) coefficient sheaf: the degree-one residual class is nonzero on both the semantic additive side and the cover-relative Čech side, and the Theorem 7.2 identity comparison transfers the nonzeroness — the full route of this section, proved.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The example transfer uses the identity comparison over the degenerate singleton-context site; no unconditional generalization to arbitrary Grothendieck sites is claimed.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../semantic-repair-saga/">
+                <span>Previous</span>
+                <strong>Part X. Semantic Repair Descent and SAGA</strong>
+              </a>
+              <a class="page-nav-next" href="../related-work/">
+                <span>Next</span>
+                <strong>Related Work and Novelty</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

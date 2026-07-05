@@ -2,11 +2,11 @@
 {
   "layout": "base.njk",
   "title": "Formal Anchors",
-  "description": "Formal anchors for Algebraic Architecture Theory: representative Lean declarations, status labels, theorem-index links, and claim boundaries gathered from the chapters.",
+  "description": "Part-by-part audit index connecting the public AAT chapters to representative Lean declarations under Formal/AG with their ledger statuses.",
   "order": 15,
   "llmsLabel": "AAT Formal Anchors",
-  "ogDescription": "Representative Lean declarations, status labels, theorem-index links, and claim boundaries gathered from the chapters.",
-  "navSection": "aat"
+  "navSection": "aat",
+  "mathjax": false
 }
 ---
     <main id="main">
@@ -15,14 +15,16 @@
           <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../../">Home</a>
             <a href="../">AAT</a>
-          <span>Formal Anchors</span>
+            <span>Formal Anchors</span>
           </nav>
-          <p class="eyebrow">Audit Trail</p>
+          <p class="eyebrow">Audit Index</p>
           <h1>Formal Anchors</h1>
           <p class="lede">
-            Representative Lean declarations, current status phrases,
-            theorem-index links, and boundary notes are gathered here as a
-            chapter-by-chapter audit surface for the mathematical reading.
+            This page is the audit index for the public chapters of Algebraic
+            Architecture Theory. For each part, Parts I through X and the
+            appendix, it pairs the chapter's public claims with representative
+            Lean declarations under <code>Formal/AG</code> and records their
+            current ledger status.
           </p>
         </div>
       </section>
@@ -33,1620 +35,530 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#atom-root">Atom root</a></li>
-                <li><a href="#foundations">Foundations</a></li>
-                <li><a href="#laws-and-witnesses">Laws and Witnesses</a></li>
-                <li><a href="#architecture-signature">Architecture Signature</a></li>
-                <li><a href="#local-law-packages">Local Law Packages</a></li>
-                <li><a href="#calculus-and-extensions">Calculus and Extensions</a></li>
-                <li><a href="#repair-and-dynamics">Repair and Dynamics</a></li>
-                <li><a href="#representations-and-effects">Representations and Effects</a></li>
-                <li><a href="#canonical-examples-and-readings">Canonical Examples and Readings</a></li>
-                <li><a href="#related-work">Related Work and Novelty</a></li>
+                <li><a href="#role-and-scope">Role and scope</a></li>
+                <li><a href="#reading-statuses">How statuses are read</a></li>
+                <li><a href="#part-i">Part I. Atoms, Objects, and Laws</a></li>
+                <li><a href="#part-ii">Part II. Sites and Sheaves</a></li>
+                <li><a href="#part-iii">Part III. Law Algebra and Lawful Locus</a></li>
+                <li><a href="#part-iv">Part IV. Obstruction Cohomology</a></li>
+                <li><a href="#part-v">Part V. Derived Geometry and Repair</a></li>
+                <li><a href="#part-vi">Part VI. Singularity, Monodromy, Stack</a></li>
+                <li><a href="#part-vii">Part VII. Representations and Periods</a></li>
+                <li><a href="#part-viii">Part VIII. Measurement Theory</a></li>
+                <li><a href="#part-ix">Part IX. Evolution Geometry</a></li>
+                <li><a href="#part-x">Part X. Semantic Repair (SAGA)</a></li>
+                <li><a href="#appendix">Appendix</a></li>
               </ol>
             </nav>
-            <div class="source-panel" data-sidebar-open="true">
-              <h2>AAT chapters</h2>
-              <ul>
-                <li><a href="../">Overview</a></li>
-                <li><a href="../atoms/">Atoms</a></li>
-                <li><a href="../architecture-objects/">Architecture Objects</a></li>
-                <li><a href="../laws/">Design Laws</a></li>
-                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
-                <li><a href="../zero-curvature/">Zero Curvature</a></li>
-                <li><a href="../architecture-signature/">Architecture Signature</a></li>
-                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
-                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
-                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
-                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
-                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
-                <li><a href="../related-work/">Related Work</a></li>
-                <li><a href="../status/">Status</a></li>
-                <li><a href="./" aria-current="page">Formal Anchors</a></li>
-              </ul>
-            </div>
           </aside>
 
           <div class="article-main">
-            <section id="audit-scope" class="article-section">
-              <h2>Audit scope</h2>
+            <section id="role-and-scope" class="article-section">
+              <h2>Role and scope</h2>
               <p>
-                This page is an audit index for the public reading surface.
-                Each card records the chapter surface, representative Lean
-                declarations, status phrase, theorem-index reference, and claim
-                boundary used by that chapter.
+                The canonical AAT text is published here as eleven chapter
+                pages: Parts I through X and the appendix. The formalization
+                lives in the Lean namespace <code>AAT.AG</code> under
+                <code>Formal/AG</code>, and the correspondence between the
+                text's labeled claims and Lean declarations is tracked row by
+                row in the ledger document
+                <code>docs/aat/lean_theorem_index_ag_aat.md</code>.
+              </p>
+              <p>
+                Each part below shows a selection of that ledger: the chapter
+                page, the Lean source files, and five to ten representative
+                rows with their canonical text label, representative Lean
+                declarations, and status. The rows shown here are
+                representative anchors, not the full inventory; the complete
+                enumeration of declarations and statuses is the ledger itself,
+                <code>docs/aat/lean_theorem_index_ag_aat.md</code>, read
+                together with the proof-obligation ledger
+                <code>docs/aat/proof_obligations_ag_aat.md</code>.
               </p>
             </section>
 
-            <section id="atom-root" class="article-section">
-              <h2>Atom root</h2>
+            <section id="reading-statuses" class="article-section">
+              <h2>How statuses are read</h2>
               <p>
-                AAT begins its audit trail at the atom layer. The atom page
-                treats primitive architectural facts as generators: typed facts
-                that exist before observation, review tooling, law packages, or
-                diagrammatic organization select them for a reading.
+                AAT states its claims relative to a fixed vocabulary, law
+                universe, coverage topology, coefficient sheaf, and
+                representation family. The canonical text keeps three claim
+                grades distinct.
               </p>
-              <div class="formal-anchor-cards" aria-label="Atom root formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Primitive architectural fact system</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the atom chapter's definition of atoms,
-                    primitive status, atom families, and non-generation reading.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>AtomAxiomSystem</code>, <code>AtomKind</code>, <code>Primitive</code>, and atom non-generation accessors.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for the atom vocabulary; primitive and non-generation accessors are read at their theorem status in the Lean index.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Atom status is the generator layer. Laws, observations, signatures, diagrams, and tools may select or read atoms; they are later packages over the atom root.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><code>docs/aat/lean_theorem_index.md</code> and the atom-related declarations under <code>Formal/Arch</code>.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>AtomAxiomSystem</code></li>
-                      <li><code>AtomKind</code></li>
-                      <li><code>Primitive</code></li>
-                      <li><code>AtomKind.component</code></li>
-                      <li><code>AtomKind.interface</code></li>
-                      <li><code>AtomKind.dependency</code></li>
-                      <li><code>AtomKind.data</code></li>
-                      <li><code>AtomKind.behavior</code></li>
-                      <li><code>AtomKind.resource</code></li>
-                      <li><code>AtomKind.policy</code></li>
-                      <li><code>AtomKind.environment</code></li>
-                      <li><code>AtomKind.evidence</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Atom families and object formation</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the passage from atom families to molecules,
-                    architecture objects, selected presentations, and law-ready
-                    finite universes.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>AAT.Molecule</code>, <code>AAT.PureTheory</code>, <code>SelectedPresentation</code>, and <code>ArchitectureCore</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for object vocabulary; selected-presentation and finite-universe bridges are audited in the foundation cards below.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>A molecule is a finite composition over atoms. Lawfulness, obstruction, flatness, and signature readings arrive after a law universe and witness family are selected.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><code>docs/aat/lean_theorem_index.md</code>, selected presentation entries, and architecture-core entries.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>AAT.Molecule</code></li>
-                      <li><code>AAT.PureTheory</code></li>
-                      <li><code>SelectedPresentation</code></li>
-                      <li><code>AATJudgement</code></li>
-                      <li><code>ArchitectureCore</code></li>
-                      <li><code>ArchitectureCore.selectedPresentation</code></li>
-                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
-                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
-                    </ul>
-                  </details>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="foundations" class="article-section">
-              <h2>Foundations</h2>
-              <div class="formal-anchor-cards" aria-label="Foundations formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Selected presentation boundary</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-objects/">Proposition 1.2</a>,
-                    <a href="../architecture-objects/">Proof 1.2</a>,
-                    <a href="../architecture-objects/">Definition 2.0</a>,
-                    <a href="../architecture-objects/">Proposition 2.1</a>,
-                    <a href="../architecture-objects/">Proof 2.1</a>, and
-                    <a href="../architecture-objects/">Counterexample 2.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>AATJudgement</code>, <code>CompleteForRelation</code>, <code>CompleteForGraph</code>, and <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for vocabulary; judgement, graph bridge, and counterexample anchors <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Selected presentation equality is not ambient repository completeness; real-code extraction, telemetry completeness, and semantic universe completeness remain separate premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary" target="_blank" rel="noopener noreferrer">Selected Presentation / Complete Extraction Boundary</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>SelectedPresentation</code></li>
-                      <li><code>AATJudgement</code></li>
-                      <li><code>aatJudgement_iff</code></li>
-                      <li><code>CompleteForRelation</code></li>
-                      <li><code>CompleteForGraph</code></li>
-                      <li><code>completeForGraph_iff_completeForRelation</code></li>
-                      <li><code>SameEdgeRestriction</code></li>
-                      <li><code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Architecture core presentation</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-objects/">Definition 1.1</a>,
-                    <a href="../architecture-objects/">Proposition 2.1</a>,
-                    <a href="../architecture-objects/">Proof 2.1</a>,
-                    <a href="../architecture-objects/">Counterexample 2.2</a>, and
-                    <a href="../architecture-objects/">Non-conclusion 2.3</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureCore.selectedPresentationJudgement_iff</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ArchitectureCore.selectedClaimBoundary</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for <code>ArchitectureCore</code> and <code>SelectedClaimBoundary</code>; selected-presentation bridge and package theorem <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Supplied finite universe and selected predicates; no global extraction completeness, runtime telemetry completeness, or global semantic universe completeness.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture" target="_blank" rel="noopener noreferrer">Architecture Core / Certified Architecture</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureCore</code></li>
-                      <li><code>ArchitectureCore.selectedPresentation</code></li>
-                      <li><code>ArchitectureCore.selectedPresentationJudgement_iff</code></li>
-                      <li><code>ArchitectureCore.staticGraphRestriction_eq_staticGraph</code></li>
-                      <li><code>ArchitectureCore.runtimeGraphRestriction_eq_runtimeGraph</code></li>
-                      <li><code>ArchitectureCore.staticCompleteForSelectedPresentation</code></li>
-                      <li><code>ArchitectureCore.runtimeCompleteForSelectedPresentation</code></li>
-                      <li><code>ArchitectureCore.staticCompleteGraphForSelectedPresentation</code></li>
-                      <li><code>ArchitectureCore.runtimeCompleteGraphForSelectedPresentation</code></li>
-                      <li><code>ArchitectureCore.component_mem_staticUniverse</code></li>
-                      <li><code>ArchitectureCore.staticCoverageComplete</code></li>
-                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
-                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Finite universe bridge package</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-objects/">Definition 3.1</a>,
-                    <a href="../architecture-objects/">Proposition 3.2</a>,
-                    <a href="../architecture-objects/">Proof idea 3.2</a>, and
-                    <a href="../architecture-objects/">Counterexample 3.3</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentUniverse.edgeClosed_of_covers</code>, <code>FiniteArchGraph.edgeClosed_components</code>, and <code>ComponentUniverse.reachable_exists_bounded_path</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> / <code>proved</code> by declaration.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Finite component list, coverage, edge closure, and explicit graph assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems" target="_blank" rel="noopener noreferrer">Finite Universe / Bridge Theorems</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ComponentUniverse</code></li>
-                      <li><code>ComponentUniverse.edgeClosed_of_covers</code></li>
-                      <li><code>FiniteArchGraph.covers_components</code></li>
-                      <li><code>FiniteArchGraph.edgeClosed_components</code></li>
-                      <li><code>ComponentUniverse.reachable_exists_bounded_path</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Thin category and decomposability vocabulary</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-objects/">Remark 3.4</a> and the
-                    boundary vocabulary used by the bridge claims.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentCategory</code>, <code>Decomposable</code>, and <code>StrictLayered</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> / selected bridge facts <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/algebraic_geometric_theory/README.md#2-architecture-object" target="_blank" rel="noopener noreferrer">mathematical theory, Chapter 2</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ComponentCategory</code></li>
-                      <li><code>Decomposable</code></li>
-                      <li><code>StrictLayered</code></li>
-                    </ul>
-                  </details>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="laws-and-witnesses" class="article-section">
-              <h2>Laws and Witnesses</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is read inside those assumptions, never as an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
               <p>
-                This chapter connects selected law universes, measured witness
-                absence, required obstruction coverage, and required signature
-                axes. The public chapter keeps the theorem narrative compact;
-                this audit entry records the representative Lean anchors and
-                theorem-boundary assumptions.
+                Status phrases in the tables below are quoted from the ledger.
+                <code>defined only</code> marks vocabulary placed in Lean
+                without a theorem claim; <code>proved</code> marks a completed
+                Lean proof; phrases of the form
+                <code>proved under explicit ... assumptions</code> mark
+                certified bounded inferences whose assumptions are explicit
+                Lean arguments; <code>statement only</code> and
+                <code>theorem candidate statement-only</code> mark statements
+                placed without a proof claim. Since the PRD-R R0 inventory,
+                theorem-grade statuses are additionally normalized by
+                <code>docs/aat/lean_ag_peer_review_inventory.md</code> into the
+                three-way vocabulary <code>proved</code> /
+                <code>packaged (assumption-relative)</code> /
+                <code>statement-only</code>: theorems read off structure-field
+                accessors or explicit assumption packages are classified as
+                <code>packaged (assumption-relative)</code> rather than as
+                unconditional <code>proved</code>.
               </p>
-              <div class="formal-anchor-cards" aria-label="Laws and Witnesses formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Measured absence, lawfulness, and required axes</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../laws/">Lemma sequence</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>lawViolationCount_eq_zero_iff_lawful</code>, <code>noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction</code>, and <code>requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_requiredAxisExact</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>proved</code> bridge anchors for finite measured witness lists, required witness coverage, and required-axis exactness.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Zero counts and required-axis conclusions are scoped to the selected finite witness family and supplied exactness assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No global witness absence, semantic lawfulness outside the selected observation, or repository-wide quality certificate follows.</dd>
-                    </div>
-                  </dl>
-                </article>
+            </section>
 
+            <section id="part-i" class="article-section">
+              <h2>Part I. Atoms, Objects, and Laws</h2>
+              <div class="formal-anchor-cards" aria-label="Part I formal anchors">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">
                     <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Required obstruction vanishing theorem schema</h3>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../atoms-objects-laws/">Atoms, Objects, and Laws</a></h3>
                     </div>
-                    <span class="status-badge status-badge-future">schema</span>
                   </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../laws/">Required theorem schema</a>.
-                  </p>
                   <dl class="formal-anchor-grid">
                     <div>
-                      <dt>Representative anchors</dt>
-                      <dd>Static instances are tracked by signature-integrated lawfulness and the finite static structural core formal anchor.</dd>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Atom/</code> (Atom, Axioms, Observation, Family, Configuration, ArchitectureObject, Invariant, Law, Obstruction, LawfulnessZero, ThreeReading, ObjectAlgebra, AATCore), <code>Formal/AG/Examples/FiniteModel.lean</code></dd>
                     </div>
                     <div>
-                      <dt>Assumptions</dt>
-                      <dd><code>WitnessComplete</code>, <code>AxisExact</code>, <code>CoverageComplete</code>, and <code>ObservationExact</code> for the selected law universe.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The equivalence is read only inside the theorem boundary that supplies those assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>The schema is not a proof that every architecture principle, metric axis, runtime trace, or semantic behavior is globally satisfied.</dd>
+                      <dt>Ledger section</dt>
+                      <dd>AG版AAT Lean形式化 PRD-1 bootstrap in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>I.定義1.1</code></td><td><code>AAT.AG.AtomRecord</code>, <code>AAT.AG.AtomCarrier</code></td><td><code>defined only</code></td></tr>
+                        <tr><td><code>I.公理A0-A8</code></td><td><code>AAT.AG.AtomAxiomSystem</code>, <code>AtomAxiomSystem.primitive_exists</code>, <code>AtomAxiomSystem.typing_total</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>I.命題A9</code></td><td><code>AAT.AG.ObservationModel</code>, <code>no_exact_reconstruction_of_nonInjective</code>, <code>A9Example.observation_incompleteness_coexists_with_a8</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>I.定義5.1 / 5.2 / 命題5.3 / 定義5.4</code></td><td><code>AAT.AG.ArchitectureObject</code>, <code>ArchitectureObject.atom_origin</code>, <code>ArchitectureObject.ObjectEquivalence</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>I.命題9.1 / 9.2 / 定理9.3</code></td><td><code>AAT.AG.ObstructionSound</code>, <code>AAT.AG.ObstructionComplete</code>, <code>AAT.AG.lawfulness_iff_omegaU_zero</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>I.定理9.3 後段</code></td><td><code>AAT.AG.concreteThreeReadingAgreement</code>, <code>ThreeReadingAgreementAssumptions.threeReadingAgreement</code></td><td><code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
+                        <tr><td><code>I.定理10.5</code></td><td><code>AAT.AG.AATCorePackage</code>, <code>AATCorePackage.exists_ofComponents_noHEq</code>, <code>AATCorePackage.AtomTowerRealization</code></td><td><code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
+                        <tr><td><code>I.R10 finite model / 例8.3 / 例8.4 / 定理9.3 example</code></td><td><code>FiniteModel.cycleObstructionCircuit</code>, <code>FiniteModel.finite_lawfulness_iff_omega_zero</code>, <code>FiniteModel.corePackage</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </article>
               </div>
             </section>
 
-            <section id="architecture-signature" class="article-section">
-              <h2>Architecture Signature</h2>
-              <div class="formal-anchor-cards" aria-label="Architecture Signature formal-anchor audit trail">
+            <section id="part-ii" class="article-section">
+              <h2>Part II. Architecture Geometry, Sites, and Sheaves</h2>
+              <div class="formal-anchor-cards" aria-label="Part II formal anchors">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">
                     <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Signature schema and selected axes</h3>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../sites-and-sheaves/">Architecture Geometry, Sites, and Sheaves</a></h3>
                     </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/">Definition 5.1</a> and
-                    <a href="../architecture-signature/">Proposition 5.2</a> /
-                    <a href="../architecture-signature/">Proof idea</a>.
-                  </p>
                   <dl class="formal-anchor-grid">
                     <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>selectedRequiredLawAxes</code>, <code>mem_selectedRequiredLawAxes_iff</code>, and <code>axisMeasurementClass</code>.</dd>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Site/</code> (Basic, Context, ContextCategory, Coverage, Topology, Adequate, Geometry, Sheaf, Descent, FinitePoset, SheafCategory), <code>Formal/AG/Examples/FiniteModel.lean</code></dd>
                     </div>
                     <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for schema and axis classifiers; selected-axis membership and bridge facts are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The concrete schema is a bounded v1 signature surface. It does not define a scalar quality score or make optional axes required.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness" target="_blank" rel="noopener noreferrer">Signature-integrated lawfulness</a></dd>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-2 / 第II部 Architecture Geometry・Site・Sheaf in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
                     </div>
                   </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Core</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Axis</code></li>
-                      <li><code>ArchitectureSignature.selectedRequiredLawAxes</code></li>
-                      <li><code>ArchitectureSignature.IsSelectedRequiredLawAxis</code></li>
-                      <li><code>ArchitectureSignature.mem_selectedRequiredLawAxes_iff</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisValue</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasurementClass</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Required zero-axis theorem package</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchor</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/">Proposition 5.2</a> and
-                    <a href="../architecture-signature/">Proof idea 5.2</a>,
-                    and the finite static theorem boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, <code>ArchitectureZeroCurvatureTheoremPackage</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>proved</code> for the selected finite static structural bridge and its matrix diagnostic corollaries.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Finite law universe, complete witness coverage, required-axis exactness, and selected static structural laws. Matrix diagnostics are derived corollaries, not required zero axes.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L107" target="_blank" rel="noopener noreferrer">Current QED boundary</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureSignature.ArchitectureLawModel</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureLawModel.signatureOf</code></li>
-                      <li><code>ArchitectureSignature.RequiredSignatureAxesAvailableAndZero</code></li>
-                      <li><code>ArchitectureSignature.RequiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesAvailableAndZero</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.MatrixDiagnosticCorollaries</code></li>
-                      <li><code>ArchitectureSignature.matrixDiagnosticCorollaries_of_requiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Measurement boundary and unmeasured axes</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/">Definition 5.3</a>,
-                    <a href="../architecture-signature/">Proposition 5.4</a>,
-                    <a href="../architecture-signature/">Proof 5.4</a>, and
-                    <a href="../architecture-signature/">Definition 5.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>MeasurementBoundary</code>, <code>ArchitectureClaim.unmeasured_not_measuredZero</code>, <code>ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>, and <code>AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for boundary records; unmeasured-not-zero accessors and optional-axis boundary theorems are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd><code>none</code>, missing, private, out-of-scope, and unmeasured evidence are not available measured-zero certificates.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#chapter-11-analytic-axis-boundary-api" target="_blank" rel="noopener noreferrer">Chapter 11 analytic axis boundary API</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>MeasurementBoundary</code></li>
-                      <li><code>MeasurementBoundary.IsMeasuredZero</code></li>
-                      <li><code>MeasurementBoundary.IsUnmeasured</code></li>
-                      <li><code>MeasurementBoundary.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasuredZero_of_axisValue_none</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.unmeasured_not_availableAndZero</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Claim level and theorem-boundary metadata</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../architecture-signature/">Definition 6.1</a>,
-                    <a href="../architecture-signature/">Proposition 6.2</a>,
-                    <a href="../architecture-signature/">Proof idea 6.2</a>,
-                    <a href="../architecture-signature/">Proposition 6.4</a>,
-                    <a href="../architecture-signature/">Proof idea 6.4</a>,
-                    <a href="../architecture-signature/">Definition 6.3</a>, and
-                    <a href="../architecture-signature/">the chapter summary</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ClaimLevel</code>, <code>ArchitectureClaim</code>, <code>ArchitectureTheoremPackage</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ToolingTheoremPackageMetadata</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for schemas; non-conclusion accessors, tooling-vs-formal separation, and missing-precondition blockers are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Formal, tooling, empirical, and hypothesis claims remain distinct. Tooling evidence and measured witnesses are not promoted to formal proved claims without theorem references and discharged assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture" target="_blank" rel="noopener noreferrer">Architecture Core / Certified Architecture</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ClaimLevel</code></li>
-                      <li><code>ArchitectureClaim</code></li>
-                      <li><code>ArchitectureClaim.records_nonConclusions_iff</code></li>
-                      <li><code>ArchitectureClaim.toolingOnly_no_formalPackage</code></li>
-                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureTheoremPackage</code></li>
-                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
-                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.records_nonConclusions_iff</code></li>
-                    </ul>
-                  </details>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>II.定義3.1 / §5.1-5.4</code></td><td><code>AAT.AG.Site.ArchitectureContext</code>, <code>AAT.AG.Site.ContextMorphism</code>, <code>ContextMorphism.IsRestriction</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.定義4.1 / 命題4.2 / 仮定4.3</code></td><td><code>ContextPreorderCategory</code>, <code>quotientFiniteMeetPosetCategoryOf</code>, <code>ContextOverlapPullback</code></td><td><code>defined only</code> / <code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
+                        <tr><td><code>II.定義7.1後半 / R4</code></td><td><code>AAT.AG.Site.AATGrothendieckTopology</code>, <code>AATGrothendieckTopology.eq_coverage_toGrothendieck</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.定義7.2 / 補題7.2A</code></td><td><code>AAT.AG.Site.UAdequateCover</code>, <code>AAT.AG.Site.witnessClosureCover_uAdequate</code>, <code>SeedWitnessClosureCover.uAdequate</code></td><td><code>defined only</code> / <code>proved</code> / <code>packaged (assumption-relative)</code></td></tr>
+                        <tr><td><code>II.定義8.1 / 定義2.1</code></td><td><code>AAT.AG.Site.AATSite</code>, <code>AAT.AG.Site.ArchitectureGeometry</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.定義9.1 / 定義10.1 / 定義10.2</code></td><td><code>AAT.AG.Site.AATSheafCondition</code>, <code>AATSheafCondition.iff_presieve_isSheaf</code>, <code>AAT.AG.Site.ArchitectureSheafFamily</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.定義11.1 / 定義11.2 / 定義12.1</code></td><td><code>AAT.AG.Site.AATGluingData</code>, <code>AAT.AG.Site.AATDescent</code>, <code>AAT.AG.Site.AATSheafificationGap</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.定義7.2B / 命題7.2C</code></td><td><code>AAT.AG.Site.FinitePosetCechComplex</code>, <code>finitePosetCechCohomology_vanishes_above_nerveDimension</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.§13 / R10</code></td><td><code>AAT.AG.Site.AATSh</code>, <code>AATSh.toAATSheaf</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>II.R11 finite model examples</code></td><td><code>FiniteModel.twoPatchCover_uAdequate</code>, <code>FiniteModel.twoPatchUnit_descent</code>, <code>FiniteModel.siteTopology_eq_coverage_toGrothendieck</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </article>
               </div>
             </section>
 
+            <section id="part-iii" class="article-section">
+              <h2>Part III. Law Algebra, Obstruction Ideals, and the Lawful Locus</h2>
+              <div class="formal-anchor-cards" aria-label="Part III formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../law-algebra-lawful-locus/">Law Algebra and the Lawful Locus</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/LawAlgebra/</code> (Coordinate, AmbientAlgebra, StructuralRelation, StructureSheaf, WitnessIdeal, IdempotentCollapse, StanleyReisner, ObstructionIdeal, LawfulLocus, Nullstellensatz, AffineChart, Scheme, Correspondence, FiniteExamples)</dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-3 / 第III部 Law Algebra・Obstruction Ideal・Lawful Locus in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>III.定義4.1</code></td><td><code>AAT.AG.LawAlgebra.FreeTypedCommAlg</code>, <code>FreeTypedCommAlg.eq_mvPolynomial</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>III.定義4.2 / 定義4.3 / 条件4.4 / 定義10.1</code></td><td><code>AAT.AG.LawAlgebra.StructuralRelationFamily</code>, <code>StructuralRelationFamily.JStruct</code>, <code>StructuralRelationFamily.RawAmbientLawAlgebra</code></td><td><code>defined only</code> / <code>proved under explicit restriction-stability and presheaf-law assumptions</code></td></tr>
+                        <tr><td><code>III.補題5.6A</code></td><td><code>AAT.AG.LawAlgebra.BoolPoint</code>, <code>IdempotentCollapse.IdempotentAlgebra</code></td><td><code>proved</code></td></tr>
+                        <tr><td><code>III.定義5.6B / 定理5.6C / 系5.6D</code></td><td><code>StanleyReisner.SquareFreeWitnessRegime</code>, <code>SquareFreeWitnessRegime.obstructionIdeal</code></td><td><code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>III.定義7.1 / 定義7.2</code></td><td><code>AAT.AG.LawAlgebra.LawfulLocus.lawfulLocus</code>, <code>LawfulLocus.LawfulSectionData</code></td><td><code>defined only</code> / <code>proved bridge</code></td></tr>
+                        <tr><td><code>III.定理候補7.2A / 定義7.2B / 命題7.2C</code></td><td><code>Nullstellensatz.ArchitectureNullstellensatzCandidate</code>, <code>Nullstellensatz.UnlawfulnessCertificate</code></td><td><code>statement only</code> / <code>defined only</code> / <code>proved</code></td></tr>
+                        <tr><td><code>III.定義8.1 / 定義8.2 / 定義8.5 / 定理8.3 / 仮定8.4</code></td><td><code>AAT.AG.LawAlgebra.AffineChart.SpecAAT</code>, <code>AffineAATChart.rawAffineChartRepresentability</code></td><td><code>defined only</code> / <code>proved for raw quotient representability and under selected presentation assumptions</code></td></tr>
+                        <tr><td><code>III.定理11.1</code></td><td><code>Correspondence.LawfulnessIdealCorrespondencePackage</code>, <code>Correspondence.lawful_iff_pulledObstructionIdeal_eq_bot</code></td><td><code>proved under explicit correspondence assumptions</code> / <code>proved bridge</code></td></tr>
+                        <tr><td><code>III.例5.6E / 例7.2D / R13 finite examples</code></td><td><code>AAT.AG.LawAlgebra.FiniteExamples.StanleyReisnerChart.regime</code>, <code>StanleyReisnerChart.obstructionIdeal_eq_stanleyReisnerIdeal</code></td><td><code>proved examples</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
 
-            <section id="local-law-packages" class="article-section">
-              <h2>Local Law Packages</h2>
+            <section id="part-iv" class="article-section">
+              <h2>Part IV. Obstruction Cohomology</h2>
+              <div class="formal-anchor-cards" aria-label="Part IV formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../obstruction-cohomology/">Obstruction Cohomology</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Cohomology/</code> (Basic, ObstructionSheaf, CechComplex, Cohomology, FinitePosetComparison, GluingMismatch, LocalFlatnessGap, BoundaryHolonomy, BoundaryResidue, HigherOverlap, FlatnessCriterion, CoverNerve, PeriodStokes, FiniteExamples)</dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-4 / 第IV部 Obstruction Cohomology in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>IV.定義2.1 / 定義2.2</code></td><td><code>AAT.AG.Cohomology.ObstructionSheaf</code>, <code>AAT.AG.Cohomology.Ob_U</code></td><td><code>defined only</code></td></tr>
+                        <tr><td><code>IV.定義3.1-3.3</code></td><td><code>AAT.AG.Cohomology.CoverRelativeCechComplex</code>, <code>CoverRelativeCechComplex.d</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IV.定義4.1</code></td><td><code>CoverRelativeCechComplex.CechCocycle</code>, <code>CoverRelativeHn</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IV.定義6.1 / 6.2 / 定理7.1</code></td><td><code>HiddenCouplingData</code>, <code>HiddenCouplingData.hiddenCouplingClass</code>, <code>CompatibleGlobalLawfulSection</code></td><td><code>proved under explicit finite overlap-wise restriction/coboundary soundness</code></td></tr>
+                        <tr><td><code>IV.定理9.2</code></td><td><code>AAT.AG.Cohomology.BoundaryHolonomyVanishes</code>, <code>BoundaryResidueHypotheses</code></td><td><code>proved under explicit Boundary Residue hypotheses</code></td></tr>
+                        <tr><td><code>IV.定理11.1 / 系11.2</code></td><td><code>GluingObstructionClass</code>, <code>AdditiveH1ClassVanishes</code></td><td><code>proved under explicit finite C0 adjustment data</code> / <code>proved under explicit Cohomological Flatness hypotheses</code></td></tr>
+                        <tr><td><code>IV.定義12.1 / 定理12.2 / 系12.3 / 定理12.4 / 系12.5</code></td><td><code>AAT.AG.Cohomology.CoverNerve</code>, <code>FiniteDimensionalNerveCohomologyData</code></td><td><code>proved under explicit finite-dimensional accounting data</code> / <code>proved from selected finite cochain complex and edge-support absorption certificate</code></td></tr>
+                        <tr><td><code>IV.R10(a) / AC13</code></td><td><code>AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden.Chart</code>, <code>coverNerve</code>, <code>LocallyLawful</code></td><td><code>proved finite example</code> / <code>proved nonzero circle-nerve firing</code></td></tr>
+                        <tr><td><code>IV.定義13.1 / 定理13.2 / 定義13.4</code></td><td><code>AAT.AG.Cohomology.FiniteCechChainComplex</code>, <code>StokesCompatiblePairing</code></td><td><code>proved under explicit pairing/accounting data</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-v" class="article-section">
+              <h2>Part V. Derived Law Geometry and Repair</h2>
+              <div class="formal-anchor-cards" aria-label="Part V formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../derived-geometry-repair/">Derived Law Geometry and Repair</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Derived/</code> (LawfulLoci, Koszul, Intersection, FreeResolution, TaylorResolution, Transversality, RepairProfile, Counterexample, Transfer, StructurallyLawfulRepair, HilbertSeries, WellFoundedRepair), <code>Formal/AG/Examples/DerivedPart5.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-5 / 第V部 Derived Law Geometry と Repair in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>V.定義2.1 / 定義3.1</code></td><td><code>AAT.AG.Derived.LawfulLoci.LawUniverseReading</code>, <code>LawUniversePair</code>, <code>LawUniversePair.I_U</code>, <code>LawUniversePair.flatU</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>V.定義2.3 / 原則2.4</code></td><td><code>AAT.AG.Derived.Koszul.SelectedGeneratorFamily</code>, <code>KoszulComplex</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>V.定義4.1 / 5.1 / 5.2</code></td><td><code>AAT.AG.Derived.Intersection.mathlibTor</code>, <code>SelectedDerivedTensorComplex.homology0LinearEquivClassicalJoint</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>V.R4 / 定義5.4 / 命題5.5</code></td><td><code>AAT.AG.Derived.FreeResolution.SelectedFiniteFreeResolution</code>, <code>SelectedTensorComplex.tensorOfResolution_certificate</code></td><td><code>proved under explicit Mathlib projective-resolution / Taylor identification data</code></td></tr>
+                        <tr><td><code>V.定理6.1 / 定義7.1-7.4 / 定理7.3</code></td><td><code>AAT.AG.Derived.Transversality.LawConflictVanishes</code>, <code>DerivedNonTransverse</code>, <code>MathlibTorVanishes</code></td><td><code>proved under explicit selected transversality criterion data</code></td></tr>
+                        <tr><td><code>V.定義10.1 / 定義10.4 / 定理10.5 / 定理10.6</code></td><td><code>AAT.AG.Derived.Transfer.TransferredObstruction</code>, <code>TransferPairingData.supportLocalized_or_pairingJustified</code></td><td><code>proved under explicit transfer-pairing data</code></td></tr>
+                        <tr><td><code>V.定義13.1 / 定義13.2 / 定理13.3 / 定理13.4</code></td><td><code>AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile</code>, <code>RepairComparisonProfile.no_infinite_repair_sequence</code></td><td><code>proved under explicit well-founded repair profile / finite synthesis data</code></td></tr>
+                        <tr><td><code>V.R11 finite examples</code></td><td><code>AAT.AG.FiniteModel.DerivedPart5.Example56TorCalculation</code>, <code>Example56TorCalculation.tor1_nonzero</code></td><td><code>proved examples under explicit selected LawConflict package / principal-kernel data</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-vi" class="article-section">
+              <h2>Part VI. Singularity, Monodromy, and Stack</h2>
+              <div class="formal-anchor-cards" aria-label="Part VI formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../singularity-monodromy-stack/">Singularity, Monodromy, and Stack</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/SingularityMonodromyStack/</code> (Stratum, CotangentInterface, SmoothSingular, SingularityTheorems, Kuranishi, OperationCategory, OperationHomotopy, Monodromy, MonodromyTheorems, and companion files)</dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-6 / 第VI部 Singularity・Monodromy・Stack in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>VI.定義2.1 / 原則2.2</code></td><td><code>ArchitectureStratum</code>, <code>StratumReadingParameter</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>VI.定義4.1 / 定義5.1 / 定義5.2</code></td><td><code>DeformationObstructionTheory</code>, <code>USmooth</code>, <code>USingular</code></td><td><code>defined only</code> / <code>proved under explicit selected effectiveness/soundness interface</code></td></tr>
+                        <tr><td><code>VI.定理6.1 / 定理6.2 / 系6.5</code></td><td><code>DeformationObstructionTheory.architectureSingularityCriterion</code>, <code>SquareZeroExtensionData.lift_of_obstruction_zero</code></td><td><code>proved under explicit selected deformation-obstruction interface</code></td></tr>
+                        <tr><td><code>VI.定義6.3 / 定理候補6.4 / 定義7.1</code></td><td><code>KuranishiLocalModelStatement</code>, <code>GodObject.multipleLawLociNonTransverse_holds</code></td><td><code>defined only</code> / <code>statement only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>VI.定理10.5 / 定理10.7 / 定理11.1</code></td><td><code>TransportDescentProblem.transport_descent_criterion</code>, <code>SquareMonodromyFillingProblem.squareMonodromy_nonfillability</code></td><td><code>proved under explicit selected transport / axis / debt interface</code></td></tr>
+                        <tr><td><code>VI.定義12.1 / 定義12.3 / 定理12.4</code></td><td><code>RefactorGroupoid</code>, <code>RefactorMorphismFamily</code></td><td><code>defined only</code> / <code>proved selected operation-invariant Galois connection</code></td></tr>
+                        <tr><td><code>VI.定義15.1 / 定義16.1 / 定理16.2</code></td><td><code>DecompositionGroupoid</code>, <code>DecompositionGroupoid.inverseHom</code></td><td><code>defined only</code> / <code>proved under explicit selected gerbe soundness interface</code></td></tr>
+                        <tr><td><code>VI.R12 finite examples</code></td><td><code>AAT.AG.FiniteModel.SingularityMonodromyStackPart6.SingularBoundaryToyModel</code>, <code>SingularBoundaryToyModel.verifies_singular_boundary</code>, <code>OperationSquareToyModel.verifies_square_nonfillability</code></td><td><code>proved example theorem</code> / <code>selected witness package</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-vii" class="article-section">
+              <h2>Part VII. Representations, Periods, and Analysis</h2>
+              <div class="formal-anchor-cards" aria-label="Part VII formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../representations-periods/">Representations, Periods, and Analysis</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/RepresentationAnalysis/</code> (Bootstrap, AATSch, PreservationReflection, GraphMatrix, Period, FiniteHomology, PeriodSeparation, SignatureCurvature, Metric, and companion files)</dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>PRD-7 / 第VII部 Representation・Periods・Analysis in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>VII.定義2.1</code></td><td><code>AAT.AG.RepresentationAnalysis.AATSch</code>, <code>AATSch.underlyingScheme</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>VII.命題3.4</code></td><td><code>DependencyAcyclicityProfile.acyclicityPreservation</code></td><td><code>proved</code></td></tr>
+                        <tr><td><code>VII.命題3.6</code></td><td><code>adjacencyMatrixPower</code>, <code>matrixWalkCount</code>, <code>CountedDirectedWalk.length_lt_card_of_acyclic</code></td><td><code>proved</code></td></tr>
+                        <tr><td><code>VII.定義5.2A</code></td><td><code>FiniteCechStrictPeriodRepresentative</code>, <code>FiniteCechStrictPeriodRepresentative.representsCohomologyClass_holds</code></td><td><code>proved under explicit finite Cech data and selected pairing-invariance assumptions</code></td></tr>
+                        <tr><td><code>VII.定理6.1 / 例6.2</code></td><td><code>PeriodSeparationReadingFamily</code>, <code>PeriodSeparation</code></td><td><code>proved under selected finite witness</code></td></tr>
+                        <tr><td><code>VII.定理12.5</code></td><td><code>MarginStabilityProfile.marginStability_no_boundary_crossing</code></td><td><code>proved under explicit margin assumptions</code></td></tr>
+                        <tr><td><code>VII.定理15.4</code></td><td><code>RepresentationConservativityUnderAdequacy.representation_conservativity_under_adequacy</code></td><td><code>proved under explicit adequacy and witness-exactness assumptions</code></td></tr>
+                        <tr><td><code>VII.定理16.1</code></td><td><code>AATSynthesisPackage</code>, <code>AATSynthesisPackage.aatSite_is_geometry_site</code></td><td><code>proved theorem package</code></td></tr>
+                        <tr><td><code>VII.R13 finite examples</code></td><td><code>AAT.AG.FiniteModel.RepresentationAnalysisPart7.dependencyDAG</code>, <code>dependencyDAG_walkCount_ab_positive</code>, <code>periodSeparation_toy_model</code></td><td><code>proved selected examples</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-viii" class="article-section">
+              <h2>Part VIII. Measurement Theory</h2>
+              <div class="formal-anchor-cards" aria-label="Part VIII formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../measurement-theory/">Measurement Theory</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Measurement/</code> (Bootstrap, Profile, Verdict, FiniteRegime, Computability, SquareFreeRepair, Stability, RefactorTransport, CellularLaplacian, Hodge, LawConflict, SupportTransfer, Packet, GAGA, Examples)</dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>AAT Algebraic-Geometric Part VIII Measurement Theory in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>VIII.定義2.1</code></td><td><code>AAT.AG.Measurement.MeasurementProfile</code>, <code>MeasurementProfile.Measured_M</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>VIII.定義3.1 / 原則3.2 / 定義3.3</code></td><td><code>AAT.AG.Measurement.MeasurementVerdict</code> with <code>measured_zero</code>, <code>measured_nonzero</code>, <code>unmeasured</code></td><td><code>defined only</code> / <code>proved constructor disjointness</code></td></tr>
+                        <tr><td><code>VIII.定義4.1</code></td><td><code>FiniteMeasurementRegime</code>, <code>FiniteMeasurementRegime.effectiveCoefficient_holds</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>VIII.定理4.2</code></td><td><code>FiniteCechComplexRepresentation</code>, <code>FiniteVerdictComputationObject</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>VIII.定義5.1 / 定理5.2 / 定義5.4 / 定理候補5.5</code></td><td><code>SquareFreeRepairRegime</code>, <code>AlexanderDualComplex</code>, <code>MinimalRepairHittingSet</code></td><td><code>defined only</code> / <code>proved theorem package construction</code> / <code>theorem candidate statement-only</code></td></tr>
+                        <tr><td><code>VIII.定義7.1 / 定義7.2 / 定理7.3</code></td><td><code>RefactorMorphism</code>, <code>PullbackObstructionClass.cechPullbackReading_holds</code></td><td><code>defined only</code> / <code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>VIII.定義8.1-8.3 / 定理8.5 / 定理8.6 / 系8.7</code></td><td><code>CellularMeasurementModel</code>, <code>SheafLaplacianReading.laplacian_eq_formula_holds</code></td><td><code>defined only</code> / <code>proved theorem package construction</code> / <code>theorem candidate statement-only</code></td></tr>
+                        <tr><td><code>VIII.定理12.3 / 原則12.4</code></td><td><code>AATGAGACertifiedFields</code>, <code>AATGAGACandidateInterfaces.candidateInterfacesSeparatedFromCertified_holds</code></td><td><code>defined only</code> / <code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>VIII.R11 finite examples</code></td><td><code>PseudoCircleMeasurementDomain</code>, <code>TinyMeasurementSite</code></td><td><code>proved selected finite examples</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-ix" class="article-section">
+              <h2>Part IX. Evolution Geometry</h2>
+              <div class="formal-anchor-cards" aria-label="Part IX formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../evolution-geometry/">Evolution Geometry</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/Evolution/</code> (Bootstrap, TraceCategory, Profile, TemporalProductSite, TemporalCoefficient, StateTransition, TemporalLaw, TemporalObstruction, ReplayDescent, Dissipation, FiniteDissipation, Lyapunov, Force), <code>Formal/AG/Examples/EvolutionPart9.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>AAT Algebraic-Geometric Part IX Evolution Geometry in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>IX.§1 / 定義2.1</code></td><td><code>AAT.AG.Evolution.TraceCategory</code>, <code>TraceCategory.assoc_holds</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.§3 / R2</code></td><td><code>TemporalSite</code>, <code>TemporalSite.IncidenceLeg</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.§3 / R3</code></td><td><code>StateTransitionPresheaf</code>, <code>StateTransitionPresheaf.traceTransport</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.§3.4 / R4</code></td><td><code>TemporalMismatch</code>, <code>TemporalCocycle.differential_zero_holds</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.§4 / R5</code></td><td><code>ReplayDescentData</code>, <code>ReplayDescentData.zeroMismatchClass</code></td><td><code>defined only</code> / <code>proved theorem package</code></td></tr>
+                        <tr><td><code>IX.定理5.3 / R7</code></td><td><code>no_infinite_descending_sequence</code>, <code>InfiniteSelectedEvolutionPath</code></td><td><code>proved theorem package</code></td></tr>
+                        <tr><td><code>IX.§6.1 / R8</code></td><td><code>AATLyapunovReading</code>, <code>DissipativePolicy.nonIncreasingAlongPolicy_of_dissipative</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.定義7.1 / 定理候補7.2 / R9</code></td><td><code>Force</code>, <code>ForceIntegrationData</code>, <code>IntegrableForce</code></td><td><code>defined only</code> / <code>statement-only candidate</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>IX.R10 / finite temporal examples</code></td><td><code>AAT.AG.Examples.EvolutionPart9.TinyTime</code>, <code>twoStepTrace</code>, <code>twoStepTraceFiniteRegime</code></td><td><code>proved examples</code> / <code>selected finite fixtures</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="part-x" class="article-section">
+              <h2>Part X. Semantic Repair Descent (SAGA)</h2>
+              <div class="formal-anchor-cards" aria-label="Part X formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Chapter</span>
+                      <h3><a href="../semantic-repair-saga/">Semantic Repair Descent (SAGA)</a></h3>
+                    </div>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean files</dt>
+                      <dd><code>Formal/AG/SemanticRepair/</code> (Bootstrap, Projection, GluingComplex, AdditiveH1, SiteCech, H1Comparison, SagaComparison, Examples) and the Part X example files under <code>Formal/AG/Examples</code></dd>
+                    </div>
+                    <div>
+                      <dt>Ledger section</dt>
+                      <dd>AAT Algebraic-Geometric Part X Semantic Repair Descent (SAGA) in <code>docs/aat/lean_theorem_index_ag_aat.md</code></dd>
+                    </div>
+                  </dl>
+                  <div style="overflow-x: auto;">
+                    <table>
+                      <thead>
+                        <tr><th>Text label</th><th>Representative Lean declarations</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><code>X.R0</code></td><td><code>AAT.AG.SemanticRepair.SemanticAtomProjection</code>, <code>FiniteSemanticRepairGluingComplex</code>, <code>SemanticFaithfulnessHypotheses</code></td><td><code>defined only</code> / <code>proved accessor</code></td></tr>
+                        <tr><td><code>X.§4 additive H1</code></td><td><code>SemanticRepairCover</code>, <code>SemanticRepairAdditiveCechH1Data</code></td><td><code>defined only</code> / <code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.§6 Atom-generated site / Čech bridge</code></td><td><code>atomGeneratedCoverage_generates_AATGrothendieckTopology</code>, <code>SemanticRepairCover.toCoverRelativeCechCover</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.定義7.1 / 定理7.2</code></td><td><code>SemanticRepairAdditiveH1Surface</code>, <code>SemanticRepairCoverRelativeH1Comparison</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.定理7.3 / 定理7.5</code></td><td><code>boundedAdditiveH1Zero_iff_surfaceH1Zero</code>, <code>trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package</code></td><td><code>proved theorem package construction</code></td></tr>
+                        <tr><td><code>X.定理8.1 / 8.2 / 8.4 / 8.5</code></td><td><code>GeneratedSourceC0ZeroPackage</code>, <code>displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage</code></td><td><code>proved boundary theorem package construction</code></td></tr>
+                        <tr><td><code>X.例9.1</code></td><td><code>Examples.SemanticRepairPart10.quotientPresheaf</code>, <code>quotientIsSheaf</code>, <code>semanticCechData</code></td><td><code>proved lawful firing instance</code></td></tr>
+                        <tr><td><code>X.例9.2</code></td><td><code>Examples.SemanticRepairPart10.circleCoverageRequirements</code>, <code>circleSite</code>, <code>circleF2Presheaf</code></td><td><code>proved nonzero circle-nerve transfer instance</code></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="appendix" class="article-section">
+              <h2>Appendix</h2>
               <p>
-                This page adds no theorem. It repackages the current
-                proof-obligation and theorem-index entries as a web-native
-                chapter with citable statements and nearby non-conclusions.
+                The <a href="../appendix/">appendix chapter</a> is the status
+                ledger of the canonical text: it collects the principal
+                undefined terms, primitive predicates, and future design
+                obligations of Parts I through X. Its audit surface is the
+                ledger pair itself &#8212;
+                <code>docs/aat/lean_theorem_index_ag_aat.md</code> for
+                implemented Lean declarations and
+                <code>docs/aat/proof_obligations_ag_aat.md</code> for proof
+                obligations and empirical hypotheses &#8212; together with the
+                peer-review status normalization in
+                <code>docs/aat/lean_ag_peer_review_inventory.md</code>. The
+                appendix carries no Lean declaration rows of its own, so this
+                page anchors it to those documents rather than to a
+                declaration table.
               </p>
-              <div class="formal-anchor-cards" aria-label="Local Law Packages formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Projection and DIP bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../design-principle-layers/">Definition 7.1</a>,
-                    <a href="../design-principle-layers/">Proposition 7.2</a>,
-                    <a href="../design-principle-layers/">Proof idea 7.2</a>,
-                    <a href="../design-principle-layers/">Definition 7.3</a>,
-                    <a href="../design-principle-layers/">Proposition 7.4</a>, and
-                    <a href="../design-principle-layers/">Proof idea 7.4</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ProjectionSound</code>, <code>ProjectionComplete</code>, <code>ProjectionExact</code>, <code>DIPCompatible</code>, and <code>StrongDIPCompatible</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Projection vocabulary is <code>defined only</code>; soundness, exactness, and selected DIP bridge facts are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Concrete graph, selected projection, abstract graph, and explicit soundness or exactness assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#projection--dip" target="_blank" rel="noopener noreferrer">Projection / DIP</a></dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>Projection or DIP compatibility alone does not prove global layering, runtime completeness, or semantic completeness.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>InterfaceProjection</code></li>
-                      <li><code>AbstractGraph</code></li>
-                      <li><code>ProjectionSound</code></li>
-                      <li><code>ProjectionComplete</code></li>
-                      <li><code>ProjectionExact</code></li>
-                      <li><code>projectionExact_iff_sound_and_complete</code></li>
-                      <li><code>DIPCompatible</code></li>
-                      <li><code>StrongDIPCompatible</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Observation and LSP bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../design-principle-layers/">Definition 7.5</a>,
-                    <a href="../design-principle-layers/">Proposition 7.6</a>, and
-                    <a href="../design-principle-layers/">Proposition 7.7</a> /
-                    <a href="../design-principle-layers/">Proof idea</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>Observation</code>, <code>ObservationFactorsThrough</code>, <code>LSPCompatible</code>, and <code>lspCompatible_iff_noLSPObstruction</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Observation vocabulary is <code>defined only</code>; selected factorization and finite violation-count bridges are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Selected observation, equivalence relation, finite same-abstraction pair coverage, and decidable observations.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#observation--lsp" target="_blank" rel="noopener noreferrer">Observation / LSP</a></dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No all-client substitutability, all-effect substitutability, or complete behavioral semantics follows.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>Observation</code></li>
-                      <li><code>ObservationFactorsThrough</code></li>
-                      <li><code>LSPCompatible</code></li>
-                      <li><code>LSPObstruction</code></li>
-                      <li><code>noLSPObstruction_of_lspCompatible</code></li>
-                      <li><code>lspCompatible_of_noLSPObstruction</code></li>
-                      <li><code>lspCompatible_iff_noLSPObstruction</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Local contract design pattern</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../design-principle-layers/">Local contract packages</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>LocalContractInvariant</code>, <code>LocalReplacementOperation</code>, <code>localContractDesignPattern</code>, and <code>localContractDesignPattern_records_nonConclusion</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>State, operation, invariant, and pattern schemas are <code>defined only</code>; selected preservation and non-conclusion accessors are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Proof-carrying local replacement contracts over selected projection, observation, and DIP/LSP invariant families.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#L871" target="_blank" rel="noopener noreferrer">Local contract design pattern</a></dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>Local contracts do not imply unconditional <code>Decomposable</code>, <code>StrictLayered</code>, or global architecture flatness.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>LocalContractState</code></li>
-                      <li><code>LocalReplacementOperation</code></li>
-                      <li><code>LocalContractInvariant</code></li>
-                      <li><code>localReplacementOperation_preserves_projectionSound</code></li>
-                      <li><code>localReplacementOperation_preserves_lspCompatible</code></li>
-                      <li><code>localReplacementOperation_preserves_dipCompatible</code></li>
-                      <li><code>localContractLayer_nonConclusion</code></li>
-                      <li><code>localContractDesignPattern</code></li>
-                      <li><code>localContractDesignPattern_closure_law</code></li>
-                      <li><code>localContractDesignPattern_records_nonConclusion</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Three-layer flatness</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../design-principle-layers/">Definition 8.1</a>,
-                    <a href="../design-principle-layers/">Proposition 8.2</a>, and
-                    <a href="../design-principle-layers/">Non-conclusion 8.3</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureFlatWithin</code>, <code>SplitFeatureExtensionWithin</code>, <code>LawfulExtensionPreservesFlatness</code>, and <code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Flatness schemas are <code>defined only</code>; bounded preservation and runtime / semantic discharge bridges are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Static, runtime, and semantic evidence with explicit coverage, exactness, and no-unmeasured-required-axis assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#flatness" target="_blank" rel="noopener noreferrer">Flatness</a></dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No automatic global <code>ArchitectureFlat</code>, extractor completeness, runtime telemetry completeness, or semantic universe completeness follows.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureFlatnessModel</code></li>
-                      <li><code>StaticFlatWithin</code></li>
-                      <li><code>RuntimeFlatWithin</code></li>
-                      <li><code>SemanticFlatWithin</code></li>
-                      <li><code>ArchitectureFlatWithin</code></li>
-                      <li><code>NoUnmeasuredRequiredAxis</code></li>
-                      <li><code>SplitFeatureExtensionWithin</code></li>
-                      <li><code>splitFeatureExtensionWithin_recordsNonConclusions</code></li>
-                      <li><code>LawfulExtensionPreservesFlatness</code></li>
-                      <li><code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>SOLID-style counterexamples</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../design-principle-layers/">Counterexample 8.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>StrongAbstractCycleComponent.strongDIPCompatible</code>, <code>StrongAbstractCycleComponent.lspCompatible</code>, and <code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Current strong abstract-cycle counterexample package is <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Strong projection and selected observation package over a cyclic abstract graph.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#solid-counterexamples" target="_blank" rel="noopener noreferrer">SOLID Counterexamples</a></dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>SOLID-style local contracts are not a universal global structure theorem and do not imply decomposability.</dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>StrongAbstractCycleComponent.observation_factors</code></li>
-                      <li><code>StrongAbstractCycleComponent.lspCompatible</code></li>
-                      <li><code>StrongAbstractCycleComponent.projectionSound</code></li>
-                      <li><code>StrongAbstractCycleComponent.projectionExact</code></li>
-                      <li><code>StrongAbstractCycleComponent.dipCompatible</code></li>
-                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible</code></li>
-                      <li><code>StrongAbstractCycleComponent.not_decomposable</code></li>
-                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code></li>
-                    </ul>
-                  </details>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="calculus-and-extensions" class="article-section">
-              <h2>Calculus and Extensions</h2>
-              <div class="formal-anchor-cards">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Operation schema</span>
-                      <h3>ArchitectureOperation / OperationRoleSchema</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../operations-and-calculus/">Definition 9.1</a>,
-                    <a href="../operations-and-calculus/">Proposition 9.2</a>,
-                    and <a href="../operations-and-calculus/">Proof idea 9.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Operation/Operation.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L453" target="_blank" rel="noopener noreferrer">Architecture Operation</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureOperation</code></li>
-                      <li><code>OperationProofObligation</code></li>
-                      <li><code>ArchitectureOperation.generatedObligation_kind</code></li>
-                      <li><code>ArchitectureOperation.exists_sourceWitness_of_targetWitness</code></li>
-                      <li><code>OperationRoleSchema.discharged_of_conclusion</code></li>
-                      <li><code>OperationRoleSchema.generatedObligation_kind</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Calculus laws</span>
-                      <h3>Bounded law packages</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Law packages expose conclusions only after their bounded
-                    assumptions are supplied.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Operation/OperationLaws.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L599" target="_blank" rel="noopener noreferrer">Architecture Calculus Laws</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureCalculusLaw</code></li>
-                      <li><code>ArchitectureCalculusLaw.conclusion_of_assumptions</code></li>
-                      <li><code>finiteComposeEdgeUnionLaw_conclusion</code></li>
-                      <li><code>finiteReplaceEdgeEquivalenceLaw_conclusion</code></li>
-                      <li><code>protectRuntimeProtectionLaw_conclusion</code></li>
-                      <li><code>noSolutionCertificateSoundnessLaw_conclusion</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Feature extension</span>
-                      <h3>Static split, lifting, and bounded flatness</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../operations-and-calculus/">Definition 10.1</a>,
-                    <a href="../operations-and-calculus/">Proposition 10.2</a>,
-                    and <a href="../operations-and-calculus/">Proof idea 10.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Extension/FeatureExtension.lean</code>, <code>SplitExtensionLifting.lean</code>, <code>Flatness.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L280" target="_blank" rel="noopener noreferrer">Feature Extension</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>FeatureExtension</code></li>
-                      <li><code>StaticSplitFeatureExtension</code></li>
-                      <li><code>SelectedStaticSplitExtension</code></li>
-                      <li><code>FeatureViewSectionPackage</code></li>
-                      <li><code>SplitExtensionLifting_preservationPackage</code></li>
-                      <li><code>architectureFlatWithin_of_splitFeatureExtensionWithin</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Extension formula</span>
-                      <h3>Structural obstruction classification</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Single-label and multi-label obstruction witnesses, plus
-                    bounded bridges for filling, lifting, complexity transfer,
-                    and residual coverage gaps.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Extension/ArchitectureExtensionFormula.lean</code>, <code>Formal/Arch/Evolution/Chapter10ArchitectureExtensionFormula.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L1161" target="_blank" rel="noopener noreferrer">Architecture Extension Formula</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ExtensionObstructionWitness</code></li>
-                      <li><code>MultiLabelExtensionObstructionWitness</code></li>
-                      <li><code>ArchitectureExtensionFormula_structural</code></li>
-                      <li><code>liftingFailureExtensionObstructionWitness_classified</code></li>
-                      <li><code>complexityTransferExtensionObstructionWitness_classified</code></li>
-                      <li><code>residualCoverageGapExtensionObstructionWitness_classified</code></li>
-                    </ul>
-                  </details>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="repair-and-dynamics" class="article-section">
-              <h2>Repair and Dynamics</h2>
-              <div class="formal-anchor-cards">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Repair</span>
-                      <h3>Selected decrease and finite repair</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../dynamics-and-geometry/">Proposition 11.2</a> /
-                    <a href="../dynamics-and-geometry/">Proof idea</a> and
-                    <a href="../dynamics-and-geometry/">Proposition 11.3</a> /
-                    <a href="../dynamics-and-geometry/">Proof idea</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair" target="_blank" rel="noopener noreferrer">Repair</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-synthesis" target="_blank" rel="noopener noreferrer">Repair Synthesis</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> records for schemas; <code>proved</code> accessor and soundness anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected witness universe, admissible rule, finite plan, coverage / exactness, or valid certificate.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No solver completeness, extractor completeness, all obstruction removal, or empirical cost improvement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Transfer</span>
-                      <h3>Repair transfer counterexample</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../dynamics-and-geometry/">Counterexample 11.4</a>
-                    and <a href="../dynamics-and-geometry/">Proof idea 11.4</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-transfer-counterexample" target="_blank" rel="noopener noreferrer">Repair Transfer Counterexample</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Concrete finite counterexample with proved selected decrease, runtime increase, transfer, and non-conclusion anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Two-state skeleton, selected static universe, runtime diagnostic universe, and selected transfer schema.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global complexity conservation and no repository-wide quality statement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Dynamics</span>
-                      <h3>Path, trajectory, homotopy, and filling</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../dynamics-and-geometry/">Proposition 12.2</a> /
-                    <a href="../dynamics-and-geometry/">Proof idea</a> and
-                    <a href="../dynamics-and-geometry/">Proposition 12.3</a> /
-                    <a href="../dynamics-and-geometry/">Proof idea</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#architecture-path" target="_blank" rel="noopener noreferrer">Architecture Path</a>, <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#signature-dynamics" target="_blank" rel="noopener noreferrer">Signature Dynamics</a>, and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#diagram-filler" target="_blank" rel="noopener noreferrer">Diagram Filler</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Finite path schemas are defined; append, preservation, observation, filler refutation, and trajectory facts have proved anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected generators, selected observation, finite diagram, witness universe, and stepwise preservation premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global semantic completeness, HoTT completeness, all observation-axis preservation, or finite-universe completeness outside stated premises.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="representations-and-effects" class="article-section">
-              <h2>Representations and Effects</h2>
-              <div class="formal-anchor-cards" aria-label="Representations and Effects formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Matrix</span>
-                      <h3>Finite structural matrix bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/">Proposition 13.2</a>
-                    and <a href="../representations-and-effects/">Proof idea 13.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#matrix-bridge" target="_blank" rel="noopener noreferrer">Matrix Bridge</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>proved</code> for finite structural bridge and spectral-radius diagnostics.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Finite selected universe, unweighted graph relation, matrix representation, and coverage / closure premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No runtime propagation, cost interpretation, latency interpretation, or redefinition of <code>Decomposable</code>.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Analytic</span>
-                      <h3>Representation strength and valuation boundary</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved accessors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/">Proposition 13.5</a>
-                    and <a href="../representations-and-effects/">Proof idea 13.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#analytic-representation" target="_blank" rel="noopener noreferrer">Analytic Representation</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#chapter-11-analytic-representation-entrypoint" target="_blank" rel="noopener noreferrer">Chapter 11 Analytic Representation Entrypoint</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> for schemas; <code>proved</code> for preserving / reflecting accessor theorems and unmeasured-axis guards.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Representation map, selected witness universe, coverage, witness completeness, semantic contract coverage, and non-conclusion fields.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No analytic-value-only flatness, global witness completeness, runtime completeness, semantic universe completeness, or extractor completeness.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">State / Effect</span>
-                      <h3>Selected lawfulness and obstruction absence</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved bridges</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../representations-and-effects/">Proposition 14.2</a>
-                    and <a href="../representations-and-effects/">Proof idea 14.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#state-transition--effect-boundary-laws" target="_blank" rel="noopener noreferrer">State Transition / Effect Boundary Laws</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> for law family schemas; <code>proved</code> for selected lawfulness / obstruction-absence bridges.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected carrier, selected finite law cases, replay / roundtrip / compensation semantics, and effect-boundary observation semantics.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No event-log completeness, all failure-mode coverage, runtime telemetry completeness, CRUD general theorem, or operational cost improvement.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-
-            <section id="canonical-examples-and-readings" class="article-section">
-              <h2>Canonical Examples and Readings</h2>
-              <div class="formal-anchor-cards" aria-label="Canonical Examples and Readings formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Coupon static</span>
-                      <h3>Selected hidden dependency and repaired static split</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/">Example 15.1</a>,
-                    <a href="../canonical-examples-and-readings/">Proof idea 15.1</a>, and
-                    the static part of <a href="../canonical-examples-and-readings/">Signature
-                    reading 15.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code>, and <code>repaired_selectedStaticSplitFeatureExtension</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Finite component skeletons and extensions are <code>defined only</code>; witness existence, bad split failure, and repaired split recovery are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Selected static skeleton and declared payment-port policy; no runtime, semantic, telemetry, or complete-extractor claim.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#feature-extension" target="_blank" rel="noopener noreferrer">Feature Extension theorem index</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>CouponStaticDependencyExample.CoreComponent</code></li>
-                      <li><code>CouponStaticDependencyExample.FeatureComponent</code></li>
-                      <li><code>CouponStaticDependencyExample.ExtendedComponent</code></li>
-                      <li><code>CouponStaticDependencyExample.goodExtension</code></li>
-                      <li><code>CouponStaticDependencyExample.badExtension</code></li>
-                      <li><code>CouponStaticDependencyExample.repairedExtension</code></li>
-                      <li><code>CouponStaticDependencyExample.hiddenDependencyWitness</code></li>
-                      <li><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code></li>
-                      <li><code>CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension</code></li>
-                      <li><code>CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Semantic / analytic</span>
-                      <h3>Static zero and semantic residual stay separate</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/">Signature reading
-                      15.2</a> and <a href="../canonical-examples-and-readings/">Counterexample
-                      15.3</a> / <a href="../canonical-examples-and-readings/">Proof idea</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code>, <code>CouponDiscountExample.roundingOrderValuation_positive</code>, and <code>StaticSemanticCounterexample.canonical_not_semanticFlatWithin</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Analytic snapshot vocabulary is <code>defined only</code>; selected bridge and counterexample facts are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Semantic claims require a selected diagram and observation; unmeasured optional axes are not available-and-zero certificates.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#chapter-11-coupon-analytic-snapshot-api" target="_blank" rel="noopener noreferrer">Coupon analytic snapshot API</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#static--semantic-counterexample" target="_blank" rel="noopener noreferrer">Static / Semantic Counterexample</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive</code></li>
-                      <li><code>CouponDiscountExample.roundingOrderValuation_positive</code></li>
-                      <li><code>StaticSemanticCounterexample.canonical_staticFlatWithin</code></li>
-                      <li><code>StaticSemanticCounterexample.canonical_not_semanticFlatWithin</code></li>
-                      <li><code>StaticSemanticCounterexample.staticFlat_with_semanticObstruction</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Repair transfer</span>
-                      <h3>Selected repair decrease is not all-axis monotonicity</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/">Counterexample
-                      15.4</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Counterexample package and selected repair-step facts are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The repair theorem is relative to a selected obstruction universe and selected measure.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#repair-transfer-counterexample" target="_blank" rel="noopener noreferrer">Repair Transfer Counterexample</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>RepairTransferCounterexample.selectedRepairStep_decreases</code></li>
-                      <li><code>RepairTransferCounterexample.selectedRepairStep_decreases_of_admissible</code></li>
-                      <li><code>RepairTransferCounterexample.runtimeAxisMeasure_increases</code></li>
-                      <li><code>RepairTransferCounterexample.runtimeAxisViolationCount_before</code></li>
-                      <li><code>RepairTransferCounterexample.runtimeAxisViolationCount_after</code></li>
-                      <li><code>RepairTransferCounterexample.selectedRepairStep_not_all_axes_nonincreasing</code></li>
-                      <li><code>RepairTransferCounterexample.staticSplitRepair_transfers_runtime</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">SOLID reading</span>
-                      <h3>Local contract compatibility does not imply global decomposability</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../canonical-examples-and-readings/">Counterexample
-                      15.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code>, <code>strongDIPCompatible_and_not_decomposable</code>, <code>projectionExact</code>, and <code>abstractGraph_not_decomposable</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Representative finite SOLID-style counterexamples are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Local contract-layer success is distinct from global strict layering, acyclicity, and decomposability.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#solid-counterexamples" target="_blank" rel="noopener noreferrer">SOLID Counterexamples</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>TwoCycleComponent.not_decomposable</code></li>
-                      <li><code>PaymentComponent.not_decomposable</code></li>
-                      <li><code>AbstractCycleComponent.not_decomposable</code></li>
-                      <li><code>StrongAbstractCycleComponent.observation_factors</code></li>
-                      <li><code>StrongAbstractCycleComponent.lspCompatible</code></li>
-                      <li><code>StrongAbstractCycleComponent.abstractGraph_not_decomposable</code></li>
-                      <li><code>StrongAbstractCycleComponent.projectionSound</code></li>
-                      <li><code>StrongAbstractCycleComponent.projectionComplete</code></li>
-                      <li><code>StrongAbstractCycleComponent.projectionExact</code></li>
-                      <li><code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code></li>
-                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code></li>
-                    </ul>
-                  </details>
-                </article>
-              </div>
-            </section>
-
-            <section id="lean-status" class="article-section">
-              <h2>Counterexample status</h2>
-              <p>
-                The theorem index records representative counterexamples,
-                flatness packages, and worked-example bridge APIs used by the
-                public examples.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Scope</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>SOLID-style local contracts do not imply decomposability</td>
-                      <td>`proved` for representative finite counterexamples</td>
-                      <td>Selected abstract / concrete graph examples and local compatibility predicates.</td>
-                      <td>Representative finite counterexamples for the local-contract / global-structure distinction.</td>
-                      <td>Lean theorem index, SOLID counterexamples.</td>
-                    </tr>
-                    <tr>
-                      <td>Static flatness does not imply semantic flatness</td>
-                      <td>`defined only` / `proved` for selected bridge and counterexample packages</td>
-                      <td>Selected static graph and selected semantic diagram universe.</td>
-                      <td>Selected semantic obstruction against a static-only reading.</td>
-                      <td>Lean theorem index and proof obligations.</td>
-                    </tr>
-                    <tr>
-                      <td>Coupon worked example</td>
-                      <td>Mixed: theorem-backed finite packages plus tooling / example-level readings</td>
-                      <td>Selected component universe, selected witnesses, selected observation contexts.</td>
-                      <td>Worked finite skeleton for static, semantic, repair, and signature readings.</td>
-                      <td>AAT algebraic-geometric mathematical text and ArchSig example docs.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-
-            <section id="related-work" class="article-section">
-              <h2>Related Work and Novelty</h2>
-              <div class="formal-anchor-cards" aria-label="Related Work and Novelty formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Architecture signature is multi-axis</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../related-work/">Signature boundary A.3</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>AxisMeasurementClass</code>, <code>axisMeasuredZero</code>, and <code>axisAvailableAndZero</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Signature schema and axis classifiers are <code>defined only</code>; selected axis-value and optional-axis boundary lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Multi-axis diagnostic, not a scalar ranking or empirical outcome predictor.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#signature-v0" target="_blank" rel="noopener noreferrer">Signature v0 / v1 index</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Finite graph and metric bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the graph-analysis comparison and selected metric
-                    boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentUniverse</code>, <code>FiniteArchGraph</code>, <code>reachableConeSizeOfFinite_eq_max_reachableConeSize_under_universe</code>, and <code>hasCycleBool_correct_under_finite_universe</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Finite-universe bridge theorems and selected metric correctness lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Finite selected universe, explicit coverage, and selected relation. No complete extractor claim.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems" target="_blank" rel="noopener noreferrer">Finite Universe / Bridge Theorems</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Finite static structural core</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchor</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="../related-work/">Formal anchor A.4</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureLawModel</code>, <code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>The finite static structural core theorem package is <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Selected static lawfulness only; runtime, semantic, empirical, and extractor-completeness claims stay outside the package.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor" target="_blank" rel="noopener noreferrer">Finite Static Structural Core Formal Anchor</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Category and representation boundary</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the category-theoretic comparison and analytic
-                    representation boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentCategory</code>, <code>Decomposable</code>, <code>AnalyticRepresentation</code>, and <code>Chapter11AnalyticRepresentation.architectureSignatureAnalyticRepresentation_nonConclusions</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Vocabulary and representations are <code>defined only</code>; selected bridge and non-conclusion lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Thin reachability category and explicit preserving / reflecting premises; no path-count semantics or automatic semantic completeness.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#analytic-representation" target="_blank" rel="noopener noreferrer">Analytic Representation</a></dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-prev" href="../status/">
+              <a class="page-nav-previous" href="../status/">
                 <span>Previous</span>
                 <strong>Status</strong>
               </a>

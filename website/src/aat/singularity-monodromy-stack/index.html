@@ -1,0 +1,1586 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part VI. Singularity, Monodromy, and Stacks",
+  "description": "Part VI of Algebraic Architecture Theory: where derived obstruction concentrates as architecture singularities, how operation history leaves monodromy debt, and when decomposition non-uniqueness is a gerbe-theoretic theorem rather than confusion.",
+  "order": 7,
+  "llmsLabel": "AAT Part VI: Singularity, Monodromy, and Stacks",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part VI</span>
+          </nav>
+          <p class="eyebrow">Part VI</p>
+          <h1>Singularity, Monodromy, and Stacks</h1>
+          <p class="lede">
+            Part V read law conflict as derived non-transversality:
+            \( \mathrm{LawConflict}_i(U,V) =
+            \mathrm{Tor}_i^{\mathcal{O}_X}(\mathcal{O}_X/\mathcal{I}_U,
+            \mathcal{O}_X/\mathcal{I}_V) \) for \( i &gt; 0 \). Part VI asks
+            where that derived obstruction concentrates, how operation history
+            leaves residue, and when no canonical decomposition exists. The
+            answers are three structures: architecture singularities read
+            through cotangent and tangent complexes, monodromy of operation
+            loops acting on obstruction sheaves, and architecture stacks with
+            a decomposition gerbe whose nonzero class refutes any global
+            canonical decomposition.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part VI page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#from-part-v">1. From Part V to Part VI</a></li>
+                <li><a href="#architecture-stratum">2. Architecture stratum</a></li>
+                <li><a href="#cotangent-tangent">3. Cotangent and tangent complex</a></li>
+                <li><a href="#smoothness">4. Smoothness</a></li>
+                <li><a href="#architecture-singularity">5. Architecture singularity</a></li>
+                <li><a href="#singularity-criterion">6. Singularity criterion</a></li>
+                <li><a href="#god-object">7. God object reinterpreted</a></li>
+                <li><a href="#operation-category">8. Operation category</a></li>
+                <li><a href="#operation-homotopy">9. Operation homotopy</a></li>
+                <li><a href="#monodromy">10. Monodromy</a></li>
+                <li><a href="#monodromy-debt">11. Monodromy debt theorem</a></li>
+                <li><a href="#refactor-groupoid">12. Refactor groupoid</a></li>
+                <li><a href="#architecture-stack">13. Architecture stack</a></li>
+                <li><a href="#codebase-essence">14. Codebase essence as quotient stack</a></li>
+                <li><a href="#decomposition-stack">15. Decomposition stack</a></li>
+                <li><a href="#no-canonical-decomposition">16. No canonical decomposition</a></li>
+                <li><a href="#finite-examples">Finite examples in Lean</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../derived-geometry-repair/">Part V. Derived Law Geometry and Repair</a></li>
+                <li><a href="./" aria-current="page">Part VI. Singularity, Monodromy, and Stacks</a></li>
+                <li><a href="../representations-periods/">Part VII. Representations, Periods, and Analysis</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                Every claim of Part VI is stated relative to a fixed atom
+                vocabulary, law universe, coverage topology, coefficient
+                structure, and selected reading. Three claim grades are kept
+                distinct throughout.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference holding under explicitly stated coverage, exactness, effectiveness, or witness-completeness assumptions. It is never an unconditional absolute claim. The main theorems of this chapter — the singularity criterion, the transport descent criterion, square monodromy nonfillability, the operation-invariant Galois correspondence — carry this grade.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics; here, the normal cone reading and the architectural monodromy index.</dd>
+                </div>
+              </dl>
+              <p>
+                Theorem labels on this page follow the canonical text. A label
+                carries a Lean status badge only when the AG Lean index has a
+                corresponding ledger row; a label without a badge is a
+                mathematical statement in the canonical text and is not read
+                as a current Lean proved claim. One statement of this chapter,
+                the Kuranishi local model, is a theorem candidate in the
+                canonical text and is marked as such.
+              </p>
+            </section>
+
+            <section id="from-part-v" class="article-section">
+              <h2>1. From Part V to Part VI</h2>
+              <p>
+                Part V defined the derived intersection of lawful loci and
+                read law conflict as derived non-transversality. For law
+                universes \( U \) and \( V \) with obstruction ideals
+                \( \mathcal{I}_U \) and \( \mathcal{I}_V \), the conflict
+                classes are Tor sheaves of the structure sheaf quotients:
+              </p>
+              <p>\[ \mathrm{LawConflict}_i(U,V) \;=\;
+                 \mathrm{Tor}_i^{\mathcal{O}_X}\!\big(\mathcal{O}_X/\mathcal{I}_U,\;
+                 \mathcal{O}_X/\mathcal{I}_V\big)
+                 \qquad \text{for } i &gt; 0, \]</p>
+              <p>
+                with the first-order conflict singled out as
+                \( \mathrm{LawConflict}_1(U,V) =
+                \mathrm{Tor}_1^{\mathcal{O}_X}(\mathcal{O}_X/\mathcal{I}_U,
+                \mathcal{O}_X/\mathcal{I}_V) \), computed on the derived
+                intersection
+                \( \mathrm{Flat}_U(X) \cap^{\mathbf{R}} \mathrm{Flat}_V(X) \).
+                Nonvanishing of a selected class,
+                \( \mathrm{LawConflict}_i(U,V) \neq 0 \) for some selected
+                \( i &gt; 0 \), shows a latent incompatibility in realizing
+                \( U \) and \( V \) simultaneously. Part V also read repair as
+                controlled movement through lawful loci, bad repair as
+                obstruction transfer, and refactoring as derived-geometric
+                deformation.
+              </p>
+              <p>Three questions remain, and they organize this chapter:</p>
+              <pre><code>Where is this obstruction located?
+Which operation paths preserve or move it?
+Can local decompositions be glued into a global one?</code></pre>
+              <p>Part VI answers with three structures:</p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Singularity</dt>
+                  <dd>The location where derived obstruction concentrates — the place where repair geometry is obstructed.</dd>
+                </div>
+                <div>
+                  <dt>Monodromy</dt>
+                  <dd>Path-dependent debt invisible to endpoint comparison — how operation history leaves residue on obstruction, semantic, and effect sheaves.</dd>
+                </div>
+                <div>
+                  <dt>Stack</dt>
+                  <dd>The geometry that keeps refactor equivalence and decomposition non-uniqueness, culminating in the decomposition gerbe and its descent failure.</dd>
+                </div>
+              </dl>
+              <p>
+                With these, AAT speaks mathematically about hard-to-repair
+                loci, operations that leave residue although the final states
+                look the same, and architectures for which no unique correct
+                partition exists.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part VI module in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>Formal.AG.SingularityMonodromyStack</code> with submodules <code>Stratum</code>, <code>CotangentInterface</code>, <code>SmoothSingular</code>, <code>SingularityTheorems</code>, <code>Kuranishi</code>, <code>OperationCategory</code>, <code>OperationHomotopy</code>, <code>Monodromy</code>, <code>MonodromyTheorems</code>, <code>RefactorGalois</code>, <code>ArchitectureStack</code>, <code>CodebaseEssence</code>, <code>DecompositionGerbe</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The Part VI module tower, imported from <code>Formal/AG.lean</code> and built on the Part III <code>LawAlgebra</code>, Part IV <code>Cohomology</code>, and Part V <code>Derived</code> layers.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="architecture-stratum" class="article-section">
+              <h2>2. Architecture stratum</h2>
+              <p>
+                Before locating obstruction, the geometry is cut into the
+                pieces on which location makes sense.
+              </p>
+              <p id="definition-6-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-2-1">Definition VI.2.1 (Architecture stratum).</a>
+                A stratum of an architecture geometry \( X \) is a part
+                \( S \subset X \) cut out by a selected architecture role,
+                boundary, operation pattern, semantic region, or runtime
+                region. A stratum is a part of the architecture geometry
+                relativized to atoms, laws, obstructions, signatures, and
+                coverage.
+              </p>
+              <p>Representative strata:</p>
+              <pre><code>component stratum
+boundary stratum
+service stratum
+shared state stratum
+authority hub stratum
+semantic boundary stratum
+runtime interaction stratum
+adapter stratum
+legacy stratum
+experimental feature stratum</code></pre>
+              <p id="principle-6-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-2-2">Principle VI.2.2 (Stratum relativity).</a>
+                Stratification is relativized to the atom vocabulary
+                \( V \), the law universe \( U \), the coverage topology
+                \( J \), the selected signature axes, and the coefficient
+                structure. The same source can look singular under one law
+                universe and smooth under another:
+              </p>
+              <pre><code>singular for U
+  does not imply
+singular for all law universes.</code></pre>
+              <p>
+                This relativity is the standing non-conclusion of the whole
+                chapter: no stratum is called singular absolutely, only
+                singular for a selected reading.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VI.2.1 and Principle VI.2.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.StratumRole</code>, <code>StratumReadingParameter</code> with <code>coverageTopology</code>, <code>lawUniverse_eq</code>, <code>selectedCoeff_eq</code>, and <code>ArchitectureStratum</code> with <code>Mem</code>, <code>mem_iff</code>, <code>selectedSubobject_holds</code>, <code>locallyClosed_holds</code>, <code>decorationCompatible_holds</code>, <code>readingCompatible_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>A stratum is proof-carrying data: selected role, carrier subset, selected subobject, locally closed reading, decoration compatibility, and reading compatibility, relativized to a reading parameter over atom vocabulary, law universe, coverage topology, signature axes, and coefficient structure.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the accessor theorems.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="cotangent-tangent" class="article-section">
+              <h2>3. Cotangent and tangent complex</h2>
+              <p id="definition-6-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-3-1">Definition VI.3.1 (Cotangent complex).</a>
+                For an architecture stratum \( S \subset X \) and a law
+                universe \( U \), the cotangent complex is written
+                \( L_{S/U} \). Here \( S \) is given as a derived stratum
+                inside the \( U \)-law coordinate geometry, with a fixed
+                inclusion or structure map \( S \to X_U \), and
+                \( L_{S/U} \) is the cotangent complex relative to this
+                \( U \)-law base. It reads how the stratum is constrained by
+                the law universe:
+              </p>
+              <pre><code>L_{S/U}
+  =
+  infinitesimal constraint complex of S relative to U</code></pre>
+              <p id="definition-6-3-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-3-2">Definition VI.3.2 (Tangent complex).</a>
+                The tangent complex is
+                \( T_{S/U} = \mathbf{R}\mathrm{Hom}(L_{S/U}, \mathcal{O}_S^U) \),
+                where \( \mathcal{O}_S^U \) is the law coordinate structure
+                sheaf on \( S \). It reads the deformation, repair, and
+                refactor directions relativized to \( U \):
+              </p>
+              <pre><code>H^0(T_{S/U}):
+  first-order lawful refactor directions.
+
+H^1(T_{S/U}):
+  blocked refactor / lifting obstruction.</code></pre>
+              <p>
+                The cohomological grading follows the convention that
+                \( H^1(T_{S/U}) \) contains the first obstruction classes.
+              </p>
+              <p id="principle-6-3-3" class="statement">
+                <a class="statement-anchor" href="#principle-6-3-3">Principle VI.3.3 (Tangent is not operation list).</a>
+                The tangent complex is not a list of operations. Concrete
+                operations — rename, move, extract, split, merge — can
+                represent tangent directions, but the tangent complex reads
+                how those operations interact with law constraints:
+              </p>
+              <pre><code>operation is syntax of change.
+tangent direction is geometry of change.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.3.1 / VI.3.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.CotangentData</code>, <code>CotangentData.baseMap_eq</code>, <code>TangentData</code>, <code>TangentData.zeroObstruction_eq</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The selected cotangent complex object, base map, pullback complex, selected tangent complex, <code>H0</code> / <code>H1</code> / obstruction target, zero obstruction, and RHom interface certificate are held as explicit data.</dd>
+                  <dt>Boundary</dt>
+                  <dd>No general cotangent complex or RHom construction is claimed; the Lean layer fixes the interface data that the theorems below consume. <em>defined only</em> for structures, <em>proved</em> for accessors.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="smoothness" class="article-section">
+              <h2>4. Smoothness</h2>
+              <p id="definition-6-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-4-1">Definition VI.4.1 (U-smooth stratum).</a>
+                A stratum \( S \) is \( U \)-smooth when every first-order
+                lawful deformation in the selected deformation test class
+                \( \mathrm{DefTest}_U(S) \) has the selected lifting and
+                filling property along the specified nilpotent thickenings
+                and base-change tests, and the selected obstruction class
+                vanishes. With the lifting / filling predicate made explicit,
+                the primary definition is:
+              </p>
+              <pre><code>LiftFill_U(eta):
+  eta has the selected lifting and filling property.
+
+forall eta in DefTest_U(S),
+  LiftFill_U(eta)
+  and
+  ob_U(eta) = 0</code></pre>
+              <p>
+                Proving smoothness from obstruction vanishing alone requires
+                an effective obstruction theory on the selected deformation
+                regime:
+              </p>
+              <pre><code>ob_U(eta) = 0 -> LiftFill_U(eta)   (effectiveness)
+LiftFill_U(eta) -> ob_U(eta) = 0   (soundness of the obstruction reading)</code></pre>
+              <p>
+                In a regime carrying both, the condition
+                \( \forall \eta,\ \mathrm{ob}_U(\eta) = 0 \) is read as
+                equivalent to the primary definition. A standard sufficient
+                criterion: if
+              </p>
+              <p>\[ \mathrm{Ext}^1_{\mathcal{O}_T}\!\big(\mathbf{L}\xi^{*} L_{S/U},\; M_T\big) = 0 \]</p>
+              <p>
+                for all selected local bases \( \xi : T \to S \) and all
+                selected deformation modules \( M_T \), then \( S \) is
+                \( U \)-smooth. When the tangent cohomology computes the
+                obstruction space in the fixed coefficient regime,
+                \( H^1(T_{S/U}) = 0 \) is likewise a sufficient criterion.
+              </p>
+              <p id="principle-6-4-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-4-2">Principle VI.4.2 (Smooth does not mean small).</a>
+                Smoothness is not size. A large component or service is
+                smooth when its lawful deformations extend smoothly —
+                <em>large but smooth</em> is admissible. A small boundary
+                concentrating higher obstruction is singular —
+                <em>small but singular</em> is dangerous. Size metrics do not
+                enter the definition on either side.
+              </p>
+            </section>
+
+            <section id="architecture-singularity" class="article-section">
+              <h2>5. Architecture singularity</h2>
+              <p id="definition-6-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-5-1">Definition VI.5.1 (U-singular stratum).</a>
+                A stratum \( S \) is \( U \)-singular when the selected
+                deformation test class contains a first-order lawful
+                deformation whose selected obstruction class is nonzero:
+              </p>
+              <pre><code>exists eta in DefTest_U(S),
+  ob_U(eta) != 0</code></pre>
+              <p>
+                Assuming further that the obstruction reading is sound for
+                lifting failure in the selected regime —
+                \( \mathrm{ob}_U(\eta) \neq 0 \rightarrow
+                \neg\,\mathrm{LiftFill}_U(\eta) \) — an actual selected
+                lifting failure exists near \( S \), and in this sense
+                \( U \)-singular negates \( U \)-smooth. The definition
+                itself is the existential statement; its equivalence with
+                <em>not \( U \)-smooth</em> is relativized to the exactness of
+                the selected obstruction theory. The phenomenon:
+              </p>
+              <pre><code>first-order refactor exists
+but
+higher-order lawful deformation is blocked.</code></pre>
+              <p>
+                The following are singularity criteria or analytic readings
+                once an appropriate regime is fixed — not the primary
+                definition:
+              </p>
+              <pre><code>H^1(T_{S/U}) != 0 as an obstruction space.
+Ext^1_{O_T}(L xi^* L_{S/U}, M_T) != 0 for some selected test.
+tangent rank jumps.
+normal cone has a selected nonzero obstruction direction.
+local lifting fails for a specified deformation.
+derived law conflict concentrates on S.</code></pre>
+              <p>
+                A non-conclusion guards the reading:
+                \( H^1(T_{S/U}) \neq 0 \) means the room where obstruction
+                lives is nontrivial —
+              </p>
+              <pre><code>nonzero obstruction space
+  !=
+every deformation is obstructed.</code></pre>
+              <p id="definition-6-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-5-2">Definition VI.5.2 (Normal cone reading).</a>
+                For the lawful locus \( \mathrm{Flat}_U(X) = V(\mathcal{I}_U) \)
+                and a point or stratum \( S \), the normal cone
+                \( C_{S/\mathrm{Flat}_U} \) reads in which directions \( S \)
+                departs from the lawful locus. A repair direction is
+                structurally effective only if it does more than improve a
+                metric:
+              </p>
+              <pre><code>repair direction v is structural
+  only if
+image(v) points toward vanishing of I_U in the normal cone.</code></pre>
+              <p id="principle-6-5-3" class="statement">
+                <a class="statement-anchor" href="#principle-6-5-3">Principle VI.5.3 (Singularity is repair difficulty).</a>
+                A singularity is not a place that looks complicated. It is a
+                place where lawful deformation jams and repair directions are
+                blocked by higher obstruction:
+              </p>
+              <pre><code>singular stratum
+  =
+place where repair geometry is obstructed.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.4.1 / VI.5.1 / VI.5.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.DeformationObstructionTheory</code> with <code>not_liftFill_of_ob_ne_zero</code>, <code>liftFill_of_ob_eq_zero</code>; <code>USmooth</code>, <code>USingular</code>, <code>USmooth.obstruction_eq_zero</code>, <code>USmooth.liftFill</code>, <code>uSmooth_of_all_obstruction_zero</code>, <code>uSmooth_iff_all_obstruction_zero</code>, <code>not_uSmooth_of_uSingular</code>; <code>NormalConeReading</code> with <code>lawfulLocus_eq_flatU_holds</code>, <code>obstructionIdealCarrier_eq_I_U_holds</code>; <code>StructuralRepairDirection</code> with <code>selected_pointsTowardVanishing_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Selected deformation tests, the lift/fill predicate, the obstruction map, effectiveness, and soundness are fixed as an interface. <code>USmooth</code> is lift/fill plus zero obstruction on all selected tests; <code>USingular</code> is the existence of a selected nonzero obstruction. The normal cone reading connects to the Part III <code>Flat_U</code> / <code>I_U</code> surface.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures; the smooth / singular theorems are <em>packaged (assumption-relative)</em> — proved under the explicit selected effectiveness / soundness interface.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="singularity-criterion" class="article-section">
+              <h2>6. Singularity criterion</h2>
+
+              <div id="theorem-6-6-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.6.1 — Certified bounded inference</span>
+                    <h3>Architecture Singularity Criterion</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  Let \( S \) be a stratum — component, boundary, service,
+                  shared state, authority hub, semantic boundary, runtime
+                  interaction. Assume:
+                </p>
+                <pre><code>cotangent complex L_{S/U} is defined
+tangent complex T_{S/U} is defined
+selected deformation modules are fixed
+law universe U is fixed</code></pre>
+                <p>
+                  If for some selected first-order deformation \( \eta \)
+                </p>
+                <p>\[ \mathrm{ob}_U(\eta) \neq 0 \;\text{ in }\; H^1(T_{S/U}), \]</p>
+                <p>
+                  then \( S \) is \( U \)-singular. Moreover, a non-smooth
+                  cotangent complex, a tangent rank jump, a nontrivial normal
+                  cone, or \( H^1(T_{S/U}) \neq 0 \) are read as singularity
+                  warnings: they show that a selected obstruction class can
+                  appear.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Nonvanishing of \( H^1(T_{S/U}) \) means the obstruction
+                    space for lifting first-order lawful deformations to
+                    higher order is nontrivial; a witness \( \eta \) with
+                    \( \mathrm{ob}_U(\eta) \neq 0 \) instantiates Definition
+                    VI.5.1 directly. When the cotangent complex is not
+                    smooth, a smooth lifting may fail to exist, so \( S \) is
+                    a singularity candidate where repair and refactor jam.
+                  </dd>
+                </dl>
+              </div>
+
+              <div id="theorem-6-6-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.6.2 — Certified bounded inference</span>
+                    <h3>Square-Zero Lifting Obstruction</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  Let \( S \to X \) be a \( U \)-lawful stratum with
+                  cotangent complex \( L_{S/U} \). Take a test object
+                  \( \xi : T \to S \), an \( \mathcal{O}_T \)-module
+                  \( M_T \), and a square-zero extension
+                </p>
+                <p>\[ 0 \to M_T \to \mathcal{O}_{T'} \to \mathcal{O}_T \to 0. \]</p>
+                <p>
+                  The obstruction to lifting \( \xi \) to \( T' \) is a class
+                  in the Ext group of the pullback cotangent complex,
+                </p>
+                <p>\[ \mathrm{ob}_T(\xi) \;\in\;
+                   \mathrm{Ext}^1_{\mathcal{O}_T}\!\big(\mathbf{L}\xi^{*} L_{S/U},\; M_T\big), \]</p>
+                <p>and</p>
+                <pre><code>ob_T(xi) != 0
+  =>
+xi does not lift to T'.</code></pre>
+                <p>
+                  If \( \mathrm{ob}_T(\xi) = 0 \) and the selected obstruction
+                  theory is effective, then lifts exist and their isomorphism
+                  classes form a torsor under
+                  \( \mathrm{Ext}^0_{\mathcal{O}_T}(\mathbf{L}\xi^{*} L_{S/U}, M_T) \),
+                  with automorphisms controlled by
+                  \( \mathrm{Ext}^{-1}_{\mathcal{O}_T}(\mathbf{L}\xi^{*} L_{S/U}, M_T) \).
+                  Consequently, if for some base \( T \), module \( M_T \),
+                  and first-order direction \( \xi \) the class
+                  \( \mathrm{ob}_T(\xi) \) is nonzero, then \( S \) carries a
+                  singular obstruction in its \( U \)-reading.
+                </p>
+              </div>
+
+              <p id="definition-6-6-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-6-3">Definition VI.6.3 (Kuranishi map).</a>
+                Let \( S \) be a \( U \)-lawful stratum and fix a selected
+                local base \( p : P \to S \), where \( P \) is a geometric
+                point \( \mathrm{Spec}\,k \) or a selected formal stratum.
+                Read the tangent and obstruction spaces through the pullback
+                cotangent complex:
+              </p>
+              <p>\[ \mathrm{Tan}_{S,p} :=
+                 \mathrm{Ext}^0_{\mathcal{O}_P}\!\big(\mathbf{L}p^{*} L_{S/U},\, \mathcal{O}_P\big),
+                 \qquad
+                 \mathrm{Obs}_{S,p} :=
+                 \mathrm{Ext}^1_{\mathcal{O}_P}\!\big(\mathbf{L}p^{*} L_{S/U},\, \mathcal{O}_P\big). \]</p>
+              <p>
+                Fix a selected complete local deformation space
+                \( \widehat{\mathrm{Def}}_{S,p} \). The map returning the
+                higher lifting obstruction on the formal deformation germ,
+              </p>
+              <p>\[ \kappa_{S,p} : \widehat{\mathrm{Def}}_{S,p} \to \mathrm{Obs}_{S,p}, \]</p>
+              <p>
+                is the Kuranishi map, and \( \mathrm{Tan}_{S,p} \) is read as
+                the tangent space of \( \widehat{\mathrm{Def}}_{S,p} \).
+              </p>
+
+              <div id="theorem-candidate-6-6-4" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem candidate VI.6.4</span>
+                    <h3>Kuranishi Local Model</h3>
+                  </div>
+                  <span class="status-badge status-badge-future">Lean: statement-only</span>
+                </div>
+                <p>
+                  Suppose the deformation-obstruction theory on a formal
+                  neighbourhood of \( p \) is controlled by \( L_{S/U} \) and
+                  effective, and the complete local Kuranishi data
+                  \( (\widehat{\mathrm{Def}}_{S,p}, \mathrm{Obs}_{S,p}, \kappa_{S,p}) \)
+                  is defined. Then the lawful deformation germ near \( p \)
+                  is read as the zero fibre
+                </p>
+                <p>\[ \kappa_{S,p}^{-1}(0) \subset \widehat{\mathrm{Def}}_{S,p}. \]</p>
+                <p>
+                  In particular, \( \kappa_{S,p}(v) \neq 0 \) means the
+                  direction \( v \) does not lift as a selected lawful
+                  deformation. When the repair transfer pairing of Part V,
+                </p>
+                <p>\[ T_{\mathrm{rep}} \times \mathrm{LawConflict}_1(U,V)
+                   \to \mathrm{TransRes}_{U,V}, \]</p>
+                <p>
+                  is in place, the first- or second-order component of
+                  \( \kappa_{S,p} \) is read as a selected transfer residue.
+                  This is a theorem candidate in the canonical text: the
+                  statement fixes the intended definitional and proof design.
+                </p>
+              </div>
+
+              <div id="corollary-6-6-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Corollary VI.6.5</span>
+                    <h3>Singular Boundary</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  For a boundary stratum \( B \), if
+                  \( H^1(T_{B/U}) \neq 0 \), then \( B \) is a
+                  \( U \)-singular boundary. A small feature repair crossing
+                  such a boundary can generate higher semantic, authority,
+                  effect, and runtime obstructions.
+                </p>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Theorems VI.6.1 / VI.6.2, Corollary VI.6.5, and the Kuranishi layer in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative) / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Criterion and square-zero layer</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.FirstOrderObstructionWitness</code>, <code>DeformationObstructionTheory.architectureSingularityCriterion</code>, <code>SquareZeroExtensionData</code> with <code>squareZeroLiftingObstruction</code>, <code>lift_of_obstruction_zero</code>, <code>liftTorsor_of_obstruction_zero</code>, <code>automorphisms_of_obstruction_zero</code>, and <code>BoundaryObstructionFamily</code>, <code>USingularBoundary</code>, <code>BoundaryObstructionFamily.singularBoundary</code> — <em>packaged (assumption-relative)</em>: proved under the explicit selected deformation-obstruction interface, with the zero-obstruction side relativized to an explicit effectiveness field exposing the lift / torsor / automorphism reading.</dd>
+                  <dt>Kuranishi layer</dt>
+                  <dd><code>KuranishiData</code>, <code>KuranishiLocalModelStatement</code>, <code>KuranishiLocalModelStatement.nonzero_not_lawful_lift</code> — <em>defined only / statement-only</em>: the local model <code>lawful deformation germ &lt;-&gt; kappa = 0</code> is held as a statement carrier, and the nonzero-\( \kappa \) reading of no selected lawful lift is exposed.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="god-object" class="article-section">
+              <h2>7. God object reinterpreted</h2>
+              <p id="definition-6-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-7-1">Definition VI.7.1 (God object).</a>
+                For a law universe \( U \), a stratum \( S \) is a God object
+                when
+              </p>
+              <pre><code>GodObject_U(S)
+  iff
+S is a singular stratum
+where multiple law loci meet non-transversely.</code></pre>
+              <p>
+                The definition never references the size of the object:
+              </p>
+              <pre><code>large object
+  is not necessarily God object.
+
+small singular boundary
+  may be worse than a large smooth component.</code></pre>
+              <p id="principle-6-7-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-7-2">Principle VI.7.2 (Size is not singularity).</a>
+                Size, line count, method count, and dependency count can be
+                representations of singularity, but they are not singularity
+                itself:
+              </p>
+              <pre><code>metric is a reading.
+singularity is derived geometry.</code></pre>
+              <p>
+                Defining the God object by size alone loses the structure of
+                AAT. The counterexample is built into the definition: a large
+                object whose lawful deformations extend smoothly is large but
+                smooth and is not a God object; a small boundary where two law
+                loci meet with
+                \( \mathrm{LawConflict}_1(U,V) \neq 0 \) concentrated on it
+                satisfies the definition despite every size metric being
+                small.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VI.7.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.GodObject</code>, <code>GodObject.singular_holds</code>, <code>GodObject.multipleLawLociNonTransverse_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>A God object is the pair of a <code>USingular</code> certificate and a multiple-law-loci non-transverse predicate relativized to the Part V <code>DerivedNonTransverse</code> surface; no size metric enters the definition.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structure, <em>proved</em> for the accessors.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="operation-category" class="article-section">
+              <h2>8. Operation category</h2>
+              <p id="definition-6-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-8-1">Definition VI.8.1 (Operation category).</a>
+                The architecture operation category relativized to a law
+                universe \( U \) is written \( \mathrm{Op}_U(X) \). Objects
+                are architecture states or architecture sections; morphisms
+                are operations relativized to the selected law universe.
+                Representative operations:
+              </p>
+              <pre><code>rename
+move
+extract
+split
+merge
+introduce interface
+insert adapter
+change contract
+add feature
+migrate state
+add runtime guard
+repair
+rollback</code></pre>
+              <p id="definition-6-8-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-8-2">Definition VI.8.2 (Operation path).</a>
+                An operation path is a sequence of morphisms
+              </p>
+              <pre><code>gamma :
+A_0 -> A_1 -> ... -> A_n</code></pre>
+              <p>
+                Each operation is read as a deformation on the architecture
+                geometry:
+              </p>
+              <pre><code>operation path
+  =
+path in architecture geometry.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.8.1 / VI.8.2 / VI.9.1 / VI.9.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.OperationCategoryData</code>, <code>SelectedOperation</code>, <code>OperationCategoryData.selectedState_eq</code>, <code>OperationPath</code> with <code>id</code>, <code>concat</code>, <code>concat_nil</code>, <code>nil_concat</code>, <code>concat_assoc</code>, <code>RefactorEndpointReading</code> with <code>refactorEquivalent_refl</code> / <code>_symm</code> / <code>_trans</code>, <code>preservesSelectedInvariants_holds</code>, <code>preservesSelectedEssence_holds</code>, <code>EndpointEquivalentPath</code>, <code>OperationLoop</code>, <code>OperationLoop.identity</code>, <code>OperationLoop.endpoint_equivalent_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Selected states, selected operations, and a law-universe-respecting predicate form the operation graph. An operation path is a dependent finite composable path of certificate-carrying edges, with identity, concatenation, and associativity proved. Endpoint equivalence is relativized to selected invariant / essence preservation certificates, and a loop is <code>gamma : A -&gt; A'</code> together with <code>A' ~_ref A</code>.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the path algebra.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="operation-homotopy" class="article-section">
+              <h2>9. Operation homotopy</h2>
+              <p id="definition-6-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-9-1">Definition VI.9.1 (Refactor-equivalent endpoint).</a>
+                Two architecture states \( A \) and \( B \) are refactor
+                equivalent, written \( A \sim_{\mathrm{ref}} B \), when they
+                agree under the refactor equivalence preserving the selected
+                invariants and essence. An operation path
+                \( \gamma : A \to B \) whose endpoints agree under refactor
+                equivalence is treated as an endpoint-equivalent path.
+              </p>
+              <p id="definition-6-9-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-9-2">Definition VI.9.2 (Operation loop).</a>
+                An operation loop is an operation path whose endpoint returns
+                to its start under refactor equivalence:
+                \( \gamma : A \to A' \) with
+                \( A' \sim_{\mathrm{ref}} A \). The set of homotopy classes
+                of operation loops is the architecture fundamental group,
+              </p>
+              <p>\[ \pi_1^{\mathrm{AAT}}(X, U;\ \text{chosen homotopy data}), \]</p>
+              <p>
+                representing the loop structure of operation history. It is
+                built in stages:
+              </p>
+              <pre><code>operation category:
+  architecture operations and composable operation paths.
+
+operation groupoid:
+  reversible or equivalence-preserving operation paths are inverted.
+
+homotopy category / fundamental groupoid:
+  selected operation homotopy under refactor equivalence is quotiented.
+
+pi_1^AAT(X,U; chosen homotopy data):
+  chosen base architecture at a component of the fundamental groupoid.</code></pre>
+              <p>
+                Only once this construction is fixed can one ask whether an
+                operation loop acts on a sheaf.
+              </p>
+              <p id="definition-6-9-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-9-3">Definition VI.9.3 (Homotopy generator family).</a>
+                A family of relations generating the selected operation
+                homotopy on \( \mathrm{Op}_U(X) \) is a homotopy generator
+                family, written \( H_U(X) \). Representative generators:
+              </p>
+              <pre><code>independent square:
+  exchange of two independent operations.
+
+same contract replacement:
+  replacement preserving the same contract.
+
+repair filler:
+  filling between a repair path and a direct path.
+
+identity insertion / deletion:
+  inserting and removing identity operations.
+
+associativity reassociation:
+  reassociation of composition brackets.</code></pre>
+              <p>
+                Which generators are adopted is relativized to the law
+                universe, the operation family, the refactor equivalence, and
+                the coefficient transport.
+              </p>
+              <p id="definition-6-9-4" class="statement">
+                <a class="statement-anchor" href="#definition-6-9-4">Definition VI.9.4 (Presentation two-complex).</a>
+                Taking the 1-skeleton of the operation graph and attaching
+                each generator of \( H_U(X) \) as a 2-cell yields the
+                presentation two-complex \( K_H(X,U) \): edges are selected
+                operations, 2-cells are selected operation homotopy
+                relations.
+              </p>
+              <p id="definition-6-9-5" class="statement">
+                <a class="statement-anchor" href="#definition-6-9-5">Definition VI.9.5 (Presented architecture fundamental group).</a>
+                Fix a base architecture state \( A \). The edge-path group of
+                \( K_H(X,U) \) is the architecture fundamental group
+                relativized to \( H \):
+              </p>
+              <p>\[ \pi_1^{\mathrm{AAT}}(X,U,H,A) \;=\; \pi_1\big(K_H(X,U),\, A\big), \]</p>
+              <p>
+                abbreviated \( \pi_1^{\mathrm{AAT}}(X,U,H) \) when the base
+                point is clear. This definition does not treat operation
+                homotopy as an unspecified quotient: it is made explicit,
+                relativized to the generator family \( H \). In the edge-path
+                group, edges are formally invertible; a reversed edge does
+                not assert that a corresponding inverse operation exists as
+                an architecture operation.
+              </p>
+              <p id="principle-6-9-6" class="statement">
+                <a class="statement-anchor" href="#principle-6-9-6">Principle VI.9.6 (Homotopy presentation boundary).</a>
+                \( \pi_1^{\mathrm{AAT}}(X,U,H) \) is the fundamental group of
+                the selected operation graph and homotopy generator family.
+                It contains no unselected operations, no unselected semantic
+                equivalences, and no unconstructed paths:
+              </p>
+              <pre><code>different H
+  -> different pi_1^AAT reading.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.9.3 / VI.9.4 / VI.9.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.HomotopyGeneratorFamily</code> with <code>pathCellFintype</code>, <code>loopRelatorFintype</code>, <code>pathCell_commonEndpoints</code>, <code>relator_based_holds</code>; <code>PresentationTwoComplex</code> with <code>vertices_read_states</code>, <code>twoCells_read_generators</code>; <code>FormalEdgeStep</code>, <code>FreeEdgeWord</code>, <code>PresentedArchitectureFundamentalGroup</code> with <code>relator_maps_to_identity_holds</code>, <code>pathCellRelator_selected_holds</code>, <code>loopRelator_selected_holds</code>, <code>relator_generated_by_selected_generator_holds</code>, <code>quotient_universal_property</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The generator family is finite path-pair relation and loop relator data; the two-complex has vertices = selected states, edges = selected operation indexing, 2-cells = selected generators. \( \pi_1^{\mathrm{AAT}} \) is the selected quotient carrier / group package relativized to base state, two-complex, and generator family, with the universal property — free transport kills the selected relators iff it factors through the quotient — proved as an accessor theorem.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the selected quotient universal property.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="monodromy" class="article-section">
+              <h2>10. Monodromy</h2>
+              <p id="definition-6-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-10-1">Definition VI.10.1 (Monodromy action).</a>
+                For an operation loop
+                \( \gamma \in \pi_1^{\mathrm{AAT}}(X,U,H,A) \), assume a
+                monodromy representation is given:
+              </p>
+              <p>\[ \rho_{U,H,A} :\ \pi_1^{\mathrm{AAT}}(X,U,H,A)
+                 \;\to\; \mathrm{Aut}(\mathrm{Ob}_U) \times
+                 \mathrm{Aut}(\mathrm{Sem}_U) \times
+                 \mathrm{Aut}(\mathrm{Eff}_U). \]</p>
+              <p>
+                Then \( \gamma \) induces automorphisms of the architecture
+                sheaves, with
+                \( \mathrm{Mon}_\gamma := \rho_{U,H,A}(\gamma) \):
+              </p>
+              <pre><code>Mon_gamma(Ob_U)  : Ob_U  -> Ob_U
+Mon_gamma(Sem_U) : Sem_U -> Sem_U
+Mon_gamma(Eff_U) : Eff_U -> Eff_U</code></pre>
+              <p>
+                This action is called monodromy. Monodromy is not a structure
+                the AAT geometry carries automatically: it is defined when
+                operation loops come equipped with a representation acting on
+                the obstruction, semantic, and effect sheaves. Absent such a
+                representation, the theory stays silent about loop actions —
+                a boundary, not a defect.
+              </p>
+              <p id="definition-6-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-10-2">Definition VI.10.2 (Finite Gauss-Manin system).</a>
+                Fix a finite operation groupoid
+                \( \mathrm{OpGpd}(X,U) \). Assign to each object \( A \) a
+                coefficient object \( H_A = H^n(A, \mathrm{Ob}_U) \) or its
+                selected finite-dimensional reading. When each operation path
+                \( \alpha : A \to B \) carries a transport map
+                \( \mathrm{GM}_\alpha : H_A \to H_B \) satisfying
+              </p>
+              <pre><code>GM_id = id
+GM_{beta alpha} = GM_beta GM_alpha</code></pre>
+              <p>
+                the functor
+                \( \mathrm{GM} : \mathrm{OpGpd}(X,U) \to \mathrm{Vect}_k \)
+                is a finite Gauss-Manin system. For an operation loop
+                \( \gamma : A \to A \), the automorphism
+                \( \rho_U^{\mathrm{GM}}(\gamma) := \mathrm{GM}_\gamma \in
+                \mathrm{Aut}(H_A) \) is the Gauss-Manin monodromy.
+              </p>
+              <p id="definition-6-10-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-10-3">Definition VI.10.3 (Monodromy debt).</a>
+                An operation loop \( \gamma \) has monodromy debt when
+                \( \mathrm{Mon}_\gamma(\mathrm{Ob}_U) \neq \mathrm{id} \).
+                This is path-dependent architecture debt invisible to
+                endpoint comparison:
+              </p>
+              <pre><code>same final architecture presentation
+but
+different obstruction sheaf state</code></pre>
+              <p id="definition-6-10-4" class="statement">
+                <a class="statement-anchor" href="#definition-6-10-4">Definition VI.10.4 (Measured square monodromy).</a>
+                Take a selected 2-cell \( \sigma \) of \( K_H(X,U) \) with
+                boundary loop \( \gamma_\sigma \). When coefficient transport
+                is defined along \( \gamma_\sigma \) and a selected axis
+                \( x \) has a comparison reading, the square-level monodromy
+                defect is
+              </p>
+              <p>\[ \mu_x(\sigma) \;=\;
+                 d_x\big(\mathrm{Transport}(\gamma_\sigma),\ \mathrm{id}\big), \]</p>
+              <p>
+                where \( d_x \) is the distance or equality-defect reading on
+                the selected axis. The value measures how identically the
+                2-cell transports the selected coefficient reading.
+              </p>
+
+              <div id="theorem-6-10-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.10.5 — Certified bounded inference</span>
+                    <h3>Transport Descent Criterion</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  Fix \( K_H(X,U) \), a base architecture \( A \), a
+                  coefficient transport functor, and a selected detecting
+                  axis family \( X_{\mathrm{axis}} \), with edge transport
+                  given on the operation graph. The edge transport descends
+                  to the presented group
+                  \( \pi_1^{\mathrm{AAT}}(X,U,H,A) \) if and only if the
+                  boundary transport of every homotopy generator 2-cell is
+                  detected as the identity:
+                </p>
+                <pre><code>for all sigma in H_U(X),
+for all x in X_axis,
+  mu_x(sigma) = 0
+
+iff
+
+edge transport descends to
+  rho_{U,H,A} : pi_1^AAT(X,U,H,A) -> Aut(Coeff_U)</code></pre>
+                <p>
+                  Here \( X_{\mathrm{axis}} \) is a selected detecting family
+                  reflecting transport equality.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    The universal property of the presented group. Transport
+                    on the free path groupoid is determined by edges, and the
+                    2-cells of \( H \) are the relations. If every relation's
+                    boundary transport is the identity, transport factors
+                    through the quotient group; conversely, factoring through
+                    the quotient sends each relation to the unit, so every
+                    \( \mu_x(\sigma) \) vanishes.
+                  </dd>
+                </dl>
+              </div>
+
+              <p id="definition-6-10-6" class="statement">
+                <a class="statement-anchor" href="#definition-6-10-6">Definition VI.10.6 (Architectural Monodromy Index).</a>
+                Fix a finite measured square family
+                \( \Sigma = \{\sigma_1, \ldots, \sigma_n\} \) and positive
+                weights \( w_i \). The Architectural Monodromy Index is the
+                weighted sum
+              </p>
+              <p>\[ \mathrm{AMI}_x(\Sigma) \;=\; \sum_i w_i \, \mu_x(\sigma_i). \]</p>
+              <p>
+                When several axes are bundled, the axis aggregation policy is
+                part of the measurement profile. The AMI is an analytic
+                reading: it reads constructed transport data and issues no
+                claim about unselected squares or axes.
+              </p>
+
+              <div id="theorem-6-10-7" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.10.7 — Certified bounded inference</span>
+                    <h3>Square Monodromy Nonfillability</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>K_H(X,U) is fixed.
+sigma is a selected 2-cell or selected square boundary.
+coefficient transport along boundary sigma is defined.
+selected axis x detects transport equality.
+mu_x(sigma) != 0.</code></pre>
+                <p>
+                  Then, under the fixed \( K_H(X,U) \), transport, and axis
+                  exactness, the boundary loop of \( \sigma \) cannot be read
+                  as a filling with identity transport on the selected axis
+                  \( x \):
+                </p>
+                <pre><code>mu_x(sigma) != 0
+  =>
+selected x-axis filling is refuted.</code></pre>
+                <p>
+                  The refutation is axis-relative: the theorem is silent
+                  about fillings on axes outside the selected detecting
+                  family.
+                </p>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.10.1–VI.10.4 / VI.10.6 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.MonodromyCoefficientObject</code>, <code>CoefficientAutomorphism</code> with <code>id</code>, <code>comp</code>; <code>MonodromyAction</code> with <code>Mon_gamma</code>, <code>mon_gamma_eq_rho</code>, <code>rho_one_holds</code>, <code>rho_mul_holds</code>, <code>obstructionMonodromy</code>, <code>MonodromyDebt</code>, <code>monodromyDebt_iff</code>; <code>FiniteGaussManinSystem</code> with <code>transport_id_holds</code>, <code>transport_comp_holds</code>, <code>LoopMonodromy</code>, <code>loopMonodromy_eq_transport</code>; <code>MeasuredSquareMonodromy</code> with <code>mu_eq_defect_holds</code>, <code>boundaryTransport_eq_monodromy_holds</code>, <code>axis_detects_of_mu_zero</code>; <code>ArchitecturalMonodromyIndex</code> with <code>value_eq_weighted_sum_holds</code>, <code>weight_positive_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The coefficient object carries obstruction / semantic / effect carriers; the representation goes from the presented \( \pi_1^{\mathrm{AAT}} \) into selected coefficient automorphisms. The Gauss-Manin system is finite object family, selected finite-dimensional fibers, selected linear transport, and identity / composition laws. Monodromy debt is nonidentity of the obstruction component; the AMI is relativized to a selected axis defect reading and finite positive weighted sum.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the accessors.</dd>
+                </dl>
+              </article>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Theorems VI.10.5 / VI.10.7 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.TransportDescentProblem</code> with <code>transport_descent_criterion</code>, <code>factorsThroughQuotient_of_relationBoundaryZero</code>, <code>relationBoundaryZero_of_factorsThroughQuotient</code>; <code>SquareMonodromyFillingProblem</code> with <code>squareMonodromy_nonfillability</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The descent criterion is relativized to a detecting-axis package in which selected square monodromy defects zero is equivalent to the relator-killing condition, and the equivalence with quotient factorization is proved from the presented-group universal property. Nonfillability refutes the filling from \( \mu \neq 0 \) whenever the selected axis filling demands \( \mu = 0 \).</dd>
+                  <dt>Status</dt>
+                  <dd><em>packaged (assumption-relative)</em> — proved under the explicit selected transport / axis interface.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="monodromy-debt" class="article-section">
+              <h2>11. Monodromy debt theorem</h2>
+
+              <div id="theorem-6-11-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.11.1</span>
+                    <h3>Monodromy Debt</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>For an operation loop \( \gamma : A \to A \), assume:</p>
+                <pre><code>gamma is endpoint-equivalent under refactor equivalence
+Mon_gamma(Ob_U) is defined</code></pre>
+                <p>
+                  If \( \mathrm{Mon}_\gamma(\mathrm{Ob}_U) \neq \mathrm{id} \),
+                  then \( \gamma \) carries hidden architecture debt:
+                </p>
+                <pre><code>same endpoint
+  does not imply
+same architecture continuation.</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Endpoint comparison sees only the start and end of the
+                    path; monodromy sees the automorphism the path induces on
+                    the sheaves — the action on \( \mathrm{Ob}_U \),
+                    \( \mathrm{Sem}_U \), \( \mathrm{Eff}_U \). If
+                    \( \mathrm{Mon}_\gamma(\mathrm{Ob}_U) \neq \mathrm{id} \),
+                    the obstruction sheaf reading has changed across the
+                    loop; the presentation returns refactor-equivalent, but
+                    the architecture continuation is not the same.
+                  </dd>
+                  <dt>Example</dt>
+                  <dd>
+                    A migration executed and rolled back through a
+                    contract-changing path: the endpoints agree under
+                    refactor equivalence, yet the transported obstruction
+                    reading differs — the loop is a debt carrier that no
+                    endpoint diff detects.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.HiddenArchitectureDebtReading</code>, <code>HiddenArchitectureDebtReading.monodromy_debt_theorem</code>, <code>HiddenArchitectureDebtReading.hiddenDebt_of_nonidentity_obstructionMonodromy</code> — <em>packaged (assumption-relative)</em>: the endpoint-equivalent loop and nonidentity obstruction monodromy are read into a selected hidden debt predicate under the explicit selected debt interface.</dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="refactor-groupoid" class="article-section">
+              <h2>12. Refactor groupoid</h2>
+              <p id="definition-6-12-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-12-1">Definition VI.12.1 (Refactor groupoid).</a>
+                For a law universe \( U \), the refactor groupoid
+                \( \mathrm{Ref}_U(X) \) has as objects the architecture
+                objects or architecture schemes carrying the same selected
+                essence, and as morphisms the refactor equivalences
+                preserving the selected invariants. Representative morphisms:
+              </p>
+              <pre><code>rename
+move
+extract
+inline
+split
+merge
+adapter insertion
+interface extraction
+contract-preserving translation
+semantic-preserving rewrite</code></pre>
+              <p>
+                It is a groupoid because refactor equivalence carries
+                isomorphisms and their compositions.
+              </p>
+              <p id="principle-6-12-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-12-2">Principle VI.12.2 (Refactor is equivalence, not equality).</a>
+                Refactor equivalence is not syntactic equality: presentation,
+                chart, coordinate, and decomposition may change while the
+                selected essence is preserved —
+              </p>
+              <pre><code>same essence
+different presentation</code></pre>
+              <p>
+                To keep this difference, AAT moves to stack-like objects.
+              </p>
+              <p id="definition-6-12-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-12-3">Definition VI.12.3 (Operation-invariant Galois data).</a>
+                Let \( \mathrm{SubGpd}(\mathrm{Ref}_U(X)) \) be the family of
+                subgroupoids of the refactor groupoid and
+                \( \mathrm{InvFam}_U(X) \) the family of selected invariant
+                families. Write \( \mathrm{Inv}(G) \) for the invariants
+                preserved by an operation family \( G \), and
+                \( \mathrm{Ops}(I) \) for the operations preserving an
+                invariant family \( I \).
+              </p>
+
+              <div id="theorem-6-12-4" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.12.4 — Certified bounded inference</span>
+                    <h3>Operation-Invariant Galois Correspondence</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>Ref_U(X) is fixed.
+invariant preservation predicate is fixed.
+SubGpd(Ref_U(X)) and InvFam_U(X) are ordered by inclusion.</code></pre>
+                <p>Then the pair forms a Galois connection:</p>
+                <p>\[ G \le \mathrm{Ops}(I) \iff I \le \mathrm{Inv}(G). \]</p>
+                <dl>
+                  <dt>Reading</dt>
+                  <dd>
+                    Enlarging the operation family shrinks the preserved
+                    invariant family; strengthening the invariant requirement
+                    shrinks the admissible operation family.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.OperationInvariantGaloisData.operationInvariantGaloisCorrespondence</code>, <code>operationInvariantGaloisCorrespondence_subgpd</code>, <code>subset_ops_of_invFamSubset_inv</code>, <code>invFamSubset_inv_of_subset_ops</code>, <code>operationInvariantGaloisCorrespondence_set</code>, and the Mathlib bridge <code>operationInvariant_galoisConnection</code> — <em>proved</em> as the selected operation-invariant Galois connection.</dd>
+                </dl>
+              </div>
+
+              <p id="principle-6-12-5" class="statement">
+                <a class="statement-anchor" href="#principle-6-12-5">Principle VI.12.5 (Galois relativity).</a>
+                The Galois connection is relativized to the selected
+                invariant predicate and refactor groupoid. It does not cover
+                all design principles, all semantic properties, or unselected
+                behaviors — the correspondence speaks exactly for the chosen
+                vocabulary and is silent beyond it.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.12.1 / VI.12.3 and Theorem VI.12.4 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.RefactorGroupoid</code> with <code>hom_refactorEquivalent</code>, <code>id_refactorEquivalent</code>, <code>inv_refactorEquivalent</code>, <code>comp_refactorEquivalent</code>; <code>RefactorMorphismFamily</code>, <code>RefactorSubgroupoid</code>, <code>SubGpd</code>, <code>RefactorMorphismFamilySubset</code>; <code>OperationInvariantGaloisData</code> with <code>id_preserves</code>, <code>inv_preserves</code>, <code>comp_preserves</code>, <code>InvFam</code>, <code>InvFamSubset</code>, <code>Ops</code>, <code>Inv</code>, <code>OpsSubgpd</code>, <code>InvSubgpd</code>, <code>SubGpdSubset</code>, <code>RefactorMorphism</code>, <code>OpsSet</code>, <code>InvSet</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The refactor groupoid packages selected objects, selected refactor-equivalence morphisms, and identity / inverse / composition laws. The Galois data is relativized to a selected preservation predicate closed under identity, inverse, and composition, with the correspondence proved on <code>SubGpd(Ref_U(X))</code> and bridged to a Mathlib <code>GaloisConnection</code> on the set-valued surface.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="architecture-stack" class="article-section">
+              <h2>13. Architecture stack</h2>
+              <p id="definition-6-13-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-13-1">Definition VI.13.1 (Architecture stack).</a>
+                For a base \( T \), write \( \mathrm{Arch}_U(T) \) for the
+                groupoid of \( T \)-parametrized architecture objects. This
+                is a contravariant functor
+              </p>
+              <pre><code>Arch_U : AATBase^op -> Groupoids</code></pre>
+              <p>
+                When local architecture objects, compatible isomorphisms on
+                overlaps, and the cocycle condition satisfy descent,
+                \( \mathrm{Arch}_U \) is an architecture stack:
+              </p>
+              <pre><code>local architecture objects
++ compatible isomorphisms on overlaps
++ cocycle condition
+-----------------------------------
+global architecture object</code></pre>
+              <p id="principle-6-13-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-13-2">Principle VI.13.2 (Stack keeps equivalences).</a>
+                A scheme has points and functions; a stack additionally keeps
+                the isomorphisms:
+              </p>
+              <pre><code>scheme:
+  objects.
+
+stack:
+  objects plus equivalences between objects.</code></pre>
+              <p>
+                In architecture, refactor, decomposition, and
+                semantic-preserving rewrite appear as essential isomorphisms,
+                so the stack treatment is the natural one.
+              </p>
+              <p id="definition-6-13-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-13-3">Definition VI.13.3 (Algebraic architecture stack).</a>
+                An architecture stack is a groupoid-valued sheaf on an AAT
+                site. Calling it algebraic requires representability
+                conditions. An architecture stack \( \mathcal{X} \) is an
+                algebraic architecture stack when:
+              </p>
+              <pre><code>representable diagonal:
+  the diagonal of the stack is representable by ArchitectureSchemes.
+
+atlas:
+  there exists an atlas class AtlasClass
+  and an admissible atlas
+  X_0 -> the stack
+  from an ArchitectureScheme X_0.
+
+descent of structure:
+  obstruction ideals, law sheaves, signature sheaves,
+  and selected structure sheaves descend along the atlas.</code></pre>
+              <p>
+                In this text, <em>stack</em> alone means a groupoid-valued
+                descent object; <em>algebraic architecture stack</em> means
+                the stronger object with diagonal, atlas, and descent of
+                structure:
+              </p>
+              <pre><code>stack
+  !=
+algebraic stack</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.13.1 / VI.13.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.ArchitectureStackBase</code>, <code>ArchitecturePresheaf</code> with <code>pullbackObj_eq</code>, <code>pullbackIso_holds</code>; <code>LocalArchitectureObjects</code>, <code>ArchitectureDescentDatum</code>, <code>EffectiveArchitectureDescent</code>, <code>ArchitectureStack</code> with <code>effectiveDescent_holds</code>, <code>cocycleCondition_holds</code>; <code>AlgebraicArchitectureStackData</code>, <code>AlgebraicArchitectureStack</code> with <code>representableDiagonal_holds</code>, <code>atlasAdmissible_holds</code>, <code>obstructionIdealsDescend_holds</code>, <code>lawSheavesDescend_holds</code>, <code>signatureSheavesDescend_holds</code>, <code>structureSheavesDescend_holds</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The stack is selected base context, restriction identity / composition, groupoid-valued presheaf, base functoriality data, local objects, overlap isomorphisms, cocycle condition, and effective descent predicate; cocycle and effective descent take selected overlap / triple / comparison data as arguments. The algebraic variant carries representable diagonal, ArchitectureScheme atlas, and the four descent-of-structure certificates as explicit data.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the accessors.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="codebase-essence" class="article-section">
+              <h2>14. Codebase essence as quotient stack</h2>
+              <p id="definition-6-14-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-14-1">Definition VI.14.1 (Codebase essence).</a>
+                For a law universe \( U \), the codebase essence is defined
+                as a quotient stack. Assume a refactor groupoid object
+                \( \mathrm{Ref}_U \rightrightarrows X^U \) acts on
+                \( X^U \), with at least the data
+              </p>
+              <pre><code>source, target:
+  s,t : Ref_U -> X^U
+
+identity:
+  e : X^U -> Ref_U
+
+inverse:
+  inv : Ref_U -> Ref_U
+
+composition:
+  Ref_U x_{X^U} Ref_U -> Ref_U</code></pre>
+              <p>
+                satisfying the groupoid identities and compatible with the
+                selected law, obstruction, signature, and structure sheaves.
+                The codebase essence is then
+              </p>
+              <p>\[ \mathrm{Ess}_U(X) \;=\; \big[\, X^U / \mathrm{Ref}_U \,\big], \]</p>
+              <p>
+                the architecture structure that remains invariant under
+                refactor equivalence:
+              </p>
+              <pre><code>codebase essence
+  =
+architecture geometry modulo refactor equivalence.</code></pre>
+              <p id="principle-6-14-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-14-2">Principle VI.14.2 (Essence is not text identity).</a>
+                Codebase essence is neither identity of source text nor graph
+                isomorphism:
+              </p>
+              <pre><code>text identity:
+  too strict.
+
+graph isomorphism:
+  too coarse.
+
+quotient stack:
+  keeps geometry and equivalence.</code></pre>
+              <p>
+                \( \mathrm{Ess}_U(X) \) quotients presentation differences
+                while keeping atoms, laws, obstructions, signatures, sheaves,
+                derived conflict, and refactor equivalence. The two failed
+                candidates are the counterexamples: text identity separates
+                states that are the same architecture, and graph isomorphism
+                identifies states whose obstruction and semantic sheaves
+                differ.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VI.14.1 and Principle VI.14.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.CodebaseRefactorArrow</code> with <code>sourceObject</code>, <code>targetObject</code>, <code>identity</code>, <code>inverse</code>, <code>comp</code> and the six source / target coherence theorems; <code>CodebaseEssenceAction</code> with <code>lawCompatible_holds</code>, <code>obstructionCompatible_holds</code>, <code>signatureCompatible_holds</code>, <code>structureSheafCompatible_holds</code>; <code>CodebaseEssencePresentation</code> with <code>refactorArrow</code>, <code>iso_id_holds</code>, <code>iso_comp_holds</code>, <code>geometryModuloRefactor_holds</code>, <code>notTextIdentity_holds</code>, <code>notGraphIsomorphism_holds</code>; <code>CodebaseEssenceQuotientStack</code>, <code>CodebaseEssence</code>, <code>Ess_U</code> with <code>quotientPresheaf</code>, <code>stack_holds</code>, <code>action_holds</code>, and the same three reading certificates.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The essence is defined over a selected <code>Ref_U ⇉ X^U</code> arrow surface with sheaf compatibilities, a presheaf presentation, descent predicate, and a local-isomorphism-to-refactor-arrow reading; <code>Ess_U(X)</code> is read as selected geometry modulo refactor equivalence, certified to be neither text identity nor graph isomorphism.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures, <em>proved</em> for the accessors.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="decomposition-stack" class="article-section">
+              <h2>15. Decomposition stack</h2>
+              <p id="definition-6-15-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-15-1">Definition VI.15.1 (Decomposition stack).</a>
+                For an architecture geometry \( X \), the stack of admissible
+                decompositions is \( \mathrm{Dec}_U(X) \): for a local
+                context \( W \), the value \( \mathrm{Dec}_U(X)(W) \) is the
+                groupoid of decompositions admissible on \( W \). Examples of
+                decompositions:
+              </p>
+              <pre><code>component decomposition
+service decomposition
+bounded context decomposition
+authority decomposition
+semantic decomposition
+runtime decomposition
+state decomposition</code></pre>
+              <p>
+                Decompositions form a groupoid, not a set: between
+                decompositions that look the same there are refactor
+                equivalences, semantic equivalences, and boundary-preserving
+                equivalences, and the stack keeps them.
+              </p>
+              <p id="principle-6-15-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-15-2">Principle VI.15.2 (No privileged decomposition).</a>
+                AAT does not assume from the outset that a unique correct
+                decomposition exists:
+              </p>
+              <pre><code>local decompositions may exist.
+global canonical decomposition may not exist.</code></pre>
+              <p>
+                Decomposition is relativized to the law universe, the
+                coverage topology, the semantic language game, the authority
+                boundary, and the runtime interaction.
+              </p>
+            </section>
+
+            <section id="no-canonical-decomposition" class="article-section">
+              <h2>16. No canonical decomposition</h2>
+              <p id="definition-6-16-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-16-1">Definition VI.16.1 (Gerbe obstruction).</a>
+                Consider a cover \( \mathcal{U} = \{ W_i \to W \} \) on which
+                local decompositions exist: each
+                \( \mathrm{Dec}_U(X)(W_i) \) is nonempty, but the cocycle
+                condition on overlaps and triple overlaps may break. In that
+                case a gerbe obstruction class is defined,
+              </p>
+              <p>\[ [\mathrm{gerbe}_U(X)] \;\in\; H^2\big(X,\ \mathrm{Aut}(\mathrm{Dec}_U)\big), \]</p>
+              <p>
+                where \( \mathrm{Aut}(\mathrm{Dec}_U) \) is the automorphism
+                sheaf of the decomposition groupoid. This \( H^2 \) is in
+                general not abelian sheaf cohomology: it is a non-abelian
+                gerbe obstruction relativized to the decomposition groupoid.
+                When the gerbe is banded by an abelian sheaf \( A \), the
+                class lands in ordinary abelian sheaf cohomology,
+                \( [\mathrm{gerbe}_U(X)] \in H^2(X, A) \); otherwise it is
+                treated as a non-abelian cohomology / stack obstruction
+                class rather than an element of a cohomology group.
+              </p>
+
+              <div id="theorem-6-16-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VI.16.2</span>
+                    <h3>No Canonical Decomposition</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: packaged (assumption-relative)</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>local decompositions exist
+Aut(Dec_U) is defined
+gerbe obstruction class is defined</code></pre>
+                <p>
+                  If \( [\mathrm{gerbe}_U(X)] \neq 0 \), then \( X \) admits
+                  no global canonical decomposition relativized to \( U \):
+                </p>
+                <pre><code>local decompositions exist
+but
+no global canonical decomposition.</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    If the local decompositions came from a global canonical
+                    decomposition, the overlap isomorphisms and the triple
+                    overlap cocycle condition would cohere, forcing the gerbe
+                    obstruction to vanish:
+                    global canonical decomposition implies
+                    \( [\mathrm{gerbe}_U(X)] = 0 \). The hypothesis says the
+                    class is nonzero, so the local decompositions do not glue
+                    into a global canonical one.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.NoCanonicalDecompositionData</code>, <code>NoCanonicalDecompositionData.localDecompositionsExist_holds</code>, <code>NoCanonicalDecompositionData.noCanonicalDecomposition</code> — <em>packaged (assumption-relative)</em>: proved under the explicit soundness hypothesis that a global canonical decomposition forces the selected gerbe class to zero.</dd>
+                </dl>
+              </div>
+
+              <p id="principle-6-16-3" class="statement">
+                <a class="statement-anchor" href="#principle-6-16-3">Principle VI.16.3 (Decomposition failure is not confusion).</a>
+                The nonexistence of a global canonical decomposition is not a
+                failure of analysis; it is a structure of the architecture
+                geometry:
+              </p>
+              <pre><code>no unique correct decomposition
+  may be theorem,
+not ignorance.</code></pre>
+              <p>
+                In that situation, searching for the one true partition is
+                itself the wrong move. What is called for is reading the
+                decomposition stack and the gerbe obstruction.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VI.15.1 / VI.16.1 and Theorem VI.16.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.SingularityMonodromyStack.DecompositionEquivalenceKind</code>, <code>DecompositionGroupoid</code> with <code>homKind</code>, <code>id_kind_defined</code>, <code>inverseHom</code>, <code>compHom</code>; <code>DecompositionPresheaf</code> with <code>Dec_U</code>, <code>Equiv</code>, <code>restrictObject_eq</code>; <code>DecompositionStack</code> with <code>overlapCompatible_holds</code>, <code>effectiveDescent_holds</code>; <code>GerbeObstructionData</code> with <code>gerbeClassValue</code>, <code>gerbeClass_ne_zero</code>, <code>autSheafDefined_holds</code>, <code>nonAbelianReading_holds</code>; <code>BandedAbelianGerbeBridge</code> with <code>representsGerbeClass_holds</code>, <code>abelianBridgeOnlyWhenBanded_holds</code>; <code>NoCanonicalDecompositionData</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The decomposition stack returns an admissible decomposition groupoid per selected local context, keeping refactor / semantic / boundary-preserving equivalence as morphism kinds. The gerbe obstruction is an abstract pointed non-abelian class with a nonzero predicate; only the banded case bridges to the Part IV conditional \( H^2(X,A) \) surface.</dd>
+                  <dt>Status</dt>
+                  <dd><em>defined only</em> for the structures; Theorem VI.16.2 is <em>packaged (assumption-relative)</em> under the explicit selected gerbe soundness interface.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="finite-examples" class="article-section">
+              <h2>Finite examples in Lean</h2>
+              <p>
+                Part VI closes its Lean surface with finite witness packages
+                that instantiate the chapter's theorems on concrete finite
+                data. Each package exhibits a selected witness, so the
+                theorems above are not merely interface-relative statements
+                but fire on constructed examples: a singular boundary, a
+                nonfillable square, both branches of transport descent, a
+                refactor Galois correspondence on a finite invariant family,
+                and a nonzero decomposition gerbe.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part VI finite examples</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.FiniteModel.SingularityMonodromyStackPart6.SingularBoundaryToyModel</code> with <code>verifies_singular_boundary</code>; <code>OperationSquareToyModel</code> with <code>verifies_square_nonfillability</code>; <code>TransportDescentZeroToyModel</code> with <code>nonempty_of_relationBoundaryZero</code>, <code>zero_case_descends</code>; <code>TransportDescentNonzeroToyModel</code> with <code>nonempty_of_not_relationBoundaryZero</code>, <code>nonzero_case_not_descend</code>; <code>RefactorGaloisToyModel</code> with <code>verifies_galois_connection</code>; <code>DecompositionGerbeToyModel</code> with <code>verifies_no_canonical_decomposition</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Finite selected witness packages verifying (a) a singular boundary, (b) selected square monodromy nonfillability, (c) transport descent in the relation-boundary-zero case and non-descent in the nonzero case — split into separate packages, each shown <code>Nonempty</code> from its finite zero / nonzero data — (d) the refactor Galois correspondence on a finite invariant family, and (e) no canonical decomposition from a nonzero decomposition gerbe.</dd>
+                  <dt>Status</dt>
+                  <dd><em>proved</em> — example theorems on selected witness packages.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Part VI formalized how the derived obstruction of Part V
+                appears inside architecture geometry. Singularity locates
+                where obstruction concentrates; monodromy shows how operation
+                history leaves residue; stacks keep refactor equivalence and
+                decomposition non-uniqueness. The three main theorems:
+              </p>
+              <pre><code>Singularity Criterion:
+  H^1(T_{S/U}) != 0
+  or cotangent complex is not smooth
+  implies S is U-singular.
+
+Monodromy Debt:
+  Mon_gamma(Ob_U) != id
+  implies endpoint-equivalent loop has hidden architecture debt.
+
+No Canonical Decomposition:
+  [gerbe_U(X)] != 0
+  implies no global canonical decomposition.</code></pre>
+              <p>
+                With these, AAT handles hard-to-repair loci,
+                history-dependent debt, and non-unique decomposition as
+                structures of architecture geometry. The next question is how
+                to represent, measure, and analyze these structures — through
+                representations, periods, metrics, and analytic shadows —
+                which leads into Part VII.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Architecture stratum</dt>
+                  <dd>A part \( S \subset X \) cut by a selected role, boundary, or region, relativized to atoms, laws, obstructions, signatures, and coverage.</dd>
+                </div>
+                <div>
+                  <dt>Cotangent / tangent complex</dt>
+                  <dd>\( L_{S/U} \), the infinitesimal constraint complex of a stratum relative to a law universe, and \( T_{S/U} = \mathbf{R}\mathrm{Hom}(L_{S/U}, \mathcal{O}_S^U) \), whose \( H^0 \) reads lawful refactor directions and \( H^1 \) reads lifting obstruction.</dd>
+                </div>
+                <div>
+                  <dt>U-singular stratum</dt>
+                  <dd>A stratum with a selected first-order lawful deformation whose selected obstruction class is nonzero — the place where repair geometry is obstructed.</dd>
+                </div>
+                <div>
+                  <dt>God object</dt>
+                  <dd>A singular stratum where multiple law loci meet non-transversely; size never enters the definition.</dd>
+                </div>
+                <div>
+                  <dt>Presented fundamental group</dt>
+                  <dd>\( \pi_1^{\mathrm{AAT}}(X,U,H,A) = \pi_1(K_H(X,U), A) \): the edge-path group of the presentation two-complex, relativized to a homotopy generator family.</dd>
+                </div>
+                <div>
+                  <dt>Monodromy debt</dt>
+                  <dd>Nonidentity action of an endpoint-equivalent operation loop on the obstruction sheaf — path-dependent debt invisible to endpoint comparison.</dd>
+                </div>
+                <div>
+                  <dt>Codebase essence</dt>
+                  <dd>\( \mathrm{Ess}_U(X) = [X^U / \mathrm{Ref}_U] \): architecture geometry modulo refactor equivalence, kept as a quotient stack rather than text identity or graph isomorphism.</dd>
+                </div>
+                <div>
+                  <dt>Decomposition gerbe</dt>
+                  <dd>The obstruction class \( [\mathrm{gerbe}_U(X)] \) measuring the failure of local decompositions to glue; nonzero class refutes any global canonical decomposition.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../derived-geometry-repair/">
+                <span>Previous</span>
+                <strong>Part V. Derived Law Geometry and Repair</strong>
+              </a>
+              <a class="page-nav-next" href="../representations-periods/">
+                <span>Next</span>
+                <strong>Part VII. Representations, Periods, and Analysis</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

@@ -1,0 +1,637 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part IX. Evolution Geometry",
+  "description": "Part IX of Algebraic Architecture Theory: trace categories, state transition presheaves, temporal coefficients, temporal descent, dissipative policies, Lyapunov readings, and the force integrability obstruction candidate.",
+  "order": 10,
+  "llmsLabel": "AAT Part IX: Evolution Geometry",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part IX</span>
+          </nav>
+          <p class="eyebrow">Part IX</p>
+          <h1>Evolution Geometry</h1>
+          <p class="lede">
+            Part VIII fixed the conditions under which AAT geometry is read
+            measurably inside a fixed finite measurement profile. An
+            architecture, however, also appears as a sequence of selected
+            geometries under selected operations, repairs, migrations, and
+            state transitions. Part IX defines the minimal structure that
+            handles the time direction while staying inside the purely
+            mathematical scope of the AAT text: a fixed trace category, a
+            state transition presheaf, a temporal coefficient, temporal laws
+            and obstructions, a temporal descent criterion, dissipative
+            policies with finite stopping, a Lyapunov reading, and a force
+            integrability reading.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part IX page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#from-part8">1. From static to evolution geometry</a></li>
+                <li><a href="#trace-category">2. Trace category</a></li>
+                <li><a href="#state-transition-presheaf">3. State transition presheaf</a></li>
+                <li><a href="#temporal-descent">4. Temporal descent</a></li>
+                <li><a href="#dissipative-policy">5. Dissipative policy</a></li>
+                <li><a href="#lyapunov-reading">6. Lyapunov reading</a></li>
+                <li><a href="#force-integrability">7. Force integrability reading</a></li>
+                <li><a href="#conclusion">8. Conclusion of Part IX</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../measurement-theory/">Part VIII. Measurement Theory</a></li>
+                <li><a href="./" aria-current="page">Part IX. Evolution Geometry</a></li>
+                <li><a href="../semantic-repair-saga/">Part X. Semantic Repair Saga</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed vocabulary, law
+                universe, coverage topology, coefficient sheaf, and
+                representation family. Three claim grades are kept distinct
+                throughout the monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                A theorem candidate is a candidate for a future definition and
+                proof design; it becomes a central Lean proof obligation only
+                when a corresponding ledger row exists. A principle fixes a
+                claim boundary, a way of reading, or a non-claim. Theorem
+                labels on this page follow the canonical text. A label carries
+                a Lean status badge only when the AG Lean index has a
+                corresponding ledger row.
+              </p>
+              <p>
+                The claims of Part IX are confined to the selected trace
+                category, state transition presheaf, and temporal coefficient.
+                About events, transitions, and state spaces outside that
+                selection, the text is silent.
+              </p>
+            </section>
+
+            <section id="from-part8" class="article-section">
+              <h2>1. From static to evolution geometry</h2>
+              <p>
+                Part VIII read AAT geometry measurably inside a fixed finite
+                measurement profile. Part IX adds the time direction: an
+                architecture also appears as a sequence of selected geometries
+                produced by selected operations, repairs, migrations, and
+                state transitions.
+              </p>
+              <pre><code>static geometry:
+  X
+
+evolution geometry:
+  X_0 -> X_1 -> ... -> X_n</code></pre>
+              <p>
+                The goal of Part IX is to define the minimal structure for the
+                time direction while preserving the purely mathematical scope
+                of the AAT text. Temporal laws and obstructions are read
+                inside a fixed trace category, state transition presheaf,
+                temporal coefficient, law universe, and measurement profile.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part IX entry point and dependency bootstrap (IX.R0)</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>Formal.AG.Evolution</code>, <code>Formal.AG.Evolution.Bootstrap</code>, <code>AAT.AG.Evolution.UsesAATSite</code>, <code>UsesArchitectureScheme</code>, <code>UsesCoverRelativeCechComplex</code>, <code>UsesRepairComparisonProfile</code>, <code>UsesArchitectureStratum</code>, <code>UsesAnalyticReadingContext</code>, <code>UsesMeasurementProfile</code>, <code>PartIXDependencyStatus</code>, <code>currentDependencyStatus</code></dd>
+                  <dt>Meaning</dt>
+                  <dd>The Part IX Evolution Geometry module is imported from <code>Formal/AG.lean</code> and stands on the earlier Part II&ndash;VIII towers; the prerequisite structures are confirmed by concrete Lean type references, with proved availability accessors (<code>current_site_available</code>, <code>current_measurement_available</code>, and siblings).</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="trace-category" class="article-section">
+              <h2>2. Trace category</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition IX.2.1 (Trace Category).</a>
+                For an architecture evolution profile <code>E</code>, the
+                trace category is written \( \mathrm{Tr}_E \). Its objects are
+                selected time points, operation stages, or abstract event
+                states; its morphisms represent selected transitions.
+              </p>
+              <p>Representative morphisms:</p>
+              <pre><code>apply transition
+replay transition
+project state
+compensate action
+migrate state
+invert selected transition
+compose transitions</code></pre>
+              <p>
+                Which transitions are adopted as objects and arrows is part of
+                the evolution profile.
+              </p>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle IX.2.2 (Trace Relativity).</a>
+                Temporal laws are relativized to the selected trace category:
+              </p>
+              <pre><code>different trace category
+  -> different temporal law reading.</code></pre>
+              <p>
+                About unselected events, paths, and external state, the AAT
+                text claims neither zero, nor lawful, nor safe. This
+                relativity is the counterexample boundary of the section: the
+                same architecture under two different trace categories yields
+                two different temporal readings, and neither reading extends
+                to the other's unselected transitions.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition IX.2.1 and Principle IX.2.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Evolution.TraceCategory</code> with <code>selectedIdentity</code>, <code>selectedComposition</code>, the proved <code>id_comp_holds</code> / <code>comp_id_holds</code> / <code>assoc_holds</code> accessors, <code>TraceCategory.FiniteRegime</code> (finite objects, finite homs, identity and composition closure of the selected arrow family), <code>EvolutionProfile</code> with <code>traceCategory</code>, <code>measurement</code>, <code>TraceRelativity</code>, <code>traceRelativityBoundary</code>, and the functor-like <code>EvolutionGeometry</code> with <code>geometryAt</code>, <code>map_identity</code>, <code>map_composition</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Vocabulary definitions with proved category-law and finiteness accessors; the profile-relative measurement, base geometry, selected state family, temporal laws, and coefficient profile ride on the profile record.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="state-transition-presheaf" class="article-section">
+              <h2>3. State transition presheaf</h2>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition IX.3.1 (State Transition Presheaf).</a>
+                Fix an AAT site <code>X</code> and a trace category
+                \( \mathrm{Tr}_E \). The state transition presheaf assigns to
+                each context <code>W</code> and trace object <code>t</code>
+                the state space and transition monoid visible on
+                <code>W</code> at time <code>t</code>:
+              </p>
+              <pre><code>St_A(W,t)
+  =
+  State_A(W,t)
+  together with
+  Trans_A(W,t)</code></pre>
+              <p>
+                Here <code>State_A</code> is the selected state presheaf and
+                <code>Trans_A</code> is the selected transition monoid
+                presheaf. Restriction follows context restriction:
+              </p>
+              <pre><code>res_{W,V} : St_A(W,t) -> St_A(V,t)</code></pre>
+              <p>
+                When the descent condition is confirmed in the selected
+                regime, this presheaf is called a state transition sheaf.
+              </p>
+              <p id="definition-3-2" class="statement">
+                <a class="statement-anchor" href="#definition-3-2">Definition IX.3.2 (Temporal Coefficient).</a>
+                The abelian coefficient sheaf measuring differences,
+                mismatches, and gluing defects of temporal law data is the
+                temporal coefficient, written
+                \( \mathrm{TempCoeff}_A \). It serves as the coefficient of
+                temporal obstructions once a selected regime is fixed in which
+                differences of states and transitions read as abelian
+                coefficients.
+              </p>
+              <p id="definition-3-3" class="statement">
+                <a class="statement-anchor" href="#definition-3-3">Definition IX.3.3 (Temporal Law).</a>
+                A temporal law is read as a commutative diagram or relation
+                over <code>St_A</code> and \( \mathrm{Tr}_E \). Representative
+                examples:
+              </p>
+              <pre><code>replay(e, replay(e, s)) = replay(e, s)
+decode(encode(s)) ~ s
+compensate(action(s)) ~ s
+migrate(project_old(s)) = project_new(migrateEvents(s))</code></pre>
+              <p>
+                These are equations or descent conditions on the selected
+                state transition presheaf, not slogans.
+              </p>
+              <p id="definition-3-4" class="statement">
+                <a class="statement-anchor" href="#definition-3-4">Definition IX.3.4 (Temporal Obstruction).</a>
+                When a temporal law <code>L_t</code> holds locally on a
+                selected context family yet fails to cohere with trace
+                composition or restriction, the mismatch is a temporal
+                obstruction:
+              </p>
+              <p>\[ \mathrm{Ob}_t \in H^n(\mathrm{Tr}_E \times X,\ \mathrm{TempCoeff}_A). \]</p>
+              <p>
+                Here \( \mathrm{Tr}_E \times X \) is a selected product site
+                or incidence model built from the trace category and the AAT
+                site. When the product structure, the temporal coefficient,
+                and the mismatch cocycle are not fixed, the display above is
+                treated as a reading schema rather than a definition &mdash;
+                this is the explicit non-conclusion boundary of the section.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions IX.3.1&ndash;IX.3.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Temporal incidence site and coefficient (IX.&sect;3 / R2)</dt>
+                  <dd><code>AAT.AG.Evolution.TemporalSite</code> with <code>Point</code>, <code>IncidenceLeg</code>, <code>idLeg</code>, <code>compLeg</code>, finiteness and soundness accessors; <code>TemporalCover</code> and <code>TemporalCoverToSiteCover</code> comparing temporal covers to Part IV site covers; <code>TemporalCechBridge</code> and <code>FinitePosetTemporalCechBridge</code> into the cover-relative &Ccaron;ech complex; <code>TemporalCoefficient</code> / <code>TempCoeff_A</code> with incidence restriction laws (<code>restrict_identity</code>, <code>restrict_composition</code>); <code>FiniteTemporalCoefficientRegime</code> backing the coefficient by a Part VIII finite measurement.</dd>
+                  <dt>State transition presheaf (IX.&sect;3 / R3)</dt>
+                  <dd><code>StateTransitionPresheaf</code> with <code>StateAt</code>, <code>TransitionAt</code>, <code>contextRestriction</code>, <code>traceTransport</code>, identity / composition functoriality, the <code>context_trace_commutes</code> square, <code>StateTransitionSheaf</code> with <code>descent_section_compatible</code>, and the <code>TemporalLawKind</code> / <code>TemporalLaw</code> vocabulary with <code>holdsStateEquation</code>, <code>holdsTransition</code>, <code>holdsDescent</code>.</dd>
+                </dl>
+              </article>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition IX.3.4 in Lean (IX.&sect;3.4 / R4)</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>TemporalMismatch</code> with <code>asCochain</code> and <code>supported_by_law</code>, <code>TemporalCocycle</code> with <code>asCechCocycle</code>, <code>differential_zero_holds</code>, <code>cohomologyClass</code>, <code>TemporalClass</code> with <code>class_matches_selected_cocycle</code>, and <code>ConcreteTemporalObstructionClass</code> with <code>selected_nonzero_holds</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Mismatch cochains, cocycles, and cover-relative cohomology classes are relativized to the selected temporal law, <code>TempCoeff_A</code>, and temporal &Ccaron;ech bridge; concrete obstruction evidence takes a selected class and an explicit nonzero predicate as arguments.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="temporal-descent" class="article-section">
+              <h2>4. Temporal descent</h2>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition IX.4.1 (Replay Descent Data).</a>
+                Fix a cover <code>U = {W_i -&gt; W}</code> and a trace arrow
+                <code>e : t -&gt; t'</code>. Suppose that on each
+                <code>W_i</code> there is replay data
+              </p>
+              <pre><code>r_i : State_A(W_i,t) -> State_A(W_i,t')</code></pre>
+              <p>
+                When the differences on overlaps read as a 1-cocycle
+                <code>m(r)</code> of the temporal coefficient, the family is
+                called replay descent data.
+              </p>
+
+              <div id="theorem-4-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem IX.4.2 &mdash; Certified bounded inference</span>
+                    <h3>Temporal Descent Criterion</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>Tr_E and X are finite.
+selected product/incidence site Tr_E x X is fixed.
+TempCoeff_A is an abelian coefficient sheaf in the selected regime.
+local replay data has a temporal mismatch cocycle m(r).
+[m(r)] = 0 in H^1(Tr_E x X, TempCoeff_A).</code></pre>
+                <p>
+                  Then, in the selected regime, after local adjustment the
+                  replay data glues to a global transition:
+                </p>
+                <pre><code>temporal mismatch class = 0
+  +
+adjust local replay data by a 0-cochain
+  =>
+global replay transition exists.</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Inside the fixed trace category and temporal coefficient,
+                    the vanishing of the mismatch class means the mismatch
+                    cocycle is a coboundary. Adjusting the local replay data
+                    by the corresponding 0-cochain kills the overlap
+                    differences, so the adjusted local data satisfies the
+                    compatibility needed to glue into a global replay
+                    transition. The reading is exactly the Part IV descent
+                    pattern transported to the temporal incidence site: local
+                    transition data with coboundary mismatch glues globally.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>ReplayDescentData</code> with <code>mismatch</code>, <code>localReplay</code>, <code>GlobalReplayTransition</code>, <code>zeroMismatchCocycle</code>, <code>zeroMismatchClass</code>; <code>ReplayMismatchCocycle</code> with <code>differential_zero_holds</code> and <code>toTemporalCocycle</code>; <code>EffectiveTemporalAdjustment</code> with the proved equation <code>m(adjust(c,r)) = m(r) - d c</code> (<code>mismatch_adjust_eq</code>); and <code>TemporalDescentCriterion</code> with <code>class_matches_mismatch</code>, <code>class_vanishes</code>, <code>adjusted_data_compatible</code>, and the theorem <code>temporal_descent_criterion</code> &mdash; a proved theorem package (IX.&sect;4 / R5).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    The Lean package proves the one-directional criterion: a
+                    vanishing class together with a compatible adjustment
+                    yields the global replay transition. The conclusion is
+                    read inside the selected finite trace regime, temporal
+                    cover, and coefficient; it issues no claim about
+                    unselected covers or coefficients.
+                  </dd>
+                </dl>
+              </div>
+
+              <p>
+                A finite example and a finite counterexample both live in the
+                Lean fixture layer (IX.R10). The zero-mismatch fixture
+                (<code>zeroReplayDescentData</code>,
+                <code>replay_zero_theorem42_global_transition_exists</code>)
+                reads a global replay transition through Theorem IX.4.2. The
+                pseudo-circle fixture (<code>pseudoCircleMismatch</code>,
+                <code>pseudoCircleMismatch_ab_nonzero</code>,
+                <code>replay_nonzero_edge_witness</code>) exhibits a nonzero
+                replay mismatch on a selected edge, so no vanishing-class
+                conclusion is available there &mdash; the criterion stays
+                silent, as it should.
+              </p>
+            </section>
+
+            <section id="dissipative-policy" class="article-section">
+              <h2>5. Dissipative policy</h2>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition IX.5.1 (Evolution Functional).</a>
+                Inside a measurement profile <code>M</code>, a reading
+                \( \Phi_M(A) \) assigning a nonnegative value to an
+                architecture state <code>A</code> is an evolution functional.
+                Representative examples:
+              </p>
+              <pre><code>obstruction mass
+harmonic mass ||h(g)||
+distance-to-flatness
+transfer residue norm</code></pre>
+              <p id="definition-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-5-2">Definition IX.5.2 (Dissipative Policy).</a>
+                An operation family <code>F</code> is dissipative with respect
+                to \( \Phi_M \) when every selected operation
+                <code>f : A -&gt; B</code> satisfies
+                \( \Phi_M(B) \le \Phi_M(A) \). It is strictly dissipative when
+                the inequality is strict at selected non-terminal states.
+              </p>
+
+              <div id="theorem-5-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem IX.5.3 &mdash; Certified bounded inference</span>
+                    <h3>Finite Dissipation Stopping</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>selected state set is finite.
+Phi_M takes values in a well-founded ordered set.
+selected operation policy is strictly dissipative outside terminal states.</code></pre>
+                <p>
+                  Then every selected evolution path reaches a terminal state
+                  in finite time.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    A path that stays outside terminal states produces a
+                    strictly decreasing sequence of \( \Phi_M \) values. In a
+                    well-founded order no infinite strictly descending
+                    sequence exists, so no infinite path stays outside the
+                    terminal states; a maximal selected path with executable
+                    endpoints therefore ends at a terminal state.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>no_infinite_descending_sequence</code>, <code>InfiniteSelectedEvolutionPath</code> with <code>StaysOutsideTerminal</code> and <code>sourceValue_strict_decrease</code>, <code>FiniteDissipationStopping</code> with <code>no_infinite_nonterminal_path</code>, and <code>SelectedEvolutionPath.maximal_path_reaches_terminal</code> &mdash; a proved theorem package (IX.&#x5B9A;&#x7406;5.3 / R7), on top of the defined-only surface <code>EvolutionFunctional</code>, <code>DissipativePolicy</code>, <code>TerminalState</code>, <code>StrictlyDissipativeOutsideTerminal</code>, <code>SelectedEvolutionPath</code> with pathwise non-increase and strict-decrease predicates (IX.&sect;5.1-5.2 / R6, defined only with proved accessors).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    Reaching a terminal state and the terminal state being
+                    lawful are separate matters: lawfulness of the terminal
+                    state additionally requires the obstruction vanishing,
+                    exactness, and coverage assumptions of Parts III and IV.
+                    The Lean fixture layer keeps this boundary concrete: the
+                    two-step fixture reaches its terminal by Theorem IX.5.3
+                    (<code>twoStep_dissipation_reaches_terminal_by_theorem53</code>),
+                    while <code>nonlawful_terminal_is_terminal</code> and
+                    <code>nonlawful_terminal_not_lawful</code> exhibit a
+                    terminal state that is not lawful.
+                  </dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="lyapunov-reading" class="article-section">
+              <h2>6. Lyapunov reading</h2>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition IX.6.1 (AAT Lyapunov Reading).</a>
+                An evolution functional \( \Phi_M \) is an AAT Lyapunov
+                reading when it is non-increasing along a dissipative policy
+                and takes its minimum near selected obstruction zero. When a
+                harmonic debt decomposition is available,
+              </p>
+              <p>\[ \Phi_M(A) = \lVert h(g_A) \rVert \]</p>
+              <p>
+                is the representative example: the harmonic mass of Part VIII
+                read as a Lyapunov functional along the evolution.
+              </p>
+              <p id="principle-6-2" class="statement">
+                <a class="statement-anchor" href="#principle-6-2">Principle IX.6.2 (Lyapunov Is Not Forecast).</a>
+                A Lyapunov reading reads dissipativity inside the selected
+                finite evolution profile. It makes no claim about unselected
+                transitions, unconstructed state spaces, or arbitrary future
+                paths:
+              </p>
+              <pre><code>dissipative in profile
+  !=
+dissipative outside the selected trace category.</code></pre>
+              <p>
+                This principle is the non-conclusion boundary of the section:
+                the reading is a statement about the selected profile, never a
+                forecast.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition IX.6.1 and Principle IX.6.2 in Lean (IX.&sect;6.1 / R8)</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>DissipativePolicy.NonIncreasingAlongPolicy</code>, <code>nonIncreasingAlongPolicy_of_dissipative</code>, <code>AATLyapunovReading</code> with <code>selected_scope</code>, <code>nonIncreasing_policy</code>, <code>minimum_near_selected_obstruction_zero</code>, <code>no_forecast_outside_selected_profile</code>, <code>selected_path_monotone</code>, <code>selected_path_strict_before_terminal</code>, <code>no_infinite_loop_before_terminal</code>, and <code>HarmonicMassLyapunovInstance</code> with <code>state_value_eq_harmonic_mass</code>, <code>harmonic_mass_reading</code>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The reading is relativized to the selected finite evolution profile; the no-forecast field carries Principle IX.6.2 as an explicit record component rather than a proved claim about anything outside the profile. The harmonic-mass hook connects to the Part VIII harmonic debt reading. The finite fixture <code>lyapunovReading</code> / <code>harmonicMassLyapunov</code> with <code>lyapunov_path_nonIncreasing</code> and <code>harmonic_mass_value</code> instantiates both (IX.R10).</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="force-integrability" class="article-section">
+              <h2>7. Force integrability reading</h2>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition IX.7.1 (Force).</a>
+                A force on evolution geometry is a selected transition sending
+                an architecture state to the next state:
+              </p>
+              <pre><code>F : A_t -> A_{t+1}</code></pre>
+              <p>
+                A force whose local law data integrates to global law data is
+                an integrable force.
+              </p>
+
+              <div id="theorem-candidate-7-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem candidate IX.7.2</span>
+                    <h3>Force Integrability Obstruction</h3>
+                  </div>
+                  <span class="status-badge status-badge-future">Lean: statement-only</span>
+                </div>
+                <p>
+                  Suppose the temporal mismatch class produced by a force
+                  <code>F</code>,
+                </p>
+                <p>\[ \mathrm{ob}(F) \in H^1(\mathrm{Tr}_E \times X,\ \mathrm{TempCoeff}_A), \]</p>
+                <p>
+                  is defined. Then, when \( \mathrm{ob}(F) \neq 0 \), the
+                  expectation is that the selected temporal law data does not
+                  integrate to a global evolution along <code>F</code>.
+                </p>
+                <dl>
+                  <dt>Status as a candidate</dt>
+                  <dd>
+                    This becomes a theorem only once the construction of
+                    \( \mathrm{ob}(F) \), coefficient exactness, the trace
+                    product site, and the detectability of temporal descent
+                    are fixed. Until then it is a theorem candidate in the
+                    canonical text, read through Theorem IX.4.2 as its
+                    intended proof route.
+                  </dd>
+                  <dt>Lean anchors (IX.&#x5B9A;&#x7FA9;7.1 / &#x5B9A;&#x7406;&#x5019;&#x88DC;7.2 / R9)</dt>
+                  <dd><code>Force</code> with <code>selectedIncidence</code>, <code>maps_source_to_target</code>, <code>selected</code>; <code>ForceIntegrationData</code> / <code>IntegrableForce</code> with <code>local_law_data_holds</code>, <code>descends_to_global_temporal_law</code>; <code>ForceMismatchClass</code> with <code>obstructionClass</code>, <code>mismatch_degree_one</code>, <code>trace_product_site_fixed</code>, <code>mismatch_constructed_from_force</code>; and <code>ForceIntegrabilityObstructionCandidate</code> whose <code>candidate_not_integrable_of_obstruction</code> is a statement-only accessor reading the package's explicit assumptions &mdash; it proves no general force integrability theorem.</dd>
+                  <dt>Finite fixture</dt>
+                  <dd>The toy force fixture (<code>toyForce</code>, <code>toyForceMismatchClass</code>, <code>toy_force_mismatch_degree_one</code>, <code>forceCandidateFixture</code>, <code>force_candidate_obstruction_nonzero</code>) instantiates the candidate surface with an explicit nonzero obstruction assumption on a selected finite model (IX.R10).</dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="conclusion" class="article-section">
+              <h2>8. Conclusion of Part IX</h2>
+              <p>
+                Part IX formalizes the time direction of AAT geometry through
+                the trace category, the state transition presheaf, and the
+                temporal coefficient:
+              </p>
+              <pre><code>Trace category
+  -> State transition presheaf
+  -> Temporal coefficient
+  -> Temporal law
+  -> Temporal obstruction
+  -> Dissipative policy
+  -> Lyapunov reading</code></pre>
+              <p>
+                With this tower, AAT handles purely mathematically the
+                situation
+              </p>
+              <pre><code>local transition laws
+but
+global temporal obstruction remains</code></pre>
+              <p>
+                Part IX makes no claim about unselected traces, unconstructed
+                transitions, or arbitrary future paths. Its conclusions are
+                read only inside the fixed temporal and evolution geometry.
+                Part X connects the law equations of Part III, the
+                cover-relative &Ccaron;ech \( H^1 \) of Part IV, and the
+                repair theory of Part V into one theorem chain inside selected
+                finite data.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Finite temporal examples and final ledger (IX.R10 / IX.R11)</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved</span>
+                </div>
+                <dl>
+                  <dt>Finite temporal examples (IX.R10)</dt>
+                  <dd><code>AAT.AG.Examples.EvolutionPart9</code>: the two-step trace (<code>twoStepTrace</code>, <code>twoStepTraceFiniteRegime</code>), zero replay descent read through the Theorem IX.4.2 package (<code>replay_zero_theorem42_global_transition_exists</code>), the pseudo-circle nonzero replay mismatch (<code>pseudoCircleMismatch_ab_nonzero</code>), finite dissipation stopping read through the Theorem IX.5.3 package (<code>twoStep_dissipation_reaches_terminal_by_theorem53</code>), the non-lawful terminal boundary, the harmonic Lyapunov reading, and the force obstruction candidate fixture, bundled by <code>finite_temporal_examples_verified</code> &mdash; proved examples on selected finite fixtures.</dd>
+                  <dt>Final ledger (IX.R11)</dt>
+                  <dd><code>Formal/AG.lean</code> imports <code>Formal.AG.Evolution</code> and <code>Formal.AG.Examples.EvolutionPart9</code> into the <code>lake build</code> target; the R11 validation confirms a no-match scan for <code>axiom</code> / <code>admit</code> / <code>sorry</code> / <code>unsafe</code> across <code>Formal/AG</code>, and the ledger keeps the Part IX text labels, Lean declarations, statuses, and residual boundaries in agreement.</dd>
+                </dl>
+              </article>
+
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Trace category</dt>
+                  <dd>\( \mathrm{Tr}_E \): selected time points, stages, or event states with selected transitions as morphisms; temporal laws are relativized to it (Principle IX.2.2).</dd>
+                </div>
+                <div>
+                  <dt>State transition presheaf</dt>
+                  <dd><code>St_A(W,t)</code>: the state space and transition monoid visible on context <code>W</code> at trace object <code>t</code>, with restriction along contexts; a sheaf when the selected descent condition is confirmed.</dd>
+                </div>
+                <div>
+                  <dt>Temporal coefficient</dt>
+                  <dd>\( \mathrm{TempCoeff}_A \): the abelian coefficient sheaf measuring differences and gluing defects of temporal law data.</dd>
+                </div>
+                <div>
+                  <dt>Temporal obstruction</dt>
+                  <dd>The mismatch class \( \mathrm{Ob}_t \in H^n(\mathrm{Tr}_E \times X, \mathrm{TempCoeff}_A) \) of a locally holding temporal law; a reading schema until the product site, coefficient, and cocycle are fixed.</dd>
+                </div>
+                <div>
+                  <dt>Replay descent data</dt>
+                  <dd>Local replay maps over a cover whose overlap differences read as a temporal 1-cocycle; the input of Theorem IX.4.2.</dd>
+                </div>
+                <div>
+                  <dt>Dissipative policy</dt>
+                  <dd>An operation family along which the evolution functional \( \Phi_M \) never increases, strictly decreasing outside terminal states in the strict case; finite stopping under well-foundedness (Theorem IX.5.3).</dd>
+                </div>
+                <div>
+                  <dt>Lyapunov reading</dt>
+                  <dd>A non-increasing evolution functional minimized near selected obstruction zero; dissipativity inside the profile, never a forecast (Principle IX.6.2).</dd>
+                </div>
+                <div>
+                  <dt>Force</dt>
+                  <dd>A selected transition <code>F : A_t -&gt; A_{t+1}</code>; its integrability obstruction is Theorem candidate IX.7.2.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../measurement-theory/">
+                <span>Previous</span>
+                <strong>Part VIII. Measurement Theory</strong>
+              </a>
+              <a class="page-nav-next" href="../semantic-repair-saga/">
+                <span>Next</span>
+                <strong>Part X. Semantic Repair Saga</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
