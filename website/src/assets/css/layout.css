@@ -204,6 +204,14 @@
   overflow-wrap: anywhere;
 }
 
+/* prose measure: direct prose in a section stays at a readable line length;
+   tables, code panels, grids, and cards keep the full column */
+.article-section > p,
+.article-section > ul,
+.article-section > ol {
+  max-width: 70ch;
+}
+
 .page-nav {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

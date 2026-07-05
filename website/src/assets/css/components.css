@@ -443,9 +443,8 @@
 .concept-grid strong {
   display: block;
   color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 0.98rem;
-  font-weight: 850;
+  font-size: 1.02rem;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -601,9 +600,8 @@
 .status-list strong {
   display: block;
   color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 1.04rem;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -669,18 +667,16 @@
 .claim-strip p {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 0.98rem;
-  font-weight: 650;
+  font-size: 1rem;
+  font-weight: 600;
   line-height: 1.52;
 }
 
 .plain-reading {
   border-left: 4px solid var(--accent-blue);
   color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 620;
+  font-size: 1.02rem;
+  font-weight: 500;
   line-height: 1.52;
   padding-left: 16px;
 }
@@ -701,9 +697,8 @@
 
 .definition-list dt {
   color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 1.04rem;
+  font-weight: 700;
   line-height: 1.3;
 }
 
