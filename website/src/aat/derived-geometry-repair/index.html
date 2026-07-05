@@ -1,0 +1,1476 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part V. Derived Law Geometry and Repair",
+  "description": "Part V of Algebraic Architecture Theory: derived intersections of lawful loci, law conflict sheaves as Tor, non-transversality of laws, repair comparison profiles, transferred obstruction, Hilbert series conflict accounting, and well-founded repair termination.",
+  "order": 6,
+  "llmsLabel": "AAT Part V: Derived Law Geometry and Repair",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part V</span>
+          </nav>
+          <p class="eyebrow">Part V</p>
+          <h1>Derived Law Geometry and Repair</h1>
+          <p class="lede">
+            When an architecture must satisfy two law universes at once, the
+            joint lawful locus is more than the classical intersection
+            \( \mathrm{Flat}_U(X) \cap \mathrm{Flat}_V(X) \): the classical
+            intersection remembers the common zeros but forgets how the loci
+            meet. Part V reads latent law conflict as the derived intersection
+            \( \mathrm{Flat}_U(X) \cap^{R} \mathrm{Flat}_V(X) \), defines law
+            conflict sheaves as Tor sheaves, and rebuilds repair as controlled
+            movement through lawful loci: derived non-transversality explains
+            why a repair that improves one law axis can transfer obstruction
+            to another, and fixed comparison profiles say exactly which
+            improvements a repair may claim.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part V page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#part4-to-part5">1. From Part IV to Part V</a></li>
+                <li><a href="#lawful-loci">2. Lawful loci</a></li>
+                <li><a href="#classical-intersection">3. Classical intersection</a></li>
+                <li><a href="#derived-intersection">4. Derived intersection</a></li>
+                <li><a href="#law-conflict-sheaf">5. Law conflict sheaf</a></li>
+                <li><a href="#derived-law-conflict">6. Derived Law Conflict theorem</a></li>
+                <li><a href="#non-transversality">7. Non-transversality of laws</a></li>
+                <li><a href="#repair-path">8. Repair path</a></li>
+                <li><a href="#no-monotone-repair">9. No monotone repair guarantee</a></li>
+                <li><a href="#transferred-obstruction">10. Transferred obstruction</a></li>
+                <li><a href="#derived-repair-criterion">11. Derived repair criterion</a></li>
+                <li><a href="#hilbert-series">12. Hilbert series conflict accounting</a></li>
+                <li><a href="#well-founded-repair">13. Well-founded repair</a></li>
+                <li><a href="#conclusion">14. Conclusion of Part V</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../obstruction-cohomology/">Part IV. Obstruction Cohomology</a></li>
+                <li><a href="./" aria-current="page">Part V. Derived Law Geometry and Repair</a></li>
+                <li><a href="../singularity-monodromy-stack/">Part VI. Singularity, Monodromy, and Stack</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed atom vocabulary, law
+                universe, coverage topology, coefficient sheaf, and selected
+                reading. Three claim grades are kept distinct throughout the
+                monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                Theorem labels on this page follow the canonical text. A label
+                carries a Lean status badge only when the AG Lean index has a
+                corresponding ledger row; a label without a badge is a
+                mathematical statement in the canonical text and is not read
+                as a current Lean proved claim. In Part V, several ledger rows
+                are packaged assumption-relative surfaces: the theorem is
+                proved in Lean from explicitly selected resolution, bridge,
+                pairing, or accounting data, and the badge
+                <em>packaged (assumption-relative)</em> records exactly that
+                relativization.
+              </p>
+            </section>
+
+            <section id="part4-to-part5" class="article-section">
+              <h2>1. From Part IV to Part V</h2>
+              <p class="research-question">
+                Can an architecture be \( U \)-lawful and \( V \)-lawful at
+                once?
+              </p>
+              <p>
+                Part III defined the lawful locus of a law universe \( U \) as
+                the zero locus of the obstruction ideal sheaf,
+                \( \mathrm{Flat}_U(X) = V(I_U) \). Part IV asked, for a single
+                law universe, whether local lawful sections glue to a global
+                lawful section, and read the failure as an obstruction
+                cohomology class:
+              </p>
+              <pre><code>forall i, Flat_U(W_i)
+and
+[g] = 0 in H^1(X, Ob_U)
+--------------------------------
+Flat_U(W)</code></pre>
+              <p>
+                Part V asks a different question. Two or more law universes
+                \( U, V \) live over the same architecture geometry \( X \),
+                each with its own lawful locus \( \mathrm{Flat}_U(X) \) and
+                \( \mathrm{Flat}_V(X) \). Joint lawfulness is not merely the
+                problem of solving \( I_U = 0 \) and \( I_V = 0 \)
+                simultaneously: what matters is how \( I_U \) and \( I_V \)
+                intersect &mdash; whether the two families of law constraints
+                cross transversely. Two laws that are separately satisfiable
+                can leave a latent compatibility obstruction when satisfied
+                together, and the classical intersection loses sight of it.
+              </p>
+              <pre><code>lawfulness is vanishing.
+joint lawfulness is intersection.
+law conflict is derived non-transversality.</code></pre>
+              <p>
+                The residue retained by the derived intersection is what makes
+                repair a substantive operation: repair is not mere local
+                improvement but the movement, resolution, or transfer of
+                derived obstruction between lawful loci.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part V entrypoint (V.R0)</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>Formal.AG.Derived</code> with the module tower <code>LawfulLoci</code>, <code>Koszul</code>, <code>Intersection</code>, <code>FreeResolution</code>, <code>TaylorResolution</code>, <code>Transversality</code>, <code>RepairProfile</code>, <code>Counterexample</code>, <code>Transfer</code>, <code>StructurallyLawfulRepair</code>, <code>HilbertSeries</code>, <code>WellFoundedRepair</code>, and <code>Formal.AG.Examples.DerivedPart5</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The Part V derived-law-geometry tower and its finite examples are imported from <code>Formal/AG.lean</code> and enter the <code>lake build</code> target.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The entrypoint does not formalize general derived category theory, the cotangent complex, or <code>Ext^1</code>; each surface below states its own relativization.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="lawful-loci" class="article-section">
+              <h2>2. Lawful loci</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition V.2.1 (Lawful locus for a law universe).</a>
+                For a law universe \( U \), write the obstruction ideal sheaf
+                as \( I_U \subset \mathcal{O}_X \), abbreviating the Part III
+                notation \( I_{\mathrm{Ob}}^U \). The lawful locus of
+                \( U \) is
+                \( \mathrm{Flat}_U(X) = V(I_U) \), and likewise
+                \( \mathrm{Flat}_V(X) = V(I_V) \) for a law universe
+                \( V \).
+              </p>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle V.2.2 (Law universes are distinct readings).</a>
+                \( U \) and \( V \) are different law readings of the same
+                architecture geometry \( X \). Representative examples:
+              </p>
+              <pre><code>U_cycle:
+  dependency cycle law universe.
+
+U_substitution:
+  substitution compatibility law universe.
+
+U_authority:
+  authority / effect law universe.
+
+U_semantic:
+  semantic consistency law universe.
+
+U_runtime:
+  runtime interaction law universe.</code></pre>
+              <p>
+                A law universe does not generate atoms. It specifies which
+                defect sections are read, which ideal is formed, and which
+                lawful locus is cut out:
+              </p>
+              <pre><code>law does not create atoms.
+law cuts out loci.</code></pre>
+              <p id="definition-2-3" class="statement">
+                <a class="statement-anchor" href="#definition-2-3">Definition V.2.3 (Derived lawful locus).</a>
+                Suppose the closed defect data of \( U \) is given as a defect
+                section valued in a perfect module or vector bundle
+                \( E_U \):
+                \( \delta_U \in \Gamma(X, E_U^{\vee}) \). The derived lawful
+                locus of \( U \) is the derived zero locus of
+                \( \delta_U \), written \( \mathrm{Flat}_U^{\mathrm{der}}(X) \).
+                Locally its structure sheaf is presented by the Koszul
+                complex,
+              </p>
+              <p>\[ \mathcal{O}_{\mathrm{Flat}_U^{\mathrm{der}}} \simeq \mathrm{Kosz}(\mathcal{O}_X;\, \delta_U), \]</p>
+              <p>
+                and the classical lawful locus is recovered as its truncation:
+              </p>
+              <p>\[ t_0\, \mathrm{Flat}_U^{\mathrm{der}}(X) = \mathrm{Flat}_U(X). \]</p>
+              <p>
+                When one starts from the ideal \( I_U \) alone, a family of
+                selected defect sections generating \( I_U \) is chosen and
+                their Koszul complex is used. Where the choice of generators
+                or perfectness matters, the construction of the derived zero
+                locus is stated explicitly as an assumption.
+              </p>
+              <p id="principle-2-4" class="statement">
+                <a class="statement-anchor" href="#principle-2-4">Principle V.2.4 (Classical locus is the truncation).</a>
+                \( \mathrm{Flat}_U(X) = V(I_U) \) is the classical vanishing
+                locus of the closed equational law, while
+                \( \mathrm{Flat}_U^{\mathrm{der}}(X) \) retains the derived
+                residue of how the law equations vanish:
+              </p>
+              <pre><code>classical lawful locus:
+  common zeros.
+
+derived lawful locus:
+  common zeros plus higher vanishing data.</code></pre>
+              <p>
+                Law conflict in the sections below can therefore be read not
+                only on the intersection of classical loci but as the
+                interaction of derived lawful loci.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition V.2.3 and Principle V.2.4 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.Koszul.SelectedGeneratorFamily</code> (with <code>generatedIdeal</code>, <code>d1</code>, <code>d1_mem_generatedIdeal</code>), <code>KoszulComplex</code> (with <code>C0</code>, <code>C1</code>, <code>zeroHomology</code>, <code>zeroHomology_eq_classicalQuotient</code>, and the algebra / ring equivalences to the classical quotient), <code>DerivedLawfulLocus</code> (with <code>structureSheafComplex</code>, <code>truncation</code>, <code>truncation_locus_eq_classical</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>A chart-level Koszul surface is built from selected finite defect generators; the zeroth truncation quotient returns the classical quotient \( \mathcal{O}_X / I \) and its locus coincides with the classical lawful locus, as proved accessor theorems.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The Koszul surface is relativized to selected finite generators; generator-choice independence and higher Koszul homology are not claimed. Status: <em>defined only / proved accessor</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="classical-intersection" class="article-section">
+              <h2>3. Classical intersection</h2>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition V.3.1 (Classical joint lawful locus).</a>
+                The classical locus of architectures satisfying both \( U \)
+                and \( V \) is
+              </p>
+              <p>\[ \mathrm{Flat}_U(X) \cap \mathrm{Flat}_V(X) = V(I_U + I_V), \]</p>
+              <p>
+                the locus on which every \( \delta \in I_U \) and every
+                \( \varepsilon \in I_V \) vanish.
+              </p>
+              <p id="principle-3-2" class="statement">
+                <a class="statement-anchor" href="#principle-3-2">Principle V.3.2 (Classical intersection forgets how).</a>
+                The classical intersection records the result of the
+                intersection but does not sufficiently remember how the two
+                loci met:
+              </p>
+              <pre><code>classical intersection remembers the common zeros.
+derived intersection remembers the way of intersection.</code></pre>
+              <p>
+                A repair achieving \( U \)-lawfulness and a repair achieving
+                \( V \)-lawfulness may each exist separately without being
+                compatible as one architecture deformation:
+              </p>
+              <pre><code>U-safe
+and
+V-safe
+does not imply
+jointly safe</code></pre>
+              <p>
+                This difference can be invisible in the classical
+                intersection.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions V.2.1 and V.3.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.LawfulLoci.LawUniverseReading</code>, <code>LawUniversePair</code> with <code>I_U</code>, <code>I_V</code>, <code>flatU</code>, <code>flatV</code>, <code>classicalJointIdeal</code>, <code>classicalJointLawfulLocus</code>, and the accessor theorems <code>flatU_eq_lawfulLocus</code>, <code>flatV_eq_lawfulLocus</code>, <code>classicalJointLawfulLocus_eq_zeroLocus</code>, <code>classicalJointLawfulLocus_eq_flatU_inter_flatV</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Two selected law-universe readings over the same chart algebra read the Part III <code>localObstructionIdeal</code> as \( I_U \) / \( I_V \) and expose the classical joint lawful locus as \( V(I_U + I_V) \) and as \( \mathrm{Flat}_U(X) \cap \mathrm{Flat}_V(X) \).</dd>
+                  <dt>Boundary</dt>
+                  <dd>Status: <em>defined only / proved accessor</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="derived-intersection" class="article-section">
+              <h2>4. Derived intersection</h2>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition V.4.1 (Derived joint lawful locus).</a>
+                The derived intersection of the lawful loci is written
+                \( \mathrm{Flat}_U(X) \cap^{R} \mathrm{Flat}_V(X) \): the
+                intersection of \( \mathrm{Flat}_U(X) \) and
+                \( \mathrm{Flat}_V(X) \) retained together with its derived
+                excess structure. When derived lawful loci are constructed,
+                it is read more structurally as
+                \( \mathrm{Flat}_U^{\mathrm{der}}(X) \times_X^{R} \mathrm{Flat}_V^{\mathrm{der}}(X) \).
+                Locally the structure sheaf is given formally by the derived
+                tensor product:
+              </p>
+              <p>\[ \mathcal{O}_{\mathrm{Flat}_U \cap^{R} \mathrm{Flat}_V} = \mathcal{O}_X / I_U \otimes^{L}_{\mathcal{O}_X} \mathcal{O}_X / I_V. \]</p>
+              <p>
+                This formula is read sheaf-theoretically: on a local chart it
+                is computed as a derived tensor product of commutative rings,
+                and globally one works with the derived tensor sheaf or its
+                hypercohomology:
+              </p>
+              <pre><code>local derived intersection:
+  (O_X/I_U) tensor^L_{O_X} (O_X/I_V) as a complex of O_X-modules.
+
+global derived reading:
+  derived global sections / hypercohomology of the local complex.</code></pre>
+              <p id="principle-4-2" class="statement">
+                <a class="statement-anchor" href="#principle-4-2">Principle V.4.2 (Derived intersection remembers conflict).</a>
+                Beyond the classical common zeros, the derived intersection
+                retains the excess structure that appears when the two ideals
+                meet non-transversely:
+              </p>
+              <pre><code>transverse laws:
+  derived residue vanishes.
+
+non-transverse laws:
+  derived residue remains.</code></pre>
+              <p>
+                This residue is read as a latent compatibility obstruction
+                between the laws themselves:
+              </p>
+              <pre><code>law conflict is not merely two laws both failing.
+law conflict is non-transverse interaction of lawful loci.</code></pre>
+              <p id="example-4-3" class="statement">
+                <a class="statement-anchor" href="#example-4-3">Example V.4.3 (Non-transverse laws).</a>
+                Suppose a repair that fixes a cycle law splits a component
+                boundary. The dependency cycle disappears, but the semantic
+                boundary or the authority / effect boundary can be distorted:
+              </p>
+              <pre><code>repair cycle obstruction
+  -&gt; creates semantic boundary residue</code></pre>
+              <p>
+                This is not a mere side effect of the repair; it is the
+                appearance of the non-transversality of the intersection of
+                \( \mathrm{Flat}_{\mathrm{cycle}}(X) \) and
+                \( \mathrm{Flat}_{\mathrm{semantic}}(X) \).
+              </p>
+            </section>
+
+            <section id="law-conflict-sheaf" class="article-section">
+              <h2>5. Law conflict sheaf</h2>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition V.5.1 (First law conflict sheaf).</a>
+                For law universes \( U \) and \( V \), the first law conflict
+                sheaf is
+              </p>
+              <p>\[ \mathrm{LawConflict}_1(U,V) = \mathrm{Tor}_1^{\mathcal{O}_X}(\mathcal{O}_X/I_U,\ \mathcal{O}_X/I_V), \]</p>
+              <p>
+                the sheaf-theoretic obstruction expressing that the
+                intersection of the lawful loci is non-transverse at first
+                order. With a fixed cohomological grading convention it is
+                read as the degree \( -1 \) part of the derived intersection:
+              </p>
+              <p>\[ \mathrm{LawConflict}_1(U,V) \cong H^{-1}\big(\mathcal{O}_{\mathrm{Flat}_U \cap^{R} \mathrm{Flat}_V}\big). \]</p>
+              <p>
+                When a global conflict group is needed, one further fixes
+                either of:
+              </p>
+              <pre><code>H^0(X, LawConflict_1(U,V)):
+  global sections of the first conflict sheaf.
+
+hypercohomology:
+  derived global reading of
+  O_X/I_U tensor^L_{O_X} O_X/I_V.</code></pre>
+              <p id="definition-5-2" class="statement">
+                <a class="statement-anchor" href="#definition-5-2">Definition V.5.2 (Higher law conflict sheaves).</a>
+                The derived intersection can carry non-transversality beyond
+                first order. For \( i &gt; 0 \) set
+              </p>
+              <p>\[ \mathrm{LawConflict}_i(U,V) = \mathrm{Tor}_i^{\mathcal{O}_X}(\mathcal{O}_X/I_U,\ \mathcal{O}_X/I_V). \]</p>
+              <p>
+                \( \mathrm{LawConflict}_1 \) is the low-degree component and
+                reads first-order non-transversality;
+                \( \mathrm{LawConflict}_i \) reads higher coherence,
+                multi-boundary, and derived repair obstruction. When the full
+                derived intersection is read, the basic object is
+                \( \mathcal{O}_X/I_U \otimes^{L}_{\mathcal{O}_X} \mathcal{O}_X/I_V \),
+                and each \( \mathrm{LawConflict}_i \) is a component of its
+                homology or cohomology sheaves under the selected grading
+                convention.
+              </p>
+              <p id="principle-5-3" class="statement">
+                <a class="statement-anchor" href="#principle-5-3">Principle V.5.3 (Conflict is structural).</a>
+                \( \mathrm{LawConflict}_1(U,V) \) is not a defect count:
+              </p>
+              <pre><code>defect count:
+  how many failures are visible.
+
+law conflict object:
+  how law ideals fail to intersect transversely.</code></pre>
+              <p id="definition-5-4" class="statement">
+                <a class="statement-anchor" href="#definition-5-4">Definition V.5.4 (Monomial law conflict regime).</a>
+                When, on a local chart \( W \), the obstruction ideals of
+                \( U \) and \( V \) are given as square-free monomial ideals
+                \( I_U(W), I_V(W) \subset R_W \) over the same polynomial
+                witness algebra \( R_W = k[E_W] \), the pair \( (U,V) \) is in
+                the monomial law conflict regime on \( W \), and
+              </p>
+              <p>\[ \mathrm{LawConflict}_i(U,V)\big|_W = \mathrm{Tor}_i^{R_W}\big(R_W/I_U(W),\ R_W/I_V(W)\big). \]</p>
+
+              <div id="proposition-5-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition V.5.5</span>
+                    <h3>Monomial Conflict Calculation</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  In the monomial law conflict regime,
+                  \( \mathrm{LawConflict}_i(U,V)|_W \) is computed by a
+                  monomial free resolution: the Taylor resolution, the minimal
+                  resolution, the Scarf resolution when the Scarf complex
+                  applies, or a multigraded resolution via the lcm-lattice.
+                  The multidegrees appearing in the computation are read as
+                  least common multiples of a forbidden \( U \)-support and a
+                  forbidden \( V \)-support, that is, as combined witness
+                  supports:
+                </p>
+                <pre><code>monomial generator of I_U:
+  forbidden U-support S.
+
+monomial generator of I_V:
+  forbidden V-support T.
+
+lcm(x_S, x_T):
+  combined witness support S union T.</code></pre>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.TaylorResolution.MonomialLawConflictRegime</code>, <code>TaylorComplex</code>, <code>MonomialConflictCalculation</code>, <code>Proposition55TheoremPackage</code>, <code>Proposition55DirectTheoremPackage</code> (with <code>lcm_multidegree_eq_union</code>, <code>lawConflictIsoRightMathlibResolutionTensorHomology</code>, <code>torComputationAndLcmSupport</code>), over <code>AAT.AG.Derived.FreeResolution</code> Mathlib projective-resolution bridges.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved under explicit Mathlib projective-resolution and Taylor identification data. A general theorem constructing Taylor resolution exactness automatically from a raw monomial presentation, the Scarf complex, lcm-lattice resolutions, and minimality are not formalized.</dd>
+                </dl>
+              </div>
+
+              <p id="example-5-6" class="statement">
+                <a class="statement-anchor" href="#example-5-6">Example V.5.6 (Shared witness factor conflict).</a>
+                Take the local coordinate ring \( R = k[x,y,z] \) and let the
+                two law universes select the forbidden witness supports
+              </p>
+              <pre><code>Forb_U(W) = { {x,y} }
+Forb_V(W) = { {x,z} }
+I_U = &lt; x y &gt;
+I_V = &lt; x z &gt;</code></pre>
+              <p>
+                Here \( x \) is a shared boundary witness, \( y \) is the
+                extra witness on the \( U \) side, and \( z \) is the extra
+                witness on the \( V \) side. Both ideals are principal
+                monomial ideals, yet the shared factor \( x \) makes the
+                intersection derived non-transverse. Tensoring the resolution
+              </p>
+              <p>\[ 0 \to R \xrightarrow{\ xy\ } R \to R/I_U \to 0 \]</p>
+              <p>
+                with \( R/I_V \) gives
+                \( \mathrm{Tor}_1^{R}(R/I_U, R/I_V) = \ker\big( R/I_V \xrightarrow{\ xy\ } R/I_V \big) \).
+                The class of \( z \) lies in the kernel, since
+                \( xy \cdot z = xyz \in \langle xz \rangle \). Therefore
+              </p>
+              <p>\[ \mathrm{Tor}_1^{R}\big(R/\langle xy \rangle,\ R/\langle xz \rangle\big) \neq 0. \]</p>
+              <p>In AAT terms:</p>
+              <pre><code>U forbids the joint support {x,y}.
+V forbids the joint support {x,z}.
+both laws share boundary witness x.
+repairing one side can transfer residue through the shared support.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions V.4.1, V.5.1, V.5.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.Intersection.SelectedDerivedTensorComplex</code>, <code>ChartDerivedIntersection</code>, <code>SelectedTorBridge</code> and <code>LawConflictPackage</code> (with <code>LawConflict</code>, <code>LawConflict&#8321;</code>, <code>lawConflict_eq_tor</code>, <code>lawConflictLinearEquivMathlibTor</code>, <code>lawConflict0AlgEquivClassicalJoint</code>), <code>SelectedGlobalLawConflictReading</code> (with <code>H0</code>, <code>hypercohomology</code>), <code>LawfulLoci.LawUniversePair.derivedIntersection</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>The chart-level derived intersection is held as selected Koszul presentations with a selected derived tensor complex; \( \mathrm{LawConflict}_i \) is exposed through a selected linear equivalence to Mathlib \( \mathrm{Tor}_i(\mathcal{O}_X/I_U, \mathcal{O}_X/I_V) \), degree zero is fixed as an algebra / ring equivalence to \( \mathcal{O}_X/(I_U + I_V) \), and \( H^0(X, \mathrm{LawConflict}_i) \) with hypercohomology stand as selected notation carriers.</dd>
+                  <dt>Boundary</dt>
+                  <dd>LawConflict is relativized to selected complex, bridge, and global notation data. Cech-to-sheaf comparison and global cohomology computation are not claimed. Status: <em>defined only / proved accessor</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="derived-law-conflict" class="article-section">
+              <h2>6. Derived Law Conflict theorem</h2>
+
+              <div id="theorem-6-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.6.1</span>
+                    <h3>Derived Law Conflict</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>Assume, for law universes \( U \) and \( V \):</p>
+                <pre><code>O_X is a commutative structure sheaf
+I_U subset O_X
+I_V subset O_X
+Flat_U(X) = V(I_U)
+Flat_V(X) = V(I_V)
+derived intersection is defined</code></pre>
+                <p>
+                  If \( \mathrm{LawConflict}_1(U,V) \neq 0 \), then the joint
+                  realization locus of \( \mathrm{Flat}_U(X) \) and
+                  \( \mathrm{Flat}_V(X) \) is derived non-transverse and
+                  carries a latent compatibility residue. Any repair or
+                  deformation that handles a \( U \)-lawful deformation and a
+                  \( V \)-lawful deformation simultaneously must account for
+                  this residue:
+                </p>
+                <pre><code>joint lawfulness
+  requires accounting for
+derived compatibility residue</code></pre>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    Nonvanishing of \( \mathrm{LawConflict}_1(U,V) \) means
+                    the derived tensor product
+                    \( \mathcal{O}_X/I_U \otimes^{L} \mathcal{O}_X/I_V \) has
+                    a nonzero degree \( -1 \) part &mdash; information the
+                    classical tensor product cannot express. That negative
+                    degree information is precisely the compatibility
+                    obstruction invisible in the classical intersection: even
+                    when classical common zeros exist, the intersection
+                    carries excess derived conflict. Classically compatible
+                    does not imply derived-transversely compatible.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.Transversality.LawConflictPackage.derivedNonTransverse_of_firstLawConflictNonzero</code>, <code>not_positiveLawConflictVanishing_of_firstLawConflictNonzero</code>, <code>not_positiveMathlibTorVanishing_of_firstLawConflictNonzero</code>.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved on the selected law-conflict package: nonzero \( \mathrm{LawConflict}_1 \) yields selected derived non-transversality and the failure of positive vanishing, relative to the selected Tor bridge data.</dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="non-transversality" class="article-section">
+              <h2>7. Non-transversality of laws</h2>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition V.7.1 (Transverse law universes).</a>
+                \( U \) and \( V \) intersect transversely at first order when
+                \( \mathrm{LawConflict}_1(U,V) = 0 \). Then no first derived
+                conflict remains on the intersection of
+                \( \mathrm{Flat}_U(X) \) and \( \mathrm{Flat}_V(X) \):
+                transverse law intersection means no first derived law
+                conflict.
+              </p>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition V.7.2 (Derived-transverse law universes).</a>
+                \( U \) and \( V \) intersect derived-transversely when every
+                positive-degree conflict vanishes:
+              </p>
+              <p>\[ \mathrm{LawConflict}_i(U,V) = 0 \quad \text{for all } i &gt; 0. \]</p>
+              <p>
+                Equivalently, locally the derived tensor product
+                \( \mathcal{O}_X/I_U \otimes^{L}_{\mathcal{O}_X} \mathcal{O}_X/I_V \)
+                carries no higher Tor residue &mdash; the same information as
+                the classical tensor product. This condition is strictly
+                stronger than \( \mathrm{LawConflict}_1 = 0 \): if first-order
+                conflict vanishes but a higher conflict remains, the pair is
+                not called derived-transverse.
+              </p>
+
+              <div id="theorem-7-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.7.3</span>
+                    <h3>Derived Transversality Criterion</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>O_X is a commutative structure sheaf
+I_U and I_V define the selected lawful loci
+derived tensor product is defined in the chosen category
+the grading convention for Tor is fixed</code></pre>
+                <p>
+                  Then \( \mathrm{Flat}_U(X) \) and \( \mathrm{Flat}_V(X) \)
+                  are, in the selected derived reading, derived-transversely
+                  compatible if
+                </p>
+                <p>\[ \mathrm{Tor}_i^{\mathcal{O}_X}(\mathcal{O}_X/I_U,\ \mathcal{O}_X/I_V) = 0 \quad \text{for all } i &gt; 0; \]</p>
+                <p>
+                  conversely, whenever a positive-degree Tor survives, the
+                  pair carries a derived law conflict in that degree. Even
+                  when classical common zeros exist, nonzero positive-degree
+                  Tor leaves a derived residue in the way the loci meet.
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.Transversality.DerivedTransversalityCriterion</code>, <code>SelectedClassicalAgreementData</code>, <code>SelectedDerivedTensorClassicalAgreement</code> (with <code>iff_positiveMathlibTorVanishing</code>, <code>toDerivedTransversalityCriterion</code>), <code>DerivedTransversalityCriterion.positiveLawConflictVanishing_iff_classicalAgreement</code>.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved under explicit selected transversality criterion data: the criterion package is constructed either from explicit LawConflict-vanishing and classical-agreement data, or directly from the concrete agreement reading bundling \( H^0 \cong \mathcal{O}/(I_U+I_V) \) with positive-degree Mathlib Tor vanishing.</dd>
+                </dl>
+              </div>
+
+              <p id="definition-7-4" class="statement">
+                <a class="statement-anchor" href="#definition-7-4">Definition V.7.4 (Non-transverse law universes).</a>
+                \( U \) and \( V \) intersect non-transversely when
+                \( \mathrm{LawConflict}_i(U,V) \neq 0 \) for some
+                \( i &gt; 0 \). The joint realization of the two law universes
+                then carries a derived law conflict: non-transverse law
+                intersection is a latent compatibility obstruction. When
+                first-order non-transversality is meant specifically, one
+                writes \( \mathrm{LawConflict}_1(U,V) \neq 0 \).
+              </p>
+              <p id="principle-7-5" class="statement">
+                <a class="statement-anchor" href="#principle-7-5">Principle V.7.5 (Non-transversality is not failure count).</a>
+                Even with few visible failures, if the lawful loci meet
+                non-transversely a repair can transfer obstruction to another
+                axis:
+              </p>
+              <pre><code>few visible defects
+but
+nonzero derived conflict</code></pre>
+              <p>
+                A locally small-looking change can still touch the constraint
+                imposed by the derived conflict.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Theorem V.6.1, Definitions V.7.1&ndash;V.7.4, Theorem V.7.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.Transversality.LawConflictVanishes</code>, <code>PositiveLawConflictVanishing</code>, <code>LawConflictNonzero</code>, <code>FirstLawConflictNonzero</code>, <code>DerivedNonTransverse</code>, <code>MathlibTorVanishes</code>, <code>PositiveMathlibTorVanishing</code>, plus the Theorem 6.1 and Theorem 7.3 anchors listed above and the vanishing-transport equivalences <code>lawConflictVanishes_iff_mathlibTorVanishes</code>, <code>positiveLawConflictVanishing_iff_mathlibTorVanishing</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Selected law-conflict vanishing / nonvanishing and Mathlib Tor vanishing are defined, the Theorem 6.1 surface reads derived non-transversality from nonzero \( \mathrm{LawConflict}_1 \), and Theorem 7.3 constructs the criterion package from explicit agreement data.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Proved under explicit selected transversality criterion data; certificate-free concrete Tor computation is not claimed at this layer.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="repair-path" class="article-section">
+              <h2>8. Repair path</h2>
+              <p>
+                Convention for the rest of Part V: no theorem is stated
+                without a fixed comparison profile or pairing. Every repair
+                theorem is read relative to a fixed profile and to whether the
+                comparison is at the section level or the geometry level. The
+                descent question &mdash; whether local repairs glue to a
+                global repair &mdash; is treated as an equivalence theorem
+                over a selected finite cover in Part X.
+              </p>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition V.8.1 (Repair comparison profile).</a>
+                To state that a repair improves anything, a comparison
+                structure is fixed. A repair comparison profile \( P_U \)
+                contains at least two comparisons:
+              </p>
+              <pre><code>prec^{sec}_{P_U}:
+  section-level comparison.
+
+prec^{geom}_{P_U}:
+  geometry / object-level comparison.</code></pre>
+              <p>
+                The section-level comparison compares two sections
+                \( s, s' : T \to X \); the geometry-level comparison compares
+                whole presentations of the architecture geometry or scheme,
+                induced from section-level comparisons along all selected
+                test sections or a designated family of probes.
+                Representative profiles:
+              </p>
+              <pre><code>ideal-order repair:
+  s'^* I_U subsetneq s^* I_U at the section level.
+
+valuation repair:
+  nu_U(s') &lt; nu_U(s).
+
+rank repair:
+  rank Ob_U(s') &lt; rank Ob_U(s).
+
+support repair:
+  Supp(s'^* I_U) subsetneq Supp(s^* I_U).</code></pre>
+              <p>
+                Comparisons are written generically as
+                \( s' \prec^{\mathrm{sec}}_{P_U} s \) and
+                \( X' \prec^{\mathrm{geom}}_{P_U} X \).
+              </p>
+              <p id="definition-8-2" class="statement">
+                <a class="statement-anchor" href="#definition-8-2">Definition V.8.2 (Pullback repair profile).</a>
+                To compare obstructions across a geometric repair
+                \( r : X \to X' \), the contravariance of scheme morphisms is
+                made explicit. Where needed, \( P_U \) contains the comparison
+                map
+              </p>
+              <p>\[ r^{-1} I'_U \cdot \mathcal{O}_X \ \le_{P_U}\ I_U, \]</p>
+              <p>
+                where \( I_U \subset \mathcal{O}_X \) is the obstruction ideal
+                before repair and \( I'_U \subset \mathcal{O}_{X'} \) after;
+                the left side pulls \( I'_U \) back to \( X \) for the
+                comparison. When a probe family \( s : T \to X \) is fixed,
+                the section-level form
+                \( (r \circ s)^{*} I'_U \le_{P_U} s^{*} I_U \) is used.
+                Repair improvement therefore splits into at least two kinds:
+              </p>
+              <pre><code>Internal repair:
+  section deformation s -&gt; s' on the same X.
+  obstruction comparison is s'^* I_U &lt;=_{P_U} s^* I_U.
+
+Geometric repair:
+  architecture geometry morphism r : X -&gt; X'.
+  obstruction comparison is made after a chosen pullback / probe profile.</code></pre>
+              <p id="definition-8-3" class="statement">
+                <a class="statement-anchor" href="#definition-8-3">Definition V.8.3 (Conflict comparison profile).</a>
+                To state that a repair does not increase derived conflict, a
+                comparison profile for the law conflict sheaves is fixed
+                separately from the obstruction ideal. For a pair
+                \( (U,V) \), a degree set
+                \( D \subset \mathbb{N}_{&gt;0} \), and a repair
+                \( r : X \to X' \), the conflict comparison profile
+                \( Q_{U,V} \) contains at least:
+              </p>
+              <pre><code>degree profile:
+  selected positive degrees D.
+
+comparison maps:
+  cmp_i(r) :
+    pullback_r LawConflict'_i(U,V)
+      -&gt; LawConflict_i(U,V)
+  or probe-level maps along selected s : T -&gt; X.
+
+order / vanishing predicate:
+  &lt;=_{Q_{U,V}} on selected conflict readings,
+  and a notion of zero / nonzero after comparison.</code></pre>
+              <p>
+                Here \( \mathrm{LawConflict}'_i(U,V) \) is the conflict sheaf
+                computed on the post-repair geometry \( X' \); whether
+                pullback, pushforward, or probe-level comparison is used is
+                part of \( Q_{U,V} \). The repair does not increase the
+                selected derived conflict when
+              </p>
+              <pre><code>pullback_r LawConflict'_i(U,V)
+  &lt;=_{Q_{U,V}}
+LawConflict_i(U,V)
+for all i in D</code></pre>
+              <p>
+                or when the selected probe-level comparison with the same
+                meaning holds.
+              </p>
+              <p id="definition-8-4" class="statement">
+                <a class="statement-anchor" href="#definition-8-4">Definition V.8.4 (Repair path).</a>
+                A repair path is a deformation or morphism on architecture
+                geometry, written \( r : X \to X' \), or a deformation of
+                sections \( s \to s' \). The repair decreases the
+                \( U \)-axis obstruction when, under the fixed profile
+                \( P_U \),
+                \( s' \prec^{\mathrm{sec}}_{P_U} s \), that is,
+                \( s'^{*} I_U \) is smaller than \( s^{*} I_U \) under
+                \( P_U \).
+              </p>
+              <p id="principle-8-5" class="statement">
+                <a class="statement-anchor" href="#principle-8-5">Principle V.8.5 (Repair is not scalar improvement).</a>
+                Repair is not the improvement of a single scalar score:
+              </p>
+              <pre><code>repair:
+  morphism in architecture geometry.
+
+selected improvement:
+  projection of repair to selected law axis.</code></pre>
+              <p>
+                Obstruction can decrease on one axis while a transferred
+                obstruction arises on another:
+              </p>
+              <pre><code>selected repair decrease
+  does not certify
+all axes non-increasing</code></pre>
+              <p>
+                This gap can arise as a structural phenomenon from the
+                non-transversality of the lawful loci.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions V.8.1&ndash;V.8.4 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.RepairProfile.RepairComparisonProfile</code> (with <code>sectionLe</code>, <code>geometryLe</code>, and the <code>idealOrderRepairProfile</code>, <code>valuationRepairProfile</code>, <code>rankRepairProfile</code>, <code>supportRepairProfile</code> instances), <code>PullbackRepairProfile</code> (with <code>IsInternal</code>, <code>IsGeometric</code>, <code>pullbackObstructionComparison_certificate</code>, <code>probeComparison_certificate</code>), <code>ConflictComparisonProfile</code> (with <code>selectedDegree_positive</code>, <code>doesNotIncreaseSelectedConflict_certificate</code>), <code>RepairPath</code> (with <code>decreasesUAxis_certificate</code>, <code>sectionComparison_of_uAxisDecrease</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>The profile \( P_U \) is fixed as explicit section / geometry comparison data with improvement predicates; the pullback profile separates internal from geometric repair and carries \( r^{-1} I'_U \cdot \mathcal{O}_X \le I_U \) and probe-level comparison as profile data; \( Q_{U,V} \) carries selected positive degrees, comparison maps, and a non-increase certificate; repair paths record \( U \)-axis decrease relative to the profile.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Status: <em>defined only / proved accessor</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="no-monotone-repair" class="article-section">
+              <h2>9. No monotone repair guarantee</h2>
+              <p id="principle-9-1" class="statement">
+                <a class="statement-anchor" href="#principle-9-1">Principle V.9.1 (No Monotone Repair Guarantee).</a>
+                Suppose a repair path \( r : X \to X' \) decreases the
+                \( U \)-axis obstruction under the geometry-level comparison
+                of a fixed profile \( P_U \):
+                \( X' \prec^{\mathrm{geom}}_{P_U} X \). Suppose further that
+                this profile carries only the \( U \)-axis comparison and no
+                \( V \)-axis monotonicity rule &mdash; no \( V \)-axis
+                monotonicity certificate is assumed. Inside this profile, the
+                decrease of the \( U \)-axis obstruction alone does not
+                license the claim that the \( V \)-axis obstruction is
+                non-increasing:
+              </p>
+              <pre><code>U-axis obstruction decreases
+does not certify
+V-axis obstruction non-increases</code></pre>
+              <p>
+                This is a claim-boundary discipline: a fixed comparison
+                profile speaks only the monotonicity it carries. That
+                \( U \)-axis improvement actually fails to imply
+                \( V \)-axis non-increase is shown by the monomial
+                counterexample family below.
+                \( \mathrm{LawConflict}_1(U,V) \neq 0 \) is a structural
+                witness of the derived non-transversality that can explain
+                this non-implication; to assert transfer along a specific
+                repair path, the support-localized pairing of Definition
+                V.10.4 is fixed.
+              </p>
+              <p>
+                Reading of Principle V.9.1: a \( U \)-axis repair moves the
+                section closer to \( \mathrm{Flat}_U(X) \). But when the
+                derived intersection of \( \mathrm{Flat}_U(X) \) and
+                \( \mathrm{Flat}_V(X) \) is non-transverse, movement toward
+                \( \mathrm{Flat}_U \) through the non-transverse intersection
+                does not guarantee monotone movement toward
+                \( \mathrm{Flat}_V \). Watching only the classical
+                intersection, this residue looks like a side effect; in
+                derived law geometry it is a candidate for the structural
+                compatibility residue read by \( \mathrm{Tor}_1 \).
+                Attribution to a concrete repair direction is stated with the
+                support-localized pairing of Definition V.10.4.
+              </p>
+
+              <div id="proposition-9-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Proposition V.9.2 &mdash; Certified bounded inference</span>
+                    <h3>Shared-Witness Repair Counterexample</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>Take the local chart</p>
+                <pre><code>R = k[x,y,z]
+I_U = &lt; x y &gt;
+I_V = &lt; x z &gt;</code></pre>
+                <p>and the section family</p>
+                <pre><code>s_t : R -&gt; k[t]
+x |-&gt; 1
+y |-&gt; 1 - t
+z |-&gt; t</code></pre>
+                <p>
+                  The \( U \)-axis and \( V \)-axis obstruction residues are
+                  \( s_t(xy) = 1 - t \) and \( s_t(xz) = t \). Along the
+                  repair path from \( t = 0 \) to \( t = 1 \):
+                </p>
+                <pre><code>U-residue: 1 -&gt; 0
+V-residue: 0 -&gt; 1</code></pre>
+                <p>
+                  This path clears the \( U \)-axis obstruction and increases
+                  the \( V \)-axis obstruction. At least in this monomial
+                  regime, a \( U \)-axis obstruction decrease does not imply
+                  \( V \)-axis non-increase:
+                </p>
+                <pre><code>selected U-repair
+  =
+y -&gt; 0
+
+transferred V-residue
+  =
+z -&gt; 1</code></pre>
+                <p>
+                  Through the shared witness \( x \), the two monomial law
+                  ideals satisfy
+                  \( \mathrm{Tor}_1^{R}(R/\langle xy \rangle, R/\langle xz \rangle) \neq 0 \),
+                  which shows a derived conflict with a shared witness factor
+                  exists in the ambient chart. Since this path fixes
+                  \( x \mapsto 1 \), it is not an example of a
+                  support-localized transfer passing through the
+                  \( \mathrm{Tor}_1 \) support \( V(x) \); attribution of a
+                  concrete transfer to Tor goes through the pairing of
+                  Definition V.10.4. The same construction over
+                  \( R = k[x, y_1, \dots, y_m, z_1, \dots, z_n] \) with
+                  \( I_U = \langle x y_1, \dots, x y_m \rangle \) and
+                  \( I_V = \langle x z_1, \dots, x z_n \rangle \) yields a
+                  counterexample family with the shared witness factor
+                  \( x \).
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.Counterexample.SharedWitnessCoord</code> with <code>sectionFamily</code>, <code>section_xy</code>, <code>section_xz</code>, <code>ResidueEndpointPath</code> (endpoint residues \( U: 1 \to 0 \), \( V: 0 \to 1 \)), <code>sharedWitness_UImproves_and_not_VNonIncreasing</code>, <code>SharedWitnessPrincipalKernelQuotientCalculation.mathlibTorClass_ne_zero</code>, <code>SharedWitnessRepairCounterexample</code> (with <code>u_improves_not_v_nonincreasing</code>, <code>tor1_nonzero</code>), and the generalized family <code>GeneralizedSharedWitnessCounterexample</code> (with <code>sharedWitness_in_lcmSupport</code>, <code>counterexample_extension_surface</code>).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>The section-family residues, endpoint path, and \( U \)-improves-but-not-\( V \)-non-increasing statements are proved over <code>MvPolynomial</code>; the Tor nonvanishing is read from a selected shifted-kernel quotient class through an explicit linear equivalence to Mathlib \( \mathrm{Tor}_1 \). Proved under explicit principal-resolution kernel quotient and Tor bridge data.</dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="transferred-obstruction" class="article-section">
+              <h2>10. Transferred obstruction</h2>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition V.10.1 (Transferred obstruction).</a>
+                When a repair \( r \) decreases the \( U \)-axis obstruction
+                while the \( V \)-axis obstruction increases or becomes
+                manifest, that \( V \)-axis obstruction is called a
+                transferred obstruction, written
+                \( \mathrm{TransOb}_{U \to V}(r) \). It is read as:
+              </p>
+              <pre><code>U obstruction decreases.
+V obstruction appears or increases.
+selected derived conflict class is paired nontrivially with the repair direction.</code></pre>
+              <p id="example-10-2" class="statement">
+                <a class="statement-anchor" href="#example-10-2">Example V.10.2 (Repair transfer).</a>
+                Representative transfers:
+              </p>
+              <pre><code>cycle repair
+  -&gt; semantic boundary obstruction
+
+component split
+  -&gt; authority / effect obstruction
+
+state consolidation
+  -&gt; runtime interaction obstruction
+
+contract simplification
+  -&gt; substitution obstruction
+
+feature isolation
+  -&gt; boundary holonomy</code></pre>
+              <p>
+                These can be read not as mere implementation failures but as
+                derived non-transversality between lawful loci &mdash;
+                provided the target law universes, conflict support, repair
+                direction, and transfer pairing are fixed.
+              </p>
+              <p id="principle-10-3" class="statement">
+                <a class="statement-anchor" href="#principle-10-3">Principle V.10.3 (Transfer is relative).</a>
+                Transferred obstruction is relativized to the fixed pair of
+                law universes: \( \mathrm{TransOb}_{U \to V} \). Changing
+                \( U \) and \( V \) changes what appears as transfer.
+              </p>
+              <p id="definition-10-4" class="statement">
+                <a class="statement-anchor" href="#definition-10-4">Definition V.10.4 (Repair direction and transfer pairing).</a>
+                To assert that a specific repair transfers obstruction to the
+                \( V \)-axis, one fixes not the whole repair path but its
+                first-order or selected deformation direction
+                \( v \in T_X \), and a selected conflict class obtained from
+                the derived non-transversality of \( U \) and \( V \):
+                \( \kappa_{U,V} \in \mathrm{LawConflict}_1(U,V) \), or, along
+                the chosen global / local reading,
+                \( \kappa_{U,V} \in H^0(X, \mathrm{LawConflict}_1(U,V)) \).
+                Write \( \mathrm{Supp}(\kappa_{U,V}) \subset X \) for its
+                support. A repair path or direction is support-localized when
+                its image, specialization, or first-order support meets
+                \( \mathrm{Supp}(\kappa_{U,V}) \) nontrivially in the
+                selected coefficient regime. For repairs that are not
+                support-localized, no transfer residue is concluded from
+                ambient \( \mathrm{LawConflict}_1(U,V) \neq 0 \) alone.
+                One further fixes the transfer residue target and its zero
+                predicate:
+              </p>
+              <pre><code>TransRes_{U,V}:
+  selected transfer residue object.
+
+0_{TransRes}:
+  distinguished zero residue.
+
+Nontrivial_{TransRes}:
+  selected nonzero / nontrivial residue predicate.</code></pre>
+              <p>The repair transfer pairing is</p>
+              <p>\[ \langle -, - \rangle_{U,V} : T_X \times \mathrm{LawConflict}_1(U,V) \to \mathrm{TransRes}_{U,V}, \qquad \mathrm{Transfer}_{U \to V}(v) := \langle v, \kappa_{U,V} \rangle_{U,V}. \]</p>
+              <p>
+                The target of the pairing is relativized to a selected
+                coefficient module, normal cone reading, or obstruction
+                residue module.
+              </p>
+
+              <div id="theorem-10-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.10.5 &mdash; Certified bounded inference</span>
+                    <h3>Pairing-Based Transfer</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>repair direction v is defined.
+conflict class kappa_{U,V} is selected.
+transfer target TransRes_{U,V} is fixed.
+zero / nontrivial predicate on TransRes_{U,V} is fixed.
+v is support-localized for kappa_{U,V}, or the pairing is otherwise justified on v.
+the transfer pairing &lt; -, - &gt;_{U,V} is defined.</code></pre>
+                <p>
+                  If
+                  \( \mathrm{Nontrivial}_{\mathrm{TransRes}}(\langle v, \kappa_{U,V} \rangle_{U,V}) \),
+                  then the repair direction \( v \) carries a nontrivial
+                  transferred obstruction residue on the \( V \)-axis:
+                </p>
+                <pre><code>nonzero pairing
+  implies
+nontrivial selected transfer residue.</code></pre>
+                <p>
+                  Conversely, \( \mathrm{LawConflict}_1(U,V) \neq 0 \) alone
+                  does not say that an arbitrary concrete repair direction has
+                  transfer (Definition V.10.4).
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.Transfer.TransferPairingData</code>, <code>PairingBasedTransferPackage</code> (with <code>pairingBasedTransfer</code>, <code>records_supportLocalized_or_pairingJustified</code>, <code>transferredObstruction_nontrivial</code>).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved under explicit transfer-pairing data; the support-localized or pairing-justified hypothesis is retained on the theorem surface.</dd>
+                </dl>
+              </div>
+
+              <div id="theorem-10-6" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.10.6 &mdash; Certified bounded inference</span>
+                    <h3>Generic Transfer</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  Let \( k \) be a field and fix the selected repair
+                  directions as a finite-dimensional \( k \)-vector space
+                  \( T_{\mathrm{rep}} \subset T_X \). Let the transfer target
+                  \( \mathrm{TransRes}_{U,V} \) be a \( k \)-vector space and
+                  the pairing
+                  \( \langle -, - \rangle_{U,V} : T_{\mathrm{rep}} \times \mathrm{LawConflict}_1(U,V) \to \mathrm{TransRes}_{U,V} \)
+                  be \( k \)-bilinear. For a selected conflict class
+                  \( \kappa_{U,V} \) define the linear map
+                </p>
+                <p>\[ \tau_{\kappa} : T_{\mathrm{rep}} \to \mathrm{TransRes}_{U,V}, \qquad \tau_{\kappa}(v) = \langle v, \kappa_{U,V} \rangle_{U,V}. \]</p>
+                <p>
+                  If \( \tau_{\kappa} \neq 0 \), then
+                  \( \ker(\tau_{\kappa}) \) is a proper subspace of
+                  \( T_{\mathrm{rep}} \). Every repair direction
+                  \( v \notin \ker(\tau_{\kappa}) \) has nonzero transferred
+                  residue, and the transfer-zero directions are contained in a
+                  proper linear subspace.
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.Transfer.GenericTransferPackage</code> (with <code>transferZeroDirections</code>, <code>tauKappa_nonzero</code>, <code>transferZeroDirections_proper</code>, <code>nonzeroTransferredResidue_of_not_mem_kernel</code>, <code>transferZeroDirections_contained_in_proper_subspace</code>).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved under explicit transfer-pairing data over the selected finite-dimensional direction space and fixed conflict class.</dd>
+                </dl>
+              </div>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions V.10.1 / V.10.4 and Theorems V.10.5 / V.10.6 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.Transfer.TransferredObstruction</code> (with <code>HasNontrivialResidue</code>), <code>TransferPairingData</code> (with <code>transferResidue</code>, <code>HasNontrivialTransferredResidue</code>, <code>supportLocalized_or_pairingJustified</code>), <code>PairingBasedTransferPackage</code>, <code>ProperSubspace</code>, <code>GenericTransferPackage</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Transferred obstruction residue, repair direction, selected conflict class, support-localized / pairing-justified predicate, transfer target, nontrivial predicate, and pairing are fixed as explicit data; the two theorem surfaces above are proved on that data.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Proved under explicit transfer-pairing data.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="derived-repair-criterion" class="article-section">
+              <h2>11. Derived repair criterion</h2>
+              <p id="definition-11-1" class="statement">
+                <a class="statement-anchor" href="#definition-11-1">Definition V.11.1 (Structurally lawful repair).</a>
+                A repair \( r \) is structurally lawful for a family of law
+                universes \( \mathcal{L} \) when it satisfies at least:
+              </p>
+              <pre><code>selected obstruction decreases
+required lawful loci remain reachable
+derived conflict class does not increase
+transferred obstruction is zero or controlled</code></pre>
+              <p>
+                Symbolically, for \( U, V \in \mathcal{L} \), fix the repair
+                comparison profile \( P_U \) and the conflict comparison
+                profile \( Q_{U,V} \) and require
+                \( r(X) \prec^{\mathrm{geom}}_{P_U} X \) together with
+              </p>
+              <pre><code>pullback_r LawConflict'_i(U,V)
+  &lt;=_{Q_{U,V}}
+LawConflict_i(U,V)
+for selected i in D</code></pre>
+              <p>
+                A repair criterion that reads only low degree may restrict to
+                \( i = 1 \); when higher coherence is included, the selected
+                conflict degree profile is stated explicitly.
+              </p>
+              <p id="principle-11-2" class="statement">
+                <a class="statement-anchor" href="#principle-11-2">Principle V.11.2 (Repair preserves geometry).</a>
+                Refactoring is a deformation that changes presentation while
+                preserving the essential structure of the architecture
+                scheme:
+              </p>
+              <pre><code>refactor:
+  changes presentation.
+  preserves selected architecture invariants.
+  avoids uncontrolled derived conflict.</code></pre>
+              <p>
+                A good refactoring is therefore a morphism on architecture
+                geometry that simultaneously approaches lawful loci and
+                controls derived conflict:
+              </p>
+              <pre><code>good refactor
+  =
+repair toward lawful locus
+  +
+control of derived law conflict</code></pre>
+              <p id="corollary-11-3" class="statement">
+                <a class="statement-anchor" href="#corollary-11-3">Corollary V.11.3 (Refactoring is derived-geometric).</a>
+                The essence of refactoring is to change the presentation of
+                the architecture scheme while decreasing the obstruction of
+                the selected law universe and controlling the conflict with
+                the other law universes:
+              </p>
+              <pre><code>refactoring is not just rearrangement of code.
+refactoring is controlled deformation of architecture geometry.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition V.11.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Derived.RepairCriterion.StructurallyLawfulRepair</code> with the component certificates <code>selectedObstructionDecreases_certificate</code>, <code>requiredLawfulLociReachable_certificate</code>, <code>conflictNonIncreasingSelectedDegrees_certificate</code>, <code>transferZeroOrControlled_certificate</code>, and <code>LowDegreeStructurallyLawfulRepair</code> (with <code>degreeOne_certificate</code>, <code>degreeOne_positive</code>).</dd>
+                  <dt>Meaning</dt>
+                  <dd>Structurally lawful repair is defined as a package relativized to \( P_U \), \( Q_{U,V} \), and a selected transfer-control reading, exposing the four component certificates; the low-degree reading carries the degree-one restriction as data.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Status: <em>defined only / proved accessor</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="hilbert-series" class="article-section">
+              <h2>12. Hilbert series conflict accounting</h2>
+              <p id="definition-12-1" class="statement">
+                <a class="statement-anchor" href="#definition-12-1">Definition V.12.1 (Graded monomial conflict regime).</a>
+                Let \( R = k[x_1, \dots, x_n] \) be the standard graded
+                polynomial ring. When the lawful loci of \( U \) and \( V \)
+                are defined by homogeneous monomial ideals
+                \( I_U, I_V \subset R \), the pair is in the graded monomial
+                conflict regime, and each
+                \( \mathrm{LawConflict}_i(U,V) = \mathrm{Tor}_i^{R}(R/I_U, R/I_V) \)
+                is read as a graded module.
+              </p>
+
+              <div id="theorem-12-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.12.2 &mdash; Certified bounded inference</span>
+                    <h3>Hilbert Series Conflict Identity</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  In the graded monomial conflict regime, suppose the Hilbert
+                  series of each Tor module is defined. Then, by the Euler
+                  characteristic of a graded free resolution,
+                </p>
+                <p>\[ \frac{H_{R/I_U}(t) \cdot H_{R/I_V}(t)}{H_R(t)} = \sum_i (-1)^i\, H_{\mathrm{LawConflict}_i(U,V)}(t), \]</p>
+                <p>where</p>
+                <p>\[ \mathrm{LawConflict}_0(U,V) = \mathrm{Tor}_0^{R}(R/I_U, R/I_V) = R/(I_U + I_V). \]</p>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    Tensor a graded free resolution of \( R/I_U \) with
+                    \( R/I_V \) and apply the Euler characteristic to Hilbert
+                    series. The Hilbert series of a free module is a sum of
+                    shifts of \( H_R(t) \), and the homology after tensoring
+                    is \( \mathrm{Tor}_i^{R}(R/I_U, R/I_V) \), which yields
+                    the alternating sum.
+                  </dd>
+                </dl>
+                <p>Consequently the interference series</p>
+                <p>\[ \mathrm{Int}_{U,V}(t) = H_{R/(I_U + I_V)}(t) - \frac{H_{R/I_U}(t) \cdot H_{R/I_V}(t)}{H_R(t)} \]</p>
+                <p>
+                  accounts for the deviation from the value expected of an
+                  independent intersection as an alternating sum of Tor mass.
+                  In the finite worked example of the appendix, the
+                  \( \mathrm{Tor}_0 \) expression makes the Hilbert series of
+                  \( R/(I_U + I_V) \) appear as the base term of the
+                  interference series.
+                </p>
+                <dl>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.HilbertSeriesTheory.HilbertSeries</code>, <code>GradedMonomialConflictRegime</code>, <code>DegreewiseShortExactPackage.hilbertSeries_additivity</code>, <code>DegreewiseShiftedFreePackage</code>, <code>DegreewiseEulerCharacteristicPackage.eulerCharacteristic_eq</code>, <code>HilbertSeriesConflictIdentityPackage</code> (with <code>denominatorClearedIdentity_certificate</code>, <code>interferenceSeries</code>), <code>HilbertSeriesConflictCoefficientIdentityPackage</code>, <code>HilbertSeriesFiniteWindowConflictAuditPackage</code>.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved under explicit Hilbert-series and Euler-characteristic data: the identity is relativized to the selected graded monomial conflict regime, recovered as a denominator-cleared identity from all-degree coefficient equalities, with the finite-window audit following from the all-degree theorem. In the shared-witness concrete case the all-degree coefficient identity is proved directly (<code>sharedWitnessG5_all_degree_coefficient_identity</code>, <code>sharedWitnessG5_denominatorClearedIdentity</code>).</dd>
+                </dl>
+              </div>
+
+              <p id="principle-12-3" class="statement">
+                <a class="statement-anchor" href="#principle-12-3">Principle V.12.3 (Hilbert series is an audit reading).</a>
+                Hilbert series conflict is an audit reading of the derived
+                non-transversality of law universes, degree by degree. It does
+                not automatically decide which law matters more or which
+                repair is practically preferable:
+              </p>
+              <pre><code>degree-k interference
+  =
+selected witness size / grading level reading,
+not total policy priority.</code></pre>
+            </section>
+
+            <section id="well-founded-repair" class="article-section">
+              <h2>13. Well-founded repair</h2>
+              <p id="definition-13-1" class="statement">
+                <a class="statement-anchor" href="#definition-13-1">Definition V.13.1 (Well-founded repair comparison profile).</a>
+                A repair comparison profile contains a set \( S \) of
+                architecture states, a well-founded order
+                \( &lt;_{\mathrm{rep}} \), and a repair step relation
+                \( A \to_r B \). The profile is a well-founded repair
+                comparison profile when every repair step satisfies
+                \( B &lt;_{\mathrm{rep}} A \).
+              </p>
+              <p id="definition-13-2" class="statement">
+                <a class="statement-anchor" href="#definition-13-2">Definition V.13.2 (Sound repair step).</a>
+                A repair step \( A \to_r B \) is sound when, for the selected
+                target obstruction predicate, one of the following holds:
+              </p>
+              <pre><code>target obstruction strictly decreases.
+target obstruction is cleared.
+selected certificate records why no target repair exists.</code></pre>
+              <p>
+                Soundness is relativized to the selected target and the
+                selected certificate. It does not mean removal of all
+                obstructions or a shortest repair.
+              </p>
+
+              <div id="theorem-13-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.13.3 &mdash; Certified bounded inference</span>
+                    <h3>Repair Termination</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>
+                  Fix a well-founded repair comparison profile and suppose
+                  every selected repair step decreases with respect to
+                  \( &lt;_{\mathrm{rep}} \). Then no infinite repair sequence
+                  exists: every sequence
+                  \( A_0 \to_r A_1 \to_r A_2 \to_r \cdots \) terminates in
+                  finite length.
+                </p>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    By the definition of well-foundedness: an infinite repair
+                    sequence would give an infinite descending chain
+                    \( A_0 &gt;_{\mathrm{rep}} A_1 &gt;_{\mathrm{rep}} A_2 &gt;_{\mathrm{rep}} \cdots \),
+                    contradicting the well-foundedness of
+                    \( &lt;_{\mathrm{rep}} \).
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile</code> (with <code>step_decreases_certificate</code>, <code>InfiniteRepairSequence</code>, <code>no_infinite_repair_sequence</code>).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved for Nat-indexed infinite repair sequences under the selected well-founded repair profile.</dd>
+                </dl>
+              </div>
+
+              <div id="theorem-13-4" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem V.13.4 &mdash; Certified bounded inference</span>
+                    <h3>Sound Repair Synthesis</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>repair comparison profile is well-founded.
+each selected step is sound for the target obstruction.
+the synthesis rule only emits selected sound steps or a selected no-solution certificate.</code></pre>
+                <p>
+                  Then synthesis terminates as a finite sequence, and its
+                  output is exactly one of:
+                </p>
+                <pre><code>target obstruction cleared in the selected profile.
+selected no-solution certificate returned.</code></pre>
+                <dl>
+                  <dt>Proof reading</dt>
+                  <dd>
+                    The composition of Theorem V.13.3 with the output rule:
+                    as long as the rule emits repair steps,
+                    \( &lt;_{\mathrm{rep}} \) descends, so the process cannot
+                    continue forever; at termination, by the definition of the
+                    rule, exactly a cleared target or a selected no-solution
+                    certificate is output.
+                  </dd>
+                  <dt>Non-conclusion</dt>
+                  <dd>
+                    This theorem does not claim solver completeness, global
+                    repair optimality, or simultaneous improvement of all law
+                    universes.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Derived.WellFoundedRepair.SoundRepairStepEvidence</code>, <code>SynthesisOutput</code>, <code>SoundRepairSynthesisPackage</code> (with <code>finite_trace_certificate</code>, <code>emitsOnlySoundStepsOrNoSolutionCertificate_certificate</code>, <code>output_cleared_or_noSolution</code>).</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>Proved for selected synthesis packages carrying a finite <code>List</code> trace, under explicit well-founded repair profile and finite synthesis data.</dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="conclusion" class="article-section">
+              <h2>14. Conclusion of Part V</h2>
+              <p>
+                Part V treated the intersection of multiple lawful loci as
+                derived geometry. The first-order non-transversality of the
+                derived intersection
+                \( \mathrm{Flat}_U(X) \cap^{R} \mathrm{Flat}_V(X) \) was
+                defined as the first law conflict sheaf
+                \( \mathrm{LawConflict}_1(U,V) = \mathrm{Tor}_1^{\mathcal{O}_X}(\mathcal{O}_X/I_U, \mathcal{O}_X/I_V) \),
+                extended to all positive degrees by
+                \( \mathrm{LawConflict}_i(U,V) = \mathrm{Tor}_i^{\mathcal{O}_X}(\mathcal{O}_X/I_U, \mathcal{O}_X/I_V) \)
+                for \( i &gt; 0 \), and read, under a fixed cohomological
+                grading, as
+                \( \mathrm{LawConflict}_1(U,V) \cong H^{-1}(\mathcal{O}_{\mathrm{Flat}_U \cap^{R} \mathrm{Flat}_V}) \).
+                When \( \mathrm{LawConflict}_i(U,V) = 0 \) for all
+                \( i &gt; 0 \), the pair \( U, V \) is derived-transverse in
+                the selected derived reading. The core of Part V:
+              </p>
+              <pre><code>law conflict is derived non-transversality.
+repair is controlled movement through lawful loci.
+bad repair transfers obstruction.
+refactoring is derived-geometric deformation.
+Hilbert series accounts for graded conflict mass.
+well-founded repair terminates under selected comparison profile.</code></pre>
+              <p>
+                AAT can therefore handle the phenomenon of \( U \)-lawful
+                improvement accompanied by \( V \)-axis obstruction transfer
+                &mdash; a structural obstruction residing in the derived
+                intersection of the lawful loci. The next question is where
+                this derived obstruction concentrates in architecture
+                geometry. To read its concentration points, stratification,
+                and path dependence, Part VI proceeds to singularity,
+                monodromy, and stacks.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part V finite examples (V.R11) and final ledger (V.R12)</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">packaged (assumption-relative)</span>
+                </div>
+                <dl>
+                  <dt>Finite examples</dt>
+                  <dd><code>AAT.AG.FiniteModel.DerivedPart5</code>: the Example V.5.6 Tor nonvanishing read from a selected principal kernel quotient calculation (<code>Example56TorCalculation</code>, <code>Example56DirectTorCalculation</code>, <code>Example56LawConflictPackageFiring</code> with <code>lawConflict1_nonzero</code>, <code>tor1_nonzero</code>); the Proposition V.9.2 numeric residue path and \( U \)-improves-not-\( V \)-non-increasing witness; the all-degree shared-witness Hilbert series identity and finite-window audit (<code>sharedWitnessG5_all_degree_coefficient_identity</code>, <code>sharedWitnessG5_window_interference_zero</code>); and two-step cleared repair traces with a no-solution certificate trace (<code>smallRepairCleared_output</code>, <code>smallRepairNoSolution_output</code>) &mdash; proved examples under explicit selected LawConflict package / principal-kernel data.</dd>
+                  <dt>Final ledger</dt>
+                  <dd><code>Formal/AG.lean</code> imports the Part V derived tower and finite examples, and the declaration-level <code>axiom</code> / <code>admit</code> / <code>sorry</code> / <code>unsafe</code> scan over <code>Formal/AG</code> reports no match; the ledger keeps the V-labels, Lean declarations, statuses, and residual boundaries in sync.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The entrypoint does not formalize general derived categories, the cotangent complex, or <code>Ext^1</code>; Koszul surfaces are relativized to selected finite generators; LawConflict readings are relativized to selected complex, bridge, and global notation data.</dd>
+                </dl>
+              </article>
+
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Lawful locus</dt>
+                  <dd>\( \mathrm{Flat}_U(X) = V(I_U) \): the classical vanishing locus of the obstruction ideal of a law universe.</dd>
+                </div>
+                <div>
+                  <dt>Derived lawful locus</dt>
+                  <dd>The derived zero locus of a selected defect section, locally presented by a Koszul complex; the classical locus is its truncation.</dd>
+                </div>
+                <div>
+                  <dt>Derived intersection</dt>
+                  <dd>\( \mathrm{Flat}_U(X) \cap^{R} \mathrm{Flat}_V(X) \), with local structure sheaf \( \mathcal{O}_X/I_U \otimes^{L}_{\mathcal{O}_X} \mathcal{O}_X/I_V \); it remembers the way two lawful loci meet.</dd>
+                </div>
+                <div>
+                  <dt>Law conflict sheaf</dt>
+                  <dd>\( \mathrm{LawConflict}_i(U,V) = \mathrm{Tor}_i^{\mathcal{O}_X}(\mathcal{O}_X/I_U, \mathcal{O}_X/I_V) \) for \( i &gt; 0 \): the structural obstruction to transverse intersection of law ideals.</dd>
+                </div>
+                <div>
+                  <dt>Derived-transverse</dt>
+                  <dd>All positive-degree law conflict sheaves vanish; strictly stronger than first-order transversality.</dd>
+                </div>
+                <div>
+                  <dt>Repair comparison profile</dt>
+                  <dd>\( P_U \): fixed section-level and geometry-level comparisons under which repair improvement is stated; a profile speaks only the monotonicity it carries.</dd>
+                </div>
+                <div>
+                  <dt>Conflict comparison profile</dt>
+                  <dd>\( Q_{U,V} \): selected positive degrees, comparison maps, and vanishing predicates under which "repair does not increase derived conflict" is stated.</dd>
+                </div>
+                <div>
+                  <dt>Transferred obstruction</dt>
+                  <dd>\( \mathrm{TransOb}_{U \to V}(r) \): a \( V \)-axis obstruction that appears or grows while a repair decreases the \( U \)-axis obstruction; attributed to a repair direction through the transfer pairing \( \langle v, \kappa_{U,V} \rangle_{U,V} \).</dd>
+                </div>
+                <div>
+                  <dt>Structurally lawful repair</dt>
+                  <dd>A repair with selected obstruction decrease, reachable required lawful loci, non-increasing selected conflict, and zero-or-controlled transfer.</dd>
+                </div>
+                <div>
+                  <dt>Interference series</dt>
+                  <dd>\( \mathrm{Int}_{U,V}(t) = H_{R/(I_U+I_V)}(t) - H_{R/I_U}(t) H_{R/I_V}(t) / H_R(t) \): the graded audit of conflict mass as an alternating sum of Tor Hilbert series.</dd>
+                </div>
+                <div>
+                  <dt>Well-founded repair</dt>
+                  <dd>A repair step relation descending along a well-founded order; it admits no infinite repair sequence, and sound synthesis halts with a cleared target or a no-solution certificate.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../obstruction-cohomology/">
+                <span>Previous</span>
+                <strong>Part IV. Obstruction Cohomology</strong>
+              </a>
+              <a class="page-nav-next" href="../singularity-monodromy-stack/">
+                <span>Next</span>
+                <strong>Part VI. Singularity, Monodromy, and Stack</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

@@ -1,0 +1,1488 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "Part VIII. Measurement Theory",
+  "description": "Part VIII of Algebraic Architecture Theory: measurement profiles, verdict discipline, finite AAT computability, Stanley-Reisner and Alexander dual repair readings, Cech stability, refactor functoriality, cellular sheaf Laplacians, LawConflict base change, support-localized transfer, and the AAT-GAGA finite measurement comparison.",
+  "order": 9,
+  "llmsLabel": "AAT Part VIII: Measurement Theory",
+  "navSection": "aat",
+  "mathjax": true
+}
+---
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Part VIII</span>
+          </nav>
+          <p class="eyebrow">Part VIII</p>
+          <h1>Measurement Theory</h1>
+          <p class="lede">
+            Parts I through VII constructed the architecture geometry, the
+            lawful locus, obstruction cohomology, derived law conflict,
+            singularity, monodromy, representation, and metric enrichment.
+            Part VIII asks: when is this geometry measurably readable? Its
+            answer is a measurement theory internal to AAT: measurement is a
+            bounded reading performed inside a selected finite measurement
+            profile, governed by a verdict discipline in which unmeasured is
+            not zero and unknown is not nonzero. The chapter fixes the finite
+            regimes in which obstruction, cohomology, Tor, distance, and
+            repair residue become computable invariants, and closes with the
+            measurement packet and the AAT-GAGA finite measurement comparison.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT Part VIII page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-guide">How to read the claims</a></li>
+                <li><a href="#part7-to-part8">1. From Part VII to Part VIII</a></li>
+                <li><a href="#measurement-profile">2. Measurement profile</a></li>
+                <li><a href="#verdict-discipline">3. Measurement verdict discipline</a></li>
+                <li><a href="#finite-computability">4. Finite AAT computability</a></li>
+                <li><a href="#stanley-reisner">5. Stanley-Reisner and Alexander dual repair</a></li>
+                <li><a href="#cech-stability">6. Čech stability</a></li>
+                <li><a href="#refactor-functoriality">7. Refactor functoriality and class transport</a></li>
+                <li><a href="#cellular-laplacian">8. Cellular sheaf Laplacian reading</a></li>
+                <li><a href="#lawconflict-base-change">9. LawConflict measurement and base change</a></li>
+                <li><a href="#support-transfer">10. Support-localized transfer measurement</a></li>
+                <li><a href="#measurement-packet">11. Measurement packet</a></li>
+                <li><a href="#part8-conclusion">12. Conclusion of Part VIII</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Reading sequence</h2>
+              <ul>
+                <li><a href="../">AAT overview</a></li>
+                <li><a href="../representations-periods/">Part VII. Representation, Periods, and Analysis</a></li>
+                <li><a href="./" aria-current="page">Part VIII. Measurement Theory</a></li>
+                <li><a href="../evolution-geometry/">Part IX. Evolution Geometry</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-guide" class="article-section">
+              <h2>How to read the claims</h2>
+              <p>
+                AAT states its claims relative to a fixed atom vocabulary, law
+                universe, coverage topology, coefficient sheaf, and selected
+                representation family. Three claim grades are kept distinct
+                throughout the monograph.
+              </p>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Formal theorem</dt>
+                  <dd>A mathematical proposition proved from the axioms, definitions, and stated assumptions.</dd>
+                </div>
+                <div>
+                  <dt>Certified bounded inference</dt>
+                  <dd>A relative inference that holds under explicitly stated coverage, exactness, or witness-completeness assumptions. It is never an unconditional absolute claim.</dd>
+                </div>
+                <div>
+                  <dt>Analytic reading</dt>
+                  <dd>A way of reading a constructed geometric object through graphs, signatures, periods, or metrics.</dd>
+                </div>
+              </dl>
+              <p>
+                Part VIII additionally carries <em>theorem candidates</em>:
+                labeled statements that fix a future definition-and-proof
+                design inside the canonical text. A theorem candidate becomes a
+                central Lean proof obligation only when the ledger carries a
+                corresponding row; until then it is a stated interface, not a
+                proved claim.
+              </p>
+              <p>
+                Theorem labels on this page follow the canonical text. A label
+                carries a Lean status badge only when the AG Lean index has a
+                corresponding ledger row; a label without a badge is a
+                mathematical statement in the canonical text and is not read as
+                a current Lean proved claim. Measurement in this chapter is a
+                reading relativized to a fixed mathematical object and a
+                selected profile; completeness of unselected data sources,
+                observation means, or decision procedures is not assumed.
+              </p>
+            </section>
+
+            <section id="part7-to-part8" class="article-section">
+              <h2>1. From Part VII to Part VIII</h2>
+              <p>
+                Part VII established that AAT geometry is readable through
+                representations, periods, metrics, and mass. Part VIII draws
+                the next distinction: being readable and being measurable are
+                not the same.
+              </p>
+              <pre><code>readable:
+  a representation or metric is defined.
+
+measurable:
+  selected finite data, algorithms, and verdict discipline are fixed.</code></pre>
+              <p>
+                The question of Part VIII is therefore:
+              </p>
+              <pre><code>When is this geometry measurably readable?</code></pre>
+              <p>
+                Measurement here means a bounded reading performed inside the
+                already-constructed AAT geometry. The chapter states under
+                which finiteness, coefficient, and stability conditions the
+                obstruction, cohomology, Tor, distance, and repair residue of
+                that geometry can be read as computable invariants. Four
+                mottos govern the whole chapter:
+              </p>
+              <pre><code>geometry first.
+measurement as a bounded reading.
+unmeasured is not zero.
+unknown is not nonzero.</code></pre>
+              <p>
+                The center of the chapter is a family of finite regimes,
+                connecting the representation and metric readings of Part VII
+                to stability, functoriality, and reporting discipline:
+              </p>
+              <pre><code>finite poset site
+square-free witness regime
+module-valued obstruction sheaf
+finite Cech complex
+Stanley-Reisner ideal
+monomial Tor
+cellular sheaf Laplacian
+support-localized repair pairing</code></pre>
+              <p>
+                What is computable is exactly what falls inside the selected
+                site, cover, coefficient, witness family, law ideals, and
+                representation family. Everything outside the selection is
+                unmeasured, and unmeasured is a scope statement, not a zero
+                claim.
+              </p>
+            </section>
+
+            <section id="measurement-profile" class="article-section">
+              <h2>2. Measurement profile</h2>
+              <p>
+                Every measurement statement in Part VIII is relative to a
+                measurement profile. Fixing the profile is what gives a
+                measurement statement its meaning.
+              </p>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition VIII.2.1 (AAT Measurement Profile).</a>
+                An AAT measurement profile consists of the following data:
+              </p>
+              <pre><code>M =
+  finite site X_M
+  selected cover U_M
+  coefficient ring or field k_M
+  coefficient effectiveness data EffCoeff_M
+  coefficient sheaf Ob_M
+  selected law universe U
+  selected witness variables E
+  obstruction ideal sheaf I_Ob^U
+  representation family Rep_M
+  measured domain Dom_M
+  zero / nonzero predicates Zero_M, NonZero_M
+  certificate and resolution selector Cert_M
+  verdict discipline Verdict_M</code></pre>
+              <p>
+                Only once <code>M</code> is fixed does the measurement
+                statement
+              </p>
+              <pre><code>Measured_M(alpha)</code></pre>
+              <p>
+                have meaning: it expresses that the class <code>alpha</code>
+                has been measured within the scope of <code>M</code>. The
+                verdict discipline <code>Verdict_M</code> is read as record
+                data referring at least to <code>Dom_M</code>,
+                <code>Zero_M</code>, <code>NonZero_M</code>,
+                <code>Cert_M</code>, and the execution state of the selected
+                method.
+              </p>
+              <p id="principle-2-2" class="statement">
+                <a class="statement-anchor" href="#principle-2-2">Principle VIII.2.2 (Measurement Is Internal).</a>
+                The measurement of Part VIII is a mathematical reading inside
+                AAT geometry:
+              </p>
+              <pre><code>measurement in Part 8:
+  finite computation over selected AAT geometry.
+
+not asserted here:
+  completeness of unselected data.
+  correctness of unselected procedures.
+  validity outside the selected profile.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part VIII entry point and Definition VIII.2.1 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only</span>
+                </div>
+                <dl>
+                  <dt>Module entry point (VIII.R0)</dt>
+                  <dd><code>Formal.AG.Measurement</code> with its submodules (<code>Bootstrap</code>, <code>Profile</code>, <code>Verdict</code>, <code>FiniteRegime</code>, <code>Computability</code>, <code>SquareFreeRepair</code>, <code>Stability</code>, <code>RefactorTransport</code>, <code>CellularLaplacian</code>, <code>Hodge</code>, <code>LawConflict</code>, <code>SupportTransfer</code>, <code>Packet</code>, <code>GAGA</code>, <code>Examples</code>), plus the dependency surface <code>AAT.AG.Measurement.UsesAATSite</code>, <code>UsesArchitectureScheme</code>, <code>UsesCoverRelativeCechComplex</code>, <code>UsesRepairComparisonProfile</code>, <code>UsesArchitectureStratum</code>, <code>UsesAnalyticReadingContext</code>, <code>PartVIIIDependencyStatus</code>, <code>currentDependencyStatus</code> and its availability accessors — <em>defined only / proved accessors</em>.</dd>
+                  <dt>Definition VIII.2.1</dt>
+                  <dd><code>AAT.AG.Measurement.MeasurementProfile</code>, <code>MeasurementProfile.Measured_M</code>, <code>MeasurementProfile.measured_inScope</code>, <code>MeasurementProfile.measured_method</code>, <code>MeasurementProfile.measured_certificate</code>: the profile holds site, cover, coefficient, effective interface, obstruction object, law universe, witness variables, obstruction ideal, representation family, domain, certificate, method, scope, and zero / nonzero / undecided / not-computed predicates as profile-relative fields; <code>Measured_M</code> is a bounded measurement surface carrying scope, selected method, and certificate reference — <em>defined only / proved accessors</em>.</dd>
+                  <dt>Boundary</dt>
+                  <dd>Prerequisites of Parts II–VII are confirmed by concrete Lean type references; the measurement verdict discipline itself begins in Section 3.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="verdict-discipline" class="article-section">
+              <h2>3. Measurement verdict discipline</h2>
+              <p>
+                A measurement outputs a verdict, and Part VIII fixes the
+                verdict vocabulary once and for all.
+              </p>
+              <p id="definition-3-1" class="statement">
+                <a class="statement-anchor" href="#definition-3-1">Definition VIII.3.1 (Measurement Verdict).</a>
+                For a selected measurement profile <code>M</code>, the
+                measurement verdict takes one of five values:
+              </p>
+              <pre><code>MeasurementVerdict_M(alpha)
+  in
+{
+  measured_zero,
+  measured_nonzero,
+  unmeasured,
+  unknown,
+  not_computed
+}</code></pre>
+              <p>
+                Written with explicit types, <code>M</code> carries the
+                following dependent data per verdict:
+              </p>
+              <pre><code>VerdictData_M(alpha) =
+  InScope_M(alpha)              -- alpha lies in Dom_M.
+  Zero_M(alpha)                 -- selected zero predicate.
+  NonZero_M(alpha)              -- selected nonzero or certificate predicate.
+  MethodStatus_M(alpha)         -- ran / not_run / undecided.
+  CertRef_M(alpha)              -- selected certificate, resolution, or trace.</code></pre>
+              <p>
+                <code>Zero_M</code> and <code>NonZero_M</code> are in general
+                not logical complements: both may fail, or the selected method
+                may return no certificate. Each verdict means exactly this:
+              </p>
+              <pre><code>measured_zero:
+  alpha is in the measured domain of M, and the selected zero predicate holds.
+
+measured_nonzero:
+  alpha is in the measured domain of M, and the selected nonzero predicate holds.
+
+unmeasured:
+  alpha is outside the selected coverage, coefficient, law, support, or representation scope.
+
+unknown:
+  alpha is inside the intended measurement scope, but the selected method does not decide it.
+
+not_computed:
+  the measurement procedure has not been run, or its output is unavailable.</code></pre>
+              <p id="principle-3-2" class="statement">
+                <a class="statement-anchor" href="#principle-3-2">Principle VIII.3.2 (Verdict Boundary).</a>
+                The verdicts are kept mutually distinct:
+              </p>
+              <pre><code>unmeasured != measured_zero
+unknown != measured_nonzero
+not_computed != unmeasured</code></pre>
+              <p>
+                <code>measured_zero</code> claims that the selected zero
+                predicate holds. <code>unmeasured</code> claims that the class
+                lies outside the selected profile — it is not a zero claim.
+                <code>unknown</code> claims that the current method does not
+                decide the class — it is not a nonzero claim.
+              </p>
+              <p id="definition-3-3" class="statement">
+                <a class="statement-anchor" href="#definition-3-3">Definition VIII.3.3 (Structural Verdict and Analytic Reading).</a>
+                A measurement report separates the structural verdict from the
+                analytic reading:
+              </p>
+              <pre><code>StructuralVerdict:
+  measured_zero / measured_nonzero / unmeasured / unknown / not_computed.
+
+AnalyticReading:
+  distance, mass, rank, dimension, barcode, spectrum, cost, residual norm.</code></pre>
+              <p>
+                A small analytic value is not a structural zero. A large
+                analytic value is likewise not a confirmed law-failure verdict
+                unless a selected structural nonzero predicate stands behind
+                it.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VIII.3.1, Principle VIII.3.2, Definition VIII.3.3 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">defined only / proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.MeasurementVerdict</code> with constructors <code>measured_zero</code>, <code>measured_nonzero</code>, <code>unmeasured</code>, <code>unknown</code>, <code>not_computed</code>, the disjointness theorems <code>MeasurementVerdict.unmeasured_ne_measured_zero</code>, <code>MeasurementVerdict.unknown_ne_measured_nonzero</code>, <code>MeasurementVerdict.not_computed_ne_unmeasured</code>, and the separated types <code>VerdictData</code>, <code>StructuralVerdict</code>, <code>AnalyticReading</code>.</dd>
+                  <dt>Status</dt>
+                  <dd>The five verdicts are dependent-payload constructors; Principle VIII.3.2 is <em>proved</em> by constructor disjointness. Structural verdict and analytic reading are distinct types with no implicit coercion from analytic value to structural verdict.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="finite-computability" class="article-section">
+              <h2>4. Finite AAT computability</h2>
+              <p>
+                The first theorem of the chapter states when measurement
+                actually reduces to finite computation.
+              </p>
+              <p id="definition-4-1" class="statement">
+                <a class="statement-anchor" href="#definition-4-1">Definition VIII.4.1 (Finite Measurement Regime).</a>
+                A measurement profile <code>M</code> is a finite measurement
+                regime when:
+              </p>
+              <pre><code>X_M is a finite poset site.
+U_M is a finite cover or finite hypercover fragment.
+each coefficient object is either finite-dimensional over an explicitly presented field,
+  or finitely presented inside a selected effective coefficient category EffCoeff_M.
+EffCoeff_M supplies the kernel / image / quotient / ideal-membership procedures
+  actually used by M.
+restriction maps are explicit matrices or finite module homomorphisms.
+zero / nonzero predicates are backed by the selected algorithms or certificates.
+selected witness variables E are finite.
+selected obstruction ideals are finitely generated.
+selected Tor computations use finite free, Koszul, Taylor, Scarf, or monomial resolutions.</code></pre>
+              <p>
+                In this regime, the Čech cochain groups, differentials,
+                obstruction ideal, and selected Tor objects are all
+                representable as finite data.
+              </p>
+
+              <div id="theorem-4-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.4.2 — Certified bounded inference</span>
+                    <h3>Finite AAT Computability</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>M is a finite measurement regime.
+the chosen cover is U-adequate for selected witnesses and axes.
+coefficient sheaf Ob_M is module-valued on the finite site.
+restriction maps are given by finite matrices or finite module maps.
+EffCoeff_M contains the coefficient algorithms used by the verdict predicates.
+square-free witness variables E are finite when Stanley-Reisner reading is used.
+monomial or finitely presented resolutions are selected when Tor is measured.</code></pre>
+                <p>
+                  Then the following selected invariants reduce to the finite
+                  linear algebra, finitely presented module computation, or
+                  finite combinatorics specified by the profile:
+                </p>
+                <pre><code>Cech cohomology H^n(U_M, Ob_M)
+obstruction cocycle representatives
+zero / nonzero verdict for selected classes in Dom_M
+square-free obstruction ideal I_Ob^U
+minimal forbidden supports
+Stanley-Reisner complex Delta_U
+monomial Tor_i for selected law ideals
+support of selected conflict classes</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    A finite site yields finite cochain groups; finite
+                    restriction maps yield finite differentials;
+                    finite-dimensional modules over \( k_M \) reduce kernel,
+                    image, and quotient to finite linear algebra; finitely
+                    presented modules over <code>EffCoeff_M</code> use only
+                    the kernel / image / quotient / ideal-membership
+                    procedures that <code>EffCoeff_M</code> provides; finite
+                    square-free witness variables give the simplicial complex
+                    and the monomial ideal by finite combinatorics; and the
+                    selected finite resolutions compute Tor as a finite chain
+                    complex.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.FiniteAATComputability</code> with <code>cechComplex_finite</code>, <code>verdictComputation_holds</code>, <code>monomialTorComplex_finite</code>, <code>conflictSupport_finite</code>, over the finite computation objects <code>FiniteCechComplexRepresentation</code>, <code>FiniteCocycleRepresentative</code>, <code>FiniteVerdictComputationObject</code>, <code>FiniteSquareFreeObstructionIdeal</code>, <code>FiniteStanleyReisnerComplex</code>, <code>FiniteMonomialTorComplex</code>, <code>FiniteConflictSupport</code>, packaged by <code>finiteAATComputabilityPackage</code> / <code>finiteAATComputability</code> — <em>proved theorem package construction</em>, relativized to the finite regime and the supplied selected finite objects. The regime itself is <code>AAT.AG.Measurement.EffCoeff</code> and <code>FiniteMeasurementRegime</code> with its five proved <code>_holds</code> accessors — <em>defined only / proved accessors</em>.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    The theorem does not claim that an arbitrary site,
+                    arbitrary sheaf cohomology, arbitrary derived stack,
+                    arbitrary coefficient regime, or arbitrary finitely
+                    generated module is computable.
+                  </dd>
+                </dl>
+              </div>
+            </section>
+
+            <section id="stanley-reisner" class="article-section">
+              <h2>5. Stanley-Reisner and Alexander dual repair reading</h2>
+              <p>
+                In the square-free regime, the obstruction ideal becomes a
+                combinatorial object, and repair targets acquire a dual
+                combinatorial reading.
+              </p>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition VIII.5.1 (Square-Free Repair Regime).</a>
+                A square-free repair regime fixes a finite witness set
+                <code>E</code> and a forbidden support family
+                <code>Forb_U subset FinSubsets(E)</code>. Each forbidden
+                support <code>S</code> is assigned the square-free monomial
+                \( x_S = \prod_{e \in S} x_e \), and the obstruction ideal is
+              </p>
+              <pre><code>I_Ob^U = &lt; x_S | S in Forb_U &gt;</code></pre>
+              <p>
+                The inclusion-minimal reduction of <code>Forb_U</code> is
+                written <code>MinForb_U</code>.
+              </p>
+
+              <div id="theorem-5-2" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.5.2 — Certified bounded inference</span>
+                    <h3>Stanley-Reisner / Alexander Dual Repair Theorem</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  Suppose <code>I_Ob^U</code> arises from a finite square-free
+                  witness regime. Then the simplicial complex
+                </p>
+                <pre><code>Delta_U
+  =
+{ T subset E | no S in MinForb_U satisfies S subset T }</code></pre>
+                <p>
+                  is defined, and \( I_{Ob}^U = I_{\Delta_U} \). Moreover the
+                  Alexander dual complex \( \Delta_U^{\vee} \) carries the
+                  minimal repair hitting set reading:
+                </p>
+                <pre><code>minimal generators of I_{Delta_U}:
+  minimal forbidden supports.
+
+minimal vertex covers of MinForb_U:
+  minimal witness hitting sets.
+
+minimal generators of I_{Delta_U^vee}:
+  minimal repair hitting sets.</code></pre>
+                <p>
+                  A repair hitting set is a witness subset meeting every
+                  forbidden support.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Square-free monomial ideals and simplicial complexes
+                    correspond under the Stanley-Reisner dictionary: the faces
+                    of \( \Delta_U \) are exactly the supports avoiding every
+                    minimal forbidden support, so the ideal generated by the
+                    forbidden monomials is the Stanley-Reisner ideal of
+                    \( \Delta_U \). Alexander duality exchanges minimal
+                    non-faces with complements of minimal vertex covers,
+                    reading minimal generators of the dual ideal as minimal
+                    repair hitting sets.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.SquareFreeRepairRegime</code>, <code>AlexanderDualComplex</code>, <code>MinimalVertexCover</code>, <code>MinimalWitnessHittingSet</code>, <code>MinimalRepairHittingSet</code>, and <code>StanleyReisnerAlexanderDualRepair</code> with <code>obstructionIdeal_eq_holds</code>, <code>minimalGenerators_iff_holds</code>, <code>vertexCovers_iff_hittingSets_holds</code>, <code>alexanderDualGenerators_iff_holds</code>, packaged by <code>stanleyReisnerAlexanderDualRepairPackage</code> / <code>stanleyReisner_alexanderDual_repair</code> — <em>proved theorem package construction</em>. <code>SquareFreeRepairRegime</code> holds the selected source regime over <code>M.WitnessVariables</code> with profile witness lift and source-reading certificate.</dd>
+                </dl>
+              </div>
+
+              <p id="principle-5-3" class="statement">
+                <a class="statement-anchor" href="#principle-5-3">Principle VIII.5.3 (Repair Hitting Set Is Not Repair Semantics).</a>
+                The Alexander dual yields the minimal witness sets that strike
+                the obstruction pattern; it does not by itself yield the
+                semantics of an architecture operation:
+              </p>
+              <pre><code>minimal hitting set:
+  combinatorial repair target.
+
+actual repair operation:
+  requires operation semantics, legality, cost, and side-effect profile.</code></pre>
+              <p id="definition-5-4" class="statement">
+                <a class="statement-anchor" href="#definition-5-4">Definition VIII.5.4 (Discrete Morse Repair Reading).</a>
+                On the simplicial complex \( \Delta_U \) of a square-free
+                repair regime, choose an acyclic matching or discrete Morse
+                function <code>Morse_U(Delta_U)</code>. The critical cells
+                read the obstruction patterns that no chosen collapse sequence
+                removes; the collapse sequence along the matching reads a
+                selected combinatorial repair route simplifying
+                \( \Delta_U \).
+              </p>
+              <p id="candidate-5-5" class="statement">
+                <a class="statement-anchor" href="#candidate-5-5">Theorem candidate VIII.5.5 (Morse Lower Bound for Structural Repair).</a>
+                In a regime where \( \Delta_U \), the acyclic matching, and
+                the repair operation semantics are compatible, the number of
+                critical cells is expected to bound from below the number of
+                steps of any selected collapse-style structural repair route.
+                The Morse matching is a combinatorial reading of repair
+                targets; actual operation legality and side-effect control
+                belong to a separate repair profile.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VIII.5.4 and Theorem candidate VIII.5.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.DiscreteMorseRepairReading</code> — <em>defined only</em>; <code>MorseLowerBoundForStructuralRepairCandidate</code> — <em>theorem candidate, statement-only</em> interface with explicit operation-semantics compatibility, legality, and side-effect assumptions.</dd>
+                  <dt>Boundary</dt>
+                  <dd>The repair hitting set is held as a combinatorial target; no repair semantics is claimed at this layer.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="cech-stability" class="article-section">
+              <h2>6. Čech stability</h2>
+              <p>
+                A computed value earns the name measurement only when a
+                stability reading separates signal from noise. Part VIII fixes
+                the distance, the module structures, and the stability
+                statements under which that separation is available.
+              </p>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition VIII.6.1 (Witness Perturbation Distance).</a>
+                In a finite square-free regime, for two witness families or
+                forbidden support families <code>F</code>, <code>F'</code>,
+                set the symmetric difference distance
+              </p>
+              <p>\[ d_{\mathrm{wit}}(F, F') = |F \mathbin{\triangle} F'|. \]</p>
+              <p>
+                The corresponding simplicial complexes are written
+                \( \Delta_F \), \( \Delta_{F'} \). A single update is the
+                addition or removal of one forbidden support; the resulting
+                change from \( \Delta_F \) to \( \Delta_{F'} \) is read as a
+                collapse, anticollapse, face deletion, or face insertion of
+                the selected finite complex.
+              </p>
+              <p id="definition-6-2" class="statement">
+                <a class="statement-anchor" href="#definition-6-2">Definition VIII.6.2 (Persistence / Zigzag Reading).</a>
+                Along a monotone filtration of the law universe, witness
+                family, or support threshold,
+              </p>
+              <pre><code>F_0 &lt;= F_1 &lt;= ... &lt;= F_m</code></pre>
+              <p>
+                form the cohomology family
+                \( H^n(\Delta_{F_i}, \mathrm{Ob}_i) \) or the Čech cohomology
+                family \( H^n(U_i, \mathrm{Ob}_i) \); this yields an ordinary
+                persistence module. For an update path allowing both addition
+                and removal of forbidden supports,
+              </p>
+              <pre><code>F_0 &lt;-&gt; F_1 &lt;-&gt; ... &lt;-&gt; F_m</code></pre>
+              <p>
+                the profile includes the direction of each arrow, the complex
+                map or correspondence, and the coefficient comparison map, and
+                the family is read as a finite zigzag module. Barcodes, rank
+                invariants, and interleaving / bottleneck / zigzag stability
+                distances over these modules are called stability readings.
+              </p>
+              <p id="candidate-6-3" class="statement">
+                <a class="statement-anchor" href="#candidate-6-3">Theorem candidate VIII.6.3 (Finite Čech Stability).</a>
+                In a finite square-free regime, assume:
+              </p>
+              <pre><code>all sites and covers are finite.
+a monotone persistence module or finite zigzag module is selected.
+each update carries an oriented complex map, correspondence, or zigzag arrow.
+coefficient comparison maps are fixed along those arrows.
+each update is controlled by a bounded collapse / anticollapse / insertion / deletion step.
+the chosen persistence or zigzag module is finite type.
+measurement uses a fixed stability distance d_stab.</code></pre>
+              <p>
+                Then a constant \( C_M \) is expected to exist with
+              </p>
+              <p>\[ d_{\mathrm{stab}}\big(H^*(F), H^*(F')\big) \le C_M \cdot d_{\mathrm{wit}}(F, F'). \]</p>
+              <p>
+                This candidate makes explicit the proof target for separating
+                noise from signal in the finite square-free regime; it claims
+                no unconditional stability for general sites or arbitrary
+                sheaf cohomology.
+              </p>
+              <p id="principle-6-4" class="statement">
+                <a class="statement-anchor" href="#principle-6-4">Principle VIII.6.4 (Stability Is a Measurement Assumption).</a>
+                A measurement value without a stability theorem is a computed
+                value that carries no guarantee of separating noise from
+                signal:
+              </p>
+              <pre><code>computed value
+  !=
+stable measurement</code></pre>
+              <p id="candidate-6-5" class="statement">
+                <a class="statement-anchor" href="#candidate-6-5">Theorem candidate VIII.6.5 (Monotone Witness Stability).</a>
+                Fix a monotonely increasing filtration
+                \( F_0 \le F_1 \le \dots \le F_m \) of forbidden support
+                families, where each step adds one forbidden support, and the
+                profile includes the contravariant inclusions of simplicial
+                complexes, filtration values, coefficient comparison maps, and
+                an interleaving or correspondence comparing barcodes. In
+                regimes where ordinary persistence stability applies, one
+                expects
+              </p>
+              <p>\[ d_{\mathrm{bottleneck}}\big(\mathrm{Barcode}(F_i), \mathrm{Barcode}(F_j)\big) \le |i - j|, \]</p>
+              <p>and, more generally, for the selected witness perturbation distance,</p>
+              <p>\[ d_{\mathrm{bottleneck}}\big(\mathrm{Barcode}(F), \mathrm{Barcode}(F')\big) \le d_{\mathrm{wit}}(F, F'). \]</p>
+              <p>
+                This is a stability claim for the case of a fixed monotone
+                filtration with fixed comparison maps; when additions and
+                removals of forbidden supports are mixed, the reading returns
+                to the zigzag profile of candidate VIII.6.3.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VIII.6.1 / VIII.6.2 and candidates VIII.6.3 / VIII.6.5 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.witnessSymmetricDifferenceCardinality</code>, <code>WitnessPerturbationProfile</code> with <code>symmetricDifferenceCardinality</code> and the proved <code>d_wit_eq_symmetricDifferenceCardinality_holds</code>, <code>WitnessUpdateKind</code>, <code>FiniteComplexUpdateReading</code>, <code>PersistenceProfile</code>, <code>ZigzagArrowDirection</code>, <code>ZigzagArrow</code>, <code>ZigzagProfile</code>, <code>FiniteCechStabilityCandidate</code>, <code>MonotoneWitnessStabilityCandidate</code>, <code>StabilityMeasurementBoundary</code> with the proved <code>noCertifiedStableMeasurementWithoutTheorem_holds</code>.</dd>
+                  <dt>Status</dt>
+                  <dd>The perturbation distance is held with a certificate as the symmetric-difference cardinality of finite forbidden-support families; persistence and zigzag profiles are interfaces with finite-type conditions and comparison maps — <em>defined only / proved accessors</em>. Candidates VIII.6.3 and VIII.6.5 hold their Lipschitz / bottleneck bounds as Prop-level statement shapes, kept separate from proved measurement theorems — <em>statement-only</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="refactor-functoriality" class="article-section">
+              <h2>7. Refactor functoriality and class transport</h2>
+              <p>
+                Comparing measurements before and after a refactor requires
+                transport structure. Part VIII defines exactly which data a
+                refactor must carry for obstruction classes to travel along
+                it.
+              </p>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition VIII.7.1 (Refactor Morphism of Measurement Profiles).</a>
+                A refactor morphism between measurement profiles
+                <code>M_X</code>, <code>M_Y</code> includes at least:
+              </p>
+              <pre><code>rho : X_M -&gt; Y_M
+  morphism of finite sites or ringed sites.
+
+rho^# :
+  O_{Y_M} -&gt; rho_* O_{X_M}
+  compatible structure map.
+
+law compatibility:
+  rho^{-1} I_Ob^{U,Y} -&gt; I_Ob^{U,X}
+
+coefficient comparison:
+  rho^{-1} Ob_Y -&gt; Ob_X
+
+witness / axis compatibility:
+  selected witness and signature readings are preserved or explicitly transformed.</code></pre>
+              <p>
+                Without this data, the transport of cohomology classes along a
+                refactor is undefined.
+              </p>
+              <p id="definition-7-2" class="statement">
+                <a class="statement-anchor" href="#definition-7-2">Definition VIII.7.2 (Pullback of Obstruction Classes).</a>
+                When <code>rho : X_M -&gt; Y_M</code> is a refactor morphism
+                with a fixed coefficient comparison, the induced map on Čech
+                or sheaf cohomology is read as the pullback:
+              </p>
+              <p>\[ \rho^* : H^n(Y_M, \mathrm{Ob}_Y) \longrightarrow H^n(X_M, \mathrm{Ob}_X). \]</p>
+              <p>
+                This is a pullback reading. Using a pushforward requires
+                separately fixing additional structure: a finite map,
+                properness, a trace map, or a selected aggregation rule.
+              </p>
+
+              <div id="theorem-7-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.7.3 — Certified bounded inference</span>
+                    <h3>Refactor Invariance under Equivalence</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>rho is an equivalence of the selected finite sites.
+the ringed ambient comparison is an isomorphism.
+coefficient comparison rho^{-1} Ob_Y -&gt; Ob_X is an isomorphism.
+law ideals pull back isomorphically.
+witness and axis readings are preserved.</code></pre>
+                <p>Then for a selected obstruction class \( \alpha \):</p>
+                <p>\[ \alpha = 0 \iff \rho^*(\alpha) = 0. \]</p>
+                <p>
+                  Moreover, when the chosen representatives and period
+                  pairings are compatible, the period readings also agree
+                  along \( \rho \).
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Under a site equivalence with isomorphic ringed ambient
+                    and coefficient comparison, the induced map on cohomology
+                    is an isomorphism; the zero verdict is therefore preserved
+                    and reflected along the pullback, and compatible pairing
+                    data carries the period readings across.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.RefactorMorphism</code> with <code>lawCompatible_holds</code>, <code>coefficientCompatible_holds</code>; <code>PullbackObstructionClass</code> with <code>cechPullbackReading_holds</code>, <code>pushforwardRequiresExtraStructure_holds</code>; <code>RefactorEquivalenceAssumptions</code>; <code>RefactorInvarianceUnderEquivalence</code> with <code>zero_iff_pullback_zero</code>, <code>source_zero_of_target_zero</code>, <code>target_zero_of_source_zero</code>, packaged by <code>refactorInvarianceUnderEquivalencePackage</code> / <code>refactorInvarianceUnderEquivalence</code> — <em>proved theorem package construction</em>, relativized to the selected finite site equivalence, ringed ambient isomorphism, coefficient isomorphism, law ideal pullback isomorphism, and witness / axis preservation.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    Obstruction is preserved exactly when the selected
+                    measurement profiles are equivalent with isomorphic
+                    coefficients; no invariance is claimed for refactors
+                    lacking that data.
+                  </dd>
+                </dl>
+              </div>
+
+              <p id="principle-7-4" class="statement">
+                <a class="statement-anchor" href="#principle-7-4">Principle VIII.7.4 (Monodromy Requires Functoriality).</a>
+                Measuring operation loops, operation homotopies, and monodromy
+                debt requires the operation groupoid and coefficient transport
+                to be defined first:
+              </p>
+              <pre><code>no operation groupoid
+  -&gt; no monodromy measurement.
+
+no coefficient transport
+  -&gt; no obstruction class transport.</code></pre>
+            </section>
+
+            <section id="cellular-laplacian" class="article-section">
+              <h2>8. Cellular sheaf Laplacian reading</h2>
+              <p>
+                The analytic side of the measurement theory reads the finite
+                Čech complex as a Hilbert complex: Laplacians, harmonic
+                representatives, residual norms, and spectra.
+              </p>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition VIII.8.1 (Cellular Measurement Model).</a>
+                Read the finite poset site <code>X_M</code> as a finite cell
+                complex or incidence category. When the coefficient sheaf
+                <code>F</code> assigns a finite-dimensional inner product
+                space to each cell, with restriction maps fixed as linear
+                maps, the data is a cellular sheaf measurement model. The
+                cochain groups are \( C^n(X_M, F) \), with coboundary
+                \( d_n : C^n(X_M, F) \to C^{n+1}(X_M, F) \).
+              </p>
+              <p id="definition-8-2" class="statement">
+                <a class="statement-anchor" href="#definition-8-2">Definition VIII.8.2 (Sheaf Laplacian).</a>
+                When the inner products define adjoints \( d_n^* \), the
+                sheaf Laplacian is
+              </p>
+              <p>\[ L_n = d_{n-1} d_{n-1}^* + d_n^* d_n. \]</p>
+              <p>
+                In the finite-dimensional Hilbert regime,
+                \( \ker L_n \cong H^n(X_M, F) \), and elements of
+                \( \ker L_n \) are read as harmonic representatives.
+              </p>
+              <p id="definition-8-3" class="statement">
+                <a class="statement-anchor" href="#definition-8-3">Definition VIII.8.3 (Distance-to-Flatness Reading).</a>
+                For a section \( s \in C^0(X_M, F) \), the residual norm is
+                \( \mathrm{Res}_M(s) = \lVert d_0 s \rVert \). When a
+                projection onto a lawful or flat subspace
+                <code>Flat_U^M</code> is defined,
+              </p>
+              <p>\[ \mathrm{dist\_flat}_M(s) = \lVert s - \mathrm{proj}_{\mathrm{Flat}_U^M}(s) \rVert \]</p>
+              <p>is called the distance-to-flatness reading.</p>
+              <p id="principle-8-4" class="statement">
+                <a class="statement-anchor" href="#principle-8-4">Principle VIII.8.4 (Near-Flat Is Not Lawful).</a>
+                Small eigenvalues, small residuals, and small distances are
+                analytic readings in the sense of Definition VIII.3.3:
+              </p>
+              <pre><code>small residual
+  !=
+zero obstruction.
+
+near-flat
+  !=
+lawful.</code></pre>
+              <p>
+                Claiming a structural zero requires the obstruction zero, axis
+                exactness, witness coverage, and coefficient exactness of
+                Parts III and IV.
+              </p>
+
+              <div id="theorem-8-5" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.8.5 — Certified bounded inference</span>
+                    <h3>Finite Hodge Decomposition</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  In the finite-dimensional inner product regime, with cochain
+                  complex \( C^n(X_M, F) \) and adjoints \( d_n^* \) defined,
+                  the orthogonal decomposition
+                </p>
+                <p>\[ C^n = \operatorname{im} d_{n-1} \oplus \ker L_n \oplus \operatorname{im} d_n^* \]</p>
+                <p>
+                  holds, together with \( \ker L_n \cong H^n(X_M, F) \), and
+                  every element of \( \ker L_n \) is the harmonic
+                  representative of its cohomology class.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    The standard decomposition of a finite-dimensional Hilbert
+                    complex: finite-dimensionality gives
+                    \( C^n = \operatorname{im} d_{n-1} \oplus (\operatorname{im} d_{n-1})^{\perp} \)
+                    with \( (\operatorname{im} d_{n-1})^{\perp} = \ker d_{n-1}^* \);
+                    splitting \( \ker d_{n-1}^* \) into \( \ker d_n \) and the
+                    orthogonal component of \( \operatorname{im} d_n^* \)
+                    identifies the harmonic part as
+                    \( \ker d_n \cap \ker d_{n-1}^* = \ker L_n \); quotienting
+                    the exact component gives each cohomology class a unique
+                    harmonic representative.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.FiniteHodgeDecompositionData</code>, <code>FiniteHodgeDecomposition</code> with <code>kernel_reads_laplacian_holds_of_package</code>, <code>decomposition_maps_read_cochain_holds_of_package</code>, <code>decomposition_holds_of_package</code>, <code>harmonic_cohomology_holds_of_package</code>, <code>cohomology_equiv_harmonic_holds_of_package</code>, packaged by <code>finiteHodgeDecompositionPackage</code> / <code>finiteHodgeDecomposition</code> — <em>proved theorem package construction</em>, relativized to explicit finite inner-product cochain model data (<code>CellularMeasurementModel</code>, <code>SheafLaplacianReading</code> with <code>laplacian_eq_formula_holds</code>).</dd>
+                </dl>
+              </div>
+
+              <div id="theorem-8-6" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.8.6 — Certified bounded inference</span>
+                    <h3>Harmonic Debt Minimality</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  Fix a mismatch cocycle \( g \in C^1(X_M, F) \) and write
+                  \( h(g) \) for its harmonic component under the Hodge
+                  decomposition. Then the residual norm remaining after
+                  removing everything a local adjustment
+                  \( c \in C^0(X_M, F) \) can cancel is
+                </p>
+                <p>\[ \min_{c} \lVert g - d_0 c \rVert = \lVert h(g) \rVert. \]</p>
+                <p>
+                  Consequently, when \( \lVert h(g) \rVert &gt; 0 \), no local
+                  adjustment that leaves the site, coefficient sheaf, and law
+                  ideal unchanged can bring \( g \) to zero mismatch.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Orthogonal projection: the component reachable by
+                    \( d_0 c \) is confined to \( \operatorname{im} d_0 \),
+                    and the Hodge decomposition places the harmonic component
+                    orthogonal to \( \operatorname{im} d_0 \), so the minimal
+                    norm representative of the affine subspace
+                    \( g - \operatorname{im} d_0 \) is \( h(g) \).
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.HarmonicDebtMinimalityData</code>, <code>HarmonicDebtMinimality</code> with <code>minimum_reads_correction_residual_holds_of_package</code>, <code>harmonic_debt_eq_harmonic_norm_holds_of_package</code>, <code>minimization_holds_of_package</code>, packaged by <code>harmonicDebtMinimalityPackage</code> / <code>harmonicDebtMinimality</code> — <em>proved theorem package construction</em>.</dd>
+                </dl>
+              </div>
+
+              <p id="corollary-8-7" class="statement">
+                <a class="statement-anchor" href="#corollary-8-7">Corollary VIII.8.7 (Essential Repair Lower Bound).</a>
+                Suppose further that the selected repair cost is
+                \( L \)-Lipschitz with respect to the cochain norm, and that
+                every repair route reaching a globally lawful state must
+                resolve the harmonic mismatch. Then the cost of any selected
+                repair route is at least
+              </p>
+              <p>\[ \frac{\lVert h(g) \rVert}{L}. \]</p>
+              <p>
+                This lower bound is relativized to the selected cost model and
+                the Lipschitz assumption; the distinction between distance and
+                lawfulness follows Definition VIII.3.3. In Lean this is
+                <code>AAT.AG.Measurement.EssentialRepairLowerBoundData</code>,
+                <code>EssentialRepairLowerBound</code> with
+                <code>lower_bound_reads_harmonic_debt_over_L_holds_of_package</code>
+                and <code>lowerBound_holds_of_package</code>, packaged by
+                <code>essentialRepairLowerBoundPackage</code> /
+                <code>essentialRepairLowerBound</code> — proved theorem
+                package construction.
+              </p>
+              <p id="definition-8-8" class="statement">
+                <a class="statement-anchor" href="#definition-8-8">Definition VIII.8.8 (Spectral Gap Reading).</a>
+                Write \( \lambda_1^{+}(L_1) \) for the smallest nonzero
+                eigenvalue of \( L_1 \). It is an analytic stability
+                indicator: in the selected cellular sheaf model, it reads how
+                easily a small perturbation approaches the harmonic component.
+              </p>
+              <p id="definition-8-9" class="statement">
+                <a class="statement-anchor" href="#definition-8-9">Definition VIII.8.9 (Curvature Transfer Spectrum).</a>
+                Fix a support set <code>S</code> and axis set <code>A</code>,
+                and build a finite weighted directed graph on
+                <code>S x A</code> whose edges express the selected transfer
+                relation. Write <code>T_curv</code> for its weighted adjacency
+                operator; its spectrum \( \mathrm{Spec}(T_{\mathrm{curv}}) \)
+                is the curvature transfer spectrum. The spectral radius reads
+                the iterative recurrence of the selected transfer relation —
+                a recurrence reading, asserting nothing about unselected
+                future states or recurrence in external processes.
+              </p>
+              <p id="candidate-8-10" class="statement">
+                <a class="statement-anchor" href="#candidate-8-10">Theorem candidate VIII.8.10 (Spectral Hotspot Reading).</a>
+                When <code>T_curv</code> is a nonnegative finite operator to
+                which the Perron-Frobenius reading applies, a large support of
+                the principal eigenvector is read as a selected curvature
+                transfer hotspot. The claim is relativized to the choice of
+                support / axis graph, weights, and transfer relation.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VIII.8.1–8.3 / 8.8 / 8.9 and candidate VIII.8.10 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.CellularMeasurementModel</code> with <code>finiteCells_holds</code>, <code>finiteDimensionalCochains_holds</code>, <code>differentialSquaresZero_holds</code>; <code>SheafLaplacianReading</code> with <code>laplacian_eq_formula_holds</code>; <code>DistanceToFlatnessReading</code> with <code>residual_eq_norm_d0_holds</code> and the proved <code>distanceZeroDoesNotImplyLawful_holds</code>; <code>SpectralGapReading</code>; <code>CurvatureTransferSpectrum</code>; <code>SpectralHotspotReadingCandidate</code>.</dd>
+                  <dt>Status</dt>
+                  <dd>The cellular model, Laplacian formula reading, and residual / distance-to-flatness readings are <em>defined only</em> with proved accessor and boundary lemmas; the spectral hotspot reading is a <em>statement-only</em> candidate surface. The Hodge, harmonic-debt, and repair-lower-bound conclusions above are carried by the proved theorem packages.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="lawconflict-base-change" class="article-section">
+              <h2>9. LawConflict measurement and base change</h2>
+              <p>
+                Measuring the derived conflict of two law universes requires a
+                common ambient. Part VIII fixes when the Tor comparison is
+                defined at all.
+              </p>
+              <p id="definition-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-9-1">Definition VIII.9.1 (Common Ambient Pair).</a>
+                To measure the LawConflict of law universes <code>U</code>,
+                <code>V</code>, fix a single ambient:
+              </p>
+              <pre><code>(X, O_X):
+  common ringed site or architecture scheme.
+
+I_U, I_V subset O_X:
+  ideal sheaves defining selected lawful loci.
+
+Ob_U, Ob_V:
+  compatible coefficient objects when needed.
+
+W_{U,V}:
+  selected witness pair and comparison profile.</code></pre>
+              <p>With this data,</p>
+              <p>\[ \mathrm{LawConflict}_i(U, V) = \mathrm{Tor}_i^{O_X}\big(O_X / I_U,\ O_X / I_V\big) \]</p>
+              <p>
+                is the common ambient LawConflict. Law ideals living on
+                different topologies, different coefficient rings, or
+                different ambient schemes are never compared through Tor
+                without a fixed comparison morphism.
+              </p>
+              <p id="candidate-9-2" class="statement">
+                <a class="statement-anchor" href="#candidate-9-2">Theorem candidate VIII.9.2 (Flat Base Change Stability for LawConflict).</a>
+                Assume a common ambient pair \( (X, O_X, I_U, I_V) \) and a
+                morphism of ringed sites
+                \( f : (X', O_{X'}) \to (X, O_X) \) whose structure map
+                \( f^{-1} O_X \to O_{X'} \) gives flat base change for the
+                selected ideals and coefficient objects and satisfies the
+                necessary finite presentation conditions. With pullback ideals
+                \( I_U' = f^* I_U \), \( I_V' = f^* I_V \), standard Tor base
+                change is expected to give
+              </p>
+              <p>\[ f^* \mathrm{Tor}_i^{O_X}\big(O_X/I_U,\ O_X/I_V\big) \cong \mathrm{Tor}_i^{O_{X'}}\big(O_{X'}/I_U',\ O_{X'}/I_V'\big), \]</p>
+              <p>and in the affine case, for \( A \to A' \):</p>
+              <p>\[ \mathrm{Tor}_i^{A}(A/I_U,\ A/I_V) \otimes_A A' \cong \mathrm{Tor}_i^{A'}(A'/I_U',\ A'/I_V'). \]</p>
+              <p>
+                The claim is relativized to flatness, finite presentation,
+                coefficient compatibility, and support pullback. Under
+                non-flat base change, new Tor may appear and existing conflict
+                may collapse.
+              </p>
+              <p id="principle-9-3" class="statement">
+                <a class="statement-anchor" href="#principle-9-3">Principle VIII.9.3 (No Ambient, No Conflict Comparison).</a>
+              </p>
+              <pre><code>different ambient
+  + no comparison morphism
+  ------------------------
+no LawConflict comparison.</code></pre>
+              <p>
+                LawConflict measurement speaks only inside the selected common
+                ambient.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definition VIII.9.1 and candidate VIII.9.2 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.CommonAmbientPair</code> with <code>commonRingedSite_holds</code>, <code>lawIdealsInCommonAmbient_holds</code>, <code>coefficientsCompatible_holds</code>, <code>noComparisonWithoutCommonAmbient_holds</code>; <code>LawConflictMeasurement</code> with <code>lawConflictTorReading_holds</code>, <code>selectedClassSupportReading_holds</code>, <code>commonAmbientRequired_holds</code>; <code>FlatBaseChangeCandidate</code> with <code>affineBaseChangeStatement_shape_holds</code>, <code>sheafBaseChangeStatement_shape_holds</code>, <code>candidateOnly_holds</code>.</dd>
+                  <dt>Status</dt>
+                  <dd>The common ambient pair and the LawConflict measurement carrying Tor handle, selected class, and support reading only over that ambient are <em>defined only</em> with proved accessors; candidate VIII.9.2 is held as an affine / sheaf-ringed-site base-change <em>statement shape</em> with flatness, finite presentation, coefficient compatibility, and support pullback as assumptions — <em>statement-only</em>.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="support-transfer" class="article-section">
+              <h2>10. Support-localized transfer measurement</h2>
+              <p>
+                A repair aimed at one law universe can leave a residue on
+                another axis. Part VIII measures that transfer through a
+                pairing localized on the support of the conflict class.
+              </p>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition VIII.10.1 (Support-Localized Repair Path).</a>
+                Fix a selected conflict class
+                \( \kappa_{U,V} \in H^0\big(X, \mathrm{LawConflict}_1(U,V)\big) \)
+                and write \( \mathrm{Supp}(\kappa_{U,V}) \subset X \) for its
+                support. A repair path <code>r : T -&gt; X</code> or
+                first-order direction <code>v</code> is support-localized
+                when, inside the selected coefficient regime,
+              </p>
+              <pre><code>image(r) intersects Supp(kappa_{U,V})</code></pre>
+              <p>or</p>
+              <pre><code>support(v) intersects Supp(kappa_{U,V})</code></pre>
+              <p>holds.</p>
+              <p id="definition-10-2" class="statement">
+                <a class="statement-anchor" href="#definition-10-2">Definition VIII.10.2 (Transfer Measurement Pairing).</a>
+                Fix a transfer target, zero predicate, and normed analytic
+                target:
+              </p>
+              <pre><code>TransRes_{U,V}
+0_{TransRes}
+Nontrivial_{TransRes}
+|| - ||_{TransRes}</code></pre>
+              <p>
+                The pairing of a repair direction with a conflict class is
+              </p>
+              <p>\[ \langle -, - \rangle_{U,V} : T_X \times \mathrm{LawConflict}_1(U,V) \longrightarrow \mathrm{TransRes}_{U,V}. \]</p>
+
+              <div id="theorem-10-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.10.3 — Certified bounded inference</span>
+                    <h3>Support-Localized Transfer</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>common ambient pair for U,V is fixed.
+conflict class kappa_{U,V} is selected.
+repair direction v or path r is defined.
+v or r is support-localized for kappa_{U,V},
+  or the pairing is otherwise justified on v.
+transfer target and zero predicate are fixed.
+pairing &lt; -, - &gt;_{U,V} is defined.</code></pre>
+                <p>Then, whenever</p>
+                <p>\[ \mathrm{Nontrivial}_{\mathrm{TransRes}}\big(\langle v, \kappa_{U,V} \rangle_{U,V}\big), \]</p>
+                <p>
+                  the selected repair direction carries a nontrivial
+                  transferred residue against the \( V \)-axis.
+                </p>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    A sufficiency reading: the fixed pairing evaluates the
+                    selected repair direction against the selected conflict
+                    class, and the selected nontriviality predicate on the
+                    pairing value directly witnesses the transferred residue.
+                    Reading the converse — necessity — requires the separate
+                    detecting assumption that the chosen pairing detects every
+                    transfer residue.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.SupportLocalizedRepairPath</code> with <code>pathImageIntersectsSupport_holds</code>, <code>directionSupportIntersectsConflict_holds</code>; <code>TransferMeasurementPairing</code> with <code>selectedResidue_eq_pairing_holds</code>, <code>detectingPairingRequiredForNecessity_holds</code>; <code>SupportLocalizedTransfer</code> with <code>nontrivial_transferred_residue_of_pairing</code>, packaged by <code>supportLocalizedTransferPackage</code> / <code>supportLocalizedTransfer</code> — <em>proved theorem package construction</em>, as a sufficient-condition theorem package.</dd>
+                </dl>
+              </div>
+
+              <p id="candidate-10-4" class="statement">
+                <a class="statement-anchor" href="#candidate-10-4">Theorem candidate VIII.10.4 (Transfer Lower Bound).</a>
+                Suppose the transfer target is normed and the pairing is
+                nondegenerate on the selected support. If a support
+                intersection weight \( w(v, \mathrm{Supp}(\kappa_{U,V})) \ge 0 \)
+                and a constant \( \lambda_M &gt; 0 \) satisfy
+              </p>
+              <p>\[ \big\lVert \langle v, \kappa_{U,V} \rangle_{U,V} \big\rVert \ \ge\ \lambda_M \cdot w\big(v, \mathrm{Supp}(\kappa_{U,V})\big) \cdot \lVert \mathrm{projected}(v) \rVert, \]</p>
+              <p>
+                then an analytic lower bound for the transfer residue is
+                obtained. The bound is relativized to the choice of pairing,
+                norm, projection, and support weight.
+              </p>
+              <p id="principle-10-5" class="statement">
+                <a class="statement-anchor" href="#principle-10-5">Principle VIII.10.5 (Transfer Non-Implications).</a>
+                The following non-implications are explicit:
+              </p>
+              <pre><code>LawConflict_1(U,V) != 0
+  does not imply
+every repair path transfers obstruction.
+
+path touches support
+  does not imply
+nonzero transfer without a detecting pairing.
+
+small distance-to-flatness
+  does not imply
+zero transferred residue.</code></pre>
+              <p id="definition-10-6" class="statement">
+                <a class="statement-anchor" href="#definition-10-6">Definition VIII.10.6 (Wasserstein Transfer Cost).</a>
+                Fix a support graph <code>G_S</code> and ground distance
+                <code>d_S</code>. When the obstruction measure
+                \( \Omega_U(A) \) is given as a finite nonnegative measure on
+                the support, the transfer cost of an operation
+                <code>op : A -&gt; B</code> is read as
+              </p>
+              <p>\[ W_1\big(\Omega_U(A), \Omega_U(B)\big) \]</p>
+              <p>
+                — an optimal transport reading of how much obstruction mass
+                moved on the selected support graph.
+              </p>
+              <p id="candidate-10-7" class="statement">
+                <a class="statement-anchor" href="#candidate-10-7">Theorem candidate VIII.10.7 (Transfer Cost Lower Bound).</a>
+                In a selected profile where total obstruction mass is
+                conserved and a mass \( m \) must leave a support \( s \) and
+                move to a set of absorbable supports \( \mathrm{Abs} \), one
+                expects
+              </p>
+              <p>\[ W_1 \ \ge\ m \cdot \mathrm{dist}(s, \mathrm{Abs}). \]</p>
+              <p>
+                The bound is undefined unless mass preservation, ground
+                distance, absorbable supports, and axis aggregation are all
+                fixed.
+              </p>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Definitions VIII.10.1 / 10.2 / 10.6 and candidates VIII.10.4 / 10.7 in Lean</h3>
+                  </div>
+                  <span class="status-badge status-badge-defined">defined only / statement-only</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.SupportLocalizedRepairPath</code>, <code>TransferMeasurementPairing</code>, <code>TransferLowerBoundCandidate</code>, <code>WassersteinTransferCostReading</code> with <code>finiteSupportGraph_holds</code>, <code>costReadsFinitePlan_holds</code>, <code>WassersteinTransferLowerBoundCandidate</code> with <code>lowerBoundStatement_shape_holds</code>, <code>candidateOnly_holds</code>.</dd>
+                  <dt>Status</dt>
+                  <dd>The support-intersection reading, transfer residue target with zero / nontrivial predicates and norm, and the finite support graph / transportation-plan Wasserstein interface are <em>defined only</em> with proved accessors; candidates VIII.10.4 and VIII.10.7 are <em>statement-only</em> interfaces. Theorem VIII.10.3 is carried by the proved theorem package above.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="measurement-packet" class="article-section">
+              <h2>11. Measurement packet</h2>
+              <p>
+                The output format of Part VIII is a packet that keeps every
+                grade of conclusion in its own compartment.
+              </p>
+              <p id="definition-11-1" class="statement">
+                <a class="statement-anchor" href="#definition-11-1">Definition VIII.11.1 (AAT Measurement Packet).</a>
+                A Part VIII measurement output records at least the following,
+                separately:
+              </p>
+              <pre><code>profile:
+  selected site, cover, coefficient, EffCoeff_M, law universe, witness family.
+  Dom_M, Zero_M, NonZero_M, Cert_M.
+
+structuralVerdict:
+  measured_zero / measured_nonzero / unmeasured / unknown / not_computed.
+
+computedInvariants:
+  H^n, Tor_i, generators, supports, dimensions, ranks, representatives.
+
+analyticReadings:
+  distance, mass, spectrum, residual norm, harmonic mass, barcode, repair cost,
+  Wasserstein transfer cost, Morse collapse reading, monodromy index.
+
+assumptions:
+  adequacy, exactness, finite regime, common ambient, base change, detecting profile.
+
+nonConclusions:
+  unselected laws, unmeasured support, unprovided coefficient data, undecided predicates.</code></pre>
+              <p id="principle-11-2" class="statement">
+                <a class="statement-anchor" href="#principle-11-2">Principle VIII.11.2 (Measurement Packet Is Bounded).</a>
+                The measurement packet concludes only inside the selected
+                profile:
+              </p>
+              <pre><code>bounded measurement
+  =
+structural verdict
+  + analytic readings
+  + assumptions
+  + explicit unmeasured scope.</code></pre>
+            </section>
+
+            <section id="part8-conclusion" class="article-section">
+              <h2>12. Conclusion of Part VIII</h2>
+
+              <div id="theorem-12-1" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.12.1 — Certified bounded inference</span>
+                    <h3>Finite Measurement Synthesis</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>Assume:</p>
+                <pre><code>M is a finite measurement regime.
+cover is U-adequate.
+witness and axis exactness hold where reflection is claimed.
+coefficient objects are finite/effective and explicit under EffCoeff_M.
+common ambient exists for selected LawConflict readings.
+support-localized pairing is fixed for transfer readings.
+verdict discipline distinguishes zero, nonzero, unmeasured, unknown, not_computed.</code></pre>
+                <p>
+                  Then the selected measurement packet of Part VIII returns
+                  the following as bounded mathematical measurement:
+                </p>
+                <pre><code>Cech obstruction verdicts
+Stanley-Reisner / Alexander dual repair readings
+finite stability readings or theorem candidates
+refactor transport maps and invariance conditions
+cellular sheaf Laplacian analytic distances
+LawConflict base-change conditions
+support-localized transfer residues
+Hodge / harmonic decomposition readings
+monotone stability readings
+Wasserstein transfer cost readings
+discrete Morse repair readings
+curvature transfer spectrum readings
+measurement verdict boundary</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    Each listed reading is exactly one of the chapter's
+                    theorem packages or defined readings, instantiated under
+                    the stated assumptions; the packet gathers them while
+                    keeping certified readings, candidate interfaces, and
+                    conditional readings in separate compartments.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.ComputedInvariants</code> with <code>finiteInvariantHandles_holds</code>; <code>AnalyticReadings</code> with <code>analyticReadingsSeparatedFromVerdict_holds</code>; <code>MeasurementAssumptions</code>; <code>MeasurementNonConclusions</code> with <code>candidateDependentReadingsSeparated_holds</code>; <code>MeasurementPacketData</code>, <code>boundedMeasurementStatement</code>, <code>boundedMeasurementStatement_cert</code>; <code>MeasurementPacket</code> with <code>boundedMathematicalMeasurement_holds</code>, <code>certifiedSeparatedFromCandidate_holds</code>, <code>measurementPacketOfData</code>; and <code>FiniteMeasurementSynthesis</code> with <code>bounded_packet_holds_of_package</code>, <code>certified_candidate_separation_holds_of_package</code>, packaged by <code>finiteMeasurementSynthesisPackage</code> / <code>finiteMeasurementSynthesis</code> — <em>proved theorem package construction</em> over the explicit assumptions of finite regime, cover adequacy, witness / axis exactness, effective coefficients, common ambient, support pairing, verdict discipline, and certified / candidate separation.</dd>
+                </dl>
+              </div>
+
+              <p id="principle-12-2" class="statement">
+                <a class="statement-anchor" href="#principle-12-2">Principle VIII.12.2 (What Part 8 Adds).</a>
+                Part VIII adds the purely mathematical conditions under which
+                AAT geometry is read measurably:
+              </p>
+              <pre><code>Part 7:
+  geometry becomes readable.
+
+Part 8:
+  selected readings become measurable under finite, stable, functorial, verdict-disciplined regimes.</code></pre>
+              <p>The measurement theory of AAT thereby holds this boundary:</p>
+              <pre><code>measured zero:
+  selected structural zero under profile.
+
+measured nonzero:
+  selected obstruction or residue under profile.
+
+analytic distance:
+  useful reading, not lawfulness itself.
+
+unmeasured:
+  outside selected profile, not zero.
+
+unknown:
+  undecided inside intended profile, not failure.</code></pre>
+              <p>
+                Part VIII remains on the pure mathematical side of the AAT
+                monograph; unselected external processes and applied decision
+                procedures are not internal objects of the chapter.
+              </p>
+
+              <div id="theorem-12-3" class="theorem-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Theorem VIII.12.3 — Certified bounded inference</span>
+                    <h3>AAT-GAGA Finite Measurement Comparison</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">Lean: proved</span>
+                </div>
+                <p>
+                  In a finite measurement regime <code>M</code>, fix:
+                </p>
+                <pre><code>finite poset site X_M.
+finite cover U_M.
+abelian coefficient sheaf F with inner products.
+cellular cochain model C^n(X_M,F).
+square-free witness regime where used.
+common ambient for selected LawConflict readings.
+stability distance and comparison maps where an applicable stability theorem is fixed.</code></pre>
+                <p>
+                  Then, within the scope of <code>M</code>, the following
+                  comparison readings are handled simultaneously:
+                </p>
+                <pre><code>Hodge comparison:
+  H^n(X_M,F) ≅ ker L_n.
+
+harmonic decomposition:
+  cochains split into exact, harmonic, and coexact components.
+
+period accounting:
+  &lt;d omega, gamma&gt; = &lt;omega, boundary gamma&gt;.
+
+topological capacity:
+  low-degree obstruction capacity is controlled by the selected nerve data.
+
+derived conflict accounting:
+  monomial LawConflict can be read by Tor and Hilbert-series accounting.
+
+stability candidate interface:
+  monotone witness filtrations admit persistence stability readings only
+  in the regime of theorem candidate 6.5 or another fixed stability theorem.</code></pre>
+                <dl>
+                  <dt>Proof idea</dt>
+                  <dd>
+                    The theorem is an interface bundling the comparison of
+                    algebraic obstruction data with analytic and combinatorial
+                    readings inside one explicit finite profile: the Hodge and
+                    harmonic clauses come from Theorem VIII.8.5, the derived
+                    conflict clause from the monomial Tor regime of Theorem
+                    VIII.4.2 and Section 9, and the stability clause is an
+                    interface that activates only when a fixed stability
+                    theorem is added. Clauses depending on theorem candidates
+                    are read as interfaces for the candidate regime, never as
+                    certified conclusions of this theorem.
+                  </dd>
+                  <dt>Lean anchors</dt>
+                  <dd><code>AAT.AG.Measurement.AATGAGACertifiedFields</code> with <code>hodgeComparisonCertified_holds</code>, <code>derivedConflictAccountingCertified_holds</code>; <code>AATGAGACandidateInterfaces</code> with <code>candidateInterfacesSeparatedFromCertified_holds</code>; <code>AATGAGAComparisonAssumptions</code>; <code>AATGAGABoundary</code> with <code>noExternalDataSourceFidelity_holds</code>, <code>candidateDependentFieldsNotCertified_holds</code>; <code>AATGAGAComparisonData</code>, <code>aatGAGAComparisonStatement</code>, <code>aatGAGAComparisonStatement_cert</code>, <code>AATGAGAComparisonPacket</code> with <code>finiteProfileComparison_holds</code>, <code>certifiedCandidateSeparation_holds</code>, <code>aatGAGAComparisonPacketOfData</code>; and <code>AATGAGAFiniteMeasurementComparison</code> with <code>finite_profile_comparison_holds_of_package</code>, <code>candidate_interfaces_separated_holds_of_package</code>, packaged by <code>aatGAGAFiniteMeasurementComparisonPackage</code> / <code>aatGAGAFiniteMeasurementComparison</code> — <em>proved theorem package construction</em>; candidate-dependent fields are never promoted to certified conclusions.</dd>
+                  <dt>Claim boundary</dt>
+                  <dd>
+                    The name GAGA is a metaphor for comparing algebraic
+                    objects with analytic readings; it asserts no fidelity of
+                    unselected data sources or external procedures.
+                  </dd>
+                </dl>
+              </div>
+
+              <p id="principle-12-4" class="statement">
+                <a class="statement-anchor" href="#principle-12-4">Principle VIII.12.4 (AAT-GAGA Boundary).</a>
+                AAT-GAGA is read only inside the selected finite measurement
+                profile:
+              </p>
+              <pre><code>constructed AAT geometry
+  + finite profile
+  + exactness / adequacy assumptions
+  ----------------------------------
+comparison reading.</code></pre>
+              <p>The following are not concluded:</p>
+              <pre><code>all unselected data are complete.
+all external procedures preserve the profile.
+all law universes are measured.
+analytic smallness implies lawfulness.</code></pre>
+
+              <article class="theorem-card lean-status-card">
+                <div class="theorem-card-header">
+                  <div>
+                    <span class="theorem-card-label">Lean status</span>
+                    <h3>Part VIII finite example suite (VIII.R11)</h3>
+                  </div>
+                  <span class="status-badge status-badge-proved">proved</span>
+                </div>
+                <dl>
+                  <dt>Lean names</dt>
+                  <dd><code>AAT.AG.Measurement.PseudoCircleMeasurementDomain</code>, <code>pseudoCircleMeasurementProfile</code>, <code>pseudoCircleBoundaryCocycleVerdict</code>, <code>pseudoCircle_unmeasuredAxis_not_zero</code>; <code>squareFreeRepairExamplePackage</code> with <code>squareFree_singletonQ_minimalRepairHittingSet</code>, <code>squareFree_pairPR_minimalRepairHittingSet</code>; <code>tinyFiniteMeasurementRegime</code>, <code>finiteComputabilityExample_verified</code>; <code>refactorInvarianceExample_zeroVerdictPreserved</code>; <code>cellularHodgeExample_kerL1_equiv_H1</code>, <code>cellularHodgeExample_harmonicDebtMinimal</code>; <code>supportTransferExample_nontrivialTransferredResidue</code>; <code>measurementPacketGAGAExample_certifiedCandidateSeparated</code>; aggregated as <code>PartVIIIFiniteExampleSuite</code> with <code>partVIIIFiniteExampleSuite_complete</code>.</dd>
+                  <dt>Meaning</dt>
+                  <dd>Selected finite fixtures verify (a) pseudo-circle measurement with an unmeasured axis that is not read as zero, (b) square-free hitting sets — <code>{q}</code> and <code>{p,r}</code> are proved to be selected minimal repair hitting sets, (c) finite computability, (d) refactor invariance, (e) cellular Hodge and harmonic debt, (f) support-localized transfer, and (g) measurement packet / AAT-GAGA certified-candidate separation, each as a concrete instance of the chapter's theorem packages — <em>proved selected finite examples</em>, reusable as static measurement fixtures for Part IX.</dd>
+                </dl>
+              </article>
+            </section>
+
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Part VIII turns readability into measurability. A measurement
+                profile (Definition VIII.2.1) fixes site, cover, coefficient,
+                law universe, witnesses, predicates, and verdict discipline;
+                every measurement statement is bounded by that profile
+                (Principle VIII.2.2). The verdict discipline (Definitions
+                VIII.3.1 / VIII.3.3, Principle VIII.3.2) keeps measured_zero,
+                measured_nonzero, unmeasured, unknown, and not_computed
+                mutually distinct — unmeasured is not zero, unknown is not
+                nonzero — and separates structural verdicts from analytic
+                readings. In the finite measurement regime, Čech cohomology,
+                obstruction ideals, Stanley-Reisner complexes, and monomial
+                Tor reduce to finite computation (Theorem VIII.4.2); the
+                Alexander dual reads minimal repair hitting sets (Theorem
+                VIII.5.2) without claiming repair semantics (Principle
+                VIII.5.3); stability is an explicit assumption with stated
+                candidates (VIII.6.3 / VIII.6.5, Principle VIII.6.4); refactor
+                transport requires morphism data and is invariant under
+                equivalence (Theorem VIII.7.3); the cellular sheaf Laplacian
+                yields Hodge decomposition, harmonic debt minimality, and an
+                essential repair lower bound (Theorems VIII.8.5 / VIII.8.6,
+                Corollary VIII.8.7) while near-flat is never lawful (Principle
+                VIII.8.4); LawConflict is compared only in a common ambient
+                (Definition VIII.9.1, Principle VIII.9.3); transfer residues
+                are measured through support-localized pairings (Theorem
+                VIII.10.3) with explicit non-implications (Principle
+                VIII.10.5); and everything is reported as a bounded
+                measurement packet (Definition VIII.11.1), synthesized by
+                Theorem VIII.12.1 and compared across algebraic, analytic, and
+                combinatorial readings by the AAT-GAGA interface (Theorem
+                VIII.12.3) inside its stated boundary (Principle VIII.12.4).
+              </p>
+              <p>
+                Part IX moves from the static measurement profile to evolution
+                geometry: trace categories, state transition presheaves, and
+                temporal coefficients.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>Measurement profile</dt>
+                  <dd>The data <code>M</code> — site, cover, coefficient, effectiveness, obstruction sheaf, law universe, witnesses, domain, predicates, certificates, verdict discipline — relative to which every measurement statement is read.</dd>
+                </div>
+                <div>
+                  <dt>Measurement verdict</dt>
+                  <dd>One of measured_zero, measured_nonzero, unmeasured, unknown, not_computed, with dependent verdict data; unmeasured is not zero and unknown is not nonzero.</dd>
+                </div>
+                <div>
+                  <dt>Finite measurement regime</dt>
+                  <dd>A profile whose site, cover, coefficients, restriction maps, witnesses, ideals, and resolutions are finite or effectively presented, so that selected invariants reduce to finite computation.</dd>
+                </div>
+                <div>
+                  <dt>Square-free repair regime</dt>
+                  <dd>Finite witnesses with forbidden supports read as a Stanley-Reisner ideal; the Alexander dual reads minimal repair hitting sets as combinatorial repair targets.</dd>
+                </div>
+                <div>
+                  <dt>Stability reading</dt>
+                  <dd>Barcode, rank invariant, or interleaving / bottleneck / zigzag distance over a selected persistence or zigzag module; without a fixed stability theorem, a computed value is not a stable measurement.</dd>
+                </div>
+                <div>
+                  <dt>Refactor morphism</dt>
+                  <dd>A morphism of measurement profiles carrying site, structure, law, coefficient, and witness / axis compatibility; the precondition for transporting obstruction classes.</dd>
+                </div>
+                <div>
+                  <dt>Harmonic debt</dt>
+                  <dd>The norm of the harmonic component of a mismatch cocycle — the residual that no local adjustment can cancel, and the source of the essential repair lower bound.</dd>
+                </div>
+                <div>
+                  <dt>Common ambient pair</dt>
+                  <dd>One ringed site or architecture scheme carrying both law ideals; the only place where LawConflict Tor comparison is defined.</dd>
+                </div>
+                <div>
+                  <dt>Measurement packet</dt>
+                  <dd>The bounded output separating profile, structural verdict, computed invariants, analytic readings, assumptions, and non-conclusions.</dd>
+                </div>
+                <div>
+                  <dt>AAT-GAGA</dt>
+                  <dd>The finite-profile interface comparing algebraic obstruction data with analytic and combinatorial readings; a metaphorical name asserting no external fidelity.</dd>
+                </div>
+              </dl>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../representations-periods/">
+                <span>Previous</span>
+                <strong>Part VII. Representation, Periods, and Analysis</strong>
+              </a>
+              <a class="page-nav-next" href="../evolution-geometry/">
+                <span>Next</span>
+                <strong>Part IX. Evolution Geometry</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>

@@ -2,10 +2,11 @@
 {
   "layout": "base.njk",
   "title": "Lean Status",
-  "description": "Lean status for Algebraic Architecture Theory: status vocabulary, current formal core, proved anchors, defined carriers, future proof obligations, and empirical hypotheses.",
+  "description": "Lean formalization status for the algebraic-geometric AAT monograph: the proved / packaged / statement-only vocabulary, part-by-part proved anchors in Formal/AG, and commit-pinned canonical sources.",
   "order": 14,
   "llmsLabel": "AAT Lean Status",
-  "navSection": "aat"
+  "navSection": "aat",
+  "mathjax": false
 }
 ---
     <main id="main">
@@ -19,45 +20,33 @@
           <p class="eyebrow">Appendix</p>
           <h1>Lean Status</h1>
           <p class="lede">
-            This page separates the mathematical reading from the formalization
-            ledger. It names the status vocabulary, current proved anchors,
-            defined carriers, future proof obligations, and empirical hypotheses.
+            This page is the formalization ledger view of the
+            algebraic-geometric AAT monograph. It fixes the status vocabulary,
+            walks Parts I&ndash;X of the checked <code>Formal/AG</code> surface
+            with representative proved anchors, and collects the commit-pinned
+            canonical sources for the whole site.
           </p>
         </div>
       </section>
 
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="AAT page navigation">
+          <aside class="article-sidebar" aria-label="AAT status page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#status-vocabulary">Status vocabulary</a></li>
-                <li><a href="#snapshot">Current snapshot</a></li>
-                <li><a href="#formal-core">Formal core</a></li>
-                <li><a href="#proved-surface">Proved surface</a></li>
-                <li><a href="#defined-surface">Defined carriers</a></li>
+                <li><a href="#ledgers">Ledger discipline</a></li>
+                <li><a href="#parts">Part-by-part Lean surface</a></li>
                 <li><a href="#obligations">Obligations and hypotheses</a></li>
-                <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#canonical-sources">Canonical sources</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
-              <h2>AAT chapters</h2>
+              <h2>Reading sequence</h2>
               <ul>
-                <li><a href="../">Overview</a></li>
-                <li><a href="../atoms/">Atoms</a></li>
-                <li><a href="../architecture-objects/">Architecture Objects</a></li>
-                <li><a href="../laws/">Design Laws</a></li>
-                <li><a href="../obstruction-circuits/">Obstruction Circuits</a></li>
-                <li><a href="../zero-curvature/">Zero Curvature</a></li>
-                <li><a href="../architecture-signature/">Architecture Signature</a></li>
-                <li><a href="../design-principle-layers/">Design Principle Layers</a></li>
-                <li><a href="../operations-and-calculus/">Operations and Calculus</a></li>
-                <li><a href="../dynamics-and-geometry/">Dynamics and Geometry</a></li>
-                <li><a href="../representations-and-effects/">Representations and Effects</a></li>
-                <li><a href="../canonical-examples-and-readings/">Examples and Readings</a></li>
                 <li><a href="../related-work/">Related Work</a></li>
-                <li><a href="./" aria-current="page">Status</a></li>
+                <li><a href="./" aria-current="page">Lean Status</a></li>
                 <li><a href="../formal-anchors/">Formal Anchors</a></li>
               </ul>
             </div>
@@ -66,233 +55,357 @@
           <div class="article-main">
             <section id="status-vocabulary" class="article-section">
               <h2>Status vocabulary</h2>
+              <p>
+                Since the peer-review hardening pass (PRD-R), theorem-grade
+                statuses in the AG ledgers are read through a three-way
+                normalization, alongside three further non-theorem tags.
+              </p>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
                       <th>Status</th>
                       <th>Reading</th>
-                      <th>Typical artifact</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td><code>proved</code></td>
-                      <td>A Lean theorem establishes the claim under its stated premises.</td>
-                      <td>Theorem, bridge, accessor, finite example, counterexample.</td>
+                      <td>A real Lean proof. Assumptions are explicit, and the conclusion is not simply read off a field of an assumption package.</td>
+                    </tr>
+                    <tr>
+                      <td><code>packaged (assumption-relative)</code></td>
+                      <td>A consequence obtained by composing fields of an explicit assumption record, certificate, or selected package. A Lean theorem exists, but it is not counted as an unconditional <code>proved</code> under peer review.</td>
+                    </tr>
+                    <tr>
+                      <td><code>statement-only</code></td>
+                      <td>A typed candidate surface exists in Lean, but it is not counted as a proved theorem. Candidate rows also marked as future proof obligations keep their obligation separately.</td>
                     </tr>
                     <tr>
                       <td><code>defined only</code></td>
-                      <td>A carrier, schema, predicate, metric, or report shape exists.</td>
-                      <td>Structure, inductive type, definition, metadata package.</td>
+                      <td>A carrier, structure, predicate, or metadata package exists. It gives vocabulary, not a conclusion. Outside the three-way normalization.</td>
                     </tr>
                     <tr>
                       <td><code>future proof obligation</code></td>
-                      <td>A theorem-shaped statement belongs to the research plan.</td>
-                      <td>Proof obligation, issue, planned bridge theorem.</td>
+                      <td>A theorem-shaped statement recorded in the obligations ledger as planned work, often with an explicit non-goal boundary. Outside the three-way normalization.</td>
                     </tr>
                     <tr>
                       <td><code>empirical hypothesis</code></td>
-                      <td>A claim belongs to repository behavior, review quality, or operational evidence.</td>
-                      <td>Study design, dataset, CI report, pilot protocol.</td>
+                      <td>A claim about repository behavior, extraction quality, or operational evidence. It belongs to the tooling and downstream ledgers, not to the AG mathematical ledger.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <p id="status-1-1" class="statement">
                 <a class="statement-anchor" href="#status-1-1">Status rule 1.1.</a>
-                A website statement with a Lean name should be read at the
-                status of that Lean declaration. A carrier gives vocabulary; a
-                theorem gives a conclusion; an example theorem demonstrates a
-                finite reading; an empirical hypothesis belongs to observed
-                repository behavior.
+                A theorem label in the canonical text or on this website is
+                read as Lean <code>proved</code> only when the AG Lean theorem
+                index has a corresponding ledger row. A label without a ledger
+                row is a mathematical statement of the canonical text, at the
+                grade the text assigns it, and nothing more.
               </p>
             </section>
 
-            <section id="snapshot" class="article-section">
-              <h2>Current snapshot</h2>
+            <section id="ledgers" class="article-section">
+              <h2>Ledger discipline</h2>
               <p>
-                The current public reading is an Atom-first AAT formalization
-                snapshot. It starts from primitive architectural facts, then
-                follows the checked Lean surface through molecules, laws,
-                obstruction circuits, signatures, operations, geometry,
-                representations, and examples.
+                Three documents carry the formal accounting, and this page is a
+                summary of them, not a replacement.
               </p>
-              <div class="article-table">
-                <table>
-                  <tbody>
-                    <tr>
-                      <th>Root</th>
-                      <td><code>AtomAxiomSystem</code> and <code>AAT.AATCore</code></td>
-                    </tr>
-                    <tr>
-                      <th>Reading surface</th>
-                      <td>Definitions, theorem packages, finite examples, counterexamples, and status notes.</td>
-                    </tr>
-                    <tr>
-                      <th>Formal status</th>
-                      <td>Each chapter distinguishes proved statements, defined carriers, future proof obligations, and empirical hypotheses.</td>
-                    </tr>
-                    <tr>
-                      <th>Scope</th>
-                      <td>Checked mathematical claims are separated from extraction quality, workflow usefulness, and operational evidence.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section id="formal-core" class="article-section">
-              <h2>Formal core</h2>
+              <ul>
+                <li>
+                  <code>docs/aat/lean_theorem_index_ag_aat.md</code> maps each
+                  canonical-text label of Parts I&ndash;X to its Lean
+                  declarations in <code>Formal/AG</code> with a status column.
+                  It is organized by the ten formalization tranches (PRD-1
+                  through PRD-10), one per part.
+                </li>
+                <li>
+                  <code>docs/aat/proof_obligations_ag_aat.md</code> is the
+                  per-part obligations ledger: residual boundaries, future
+                  proof obligations, explicit non-goals, and the PRD-R
+                  re-judgment of the old acceptance criteria.
+                </li>
+                <li>
+                  <code>docs/aat/lean_ag_peer_review_inventory.md</code>
+                  defines the <code>proved</code> /
+                  <code>packaged (assumption-relative)</code> /
+                  <code>statement-only</code> normalization and holds the
+                  row-level overlay used to reclassify earlier statuses.
+                </li>
+              </ul>
               <p>
-                The current AAT formal core starts at <code>AtomAxiomSystem</code>
-                and <code>AAT.AATCore</code>, then builds molecules, laws,
-                obstruction circuits, zero-curvature packages, architecture
-                signatures, operation packages, path geometry, analytic
-                representation, and finite examples around that root.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Core chain</figcaption>
-                <pre><code>AtomAxiomSystem
-  -&gt; AATCore
-  -&gt; Molecule / DesignLaw / ObstructionCircuit
-  -&gt; ZeroCurvaturePackage
-  -&gt; ArchitectureSignature bridge
-  -&gt; Operation / Repair / Synthesis packages
-  -&gt; Path / Homotopy / Representation examples</code></pre>
-              </figure>
-              <p id="status-3-1" class="statement">
-                <a class="statement-anchor" href="#status-3-1">Status 3.1.</a>
-                The formal core is a family of checked carriers and theorem
-                packages. Each chapter names the package it uses, so the reader
-                can move from public explanation to the corresponding Lean
-                surface without changing the claim being read.
-              </p>
-            </section>
-
-            <section id="proved-surface" class="article-section">
-              <h2>Proved surface</h2>
-              <p>
-                The proved surface is broadest where the claim is finite,
-                selected, and theorem-package shaped. Representative proved
-                anchors include atom non-generation accessors, law-relative
-                obstruction circuits, finite witness-count zero bridges, required
-                signature-axis lawfulness bridges, selected repair measure
-                decrease, synthesis candidate soundness, path invariant
-                preservation, homotopy observation equality, diagram filler
-                refutation, analytic preservation/reflection accessors, and
-                canonical counterexamples.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Area</th>
-                      <th>Representative proved reading</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Atoms and pure AAT</td>
-                      <td>Non-generation accessors and finite obstruction-circuit examples.</td>
-                    </tr>
-                    <tr>
-                      <td>Signature / zero curvature</td>
-                      <td>Selected required lawfulness iff selected required signature axes zero.</td>
-                    </tr>
-                    <tr>
-                      <td>Operations</td>
-                      <td>Witness reflection, selected repair decrease, synthesis candidate soundness.</td>
-                    </tr>
-                    <tr>
-                      <td>Geometry</td>
-                      <td>Path invariant preservation, homotopy observation equality, filler refutation.</td>
-                    </tr>
-                    <tr>
-                      <td>Examples</td>
-                      <td>Static-flat semantic obstruction and DIP-compatible non-decomposable examples.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section id="defined-surface" class="article-section">
-              <h2>Defined carriers</h2>
-              <p>
-                Many AAT surfaces are intentionally defined before every intended
-                bridge theorem is proved. This includes operation kinds, role
-                schemas, calculus-law carriers, signature axes, report metadata,
-                analytic extension formula packages, selected continuation
-                readings, and some higher-level theorem-package registries.
-              </p>
-              <p id="status-4-1" class="statement">
-                <a class="statement-anchor" href="#status-4-1">Status 4.1.</a>
-                A defined carrier gives vocabulary and type-level discipline.
-                A proved theorem gives the corresponding conclusion.
-              </p>
-              <p id="status-4-2" class="statement">
-                <a class="statement-anchor" href="#status-4-2">Status 4.2.</a>
-                The expected pattern is carrier first, bridge theorem second,
-                example theorem third, and empirical evaluation separately. This
-                lets AAT publish vocabulary before overclaiming completeness.
-              </p>
-            </section>
-
-            <section id="obligations" class="article-section">
-              <h2>Obligations and hypotheses</h2>
-              <p>
-                Future proof obligations focus on broader completeness, richer
-                operation laws, extended geometry, representation strength, and
-                cross-package bridges. Empirical hypotheses belong to extraction
-                quality, review usefulness, operational prediction, cost, and
-                adoption evidence.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Lane</th>
-                      <th>Examples</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Future proof obligation</td>
-                      <td>Additional bounded completeness theorems, richer operation laws, stronger representation bridges, broader canonical examples.</td>
-                    </tr>
-                    <tr>
-                      <td>Empirical hypothesis</td>
-                      <td>Extractor quality, review focus improvement, incident prediction, maintainability correlation, team workflow effects.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p id="status-5-1" class="statement">
-                <a class="statement-anchor" href="#status-5-1">Status 5.1.</a>
-                Proof obligations extend theorem packages; empirical hypotheses
-                evaluate how those packages behave when attached to real
-                repositories, review workflows, and operational evidence.
-              </p>
-            </section>
-
-            <section id="reading-order" class="article-section">
-              <h2>Reading order</h2>
-              <p>
-                Use the concept chapters for the mathematical story, this status
-                page for claim labels, and the formal anchors page for
-                declaration-level audit. The Lean theorem index and proof
-                obligations document remain the source of detailed formal
-                accounting.
+                The whole <code>Formal/AG</code> tower builds with
+                <code>lake build</code>, and the ledgers record that the
+                declaration-level scan for <code>axiom</code>,
+                <code>admit</code>, <code>sorry</code>, and
+                <code>unsafe</code> over <code>Formal/AG</code> has no matches.
               </p>
               <figure class="code-panel">
                 <figcaption>Audit path</figcaption>
                 <pre><code>concept page
   -&gt; status label
   -&gt; formal anchor
-  -&gt; Lean theorem index
-  -&gt; Lean source</code></pre>
+  -&gt; AG Lean theorem index
+  -&gt; Lean source in Formal/AG</code></pre>
               </figure>
+            </section>
+
+            <section id="parts" class="article-section">
+              <h2>Part-by-part Lean surface</h2>
+              <p>
+                Each part of the monograph has a dedicated tranche in
+                <code>Formal/AG</code>. The anchors below are representative
+                proved rows of the AG Lean theorem index; the index itself
+                remains the complete listing.
+              </p>
+
+              <h3>Part I &mdash; Atoms, Objects, and Laws</h3>
+              <p>
+                <code>Formal/AG/Atom/</code> and
+                <code>Formal/AG/Examples/FiniteModel.lean</code>. Proved
+                anchors: <code>AAT.AG.ArchitectureObject.atom_origin</code>
+                (every architecture object is generated from an atom family),
+                <code>AAT.AG.lawfulness_iff_omegaU_zero</code> (lawfulness iff
+                zero aggregate obstruction, relative to a required law universe
+                and zero-reflecting aggregation), and
+                <code>AAT.AG.concreteThreeReadingAgreement</code> (the concrete
+                three-reading agreement built from the required-law index).
+                Theorem I.10.5 is carried by
+                <code>AAT.AG.AATCorePackage</code> with the HEq-free existence
+                theorems proved and the older
+                <code>ThreeReadingAgreementAssumptions</code> surface kept as
+                packaged (assumption-relative).
+              </p>
+
+              <h3>Part II &mdash; Architecture Geometry, Sites, and Sheaves</h3>
+              <p>
+                <code>Formal/AG/Site/</code>. Proved anchors:
+                <code>AAT.AG.Site.AATGrothendieckTopology.eq_coverage_toGrothendieck</code>
+                (the generated topology agrees with the Mathlib coverage bridge
+                under explicit pullback and base-change premises),
+                <code>AAT.AG.Site.AATSheafCondition.descent</code> (descent
+                read from the sheaf condition), and
+                <code>AAT.AG.Site.finitePosetCechCohomology_vanishes_above_nerveDimension</code>
+                (finite poset Čech cohomology vanishes above the nerve
+                dimension). The standard finite-poset Čech route of PRD-10 R1
+                is exposed here with its packaged
+                <code>standardFinitePosetCechComplex</code> surface.
+              </p>
+
+              <h3>Part III &mdash; Law Algebra, Obstruction Ideal, and the Lawful Locus</h3>
+              <p>
+                <code>Formal/AG/LawAlgebra/</code>. Proved anchors:
+                <code>AAT.AG.LawAlgebra.SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal</code>
+                (the square-free obstruction ideal is the Stanley&ndash;Reisner
+                ideal),
+                <code>AAT.AG.LawAlgebra.IdempotentCollapse.quotientAlgEquivPi</code>
+                (finite idempotent coordinate algebras collapse onto Boolean
+                point products, with higher-Tor and Kähler vanishing), and
+                <code>AAT.AG.LawAlgebra.LawfulSectionData.lawful_iff_factorsThroughLawfulLocus</code>
+                (a section is lawful iff it factors through the lawful locus).
+                The Lawfulness&ndash;Ideal Correspondence
+                (<code>lawfulnessIdealCorrespondence</code>) is packaged
+                (assumption-relative), and the Architecture Nullstellensatz
+                (<code>ArchitectureNullstellensatzCandidate</code>) is
+                statement-only.
+              </p>
+
+              <h3>Part IV &mdash; Obstruction Cohomology</h3>
+              <p>
+                <code>Formal/AG/Cohomology/</code>. Proved anchors:
+                <code>AAT.AG.Cohomology.CoverRelativeCechComplex.d_comp_d_eq_zero</code>
+                (the cover-relative Čech differential squares to zero),
+                <code>AAT.AG.Cohomology.localFlatnessGap_no_globalLawfulSection</code>
+                (a nonzero hidden-coupling class forbids a compatible global
+                lawful section), and
+                <code>AAT.AG.Cohomology.BoundaryResidueHypotheses.boundaryResidueTheorem</code>
+                (selected global U-flatness iff zero boundary holonomy, under
+                its explicit hypothesis block). The cohomological flatness
+                criterion is packaged (assumption-relative); the low-degree
+                five-term sequences (定理候補10.4 / 14.2) are statement-only.
+              </p>
+
+              <h3>Part V &mdash; Derived Law Geometry and Repair</h3>
+              <p>
+                <code>Formal/AG/Derived/</code>. Proved anchors:
+                <code>AAT.AG.Derived.Transversality.LawConflictPackage.derivedNonTransverse_of_firstLawConflictNonzero</code>
+                (nonzero first law conflict yields selected derived
+                non-transversality),
+                <code>AAT.AG.Derived.Counterexample.SharedWitnessRepairCounterexample.tor1_nonzero</code>
+                (an explicit shared-witness counterexample with nonzero
+                Tor&#8321;), and
+                <code>AAT.AG.Derived.WellFoundedRepair.RepairComparisonProfile.no_infinite_repair_sequence</code>
+                (well-founded repair admits no infinite descending repair
+                sequence).
+              </p>
+
+              <h3>Part VI &mdash; Singularity, Monodromy, and Stacks</h3>
+              <p>
+                <code>Formal/AG/SingularityMonodromyStack/</code>. Proved
+                anchors:
+                <code>AAT.AG.SingularityMonodromyStack.DeformationObstructionTheory.architectureSingularityCriterion</code>
+                (a selected first-order obstruction witness yields
+                singularity),
+                <code>AAT.AG.SingularityMonodromyStack.OperationInvariantGaloisData.operationInvariantGaloisCorrespondence</code>
+                (the operation&ndash;invariant Galois correspondence), and
+                <code>AAT.AG.SingularityMonodromyStack.NoCanonicalDecompositionData.noCanonicalDecomposition</code>
+                (a nonzero gerbe class forbids a global canonical
+                decomposition, under explicit gerbe soundness). The Kuranishi
+                local model (<code>KuranishiLocalModelStatement</code>) is
+                statement-only.
+              </p>
+
+              <h3>Part VII &mdash; Representation, Periods, and Analysis</h3>
+              <p>
+                <code>Formal/AG/RepresentationAnalysis/</code>. Proved anchors:
+                <code>AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.adjacencyMatrixPower_eq_zero_at_card_of_acyclic</code>
+                (adjacency-matrix nilpotence for acyclic finite graphs),
+                <code>AAT.AG.RepresentationAnalysis.PeriodSeparationExample62.periodSeparation_theorem6_1</code>
+                (period separation: equal graph reading, distinct semantic and
+                effect readings), and
+                <code>AAT.AG.RepresentationAnalysis.RepresentationConservativityUnderAdequacy.representation_conservativity_under_adequacy</code>
+                (under adequacy and witness exactness, analytically-zero
+                classes are the zero class). The PRD-1 through PRD-7 tower is
+                bundled by the proved theorem package
+                <code>algebraicGeometricAATSynthesis</code>.
+              </p>
+
+              <h3>Part VIII &mdash; Measurement Theory</h3>
+              <p>
+                <code>Formal/AG/Measurement/</code>. Proved anchors:
+                <code>AAT.AG.Measurement.MeasurementVerdict.unmeasured_ne_measured_zero</code>
+                (verdict discipline: unmeasured is never measured-zero),
+                <code>AAT.AG.Measurement.stanleyReisner_alexanderDual_repair</code>
+                (Stanley&ndash;Reisner / Alexander-dual repair: minimal
+                generators correspond to minimal vertex covers), and
+                <code>AAT.AG.Measurement.finiteHodgeDecomposition</code>
+                (finite Hodge decomposition under explicit inner-product
+                cochain-model data). The finite computability package
+                <code>finiteAATComputability</code> is a proved theorem
+                package construction; several 定理候補 rows (Morse lower
+                bound, spectral hotspot, flat base change, Wasserstein
+                transfer) are statement-only.
+              </p>
+
+              <h3>Part IX &mdash; Evolution Geometry</h3>
+              <p>
+                <code>Formal/AG/Evolution/</code>. Proved anchors:
+                <code>AAT.AG.Evolution.TemporalDescentCriterion.temporal_descent_criterion</code>
+                (a vanishing temporal cohomology class with compatible
+                adjusted data yields a global replay transition) and
+                <code>AAT.AG.Evolution.FiniteDissipationStopping.no_infinite_nonterminal_path</code>
+                (well-founded dissipation admits no infinite non-terminal
+                evolution path). The force integrability obstruction
+                (<code>ForceIntegrabilityObstructionCandidate</code>) is a
+                statement-only candidate and a future proof obligation.
+              </p>
+
+              <h3>Part X &mdash; Semantic Repair Descent and the SAGA Comparison Theorem</h3>
+              <p>
+                <code>Formal/AG/SemanticRepair/</code>. Proved anchors:
+                <code>AAT.AG.SemanticRepair.globalRepairCoherent_iff_additiveH1Zero</code>
+                (global semantic repair coherence iff the additive Čech H1
+                vanishes),
+                <code>AAT.AG.SemanticRepair.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero</code>
+                (the cochain-level comparison with cover-relative Čech H1),
+                and the unconditional nonzero-H1 witness
+                <code>AAT.AG.Examples.SemanticRepairPart10.circleSemanticH1_nonzero</code>
+                on the three-edge circle nerve. The SAGA comparison packet is
+                carried by the proved package theorems of §7, relative to the
+                selected cover, additive coefficients, and supplied
+                law-equation grounding.
+              </p>
+
+              <h3>Appendix &mdash; Status ledger of the canonical text</h3>
+              <p>
+                The appendix of the monograph is the canonical status ledger
+                for undefined terms, primitive predicates, and future design
+                obligations. It has no separate Lean tranche; its entries are
+                tracked through the per-part ledgers above.
+              </p>
+            </section>
+
+            <section id="obligations" class="article-section">
+              <h2>Obligations and hypotheses</h2>
+              <p>
+                The obligations ledger keeps theorem-shaped future work named
+                and bounded. Representative entries include the Architecture
+                Nullstellensatz proof (III.定理候補7.2A), the low-degree
+                five-term sequences (IV.定理候補10.4 / 14.2),
+                <code>CotangentComplexGeneralConstruction</code>,
+                <code>NonAbelianGerbeCohomologyGeneralTheory</code>,
+                <code>GeneralSingularHomologyRealization</code>, and
+                <code>ForceIntegrabilityObstructionCandidate</code>. Many of
+                these are paired with explicit non-goals: the current tranches
+                deliberately do not claim general derived categories, general
+                cotangent complexes, algebraic-stack general theory, or
+                unconditional analytic-to-structural inferences.
+              </p>
+              <p>
+                Empirical hypotheses &mdash; extraction quality, review
+                usefulness, operational prediction &mdash; are not rows of the
+                AG mathematical ledger. They live with the classical and
+                downstream ledgers and the tooling documentation, entered
+                through <code>docs/aat/proof_obligations.md</code>.
+              </p>
+            </section>
+
+            <section id="canonical-sources" class="article-section">
+              <h2>Canonical sources</h2>
+              <p>
+                The canonical text of the monograph and its formal ledgers,
+                pinned to a fixed commit. Site pages that cite the canonical
+                text resolve here.
+              </p>
+              <h3>Canonical text</h3>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/README.md" target="_blank" rel="noopener noreferrer">Canonical overview (README)</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md" target="_blank" rel="noopener noreferrer">Part I &mdash; Atoms, Objects, and Laws</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md" target="_blank" rel="noopener noreferrer">Part II &mdash; Architecture Geometry, Sites, and Sheaves</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md" target="_blank" rel="noopener noreferrer">Part III &mdash; Law Algebra, Obstruction Ideal, and the Lawful Locus</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md" target="_blank" rel="noopener noreferrer">Part IV &mdash; Obstruction Cohomology</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_5_derived_law_geometry_repair.md" target="_blank" rel="noopener noreferrer">Part V &mdash; Derived Law Geometry and Repair</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_6_singularity_monodromy_stack.md" target="_blank" rel="noopener noreferrer">Part VI &mdash; Singularity, Monodromy, and Stacks</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_7_representation_periods_analysis.md" target="_blank" rel="noopener noreferrer">Part VII &mdash; Representation, Periods, and Analysis</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md" target="_blank" rel="noopener noreferrer">Part VIII &mdash; Measurement Theory</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_9_evolution_geometry.md" target="_blank" rel="noopener noreferrer">Part IX &mdash; Evolution Geometry</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md" target="_blank" rel="noopener noreferrer">Part X &mdash; Semantic Repair Descent and the SAGA Comparison Theorem</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/appendix.md" target="_blank" rel="noopener noreferrer">Appendix &mdash; Status ledger of the canonical text</a>
+                </li>
+              </ul>
+              <h3>Formal ledgers</h3>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/lean_theorem_index_ag_aat.md" target="_blank" rel="noopener noreferrer">AG Lean theorem index</a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/proof_obligations_ag_aat.md" target="_blank" rel="noopener noreferrer">AG proof obligations ledger</a>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
