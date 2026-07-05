@@ -1983,3 +1983,50 @@ G2 / G3 / G4 audit summary:
   positive side に反転し、既存 iff package と接続する点であり、新しい finite vocabulary、
   scanner、example、repair calculus ではない。threshold close のために増点せず、fail-closed に
   G4 の下限を採用し、base 20、evidence multiplier 2.0、penalty 10、final +30 とする。
+
+## Cycle 36 — First-miss no-miss bridge
+
+candidate: `research/ideas/g-sft-conway-01-first-miss-no-miss-bridge.md`
+candidate_type: `bridge`
+evidence_stage: `proved-in-research`
+base_score: 15
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 20
+category: `conway-obstruction`, `first-miss-scanner`,
+  `selected-conflict-set`, `no-miss-criterion`
+goal_delta: selected reorg/refactor edit shapes について、selected first miss がないことと
+  pointwise selected miss がないことの直接同値を追加した。
+project_value_delta: Cycle 33 の first-miss completeness を negative-side criterion として保存し、
+  downstream theorem が existential scanner completeness を毎回展開せず no-first-miss と no-miss を
+  相互参照できる。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  first failing conflict と no failing conflict を診断できるが、この cycle は selected finite Conway
+  vocabulary 上で no-first-miss と pointwise no-selected-miss の同値を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayFirstMissNoMissBridge.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。reported theorem は標準 `propext`、
+  既存 infrastructure 由来の `Classical.choice` / `Quot.sound` を継承する。
+open_questions: arbitrary conflict enumeration、runtime extraction algorithm、general repair calculus、
+  selector-preserving refinement naturality は未固定。この cycle 後の ledger は 2990 -> 3010 / 3000 で、
+  Issue #2962 の active threshold 3000 に到達する。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayFirstMissNoMissBridge.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.reorgNoFirstSelectedMiss_iff_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorNoFirstSelectedMiss_iff_noSelectedMiss`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedFirstMissNoMissBridgePackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: reduce。Cycle36 は正しいが、主な増分は Cycle 33 の
+  `exists first miss ↔ exists selected miss` を negative side の criterion として保存する点であり、
+  新しい scanner、repair calculus、obstruction、不変量、例ではない。G2 は base 15、multiplier 2.0、
+  penalty 10、final +20 を推奨。
+- G3 formalization quality: pass。focused check、module build、`FormalAGResearch`、`git diff --check` は
+  通過し、対象 Lean/card に `sorry/admit/unsafe/axiom/sorryAx` はない。axiom audit は reported theorem
+  と package が標準 `propext`、既存 infrastructure 由来の `Classical.choice` / `Quot.sound` を継承する。
+- G4 score audit: reduce。downstream API として no-first-miss と pointwise no-miss を直接参照できる
+  価値はあるが、threshold 到達の都合は score に入れない。Cycle35 の repair-transition positive
+  criterion より研究増分は小さいため、fail-closed に G2/G4 の一致した下限を採用し、base 15、
+  evidence multiplier 2.0、penalty 10、final +20 とする。
