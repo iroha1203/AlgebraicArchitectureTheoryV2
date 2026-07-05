@@ -242,8 +242,8 @@ docs/aat/proof_obligations_ag_aat.md
 | IV-6 | `Formal/AG/Cohomology/ObstructionSheaf.lean` `DerOb_U` | 昇格 | R5 で opaque placeholder を除去し、`ConDef_U = I_U/I_U^2` と係数 module `M` からなる selected naive cotangent-coefficient carrier として透明化済み。一般 cotangent complex / derived category / `Ext^1` 構成は非主張として残す。 |
 | IV-7 | `BoundaryResidue.lean` / `PeriodStokes.lean` | 実質化 | globally U-flat と stokes を supplied field から実述語へ。 |
 | IV-8 | `ObstructionSheaf.lean` Type-valued sheaf | 実質化 | AddCommGrpCat constructor 側を正とし既存 surface は凍結。 |
-| V-1 | `Counterexample.lean` Tor1 nonzero | 昇格 | certificate assumption から principal resolution calculation へ。 |
-| V-2 | `Intersection.lean` Tor0 bridge | 昇格 | Tor zero / quotient tensor bridge と canonical instance。 |
+| V-1 | `Counterexample.lean` Tor1 nonzero | 昇格 | R6 で selected principal kernel quotient calculation 由来の Tor1 非零を、例5.6 の explicit `LawConflictPackage` firing surface 上でも読めるようにした。 |
+| V-2 | `Intersection.lean` Tor0 bridge | 昇格 | R6 で Tor0 `LawConflict_0 ≃ O/(I_U+I_V)` bridge と Tor1 非零を同じ selected `Example56LawConflictPackageFiring` surface に束ねた。一般 Tor 計算や global derived category は非主張として残す。 |
 | V-3 | `TaylorResolution.lean` | 昇格 | 2生成 Taylor complex を実構成し一般形は packaged。 |
 | V-4 | `FreeResolution.lean` exact field | 実質化 | `Function.Exact` predicate へ。 |
 | V-5 | mislabeled / content-free theorems | 削除 | finite_trace_certificate 等。必要なら正しい theorem へ差し替え。 |
@@ -346,6 +346,8 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteForestEdgeAbsorptionVanishing` | `AAT.AG.Cohomology.FiniteForestEdgeAbsorptionData.forestVanishing` | `propext` |
 | `AAT.AG.AxiomAudit.derObUOfConDefCoefficientConDefClass` | `AAT.AG.Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_conDefClass` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.derObUOfConDefCoefficientCoefficient` | `AAT.AG.Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_coefficient` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.example56LawConflictPackageFiringLawConflict1Nonzero` | `AAT.AG.FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.lawConflict1_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.example56LawConflictPackageFiringTor1Nonzero` | `AAT.AG.FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. Later PRD-R hardening PRs must add
 new wrappers when they promote theorem-package or firing-instance declarations
@@ -430,3 +432,5 @@ surfaces and bridge theorems.
 | IV-5 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `coverNerveTopologicalDebtCapacityFromComplex`, guarded at `propext`, `Classical.choice`, `Quot.sound`, and `finiteForestEdgeAbsorptionVanishing`, guarded at `propext`. |
 | IV-6 | 昇格 | `Formal/AG/Cohomology/ObstructionSheaf.lean` replaces opaque `DerOb_U` with a transparent selected naive cotangent-coefficient carrier whose fields are `conDefClass : ConDef_U A F` and `coefficient : M`. It adds `DerOb_U.ofConDefCoefficient` and accessor theorems while keeping general cotangent complex / derived category / `Ext^1` construction outside the claim boundary. |
 | IV-6 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `derObUOfConDefCoefficientConDefClass` and `derObUOfConDefCoefficientCoefficient`, both guarded at `propext`, `Classical.choice`, `Quot.sound`. |
+| V-1/V-2 | 昇格 | `Formal/AG/Examples/DerivedPart5.lean` adds `Example56LawConflictPackageFiring`, tying the example-5.6 principal kernel quotient calculation for `I_U=<xy>` / `I_V=<xz>` to a selected `LawConflictPackage` for the same ideals. It exposes `lawConflict0AlgEquivClassicalJoint`, `lawConflict1_nonzero`, and `tor1_nonzero`, so Tor0 bridge and Tor1 nonzero are read from one explicit firing surface. |
+| V-1/V-2 audit | 監査 | `Formal/AG/AxiomAudit.lean` adds `example56LawConflictPackageFiringLawConflict1Nonzero` and `example56LawConflictPackageFiringTor1Nonzero`, both guarded at `propext`, `Classical.choice`, `Quot.sound`. |

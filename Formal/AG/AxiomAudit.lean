@@ -31,6 +31,22 @@ theorem derivedG5AllDegree :
         FiniteModel.DerivedPart5.sharedWitnessConflictAlternatingSeries).coeff n :=
   FiniteModel.DerivedPart5.sharedWitnessG5_all_degree_coefficient_identity
 
+theorem example56LawConflictPackageFiringLawConflict1Nonzero
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    ∃ x : E.lawConflictPackage.LawConflict 1, x ≠ 0 :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.lawConflict1_nonzero E
+
+theorem example56LawConflictPackageFiringTor1Nonzero
+    {k : Type} [CommRing k]
+    (E : FiniteModel.DerivedPart5.Example56LawConflictPackageFiring k) :
+    ∃ x : Derived.Intersection.mathlibTor
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (Derived.Counterexample.SharedWitnessCoord.idealV k) 1,
+      x ≠ 0 :=
+  FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero E
+
 theorem temporalPseudoCircleNonzero :
     Examples.EvolutionPart9.pseudoCircleMismatch
         Examples.EvolutionPart9.PseudoCircleEdge.ab ≠ 0 :=
@@ -261,6 +277,22 @@ info: 'AAT.AG.AxiomAudit.derivedG5AllDegree' depends on axioms: [propext, Classi
 -/
 #guard_msgs in
 #print axioms derivedG5AllDegree
+
+/--
+info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringLawConflict1Nonzero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56LawConflictPackageFiringLawConflict1Nonzero
+
+/--
+info: 'AAT.AG.AxiomAudit.example56LawConflictPackageFiringTor1Nonzero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms example56LawConflictPackageFiringTor1Nonzero
 
 /--
 info: 'AAT.AG.AxiomAudit.temporalPseudoCircleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
