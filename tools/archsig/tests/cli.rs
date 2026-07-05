@@ -492,6 +492,43 @@ fn cli_law_policy_ag_evaluator_requires_measurement_profile() {
 }
 
 #[test]
+fn cli_law_policy_registry_keeps_ag_evaluator_after_split() {
+    let out_dir = temp_dir("ag-policy-registry");
+    let root = ag_measurement_root();
+    let report = out_dir.join("law-policy-validation.json");
+
+    run_sig0(&[
+        "law-policy",
+        "--input",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["checks"].as_array().is_some_and(|checks| {
+            checks.iter().any(|check| {
+                check["id"] == "law-policy-schema050-registry-vocabulary"
+                    && check["result"] == "pass"
+            })
+        }),
+        "AG evaluator ids must still resolve through the split registry"
+    );
+    assert!(
+        json["expandedPolicies"].as_array().is_some_and(|entries| {
+            entries.iter().any(|entry| {
+                entry["law"] == "ag.cech-obstruction" && entry["evaluator"] == "ag.cech-obstruction"
+            })
+        }),
+        "AG evaluator policy must survive registry module split"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let out_dir = temp_dir("ag-measurement-analyze");
     let root = ag_measurement_root();

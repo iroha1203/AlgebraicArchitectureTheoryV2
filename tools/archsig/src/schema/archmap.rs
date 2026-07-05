@@ -10,7 +10,7 @@ pub struct ArchMapDocumentV1 {
     pub schema: String,
     pub id: String,
     #[serde(default)]
-    pub sources: BTreeMap<String, ArchMapSourceV1>,
+    pub sources: BTreeMap<String, ArchMapSource>,
     #[serde(default)]
     pub atoms: Vec<ArchMapAtomV1>,
     #[serde(default)]
@@ -25,7 +25,7 @@ pub struct ArchMapDocumentV2 {
     #[serde(default = "canonical_archmap_extraction_doctrine_ref_v2")]
     pub extraction_doctrine_ref: ArchMapExtractionDoctrineRefV2,
     #[serde(default)]
-    pub sources: BTreeMap<String, ArchMapSourceV1>,
+    pub sources: BTreeMap<String, ArchMapSource>,
     #[serde(default)]
     pub atoms: Vec<ArchMapAtomV2>,
     #[serde(default)]
@@ -118,7 +118,7 @@ pub struct ArchMapCoverV2 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ArchMapSourceV1 {
+pub struct ArchMapSource {
     pub kind: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,

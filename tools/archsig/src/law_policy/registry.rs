@@ -4,6 +4,8 @@ use crate::{
     ReplacementEvaluatorManifestV1,
 };
 
+pub mod ag;
+
 const REGISTRY_SCHEMA: &str = "law-evaluator-registry/v0.5.0";
 pub const REPLACEMENT_REGISTRY_REF: &str = "removed-schema050-field-replacement-registry";
 
@@ -72,7 +74,7 @@ pub fn is_known_v1_pack(pack: &str) -> bool {
     pack_entries(pack).len() > 0
 }
 
-pub fn is_known_v1_evaluator(evaluator: &str) -> bool {
+pub fn is_known_evaluator(evaluator: &str) -> bool {
     evaluator_manifests()
         .iter()
         .any(|manifest| manifest.evaluator_id == evaluator)
@@ -260,223 +262,8 @@ fn evaluator_manifests() -> Vec<LawEvaluatorManifestV1> {
             negative_fixtures: vec!["law_policy_unknown_evaluator.json".to_string()],
         },
     ];
-    manifests.extend([
-        ag_manifest("ag.cech-obstruction", "ag.cech-obstruction"),
-        ag_coherence_manifest(),
-        ag_restriction_manifest(),
-        ag_section_manifest(),
-        ag_boundary_residue_manifest(),
-        ag_manifest("ag.square-free-repair", "ag.square-free-repair"),
-        ag_manifest("ag.law-conflict-tor", "ag.law-conflict-tor"),
-        ag_manifest("ag.sheaf-laplacian", "ag.sheaf-laplacian"),
-        ag_manifest("ag.period-stokes", "ag.period-stokes"),
-        ag_period_stokes_audit_manifest(),
-        ag_manifest("ag.support-transfer", "ag.support-transfer"),
-    ]);
+    manifests.extend(ag::ag_evaluator_manifests());
     manifests
-}
-
-fn ag_coherence_manifest() -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: "ag.coherence-obstruction".to_string(),
-        law_id: "ag.coherence-obstruction".to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: vec!["coherence.tripleMismatch".to_string()],
-        required_molecule_condition:
-            "archmap/v0.5.0 contexts and selected cover triple-overlap 2-skeleton".to_string(),
-        scope_filtering_rule:
-            "selected finite poset site and cover from MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing coherence witness atoms are unmeasured; incomplete 2-skeleton is not_computed"
-                .to_string(),
-        pass_criteria:
-            "selected-cover banded abelian F2 H2 coherence cocycle is a coboundary"
-                .to_string(),
-        violation_criteria:
-            "selected-cover banded abelian F2 H2 coherence cocycle has a representative outside im d1"
-                .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution: "structural H2 coherence verdict remains cover-relative and F2-banded"
-            .to_string(),
-        summary_output_refs: vec!["/structuralVerdict".to_string()],
-        detail_output_refs: vec![
-            "/assumptions".to_string(),
-            "/computedInvariants".to_string(),
-        ],
-        negative_fixtures: vec!["ag_coherence_obstruction_negative.json".to_string()],
-    }
-}
-
-fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: "ag.boundary-residue".to_string(),
-        law_id: "ag.boundary-residue".to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: vec![
-            "boundary-residue.patchRole".to_string(),
-            "boundary-residue.restrictionColumn".to_string(),
-            "boundary-residue.mismatchSection".to_string(),
-        ],
-        required_molecule_condition:
-            "archmap/v0.5.0 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"
-                .to_string(),
-        scope_filtering_rule:
-            "selected finite cover and witnessFamily from MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing patch classification, mismatch section, or restriction matrix is not_computed"
-                .to_string(),
-        pass_criteria:
-            "selected boundary mismatch section lies in the F2 image of Mayer-Vietoris d0"
-                .to_string(),
-        violation_criteria:
-            "selected boundary mismatch section is outside the F2 image of Mayer-Vietoris d0"
-                .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution:
-            "structural boundary residue verdict remains selected-cover and F2-relative"
-                .to_string(),
-        summary_output_refs: vec!["/structuralVerdict".to_string()],
-        detail_output_refs: vec![
-            "/assumptions".to_string(),
-            "/computedInvariants".to_string(),
-        ],
-        negative_fixtures: Vec::new(),
-    }
-}
-
-fn ag_period_stokes_audit_manifest() -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: "ag.period-stokes-audit".to_string(),
-        law_id: "ag.period-stokes-audit".to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: vec![
-            "period.dOmegaIntegral".to_string(),
-            "period.boundaryPeriod".to_string(),
-        ],
-        required_molecule_condition:
-            "archmap/v0.5.0 selected cover with supplied dOmegaIntegral and boundaryPeriod audit values"
-                .to_string(),
-        scope_filtering_rule:
-            "selected finite cover and fixed coefficient MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing audit pairs or unresolved strict coefficient data yields unknown/not_computed, not a crash"
-                .to_string(),
-        pass_criteria:
-            "all supplied fixed-coefficient Stokes audit residuals are zero".to_string(),
-        violation_criteria:
-            "at least one supplied fixed-coefficient Stokes audit residual is nonzero".to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution:
-            "structural verdict is scoped to supplied independent Stokes accounting values only"
-                .to_string(),
-        summary_output_refs: vec!["/structuralVerdict".to_string()],
-        detail_output_refs: vec![
-            "/computedInvariants".to_string(),
-            "/analyticReadings".to_string(),
-            "/assumptions".to_string(),
-        ],
-        negative_fixtures: Vec::new(),
-    }
-}
-
-fn ag_section_manifest() -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: "ag.section-factorization".to_string(),
-        law_id: "ag.section-factorization".to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: vec![
-            "section-factorization.obstructionGenerator".to_string(),
-            "section-factorization.witnessAssignment".to_string(),
-        ],
-        required_molecule_condition:
-            "archmap/v0.5.0 selected cover, finite forbidden supports, and one selected Boolean section"
-                .to_string(),
-        scope_filtering_rule:
-            "selected finite poset site and witness family from MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing witnessAssignment or obstructionGenerator atoms are not_computed; partial undecidable assignment is unknown"
-                .to_string(),
-        pass_criteria:
-            "selected total section avoids every minimal forbidden support, so s^* I_Ob^U=0"
-                .to_string(),
-        violation_criteria: "selected section active support contains a minimal forbidden support"
-            .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution:
-            "structural section factorization verdict remains selected-section relative".to_string(),
-        summary_output_refs: vec!["/structuralVerdict".to_string()],
-        detail_output_refs: vec![
-            "/assumptions".to_string(),
-            "/computedInvariants".to_string(),
-        ],
-        negative_fixtures: vec!["ag_section_factorization_negative.json".to_string()],
-    }
-}
-
-fn ag_restriction_manifest() -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: "ag.restriction-compatibility".to_string(),
-        law_id: "ag.restriction-compatibility".to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: vec![
-            "restriction-compatibility.restrictionIdealGenerator".to_string(),
-        ],
-        required_molecule_condition:
-            "archmap/v0.5.0 contexts, selected cover restriction edges, and finite ideal generator supports"
-                .to_string(),
-        scope_filtering_rule:
-            "selected finite poset site and cover from MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing restriction edges or endpoint generator contracts are not_computed".to_string(),
-        pass_criteria:
-            "every selected restriction edge carries source ideal generators into the target ideal"
-                .to_string(),
-        violation_criteria:
-            "some selected restriction edge has a source generator with no target generator dividing its support"
-                .to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution:
-            "structural restriction compatibility verdict remains selected-cover and presentation-relative"
-                .to_string(),
-        summary_output_refs: vec!["/structuralVerdict".to_string()],
-        detail_output_refs: vec![
-            "/assumptions".to_string(),
-            "/computedInvariants".to_string(),
-        ],
-        negative_fixtures: vec!["ag_restriction_compatibility_negative.json".to_string()],
-    }
-}
-
-fn ag_manifest(evaluator_id: &str, law_id: &str) -> LawEvaluatorManifestV1 {
-    LawEvaluatorManifestV1 {
-        evaluator_id: evaluator_id.to_string(),
-        law_id: law_id.to_string(),
-        required_atom_constructors: Vec::new(),
-        required_predicates: Vec::new(),
-        required_molecule_condition:
-            "archmap/v0.5.0 contexts and covers replace molecule primary input".to_string(),
-        scope_filtering_rule: "selected finite poset site from MeasurementProfile".to_string(),
-        missing_blocker_rule:
-            "missing MeasurementProfile fails validation before evaluator execution".to_string(),
-        pass_criteria: "schema foundation only; concrete AG evaluator verdicts are follow-up work"
-            .to_string(),
-        violation_criteria:
-            "schema foundation only; concrete AG evaluator verdicts are follow-up work".to_string(),
-        typed_result_schema: "archsig-measurement-packet/v0.5.0".to_string(),
-        distance_contribution: "structural verdict and analytic readings remain separated"
-            .to_string(),
-        summary_output_refs: vec![
-            "/structuralVerdict".to_string(),
-            "/analyticReadings".to_string(),
-        ],
-        detail_output_refs: vec![
-            "/assumptions".to_string(),
-            "/computedInvariants".to_string(),
-        ],
-        negative_fixtures: vec![
-            "tests/fixtures/ag_measurement/law_policy_missing_profile.json".to_string(),
-        ],
-    }
 }
 
 fn replacement_manifest(
@@ -550,5 +337,37 @@ fn solid_manifest(
         summary_output_refs: vec!["typedResults[].summary".to_string()],
         detail_output_refs: vec!["typedResults[].evidenceRefs".to_string()],
         negative_fixtures: vec!["law_policy_dsl_field.json".to_string()],
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn registry_keeps_ag_evaluator_vocabulary_after_module_split() {
+        assert!(is_known_evaluator("ag.cech-obstruction"));
+        assert!(is_known_evaluator("ag.section-factorization"));
+        assert!(!is_known_evaluator("ag.unknown-evaluator"));
+
+        let registry = static_law_evaluator_registry_v1();
+        let section_manifest = registry
+            .evaluators
+            .iter()
+            .find(|manifest| manifest.evaluator_id == "ag.section-factorization")
+            .expect("section-factorization manifest remains registered");
+
+        assert_eq!(section_manifest.law_id, "ag.section-factorization");
+        assert_eq!(
+            section_manifest.required_predicates,
+            vec![
+                "section-factorization.obstructionGenerator".to_string(),
+                "section-factorization.witnessAssignment".to_string(),
+            ]
+        );
+        assert_eq!(
+            section_manifest.typed_result_schema,
+            "archsig-measurement-packet/v0.5.0"
+        );
     }
 }
