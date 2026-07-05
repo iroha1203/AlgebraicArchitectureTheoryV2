@@ -2,13 +2,15 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::saga::evaluate_saga_descent_v1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
-    AgStructuralVerdictV1, AgVerdictDataV1, ArchSigMeasurementPacketV1, BoundaryStatementV1,
-    LawPolicyDocumentV1, MeasurementProfileV1, NormalizedArchMapV2, NormalizedAtomV2,
-    NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1, ValidationCheck,
-    ValidationExample,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
+    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
+    ArchSigMeasurementPacketV1, BoundaryStatementV1, LawPolicyDocumentV1, MeasurementProfileV1,
+    NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
+    RepairPlanDocumentV1, ValidationCheck, ValidationExample,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -82,7 +84,21 @@ fn boundary_statements_for_measurement_packet(
 
     for (index, row) in packet.structural_verdict.iter().enumerate() {
         let scope_ref = structural_verdict_ref(row);
-        if row.verdict == "unmeasured" {
+        if row.verdict == "unmeasured"
+            && row.evaluator == "ag.saga-descent"
+            && row.law == "saga.global-coherence"
+            && row.verdict_data.method_status == "complete_support_not_declared"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:silence-by-design:saga-global-coherence:{index}"),
+                kind: "silence_by_design".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: row.verdict_data.method_status.clone(),
+                text: row.reason.clone().unwrap_or_else(|| {
+                    "complete-support declaration or Stage 2 faithfulness data is required before global coherence can be stated".to_string()
+                }),
+            });
+        } else if row.verdict == "unmeasured" {
             statements.push(BoundaryStatementV1 {
                 id: format!("boundary:unmeasured-support:{index}"),
                 kind: "unmeasured_support".to_string(),
@@ -239,6 +255,7 @@ fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacket
 
 pub fn build_foundation_measurement_packet_v1(
     normalized: &NormalizedArchMapV2,
+    archmap: &ArchMapDocumentV2,
     policy: &LawPolicyDocumentV1,
     measurement_profile: &MeasurementProfileV1,
     repair_plan: Option<&RepairPlanDocumentV1>,
@@ -522,57 +539,39 @@ pub fn build_foundation_measurement_packet_v1(
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
-            let (method_status, reason, repair_plan_id) = repair_plan
-                .map(|plan| {
-                    (
-                        "saga_descent_evaluator_stage_pending",
-                        "RepairPlan passed Stage 1 validation; boundary-membership computation is implemented by the follow-up SAGA evaluator issue.",
-                        Some(plan.id.clone()),
-                    )
-                })
-                .unwrap_or((
-                    "repair_plan_not_supplied",
-                    "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.",
-                    None,
-                ));
             if let Some(plan) = repair_plan {
-                assumptions.push(AgAssumptionLedgerEntryV1 {
-                    theorem_ref: "part10/repair-plan-enumeration".to_string(),
-                    assumption: format!(
-                        "repair-plan complex enumeration completeness for {}",
-                        plan.id
+                let measurement = evaluate_saga_descent_v1(archmap, plan);
+                computed_invariants.extend(measurement.computed_invariants);
+                assumptions.extend(measurement.assumptions);
+                structural_verdict.extend(measurement.structural_verdict);
+            } else {
+                computed_invariants.push(json!({
+                    "invariantId": "saga-descent-stage1-input",
+                    "evaluator": "ag.saga-descent",
+                    "status": "not_computed",
+                    "methodStatus": "repair_plan_not_supplied",
+                    "repairPlanRef": null
+                }));
+                structural_verdict.push(AgStructuralVerdictV1 {
+                    evaluator: evaluator.to_string(),
+                    law: entry
+                        .law
+                        .clone()
+                        .unwrap_or_else(|| "ag.saga-descent".to_string()),
+                    verdict: "not_computed".to_string(),
+                    verdict_data: AgVerdictDataV1 {
+                        in_scope: true,
+                        zero: false,
+                        non_zero: false,
+                        method_status: "repair_plan_not_supplied".to_string(),
+                        cert_ref: None,
+                    },
+                    depends_on_assumptions: Vec::new(),
+                    reason: Some(
+                        "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.".to_string(),
                     ),
-                    status: "assumed".to_string(),
-                    checked_by: None,
-                    assumed_by: Some("repair-plan author".to_string()),
                 });
             }
-            computed_invariants.push(json!({
-                "invariantId": "saga-descent-stage1-input",
-                "evaluator": "ag.saga-descent",
-                "status": "not_computed",
-                "methodStatus": method_status,
-                "repairPlanRef": repair_plan_id
-            }));
-            structural_verdict.push(AgStructuralVerdictV1 {
-                evaluator: evaluator.to_string(),
-                law: entry
-                    .law
-                    .clone()
-                    .unwrap_or_else(|| "ag.saga-descent".to_string()),
-                verdict: "not_computed".to_string(),
-                verdict_data: AgVerdictDataV1 {
-                    in_scope: true,
-                    zero: false,
-                    non_zero: false,
-                    method_status: method_status.to_string(),
-                    cert_ref: None,
-                },
-                depends_on_assumptions: repair_plan
-                    .map(|_| vec!["part10/repair-plan-enumeration".to_string()])
-                    .unwrap_or_default(),
-                reason: Some(reason.to_string()),
-            });
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -3070,7 +3069,21 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     let cech_zero = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.cech-obstruction" && verdict.verdict == "measured_zero"
     });
-    let conclusion = if cech_nonzero {
+    let saga_non_gluing = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.residual-boundary-membership"
+            && verdict.verdict == "measured_nonzero"
+    });
+    let saga_glues = packet.structural_verdict.iter().any(|verdict| {
+        verdict.evaluator == "ag.saga-descent"
+            && verdict.law == "saga.global-coherence"
+            && verdict.verdict == "measured_zero"
+    });
+    let conclusion = if saga_non_gluing {
+        ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL
+    } else if saga_glues {
+        ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+    } else if cech_nonzero {
         "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
     } else if nonzero_count > 0 {
         "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
