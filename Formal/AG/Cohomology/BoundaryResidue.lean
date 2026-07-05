@@ -72,6 +72,59 @@ theorem of_boundary_agreement
 
 end TwoChartGloballyUFlat
 
+namespace TwoChartConnectingHomomorphism
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A}
+variable {Ob : ObstructionSheaf S}
+variable {E : TwoChartFeatureExtensionCover S}
+variable {𝒰 : CoverRelativeCechCover S}
+variable {K : CoverRelativeCechComplex 𝒰 Ob}
+variable {D : TwoChartConnectingHomomorphism Ob E K}
+variable {b : BoundaryMismatchSection Ob E}
+
+/--
+IV-7 / 定理9.2 soundness core: if the selected boundary mismatch is the
+two-chart boundary of a core/feature section whose boundary difference is zero,
+then the selected boundary holonomy vanishes.
+
+This is the theorem-level two-chart soundness route.  It does not read the
+`BoundaryResidueHypotheses.boundaryResidueSoundness` field.
+-/
+theorem boundaryHolonomy_zero_of_twoChartBoundaryAgreement
+    (s : D.twoChartCech.C0)
+    (hb :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      b.b_U = D.twoChartCech.d0 s)
+    (hs :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      D.twoChartCech.d0 s = 0) :
+    BoundaryHolonomyVanishes D b := by
+  letI := D.cohomologyAddCommGroup
+  dsimp [BoundaryHolonomyVanishes, boundaryHolonomy]
+  rw [hb, hs]
+  exact map_zero D.deltaH1
+
+/--
+IV-7 / 定理9.2 soundness core: a zero boundary mismatch has zero selected
+boundary holonomy.
+-/
+theorem boundaryHolonomy_zero_of_boundaryMismatch_zero
+    (hb :
+      letI := Ob.addCommGroup E.boundary
+      b.b_U = 0) :
+    BoundaryHolonomyVanishes D b := by
+  letI := D.cohomologyAddCommGroup
+  dsimp [BoundaryHolonomyVanishes, boundaryHolonomy]
+  rw [hb]
+  exact map_zero D.deltaH1
+
+end TwoChartConnectingHomomorphism
+
 /--
 IV.定理9.2: explicit hypothesis block for the Boundary Residue theorem.
 

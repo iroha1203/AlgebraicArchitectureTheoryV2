@@ -467,6 +467,28 @@ theorem coverNerveTopologicalDebtCapacityFromComplex
         Module.finrank D.k D.C2 :=
   Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
 
+theorem boundaryResidueTwoChartBoundaryAgreementSoundness
+    {U : AtomCarrier} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {Ob : Cohomology.ObstructionSheaf S}
+    {E : Cohomology.TwoChartFeatureExtensionCover S}
+    {𝒰 : Cohomology.CoverRelativeCechCover S}
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {D : Cohomology.TwoChartConnectingHomomorphism Ob E K}
+    {b : Cohomology.BoundaryMismatchSection Ob E}
+    (s : D.twoChartCech.C0)
+    (hb :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      b.b_U = D.twoChartCech.d0 s)
+    (hs :
+      letI := Ob.addCommGroup E.core
+      letI := Ob.addCommGroup E.feature
+      letI := Ob.addCommGroup E.boundary
+      D.twoChartCech.d0 s = 0) :
+    Cohomology.BoundaryHolonomyVanishes D b :=
+  D.boundaryHolonomy_zero_of_twoChartBoundaryAgreement s hb hs
+
 theorem gagaLowDegreePeriodStokesAccountingAdditive
     (x y :
       Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
@@ -808,6 +830,12 @@ info: 'AAT.AG.AxiomAudit.coverNerveTopologicalDebtCapacityFromComplex' depends o
 -/
 #guard_msgs in
 #print axioms coverNerveTopologicalDebtCapacityFromComplex
+
+/--
+info: 'AAT.AG.AxiomAudit.boundaryResidueTwoChartBoundaryAgreementSoundness' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms boundaryResidueTwoChartBoundaryAgreementSoundness
 
 /--
 info: 'AAT.AG.AxiomAudit.gagaLowDegreePeriodStokesAccountingAdditive' depends on axioms: [propext,
