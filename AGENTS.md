@@ -125,10 +125,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --out-dir .tmp/archsig-analyze
 ```
 
-website は no-build static stack として扱う。directory route、asset path、`sitemap.xml`、`robots.txt` を確認する場合は local server で preview する。
+website は Eleventy で authoring し、配信 artifact は純静的とする(詳細は [Website guideline](docs/website/guideline.md))。directory route、asset path、`sitemap.xml`、`robots.txt` を確認する場合は dev server で preview する。
 
 ```bash
-python3 -m http.server 0 --directory website
+cd website && npx @11ty/eleventy --serve   # 初回は npm install
 ```
 
 Codex から Playwright を実行する場合、macOS のブラウザ起動権限により通常の sandbox 内実行で Chromium が固まることがある。必要に応じて sandbox 外実行を使う。

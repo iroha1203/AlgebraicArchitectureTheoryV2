@@ -1,0 +1,7 @@
+[
+  { "key": "home", "label": "Home", "path": "" },
+  { "key": "aat", "label": "AAT", "path": "aat/" },
+  { "key": "sft", "label": "SFT", "path": "sft/" },
+  { "key": "archsig", "label": "ArchSig", "path": "archsig/" },
+  { "key": "outreach", "label": "Outreach", "path": "outreach/" }
+]

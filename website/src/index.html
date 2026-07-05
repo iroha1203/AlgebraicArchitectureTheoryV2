@@ -1,0 +1,243 @@
+---json
+{
+  "layout": "base.njk",
+  "title": "AAT / SFT Research Notes",
+  "description": "Research notes on software architecture, formal methods, Lean, Algebraic Architecture Theory, Software Field Theory, and architecture signatures.",
+  "order": 0,
+  "llmsLabel": "Home",
+  "bodyClass": "home-page"
+}
+---
+    <main id="main">
+      <section id="top" class="hero section-band">
+        <div class="site-shell hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Algebraic Architecture Theory / Software Field Theory</p>
+            <h1>Making software evolution computable.</h1>
+            <p class="lede">
+              This site is the public home for AAT, SFT, and ArchSig: a research
+              program for making software evolution computable through
+              architecture operations, invariant preservation, obstruction
+              witnesses, and signature trajectories.
+            </p>
+          </div>
+          <aside class="hero-aside author-card" aria-labelledby="author-title">
+            <h2 id="author-title">Author</h2>
+            <div class="author-details">
+              <p class="author-name">Hiroyuki Nakahata</p>
+              <p class="author-handle">@iroha1203</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="aat" class="section-band section-band-muted research-deep-dive">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">AAT</p>
+            <h2>Algebraic Architecture Theory</h2>
+            <p>
+              Algebraic Architecture Theory starts from atoms: primitive
+              architectural facts that assemble into objects, laws, obstruction
+              circuits, signatures, operations, and computable representations.
+            </p>
+          </div>
+          <div class="research-detail">
+            <a class="research-primary-link" href="aat/">Read AAT overview</a>
+            <nav class="sft-chapter-map" aria-label="AAT chapters">
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="aat/atoms/">Part I. Foundations</a>
+                <div class="sft-subchapter-links">
+                  <a href="aat/atoms/">1-1. Atoms</a>
+                  <a href="aat/architecture-objects/">1-2. Architecture Objects</a>
+                  <a href="aat/laws/">1-3. Design Laws</a>
+                </div>
+              </div>
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="aat/obstruction-circuits/">Part II. Key Concepts</a>
+                <div class="sft-subchapter-links">
+                  <a href="aat/obstruction-circuits/">2-1. Obstruction Circuits</a>
+                  <a href="aat/zero-curvature/">2-2. Zero Curvature</a>
+                  <a href="aat/architecture-signature/">2-3. Architecture Signature</a>
+                  <a href="aat/design-principle-layers/">2-4. Design Principle Layers</a>
+                  <a href="aat/operations-and-calculus/">2-5. Operations and Calculus</a>
+                </div>
+              </div>
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="aat/dynamics-and-geometry/">Part III. Geometry and Analytic Connections</a>
+                <div class="sft-subchapter-links">
+                  <a href="aat/dynamics-and-geometry/">3-1. Dynamics and Geometry</a>
+                  <a href="aat/representations-and-effects/">3-2. Representations and Effects</a>
+                  <a href="aat/canonical-examples-and-readings/">3-3. Canonical Examples</a>
+                </div>
+              </div>
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="aat/related-work/">References</a>
+                <div class="sft-subchapter-links">
+                  <a href="aat/related-work/">Related Work and Novelty</a>
+                  <a href="aat/status/">Lean Status</a>
+                  <a href="aat/formal-anchors/">Formal Anchors Audit</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <section id="sft" class="section-band research-deep-dive">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">SFT</p>
+            <h2>Software<br>Field<br>Theory</h2>
+            <p>
+              Software Field Theory models selected slices of software
+              evolution through field state, operation support, policy,
+              forecast cones, consequence envelopes, and feedback updates.
+            </p>
+          </div>
+          <div class="research-detail">
+            <a class="research-primary-link" href="sft/">Read SFT overview</a>
+            <nav class="sft-chapter-map" aria-label="SFT chapters">
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="sft/field-and-force/">Part 1. Field and Force</a>
+                <div class="sft-subchapter-links">
+                  <a href="sft/field-and-force/field/">1-1. Field</a>
+                  <a href="sft/field-and-force/force/">1-2. Force</a>
+                  <a href="sft/field-and-force/organization/">1-3. Organization</a>
+                  <a href="sft/field-and-force/governance/">1-4. Governance</a>
+                </div>
+              </div>
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="sft/computation/">Part 2. Computation</a>
+                <div class="sft-subchapter-links">
+                  <a href="sft/computation/interface/">2-1. Interface</a>
+                  <a href="sft/computation/computational-core/">2-2. Computational Core</a>
+                  <a href="sft/computation/forecast-cone/">2-3. ForecastCone</a>
+                  <a href="sft/computation/workbench/">2-4. Workbench</a>
+                </div>
+              </div>
+              <div class="sft-chapter-group">
+                <a class="sft-part-link" href="sft/software-evolution/">Part 3. Software Evolution</a>
+                <div class="sft-subchapter-links">
+                  <a href="sft/software-evolution/field-shaping/">3-1. Field Shaping</a>
+                  <a href="sft/software-evolution/attractor-engineering/">3-2. Attractor Engineering</a>
+                  <a href="sft/software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a>
+                  <a href="sft/software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <section id="archsig" class="section-band section-band-muted research-deep-dive">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">Architecture Signature</p>
+            <h2>ArchSig</h2>
+            <p>
+              ArchSig is an AAT structural analyzer exposed as a Skill-first
+              architecture analysis surface. Ask an LLM agent to inspect a repo
+              or PR, build ArchMap evidence and LawPolicy, run ArchSig, then
+              return review findings and repair candidates engineers can act on.
+            </p>
+          </div>
+          <div class="research-detail">
+            <a class="research-primary-link" href="archsig/">Use ArchSig Skills</a>
+            <nav class="chapter-link-list" aria-label="ArchSig chapters">
+              <a href="archsig/getting-started/">Getting Started</a>
+              <a href="archsig/analyses/">Analyses</a>
+              <a href="archsig/examples/">Examples</a>
+              <a href="archsig/manual/">Manual</a>
+              <a href="archsig/reference/">Reference</a>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <section id="outreach" class="section-band">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">Outreach</p>
+            <h2>Research Essays</h2>
+            <p>
+              Articles and essays on AAT, SFT, ArchSig, and the design
+              questions that make software evolution observable and computable.
+            </p>
+          </div>
+          <div class="outreach-stack">
+            <a
+              class="featured-article"
+              href="https://blog.iroha1203.dev/software-architecture-as-a-field"
+             target="_blank" rel="noopener noreferrer">
+              <img
+                src="assets/software-architecture-as-a-field.jpg"
+                alt=""
+                width="1672"
+                height="941"
+              >
+              <span class="featured-article-copy">
+                <span class="featured-article-label">Featured article</span>
+                <strong>
+                  Software Architecture as a Field: Asking Better Questions
+                  About Software Evolution
+                </strong>
+                <span>
+                  A public introduction to AAT and SFT as theories for asking
+                  better questions about software evolution.
+                </span>
+              </span>
+            </a>
+            <a href="outreach/">
+              Read more articles
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="profile" class="section-band section-band-muted profile-band home-profile">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">Profile</p>
+            <h2>Originator of the research program.</h2>
+            <p>
+              This is an independent, personal research practice: a place to
+              follow the mathematics of software architecture beyond day-to-day
+              engineering work.
+            </p>
+          </div>
+          <div class="home-profile-card">
+            <img
+              class="home-profile-photo"
+              src="assets/hiroyuki-nakahata.jpeg"
+              alt="Hiroyuki Nakahata"
+              width="1434"
+              height="925"
+            >
+            <div class="home-profile-copy">
+              <p class="home-profile-name">Hiroyuki Nakahata</p>
+              <p class="home-profile-handle">@iroha1203</p>
+              <p>
+                Software engineer in Tokyo. Away from work and research, I
+                enjoy horse racing.
+              </p>
+              <dl class="home-profile-meta">
+                <div>
+                  <dt>Location</dt>
+                  <dd>Tokyo, Japan</dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd>Software Engineer</dd>
+                </div>
+              </dl>
+              <div class="author-links" aria-label="Author links">
+                <a href="https://github.com/iroha1203" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://blog.iroha1203.dev/" target="_blank" rel="noopener noreferrer">Blog</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>

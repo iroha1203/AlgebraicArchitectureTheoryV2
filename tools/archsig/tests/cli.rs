@@ -9623,7 +9623,7 @@ fn cli_analyze_v2_strict_distance_allows_implemented_analytic_only_evaluators() 
 }
 
 #[test]
-fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
+fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_root
         .parent()
@@ -9658,7 +9658,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             ][..],
         ),
         (
-            "website/archsig/manual/index.html",
+            "website/src/archsig/manual/index.html",
             &[
                 "architecture-distance.json",
                 "distanceInsights",
@@ -9666,7 +9666,7 @@ fn cli_locks_part4_output_contract_docs_skill_and_website_smoke() {
             ][..],
         ),
         (
-            "website/archsig/reference/index.html",
+            "website/src/archsig/reference/index.html",
             &[
                 "architecture-distance.json",
                 "archsig-architecture-distance/v0.5.0",

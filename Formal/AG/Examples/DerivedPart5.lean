@@ -28,6 +28,24 @@ structure Example56DirectTorCalculation (k : Type v) [CommRing k] where
   principalKernelCalculation :
     Derived.Counterexample.SharedWitnessPrincipalKernelQuotientCalculation k
 
+/--
+V.R6 / AC10: selected example-5.6 law-conflict firing surface.
+
+The package ties the principal kernel-quotient Tor calculation for
+`I_U = <xy>` and `I_V = <xz>` to a selected `LawConflictPackage` for the same
+chart ideals. This is still relative to explicit selected derived-intersection
+and Tor-bridge data; it does not construct a general Tor calculator or a global
+derived category object.
+-/
+structure Example56LawConflictPackageFiring (k : Type v) [CommRing k] where
+  lawConflictPackage :
+    Derived.Intersection.LawConflictPackage
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+      (Derived.Counterexample.SharedWitnessCoord.idealU k)
+      (Derived.Counterexample.SharedWitnessCoord.idealV k)
+  principalKernelCalculation :
+    Derived.Counterexample.SharedWitnessPrincipalKernelQuotientCalculation k
+
 namespace Example56TorCalculation
 
 variable {k : Type v} [CommRing k]
@@ -69,6 +87,54 @@ def toExample56TorCalculation (E : Example56DirectTorCalculation k) :
   Example56TorCalculation.ofPrincipalKernelCalculation E.principalKernelCalculation
 
 end Example56DirectTorCalculation
+
+namespace Example56LawConflictPackageFiring
+
+variable {k : Type v} [CommRing k]
+
+/-- V.R6 / AC10: the firing surface induces the direct example-5.6 package. -/
+def toDirectTorCalculation (E : Example56LawConflictPackageFiring k) :
+    Example56DirectTorCalculation k where
+  principalKernelCalculation := E.principalKernelCalculation
+
+/--
+V.R6 / AC10: package-level Tor0 bridge for the shared-witness ideals.
+-/
+def lawConflict0AlgEquivClassicalJoint (E : Example56LawConflictPackageFiring k) :
+    E.lawConflictPackage.LawConflict 0 ≃ₐ[
+      Derived.Counterexample.SharedWitnessCoord.ChartRing k]
+      Derived.Intersection.classicalJointQuotient
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (Derived.Counterexample.SharedWitnessCoord.idealV k) :=
+  E.lawConflictPackage.lawConflict0AlgEquivClassicalJoint
+
+/--
+V.R6 / AC10: selected `LawConflict_1` is nonzero for the example-5.6 package.
+-/
+theorem lawConflict1_nonzero (E : Example56LawConflictPackageFiring k) :
+    ∃ x : E.lawConflictPackage.LawConflict 1, x ≠ 0 := by
+  let torClass := E.principalKernelCalculation.mathlibTorClass
+  let e := E.lawConflictPackage.lawConflictLinearEquivMathlibTor 1
+  refine ⟨e.symm torClass, ?_⟩
+  intro hzero
+  have hmap := congrArg e hzero
+  exact E.principalKernelCalculation.mathlibTorClass_ne_zero (by
+    simpa [torClass] using hmap)
+
+/--
+V.R6 / AC10: the same firing surface also reads the Mathlib `Tor_1` class
+through the principal kernel-quotient calculation.
+-/
+theorem tor1_nonzero (E : Example56LawConflictPackageFiring k) :
+    ∃ x : Derived.Intersection.mathlibTor
+        (Derived.Counterexample.SharedWitnessCoord.ChartRing k)
+        (Derived.Counterexample.SharedWitnessCoord.idealU k)
+        (Derived.Counterexample.SharedWitnessCoord.idealV k) 1,
+      x ≠ 0 :=
+  E.principalKernelCalculation.mathlibTor1_nonzero_of_kernelQuotientCalculation
+
+end Example56LawConflictPackageFiring
 
 /-- V.R11(b): the selected `s_t` family has the endpoint residues of proposition 9.2. -/
 theorem sharedWitness_numeric_residue_path :
