@@ -1,10 +1,7 @@
-pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-observation-map-v0";
 pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v1";
 pub const ARCHMAP_V1_SCHEMA: &str = "archmap/v1";
 pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v2";
-pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
-pub const LAW_POLICY_SCHEMA_VERSION: &str = "law-policy-v0";
 pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v1";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
 pub const NORMALIZED_ARCHMAP_V1_SCHEMA: &str = "normalized-archmap/v1";
@@ -14,10 +11,7 @@ pub const ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA: &str = "archsig-boundary-stateme
 pub const TYPED_EVALUATOR_RESULTS_V1_SCHEMA: &str = "typed-evaluator-results/v1";
 pub const ARCHITECTURE_DISTANCE_V1_SCHEMA: &str = "archsig-architecture-distance/v1";
 pub const ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA: &str = "archsig-measurement-packet/v1";
-pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
 pub const ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA: &str = "archsig-analysis-packet/v1";
-pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "archsig-analysis-packet-validation-report-v0";
 pub const ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION: &str = "archsig-run-manifest-v0";
 pub const ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION: &str = "archsig-atom-viewer-data-v0";
 pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";

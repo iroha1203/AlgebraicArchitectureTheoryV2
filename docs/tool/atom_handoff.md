@@ -47,9 +47,9 @@ The minimal v1 ArchMap fixture used by ArchSig is:
 
 The fixture uses `sources`, `atoms`, and `molecules` only.
 
-The FieldSig handoff fixture reads the ArchSig analysis packet:
+The FieldSig compatibility handoff fixture reads the ArchSig v1 analysis packet:
 
-- `tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json`
+- `tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json`
 
 Raw ArchMap files are not FieldSig handoff input. FieldSig reads ArchSig
 analysis packets after ArchSig has applied the ArchMap / LawPolicy contract.

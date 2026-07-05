@@ -1,0 +1,33 @@
+{
+  "schema": "archsig-analysis-packet/v1",
+  "analysisId": "analysis:fieldsig-v1-handoff-fixture",
+  "inputRefs": {
+    "lawPolicy": "law-policy:fieldsig-fixture",
+    "normalizedArchMap": "normalized-archmap:fieldsig-fixture",
+    "typedEvaluatorResults": "typed-evaluator-results:fieldsig-fixture"
+  },
+  "typedEvaluatorResults": [
+    {
+      "evaluator": "ag.cech-obstruction@1",
+      "law": "cech-obstruction",
+      "status": "blocked",
+      "supportAtomRefs": [
+        "atom:fieldsig-fixture"
+      ],
+      "supportMoleculeRefs": [],
+      "basisRefs": [
+        "basis:fieldsig-fixture"
+      ],
+      "detailRefs": [
+        "detail:fieldsig-fixture"
+      ]
+    }
+  ],
+  "detailRefs": [
+    "detail:fieldsig-fixture"
+  ],
+  "positiveBoundedConclusions": [],
+  "nonConclusions": [
+    "ArchSig v1 packet is bounded current structural state, not forecast truth"
+  ]
+}

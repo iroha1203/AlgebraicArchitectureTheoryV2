@@ -2,7 +2,7 @@
   "schemaVersion": "consequence-envelope-report-validation-report-v0",
   "input": {
     "schemaVersion": "consequence-envelope-report-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/sft_forecast_coupon_golden/consequence-envelope-report.json",
+    "path": "tools/fieldsig/tests/fixtures/minimal/sft_forecast_coupon_golden/consequence-envelope-report.json",
     "envelopeId": "envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline",
     "coneId": "cone:estimate:descriptor:coupon-prd-forecast-pipeline"
   },

@@ -14,25 +14,25 @@
   "sourceRefs": [
     {
       "kind": "signature-trajectory-report",
-      "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
       "schemaVersion": "signature-trajectory-report-v0",
       "artifactId": "fixture-signature-trajectory-report-v0"
     },
     {
       "kind": "organization-policy",
-      "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
       "schemaVersion": "organization-policy-v0",
       "artifactId": "fixture-b7-organization-policy"
     },
     {
       "kind": "law-policy-template-registry",
-      "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
       "schemaVersion": "law-policy-template-registry-v0",
       "artifactId": "fixture-law-policy-template-registry-v0"
     },
     {
       "kind": "measurement-unit-registry",
-      "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
       "schemaVersion": "measurement-unit-registry-v0",
       "artifactId": "fixture-measurement-unit-registry-v0"
     }
@@ -60,25 +60,25 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "organization-policy",
-            "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
             "schemaVersion": "organization-policy-v0",
             "artifactId": "fixture-b7-organization-policy"
           },
           {
             "kind": "law-policy-template-registry",
-            "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
             "schemaVersion": "law-policy-template-registry-v0",
             "artifactId": "fixture-law-policy-template-registry-v0"
           },
           {
             "kind": "measurement-unit-registry",
-            "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
             "schemaVersion": "measurement-unit-registry-v0",
             "artifactId": "fixture-measurement-unit-registry-v0"
           }
@@ -122,13 +122,13 @@
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
           "schemaVersion": "signature-trajectory-report-v0",
           "artifactId": "fixture-signature-trajectory-report-v0"
         },
         {
           "kind": "measurement-unit-registry",
-          "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+          "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
           "schemaVersion": "measurement-unit-registry-v0",
           "artifactId": "fixture-measurement-unit-registry-v0"
         }
@@ -143,25 +143,25 @@
         "sourceArtifactRefs": [
           {
             "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
             "schemaVersion": "signature-trajectory-report-v0",
             "artifactId": "fixture-signature-trajectory-report-v0"
           },
           {
             "kind": "organization-policy",
-            "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/organization_policy.json",
             "schemaVersion": "organization-policy-v0",
             "artifactId": "fixture-b7-organization-policy"
           },
           {
             "kind": "law-policy-template-registry",
-            "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/law_policy_templates.json",
             "schemaVersion": "law-policy-template-registry-v0",
             "artifactId": "fixture-law-policy-template-registry-v0"
           },
           {
             "kind": "measurement-unit-registry",
-            "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+            "path": "tools/fieldsig/tests/fixtures/minimal/measurement_units.json",
             "schemaVersion": "measurement-unit-registry-v0",
             "artifactId": "fixture-measurement-unit-registry-v0"
           }

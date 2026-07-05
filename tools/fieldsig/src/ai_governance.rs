@@ -31,7 +31,7 @@ const SUPPORT_CATEGORIES: [&str; 5] = [
 
 pub fn static_ai_proposal_governance() -> AiProposalGovernanceV0 {
     let descriptor = crate::build_artifact_descriptor_from_ai_proposal_json(
-        "tools/archsig/tests/fixtures/minimal/ai_proposal_sft_adapter.json",
+        "tools/fieldsig/tests/fixtures/minimal/ai_proposal_sft_adapter.json",
         &serde_json::json!({
             "proposalId": "fixture-ai-proposal",
             "title": "Fixture AI proposal governance",

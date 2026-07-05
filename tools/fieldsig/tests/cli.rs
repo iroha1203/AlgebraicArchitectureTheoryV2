@@ -318,73 +318,48 @@ fn read_json(path: &Path) -> Value {
     serde_json::from_str(&contents).expect("json output parses")
 }
 
-#[test]
-fn fieldsig_locks_llm_native_archsig_handoff_fixtures() {
-    let root = fixture_root().join("llm_native_handoff");
-    let archmap = read_json(&root.join("archmap.json"));
-    assert_eq!(archmap["schemaVersion"], "archmap-observation-map-v0");
-    assert!(
-        archmap["atomObservations"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "handoff ArchMap must retain source-derived atom observations"
-    );
-    assert!(
-        archmap["concernHints"][0]["analysisBoundary"]
-            .as_str()
-            .expect("concern hint has analysis boundary")
-            .contains("not an obstruction circuit"),
-        "concern hints must not be promoted to obstruction circuits in ArchMap"
-    );
-    assert_eq!(
-        archmap["observationGaps"][0]["evidenceStatus"], "unavailable",
-        "observation gaps remain unavailable evidence, not measured zero"
-    );
-
-    let law_policy = read_json(&root.join("law_policy.json"));
-    let layer_policy = read_json(&root.join("law_policy_layer_only.json"));
-    assert_eq!(law_policy["schemaVersion"], "law-policy-v0");
-    assert_eq!(layer_policy["schemaVersion"], "law-policy-v0");
-    assert_ne!(
-        law_policy["lawPolicyId"], layer_policy["lawPolicyId"],
-        "same ArchMap must be reanalyzable under distinct LawPolicy artifacts"
-    );
-
-    let full_packet = read_json(&root.join("archsig_analysis_packet.json"));
-    let layer_packet = read_json(&root.join("archsig_analysis_packet_layer_only.json"));
-    assert_eq!(full_packet["schemaVersion"], "archsig-analysis-packet-v0");
-    assert_eq!(layer_packet["schemaVersion"], "archsig-analysis-packet-v0");
-    assert_eq!(
-        full_packet["selectedLawPolicyRef"]["artifactId"],
-        law_policy["lawPolicyId"]
-    );
-    assert_eq!(
-        layer_packet["selectedLawPolicyRef"]["artifactId"],
-        layer_policy["lawPolicyId"]
-    );
-    assert!(
-        full_packet["obstructionCircuits"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "full LawPolicy fixture should produce obstruction circuit observations"
-    );
-    assert_eq!(
-        layer_packet["obstructionCircuits"]
-            .as_array()
-            .expect("obstruction circuits are an array")
-            .len(),
-        0,
-        "layer-only LawPolicy fixture should produce a distinct no-obstruction packet"
-    );
+fn write_json(path: &Path, value: &Value) {
+    fs::write(
+        path,
+        serde_json::to_string_pretty(value).expect("json serializes"),
+    )
+    .expect("json fixture writes");
 }
 
 #[test]
 fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     let out_dir = temp_dir("archsig-analysis-sft-input");
-    let root = fixture_root().join("llm_native_handoff");
-    let packet = root.join("archsig_analysis_packet.json");
+    let packet = out_dir.join("archsig-analysis-packet-v1.json");
     let estimate = out_dir.join("operation-support-estimate.json");
     let cone = out_dir.join("forecast-cone.json");
+    write_json(
+        &packet,
+        &serde_json::json!({
+            "schema": "archsig-analysis-packet/v1",
+            "analysisId": "analysis:test-v1-handoff",
+            "inputRefs": {
+                "lawPolicy": "law-policy:test",
+                "normalizedArchMap": "normalized-archmap:test",
+                "typedEvaluatorResults": "typed-evaluator-results:test"
+            },
+            "typedEvaluatorResults": [
+                {
+                    "evaluator": "ag.cech-obstruction@1",
+                    "law": "cech-obstruction",
+                    "status": "blocked",
+                    "supportAtomRefs": ["atom:test"],
+                    "supportMoleculeRefs": [],
+                    "basisRefs": ["basis:test"],
+                    "detailRefs": ["detail:test"]
+                }
+            ],
+            "detailRefs": ["detail:test"],
+            "positiveBoundedConclusions": [],
+            "nonConclusions": [
+                "ArchSig v1 packet is bounded current structural state, not forecast truth"
+            ]
+        }),
+    );
 
     run_sig0(&[
         "archsig-analysis-sft-input",
@@ -415,8 +390,8 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
             .as_array()
             .expect("candidate families are array")
             .iter()
-            .any(|family| family["supportKind"] == "archsig-analysis-repair-candidate"),
-        "FieldSig must read repair candidates from ArchSig analysis state"
+            .any(|family| family["supportKind"] == "typed-evaluator-result"),
+        "FieldSig must read typed evaluator results from ArchSig v1 analysis state"
     );
     let descriptor_source_refs = estimate_json["descriptorRef"]["sourceRefIds"]
         .as_array()
@@ -426,23 +401,14 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
             source
                 .as_str()
                 .expect("source ref is string")
-                .starts_with("archsigStructuralReadingReviewSurface:")
+                .starts_with("archsigV1Input:lawPolicy:")
         }) && descriptor_source_refs.iter().any(|source| {
             source
                 .as_str()
                 .expect("source ref is string")
-                .starts_with("archsigCurrentStateEvolutionBoundary:")
+                .starts_with("archsigV1SupportAtom:")
         }),
-        "FieldSig must preserve ArchSig structural review and current-state/evolution boundary refs"
-    );
-    assert!(
-        descriptor_source_refs.iter().any(|source| {
-            source
-                .as_str()
-                .expect("source ref is string")
-                .starts_with("archsigMeasurementExpansion:")
-        }),
-        "FieldSig must preserve ArchSig v0.3.0 measurement expansion refs"
+        "FieldSig must preserve ArchSig v1 input refs and support refs"
     );
     assert!(
         estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
@@ -453,9 +419,9 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
                 source
                     .as_str()
                     .expect("measurement boundary ref is string")
-                    .starts_with("archsigLawUniverseCoverage:")
+                    .starts_with("archsigV1EvaluatorStatus:")
             }),
-        "FieldSig handoff must carry v0.3.0 measurement expansion boundaries"
+        "FieldSig handoff must carry v1 typed evaluator status boundaries"
     );
     assert!(
         estimate_json["evidenceBoundary"]["assumptions"]
@@ -500,22 +466,13 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
                 entry["reason"]
                     .as_str()
                     .expect("reason is string")
-                    .contains("ArchSig child record")
+                    .contains("ArchSig v1 typed evaluator")
                     && entry["treatment"]
                         .as_str()
                         .expect("treatment is string")
-                        .contains("do not round child boundary")
-                    && entry["unknownAxes"]
-                        .as_array()
-                        .expect("unknown axes are array")
-                        .iter()
-                        .any(|axis| {
-                            axis.as_str()
-                                .expect("unknown axis is string")
-                                .starts_with("excluded reading:")
-                        })
+                        .contains("do not round to absence")
             }),
-        "child-level ArchSig missing evidence and excluded readings must remain unknown remainder"
+        "blocked ArchSig v1 evaluator status must remain unknown remainder"
     );
 
     let cone_json = read_json(&cone);
@@ -549,7 +506,7 @@ fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
     assert!(!rejected.status.success());
     assert!(
         String::from_utf8_lossy(&rejected.stderr)
-            .contains("requires archsig-analysis-packet/v1 or archsig-analysis-packet-v0"),
+            .contains("requires archsig-analysis-packet/v1"),
         "raw ArchMap input must be rejected by the ArchSig analysis handoff command"
     );
 }
@@ -927,15 +884,11 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let both = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
-        fixture_root()
-            .join("llm_native_handoff/archsig_analysis_packet.json")
+        schema_only
             .to_str()
-            .expect("analysis packet path is utf-8"),
+            .expect("measurement packet path is utf-8"),
         "--analysis-packet",
-        fixture_root()
-            .join("llm_native_handoff/archsig_analysis_packet.json")
-            .to_str()
-            .expect("analysis packet path is utf-8"),
+        schema_only.to_str().expect("analysis packet path is utf-8"),
         "--out",
         out_dir
             .join("both.json")
@@ -1389,7 +1342,7 @@ fn cli_validates_archmap_fixture_and_guardrails() {
     let missing_inventory_report = out_dir.join("archmap-missing-source-inventory-report.json");
     let mut missing_inventory_json = read_json(&input);
     missing_inventory_json["sourceInventoryRef"]["path"] =
-        serde_json::json!("tools/archsig/tests/fixtures/minimal/missing_source_inventory.json");
+        serde_json::json!("tools/fieldsig/tests/fixtures/minimal/external/missing_source_inventory.json");
     fs::write(
         &missing_inventory,
         serde_json::to_string_pretty(&missing_inventory_json)
@@ -1693,7 +1646,7 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
                 artifact["artifactId"] == "source-inventory-fixture"
                     && artifact["kind"] == "source_inventory"
                     && artifact["path"]
-                        == "tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json"
+                        == "tools/fieldsig/tests/fixtures/minimal/archmap_source_inventory.json"
             })
     );
     assert!(

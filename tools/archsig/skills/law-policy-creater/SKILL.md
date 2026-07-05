@@ -15,7 +15,7 @@ AG measurement path, the same `law-policy/v1` document also carries
 LawPolicy v1 selects policies, evaluator ids, policy packs, basis refs, scope,
 severity, and optional first-class profile refs. It is not a DSL. It does not
 contain ad hoc witness rules, signature axes, coverage requirements, exactness
-assumptions, distance formulas, `part4DistanceProfile`, spectrum profiles, or
+assumptions, distance formulas, legacy distance-profile fields, spectrum profiles, or
 homotopy profiles. Calculation rules belong to the ArchSig evaluator registry.
 AG measurement coordinates belong to `MeasurementProfile`, not to custom
 LawPolicy fields.
@@ -162,11 +162,11 @@ running `analyze`.
 - `optionalAxes`
 - `witnessRules`
 - `moleculePatterns`
-- `obstructionCircuitDefinitions`
-- `signatureAxisDefinitions`
+- legacy obstruction-circuit definition fields
+- legacy signature-axis definition fields
 - `measurementPolicy`
-- `part4DistanceProfile`
-- `spectrumMeasurementProfile`
+- legacy distance-profile fields
+- legacy spectrum-profile fields
 - `homotopyMeasurementProfile`
 - `coverageRequirements`
 - `exactnessAssumptions`

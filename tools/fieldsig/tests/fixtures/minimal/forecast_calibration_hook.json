@@ -63,7 +63,7 @@
     {
       "observedRefId": "observed:b10-daily-ledger",
       "observedKind": "report-outcome-daily-ledger",
-      "pathOrUrl": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "pathOrUrl": "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
       "status": "matched",
       "b10Refs": [
         "b10:report-outcome-daily-ledger"

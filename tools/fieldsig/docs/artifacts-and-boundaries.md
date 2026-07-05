@@ -25,10 +25,8 @@ non-conclusions を落とさない。
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
-| ArchMap observation map | `archmap-observation-map-v0` | ArchSig 入力の source-grounded Atom observation map。FieldSig はこれを現行 handoff として直接読まない。 |
-| LawPolicy | `law-policy-v0` | ArchSig analysis 用 selected law / witness / signature-axis policy artifact。AAT theory そのものではない。 |
 | ArchSig measurement packet | `archsig-measurement-packet/v1` | FieldSig の現行 ArchSig handoff。structural verdict、computed invariants、analytic readings、assumption ledger、non-conclusions を bounded SFT input として読む。 |
-| ArchSig analysis packet | `archsig-analysis-packet/v1`, `archsig-analysis-packet-v0` | Legacy compatibility handoff。typed evaluator / obstruction / signature / repair / structural review refs を bounded SFT input として読むが、v0.4.0 の primary handoff ではない。 |
+| ArchSig analysis packet | `archsig-analysis-packet/v1` | Legacy compatibility handoff。typed evaluator / obstruction / signature / repair / structural review refs を bounded SFT input として読むが、v0.4.0 の primary handoff ではない。 |
 | ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
@@ -107,8 +105,8 @@ non-conclusions を落とさない。
 computed invariants、analytic readings、assumption ledger、non-conclusions は bounded refs /
 unknown remainder として残る。analytic readings や theorem-candidate readings は structural verdict
 へ変換しない。これは certified universal atoms、zero curvature proof、PR diff analysis、
-forecast correctness、future outcome probability ではない。`archsig-analysis-packet/v1` と
-`archsig-analysis-packet-v0` は legacy bounded compatibility input としてのみ読む。
+forecast correctness、future outcome probability ではない。`archsig-analysis-packet/v1` は
+legacy bounded compatibility input としてのみ読む。
 `archmap-sft-input` は legacy bounded projection であり、raw ArchMap observation を forecast truth へ
 昇格してはならない。
 
@@ -238,7 +236,7 @@ tooling evidence であり、Lean `ComponentUniverse` bridge precondition なし
 | 到達 cone | `reachableConeSize` | 変更理解や影響確認の範囲が広がる候補。 | edge 方向は `source depends on target`。 |
 | boundary violation | `boundaryViolationCount`, `policyViolations[]` | 意図した layer / domain boundary が破られている候補。 | policy 未指定なら placeholder 0 でも違反なしとは読まない。 |
 | Layered law violation | `law-violation-report-v0.deterministicViolations[]`, `policyViolations[]` | resolved layer selector と measured import edge に対する deterministic forbidden dependency。 | selector 未解決、dynamic import、framework convention は unmeasured。policy pass は architecture lawfulness proof ではない。 |
-| SRP review cue | `archsig-analysis-packet-v0.moleculeReadings[]`, `signatureAxes[]`, `repairCandidates[]`, `law-violation-report-v0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
+| SRP review cue | `signatureAxes[]`, `repairCandidates[]`, `law-violation-report-v0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
 | abstraction violation | `abstractionViolationCount`, `policyViolations[]` | abstraction boundary の破れ候補。 | Lean の `ProjectionSound` witness そのものではない。 |
 | runtime exposure | `runtimePropagation`, `runtimeDependencyGraph`, `runtimeEdgeEvidence[]` | runtime evidence 上の exposure radius が大きい。 | runtime edge evidence を渡した場合だけ測定済み。 |
 | relation complexity | `relationComplexity`, `counts.*`, `excludedEvidence[]` | 状態遷移設計や運用リスクの review 対象候補。 | candidate evidence からの observation。 |

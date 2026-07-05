@@ -12,7 +12,7 @@
   "sourceInventoryRef": {
     "artifactId": "archmap-expressiveness-suite-v0-source-inventory",
     "kind": "source_inventory",
-    "path": "tools/archsig/tests/fixtures/expressiveness/archmap_source_inventory.json",
+    "path": "tools/fieldsig/tests/fixtures/expressiveness/archmap_source_inventory.json",
     "contentHash": "sha256-expressiveness-source-inventory"
   },
   "generationBoundary": {

@@ -7,7 +7,7 @@
       {
         "sourceRefId": "source:prd:coupon",
         "sourceKind": "prd",
-        "pathOrUrl": "tools/archsig/tests/fixtures/minimal/coupon_prd.md",
+        "pathOrUrl": "tools/fieldsig/tests/fixtures/minimal/coupon_prd.md",
         "stableRef": "section:requirements",
         "evidenceRole": "intent-source",
         "retainedFields": [

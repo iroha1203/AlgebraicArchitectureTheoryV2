@@ -115,7 +115,7 @@
     {
       "monitorRef": "fixture-b10-incident-correlation-monitor-v0",
       "sourceKind": "incident-correlation-monitor",
-      "path": "tools/archsig/tests/fixtures/minimal/incident_correlation_monitor.json",
+      "path": "tools/fieldsig/tests/fixtures/minimal/incident_correlation_monitor.json",
       "boundary": "exploratoryOperationalCorrelation",
       "nonConclusions": [
         "monitor correlation is empirical input only"
