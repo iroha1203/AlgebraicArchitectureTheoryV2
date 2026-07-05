@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-runtime-measured-nonzero",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-sig0",
       "kind": "sig0",
-      "schemaVersion": "archsig-sig0-v0",
+      "schema": "archsig-sig0/v0.5.0",
       "path": "canonical/runtime/nonzero/sig0.json",
       "contentHash": null,
       "producedBy": "archsig"
@@ -36,7 +36,7 @@
       "path": "canonical/runtime/nonzero/sig0.json",
       "symbol": null,
       "line": null,
-      "ruleId": "archsig-sig0-v0",
+      "ruleId": "archsig-sig0/v0.5.0",
       "confidence": "high"
     },
     {
@@ -103,7 +103,7 @@
       "kind": "grpc",
       "lifecycle": "added",
       "protectedBy": "unknown",
-      "extractionRule": "runtime-edge-projection-v0",
+      "extractionRule": "runtime-edge-projection/v0.5.0",
       "evidenceRefs": ["evidence-runtime-coupon"]
     }
   ],
@@ -134,7 +134,7 @@
         "value": 2,
         "measured": true,
         "measurementBoundary": "measuredNonzero",
-        "source": "runtime-edge-projection-v0",
+        "source": "runtime-edge-projection/v0.5.0",
         "reason": null
       }
     ]
@@ -157,13 +157,13 @@
         "universeRefs": ["artifact-sig0"],
         "measuredAxes": ["runtimePropagation"],
         "unmeasuredAxes": [],
-        "projectionRule": "runtime-edge-projection-v0",
+        "projectionRule": "runtime-edge-projection/v0.5.0",
         "extractionScope": [
           "runtime edge evidence JSON",
           "0/1 runtime dependency graph over measured component pairs"
         ],
         "exactnessAssumptions": [
-          "runtime-edge-projection-v0 maps each observed component pair to one runtime edge",
+          "runtime-edge-projection-schema050 maps each observed component pair to one runtime edge",
           "runtime evidence component ids resolve inside the AIR component universe"
         ],
         "unsupportedConstructs": []
@@ -197,7 +197,7 @@
       "evidenceRefs": ["evidence-sig0", "evidence-runtime-coupon"],
       "requiredAssumptions": [],
       "coverageAssumptions": ["runtime edge evidence coverage"],
-      "exactnessAssumptions": ["runtime-edge-projection-v0 exactness"],
+      "exactnessAssumptions": ["runtime-edge-projection-schema050 exactness"],
       "missingPreconditions": [],
       "nonConclusions": [
         "runtime blast radius is not concluded",

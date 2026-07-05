@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-policy-violation",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-policy",
       "kind": "policy",
-      "schemaVersion": "signature-policy-v0",
+      "schema": "signature-policy/v0.5.0",
       "path": "canonical/policy/policy.json",
       "contentHash": null,
       "producedBy": null

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "archmap-delta-v0",
-  "deltaId": "delta:place-order-v1-after-only-pr",
+  "schema": "archmap-delta/v0.5.0",
+  "deltaId": "delta:place-order-schema050-after-only-pr",
   "baseSnapshotRef": "archmap:v1:practical-rust-service:base",
   "headSnapshotRef": "archmap:v1:practical-rust-service:head",
   "changedObservationRefs": [

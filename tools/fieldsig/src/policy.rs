@@ -10,6 +10,7 @@ use crate::{COMPONENT_KIND, Component, Edge, PolicyViolation};
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PolicyFile {
+    #[serde(rename = "schema")]
     pub(crate) schema_version: String,
     pub(crate) policy_id: String,
     component_id_kind: String,
@@ -22,12 +23,8 @@ impl PolicyFile {
     pub(crate) fn read(path: &Path) -> Result<Self, Box<dyn Error>> {
         let source = fs::read_to_string(path)?;
         let policy: PolicyFile = serde_json::from_str(&source)?;
-        if policy.schema_version != "signature-policy-v0" {
-            return Err(format!(
-                "unsupported policy schemaVersion: {}",
-                policy.schema_version
-            )
-            .into());
+        if policy.schema_version != "signature-policy/v0.5.0" {
+            return Err(format!("unsupported policy schema: {}", policy.schema_version).into());
         }
         if policy.component_id_kind != COMPONENT_KIND {
             return Err(format!(

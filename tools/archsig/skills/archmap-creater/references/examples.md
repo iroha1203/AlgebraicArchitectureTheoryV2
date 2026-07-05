@@ -4,7 +4,7 @@
 
 ```json
 {
-  "schema": "archmap/v2",
+  "schema": "archmap/v0.5.0",
   "id": "example-service",
   "sources": {
     "src.order": { "kind": "file", "path": "src/order.rs" },
@@ -78,7 +78,7 @@
 
 ```json
 {
-  "schema": "archmap/v2",
+  "schema": "archmap/v0.5.0",
   "id": "bad-map",
   "sources": {},
   "atoms": [],
@@ -164,7 +164,7 @@ AG evaluator derive mismatch / obstruction readings.
 
 ```json
 {
-  "schema": "archmap/v2",
+  "schema": "archmap/v0.5.0",
   "id": "bad-map",
   "sources": {},
   "atoms": [],

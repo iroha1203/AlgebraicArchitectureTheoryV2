@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "archmap-delta-v0",
-  "deltaId": "delta:place-order-v1-output-replacement-pr",
+  "schema": "archmap-delta/v0.5.0",
+  "deltaId": "delta:place-order-schema050-output-replacement-pr",
   "baseSnapshotRef": "archmap:v1:practical-rust-service:base",
   "headSnapshotRef": "archmap:v1:practical-rust-service:head",
   "changedObservationRefs": [
@@ -12,8 +12,8 @@
     "summary": "Fixture PR changes place_order inventory relation and reservation effect evidence.",
     "expectedReviewAxes": [
       "solid.dependency-inversion",
-      "semantic.interpretation@1",
-      "operation-square.reading@1"
+      "semantic.interpretation",
+      "operation-square.reading"
     ],
     "sourceFirstTargets": [
       "sample/src/app.rs"

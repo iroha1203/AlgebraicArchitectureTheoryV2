@@ -17,11 +17,7 @@ pub fn render_pr_comment_markdown(
     policy_decision: Option<&PolicyDecisionReportV0>,
 ) -> String {
     let mut out = String::new();
-    writeln!(
-        out,
-        "<!-- schemaVersion: {PR_COMMENT_SUMMARY_SCHEMA_VERSION} -->"
-    )
-    .unwrap();
+    writeln!(out, "<!-- schema: {PR_COMMENT_SUMMARY_SCHEMA_VERSION} -->").unwrap();
     writeln!(out, "## ArchSig PR Review Summary").unwrap();
     writeln!(out).unwrap();
     writeln!(out, "### Level 1 Review Summary").unwrap();

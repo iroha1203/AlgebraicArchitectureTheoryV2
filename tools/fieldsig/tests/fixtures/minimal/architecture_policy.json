@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "architecture-policy-v0",
+  "schema": "architecture-policy/v0.5.0",
   "policyId": "minimal-law-aware-review-policy",
   "policyVersion": "2026-05-25",
   "componentIdKind": "lean-module",

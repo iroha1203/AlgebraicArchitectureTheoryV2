@@ -2,142 +2,146 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-pub const SCHEMA_VERSION: &str = "archsig-sig0-v0";
+pub const SCHEMA_VERSION: &str = "archsig-sig0/v0.5.0";
 pub const COMPONENT_KIND: &str = "lean-module";
 pub const PYTHON_COMPONENT_KIND: &str = "python-module";
-pub const PYTHON_IMPORT_RULE_VERSION: &str = "python-import-graph-v0";
-pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
-pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
-pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store-v0";
-pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
-pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
-pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
-pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-v0";
-pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
-pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
-pub const ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA: &str = "archsig-analysis-packet/v1";
-pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
-pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness-v0";
-pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger-v0";
+pub const PYTHON_IMPORT_RULE_VERSION: &str = "python-import-graph/v0.5.0";
+pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report/v0.5.0";
+pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset/v0.5.0";
+pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store/v0.5.0";
+pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report/v0.5.0";
+pub const AIR_SCHEMA_VERSION: &str = "aat-air/v0.5.0";
+pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report/v0.5.0";
+pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap/v0.5.0";
+pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory/v0.5.0";
+pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.0";
+pub const ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA: &str = "archsig-analysis-packet/v0.5.0";
+pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report/v0.5.0";
+pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness/v0.5.0";
+pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger/v0.5.0";
 pub const DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION: &str =
-    "detectable-values-reported-axes-catalog-v0";
-pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";
-pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy-v0";
+    "detectable-values-reported-axes-catalog/v0.5.0";
+pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog/v0.5.0";
+pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy/v0.5.0";
 pub const SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION: &str =
-    "schema-compatibility-check-report-v0";
+    "schema-compatibility-check-report/v0.5.0";
 pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
-    "theorem-precondition-check-report-v0";
-pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
+    "theorem-precondition-check-report/v0.5.0";
+pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry/v0.5.0";
 pub const REPAIR_RULE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "repair-rule-registry-validation-report-v0";
-pub const SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION: &str = "synthesis-constraint-artifact-v0";
+    "repair-rule-registry-validation-report/v0.5.0";
+pub const SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION: &str =
+    "synthesis-constraint-artifact/v0.5.0";
 pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "synthesis-constraint-validation-report-v0";
-pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate-v0";
+    "synthesis-constraint-validation-report/v0.5.0";
+pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate/v0.5.0";
 pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "no-solution-certificate-validation-report-v0";
-pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
+    "no-solution-certificate-validation-report/v0.5.0";
+pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy/v0.5.0";
 pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "organization-policy-validation-report-v0";
-pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
+    "organization-policy-validation-report/v0.5.0";
+pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry/v0.5.0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "law-policy-template-registry-validation-report-v0";
-pub const ARCHITECTURE_POLICY_SCHEMA_VERSION: &str = "architecture-policy-v0";
+    "law-policy-template-registry-validation-report/v0.5.0";
+pub const ARCHITECTURE_POLICY_SCHEMA_VERSION: &str = "architecture-policy/v0.5.0";
 pub const ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "architecture-policy-validation-report-v0";
-pub const LAW_VIOLATION_REPORT_SCHEMA_VERSION: &str = "law-violation-report-v0";
-pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry-v0";
+    "architecture-policy-validation-report/v0.5.0";
+pub const LAW_VIOLATION_REPORT_SCHEMA_VERSION: &str = "law-violation-report/v0.5.0";
+pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry/v0.5.0";
 pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "custom-rule-plugin-registry-validation-report-v0";
-pub const MEASUREMENT_UNIT_REGISTRY_SCHEMA_VERSION: &str = "measurement-unit-registry-v0";
+    "custom-rule-plugin-registry-validation-report/v0.5.0";
+pub const MEASUREMENT_UNIT_REGISTRY_SCHEMA_VERSION: &str = "measurement-unit-registry/v0.5.0";
 pub const MEASUREMENT_UNIT_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "measurement-unit-registry-validation-report-v0";
-pub const DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION: &str = "dynamics-measurement-contract-v0";
+    "measurement-unit-registry-validation-report/v0.5.0";
+pub const DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION: &str =
+    "dynamics-measurement-contract/v0.5.0";
 pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "dynamics-measurement-contract-validation-report-v0";
-pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report-v0";
+    "dynamics-measurement-contract-validation-report/v0.5.0";
+pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report/v0.5.0";
 pub const PR_FORCE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "pr-force-report-validation-report-v0";
-pub const SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION: &str = "signature-trajectory-report-v0";
+    "pr-force-report-validation-report/v0.5.0";
+pub const SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION: &str = "signature-trajectory-report/v0.5.0";
 pub const SIGNATURE_TRAJECTORY_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "signature-trajectory-report-validation-report-v0";
+    "signature-trajectory-report-validation-report/v0.5.0";
 pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION: &str =
-    "architecture-dynamics-metrics-report-v0";
+    "architecture-dynamics-metrics-report/v0.5.0";
 pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "architecture-dynamics-metrics-report-validation-report-v0";
-pub const ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION: &str = "architecture-field-snapshot-v0";
+    "architecture-dynamics-metrics-report-validation-report/v0.5.0";
+pub const ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION: &str = "architecture-field-snapshot/v0.5.0";
 pub const ARCHITECTURE_FIELD_SNAPSHOT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "architecture-field-snapshot-validation-report-v0";
-pub const OPERATION_PROPOSAL_LOG_SCHEMA_VERSION: &str = "operation-proposal-log-v0";
+    "architecture-field-snapshot-validation-report/v0.5.0";
+pub const OPERATION_PROPOSAL_LOG_SCHEMA_VERSION: &str = "operation-proposal-log/v0.5.0";
 pub const OPERATION_PROPOSAL_LOG_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "operation-proposal-log-validation-report-v0";
-pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
+    "operation-proposal-log-validation-report/v0.5.0";
+pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report/v0.5.0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
-    "report-artifact-retention-manifest-v0";
+    "report-artifact-retention-manifest/v0.5.0";
 pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "report-artifact-retention-validation-report-v0";
-pub const PR_COMMENT_SUMMARY_SCHEMA_VERSION: &str = "pr-comment-summary-v0";
-pub const BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION: &str = "baseline-suppression-report-v0";
-pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
-pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
-pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
-pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
-pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record-v0";
-pub const TEAM_THRESHOLD_POLICY_SCHEMA_VERSION: &str = "team-threshold-policy-v0";
-pub const OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION: &str = "ownership-boundary-monitor-v0";
-pub const REPAIR_ADOPTION_RECORD_SCHEMA_VERSION: &str = "repair-adoption-record-v0";
-pub const INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION: &str = "incident-correlation-monitor-v0";
-pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cycle-v0";
-pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor-v0";
+    "report-artifact-retention-validation-report/v0.5.0";
+pub const PR_COMMENT_SUMMARY_SCHEMA_VERSION: &str = "pr-comment-summary/v0.5.0";
+pub const BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION: &str = "baseline-suppression-report/v0.5.0";
+pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset/v0.5.0";
+pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset/v0.5.0";
+pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset/v0.5.0";
+pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger/v0.5.0";
+pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record/v0.5.0";
+pub const TEAM_THRESHOLD_POLICY_SCHEMA_VERSION: &str = "team-threshold-policy/v0.5.0";
+pub const OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION: &str = "ownership-boundary-monitor/v0.5.0";
+pub const REPAIR_ADOPTION_RECORD_SCHEMA_VERSION: &str = "repair-adoption-record/v0.5.0";
+pub const INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION: &str = "incident-correlation-monitor/v0.5.0";
+pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cycle/v0.5.0";
+pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor/v0.5.0";
 pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "artifact-descriptor-validation-report-v0";
-pub const INTENTMAP_SCHEMA_VERSION: &str = "intentmap-v0";
-pub const INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "intentmap-validation-report-v0";
-pub const INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION: &str = "intent-archmap-alignment-v0";
+    "artifact-descriptor-validation-report/v0.5.0";
+pub const INTENTMAP_SCHEMA_VERSION: &str = "intentmap/v0.5.0";
+pub const INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "intentmap-validation-report/v0.5.0";
+pub const INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION: &str = "intent-archmap-alignment/v0.5.0";
 pub const INTENT_ARCHMAP_ALIGNMENT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "intent-archmap-alignment-validation-report-v0";
-pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate-v0";
+    "intent-archmap-alignment-validation-report/v0.5.0";
+pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate/v0.5.0";
 pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "operation-support-estimate-validation-report-v0";
-pub const FORECAST_CONE_SKELETON_SCHEMA_VERSION: &str = "forecast-cone-skeleton-v0";
+    "operation-support-estimate-validation-report/v0.5.0";
+pub const FORECAST_CONE_SKELETON_SCHEMA_VERSION: &str = "forecast-cone-skeleton/v0.5.0";
 pub const FORECAST_CONE_SKELETON_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "forecast-cone-skeleton-validation-report-v0";
-pub const CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION: &str = "consequence-envelope-report-v0";
+    "forecast-cone-skeleton-validation-report/v0.5.0";
+pub const CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION: &str = "consequence-envelope-report/v0.5.0";
 pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "consequence-envelope-report-validation-report-v0";
-pub const SFT_REVIEW_SUMMARY_SCHEMA_VERSION: &str = "sft-review-summary-v0";
+    "consequence-envelope-report-validation-report/v0.5.0";
+pub const SFT_REVIEW_SUMMARY_SCHEMA_VERSION: &str = "sft-review-summary/v0.5.0";
 pub const SFT_REVIEW_SUMMARY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "sft-review-summary-validation-report-v0";
-pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
+    "sft-review-summary-validation-report/v0.5.0";
+pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook/v0.5.0";
 pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "forecast-calibration-hook-validation-report-v0";
-pub const PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION: &str = "pr-quality-analysis-report-v0";
+    "forecast-calibration-hook-validation-report/v0.5.0";
+pub const PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION: &str = "pr-quality-analysis-report/v0.5.0";
 pub const PR_QUALITY_ANALYSIS_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "pr-quality-analysis-validation-report-v0";
-pub const AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION: &str = "aat-observable-bundle-v0";
+    "pr-quality-analysis-validation-report/v0.5.0";
+pub const AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION: &str = "aat-observable-bundle/v0.5.0";
 pub const AAT_OBSERVABLE_BUNDLE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "aat-observable-bundle-validation-report-v0";
-pub const INTENT_CALIBRATION_RECORD_SCHEMA_VERSION: &str = "intent-calibration-record-v0";
+    "aat-observable-bundle-validation-report/v0.5.0";
+pub const INTENT_CALIBRATION_RECORD_SCHEMA_VERSION: &str = "intent-calibration-record/v0.5.0";
 pub const INTENT_CALIBRATION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "intent-calibration-validation-report-v0";
-pub const AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION: &str = "ai-proposal-governance-v0";
+    "intent-calibration-validation-report/v0.5.0";
+pub const AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION: &str = "ai-proposal-governance/v0.5.0";
 pub const AI_PROPOSAL_GOVERNANCE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "ai-proposal-governance-validation-report-v0";
-pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
-pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
-pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
-pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
+    "ai-proposal-governance-validation-report/v0.5.0";
+pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence/v0.5.0";
+pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection/v0.5.0";
+pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence/v0.5.0";
+pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str =
+    "relation-complexity-candidates/v0.5.0";
 pub const RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION: &str =
-    "relation-complexity-observation/v0";
-pub const RELATION_COMPLEXITY_RULE_SET_VERSION: &str = "relation-complexity-rules/v0";
+    "relation-complexity-observation/v0.5.0";
+pub const RELATION_COMPLEXITY_RULE_SET_VERSION: &str = "relation-complexity-rules/v0.5.0";
 pub const EXTRACTOR_NAME: &str = "archsig";
 pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const RULE_SET_VERSION: &str = "sig0-v0";
+pub const RULE_SET_VERSION: &str = "sig0/v0.5.0";
 pub const DEFAULT_UNIVERSE_MODE: &str = "local-only";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SchemaVersionCatalogV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub catalog_id: String,
     pub catalog_version: String,
@@ -152,6 +156,7 @@ pub struct SchemaVersionCatalogV0 {
 pub struct SchemaVersionCatalogEntryV0 {
     pub artifact_id: String,
     pub artifact_name: String,
+    #[serde(rename = "schemaName")]
     pub schema_version_name: String,
     pub artifact_role: String,
     pub owner_phase: String,
@@ -174,6 +179,7 @@ pub struct SchemaCompatibilityBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SchemaCompatibilityPolicyV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_id: String,
     pub policy_version: String,
@@ -195,6 +201,7 @@ pub struct SchemaCompatibilityDimensionV0 {
 #[serde(rename_all = "camelCase")]
 pub struct SchemaArtifactCompatibilityV0 {
     pub artifact_id: String,
+    #[serde(rename = "schemaName")]
     pub schema_version_name: String,
     pub compatibility_policy_ref: String,
     pub field_mappings: Vec<SchemaFieldMappingV0>,
@@ -207,6 +214,7 @@ pub struct SchemaArtifactCompatibilityV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DetectableValuesReportedAxesCatalogV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub catalog_id: String,
     pub catalog_version: String,
@@ -294,6 +302,7 @@ pub struct SchemaCoverageExactnessBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SchemaCompatibilityCheckReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub checker_id: String,
     pub compatibility_policy_ref: String,
@@ -313,6 +322,7 @@ pub struct SchemaCompatibilityCheckReportV0 {
 pub struct SchemaCompatibilityArtifactRefV0 {
     pub path: String,
     pub artifact_id: Option<String>,
+    #[serde(rename = "schemaName")]
     pub schema_version_name: Option<String>,
     pub catalog_status: String,
     pub has_schema_compatibility_metadata: bool,
@@ -343,6 +353,7 @@ pub struct SchemaCompatibilityCheckV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sig0Document {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub root: String,
     pub component_kind: String,
@@ -383,6 +394,7 @@ pub struct Policies {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub policy_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub boundary_group_count: Option<usize>,
@@ -465,6 +477,7 @@ pub struct RuntimeDependencyGraphProjection {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FrameworkAdapterEvidenceV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub adapter_id: String,
     pub framework: String,
@@ -517,6 +530,7 @@ pub struct UnsupportedConstruct {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ComponentUniverseValidationReport {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ValidationInput,
     pub universe_mode: String,
@@ -529,6 +543,7 @@ pub struct ComponentUniverseValidationReport {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub root: String,
@@ -595,6 +610,7 @@ pub struct EmpiricalDatasetInput {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EmpiricalSignatureDatasetV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: RepositoryRef,
     pub pull_request: PullRequestRef,
@@ -662,6 +678,7 @@ pub struct IssueIncidentLink {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrHistoryDatasetV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: RepositoryRef,
     pub records: Vec<PrHistoryRecordV0>,
@@ -726,6 +743,7 @@ pub struct PrHistoryArtifactRef {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub commit_role: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
 }
 
@@ -740,6 +758,7 @@ pub struct PrHistoryAnalysisMetadata {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureExtensionDatasetV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: RepositoryRef,
     pub records: Vec<FeatureExtensionDatasetRecordV0>,
@@ -844,6 +863,7 @@ pub struct FeatureExtensionDatasetAnalysisMetadata {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OutcomeLinkageInputV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: RepositoryRef,
     pub records: Vec<OutcomeObservationV0>,
@@ -853,6 +873,7 @@ pub struct OutcomeLinkageInputV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OutcomeLinkageDatasetV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: RepositoryRef,
     pub records: Vec<OutcomeLinkageDatasetRecordV0>,
@@ -962,6 +983,7 @@ pub struct OutcomeLinkageAnalysisMetadata {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportOutcomeDailyLedgerV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -980,6 +1002,7 @@ pub struct ReportOutcomeDailyLedgerV0 {
 pub struct ReportOutcomeSourceReportRefV0 {
     pub kind: String,
     pub path: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub report_id: Option<String>,
@@ -1047,6 +1070,7 @@ pub struct ReportOutcomeLedgerAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CalibrationReviewRecordV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1137,6 +1161,7 @@ pub struct CalibrationReviewAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamThresholdPolicyV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1209,6 +1234,7 @@ pub struct TeamThresholdPolicyAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OwnershipBoundaryMonitorV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1285,6 +1311,7 @@ pub struct OwnershipBoundaryAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairAdoptionRecordV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1365,6 +1392,7 @@ pub struct RepairAdoptionAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IncidentCorrelationMonitorV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1390,6 +1418,7 @@ pub struct IncidentCorrelationSourceRefV0 {
     pub source_ref: String,
     pub source_kind: String,
     pub path: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub boundary: String,
     pub non_conclusions: Vec<String>,
@@ -1464,6 +1493,7 @@ pub struct IncidentCorrelationAnalysisMetadataV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HypothesisRefreshCycleV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1622,6 +1652,7 @@ impl RelationComplexityComponents {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RelationComplexityCandidateFile {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: String,
     pub revision: String,
@@ -1638,6 +1669,7 @@ pub struct RelationComplexityCandidateFile {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RelationComplexityObservation {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: String,
     pub revision: String,
@@ -1745,6 +1777,7 @@ pub struct ArchitectureSignatureV1DatasetShape {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignatureSnapshotStoreRecordV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub repository: SnapshotRepositoryRef,
     pub revision: RepositoryRevisionRef,
@@ -1800,6 +1833,7 @@ pub struct SnapshotExtractorMetadata {
 #[serde(rename_all = "camelCase")]
 pub struct SnapshotPolicyMetadata {
     pub policy_id: Option<String>,
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     pub version: Option<String>,
     pub source_path: Option<String>,
@@ -1809,6 +1843,7 @@ pub struct SnapshotPolicyMetadata {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SnapshotValidationSummary {
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     pub result: String,
     pub universe_mode: Option<String>,
@@ -1852,6 +1887,7 @@ pub struct SnapshotRecordInput {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignatureDiffReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub before: SnapshotDiffEndpoint,
     pub after: SnapshotDiffEndpoint,
@@ -1869,6 +1905,7 @@ pub struct SignatureDiffReportV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AirDocumentV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -1933,6 +1970,7 @@ pub struct AirAiSession {
 pub struct AirArtifact {
     pub artifact_id: String,
     pub kind: String,
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     pub path: Option<String>,
     pub content_hash: Option<String>,
@@ -2099,6 +2137,7 @@ pub struct AirOperationTrace {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapDocumentV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub map_id: String,
     pub architecture_id: String,
@@ -2192,6 +2231,7 @@ pub struct ArchMapSourceUniverse {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapSourceInventoryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub inventory_id: String,
     pub root: String,
@@ -2402,6 +2442,7 @@ pub struct ArchMapConflict {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub archmap_ref: String,
     pub lean_preservation_vocabulary: Vec<ArchMapLeanPreservationVocabularyEntry>,
@@ -2493,6 +2534,7 @@ pub struct AirDocumentInput {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AirValidationReport {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: AirValidationInput,
     pub summary: AirValidationSummary,
@@ -2504,6 +2546,7 @@ pub struct AirValidationReport {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AirValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub architecture_id: String,
@@ -2524,6 +2567,7 @@ pub struct AirValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureExtensionReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -2559,6 +2603,7 @@ pub struct FeatureExtensionReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureReportInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub architecture_id: String,
@@ -2716,6 +2761,7 @@ pub struct FeatureReportObstructionWitness {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ObstructionWitnessArtifactV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -2776,6 +2822,7 @@ pub struct FeatureReportEvidenceRef {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureDriftLedgerV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
@@ -2918,6 +2965,7 @@ pub struct FeatureReportCoverageGap {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TheoremPreconditionCheckReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: TheoremPreconditionCheckInput,
     pub registry: TheoremPackageRegistryV0,
@@ -2929,6 +2977,7 @@ pub struct TheoremPreconditionCheckReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TheoremPreconditionCheckInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub architecture_id: String,
@@ -2937,6 +2986,7 @@ pub struct TheoremPreconditionCheckInput {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TheoremPackageRegistryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub scope: String,
     pub packages: Vec<TheoremPackageMetadataV0>,
@@ -2999,6 +3049,7 @@ pub struct TheoremPreconditionCheck {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairRuleRegistryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub scope: String,
     pub selected_obstruction_universe: String,
@@ -3034,6 +3085,7 @@ pub struct RepairRuleRelativeScopeV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairRuleRegistryValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: RepairRuleRegistryValidationInput,
     pub registry: RepairRuleRegistryV0,
@@ -3044,6 +3096,7 @@ pub struct RepairRuleRegistryValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairRuleRegistryValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub scope: String,
@@ -3061,6 +3114,7 @@ pub struct RepairRuleRegistryValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SynthesisConstraintArtifactV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub scope: String,
     pub constraint_refs: Vec<String>,
@@ -3114,6 +3168,7 @@ pub struct SynthesisNoSolutionBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SynthesisConstraintValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: SynthesisConstraintValidationInput,
     pub artifact: SynthesisConstraintArtifactV0,
@@ -3124,6 +3179,7 @@ pub struct SynthesisConstraintValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SynthesisConstraintValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub scope: String,
@@ -3142,6 +3198,7 @@ pub struct SynthesisConstraintValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NoSolutionCertificateV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub certificate_id: String,
     pub scope: String,
@@ -3172,6 +3229,7 @@ pub struct NoSolutionCertificateCaseV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NoSolutionCertificateValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: NoSolutionCertificateValidationInput,
     pub certificate: NoSolutionCertificateV0,
@@ -3182,6 +3240,7 @@ pub struct NoSolutionCertificateValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NoSolutionCertificateValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub certificate_id: String,
@@ -3200,6 +3259,7 @@ pub struct NoSolutionCertificateValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrganizationPolicyV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_id: String,
     pub policy_version: String,
@@ -3244,6 +3304,7 @@ pub struct OrganizationRequiredTheoremPreconditionV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrganizationPolicyValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: OrganizationPolicyValidationInput,
     pub policy: OrganizationPolicyV0,
@@ -3254,6 +3315,7 @@ pub struct OrganizationPolicyValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrganizationPolicyValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub policy_id: String,
@@ -3275,6 +3337,7 @@ pub struct OrganizationPolicyValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LawPolicyTemplateRegistryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub registry_id: String,
     pub scope: String,
@@ -3301,6 +3364,7 @@ pub struct LawPolicyTemplateV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LawPolicyTemplateRegistryValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: LawPolicyTemplateRegistryValidationInput,
     pub registry: LawPolicyTemplateRegistryV0,
@@ -3311,6 +3375,7 @@ pub struct LawPolicyTemplateRegistryValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LawPolicyTemplateRegistryValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub registry_id: String,
@@ -3329,6 +3394,7 @@ pub struct LawPolicyTemplateRegistryValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitecturePolicyV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_id: String,
     pub policy_version: String,
@@ -3444,6 +3510,7 @@ pub struct ArchitecturePolicyGovernanceInterventionV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitecturePolicyValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ArchitecturePolicyValidationInputV0,
     pub policy: ArchitecturePolicyV0,
@@ -3454,6 +3521,7 @@ pub struct ArchitecturePolicyValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitecturePolicyValidationInputV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub policy_id: String,
@@ -3476,6 +3544,7 @@ pub struct ArchitecturePolicyValidationSummaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LawViolationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
     pub policy_ref: LawViolationPolicyRefV0,
@@ -3577,6 +3646,7 @@ pub struct LawViolationUnmeasuredV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomRulePluginRegistryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub registry_id: String,
     pub scope: String,
@@ -3607,6 +3677,7 @@ pub struct CustomRulePluginV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomRulePluginRegistryValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: CustomRulePluginRegistryValidationInput,
     pub registry: CustomRulePluginRegistryV0,
@@ -3617,6 +3688,7 @@ pub struct CustomRulePluginRegistryValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomRulePluginRegistryValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub registry_id: String,
@@ -3635,6 +3707,7 @@ pub struct CustomRulePluginRegistryValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MeasurementUnitRegistryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub registry_id: String,
     pub scope: String,
@@ -3696,6 +3769,7 @@ pub struct MeasurementEvidenceAdapterBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MeasurementUnitRegistryValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: MeasurementUnitRegistryValidationInput,
     pub registry: MeasurementUnitRegistryV0,
@@ -3706,6 +3780,7 @@ pub struct MeasurementUnitRegistryValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MeasurementUnitRegistryValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub registry_id: String,
@@ -3725,6 +3800,7 @@ pub struct MeasurementUnitRegistryValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamicsMeasurementContractV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub artifact_id: String,
     pub scope: String,
@@ -3754,6 +3830,7 @@ pub struct DynamicsArtifactRefV0 {
     pub kind: String,
     pub path: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub artifact_id: Option<String>,
@@ -3770,6 +3847,7 @@ pub struct MeasurementBoundaryV0 {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub policy_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub aggregation_window: Option<DynamicsAggregationWindowV0>,
@@ -3801,6 +3879,7 @@ pub struct DynamicsMissingEvidenceV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamicsMeasurementContractValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: DynamicsMeasurementContractValidationInput,
     pub contract: DynamicsMeasurementContractV0,
@@ -3811,6 +3890,7 @@ pub struct DynamicsMeasurementContractValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamicsMeasurementContractValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub artifact_id: String,
@@ -3829,6 +3909,7 @@ pub struct DynamicsMeasurementContractValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrForceReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
     pub pull_request: PullRequestRefV0,
@@ -3895,6 +3976,7 @@ pub struct ForceComponentV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrForceReportValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: PrForceReportValidationInput,
     pub report: PrForceReportV0,
@@ -3905,6 +3987,7 @@ pub struct PrForceReportValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrForceReportValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub report_id: String,
@@ -3924,6 +4007,7 @@ pub struct PrForceReportValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignatureTrajectoryReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
     pub repository: RepositoryRef,
@@ -3971,6 +4055,7 @@ pub struct SelectedSignatureRegionV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignatureTrajectoryReportValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: SignatureTrajectoryReportValidationInput,
     pub report: SignatureTrajectoryReportV0,
@@ -3981,6 +4066,7 @@ pub struct SignatureTrajectoryReportValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignatureTrajectoryReportValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub report_id: String,
@@ -4006,6 +4092,7 @@ pub struct SignatureTrajectoryReportValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureDynamicsMetricsReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
     pub repository: RepositoryRef,
@@ -4193,6 +4280,7 @@ pub struct SupportRiskMassEntryV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureDynamicsMetricsReportValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ArchitectureDynamicsMetricsReportValidationInput,
     pub report: ArchitectureDynamicsMetricsReportV0,
@@ -4203,6 +4291,7 @@ pub struct ArchitectureDynamicsMetricsReportValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureDynamicsMetricsReportValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub report_id: String,
@@ -4229,6 +4318,7 @@ pub struct ArchitectureDynamicsMetricsReportValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureFieldSnapshotV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub snapshot_id: String,
     pub repository: RepositoryRef,
@@ -4243,6 +4333,7 @@ pub struct ArchitectureFieldSnapshotV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureFieldSnapshotValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ArchitectureFieldSnapshotValidationInput,
     pub snapshot: ArchitectureFieldSnapshotV0,
@@ -4253,6 +4344,7 @@ pub struct ArchitectureFieldSnapshotValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchitectureFieldSnapshotValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub snapshot_id: String,
@@ -4274,6 +4366,7 @@ pub struct ArchitectureFieldSnapshotValidationSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationProposalLogV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub log_id: String,
     pub repository: RepositoryRef,
@@ -4303,6 +4396,7 @@ pub struct OperationProposalEntryV0 {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationProposalLogValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: OperationProposalLogValidationInput,
     pub log: OperationProposalLogV0,
@@ -4313,6 +4407,7 @@ pub struct OperationProposalLogValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationProposalLogValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub log_id: String,
@@ -4333,6 +4428,7 @@ pub struct OperationProposalLogValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactDescriptorV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub descriptor_id: String,
     pub artifact_kind: String,
@@ -4411,6 +4507,7 @@ pub struct ArtifactDescriptorMeasurementBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactDescriptorValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ArtifactDescriptorValidationInput,
     pub descriptor: ArtifactDescriptorV0,
@@ -4421,6 +4518,7 @@ pub struct ArtifactDescriptorValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactDescriptorValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub descriptor_id: String,
@@ -4441,6 +4539,7 @@ pub struct ArtifactDescriptorValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentMapV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub intent_map_id: String,
     pub source_universe: IntentSourceUniverseV0,
@@ -4518,6 +4617,7 @@ pub struct IntentBoundaryItemV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentMapValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: IntentMapValidationInput,
     pub intent_map: IntentMapV0,
@@ -4528,6 +4628,7 @@ pub struct IntentMapValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentMapValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub intent_map_id: String,
@@ -4548,6 +4649,7 @@ pub struct IntentMapValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AatObservableBundleV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub bundle_id: String,
     pub architecture_id: String,
@@ -4576,6 +4678,7 @@ pub struct AatObservableBundleV0 {
 pub struct AatObservableSourceRefV0 {
     pub source_ref_id: String,
     pub artifact_kind: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub retained_fields: Vec<String>,
@@ -4796,6 +4899,7 @@ pub struct AatResponsibilityBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AatObservableBundleValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: AatObservableBundleValidationInputV0,
     pub bundle: AatObservableBundleV0,
@@ -4806,6 +4910,7 @@ pub struct AatObservableBundleValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AatObservableBundleValidationInputV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub bundle_id: String,
@@ -4826,6 +4931,7 @@ pub struct AatObservableBundleValidationSummaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentArchMapAlignmentV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub alignment_map_id: String,
     pub intent_map_ref: IntentMapArtifactRefV0,
@@ -4841,6 +4947,7 @@ pub struct IntentArchMapAlignmentV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentMapArtifactRefV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub intent_map_id: String,
     pub path: String,
@@ -4851,6 +4958,7 @@ pub struct IntentMapArtifactRefV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentArchMapArtifactRefV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub map_id: String,
     pub path: String,
@@ -4888,6 +4996,7 @@ pub struct IntentAlignmentBoundaryItemV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentArchMapAlignmentValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: IntentArchMapAlignmentValidationInput,
     pub alignment_map: IntentArchMapAlignmentV0,
@@ -4898,6 +5007,7 @@ pub struct IntentArchMapAlignmentValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentArchMapAlignmentValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub alignment_map_id: String,
@@ -4921,6 +5031,7 @@ pub struct IntentArchMapAlignmentValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationSupportEstimateV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub estimate_id: String,
     pub descriptor_ref: OperationSupportDescriptorRefV0,
@@ -5015,6 +5126,7 @@ pub struct OperationSupportEvidenceBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationSupportEstimateValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: OperationSupportEstimateValidationInput,
     pub estimate: OperationSupportEstimateV0,
@@ -5025,6 +5137,7 @@ pub struct OperationSupportEstimateValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationSupportEstimateValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub estimate_id: String,
@@ -5046,6 +5159,7 @@ pub struct OperationSupportEstimateValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastConeSkeletonV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub cone_id: String,
     pub operation_support_ref: ForecastOperationSupportRefV0,
@@ -5180,6 +5294,7 @@ pub struct ForecastUnknownRemainderV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastConeSkeletonValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ForecastConeSkeletonValidationInput,
     pub cone: ForecastConeSkeletonV0,
@@ -5190,6 +5305,7 @@ pub struct ForecastConeSkeletonValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastConeSkeletonValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub cone_id: String,
@@ -5210,6 +5326,7 @@ pub struct ForecastConeSkeletonValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConsequenceEnvelopeReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub envelope_id: String,
     pub forecast_cone_ref: ConsequenceForecastConeRefV0,
@@ -5368,6 +5485,7 @@ pub struct ConsequenceUnknownRemainderV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConsequenceEnvelopeValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ConsequenceEnvelopeValidationInput,
     pub envelope: ConsequenceEnvelopeReportV0,
@@ -5378,6 +5496,7 @@ pub struct ConsequenceEnvelopeValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConsequenceEnvelopeValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub envelope_id: String,
@@ -5399,6 +5518,7 @@ pub struct ConsequenceEnvelopeValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SftReviewSummaryV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub summary_id: String,
     pub envelope_ref: SftReviewSummaryEnvelopeRefV0,
@@ -5467,6 +5587,7 @@ pub struct SftReviewLlmJudgementContractV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SftReviewSummaryValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: SftReviewSummaryValidationInput,
     pub summary: SftReviewSummaryV0,
@@ -5477,6 +5598,7 @@ pub struct SftReviewSummaryValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SftReviewSummaryValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub summary_id: String,
@@ -5498,6 +5620,7 @@ pub struct SftReviewSummaryValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastCalibrationHookV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub hook_id: String,
     pub envelope_ref: CalibrationEnvelopeRefV0,
@@ -5568,6 +5691,7 @@ pub struct CalibrationReferenceBoundariesV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastCalibrationHookValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ForecastCalibrationHookValidationInput,
     pub hook: ForecastCalibrationHookV0,
@@ -5578,6 +5702,7 @@ pub struct ForecastCalibrationHookValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForecastCalibrationHookValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub hook_id: String,
@@ -5598,6 +5723,7 @@ pub struct ForecastCalibrationHookValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrQualityAnalysisReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
     pub archmap_ref: IntentArchMapArtifactRefV0,
@@ -5617,6 +5743,7 @@ pub struct PrQualityArtifactRefV0 {
     pub artifact_id: String,
     pub artifact_kind: String,
     pub path: String,
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
     pub non_conclusions: Vec<String>,
 }
@@ -5646,6 +5773,7 @@ pub struct PrQualityReviewSummaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrQualityAnalysisValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: PrQualityAnalysisValidationInput,
     pub report: PrQualityAnalysisReportV0,
@@ -5656,6 +5784,7 @@ pub struct PrQualityAnalysisValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrQualityAnalysisValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub report_id: String,
@@ -5674,6 +5803,7 @@ pub struct PrQualityAnalysisValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentCalibrationRecordV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub calibration_id: String,
     pub intent_map_ref: IntentMapArtifactRefV0,
@@ -5721,6 +5851,7 @@ pub struct ForecastUsefulnessFeedbackV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentCalibrationValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: IntentCalibrationValidationInput,
     pub record: IntentCalibrationRecordV0,
@@ -5731,6 +5862,7 @@ pub struct IntentCalibrationValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IntentCalibrationValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub calibration_id: String,
@@ -5751,6 +5883,7 @@ pub struct IntentCalibrationValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AiProposalGovernanceV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub governance_id: String,
     pub proposal_ref: AiProposalGovernanceProposalRefV0,
@@ -5848,6 +5981,7 @@ pub struct AiProposalGovernanceEvidenceBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AiProposalGovernanceValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: AiProposalGovernanceValidationInput,
     pub governance: AiProposalGovernanceV0,
@@ -5858,6 +5992,7 @@ pub struct AiProposalGovernanceValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AiProposalGovernanceValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub governance_id: String,
@@ -5877,6 +6012,7 @@ pub struct AiProposalGovernanceValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PolicyDecisionReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: PolicyDecisionInput,
     pub summary: PolicyDecisionSummary,
@@ -5970,6 +6106,7 @@ pub struct WitnessPolicyDecisionV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportArtifactRetentionManifestV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub retention_id: String,
     pub repository: RepositoryRef,
@@ -6000,6 +6137,7 @@ pub struct ReportArtifactPolicyRef {
     pub policy_id: Option<String>,
     pub policy_version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "schema")]
     pub schema_version: Option<String>,
 }
 
@@ -6012,6 +6150,7 @@ pub struct RetainedReportArtifactRefV0 {
     pub repository: RepositoryRef,
     pub pull_request_number: usize,
     pub commit_sha: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_version: String,
     pub generated_at: String,
@@ -6032,6 +6171,7 @@ pub struct MissingReportArtifactRefV0 {
     pub repository: RepositoryRef,
     pub pull_request_number: usize,
     pub commit_sha: String,
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_version: String,
     pub generated_at: String,
@@ -6051,6 +6191,7 @@ pub struct ReportArtifactTraceabilityV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportArtifactRetentionValidationReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: ReportArtifactRetentionValidationInput,
     pub manifest: ReportArtifactRetentionManifestV0,
@@ -6061,6 +6202,7 @@ pub struct ReportArtifactRetentionValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportArtifactRetentionValidationInput {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub path: String,
     pub retention_id: String,
@@ -6083,6 +6225,7 @@ pub struct ReportArtifactRetentionValidationSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaselineSuppressionReportV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: BaselineSuppressionInput,
     pub summary: BaselineSuppressionSummary,

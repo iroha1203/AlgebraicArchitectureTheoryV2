@@ -21,7 +21,7 @@ use crate::{
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
-    let catalog_version = "b10-schema-catalog-v0";
+    let catalog_version = "b10-schema-catalog/v0.5.0";
     SchemaVersionCatalogV0 {
         schema_version: SCHEMA_VERSION_CATALOG_SCHEMA_VERSION.to_string(),
         catalog_id: "archsig-b9-b10-schema-version-catalog".to_string(),
@@ -59,7 +59,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "B0-B9",
                 "implemented",
                 vec![
-                    "docs/aat_v2_tooling_design.md#31-air-v0-schema",
+                    "docs/aat_v2_tooling_design.md#31-air-schema050-schema",
                     "docs/design/archsig_tooling_index.md",
                 ],
                 vec!["#608", "#609"],
@@ -92,7 +92,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     vec![],
                     vec![
                         "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
-                        "New atomic observation fields must remain optional/default-compatible in archmap-v0 unless schemaVersion is deliberately bumped.",
+                        "New atomic observation fields must remain optional/default-compatible in archmap-schema050 unless schema is deliberately bumped.",
                         "SFT-facing mapping kinds must remain projection input and not forecast result claims.",
                     ],
                     vec![
@@ -193,7 +193,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             artifact(
                 "archmap-generation-protocol",
                 "ArchMap generation protocol",
-                "archmap-generation-protocol-v0",
+                "archmap-generation-protocol/v0.5.0",
                 "external-agent-protocol",
                 "ArchMap v2",
                 "implemented",
@@ -278,7 +278,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ),
             ),
             artifact(
-                "archsig-analysis-packet-v1",
+                "archsig-analysis-packet/v0.5.0",
                 "ArchSig v1 typed evaluator analysis packet",
                 ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA,
                 "current-state-handoff",
@@ -703,7 +703,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "D5-D6",
                 "implemented",
                 vec![
-                    "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
+                    "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-schema050",
                     "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model",
                 ],
                 vec!["#675"],
@@ -726,7 +726,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "D5-D6",
                 "implemented",
                 vec![
-                    "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
+                    "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-schema050",
                     "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation",
                 ],
                 vec!["#671", "#718"],
@@ -755,7 +755,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "D5-D6",
                 "implemented",
                 vec![
-                    "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
+                    "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-schema050",
                     "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics",
                 ],
                 vec!["#676"],
@@ -862,7 +862,7 @@ fn compatibility_policy(catalog_version: &str) -> SchemaCompatibilityPolicyV0 {
     SchemaCompatibilityPolicyV0 {
         schema_version: SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION.to_string(),
         policy_id: "archsig-b9-schema-compatibility-policy".to_string(),
-        policy_version: "b9-compatibility-policy-v0".to_string(),
+        policy_version: "b9-compatibility-policy/v0.5.0".to_string(),
         applies_to_catalog_version: catalog_version.to_string(),
         dimensions: vec![
             dimension(
@@ -907,7 +907,7 @@ fn compatibility_policy(catalog_version: &str) -> SchemaCompatibilityPolicyV0 {
             ),
         ],
         required_checks: vec![
-            "known schemaVersion in catalog".to_string(),
+            "known schema in catalog".to_string(),
             "field mapping entries are explicit for renamed or removed fields".to_string(),
             "deprecated fields declare replacement or removal behavior".to_string(),
             "new required assumptions are surfaced as missing until discharged".to_string(),

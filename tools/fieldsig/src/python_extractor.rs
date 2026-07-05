@@ -274,7 +274,7 @@ pub fn extract_python_sig0(
         "pythonDynamicImportCoverage".to_string(),
         if unsupported.is_empty() {
             unmeasured_status(
-                "dynamic import, plugin loading, framework convention, generated code, and notebook coverage is outside python-import-graph-v0".to_string(),
+                "dynamic import, plugin loading, framework convention, generated code, and notebook coverage is outside python-import-graph-schema050".to_string(),
             )
         } else {
             let first = unsupported

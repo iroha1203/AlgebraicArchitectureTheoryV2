@@ -47,7 +47,7 @@ pub fn static_repair_rule_registry() -> RepairRuleRegistryV0 {
         ],
         rules: vec![
             repair_rule(
-                "repair-hidden-interaction-through-interface-v0",
+                "repair-hidden-interaction-through-interface/v0.5.0",
                 "hidden_interaction",
                 "split",
                 &[
@@ -69,7 +69,7 @@ pub fn static_repair_rule_registry() -> RepairRuleRegistryV0 {
                 "medium",
             ),
             repair_rule(
-                "repair-policy-violation-isolate-boundary-v0",
+                "repair-policy-violation-isolate-boundary/v0.5.0",
                 "policy_violation",
                 "isolate",
                 &[
@@ -91,7 +91,7 @@ pub fn static_repair_rule_registry() -> RepairRuleRegistryV0 {
                 "medium",
             ),
             repair_rule(
-                "repair-semantic-nonfillability-add-contract-evidence-v0",
+                "repair-semantic-nonfillability-add-contract-evidence/v0.5.0",
                 "nonfillability_witness",
                 "contract",
                 &[
@@ -217,7 +217,7 @@ fn check_schema_version(registry: &RepairRuleRegistryV0) -> ValidationCheck {
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported repair rule registry schemaVersion: {}",
+            "unsupported repair rule registry schema: {}",
             registry.schema_version
         ));
     }
@@ -508,7 +508,7 @@ mod tests {
         assert_eq!(report.summary.result, "pass");
         assert_eq!(report.summary.rule_count, 3);
         assert!(report.registry.rules.iter().any(|rule| {
-            rule.repair_rule_id == "repair-hidden-interaction-through-interface-v0"
+            rule.repair_rule_id == "repair-hidden-interaction-through-interface/v0.5.0"
                 && rule.target_witness_kind == "hidden_interaction"
                 && rule.proposed_operation == "split"
                 && rule

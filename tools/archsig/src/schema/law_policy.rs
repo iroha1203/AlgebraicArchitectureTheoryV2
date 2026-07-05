@@ -62,6 +62,7 @@ pub struct LawPolicyEntryV1 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LawPolicyValidationReportV1 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub input: LawPolicyValidationInputV1,
     pub expanded_policies: Vec<ExpandedLawPolicyEntryV1>,

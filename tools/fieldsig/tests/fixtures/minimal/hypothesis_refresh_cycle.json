@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "hypothesis-refresh-cycle-v0",
+  "schema": "hypothesis-refresh-cycle/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "hypothesis-refresh-cycle",
-    "schemaVersionName": "hypothesis-refresh-cycle-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "hypothesis-refresh-cycle/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "sourceMonitorRefs",
@@ -113,7 +113,7 @@
   "teamRef": "team:checkout-platform",
   "sourceMonitorRefs": [
     {
-      "monitorRef": "fixture-b10-incident-correlation-monitor-v0",
+      "monitorRef": "fixture-b10-incident-correlation-monitor/v0.5.0",
       "sourceKind": "incident-correlation-monitor",
       "path": "tools/fieldsig/tests/fixtures/minimal/incident_correlation_monitor.json",
       "boundary": "exploratoryOperationalCorrelation",

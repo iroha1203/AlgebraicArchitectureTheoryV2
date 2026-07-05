@@ -1,7 +1,7 @@
 # Repository Survey For ArchMap v2
 
 Use parallel survey only to collect candidate evidence. The final ArchMap is a
-single integrated `archmap/v2` artifact.
+single integrated `archmap/v0.5.0` artifact.
 
 Do not delegate ArchMap creation to a script. Mechanical inventories may guide
 the survey, but final atoms require source reading and author judgement about

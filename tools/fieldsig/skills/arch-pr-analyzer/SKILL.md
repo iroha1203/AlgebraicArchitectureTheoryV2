@@ -11,15 +11,15 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 
 ## Inputs To Prefer
 
-- `signature-diff-report-v0`
+- `signature-diff-report/v0.5.0`
 - Sig0 and validation reports
 - ArchMap observation artifact and ArchMap validation report
 - AIR, AIR validation, theorem-check, feature-report
-- `aat-observable-bundle-v0` and validation report when the PR review asks for AAT concept coverage
-- `architecture-policy-v0` and `law-violation-report-v0`
+- `aat-observable-bundle/v0.5.0` and validation report when the PR review asks for AAT concept coverage
+- `architecture-policy/v0.5.0` and `law-violation-report/v0.5.0`
 - policy-decision and PR comment summary
-- `pr-quality-analysis-report-v0`
-- `sft-review-summary-v0` only when the user asks for SFT review judgement or future-impact review
+- `pr-quality-analysis-report/v0.5.0`
+- `sft-review-summary/v0.5.0` only when the user asks for SFT review judgement or future-impact review
 
 Do not use IntentMap, AlignmentMap, or planning forecast artifacts for PR merge review unless the user explicitly asks for planning context.
 
@@ -115,9 +115,9 @@ ${FIELDSIG_BIN:-fieldsig} sft-review-summary \
    - Treat SRP `semanticRole` / `responsibilityRegions` / `reasonToChange` / `lawRefs` as evidence for LLM judgment, not as tool-only violation.
    - For SRP probable violation, cite both evidence refs and policy refs and distinguish `acceptableOrchestrator`, `allowedException`, and `unmeasured`.
    - Tie each finding to artifact ids or paths.
-   - When using `aat-observable-bundle-v0`, translate `reviewActions` into evidence gap,
+   - When using `aat-observable-bundle/v0.5.0`, translate `reviewActions` into evidence gap,
      blocked formal claim, review guardrail, or next evidence without treating LLM judgment as proof.
-   - When using `sft-review-summary-v0`, report opened futures, closed futures, boundary failures,
+   - When using `sft-review-summary/v0.5.0`, report opened futures, closed futures, boundary failures,
      and next actions with evidence refs. Do not treat the summary status as merge approval.
    - Keep recommendations bounded to PR review actions.
 

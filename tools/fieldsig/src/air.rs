@@ -614,7 +614,7 @@ fn static_extraction_scope(sig0: &Sig0Document) -> Vec<String> {
 fn static_exactness_assumptions(sig0: &Sig0Document) -> Vec<String> {
     match sig0.component_kind.as_str() {
         PYTHON_COMPONENT_KIND => vec![
-            "python-import-graph-v0 observes static import and from-import syntax only".to_string(),
+            "python-import-graph-schema050 observes static import and from-import syntax only".to_string(),
             "python-module ids are normalized relative to the configured package root".to_string(),
             "Python extractor output is tooling evidence, not a Lean ComponentUniverse completeness proof".to_string(),
         ],
@@ -701,7 +701,7 @@ fn air_runtime_coverage_layer(
                 "0/1 runtime dependency graph over measured component pairs".to_string(),
             ],
             exactness_assumptions: vec![
-                "runtime-edge-projection-v0 maps each observed component pair to one runtime edge"
+                "runtime-edge-projection-schema050 maps each observed component pair to one runtime edge"
                     .to_string(),
                 "runtime evidence component ids resolve inside the AIR component universe"
                     .to_string(),

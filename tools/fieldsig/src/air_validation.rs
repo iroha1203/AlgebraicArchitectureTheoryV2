@@ -81,7 +81,7 @@ fn check_air_schema_version(schema_version: &str) -> ValidationCheck {
         },
     );
     if check.result == "fail" {
-        check.reason = Some(format!("unsupported schemaVersion: {schema_version}"));
+        check.reason = Some(format!("unsupported schema: {schema_version}"));
     }
     check
 }
@@ -109,9 +109,9 @@ fn check_air_schema_compatibility_metadata(document: &AirDocumentV0) -> Validati
     }
     if metadata.schema_version_name != AIR_SCHEMA_VERSION {
         invalid.push(generic_validation_example(
-            "schemaCompatibility.schemaVersionName",
+            "schemaCompatibility.schemaName",
             &metadata.schema_version_name,
-            "AIR schema compatibility metadata must match schemaVersion",
+            "AIR schema compatibility metadata must match schema",
         ));
     }
     for required_field in [
@@ -923,7 +923,7 @@ fn check_air_runtime_metadata(document: &AirDocumentV0) -> ValidationCheck {
             invalid.push(generic_validation_example(
                 &relation.id,
                 relation.extraction_rule.as_deref().unwrap_or("<missing>"),
-                "runtime relation must use runtime-edge-projection-v0",
+                "runtime relation must use runtime-edge-projection-schema050",
             ));
         }
     }
@@ -986,7 +986,7 @@ fn check_air_runtime_metadata(document: &AirDocumentV0) -> ValidationCheck {
                     .projection_rule
                     .as_deref()
                     .unwrap_or("<missing>"),
-                "measured runtime coverage must record runtime-edge-projection-v0",
+                "measured runtime coverage must record runtime-edge-projection-schema050",
             ));
         }
         if runtime_layer.universe_refs.is_empty() {

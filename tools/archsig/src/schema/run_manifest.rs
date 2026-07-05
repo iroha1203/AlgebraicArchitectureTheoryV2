@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchSigRunManifestV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub command_name: String,
     pub archmap_input_path: String,

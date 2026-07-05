@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "archmap-source-inventory-v0",
+  "schema": "archmap-source-inventory/v0.5.0",
   "inventoryId": "source-inventory-fixture",
   "root": ".",
   "includedRefs": [

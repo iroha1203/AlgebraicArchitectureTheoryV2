@@ -106,7 +106,7 @@ pub fn build_schema_compatibility_check_report(
 
     SchemaCompatibilityCheckReportV0 {
         schema_version: SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION.to_string(),
-        checker_id: "archsig-b9-schema-compatibility-checker-v0".to_string(),
+        checker_id: "archsig-b9-schema-compatibility-checker/v0.5.0".to_string(),
         compatibility_policy_ref: catalog.compatibility_policy.policy_version.clone(),
         before: artifact_ref(
             before_path,
@@ -132,7 +132,7 @@ pub fn build_schema_compatibility_check_report(
 
 fn schema_version(value: &Value) -> Option<&str> {
     value
-        .get("schemaVersion")
+        .get("schema")
         .or_else(|| value.get("schema"))
         .and_then(Value::as_str)
 }
@@ -187,7 +187,7 @@ fn check_known_schema_version(
             "pass",
             "compatible",
             format!(
-                "{side} schemaVersion `{version}` is cataloged as `{}`",
+                "{side} schema `{version}` is cataloged as `{}`",
                 entry.artifact_id
             ),
             None,
@@ -198,18 +198,18 @@ fn check_known_schema_version(
             "schema_version",
             "fail",
             "fail",
-            format!("{side} schemaVersion `{version}` is not present in the B9 catalog"),
+            format!("{side} schema `{version}` is not present in the B9 catalog"),
             Some("add a catalog entry or provide an explicit compatibility policy".to_string()),
-            Some("unknown schemaVersion is not evidence of semantic preservation".to_string()),
+            Some("unknown schema is not evidence of semantic preservation".to_string()),
         ),
         (None, _) => check(
             id,
             "schema_version",
             "fail",
             "fail",
-            format!("{side} artifact does not declare schemaVersion"),
-            Some("declare schemaVersion before running migration checks".to_string()),
-            Some("missing schemaVersion is not evidence of extractor completeness".to_string()),
+            format!("{side} artifact does not declare schema"),
+            Some("declare schema before running migration checks".to_string()),
+            Some("missing schema is not evidence of extractor completeness".to_string()),
         ),
     }
 }
@@ -225,9 +225,9 @@ fn check_schema_version_delta(
             "field_mapping",
             "pass",
             "compatible",
-            "schemaVersion is unchanged".to_string(),
+            "schema is unchanged".to_string(),
             None,
-            Some("unchanged schemaVersion does not prove semantic preservation".to_string()),
+            Some("unchanged schema does not prove semantic preservation".to_string()),
         );
     }
 
@@ -240,7 +240,7 @@ fn check_schema_version_delta(
             "field_mapping",
             "requiresMigration",
             "migrationRequired",
-            "schemaVersion changed and explicit field mappings are present".to_string(),
+            "schema changed and explicit field mappings are present".to_string(),
             Some("review the declared field mappings before accepting the migration".to_string()),
             Some("field mapping does not prove semantic preservation".to_string()),
         )
@@ -250,7 +250,7 @@ fn check_schema_version_delta(
             "field_mapping",
             "requiresMigration",
             "migrationRequired",
-            "schemaVersion changed without explicit field mappings".to_string(),
+            "schema changed without explicit field mappings".to_string(),
             Some("add schemaCompatibility.fieldMappings for renamed, removed, split, or merged fields".to_string()),
             Some("renamed fields do not discharge new required assumptions".to_string()),
         )
@@ -905,7 +905,7 @@ mod tests {
     #[test]
     fn unchanged_cataloged_artifact_without_metadata_is_backward_compatible() {
         let catalog = static_schema_version_catalog();
-        let artifact = json!({"schemaVersion": "archsig-sig0-v0"});
+        let artifact = json!({"schema": "archsig-sig0/v0.5.0"});
         let report = build_schema_compatibility_check_report(
             &artifact,
             "before.json",
@@ -928,11 +928,11 @@ mod tests {
     fn missing_formal_claim_guardrail_blocks_report() {
         let catalog = static_schema_version_catalog();
         let before = json!({
-            "schemaVersion": "aat-air-v0",
+            "schema": "aat-air/v0.5.0",
             "schemaCompatibility": {
                 "artifactId": "air",
-                "schemaVersionName": "aat-air-v0",
-                "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+                "schemaName": "aat-air/v0.5.0",
+                "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
                 "fieldMappings": [{"sourceField": "claims[].nonConclusions", "targetField": "claims[].nonConclusions", "mappingKind": "stable", "requiredReview": "preserve guardrails"}],
                 "deprecatedFields": [],
                 "requiredAssumptions": [{"assumptionId": "a", "appliesTo": "air", "requiredFor": "schema compatibility review", "fallbackWhenMissing": "report as undischarged; do not infer a formal claim"}],

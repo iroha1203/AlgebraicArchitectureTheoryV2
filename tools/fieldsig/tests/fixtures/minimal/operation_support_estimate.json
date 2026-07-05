@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "operation-support-estimate-v0",
-  "estimateId": "fixture-operation-support-estimate-v0",
+  "schema": "operation-support-estimate/v0.5.0",
+  "estimateId": "fixture-operation-support-estimate/v0.5.0",
   "descriptorRef": {
-    "descriptorSchemaVersion": "artifact-descriptor-v0",
-    "descriptorId": "fixture-artifact-descriptor-v0",
+    "descriptorSchemaVersion": "artifact-descriptor/v0.5.0",
+    "descriptorId": "fixture-artifact-descriptor/v0.5.0",
     "artifactKind": "issue",
     "sourceRefIds": [
       "source:issue-734",

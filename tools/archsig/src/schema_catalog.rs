@@ -1,36 +1,40 @@
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHITECTURE_DISTANCE_V1_SCHEMA, ARCHMAP_V1_SCHEMA,
-    ARCHMAP_V2_SCHEMA, ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
+    ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
-    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0, TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    NORMALIZED_ARCHMAP_V1_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0, TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
     SchemaVersionCatalogV0 {
         schema_version: SCHEMA_VERSION_CATALOG_SCHEMA_VERSION.to_string(),
         catalog_id: "archsig-llm-atom-schema-version-catalog".to_string(),
-        catalog_version: "llm-atom-archmap-v0".to_string(),
+        catalog_version: "llm-atom-archmap/v0.5.0".to_string(),
         phase: "LLM Atom ArchMap primary workflow".to_string(),
         artifacts: vec![
             artifact(
-                "archmap-v1",
-                "ArchMap v1 Atom input artifact",
+                "archmap-current",
+                "ArchMap current input artifact",
                 ARCHMAP_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["archsig-contract:archmap-minimal-observation"],
-                "ArchMap v1 records sources, atoms, and molecules as the primary input contract. It rejects legacy v0 root fields, unknown atom kinds, unknown predicates, and unresolved source refs before analysis.",
                 vec![
-                    "ArchMap v1 validation does not run the v1 evaluator pipeline.",
-                    "ArchMap v1 validation does not prove architecture lawfulness, source completeness, Lean theorem discharge, or global semantic truth.",
+                    "archsig-contract:archmap-minimal-observation",
+                    "archsig-contract:v0.4.0-ag-measurement",
+                ],
+                "ArchMap v0.5.0 records source-grounded architecture observations. Structural-shape inputs contain sources, atoms, and molecules for the typed evaluator path; finite-poset-site-shape inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. Both shapes reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
+                vec![
+                    "ArchMap validation does not run the evaluator or measurement pipeline.",
+                    "ArchMap validation does not prove architecture lawfulness, source completeness, U-adequacy, exactness, Lean theorem discharge, or global semantic truth.",
+                    "Shape selection is command-local; schema equality does not by itself promote structural input to finite-poset-site input.",
                 ],
             ),
             artifact(
-                "aat-atom-vocabulary-v1",
+                "aat-atom-vocabulary/v0.5.0",
                 "AAT atom vocabulary v1",
                 AAT_ATOM_VOCABULARY_V1_SCHEMA,
                 "primary",
@@ -43,20 +47,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archmap-v2",
-                "ArchMap v2 finite poset site artifact",
-                ARCHMAP_V2_SCHEMA,
-                "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, and covers. The extraction doctrine is fixed by ArchSig as doctrine:aat-canonical@1; molecules are not a primary v2 field.",
-                vec![
-                    "ArchMap v2 validation does not prove source extraction soundness, U-adequacy, exactness, Lean theorem discharge, or architecture lawfulness.",
-                    "Contexts and covers are observation structure; measurement choices live in MeasurementProfile.",
-                ],
-            ),
-            artifact(
-                "law-policy-v1",
+                "law-policy/v0.5.0",
                 "LawPolicy v1 selector artifact",
                 LAW_POLICY_V1_SCHEMA,
                 "primary",
@@ -69,7 +60,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "measurement-profile-v1",
+                "measurement-profile/v0.5.0",
                 "MeasurementProfile v1 AG evaluator selector",
                 MEASUREMENT_PROFILE_V1_SCHEMA,
                 "primary",
@@ -82,9 +73,9 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "law-evaluator-registry-v1",
+                "law-evaluator-registry/v0.5.0",
                 "Law evaluator registry v1",
-                "law-evaluator-registry/v1",
+                "law-evaluator-registry/v0.5.0",
                 "primary",
                 "ArchMap Atom-to-AAT contract",
                 vec!["archsig-contract:archmap-minimal-observation"],
@@ -95,33 +86,24 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "normalized-archmap-v1",
-                "Normalized ArchMap v1 computation artifact",
+                "normalized-archmap-current",
+                "Normalized ArchMap current computation artifact",
                 NORMALIZED_ARCHMAP_V1_SCHEMA,
                 "primary",
                 "ArchMap Atom-to-AAT contract",
-                vec!["archsig-contract:archmap-minimal-observation"],
-                "Normalized ArchMap v1 is generated by the ArchSig normalizer from ArchMap v1 without rereading the source repository. It records normalized AtomKind / Axis / predicate bindings, valence template refs, molecule memberships, and generated molecule candidate status.",
                 vec![
-                    "Normalized ArchMap v1 is deterministic tooling input for evaluators, not a Lean proof object.",
+                    "archsig-contract:archmap-minimal-observation",
+                    "archsig-contract:v0.4.0-ag-measurement",
+                ],
+                "Normalized ArchMap v0.5.0 is generated by the ArchSig normalizer without rereading the source repository. Structural-shape output records normalized AtomKind / Axis / predicate bindings, valence template refs, molecule memberships, and generated molecule candidate status; finite-poset-site-shape output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
+                vec![
+                    "Normalized ArchMap is deterministic tooling input for evaluators or measurements, not a Lean proof object.",
                     "Generated molecule candidate status is not an obstruction, holonomy, risk, or lawfulness conclusion.",
+                    "Finite-poset-site normalization does not prove source extraction soundness.",
                 ],
             ),
             artifact(
-                "normalized-archmap-v2",
-                "Normalized ArchMap v2 finite poset site artifact",
-                NORMALIZED_ARCHMAP_V2_SCHEMA,
-                "primary",
-                "ArchSig v0.4.0 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under the fixed AAT canonical doctrine fingerprint.",
-                vec![
-                    "Normalized ArchMap v2 does not prove source extraction soundness.",
-                    "A8 determinism is relative to the fixed tool doctrine fingerprint.",
-                ],
-            ),
-            artifact(
-                "typed-evaluator-results-v1",
+                "typed-evaluator-results/v0.5.0",
                 "Typed evaluator results v1",
                 TYPED_EVALUATOR_RESULTS_V1_SCHEMA,
                 "primary",
@@ -134,7 +116,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "architecture-distance-v1",
+                "archsig-architecture-distance/v0.5.0",
                 "Architecture distance v1 computation artifact",
                 ARCHITECTURE_DISTANCE_V1_SCHEMA,
                 "primary",
@@ -148,7 +130,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-measurement-packet-v1",
+                "archsig-measurement-packet/v0.5.0",
                 "ArchSig measurement packet v1",
                 ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
                 "primary",
@@ -164,7 +146,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-boundary-statement-v1",
+                "archsig-boundary-statement/v0.5.0",
                 "ArchSig BoundaryStatement v1",
                 ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
                 "primary",
@@ -177,7 +159,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-analysis-packet-v1",
+                "archsig-analysis-packet/v0.5.0",
                 "ArchSig v1 typed evaluator analysis packet",
                 ARCHSIG_ANALYSIS_PACKET_V1_SCHEMA,
                 "primary",
@@ -194,7 +176,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-run-manifest",
+                "archsig-run-manifest/v0.5.0",
                 "ArchSig analyze run manifest",
                 ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
                 "primary",
@@ -210,7 +192,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-atom-viewer-data",
+                "archsig-atom-viewer-data/v0.5.0",
                 "ArchSig viewer bounded projection data",
                 ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
                 "primary",
@@ -230,13 +212,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
         compatibility_policy: SchemaCompatibilityPolicyV0 {
             schema_version: SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION.to_string(),
             policy_id: "archsig-llm-atom-schema-compatibility-policy".to_string(),
-            policy_version: "llm-atom-archmap-v0".to_string(),
-            applies_to_catalog_version: "llm-atom-archmap-v0".to_string(),
+            policy_version: "llm-atom-archmap/v0.5.0".to_string(),
+            applies_to_catalog_version: "llm-atom-archmap/v0.5.0".to_string(),
             dimensions: vec![
                 compatibility_dimension(
                     "schema-version",
-                    vec!["schemaVersion"],
-                    "schemaVersion must match one of the current LLM Atom ArchMap artifacts.",
+                    vec!["schema"],
+                    "schema must match one of the current LLM Atom ArchMap artifacts.",
                 ),
                 compatibility_dimension(
                     "claim-boundary",
@@ -334,23 +316,36 @@ mod tests {
             .map(|artifact| artifact.artifact_id.as_str())
             .collect();
         assert_eq!(
+            ids.len(),
+            catalog.artifacts.len(),
+            "schema catalog artifact IDs must be unique"
+        );
+        let schema_names: BTreeSet<_> = catalog
+            .artifacts
+            .iter()
+            .map(|artifact| artifact.schema_version_name.as_str())
+            .collect();
+        assert_eq!(
+            schema_names.len(),
+            catalog.artifacts.len(),
+            "schema catalog schema names must be unique"
+        );
+        assert_eq!(
             ids,
             BTreeSet::from([
-                "archmap-v1",
-                "aat-atom-vocabulary-v1",
-                "archmap-v2",
-                "law-policy-v1",
-                "law-evaluator-registry-v1",
-                "measurement-profile-v1",
-                "normalized-archmap-v1",
-                "normalized-archmap-v2",
-                "typed-evaluator-results-v1",
-                "architecture-distance-v1",
-                "archsig-measurement-packet-v1",
-                "archsig-boundary-statement-v1",
-                "archsig-analysis-packet-v1",
-                "archsig-run-manifest",
-                "archsig-atom-viewer-data",
+                "archmap-current",
+                "aat-atom-vocabulary/v0.5.0",
+                "law-policy/v0.5.0",
+                "law-evaluator-registry/v0.5.0",
+                "measurement-profile/v0.5.0",
+                "normalized-archmap-current",
+                "typed-evaluator-results/v0.5.0",
+                "archsig-architecture-distance/v0.5.0",
+                "archsig-measurement-packet/v0.5.0",
+                "archsig-boundary-statement/v0.5.0",
+                "archsig-analysis-packet/v0.5.0",
+                "archsig-run-manifest/v0.5.0",
+                "archsig-atom-viewer-data/v0.5.0",
             ])
         );
         for legacy in [

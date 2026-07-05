@@ -30,7 +30,7 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
     let non_conclusions = strings(&AAT_OBSERVABLE_NON_CONCLUSIONS);
     AatObservableBundleV0 {
         schema_version: AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION.to_string(),
-        bundle_id: "fixture-aat-observable-bundle-v0".to_string(),
+        bundle_id: "fixture-aat-observable-bundle/v0.5.0".to_string(),
         architecture_id: "coupon-service".to_string(),
         source_refs: vec![
             source_ref(
@@ -95,7 +95,7 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
             input_artifact_refs: vec![
                 "source:air:coupon".to_string(),
                 "source:feature-report:coupon".to_string(),
-                "bundle:fixture-aat-observable-bundle-v0".to_string(),
+                "bundle:fixture-aat-observable-bundle-schema050".to_string(),
             ],
             review_questions: vec![
                 "Which invariant is preserved, broken, unmeasured, or out of scope?".to_string(),
@@ -223,7 +223,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:theorem-boundary",
             "TheoremBoundary / NonConclusion",
-            &["theorem-check-report-v0"],
+            &["theorem-check-report/v0.5.0"],
             &["boundary:formal-precondition-missing"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -237,8 +237,8 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
             "concept:operation",
             "ArchitectureOperation",
             &[
-                "pr-quality-analysis-report-v0",
-                "operation-support-estimate-v0",
+                "pr-quality-analysis-report/v0.5.0",
+                "operation-support-estimate/v0.5.0",
             ],
             &["operation:coupon-feature-extension"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
@@ -359,7 +359,7 @@ fn observed_axes() -> Vec<AatObservedAxisV0> {
         AatObservedAxisV0 {
             axis_id: "axis:runtimePropagation".to_string(),
             concept_refs: vec!["concept:state-effect".to_string()],
-            artifact_refs: vec!["runtime-edge-evidence-v0".to_string()],
+            artifact_refs: vec!["runtime-edge-evidence/v0.5.0".to_string()],
             measurement_status: "unmeasured".to_string(),
             value: None,
             boundary: "runtime traces unavailable".to_string(),
@@ -598,7 +598,7 @@ fn review_actions() -> Vec<AatReviewActionV0> {
             "nextEvidence",
             &["coverage-boundary:dynamic-dispatch"],
             "request runtime traces or mark runtime law family unmeasured",
-            &["runtime-edge-evidence-v0"],
+            &["runtime-edge-evidence/v0.5.0"],
             "human-review",
             &["missing runtime evidence is not zero runtime risk"],
         ),
@@ -616,7 +616,7 @@ fn review_actions() -> Vec<AatReviewActionV0> {
             "blockedFormalClaim",
             &["boundary:formal-precondition-missing"],
             "do not promote tooling evidence to Lean theorem claim",
-            &["theorem-precondition-check-report-v0"],
+            &["theorem-precondition-check-report/v0.5.0"],
             "deterministic-tool",
             &["blocked formal claim is not tool failure"],
         ),

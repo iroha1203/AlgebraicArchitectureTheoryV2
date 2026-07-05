@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "repair-adoption-record-v0",
+  "schema": "repair-adoption-record/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "repair-adoption-record",
-    "schemaVersionName": "repair-adoption-record-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "repair-adoption-record/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "suggestionRefs",
@@ -108,7 +108,7 @@
       "repair adoption tracking does not prove global flatness preservation or cost improvement"
     ]
   },
-  "recordId": "fixture-b10-repair-adoption-record-v0",
+  "recordId": "fixture-b10-repair-adoption-record/v0.5.0",
   "reviewedAt": "2026-05-05T11:00:00Z",
   "reviewer": "architecture-reviewer@example.com",
   "suggestionRefs": [
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "outcomeRef": "ownership-monitor:fixture-b10-ownership-boundary-monitor-v0",
+      "outcomeRef": "ownership-monitor:fixture-b10-ownership-boundary-monitor-schema050",
       "outcomeKind": "ownership-boundary-monitor",
       "boundary": "boundedOperationalObservation",
       "metricRefs": [
@@ -177,7 +177,7 @@
       "description": "adapter extraction may require cross-team review and temporarily increase approval latency",
       "severity": "watch",
       "evidenceRefs": [
-        "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+        "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-schema050"
       ],
       "nonConclusions": [
         "side-effect note is risk tracking, not a prediction theorem"

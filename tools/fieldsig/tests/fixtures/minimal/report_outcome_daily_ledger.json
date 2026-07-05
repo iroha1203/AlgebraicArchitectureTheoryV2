@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "report-outcome-daily-ledger-v0",
+  "schema": "report-outcome-daily-ledger/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "report-outcome-daily-ledger",
-    "schemaVersionName": "report-outcome-daily-ledger-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "report-outcome-daily-ledger/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "aggregationWindow",
@@ -86,13 +86,13 @@
     {
       "kind": "outcome-linkage-dataset",
       "path": "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
-      "schemaVersion": "outcome-linkage-dataset-v0",
+      "schema": "outcome-linkage-dataset/v0.5.0",
       "boundary": "PR-level bounded outcome observations"
     },
     {
       "kind": "architecture-drift-ledger",
       "path": "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
-      "schemaVersion": "architecture-drift-ledger-v0",
+      "schema": "architecture-drift-ledger/v0.5.0",
       "reportId": "fixture-b9-architecture-drift-ledger",
       "boundary": "daily drift / suppression / retention operational state"
     }

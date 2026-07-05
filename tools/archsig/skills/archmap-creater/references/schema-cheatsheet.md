@@ -4,7 +4,7 @@
 
 ```json
 {
-  "schema": "archmap/v2",
+  "schema": "archmap/v0.5.0",
   "id": "project-or-scope-id",
   "sources": {},
   "atoms": [],
@@ -112,4 +112,4 @@ Do not emit:
 - `confidence`
 - `uncertainty`
 - `nonConclusions`
-- `molecules` in `archmap/v2`
+- `molecules` in `archmap/v0.5.0`

@@ -1,22 +1,23 @@
 {
-  "schemaVersion": "schema-version-catalog-v0",
+  "schema": "schema-version-catalog/v0.5.0",
   "catalogId": "archsig-llm-atom-schema-version-catalog",
-  "catalogVersion": "llm-atom-archmap-v0",
+  "catalogVersion": "llm-atom-archmap/v0.5.0",
   "phase": "LLM Atom ArchMap primary workflow",
   "artifacts": [
     {
-      "artifactId": "archmap-v1",
-      "artifactName": "ArchMap v1 Atom input artifact",
-      "schemaVersionName": "archmap/v1",
+      "artifactId": "archmap-current",
+      "artifactName": "ArchMap current input artifact",
+      "schemaName": "archmap/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-minimal-observation"
+        "archsig-contract:archmap-minimal-observation",
+        "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap v1 records sources, atoms, and molecules as the primary input contract. It rejects legacy v0 root fields, unknown atom kinds, unknown predicates, and unresolved source refs before analysis.",
+        "fieldMappingPolicy": "ArchMap v0.5.0 records source-grounded architecture observations. Structural-shape inputs contain sources, atoms, and molecules for the typed evaluator path; finite-poset-site-shape inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. Both shapes reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -26,15 +27,16 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "ArchMap v1 validation does not run the v1 evaluator pipeline.",
-          "ArchMap v1 validation does not prove architecture lawfulness, source completeness, Lean theorem discharge, or global semantic truth."
+          "ArchMap validation does not run the evaluator or measurement pipeline.",
+          "ArchMap validation does not prove architecture lawfulness, source completeness, U-adequacy, exactness, Lean theorem discharge, or global semantic truth.",
+          "Shape selection is command-local; schema equality does not by itself promote structural input to finite-poset-site input."
         ]
       }
     },
     {
-      "artifactId": "aat-atom-vocabulary-v1",
+      "artifactId": "aat-atom-vocabulary/v0.5.0",
       "artifactName": "AAT atom vocabulary v1",
-      "schemaVersionName": "aat-atom-vocabulary/v1",
+      "schemaName": "aat-atom-vocabulary/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
@@ -59,36 +61,9 @@
       }
     },
     {
-      "artifactId": "archmap-v2",
-      "artifactName": "ArchMap v2 finite poset site artifact",
-      "schemaVersionName": "archmap/v2",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:v0.4.0-ag-measurement"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap v2 records sources, subject/axis-decorated atoms, finite context posets, and covers. The extraction doctrine is fixed by ArchSig as doctrine:aat-canonical@1; molecules are not a primary v2 field.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "ArchMap v2 validation does not prove source extraction soundness, U-adequacy, exactness, Lean theorem discharge, or architecture lawfulness.",
-          "Contexts and covers are observation structure; measurement choices live in MeasurementProfile."
-        ]
-      }
-    },
-    {
-      "artifactId": "law-policy-v1",
+      "artifactId": "law-policy/v0.5.0",
       "artifactName": "LawPolicy v1 selector artifact",
-      "schemaVersionName": "law-policy/v1",
+      "schemaName": "law-policy/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
@@ -113,9 +88,9 @@
       }
     },
     {
-      "artifactId": "measurement-profile-v1",
+      "artifactId": "measurement-profile/v0.5.0",
       "artifactName": "MeasurementProfile v1 AG evaluator selector",
-      "schemaVersionName": "measurement-profile/v1",
+      "schemaName": "measurement-profile/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
@@ -140,9 +115,9 @@
       }
     },
     {
-      "artifactId": "law-evaluator-registry-v1",
+      "artifactId": "law-evaluator-registry/v0.5.0",
       "artifactName": "Law evaluator registry v1",
-      "schemaVersionName": "law-evaluator-registry/v1",
+      "schemaName": "law-evaluator-registry/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
@@ -167,45 +142,19 @@
       }
     },
     {
-      "artifactId": "normalized-archmap-v1",
-      "artifactName": "Normalized ArchMap v1 computation artifact",
-      "schemaVersionName": "normalized-archmap/v1",
+      "artifactId": "normalized-archmap-current",
+      "artifactName": "Normalized ArchMap current computation artifact",
+      "schemaName": "normalized-archmap/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
       "primaryDocs": [
-        "archsig-contract:archmap-minimal-observation"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Normalized ArchMap v1 is generated by the ArchSig normalizer from ArchMap v1 without rereading the source repository. It records normalized AtomKind / Axis / predicate bindings, valence template refs, molecule memberships, and generated molecule candidate status.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "Normalized ArchMap v1 is deterministic tooling input for evaluators, not a Lean proof object.",
-          "Generated molecule candidate status is not an obstruction, holonomy, risk, or lawfulness conclusion."
-        ]
-      }
-    },
-    {
-      "artifactId": "normalized-archmap-v2",
-      "artifactName": "Normalized ArchMap v2 finite poset site artifact",
-      "schemaVersionName": "normalized-archmap/v2",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
+        "archsig-contract:archmap-minimal-observation",
         "archsig-contract:v0.4.0-ag-measurement"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Normalized ArchMap v2 is the deterministic finite-poset-site presentation produced from ArchMap v2 under the fixed AAT canonical doctrine fingerprint.",
+        "fieldMappingPolicy": "Normalized ArchMap v0.5.0 is generated by the ArchSig normalizer without rereading the source repository. Structural-shape output records normalized AtomKind / Axis / predicate bindings, valence template refs, molecule memberships, and generated molecule candidate status; finite-poset-site-shape output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -215,15 +164,16 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Normalized ArchMap v2 does not prove source extraction soundness.",
-          "A8 determinism is relative to the fixed tool doctrine fingerprint."
+          "Normalized ArchMap is deterministic tooling input for evaluators or measurements, not a Lean proof object.",
+          "Generated molecule candidate status is not an obstruction, holonomy, risk, or lawfulness conclusion.",
+          "Finite-poset-site normalization does not prove source extraction soundness."
         ]
       }
     },
     {
-      "artifactId": "typed-evaluator-results-v1",
+      "artifactId": "typed-evaluator-results/v0.5.0",
       "artifactName": "Typed evaluator results v1",
-      "schemaVersionName": "typed-evaluator-results/v1",
+      "schemaName": "typed-evaluator-results/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchMap Atom-to-AAT contract",
       "status": "implemented",
@@ -248,9 +198,9 @@
       }
     },
     {
-      "artifactId": "architecture-distance-v1",
+      "artifactId": "archsig-architecture-distance/v0.5.0",
       "artifactName": "Architecture distance v1 computation artifact",
-      "schemaVersionName": "archsig-architecture-distance/v1",
+      "schemaName": "archsig-architecture-distance/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
@@ -276,9 +226,9 @@
       }
     },
     {
-      "artifactId": "archsig-measurement-packet-v1",
+      "artifactId": "archsig-measurement-packet/v0.5.0",
       "artifactName": "ArchSig measurement packet v1",
-      "schemaVersionName": "archsig-measurement-packet/v1",
+      "schemaName": "archsig-measurement-packet/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
@@ -306,9 +256,9 @@
       }
     },
     {
-      "artifactId": "archsig-boundary-statement-v1",
+      "artifactId": "archsig-boundary-statement/v0.5.0",
       "artifactName": "ArchSig BoundaryStatement v1",
-      "schemaVersionName": "archsig-boundary-statement/v1",
+      "schemaName": "archsig-boundary-statement/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.4.0 Algebraic Geometry Measurement",
       "status": "implemented",
@@ -333,9 +283,9 @@
       }
     },
     {
-      "artifactId": "archsig-analysis-packet-v1",
+      "artifactId": "archsig-analysis-packet/v0.5.0",
       "artifactName": "ArchSig v1 typed evaluator analysis packet",
-      "schemaVersionName": "archsig-analysis-packet/v1",
+      "schemaName": "archsig-analysis-packet/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "FieldSig handoff / raw evidence store",
       "status": "implemented",
@@ -362,9 +312,9 @@
       }
     },
     {
-      "artifactId": "archsig-run-manifest",
+      "artifactId": "archsig-run-manifest/v0.5.0",
       "artifactName": "ArchSig analyze run manifest",
-      "schemaVersionName": "archsig-run-manifest-v0",
+      "schemaName": "archsig-run-manifest/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
@@ -390,9 +340,9 @@
       }
     },
     {
-      "artifactId": "archsig-atom-viewer-data",
+      "artifactId": "archsig-atom-viewer-data/v0.5.0",
       "artifactName": "ArchSig viewer bounded projection data",
-      "schemaVersionName": "archsig-atom-viewer-data-v0",
+      "schemaName": "archsig-atom-viewer-data/v0.5.0",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / Viewer workflow",
       "status": "implemented",
@@ -420,17 +370,17 @@
     }
   ],
   "compatibilityPolicy": {
-    "schemaVersion": "schema-compatibility-policy-v0",
+    "schema": "schema-compatibility-policy/v0.5.0",
     "policyId": "archsig-llm-atom-schema-compatibility-policy",
-    "policyVersion": "llm-atom-archmap-v0",
-    "appliesToCatalogVersion": "llm-atom-archmap-v0",
+    "policyVersion": "llm-atom-archmap/v0.5.0",
+    "appliesToCatalogVersion": "llm-atom-archmap/v0.5.0",
     "dimensions": [
       {
         "dimension": "schema-version",
         "requiredMetadata": [
-          "schemaVersion"
+          "schema"
         ],
-        "checkerBoundary": "schemaVersion must match one of the current LLM Atom ArchMap artifacts."
+        "checkerBoundary": "schema must match one of the current LLM Atom ArchMap artifacts."
       },
       {
         "dimension": "claim-boundary",

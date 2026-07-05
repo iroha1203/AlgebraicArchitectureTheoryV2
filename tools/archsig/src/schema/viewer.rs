@@ -5,6 +5,7 @@ use super::archmap::ArchMapSourceRef;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchSigAtomViewerDataV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub data_kind: String,
     pub source_artifact_refs: ArchSigAtomViewerSourceArtifactRefsV0,

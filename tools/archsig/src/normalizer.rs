@@ -8,8 +8,8 @@ use crate::{
     NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, NormalizedMoleculeV1,
 };
 
-const NORMALIZER_ID: &str = "archmap-v1-aat-presentation@1";
-const NORMALIZER_V2_ID: &str = "archmap-v2-finite-poset-site@1";
+const NORMALIZER_ID: &str = "archmap-schema050-aat-presentation@1";
+const NORMALIZER_V2_ID: &str = "archmap-schema050-finite-poset-site@1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ArchMapAtomConstructorV1 {

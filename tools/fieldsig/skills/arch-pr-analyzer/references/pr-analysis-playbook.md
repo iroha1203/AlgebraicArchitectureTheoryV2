@@ -14,8 +14,8 @@ Use this playbook for PR / CI architecture review.
 
 ## Review Rules
 
-- Treat `pr-quality-analysis-report-v0` as review cue, not merge approval.
-- Treat `sft-review-summary-v0` as judgement input. Its status is bounded triage, not approval.
+- Treat `pr-quality-analysis-report/v0.5.0` as review cue, not merge approval.
+- Treat `sft-review-summary/v0.5.0` as judgement input. Its status is bounded triage, not approval.
 - Treat theorem-check as precondition status, not proof discharge.
 - Treat absence of measured violations as inconclusive when important axes are unmeasured.
 - Prefer concrete evidence gaps over broad refactor advice.

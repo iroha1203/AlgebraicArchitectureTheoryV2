@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "archmap-v0",
-  "mapId": "archmap-expressiveness-suite-v0",
+  "schema": "archmap/v0.5.0",
+  "mapId": "archmap-expressiveness-suite/v0.5.0",
   "architectureId": "archmap-expressiveness-fixture-repo",
   "generatedAt": "2026-05-24T00:00:00Z",
   "generator": {
@@ -10,7 +10,7 @@
     "modelId": "not-applicable"
   },
   "sourceInventoryRef": {
-    "artifactId": "archmap-expressiveness-suite-v0-source-inventory",
+    "artifactId": "archmap-expressiveness-suite-schema050-source-inventory",
     "kind": "source_inventory",
     "path": "tools/fieldsig/tests/fixtures/expressiveness/archmap_source_inventory.json",
     "contentHash": "sha256-expressiveness-source-inventory"
@@ -46,10 +46,10 @@
     "privateRefs": [{"artifactId": "private-plugin-rules", "kind": "privateContext", "path": "private/plugin-rules.md"}],
     "hashes": [{"artifactId": "src-user-service", "path": "src/services/user.ts", "contentHash": "sha256-expressiveness-user-service"}],
     "knownBlindSpots": ["runtime trace is unavailable in the fixture", "dynamic plugin registry is private"],
-    "selectionBoundary": "archmap-expressiveness-suite-v0 bounded source inventory"
+    "selectionBoundary": "archmap-expressiveness-suite-schema050 bounded source inventory"
   },
   "targetUniverse": {
-    "representation": "aat-air-v0",
+    "representation": "aat-air/v0.5.0",
     "selectedLayers": ["static", "semantic", "policy", "runtime", "framework", "dynamic"]
   },
   "mapItems": [
@@ -210,7 +210,7 @@
     }
   ],
   "nonConclusions": [
-    "archmap-expressiveness-suite-v0 is not architecture ground truth",
+    "archmap-expressiveness-suite-schema050 is not architecture ground truth",
     "suite pass does not prove semantic preservation",
     "suite pass does not prove LLM generation accuracy",
     "field, force, attractor, basin, ForecastCone, and ConsequenceEnvelope are FieldSig-computed artifacts, not ArchMap-authored facts"

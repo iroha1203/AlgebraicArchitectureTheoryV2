@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "sft-review-summary-v0",
+  "schema": "sft-review-summary/v0.5.0",
   "summaryId": "summary:envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline",
   "envelopeRef": {
-    "envelopeSchemaVersion": "consequence-envelope-report-v0",
+    "envelopeSchemaVersion": "consequence-envelope-report/v0.5.0",
     "envelopeId": "envelope:cone:estimate:descriptor:coupon-prd-forecast-pipeline",
     "coneId": "cone:estimate:descriptor:coupon-prd-forecast-pipeline",
     "sourceRefIds": [

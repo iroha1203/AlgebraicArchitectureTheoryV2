@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "artifact-descriptor-v0",
-  "descriptorId": "fixture-artifact-descriptor-v0",
+  "schema": "artifact-descriptor/v0.5.0",
+  "descriptorId": "fixture-artifact-descriptor/v0.5.0",
   "artifactKind": "issue",
   "artifactTitle": "B12.1 ArtifactDescriptor schema",
   "sourceRefs": [
@@ -73,7 +73,7 @@
         "source:issue-733",
         "source:roadmap-b12"
       ],
-      "rationale": "Issue requests a Rust schema for artifact-descriptor-v0.",
+      "rationale": "Issue requests a Rust schema for artifact-descriptor-schema050.",
       "assumptions": [
         "candidate was inferred from selected source refs only",
         "candidate does not imply an operation support estimate"

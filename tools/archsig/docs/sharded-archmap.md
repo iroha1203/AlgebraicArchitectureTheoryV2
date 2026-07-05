@@ -1,7 +1,7 @@
 # Sharded ArchMap Design
 
 This document defines a planned sharded ArchMap authoring layout. The current
-runtime artifact remains a monolithic `archmap/v1`; sharding is an authoring
+runtime artifact remains a monolithic `archmap/v0.5.0`; sharding is an authoring
 and review layout that must bundle/export back to one v1 ArchMap before current
 `archsig archmap` or `archsig analyze` commands consume it.
 
@@ -44,11 +44,11 @@ Minimal manifest:
 
 ```json
 {
-  "schemaVersion": "archmap-shard-manifest-v1",
+  "schema": "archmap-shard-manifest/v0.5.0",
   "manifestId": "archmap-manifest-<scope>",
   "mapId": "archmap-<scope>",
   "architectureId": "<architecture-id>",
-  "canonicalSchema": "archmap/v1",
+  "canonicalSchema": "archmap/v0.5.0",
   "root": ".archsig/archmap",
   "shardingMode": "horizontal-bounded-observation-slices",
   "slices": [
@@ -72,7 +72,7 @@ Minimal manifest:
     }
   ],
   "exportPolicy": {
-    "targetSchema": "archmap/v1",
+    "targetSchema": "archmap/v0.5.0",
     "targetPath": "archmap.json",
     "sliceOrdering": ["authority", "state", "effects", "providers", "runtime"],
     "idCollisionPolicy": "fail",
@@ -101,7 +101,7 @@ Minimal manifest:
   },
   "nonConclusions": [
     "sharded ArchMap is an authoring layout, not a new proof surface",
-    "monolithic archmap/v1 export remains the current ArchSig analysis contract"
+    "monolithic archmap/v0.5.0 export remains the current ArchSig analysis contract"
   ]
 }
 ```
@@ -112,7 +112,7 @@ A horizontal slice uses this shape:
 
 ```json
 {
-  "schemaVersion": "archmap-observation-slice/v1",
+  "schema": "archmap-observation-slice/v0.5.0",
   "sliceId": "authority",
   "sliceKind": "boundedObservationSlice",
   "surface": "authority/authentication",
@@ -124,7 +124,7 @@ A horizontal slice uses this shape:
 }
 ```
 
-The field names mirror `archmap/v1` so export is a structural merge rather than
+The field names mirror `archmap/v0.5.0` so export is a structural merge rather than
 semantic reinterpretation. Removed v0 helper fields such as
 `semanticObservations`, `projectionInfo`, `operationSquareEvidence`,
 `concernHints`, and `observationGaps` are not slice fields.
@@ -143,7 +143,7 @@ Recommended slice surfaces:
 
 ## Bundle / Export Compatibility
 
-The bundle/export step must produce one valid `archmap/v1` JSON document.
+The bundle/export step must produce one valid `archmap/v0.5.0` JSON document.
 Current downstream commands consume only the exported monolithic file.
 
 Export rules:

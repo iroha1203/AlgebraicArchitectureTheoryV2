@@ -10,8 +10,8 @@ use crate::{
     TypedEvaluatorResultsSummaryV1, TypedEvaluatorResultsV1, expand_law_policy_v1,
 };
 
-const PIPELINE_ID: &str = "archsig-v1-typed-evaluator-pipeline@1";
-const ANALYSIS_PIPELINE_ID: &str = "archsig-v1-typed-analysis-pipeline@1";
+const PIPELINE_ID: &str = "archsig-schema050-typed-evaluator-pipeline";
+const ANALYSIS_PIPELINE_ID: &str = "archsig-schema050-typed-analysis-pipeline";
 
 #[derive(Clone, Copy)]
 struct ArchitectureDistanceProfileV1 {
@@ -165,7 +165,7 @@ pub fn build_typed_analysis_packet_v1(
         .into_iter()
         .collect::<Vec<_>>();
     json!({
-        "schema": "archsig-analysis-packet/v1",
+        "schema": "archsig-analysis-packet/v0.5.0",
         "analysisId": format!("analysis:{}", normalized.source_archmap_id),
         "pipelineId": ANALYSIS_PIPELINE_ID,
         "inputRefs": {
@@ -1203,7 +1203,7 @@ fn distance_actionable_insights_v1(
     let distance_action_queue = distance_action_queue(&blocked_evidence, &change_sensitive_areas);
 
     json!({
-        "schema": "archsig-distance-insights/v1",
+        "schema": "archsig-distance-insights/v0.5.0",
         "basis": "architecture-distance.json",
         "status": if blocked_evidence.as_array().is_some_and(|items| !items.is_empty()) {
             "actionable-with-blocked-evidence"
@@ -2165,7 +2165,7 @@ pub fn build_typed_analysis_summary_v1(
         "BOUNDED_MEASUREMENT_INCOMPLETE"
     };
     json!({
-        "schema": "archsig-analysis-summary/v1",
+        "schema": "archsig-analysis-summary/v0.5.0",
         "summaryKind": "typed-evaluator-summary",
         "verdict": verdict,
         "conclusion": typed_conclusion(typed_results, architecture_distance),
@@ -2248,7 +2248,7 @@ pub fn build_typed_atom_viewer_data_v1(
         })
         .collect::<Vec<_>>();
     json!({
-        "schemaVersion": "archsig-atom-viewer-data-v1",
+        "schema": "archsig-atom-viewer-data/v0.5.0",
         "dataKind": "typed-evaluator-viewer-projection",
         "sourceArtifactRefs": {
             "normalizedArchMap": "normalized-archmap.json",
@@ -2353,7 +2353,7 @@ pub fn build_typed_detail_index_v1(
         .collect::<Vec<_>>();
     entries.extend(derived_detail_index_entries(packet));
     json!({
-        "schemaVersion": "archsig-analysis-detail-index-v1",
+        "schema": "archsig-analysis-detail-index/v0.5.0",
         "indexKind": "typed-evaluator-support-index",
         "sections": [
             detail_index_section_v1("typedEvaluatorResults", "/typedEvaluatorResults", packet_array_len(packet, "typedEvaluatorResults")),
@@ -2418,7 +2418,7 @@ pub fn build_typed_llm_interpretation_packet_v1(
         &homotopy,
     );
     json!({
-        "schema": "llm-interpretation-packet/v1",
+        "schema": "llm-interpretation-packet/v0.5.0",
         "interpretationKind": "typed-evaluator-bounded-reading",
         "primaryConclusion": typed_conclusion(typed_results, architecture_distance),
         "typedEvaluatorDiagnosis": typed_evaluator_diagnosis(typed_results),
@@ -2545,7 +2545,7 @@ pub fn build_architecture_distance_v1(
         },
         "summary": distance_summary,
         "distanceDiagnosis": {
-            "schema": "archsig-distance-diagnosis/v1",
+            "schema": "archsig-distance-diagnosis/v0.5.0",
             "basis": "architectureDistance",
             "verdict": if measured_total > 0 {
                 "ARCHITECTURE_DISTANCE_MEASURED"
@@ -2600,7 +2600,7 @@ pub fn build_typed_analysis_validation_v1(
     packet: &serde_json::Value,
     typed_results: &TypedEvaluatorResultsV1,
 ) -> serde_json::Value {
-    let packet_schema_pass = packet["schema"] == "archsig-analysis-packet/v1";
+    let packet_schema_pass = packet["schema"] == "archsig-analysis-packet/v0.5.0";
     let typed_count_pass = typed_results.summary.result_count == typed_results.results.len();
     let architecture_distance_pass =
         packet["architectureDistance"]["schema"] == ARCHITECTURE_DISTANCE_V1_SCHEMA;
@@ -2849,7 +2849,7 @@ pub fn build_typed_analysis_validation_v1(
     };
     let failed_check_count = checks_pass.iter().copied().filter(|passed| !passed).count();
     json!({
-        "schemaVersion": "archsig-analysis-validation-report-v1",
+        "schema": "archsig-analysis-validation-report/v0.5.0",
         "summary": {
             "result": result,
             "failedCheckCount": failed_check_count,
@@ -3180,7 +3180,7 @@ fn architecture_spectrum_report_valid(packet: &Value) -> bool {
 fn architecture_homotopy_report_valid(packet: &Value) -> bool {
     let report = &packet["architectureHomotopyReport"];
     if !report.is_object()
-        || report["schemaVersion"] != "architecture-homotopy-report/v1"
+        || report["schema"] != "architecture-homotopy-report/v0.5.0"
         || report["reportId"].as_str().is_none()
         || !report["nonConclusions"]
             .as_array()
@@ -3409,7 +3409,7 @@ fn architecture_homotopy_report_valid(packet: &Value) -> bool {
 fn structural_reading_review_surface_valid(packet: &Value) -> bool {
     let surface = &packet["structuralReadingReviewSurface"];
     if !surface.is_object()
-        || surface["schemaVersion"] != "structural-reading-review-surface/v1"
+        || surface["schema"] != "structural-reading-review-surface/v0.5.0"
         || !surface["currentStateReading"]
             .as_str()
             .is_some_and(|reading| reading.contains("current architecture state"))
@@ -4420,7 +4420,7 @@ fn architecture_homotopy_report_v1(
         "actionable"
     };
     json!({
-        "schemaVersion": "architecture-homotopy-report/v1",
+        "schema": "architecture-homotopy-report/v0.5.0",
         "reportId": "architecture-homotopy-report:v1-explicit-molecule-support",
         "selectedLawPolicyRef": typed_results.law_policy_ref,
         "archMapRef": typed_results.normalized_archmap_ref,
@@ -4706,7 +4706,7 @@ fn architecture_structural_v1(
         "pathMultiplicityLossReadings": path_multiplicity_loss_readings,
         "structuralReadingReviewSurface": {
             "surfaceId": "structural-reading-review-surface:v1",
-            "schemaVersion": "structural-reading-review-surface/v1",
+            "schema": "structural-reading-review-surface/v0.5.0",
             "status": status,
             "measurementStatus": if blocked_count == 0 { "measured" } else { "partial" },
             "currentStateReading": format!(
@@ -5133,7 +5133,7 @@ fn rich_packet_refs_v1(
     structural: &Value,
 ) -> Value {
     json!({
-        "schemaVersion": "archsig-rich-packet-refs/v1",
+        "schema": "archsig-rich-packet-refs/v0.5.0",
         "distanceDiagnosisDetailRefs": json_string_array_value(&architecture_distance["distanceDiagnosis"], "detailRefs"),
         "spectrumHotspotRefs": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "topHotspots", "architectureSpectrumReport/topHotspots", 8),
         "recurrentObstructionRefs": packet_refs_from_nested_array(&spectrum["architectureSpectrumReport"], "recurrentObstructions", "architectureSpectrumReport/recurrentObstructions", 8),
@@ -5167,7 +5167,7 @@ fn rich_dominant_findings_v1(spectrum: &Value, homotopy: &Value, structural: &Va
 
 fn rich_reading_guide_v1() -> Value {
     json!({
-        "schemaVersion": "archsig-rich-reading-guide/v1",
+        "schema": "archsig-rich-reading-guide/v0.5.0",
         "readingOrder": [
             "conclusion",
             "distanceDiagnosis",
@@ -5778,9 +5778,9 @@ fn repair_target_kind(obstruction: &Value) -> &'static str {
 
 fn registry_basis_refs(result: &TypedEvaluatorResultV1) -> Vec<String> {
     vec![
-        format!("law-evaluator-registry@1/evaluators/{}", result.evaluator),
-        format!("law-evaluator-registry@1/laws/{}", result.law),
-        "law-evaluator-registry@1/distance-contribution".to_string(),
+        format!("law-evaluator-registry/evaluators/{}", result.evaluator),
+        format!("law-evaluator-registry/laws/{}", result.law),
+        "law-evaluator-registry/distance-contribution".to_string(),
     ]
 }
 
@@ -6153,8 +6153,8 @@ fn replacement_result(
     law_results: &[TypedEvaluatorResultV1],
 ) -> TypedEvaluatorResultV1 {
     match manifest.replacement_id.as_str() {
-        "missing-evidence.reading@1" => missing_evidence_replacement_result(manifest, law_results),
-        "concern.boundary@1" | "non-conclusion.boundary@1" => boundary_replacement_result(manifest),
+        "missing-evidence.reading" => missing_evidence_replacement_result(manifest, law_results),
+        "concern.boundary" | "non-conclusion.boundary" => boundary_replacement_result(manifest),
         _ => support_based_replacement_result(normalized, manifest),
     }
 }
@@ -6340,13 +6340,13 @@ fn replacement_molecule_condition_matches(
     manifest: &ReplacementEvaluatorManifestV1,
 ) -> bool {
     match manifest.replacement_id.as_str() {
-        "semantic.interpretation@1" => molecule_has_constructor(normalized, molecule, "semantic"),
-        "projection.reading@1" => molecule_has_any_constructor(
+        "semantic.interpretation" => molecule_has_constructor(normalized, molecule, "semantic"),
+        "projection.reading" => molecule_has_any_constructor(
             normalized,
             molecule,
             &["component", "relation", "capability"],
         ),
-        "operation-square.reading@1" => {
+        "operation-square.reading" => {
             molecule_has_constructor(normalized, molecule, "relation")
                 && molecule_has_any_constructor(normalized, molecule, &["effect", "runtime"])
         }
@@ -6398,7 +6398,7 @@ fn replacement_registry_resolution(
     summary: &TypedEvaluatorResultsSummaryV1,
 ) -> ReplacementRegistryResolutionV1 {
     ReplacementRegistryResolutionV1 {
-        schema: "archsig-replacement-registry-resolution/v1".to_string(),
+        schema: "archsig-replacement-registry-resolution/v0.5.0".to_string(),
         registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
         manifest_count: manifests.len(),
         resolved_replacement_count: summary.measured_pass_count + summary.measured_violation_count,
@@ -6698,7 +6698,7 @@ fn typed_evaluator_diagnosis(typed_results: &TypedEvaluatorResultsV1) -> serde_j
         })
         .collect::<Vec<_>>();
     json!({
-        "schema": "archsig-typed-evaluator-diagnosis/v1",
+        "schema": "archsig-typed-evaluator-diagnosis/v0.5.0",
         "basis": "typedEvaluatorResults",
         "verdict": if measured_violation_count > 0 {
             "SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"
@@ -8038,7 +8038,7 @@ mod tests {
     #[test]
     fn architecture_distance_builder_rejects_unknown_profile_ref() {
         let normalized = NormalizedArchMapV1 {
-            schema: "normalized-archmap/v1".to_string(),
+            schema: "normalized-archmap/v0.5.0".to_string(),
             normalizer_id: "test-normalizer".to_string(),
             source_archmap_ref: "archmap.json".to_string(),
             source_archmap_id: "archmap:test".to_string(),
@@ -8054,7 +8054,7 @@ mod tests {
             non_conclusions: Vec::new(),
         };
         let policy = LawPolicyDocumentV1 {
-            schema: "law-policy/v1".to_string(),
+            schema: "law-policy/v0.5.0".to_string(),
             id: "policy:test".to_string(),
             distance_profile_ref: Some("distance-profile:unknown@1".to_string()),
             measurement_profile_ref: None,
@@ -8087,7 +8087,7 @@ mod tests {
                 unmeasured_count: 0,
             },
             replacement_registry_resolution: ReplacementRegistryResolutionV1 {
-                schema: "archsig-replacement-registry-resolution/v1".to_string(),
+                schema: "archsig-replacement-registry-resolution/v0.5.0".to_string(),
                 registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
                 manifest_count: 0,
                 resolved_replacement_count: 0,
@@ -8259,7 +8259,7 @@ mod tests {
             "missing semantic anchor must carry a blocker ref"
         );
         let normalized = NormalizedArchMapV1 {
-            schema: "normalized-archmap/v1".to_string(),
+            schema: "normalized-archmap/v0.5.0".to_string(),
             normalizer_id: "test-normalizer".to_string(),
             source_archmap_ref: "archmap.json".to_string(),
             source_archmap_id: "archmap:test".to_string(),
@@ -8275,7 +8275,7 @@ mod tests {
             non_conclusions: Vec::new(),
         };
         let policy = LawPolicyDocumentV1 {
-            schema: "law-policy/v1".to_string(),
+            schema: "law-policy/v0.5.0".to_string(),
             id: "policy:test".to_string(),
             distance_profile_ref: Some("distance-profile:architecture-default@1".to_string()),
             measurement_profile_ref: None,
@@ -8510,7 +8510,7 @@ mod tests {
                 unmeasured_count: 0,
             },
             replacement_registry_resolution: ReplacementRegistryResolutionV1 {
-                schema: "archsig-replacement-registry-resolution/v1".to_string(),
+                schema: "archsig-replacement-registry-resolution/v0.5.0".to_string(),
                 registry_ref: REPLACEMENT_REGISTRY_REF.to_string(),
                 manifest_count: 0,
                 resolved_replacement_count: 0,

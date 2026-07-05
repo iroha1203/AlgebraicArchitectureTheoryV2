@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "report-artifact-retention-manifest-v0",
+  "schema": "report-artifact-retention-manifest/v0.5.0",
   "retentionId": "fixture-b7-report-artifact-retention",
   "repository": {
     "owner": "iroha1203",
@@ -14,7 +14,7 @@
   "policy": {
     "policyId": "aat-b7-default-organization-policy",
     "policyVersion": "2026-05-05",
-    "schemaVersion": "organization-policy-v0"
+    "schema": "organization-policy/v0.5.0"
   },
   "generatedAt": "2026-05-05T00:00:00Z",
   "retentionScope": "ci-pr-review-baseline-suppression",
@@ -30,7 +30,7 @@
       },
       "pullRequestNumber": 575,
       "commitSha": "fixture-b7-retention-commit",
-      "schemaVersion": "feature-extension-report-v0",
+      "schema": "feature-extension-report/v0.5.0",
       "policyVersion": "2026-05-05",
       "generatedAt": "2026-05-05T00:00:00Z",
       "retentionScope": "ci-pr-review-baseline-suppression",
@@ -51,7 +51,7 @@
       },
       "pullRequestNumber": 575,
       "commitSha": "fixture-b7-retention-commit",
-      "schemaVersion": "theorem-precondition-check-report-v0",
+      "schema": "theorem-precondition-check-report/v0.5.0",
       "policyVersion": "2026-05-05",
       "generatedAt": "2026-05-05T00:00:00Z",
       "retentionScope": "ci-pr-review-baseline-suppression",
@@ -72,7 +72,7 @@
       },
       "pullRequestNumber": 575,
       "commitSha": "fixture-b7-retention-commit",
-      "schemaVersion": "policy-decision-report-v0",
+      "schema": "policy-decision-report/v0.5.0",
       "policyVersion": "2026-05-05",
       "generatedAt": "2026-05-05T00:00:00Z",
       "retentionScope": "ci-pr-review-baseline-suppression",
@@ -95,7 +95,7 @@
       },
       "pullRequestNumber": 575,
       "commitSha": "fixture-b7-retention-commit",
-      "schemaVersion": "pr-comment-summary-v0",
+      "schema": "pr-comment-summary/v0.5.0",
       "policyVersion": "2026-05-05",
       "generatedAt": "2026-05-05T00:00:00Z",
       "retentionScope": "ci-pr-review-baseline-suppression",

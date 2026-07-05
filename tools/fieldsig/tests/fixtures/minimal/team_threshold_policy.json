@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "team-threshold-policy-v0",
+  "schema": "team-threshold-policy/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "team-threshold-policy",
-    "schemaVersionName": "team-threshold-policy-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "team-threshold-policy/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "policyId",
@@ -122,7 +122,7 @@
       "team threshold tuning is empirical calibration, not architecture lawfulness"
     ]
   },
-  "policyId": "fixture-b10-checkout-team-threshold-policy-v0",
+  "policyId": "fixture-b10-checkout-team-threshold-policy/v0.5.0",
   "organizationRef": "org:example-commerce",
   "teamRef": "team:checkout-platform",
   "effectivePeriod": {
@@ -140,7 +140,7 @@
       "ciMode": "advisory",
       "calibrationBoundary": "private runtime evidence is monitored as advisory until observation coverage improves",
       "calibrationSourceRefs": [
-        "calibration-review:fixture-b10-calibration-review-false-positive-v0",
+        "calibration-review:fixture-b10-calibration-review-false-positive-schema050",
         "daily-ledger:fixture-b10-report-outcome-daily-ledger"
       ],
       "rationale": "bounded review did not corroborate incident or rollback evidence, while private traces remain unmeasured",
@@ -169,7 +169,7 @@
   ],
   "calibrationSourceRefs": [
     {
-      "sourceRef": "calibration-review:fixture-b10-calibration-review-false-positive-v0",
+      "sourceRef": "calibration-review:fixture-b10-calibration-review-false-positive-schema050",
       "sourceKind": "calibration-review-record",
       "path": "tools/fieldsig/tests/fixtures/minimal/calibration_review_record.json",
       "windowRef": "bounded review window 2026-05-04/2026-05-05",
@@ -192,7 +192,7 @@
   ],
   "rollbackPolicy": {
     "rollbackTrigger": "two consecutive calibration reviews show false negatives or a linked rollback / incident within the bounded window",
-    "fallbackPolicyRef": "ci-policy:runtime-private-evidence-warn-v0",
+    "fallbackPolicyRef": "ci-policy:runtime-private-evidence-warn-schema050",
     "approvalRefs": [
       "architecture-review-board",
       "checkout-platform-owner"

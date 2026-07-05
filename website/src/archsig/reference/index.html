@@ -26,7 +26,7 @@
           <div class="article-main">
             <section id="primary" class="article-section">
               <h2>Primary workflow</h2>
-              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v1</code> and <code>law-policy/v1</code>, then writes validation reports, normalized atoms, typed evaluator results, <code>architecture-distance.json</code>, summary, viewer data, and optional raw v1 artifacts.</p>
+              <p><code>analyze</code> is the primary ArchSig workflow entry. It consumes <code>archmap/v0.5.0</code> and <code>law-policy/v0.5.0</code>, then writes validation reports, normalized atoms, typed evaluator results, <code>architecture-distance.json</code>, summary, viewer data, and optional raw artifacts.</p>
               <figure class="code-panel">
                 <figcaption>Run analysis</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
@@ -47,15 +47,15 @@
             <section id="outputs" class="article-section">
               <h2>Workflow outputs</h2>
               <ul class="status-list">
-                <li><strong><code>archmap-validation.json</code></strong><span>Validation report for the supplied <code>archmap/v1</code>.</span></li>
-                <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v1</code>.</span></li>
+                <li><strong><code>archmap-validation.json</code></strong><span>Validation report for the supplied <code>archmap/v0.5.0</code>.</span></li>
+                <li><strong><code>law-policy-validation.json</code></strong><span>Validation report for the selected <code>law-policy/v0.5.0</code>.</span></li>
                 <li><strong><code>normalized-archmap.json</code></strong><span>ArchMap atoms normalized into the ArchSig typed model.</span></li>
                 <li><strong><code>typed-evaluator-results.json</code></strong><span>Evaluator statuses, support refs, basis refs, and bounded conclusions.</span></li>
-                <li><strong><code>architecture-distance.json</code></strong><span>The primary <code>archsig-architecture-distance/v1</code> artifact for Part IV family summaries, <code>distanceInsights</code>, <code>distanceDiagnosis</code>, homotopy rows, curvature rows, and representation metric rows.</span></li>
+                <li><strong><code>architecture-distance.json</code></strong><span>The primary <code>archsig-architecture-distance/v0.5.0</code> artifact for Part IV family summaries, <code>distanceInsights</code>, <code>distanceDiagnosis</code>, homotopy rows, curvature rows, and representation metric rows.</span></li>
                 <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface with the same distance insights and diagnosis.</span></li>
                 <li><strong><code>archsig-atom-viewer-data.json</code></strong><span>Bounded viewer projection with the same rich packet refs and report-pane reading guide as the summary.</span></li>
                 <li><strong><code>archsig-run-manifest.json</code></strong><span>Run artifact manifest and generated / omitted artifact state.</span></li>
-                <li><strong><code>archsig-analysis-packet.json</code></strong><span>The raw <code>archsig-analysis-packet/v1</code> detail store, emitted with <code>--emit-raw-artifacts</code>.</span></li>
+                <li><strong><code>archsig-analysis-packet.json</code></strong><span>The raw <code>archsig-analysis-packet/v0.5.0</code> detail store, emitted with <code>--emit-raw-artifacts</code>.</span></li>
                 <li><strong><code>archsig-analysis-validation.json</code></strong><span>Validation report for the generated v1 analysis packet.</span></li>
                 <li><strong><code>llm-interpretation-packet.json</code></strong><span>The typed evaluator packet serialized for LLM reading when raw artifacts are emitted.</span></li>
               </ul>
@@ -66,8 +66,8 @@
                 <table>
                   <thead><tr><th scope="col">Command</th><th scope="col">Use it for</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap</code></td><td>Validate an <code>archmap/v1</code>.</td></tr>
-                    <tr><td><code>law-policy</code></td><td>Validate a selected <code>law-policy/v1</code> evaluator selector.</td></tr>
+                    <tr><td><code>archmap</code></td><td>Validate an <code>archmap/v0.5.0</code>.</td></tr>
+                    <tr><td><code>law-policy</code></td><td>Validate a selected <code>law-policy/v0.5.0</code> evaluator selector.</td></tr>
                     <tr><td><code>analyze</code></td><td>Run the primary ArchMap plus LawPolicy analysis workflow.</td></tr>
                     <tr><td><code>pr-review</code></td><td>Read a base ArchMap, PR-local ArchMap delta, and LawPolicy for small PR review.</td></tr>
                     <tr><td><code>schema-catalog</code></td><td>Emit the current ArchSig schema catalog.</td></tr>
@@ -82,16 +82,16 @@
                 <table>
                   <thead><tr><th scope="col">Schema</th><th scope="col">Role</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap/v1</code></td><td>Source-grounded atoms and explicit molecule membership over read sources.</td></tr>
-                    <tr><td><code>archmap-validation-report-v1</code></td><td>ArchMap v1 shape, source ref, atom, and molecule validation.</td></tr>
-                    <tr><td><code>law-policy/v1</code></td><td>Policy pack / evaluator selector with basis refs, scope, and severity.</td></tr>
-                    <tr><td><code>law-policy-validation-report-v1</code></td><td>LawPolicy selector validation against the evaluator registry.</td></tr>
-                    <tr><td><code>normalized-archmap/v1</code></td><td>Deterministic typed normalization of valid ArchMap atoms and molecules.</td></tr>
-                    <tr><td><code>typed-evaluator-results/v1</code></td><td>Typed evaluator statuses, support refs, basis refs, and bounded conclusions.</td></tr>
-                    <tr><td><code>archsig-architecture-distance/v1</code></td><td>Primary Part IV family bundle for atom, configuration, signature, operation, curvature, homotopy, representation, distance insights, and distance diagnosis.</td></tr>
-                    <tr><td><code>archsig-analysis-packet/v1</code></td><td>Typed evaluator detail store for measurement detail and LLM / human review reading.</td></tr>
-                    <tr><td><code>archsig-analysis-validation-report-v1</code></td><td>V1 analysis packet validation boundary.</td></tr>
-                    <tr><td><code>archsig-pr-review-report-v1</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>
+                    <tr><td><code>archmap/v0.5.0</code></td><td>Source-grounded atoms and explicit molecule membership over read sources.</td></tr>
+                    <tr><td><code>archmap-validation-report/v0.5.0</code></td><td>ArchMap shape, source ref, atom, molecule, and finite-poset-site validation.</td></tr>
+                    <tr><td><code>law-policy/v0.5.0</code></td><td>Policy pack / evaluator selector with basis refs, scope, and severity.</td></tr>
+                    <tr><td><code>law-policy-validation-report/v0.5.0</code></td><td>LawPolicy selector validation against the evaluator registry.</td></tr>
+                    <tr><td><code>normalized-archmap/v0.5.0</code></td><td>Deterministic typed normalization of valid ArchMap atoms and molecules.</td></tr>
+                    <tr><td><code>typed-evaluator-results/v0.5.0</code></td><td>Typed evaluator statuses, support refs, basis refs, and bounded conclusions.</td></tr>
+                    <tr><td><code>archsig-architecture-distance/v0.5.0</code></td><td>Primary Part IV family bundle for atom, configuration, signature, operation, curvature, homotopy, representation, distance insights, and distance diagnosis.</td></tr>
+                    <tr><td><code>archsig-analysis-packet/v0.5.0</code></td><td>Typed evaluator detail store for measurement detail and LLM / human review reading.</td></tr>
+                    <tr><td><code>archsig-analysis-validation-report/v0.5.0</code></td><td>Analysis packet validation boundary.</td></tr>
+                    <tr><td><code>archsig-pr-review-report/v0.5.0</code></td><td>Change-local PR review output from base ArchMap, PR-local delta, and LawPolicy.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -100,7 +100,7 @@
               <h2>Removed runtime surfaces</h2>
               <ul class="status-list">
                 <li><strong><code>llm-native-workflow</code> / <code>north-star-workflow</code></strong><span>Removed as runtime aliases. Use <code>analyze</code>.</span></li>
-                <li><strong><code>interpretation-profile</code></strong><span>Removed as a runtime alias. Use <code>law-policy</code> with <code>law-policy/v1</code>.</span></li>
+                <li><strong><code>interpretation-profile</code></strong><span>Removed as a runtime alias. Use <code>law-policy</code> with <code>law-policy/v0.5.0</code>.</span></li>
                 <li><strong><code>archsig-analysis</code> / <code>aat-analysis</code></strong><span>Removed as v0 packet-builder runtime surfaces. Use <code>analyze --emit-raw-artifacts</code>.</span></li>
                 <li><strong><code>analysis-summary</code> / <code>summary</code></strong><span>Removed as standalone runtime surfaces. Read the summary emitted by <code>analyze</code>.</span></li>
                 <li><strong><code>archmap-generate</code> / <code>codebase-inspection</code></strong><span>Removed from the v1 runtime contract.</span></li>
@@ -109,7 +109,7 @@
             <section id="boundaries" class="article-section">
               <h2>Reference boundaries</h2>
               <ul class="status-list">
-                <li><strong>Current input contract</strong><span>ArchSig analysis consumes <code>archmap/v1</code> plus <code>law-policy/v1</code>. v0 dual reader and legacy aliases are not v1 completion requirements.</span></li>
+                <li><strong>Current input contract</strong><span>ArchSig analysis consumes <code>archmap/v0.5.0</code> plus <code>law-policy/v0.5.0</code>. v0 dual reader and legacy aliases are not v1 completion requirements.</span></li>
                 <li><strong>PR input contract</strong><span><code>pr-review</code> reads base ArchMap, PR-local ArchMap delta, and LawPolicy. Raw diff is not an ArchSig PR-review input.</span></li>
                 <li><strong>Validation boundary</strong><span>Validation checks artifact shape and guardrails. It is not a Lean proof, runtime correctness proof, or repair safety certificate.</span></li>
               </ul>

@@ -17,8 +17,8 @@
 ## Request
 
 Add an end-to-end CLI command that reads this Markdown PRD and emits
-artifact-descriptor-v0, operation-support-estimate-v0, forecast-cone-skeleton-v0,
-and consequence-envelope-report-v0 JSON artifacts.
+artifact-descriptor-schema050, operation-support-estimate/v0.5.0, forecast-cone-skeleton-schema050,
+and consequence-envelope-report-schema050 JSON artifacts.
 
 The command should keep source refs, selected scope, measurement boundary,
 forecast boundary, unknown remainder, and forecast non-conclusions across every

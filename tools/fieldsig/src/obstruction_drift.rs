@@ -11,7 +11,7 @@ use crate::{
     SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0, SchemaRequiredAssumptionV0,
 };
 
-const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
+const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy/v0.5.0";
 
 pub fn static_obstruction_witness_artifact() -> ObstructionWitnessArtifactV0 {
     let witness = FeatureReportObstructionWitness {
@@ -41,7 +41,7 @@ pub fn static_obstruction_witness_artifact() -> ObstructionWitnessArtifactV0 {
                 artifact_ref: Some("artifact-current-feature-report".to_string()),
                 path: Some("src/coupon/CouponService.ts".to_string()),
                 symbol: Some("CouponService.calculate".to_string()),
-                rule_id: Some("typescript-static-call-fixture-v0".to_string()),
+                rule_id: Some("typescript-static-call-fixture/v0.5.0".to_string()),
             },
             FeatureReportEvidenceRef {
                 evidence_ref: "evidence-private-runtime-log".to_string(),
@@ -49,7 +49,7 @@ pub fn static_obstruction_witness_artifact() -> ObstructionWitnessArtifactV0 {
                 artifact_ref: None,
                 path: None,
                 symbol: None,
-                rule_id: Some("retention-manifest-private-evidence-v0".to_string()),
+                rule_id: Some("retention-manifest-private-evidence/v0.5.0".to_string()),
             },
         ],
         theorem_reference: vec!["StaticSplitFeatureExtension".to_string()],
@@ -118,7 +118,7 @@ pub fn static_architecture_drift_ledger() -> ArchitectureDriftLedgerV0 {
             witness_fingerprint: Some(
                 "hidden-cache-access:CouponService:PaymentAdapter".to_string(),
             ),
-            policy_ref: Some("boundary-policy-v0".to_string()),
+            policy_ref: Some("boundary-policy/v0.5.0".to_string()),
             aggregation_window: DriftLedgerAggregationWindowV0 {
                 window_start: Some("2026-05-04T00:00:00Z".to_string()),
                 window_end: Some("2026-05-05T00:00:00Z".to_string()),
@@ -148,7 +148,7 @@ pub fn static_architecture_drift_ledger() -> ArchitectureDriftLedgerV0 {
                 approved_at: Some("2026-05-04T11:00:00Z".to_string()),
                 expires_at: Some("2026-05-11T00:00:00Z".to_string()),
                 scope: Some("pr-575 hidden interaction witness".to_string()),
-                policy_ref: Some("boundary-policy-v0".to_string()),
+                policy_ref: Some("boundary-policy/v0.5.0".to_string()),
                 witness_ref: Some("witness-hidden-cache-access".to_string()),
             }),
             repair_candidates: vec!["repair-coupon-boundary".to_string()],
@@ -166,7 +166,7 @@ pub fn static_architecture_drift_ledger() -> ArchitectureDriftLedgerV0 {
             revision_ref: Some("main@fixture-b9-drift-current".to_string()),
             subject_ref: "runtime:PaymentAdapter".to_string(),
             witness_fingerprint: Some("private-runtime-log:PaymentAdapter".to_string()),
-            policy_ref: Some("runtime-evidence-policy-v0".to_string()),
+            policy_ref: Some("runtime-evidence-policy/v0.5.0".to_string()),
             aggregation_window: DriftLedgerAggregationWindowV0 {
                 window_start: Some("2026-05-04T00:00:00Z".to_string()),
                 window_end: Some("2026-05-05T00:00:00Z".to_string()),

@@ -7,18 +7,18 @@ description: Review ArchSig AAT Observable Bundle artifacts and translate AAT co
 
 ## Purpose
 
-Read `aat-observable-bundle-v0` and related ArchSig artifacts as AAT-facing review evidence.
+Read `aat-observable-bundle/v0.5.0` and related ArchSig artifacts as AAT-facing review evidence.
 This skill turns deterministic evidence into review cues while preserving the boundary between
 tooling evidence, LLM judgment, human review, and Lean proof.
 
 ## Inputs To Prefer
 
-- `aat-observable-bundle-v0` and validation report
+- `aat-observable-bundle/v0.5.0` and validation report
 - AIR and AIR validation
 - ArchMap observation artifact and ArchMap validation report
 - theorem-check report
 - Feature Extension Report
-- `obstruction-witness-v0`
+- `obstruction-witness/v0.5.0`
 - PR quality analysis and policy decision reports
 
 ## Workflow

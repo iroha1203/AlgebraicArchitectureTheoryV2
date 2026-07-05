@@ -1,6 +1,6 @@
 # PR Review Report Guide
 
-Use this reference when reading `archsig-pr-review-report-v1`.
+Use this reference when reading `archsig-pr-review-report/v0.5.0`.
 
 The report is a triage artifact. It helps select code-review focus from the
 base/head ArchMap, optional intermediate path ArchMaps, PR-local delta, and
@@ -11,7 +11,7 @@ or a FieldSig forecast.
 
 | Field | Meaning | Reviewer action |
 | --- | --- | --- |
-| `schemaVersion` | Report schema. Must be `archsig-pr-review-report-v1`. | Stop if different. |
+| `schema` | Report schema. Must be `archsig-pr-review-report/v0.5.0`. | Stop if different. |
 | `canonicalInputs` | Paths, ids, and schema versions of base/head/path ArchMaps, delta, and LawPolicy. | Confirm the intended artifacts were used. |
 | `typedEvaluatorSummary` | Base snapshot evaluator status counts. | Check whether selected support is measured, blocked, unknown, or unmeasured. |
 | `v1Analysis` | Report-local base / optional after / optional path v1 analysis snapshots. | Use packet refs, structural refs, and distance diagnosis as navigation evidence. |
@@ -22,7 +22,7 @@ or a FieldSig forecast.
 
 ## Reading Order
 
-1. Confirm `schemaVersion`.
+1. Confirm `schema`.
 2. Check `canonicalInputs`:
    - base ArchMap is the intended project/scope
    - head ArchMap is present when PR drift / safe budget readings are expected

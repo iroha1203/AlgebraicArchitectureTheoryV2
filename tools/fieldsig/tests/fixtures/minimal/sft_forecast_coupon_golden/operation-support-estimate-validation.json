@@ -1,16 +1,16 @@
 {
-  "schemaVersion": "operation-support-estimate-validation-report-v0",
+  "schema": "operation-support-estimate-validation-report/v0.5.0",
   "input": {
-    "schemaVersion": "operation-support-estimate-v0",
+    "schema": "operation-support-estimate/v0.5.0",
     "path": "tools/fieldsig/tests/fixtures/minimal/sft_forecast_coupon_golden/operation-support-estimate.json",
     "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
     "descriptorId": "descriptor:coupon-prd-forecast-pipeline"
   },
   "estimate": {
-    "schemaVersion": "operation-support-estimate-v0",
+    "schema": "operation-support-estimate/v0.5.0",
     "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
     "descriptorRef": {
-      "descriptorSchemaVersion": "artifact-descriptor-v0",
+      "descriptorSchemaVersion": "artifact-descriptor/v0.5.0",
       "descriptorId": "descriptor:coupon-prd-forecast-pipeline",
       "artifactKind": "prd",
       "sourceRefIds": [

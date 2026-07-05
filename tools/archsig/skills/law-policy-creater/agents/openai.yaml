@@ -1,4 +1,4 @@
 interface:
   display_name: "LawPolicy Creater"
   short_description: "Create LawPolicy and AG profiles"
-  default_prompt: "Use $law-policy-creater to derive a law-policy/v1 artifact with MeasurementProfile v1 for AG measurement and validate the result."
+  default_prompt: "Use $law-policy-creater to derive a law-policy/v0.5.0 artifact with MeasurementProfile v1 for AG measurement and validate the result."

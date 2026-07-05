@@ -10,8 +10,8 @@ Ask only what is needed to select evaluator manifests.
 
 ## Policy Selection
 
-- Does the repository explicitly adopt SOLID? If yes, use `pack: "solid@1"`.
-- Is domain-to-infrastructure dependency forbidden? If yes, use `domain.no-direct-infra-dependency@1`.
+- Does the repository explicitly adopt SOLID? If yes, use `pack: "solid"`.
+- Is domain-to-infrastructure dependency forbidden? If yes, use `domain.no-direct-infra-dependency`.
 - Are there project-specific policies that need a registry evaluator before they can be selected?
 - Is this an AG measurement run? If yes, which AG evaluator(s) should be
   selected: Čech obstruction, square-free repair, law-conflict Tor, sheaf

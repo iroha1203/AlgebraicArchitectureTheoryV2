@@ -1,5 +1,5 @@
 {
-  "schema": "archmap/v1",
+  "schema": "archmap/v0.5.0",
   "id": "practical-rust-service",
   "sources": {
     "src.app": {

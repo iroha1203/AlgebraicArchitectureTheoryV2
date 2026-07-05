@@ -1,13 +1,13 @@
 ---
 name: intentmap-creater
-description: Create bounded IntentMap artifacts from Epic, PRD, Spec, Issue, or proposal text. Use when Codex is asked to draft, generate, update, or validate an intentmap-v0 JSON file, extract product or planning intent, record missing decisions or ambiguous intents, or prepare input for IntentMap x ArchMap planning forecast.
+description: Create bounded IntentMap artifacts from Epic, PRD, Spec, Issue, or proposal text. Use when Codex is asked to draft, generate, update, or validate an intentmap/v0.5.0 JSON file, extract product or planning intent, record missing decisions or ambiguous intents, or prepare input for IntentMap x ArchMap planning forecast.
 ---
 
 # IntentMap Creater
 
 ## Purpose
 
-Create `intentmap-v0` as bounded LLM-authored intent evidence. Treat IntentMap as a source-to-intent mapping artifact for Epic / PRD / Spec planning workflows, not as implementation plan completeness, forecast correctness, product truth, or causal diagnosis.
+Create `intentmap/v0.5.0` as bounded LLM-authored intent evidence. Treat IntentMap as a source-to-intent mapping artifact for Epic / PRD / Spec planning workflows, not as implementation plan completeness, forecast correctness, product truth, or causal diagnosis.
 
 ## Inputs
 
@@ -36,7 +36,7 @@ ${FIELDSIG_BIN:-fieldsig} <command> ...
    - Read `references/schema-cheatsheet.md` when field values are unclear.
    - Compare with `references/examples.md` when checking output shape.
 
-2. Draft `intentmap-v0`.
+2. Draft `intentmap/v0.5.0`.
    - Use `items[]` as the unit of requirement, operation, workflow, state, transition, invariant, acceptance, non-goal, or ambiguity.
    - Keep `intentItemId`, `intentKind`, `sourceRefs`, `targetIntentRef`, `preserves`, `forgets`, `claimClassification`, `confidence`, `requiredAssumptions`, `missingDecisions`, `missingEvidence`, and `nonConclusions` explicit.
    - Put unresolved product choices in `missingDecisions[]`; do not fill them with guesses.

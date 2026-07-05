@@ -44,15 +44,15 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- hypothesis-refresh-cycle 
 
 ## Artifacts
 
-| artifact | schemaVersion | 役割 |
+| artifact | schema | 役割 |
 | --- | --- | --- |
-| Report outcome daily ledger | `report-outcome-daily-ledger-v0` | `outcome-linkage-dataset-v0` と `architecture-drift-ledger-v0` を aggregation window で join する。 |
-| Calibration review record | `calibration-review-record-v0` | false positive / false negative review と metric calibration の入力を保持する。 |
-| Team threshold policy | `team-threshold-policy-v0` | team-specific threshold tuning policy を保持する。 |
-| Ownership boundary monitor | `ownership-boundary-monitor-v0` | ownership / boundary erosion monitoring を保持する。 |
-| Repair adoption record | `repair-adoption-record-v0` | repair suggestion adoption tracking を保持する。 |
-| Incident correlation monitor | `incident-correlation-monitor-v0` | incident / rollback / MTTR correlation monitoring を保持する。 |
-| Hypothesis refresh cycle | `hypothesis-refresh-cycle-v0` | empirical hypothesis refresh cycle を保持する。 |
+| Report outcome daily ledger | `report-outcome-daily-ledger/v0.5.0` | `outcome-linkage-dataset/v0.5.0` と `architecture-drift-ledger/v0.5.0` を aggregation window で join する。 |
+| Calibration review record | `calibration-review-record/v0.5.0` | false positive / false negative review と metric calibration の入力を保持する。 |
+| Team threshold policy | `team-threshold-policy/v0.5.0` | team-specific threshold tuning policy を保持する。 |
+| Ownership boundary monitor | `ownership-boundary-monitor/v0.5.0` | ownership / boundary erosion monitoring を保持する。 |
+| Repair adoption record | `repair-adoption-record/v0.5.0` | repair suggestion adoption tracking を保持する。 |
+| Incident correlation monitor | `incident-correlation-monitor/v0.5.0` | incident / rollback / MTTR correlation monitoring を保持する。 |
+| Hypothesis refresh cycle | `hypothesis-refresh-cycle/v0.5.0` | empirical hypothesis refresh cycle を保持する。 |
 
 ## Reading Rules
 
@@ -70,7 +70,7 @@ observed PR / review / CI / outcome refs と false positive / false negative rev
 Closed-loop SFT workbench では、B10 artifact は forecast 後の観測面を担当する。最小 flow は
 `sft-forecast` が生成した `ConsequenceEnvelope` / forecast item refs、review / CI
 intervention refs、observed PR / review / CI / incident refs を
-`forecast-calibration-hook-v0` と B10 artifact に接続し、hypothesis refresh の入力として
+`forecast-calibration-hook/v0.5.0` と B10 artifact に接続し、hypothesis refresh の入力として
 保存することである。この接続は deployment evidence の台帳であり、自動 governance
 correctness、forecast quality、global risk reduction、または incident causality を結論しない。
 

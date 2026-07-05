@@ -41,10 +41,10 @@ pub fn static_operation_support_estimate() -> OperationSupportEstimateV0 {
 
     OperationSupportEstimateV0 {
         schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
-        estimate_id: "fixture-operation-support-estimate-v0".to_string(),
+        estimate_id: "fixture-operation-support-estimate/v0.5.0".to_string(),
         descriptor_ref: OperationSupportDescriptorRefV0 {
             descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
-            descriptor_id: "fixture-artifact-descriptor-v0".to_string(),
+            descriptor_id: "fixture-artifact-descriptor/v0.5.0".to_string(),
             artifact_kind: "issue".to_string(),
             source_ref_ids: source_ref_ids.clone(),
             action_class_candidate_ids: action_class_candidate_ids.clone(),
@@ -536,7 +536,7 @@ fn check_schema_version(estimate: &OperationSupportEstimateV0) -> ValidationChec
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported operation support estimate schemaVersion: {}",
+            "unsupported operation support estimate schema: {}",
             estimate.schema_version
         ));
     }

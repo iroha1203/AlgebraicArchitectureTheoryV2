@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "framework-adapter-evidence-v0",
-  "adapterId": "fastapi-route-adapter-fixture-v0",
+  "schema": "framework-adapter-evidence/v0.5.0",
+  "adapterId": "fastapi-route-adapter-fixture/v0.5.0",
   "framework": "fastapi",
   "sourceLanguage": "python",
   "componentIdKind": "python-module",
-  "projectionRule": "fastapi-route-adapter-fixture-v0",
+  "projectionRule": "fastapi-route-adapter-fixture/v0.5.0",
   "routes": [
     {
       "routeId": "route-list-users",
@@ -24,7 +24,7 @@
     "fixture adapter inspects FastAPI APIRouter decorator calls in src/app/web.py"
   ],
   "exactnessAssumptions": [
-    "fastapi-route-adapter-fixture-v0 maps observed APIRouter method decorators to route handler relations"
+    "fastapi-route-adapter-fixture-schema050 maps observed APIRouter method decorators to route handler relations"
   ],
   "unsupportedConstructs": [
     {

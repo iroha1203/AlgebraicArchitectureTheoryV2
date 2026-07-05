@@ -1,17 +1,17 @@
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "solid-policy",
   "distanceProfileRef": "distance-profile:architecture-default@1",
   "policies": [
     {
-      "pack": "solid@1",
+      "pack": "solid",
       "basis": ["policy-basis:solid"],
       "scope": ["src.app"],
       "severity": "error"
     },
     {
       "law": "domain.no-direct-infra-dependency",
-      "evaluator": "domain.no-direct-infra-dependency@1",
+      "evaluator": "domain.no-direct-infra-dependency",
       "basis": ["policy-basis:layering"],
       "scope": ["src.app"],
       "severity": "warning"

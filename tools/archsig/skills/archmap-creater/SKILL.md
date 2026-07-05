@@ -1,18 +1,18 @@
 ---
 name: archmap-creater
-description: Create and validate ArchMap artifacts from repository evidence, especially AG measurement archmap/v2 finite-poset-site JSON. Use when Codex is asked to draft, generate, update, or validate an ArchMap, prepare source-grounded atoms, contexts, covers, or run ArchSig analyze from code/docs/tests/traces.
+description: Create and validate ArchMap artifacts from repository evidence, especially AG measurement archmap/v0.5.0 finite-poset-site JSON. Use when Codex is asked to draft, generate, update, or validate an ArchMap, prepare source-grounded atoms, contexts, covers, or run ArchSig analyze from code/docs/tests/traces.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap/v2` as the source-grounded finite-poset-site input for
+Create `archmap/v0.5.0` as the source-grounded finite-poset-site input for
 ArchSig AG measurement.
 
 ArchMap v2 has five primary surfaces:
 
-- `schema`: exactly `archmap/v2`.
+- `schema`: exactly `archmap/v0.5.0`.
 - `sources`: source ledger for files, symbols, docs, tests, traces, and policy
   refs that were actually read.
 - `atoms`: subject / axis-decorated primitive source-grounded Atom facts.
@@ -30,7 +30,7 @@ gap ledgers, Lean proof objects, or global architecture truth. ArchSig computes
 bounded diagnostics later from `ArchMap + LawPolicy + MeasurementProfile +
 evaluator registry`.
 
-Use `archmap/v1` only when the user explicitly targets the bounded legacy
+Use `archmap/v0.5.0` only when the user explicitly targets the bounded legacy
 structural-analysis path. Do not migrate v2 contexts back into v1 molecules for
 AG measurement work.
 

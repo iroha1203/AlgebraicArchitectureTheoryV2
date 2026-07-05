@@ -3,7 +3,7 @@
 Use this reference when deciding what to read first in ArchSig output. The
 default first surfaces are `archsig-analysis-summary.json` for LLM/structured
 reading and the ArchView report pane for human visual reading. Raw
-`archsig-analysis-packet/v1` artifacts are optional evidence-store and FieldSig
+`archsig-analysis-packet/v0.5.0` artifacts are optional evidence-store and FieldSig
 handoff files emitted only with `--emit-raw-artifacts`.
 
 ## Analysis Summary Reading Order

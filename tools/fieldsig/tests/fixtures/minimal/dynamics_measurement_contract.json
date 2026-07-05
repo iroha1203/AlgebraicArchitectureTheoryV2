@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "dynamics-measurement-contract-v0",
-  "artifactId": "fixture-dynamics-measurement-contract-v0",
+  "schema": "dynamics-measurement-contract/v0.5.0",
+  "artifactId": "fixture-dynamics-measurement-contract/v0.5.0",
   "scope": "canonical Architecture Dynamics measurement status boundary fixture",
   "metrics": [
     {
@@ -11,7 +11,7 @@
         {
           "kind": "signature-snapshot-store",
           "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
-          "schemaVersion": "signature-snapshot-store-v0",
+          "schema": "signature-snapshot-store/v0.5.0",
           "artifactId": "fixture-signature-snapshot"
         }
       ],
@@ -22,13 +22,13 @@
           {
             "kind": "signature-snapshot-store",
             "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
-            "schemaVersion": "signature-snapshot-store-v0",
+            "schema": "signature-snapshot-store/v0.5.0",
             "artifactId": "fixture-signature-snapshot"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "dynamics-measurement-contract-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "dynamics-measurement-contract/v0.5.0",
         "selectedRegionRefs": ["fixture:selected-pr-window"],
         "assumptions": ["selected PR before and after signatures are available"],
         "unsupportedConstructs": [],
@@ -53,7 +53,7 @@
         {
           "kind": "pr-history-dataset",
           "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
-          "schemaVersion": "pr-history-dataset-v0",
+          "schema": "pr-history-dataset/v0.5.0",
           "artifactId": "fixture-pr-history"
         }
       ],
@@ -64,13 +64,13 @@
           {
             "kind": "pr-history-dataset",
             "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
-            "schemaVersion": "pr-history-dataset-v0",
+            "schema": "pr-history-dataset/v0.5.0",
             "artifactId": "fixture-pr-history"
           }
         ],
         "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "dynamics-measurement-contract-v0",
+        "policyVersion": "fixture-policy/v0.5.0",
+        "schema": "dynamics-measurement-contract/v0.5.0",
         "selectedRegionRefs": ["fixture:selected-pr-window"],
         "assumptions": ["review metadata is available for the selected PR window"],
         "unsupportedConstructs": [],
@@ -99,7 +99,7 @@
         "measuredAxes": [],
         "sourceArtifactRefs": [],
         "extractorVersion": "0.1.0",
-        "schemaVersion": "dynamics-measurement-contract-v0",
+        "schema": "dynamics-measurement-contract/v0.5.0",
         "selectedRegionRefs": [],
         "assumptions": ["local grammar extractor not run"],
         "unsupportedConstructs": [],
@@ -123,19 +123,19 @@
       {
         "kind": "signature-snapshot-store",
         "path": "tools/fieldsig/tests/fixtures/minimal/external/signature_snapshot_store.json",
-        "schemaVersion": "signature-snapshot-store-v0",
+        "schema": "signature-snapshot-store/v0.5.0",
         "artifactId": "fixture-signature-snapshot"
       },
       {
         "kind": "pr-history-dataset",
         "path": "tools/fieldsig/tests/fixtures/minimal/external/pr_history_dataset.json",
-        "schemaVersion": "pr-history-dataset-v0",
+        "schema": "pr-history-dataset/v0.5.0",
         "artifactId": "fixture-pr-history"
       }
     ],
     "extractorVersion": "0.1.0",
-    "policyVersion": "fixture-policy-v0",
-    "schemaVersion": "dynamics-measurement-contract-v0",
+    "policyVersion": "fixture-policy/v0.5.0",
+    "schema": "dynamics-measurement-contract/v0.5.0",
     "aggregationWindow": {
       "windowStart": "2026-01-01T00:00:00Z",
       "windowEnd": "2026-01-31T23:59:59Z",

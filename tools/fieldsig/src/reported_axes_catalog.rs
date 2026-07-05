@@ -5,11 +5,11 @@ use crate::{
     SchemaFieldMappingV0, SchemaRequiredAssumptionV0,
 };
 
-const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
+const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy/v0.5.0";
 
 pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesReportedAxesCatalogV0 {
-    let catalog_version = "archsig-reported-axes-catalog-v0";
-    let benchmark_suite_version = "archsig-benchmark-suite-v0";
+    let catalog_version = "archsig-reported-axes-catalog/v0.5.0";
+    let benchmark_suite_version = "archsig-benchmark-suite/v0.5.0";
     let axes = vec![
         axis(
             "hasCycle",
@@ -47,7 +47,7 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             "Option Nat",
             vec!["AIR", "Feature Extension Report"],
             "unmeasured",
-            vec!["runtime edge evidence is supplied with runtime-edge-projection-v0"],
+            vec!["runtime edge evidence is supplied with runtime-edge-projection-schema050"],
             vec![
                 "ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction",
             ],

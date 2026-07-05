@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "aat-air-v0",
+  "schema": "aat-air/v0.5.0",
   "architectureId": "canonical-ai-metadata-missing-unmeasured",
   "ids": {
     "componentIdPolicy": "canonical component id",
@@ -22,7 +22,7 @@
     {
       "artifactId": "artifact-generated-patch",
       "kind": "generated_patch",
-      "schemaVersion": "generated-patch-v0",
+      "schema": "generated-patch/v0.5.0",
       "path": "canonical/metadata-missing/generated.patch",
       "contentHash": "sha256:canonical-metadata-missing-patch",
       "producedBy": null
@@ -36,7 +36,7 @@
       "path": "canonical/metadata-missing/generated.patch",
       "symbol": null,
       "line": null,
-      "ruleId": "generated-patch-v0",
+      "ruleId": "generated-patch/v0.5.0",
       "confidence": "low"
     }
   ],

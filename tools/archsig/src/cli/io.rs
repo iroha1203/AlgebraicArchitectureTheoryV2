@@ -32,11 +32,11 @@ pub(crate) fn require_schema(
     field_name: &str,
 ) -> Result<(), Box<dyn Error>> {
     let actual = document
-        .get("schemaVersion")
+        .get("schema")
         .or_else(|| document.get("schema"))
         .and_then(|value| value.as_str());
     if actual != Some(expected) {
-        return Err(format!("{field_name} must have schemaVersion {expected}").into());
+        return Err(format!("{field_name} must have schema {expected}").into());
     }
     Ok(())
 }

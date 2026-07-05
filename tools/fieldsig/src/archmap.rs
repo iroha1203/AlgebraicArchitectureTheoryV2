@@ -182,17 +182,17 @@ pub fn build_operation_support_estimate_from_archsig_analysis_packet(
     input_path: &str,
 ) -> Result<OperationSupportEstimateV0, Box<dyn std::error::Error>> {
     let schema_version = packet
-        .get("schemaVersion")
+        .get("schema")
         .or_else(|| packet.get("schema"))
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema_version == "archsig-analysis-packet/v1" {
+    if schema_version == "archsig-analysis-packet/v0.5.0" {
         return Ok(build_operation_support_estimate_from_archsig_v1_packet(
             packet, input_path,
         ));
     }
     Err(format!(
-        "FieldSig ArchSig handoff requires archsig-analysis-packet/v1, got {schema_version}"
+        "FieldSig ArchSig handoff requires archsig-analysis-packet/v0.5.0, got {schema_version}"
     )
     .into())
 }
@@ -203,12 +203,12 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
 ) -> Result<OperationSupportEstimateV0, Box<dyn std::error::Error>> {
     let schema_version = packet
         .get("schema")
-        .or_else(|| packet.get("schemaVersion"))
+        .or_else(|| packet.get("schema"))
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema_version != "archsig-measurement-packet/v1" {
+    if schema_version != "archsig-measurement-packet/v0.5.0" {
         return Err(format!(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v1, got {schema_version}"
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.0, got {schema_version}"
         )
         .into());
     }
@@ -284,8 +284,8 @@ pub fn build_operation_support_estimate_from_archsig_measurement_packet(
                 "ArchSig measurement packet statuses are selected finite-measurement evidence, not probability"
                     .to_string(),
             evidence_kinds: vec![
-                "archsig-measurement-packet/v1".to_string(),
-                "measurement-profile/v1".to_string(),
+                "archsig-measurement-packet/v0.5.0".to_string(),
+                "measurement-profile/v0.5.0".to_string(),
                 "structural-verdict".to_string(),
                 "computed-invariant".to_string(),
                 "analytic-reading".to_string(),
@@ -316,7 +316,7 @@ fn build_operation_support_estimate_from_archsig_v1_packet(
     let analysis_id = packet
         .get("analysisId")
         .and_then(|value| value.as_str())
-        .unwrap_or("archsig-analysis-packet-v1");
+        .unwrap_or("archsig-analysis-packet/v0.5.0");
     let source_ref_ids = archsig_v1_packet_sft_source_refs(packet, input_path);
     let action_class_candidate_ids = archsig_v1_packet_action_candidate_ids(packet);
     let candidate_operation_families =
@@ -329,10 +329,10 @@ fn build_operation_support_estimate_from_archsig_v1_packet(
 
     OperationSupportEstimateV0 {
         schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
-        estimate_id: format!("estimate:archsig-analysis-v1:{}", stable_id(analysis_id)),
+        estimate_id: format!("estimate:archsig-analysis-schema050:{}", stable_id(analysis_id)),
         descriptor_ref: OperationSupportDescriptorRefV0 {
             descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
-            descriptor_id: format!("descriptor:archsig-analysis-v1:{analysis_id}"),
+            descriptor_id: format!("descriptor:archsig-analysis-schema050:{analysis_id}"),
             artifact_kind: "archsig-analysis-packet".to_string(),
             source_ref_ids: source_ref_ids.clone(),
             action_class_candidate_ids: action_class_candidate_ids.clone(),
@@ -340,7 +340,7 @@ fn build_operation_support_estimate_from_archsig_v1_packet(
         },
         candidate_operation_families,
         policy_constraints: vec![OperationSupportPolicyConstraintV0 {
-            constraint_id: "constraint:archsig-analysis-v1:no-forecast-truth-promotion".to_string(),
+            constraint_id: "constraint:archsig-analysis-schema050:no-forecast-truth-promotion".to_string(),
             constraint_kind: "claim-boundary".to_string(),
             applies_to_family_ids: family_ids.clone(),
             source_ref_ids: source_ref_ids.clone(),
@@ -358,7 +358,7 @@ fn build_operation_support_estimate_from_archsig_v1_packet(
             operation_family: "raw-archmap-truth-promotion".to_string(),
             source_ref_ids: source_ref_ids.clone(),
             constraint_refs: vec![
-                "constraint:archsig-analysis-v1:no-forecast-truth-promotion".to_string(),
+                "constraint:archsig-analysis-schema050:no-forecast-truth-promotion".to_string(),
             ],
             reason: "raw ArchMap atoms and ArchSig typed evaluator packets do not assert SFT forecast correctness".to_string(),
             boundary: "FieldSig must keep ArchSig packet refs as bounded current structural state, not ground truth or diff analysis".to_string(),
@@ -370,17 +370,17 @@ fn build_operation_support_estimate_from_archsig_v1_packet(
             &source_ref_ids,
         ),
         evidence_boundary: OperationSupportEvidenceBoundaryV0 {
-            boundary_id: format!("boundary:archsig-analysis-v1:{}:sft-input", stable_id(analysis_id)),
+            boundary_id: format!("boundary:archsig-analysis-schema050:{}:sft-input", stable_id(analysis_id)),
             source_ref_ids,
             measurement_boundary_refs: archsig_v1_packet_measurement_boundary_refs(packet),
             confidence_boundary:
                 "ArchSig v1 typed evaluator status is structural review evidence, not probability"
                     .to_string(),
             evidence_kinds: vec![
-                "archsig-analysis-packet/v1".to_string(),
-                "typed-evaluator-results/v1".to_string(),
-                "law-policy/v1".to_string(),
-                "archmap/v1".to_string(),
+                "archsig-analysis-packet/v0.5.0".to_string(),
+                "typed-evaluator-results/v0.5.0".to_string(),
+                "law-policy/v0.5.0".to_string(),
+                "archmap/v0.5.0".to_string(),
             ],
             unsupported_constructs: Vec::new(),
             assumptions: vec![
@@ -580,7 +580,7 @@ fn archsig_v1_packet_candidate_families(
                 .and_then(|value| value.as_str())
                 .unwrap_or("selected-law");
             CandidateOperationFamilyV0 {
-                family_id: format!("family:archsig-v1:{}", stable_id(evaluator)),
+                family_id: format!("family:archsig-schema050:{}", stable_id(evaluator)),
                 operation_family: format!("review-typed-evaluator-{status}"),
                 support_kind: "typed-evaluator-result".to_string(),
                 action_class_candidate_ids: vec![evaluator.to_string(), law.to_string()],
@@ -606,8 +606,8 @@ fn archsig_v1_packet_candidate_families(
         .collect::<Vec<_>>();
     if families.is_empty() {
         families.push(CandidateOperationFamilyV0 {
-            family_id: "family:archsig-v1-review-only".to_string(),
-            operation_family: "review-selected-archsig-v1-analysis".to_string(),
+            family_id: "family:archsig-schema050-review-only".to_string(),
+            operation_family: "review-selected-archsig-schema050-analysis".to_string(),
             support_kind: "review-boundary".to_string(),
             action_class_candidate_ids: action_class_candidate_ids.to_vec(),
             source_ref_ids: source_ref_ids.to_vec(),
@@ -643,7 +643,7 @@ fn archsig_v1_packet_unknown_remainders(
                 .unwrap_or("typed-evaluator");
             Some(OperationSupportUnknownRemainderV0 {
                 remainder_id: format!(
-                    "unknown:archsig-analysis-v1:{}",
+                    "unknown:archsig-analysis-schema050:{}",
                     stable_id(evaluator)
                 ),
                 affected_family_ids: family_ids.to_vec(),
@@ -753,9 +753,10 @@ fn validate_archsig_measurement_packet_handoff_shape(
         .get("schema")
         .and_then(|value| value.as_str())
         .unwrap_or_default();
-    if schema != "archsig-measurement-packet/v1" {
+    if schema != "archsig-measurement-packet/v0.5.0" {
         return Err(
-            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v1".into(),
+            "FieldSig ArchSig measurement handoff requires archsig-measurement-packet/v0.5.0"
+                .into(),
         );
     }
     let packet_id = packet
@@ -955,13 +956,13 @@ fn archsig_measurement_certificate_invariant_prefixes(
     evaluator: &str,
 ) -> Option<&'static [&'static str]> {
     match evaluator {
-        "ag.cech-obstruction@1" => Some(&["cech-cohomology:"]),
-        "ag.law-conflict-tor@1" => Some(&["law-conflict-tor:"]),
-        "ag.square-free-repair@1" => Some(&["square-free-repair:"]),
-        "ag.restriction-compatibility@1" => Some(&["restriction-compatibility:"]),
-        "ag.section-factorization@1" => Some(&["section-factorization:"]),
-        "ag.boundary-residue@1" => Some(&["boundary-residue:"]),
-        "ag.coherence-obstruction@1" => Some(&["coherence-obstruction:"]),
+        "ag.cech-obstruction" => Some(&["cech-cohomology:"]),
+        "ag.law-conflict-tor" => Some(&["law-conflict-tor:"]),
+        "ag.square-free-repair" => Some(&["square-free-repair:"]),
+        "ag.restriction-compatibility" => Some(&["restriction-compatibility:"]),
+        "ag.section-factorization" => Some(&["section-factorization:"]),
+        "ag.boundary-residue" => Some(&["boundary-residue:"]),
+        "ag.coherence-obstruction" => Some(&["coherence-obstruction:"]),
         _ => None,
     }
 }
@@ -1689,7 +1690,7 @@ pub fn build_air_from_archmap(
                     kind: "archmap-relation".to_string(),
                     lifecycle: "after".to_string(),
                     protected_by: None,
-                    extraction_rule: Some("archmap-v0-projection".to_string()),
+                    extraction_rule: Some("archmap-schema050-projection".to_string()),
                     evidence_refs: evidence_refs.clone(),
                 });
             }
@@ -1802,7 +1803,7 @@ pub fn build_air_from_archmap(
         feature: AirFeature {
             feature_id: Some(document.map_id.clone()),
             title: Some("ArchMap supplied JSON projection".to_string()),
-            description: Some("AIR generated from supplied archmap-v0 artifact".to_string()),
+            description: Some("AIR generated from supplied archmap-schema050 artifact".to_string()),
             source: "manual".to_string(),
             ai_session: None,
         },
@@ -1902,7 +1903,7 @@ fn check_archmap_schema_version(schema_version: &str) -> ValidationCheck {
         },
     );
     if check.result == "fail" {
-        check.reason = Some(format!("unsupported schemaVersion: {schema_version}"));
+        check.reason = Some(format!("unsupported schema: {schema_version}"));
     }
     check
 }
@@ -2009,7 +2010,7 @@ fn check_source_inventory_artifact(
 
     if inventory.schema_version != ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION {
         examples.push(generic_validation_example(
-            "sourceInventory.schemaVersion",
+            "sourceInventory.schema",
             &inventory.schema_version,
             "source inventory schema version is unsupported",
         ));
@@ -2826,7 +2827,7 @@ fn archmap_air_coverage(
             projection_rule: if layer == "runtime" && !measured {
                 None
             } else {
-                Some("archmap-v0-to-air-v0".to_string())
+                Some("archmap-schema050-to-air/v0.5.0".to_string())
             },
             extraction_scope: vec![document.source_universe.selection_boundary.clone()],
             exactness_assumptions: vec![
@@ -2874,7 +2875,7 @@ fn archmap_signature_axes(document: &ArchMapDocumentV0) -> Vec<crate::AirSignatu
                 } else {
                     "unmeasured".to_string()
                 },
-                source: Some("archmap-v0".to_string()),
+                source: Some("archmap/v0.5.0".to_string()),
                 reason: (!measured).then(|| format!("{layer} layer is not measured by ArchMap")),
             }
         })
@@ -2884,7 +2885,7 @@ fn archmap_signature_axes(document: &ArchMapDocumentV0) -> Vec<crate::AirSignatu
         value: None,
         measured: false,
         measurement_boundary: "unmeasured".to_string(),
-        source: Some("archmap-v0".to_string()),
+        source: Some("archmap/v0.5.0".to_string()),
         reason: Some("runtime traces are not supplied by ArchMap MVP fixture".to_string()),
     });
     axes
@@ -3117,7 +3118,9 @@ fn archmap_formal_promotion_guardrail_checklist_entry() -> ArchMapLeanPreservati
             "validation and projection do not discharge ArchMapPreservationPackage fields"
                 .to_string(),
         ],
-        missing_evidence: vec!["Lean theorem witness not supplied by archmap-v0".to_string()],
+        missing_evidence: vec![
+            "Lean theorem witness not supplied by archmap-schema050".to_string(),
+        ],
         coverage_boundary:
             "formal promotion requires explicit Lean theorem refs and discharged preconditions"
                 .to_string(),

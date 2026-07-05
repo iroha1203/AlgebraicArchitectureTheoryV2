@@ -21,8 +21,8 @@ fn cli_emits_and_validates_software_field_measurement_and_run_manifest() {
     ]);
     let measurement_json = read_json(&measurement);
     assert_eq!(
-        measurement_json["schemaVersion"],
-        "software-field-measurement-v0"
+        measurement_json["schema"],
+        "software-field-measurement/v0.5.0"
     );
     assert!(
         measurement_json["archsigArtifactRefs"]
@@ -64,8 +64,8 @@ fn cli_emits_and_validates_software_field_measurement_and_run_manifest() {
     ]);
     let validation_json = read_json(&measurement_validation);
     assert_eq!(
-        validation_json["schemaVersion"],
-        "software-field-measurement-validation-report-v0"
+        validation_json["schema"],
+        "software-field-measurement-validation-report/v0.5.0"
     );
     assert_eq!(validation_json["summary"]["result"], "pass");
     assert!(
@@ -83,7 +83,7 @@ fn cli_emits_and_validates_software_field_measurement_and_run_manifest() {
         manifest.to_str().expect("manifest path is utf-8"),
     ]);
     let manifest_json = read_json(&manifest);
-    assert_eq!(manifest_json["schemaVersion"], "fieldsig-run-manifest-v0");
+    assert_eq!(manifest_json["schema"], "fieldsig-run-manifest/v0.5.0");
     assert!(
         manifest_json["inputArtifactRefs"]
             .as_array()
@@ -96,7 +96,7 @@ fn cli_emits_and_validates_software_field_measurement_and_run_manifest() {
             .as_array()
             .expect("output refs")
             .iter()
-            .any(|entry| entry["schemaVersion"] == "software-field-measurement-v0")
+            .any(|entry| entry["schema"] == "software-field-measurement/v0.5.0")
     );
 
     run_fieldsig(&[
@@ -110,8 +110,8 @@ fn cli_emits_and_validates_software_field_measurement_and_run_manifest() {
     ]);
     let manifest_validation_json = read_json(&manifest_validation);
     assert_eq!(
-        manifest_validation_json["schemaVersion"],
-        "fieldsig-run-manifest-validation-report-v0"
+        manifest_validation_json["schema"],
+        "fieldsig-run-manifest-validation-report/v0.5.0"
     );
     assert_eq!(manifest_validation_json["summary"]["result"], "pass");
 }

@@ -155,7 +155,7 @@ fn validate_framework_adapter_evidence(
 ) -> Result<(), String> {
     if adapter.schema_version != FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION {
         return Err(format!(
-            "unsupported framework adapter evidence schemaVersion: {}",
+            "unsupported framework adapter evidence schema: {}",
             adapter.schema_version
         ));
     }

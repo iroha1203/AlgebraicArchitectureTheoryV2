@@ -75,7 +75,7 @@ const CALIBRATION_NON_CONCLUSIONS: [&str; 4] = [
 pub fn static_intent_map() -> IntentMapV0 {
     IntentMapV0 {
         schema_version: INTENTMAP_SCHEMA_VERSION.to_string(),
-        intent_map_id: "fixture-intentmap-v0".to_string(),
+        intent_map_id: "fixture-intentmap/v0.5.0".to_string(),
         source_universe: IntentSourceUniverseV0 {
             universe_id: "intent-universe:coupon-prd".to_string(),
             source_refs: vec![IntentSourceRefV0 {
@@ -200,7 +200,7 @@ pub fn static_intent_archmap_alignment() -> IntentArchMapAlignmentV0 {
     let intent_map = static_intent_map();
     IntentArchMapAlignmentV0 {
         schema_version: INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION.to_string(),
-        alignment_map_id: "fixture-intent-archmap-alignment-v0".to_string(),
+        alignment_map_id: "fixture-intent-archmap-alignment/v0.5.0".to_string(),
         intent_map_ref: IntentMapArtifactRefV0 {
             schema_version: INTENTMAP_SCHEMA_VERSION.to_string(),
             intent_map_id: intent_map.intent_map_id.clone(),
@@ -214,7 +214,7 @@ pub fn static_intent_archmap_alignment() -> IntentArchMapAlignmentV0 {
         },
         archmap_ref: IntentArchMapArtifactRefV0 {
             schema_version: ARCHMAP_SCHEMA_VERSION.to_string(),
-            map_id: "fixture-archmap-v0".to_string(),
+            map_id: "fixture-archmap/v0.5.0".to_string(),
             path: "tools/fieldsig/tests/fixtures/minimal/archmap.json".to_string(),
             map_item_ids: vec![
                 "object-route-users".to_string(),
@@ -450,22 +450,22 @@ pub fn build_operation_support_estimate_from_intent_alignment(
 pub fn static_pr_quality_analysis_report() -> PrQualityAnalysisReportV0 {
     PrQualityAnalysisReportV0 {
         schema_version: PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION.to_string(),
-        report_id: "fixture-pr-quality-analysis-v0".to_string(),
+        report_id: "fixture-pr-quality-analysis/v0.5.0".to_string(),
         archmap_ref: static_intent_archmap_alignment().archmap_ref,
-        air_ref: Some(artifact_ref("air", "aat-air-v0", "air.json")),
+        air_ref: Some(artifact_ref("air", "aat-air/v0.5.0", "air.json")),
         theorem_check_ref: Some(artifact_ref(
             "theorem-check",
-            "theorem-precondition-check-report-v0",
+            "theorem-precondition-check-report/v0.5.0",
             "theorem-check.json",
         )),
         feature_report_ref: Some(artifact_ref(
             "feature-report",
-            "feature-extension-report-v0",
+            "feature-extension-report/v0.5.0",
             "feature-report.json",
         )),
         policy_decision_ref: Some(artifact_ref(
             "policy-decision",
-            "policy-decision-report-v0",
+            "policy-decision-report/v0.5.0",
             "policy-decision.json",
         )),
         cues: vec![
@@ -546,7 +546,7 @@ pub fn static_intent_calibration_record() -> IntentCalibrationRecordV0 {
     let intent_map = static_intent_map();
     IntentCalibrationRecordV0 {
         schema_version: INTENT_CALIBRATION_RECORD_SCHEMA_VERSION.to_string(),
-        calibration_id: "fixture-intent-calibration-record-v0".to_string(),
+        calibration_id: "fixture-intent-calibration-record/v0.5.0".to_string(),
         intent_map_ref: IntentMapArtifactRefV0 {
             schema_version: INTENTMAP_SCHEMA_VERSION.to_string(),
             intent_map_id: intent_map.intent_map_id.clone(),
@@ -559,7 +559,7 @@ pub fn static_intent_calibration_record() -> IntentCalibrationRecordV0 {
             non_conclusions: strings(&CALIBRATION_NON_CONCLUSIONS),
         },
         forecast_cone_ref: ConsequenceForecastConeRefV0 {
-            forecast_cone_schema_version: "forecast-cone-skeleton-v0".to_string(),
+            forecast_cone_schema_version: "forecast-cone-skeleton/v0.5.0".to_string(),
             cone_id: "cone:intent-alignment".to_string(),
             operation_support_estimate_id: "estimate:intent-alignment".to_string(),
             source_ref_ids: vec!["source:prd:coupon".to_string()],
@@ -1137,9 +1137,7 @@ fn simple_schema_check(id: &str, actual: &str, expected: &str) -> ValidationChec
         if actual == expected { "pass" } else { "fail" },
     );
     if check.result == "fail" {
-        check.reason = Some(format!(
-            "unsupported schemaVersion: {actual}; expected {expected}"
-        ));
+        check.reason = Some(format!("unsupported schema: {actual}; expected {expected}"));
     }
     check
 }

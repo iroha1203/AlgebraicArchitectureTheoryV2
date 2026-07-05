@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "calibration-review-record-v0",
+  "schema": "calibration-review-record/v0.5.0",
   "schemaCompatibility": {
     "artifactId": "calibration-review-record",
-    "schemaVersionName": "calibration-review-record-v0",
-    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "schemaName": "calibration-review-record/v0.5.0",
+    "compatibilityPolicyRef": "b9-compatibility-policy/v0.5.0",
     "fieldMappings": [
       {
         "sourceField": "reportFindingRefs",
@@ -122,7 +122,7 @@
       "false positive / false negative review is empirical policy input, not causal proof"
     ]
   },
-  "recordId": "fixture-b10-calibration-review-false-positive-v0",
+  "recordId": "fixture-b10-calibration-review-false-positive/v0.5.0",
   "reviewedAt": "2026-05-05T09:00:00Z",
   "reviewer": "architecture-reviewer@example.com",
   "reportFindingRefs": [
@@ -199,7 +199,7 @@
       "reviewCost.approvalLatencyHours"
     ],
     "thresholdPolicyRefs": [
-      "ci-policy:runtime-private-evidence-advisory-v0"
+      "ci-policy:runtime-private-evidence-advisory-schema050"
     ],
     "sourceLedgerRefs": [
       "tools/fieldsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"

@@ -1,6 +1,6 @@
 ---
 name: archsig-pr-reviewer
-description: Run ArchSig lightweight PR review from base ArchMap v1, base-branch-derived PR-local archmap-delta-v0, and LawPolicy v1; read archsig-pr-review-report-v1 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
+description: Run ArchSig lightweight PR review from base ArchMap v1, base-branch-derived PR-local archmap-delta/v0.5.0, and LawPolicy v1; read archsig-pr-review-report/v0.5.0 outputs; and turn the report into bounded source-first review questions. Use when Codex is asked to prepare, run, interpret, or automate ArchSig PR review for a pull request.
 ---
 
 # ArchSig PR Reviewer
@@ -12,11 +12,11 @@ bounded review focus.
 
 `pr-review` is change-local. It reads:
 
-- base `archmap/v1`
-- optional head `archmap/v1`
-- optional intermediate path `archmap/v1` snapshots
-- PR-local `archmap-delta-v0`
-- required `law-policy/v1`
+- base `archmap/v0.5.0`
+- optional head `archmap/v0.5.0`
+- optional intermediate path `archmap/v0.5.0` snapshots
+- PR-local `archmap-delta/v0.5.0`
+- required `law-policy/v0.5.0`
 
 It does not read raw diff, v0 analysis packets, FieldSig forecasts, CI status,
 or GitHub approval state. No LawPolicy, no ArchSig judgement.
@@ -39,10 +39,10 @@ available. Load these references as needed:
 
 - `references/release-runtime.md`: release-only runtime assumptions, binary
   resolution, required artifacts, and stop conditions.
-- `references/source-diff-to-delta.md`: how to derive `archmap-delta-v0` from
+- `references/source-diff-to-delta.md`: how to derive `archmap-delta/v0.5.0` from
   the base branch diff.
 - `references/pr-review-report-guide.md`: how to read
-  `archsig-pr-review-report-v1` without source repository docs.
+  `archsig-pr-review-report/v0.5.0` without source repository docs.
 - `references/human-review-guide.md`: how to turn the report and source
   inspection into human code-review language.
 - `../archmap-creater/references/mapping-guide.md`,
@@ -75,7 +75,7 @@ Required stop conditions:
 - If the base branch / merge-base diff cannot be determined or supplied, ask for
   that diff boundary before authoring the delta.
 
-Always create the PR-local `archmap-delta-v0` from the base branch difference
+Always create the PR-local `archmap-delta/v0.5.0` from the base branch difference
 for the current PR review. An existing delta can be used only as a draft to
 compare against the fresh base-branch-derived delta; do not trust stale delta
 files silently. Do not pass raw diff directly to `archsig pr-review`.
@@ -85,10 +85,10 @@ assuming any repository-local ArchSig paths, fixtures, or docs exist.
 
 Required procedure:
 
-1. Check that the base ArchMap exists and has `schema: "archmap/v1"`. If it
+1. Check that the base ArchMap exists and has `schema: "archmap/v0.5.0"`. If it
    does not, stop.
-2. Create the PR-local `archmap-delta-v0` from the base branch difference.
-3. Check that the LawPolicy exists and has `schema: "law-policy/v1"`. If it
+2. Create the PR-local `archmap-delta/v0.5.0` from the base branch difference.
+3. Check that the LawPolicy exists and has `schema: "law-policy/v0.5.0"`. If it
    does not, stop.
 4. If the PR introduces new observations, either refine the ArchMap first or
    supply a head ArchMap that contains the PR-local facts.
@@ -100,7 +100,7 @@ Required procedure:
 For non-trivial PRs, read `references/source-diff-to-delta.md` before drafting
 the delta.
 
-`archmap-delta-v0` records which existing or PR-local ArchMap observations are
+`archmap-delta/v0.5.0` records which existing or PR-local ArchMap observations are
 touched by the pull request, as read from the base branch difference. It is not
 a parser output, merge-safety claim, or semantic diff proof.
 
@@ -120,7 +120,7 @@ Minimal shape:
 
 ```json
 {
-  "schemaVersion": "archmap-delta-v0",
+  "schema": "archmap-delta/v0.5.0",
   "deltaId": "delta:<short-pr-scope>",
   "baseSnapshotRef": "archmap-snapshot:<scope>:base",
   "headSnapshotRef": "archmap-snapshot:<scope>:head",
@@ -171,9 +171,9 @@ Resolve the ArchSig binary before running:
 
 Before running, verify the JSON inputs have these schema values:
 
-- base ArchMap: `schema: "archmap/v1"`
-- delta ArchMap: `archmap-delta-v0`
-- LawPolicy: `schema: "law-policy/v1"`
+- base ArchMap: `schema: "archmap/v0.5.0"`
+- delta ArchMap: `archmap-delta/v0.5.0`
+- LawPolicy: `schema: "law-policy/v0.5.0"`
 
 Run:
 
@@ -200,7 +200,7 @@ the ArchSig source tree in a released skill-only environment.
 
 For field-level guidance, read `references/pr-review-report-guide.md`.
 
-Read the `archsig-pr-review-report-v1` in this order:
+Read the `archsig-pr-review-report/v0.5.0` in this order:
 
 1. `canonicalInputs`
    - Confirm the paths and schema versions are the intended base ArchMap,
@@ -317,7 +317,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-review \
   --out .tmp/archsig-pr-reviewer-validation.json
 ```
 
-Then confirm the output has `schemaVersion: "archsig-pr-review-report-v1"` and
+Then confirm the output has `schema: "archsig-pr-review-report/v0.5.0"` and
 `reviewKind: "v1-output-replacement-structural-pr-review"` and does not
 contain a raw-diff input field.
 These are maintenance checks, not runtime requirements for released skill users.

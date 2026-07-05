@@ -1,7 +1,7 @@
 # Human Review Guide
 
 Use this guide after `archsig pr-review` emits
-`archsig-pr-review-report-v1`, before writing a human-facing review.
+`archsig-pr-review-report/v0.5.0`, before writing a human-facing review.
 
 The goal is to turn ArchSig output into concrete review work:
 

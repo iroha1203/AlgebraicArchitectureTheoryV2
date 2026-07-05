@@ -1,10 +1,10 @@
 {
-  "schema": "law-policy/v1",
+  "schema": "law-policy/v0.5.0",
   "id": "ag-support-transfer-policy",
   "measurementProfileRef": "profile:ag-support-transfer@1",
   "measurementProfiles": [
     {
-      "schema": "measurement-profile/v1",
+      "schema": "measurement-profile/v0.5.0",
       "profileId": "profile:ag-support-transfer@1",
       "siteRef": "archmap:/contexts",
       "coverRef": "cover:support-transfer",
@@ -31,7 +31,7 @@
   "policies": [
     {
       "law": "ag.support-transfer",
-      "evaluator": "ag.support-transfer@1",
+      "evaluator": "ag.support-transfer",
       "basis": ["policy-basis:layering"],
       "scope": ["src/"],
       "severity": "medium"

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SchemaVersionCatalogV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub catalog_id: String,
     pub catalog_version: String,
@@ -17,6 +18,7 @@ pub struct SchemaVersionCatalogV0 {
 pub struct SchemaVersionCatalogEntryV0 {
     pub artifact_id: String,
     pub artifact_name: String,
+    #[serde(rename = "schemaName")]
     pub schema_version_name: String,
     pub artifact_role: String,
     pub owner_phase: String,
@@ -39,6 +41,7 @@ pub struct SchemaCompatibilityBoundaryV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SchemaCompatibilityPolicyV0 {
+    #[serde(rename = "schema")]
     pub schema_version: String,
     pub policy_id: String,
     pub policy_version: String,

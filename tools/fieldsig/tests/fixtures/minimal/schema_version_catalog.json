@@ -1,13 +1,13 @@
 {
-  "schemaVersion": "schema-version-catalog-v0",
+  "schema": "schema-version-catalog/v0.5.0",
   "catalogId": "archsig-b9-b10-schema-version-catalog",
-  "catalogVersion": "b10-schema-catalog-v0",
+  "catalogVersion": "b10-schema-catalog/v0.5.0",
   "phase": "B9 Schema standardization and compatibility / B10 operational feedback",
   "artifacts": [
     {
       "artifactId": "signature-artifact",
       "artifactName": "Architecture Signature artifact",
-      "schemaVersionName": "archsig-sig0-v0",
+      "schemaName": "archsig-sig0/v0.5.0",
       "artifactRole": "extractor-output",
       "ownerPhase": "B0-B8",
       "status": "implemented",
@@ -35,12 +35,12 @@
     {
       "artifactId": "air",
       "artifactName": "Architecture Intermediate Representation",
-      "schemaVersionName": "aat-air-v0",
+      "schemaName": "aat-air/v0.5.0",
       "artifactRole": "intermediate-representation",
       "ownerPhase": "B0-B9",
       "status": "implemented",
       "primaryDocs": [
-        "docs/aat_v2_tooling_design.md#31-air-v0-schema",
+        "docs/aat_v2_tooling_design.md#31-air-schema050-schema",
         "docs/design/archsig_tooling_index.md"
       ],
       "downstreamIssues": [
@@ -66,7 +66,7 @@
     {
       "artifactId": "archmap",
       "artifactName": "ArchMap supplied JSON artifact",
-      "schemaVersionName": "archmap-v0",
+      "schemaName": "archmap/v0.5.0",
       "artifactRole": "semantic-observation-input",
       "ownerPhase": "ArchMap MVP",
       "status": "implemented",
@@ -87,7 +87,7 @@
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
-          "New atomic observation fields must remain optional/default-compatible in archmap-v0 unless schemaVersion is deliberately bumped.",
+          "New atomic observation fields must remain optional/default-compatible in archmap-schema050 unless schema is deliberately bumped.",
           "SFT-facing mapping kinds must remain projection input and not forecast result claims."
         ],
         "coverageExactnessBoundary": [
@@ -103,7 +103,7 @@
     {
       "artifactId": "archmap-validation-report",
       "artifactName": "ArchMap Validation Report",
-      "schemaVersionName": "archmap-validation-report-v0",
+      "schemaName": "archmap-validation-report/v0.5.0",
       "artifactRole": "validation-output",
       "ownerPhase": "ArchMap MVP",
       "status": "implemented",
@@ -138,7 +138,7 @@
     {
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
-      "schemaVersionName": "architecture-policy-v0",
+      "schemaName": "architecture-policy/v0.5.0",
       "artifactRole": "law-aware-review-policy",
       "ownerPhase": "ArchMap law-aware review",
       "status": "implemented",
@@ -169,7 +169,7 @@
     {
       "artifactId": "architecture-policy-validation-report",
       "artifactName": "Architecture policy validation report",
-      "schemaVersionName": "architecture-policy-validation-report-v0",
+      "schemaName": "architecture-policy-validation-report/v0.5.0",
       "artifactRole": "validation-output",
       "ownerPhase": "ArchMap law-aware review",
       "status": "implemented",
@@ -198,7 +198,7 @@
     {
       "artifactId": "law-violation-report",
       "artifactName": "Law violation report",
-      "schemaVersionName": "law-violation-report-v0",
+      "schemaName": "law-violation-report/v0.5.0",
       "artifactRole": "review-output",
       "ownerPhase": "ArchMap law-aware review",
       "status": "implemented",
@@ -229,7 +229,7 @@
     {
       "artifactId": "archmap-generation-protocol",
       "artifactName": "ArchMap generation protocol",
-      "schemaVersionName": "archmap-generation-protocol-v0",
+      "schemaName": "archmap-generation-protocol/v0.5.0",
       "artifactRole": "external-agent-protocol",
       "ownerPhase": "ArchMap v2",
       "status": "implemented",
@@ -259,7 +259,7 @@
     {
       "artifactId": "intentmap",
       "artifactName": "IntentMap supplied JSON artifact",
-      "schemaVersionName": "intentmap-v0",
+      "schemaName": "intentmap/v0.5.0",
       "artifactRole": "planning-intent-input",
       "ownerPhase": "PRD v3",
       "status": "implemented",
@@ -290,7 +290,7 @@
     {
       "artifactId": "intent-archmap-alignment",
       "artifactName": "IntentMap to ArchMap AlignmentMap",
-      "schemaVersionName": "intent-archmap-alignment-v0",
+      "schemaName": "intent-archmap-alignment/v0.5.0",
       "artifactRole": "planning-alignment-input",
       "ownerPhase": "PRD v3",
       "status": "implemented",
@@ -323,7 +323,7 @@
     {
       "artifactId": "operation-support-estimate",
       "artifactName": "Operation support estimate",
-      "schemaVersionName": "operation-support-estimate-v0",
+      "schemaName": "operation-support-estimate/v0.5.0",
       "artifactRole": "bounded-forecast-input",
       "ownerPhase": "SFT review judgement",
       "status": "implemented",
@@ -354,9 +354,9 @@
       }
     },
     {
-      "artifactId": "archsig-analysis-packet-v1",
+      "artifactId": "archsig-analysis-packet/v0.5.0",
       "artifactName": "ArchSig v1 typed evaluator analysis packet",
-      "schemaVersionName": "archsig-analysis-packet/v1",
+      "schemaName": "archsig-analysis-packet/v0.5.0",
       "artifactRole": "current-state-handoff",
       "ownerPhase": "ArchSig v1 / FieldSig handoff",
       "status": "implemented",
@@ -388,7 +388,7 @@
     {
       "artifactId": "forecast-cone-skeleton",
       "artifactName": "ForecastCone skeleton",
-      "schemaVersionName": "forecast-cone-skeleton-v0",
+      "schemaName": "forecast-cone-skeleton/v0.5.0",
       "artifactRole": "bounded-forecast-artifact",
       "ownerPhase": "SFT review judgement",
       "status": "implemented",
@@ -419,7 +419,7 @@
     {
       "artifactId": "consequence-envelope-report",
       "artifactName": "ConsequenceEnvelope report",
-      "schemaVersionName": "consequence-envelope-report-v0",
+      "schemaName": "consequence-envelope-report/v0.5.0",
       "artifactRole": "review-projection",
       "ownerPhase": "SFT review judgement",
       "status": "implemented",
@@ -451,7 +451,7 @@
     {
       "artifactId": "sft-review-summary",
       "artifactName": "SFT review summary",
-      "schemaVersionName": "sft-review-summary-v0",
+      "schemaName": "sft-review-summary/v0.5.0",
       "artifactRole": "review-judgement-input",
       "ownerPhase": "SFT review judgement",
       "status": "implemented",
@@ -484,7 +484,7 @@
     {
       "artifactId": "pr-quality-analysis",
       "artifactName": "PR Quality Analysis report",
-      "schemaVersionName": "pr-quality-analysis-report-v0",
+      "schemaName": "pr-quality-analysis-report/v0.5.0",
       "artifactRole": "review-output",
       "ownerPhase": "PRD v3",
       "status": "implemented",
@@ -514,7 +514,7 @@
     {
       "artifactId": "aat-observable-bundle",
       "artifactName": "AAT Observable Bundle",
-      "schemaVersionName": "aat-observable-bundle-v0",
+      "schemaName": "aat-observable-bundle/v0.5.0",
       "artifactRole": "aat-observable-review-bundle",
       "ownerPhase": "AAT observable bridge",
       "status": "implemented",
@@ -559,7 +559,7 @@
     {
       "artifactId": "intent-calibration-record",
       "artifactName": "Intent calibration record",
-      "schemaVersionName": "intent-calibration-record-v0",
+      "schemaName": "intent-calibration-record/v0.5.0",
       "artifactRole": "empirical-feedback",
       "ownerPhase": "PRD v3",
       "status": "implemented",
@@ -589,7 +589,7 @@
     {
       "artifactId": "feature-extension-report",
       "artifactName": "Feature Extension Report",
-      "schemaVersionName": "feature-extension-report-v0",
+      "schemaName": "feature-extension-report/v0.5.0",
       "artifactRole": "review-output",
       "ownerPhase": "B1-B9",
       "status": "implemented",
@@ -620,7 +620,7 @@
     {
       "artifactId": "obstruction-witness",
       "artifactName": "Obstruction Witness",
-      "schemaVersionName": "obstruction-witness-v0",
+      "schemaName": "obstruction-witness/v0.5.0",
       "artifactRole": "embedded-witness",
       "ownerPhase": "B1-B9",
       "status": "implemented",
@@ -650,7 +650,7 @@
     {
       "artifactId": "architecture-drift-ledger",
       "artifactName": "Architecture Drift Ledger",
-      "schemaVersionName": "architecture-drift-ledger-v0",
+      "schemaName": "architecture-drift-ledger/v0.5.0",
       "artifactRole": "batch-history-output",
       "ownerPhase": "B1-B9",
       "status": "implemented",
@@ -680,7 +680,7 @@
     {
       "artifactId": "detectable-values-reported-axes-catalog",
       "artifactName": "Detectable values / reported axes catalog",
-      "schemaVersionName": "detectable-values-reported-axes-catalog-v0",
+      "schemaName": "detectable-values-reported-axes-catalog/v0.5.0",
       "artifactRole": "axis-catalog",
       "ownerPhase": "B9",
       "status": "implemented",
@@ -710,7 +710,7 @@
     {
       "artifactId": "report-outcome-daily-ledger",
       "artifactName": "Report outcome daily ledger",
-      "schemaVersionName": "report-outcome-daily-ledger-v0",
+      "schemaName": "report-outcome-daily-ledger/v0.5.0",
       "artifactRole": "operational-feedback-output",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -740,7 +740,7 @@
     {
       "artifactId": "calibration-review-record",
       "artifactName": "Calibration review record",
-      "schemaVersionName": "calibration-review-record-v0",
+      "schemaName": "calibration-review-record/v0.5.0",
       "artifactRole": "operational-feedback-input",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -770,7 +770,7 @@
     {
       "artifactId": "team-threshold-policy",
       "artifactName": "Team threshold policy",
-      "schemaVersionName": "team-threshold-policy-v0",
+      "schemaName": "team-threshold-policy/v0.5.0",
       "artifactRole": "operational-feedback-policy",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -800,7 +800,7 @@
     {
       "artifactId": "ownership-boundary-monitor",
       "artifactName": "Ownership boundary monitor",
-      "schemaVersionName": "ownership-boundary-monitor-v0",
+      "schemaName": "ownership-boundary-monitor/v0.5.0",
       "artifactRole": "operational-feedback-monitor",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -830,7 +830,7 @@
     {
       "artifactId": "repair-adoption-record",
       "artifactName": "Repair adoption record",
-      "schemaVersionName": "repair-adoption-record-v0",
+      "schemaName": "repair-adoption-record/v0.5.0",
       "artifactRole": "operational-feedback-record",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -860,7 +860,7 @@
     {
       "artifactId": "incident-correlation-monitor",
       "artifactName": "Incident / rollback / MTTR correlation monitor",
-      "schemaVersionName": "incident-correlation-monitor-v0",
+      "schemaName": "incident-correlation-monitor/v0.5.0",
       "artifactRole": "operational-feedback-monitor",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -890,7 +890,7 @@
     {
       "artifactId": "hypothesis-refresh-cycle",
       "artifactName": "Empirical hypothesis refresh cycle",
-      "schemaVersionName": "hypothesis-refresh-cycle-v0",
+      "schemaName": "hypothesis-refresh-cycle/v0.5.0",
       "artifactRole": "operational-feedback-research-cycle",
       "ownerPhase": "B10",
       "status": "implemented",
@@ -920,12 +920,12 @@
     {
       "artifactId": "pr-force-report",
       "artifactName": "PR Force Report",
-      "schemaVersionName": "pr-force-report-v0",
+      "schemaName": "pr-force-report/v0.5.0",
       "artifactRole": "architecture-dynamics-output",
       "ownerPhase": "D5-D6",
       "status": "implemented",
       "primaryDocs": [
-        "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
+        "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-schema050",
         "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model"
       ],
       "downstreamIssues": [
@@ -950,12 +950,12 @@
     {
       "artifactId": "architecture-dynamics-metrics-report",
       "artifactName": "Architecture Dynamics Metrics Report",
-      "schemaVersionName": "architecture-dynamics-metrics-report-v0",
+      "schemaName": "architecture-dynamics-metrics-report/v0.5.0",
       "artifactRole": "architecture-dynamics-output",
       "ownerPhase": "D5-D6",
       "status": "implemented",
       "primaryDocs": [
-        "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
+        "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-schema050",
         "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation"
       ],
       "downstreamIssues": [
@@ -987,12 +987,12 @@
     {
       "artifactId": "signature-trajectory-report",
       "artifactName": "Signature Trajectory Report",
-      "schemaVersionName": "signature-trajectory-report-v0",
+      "schemaName": "signature-trajectory-report/v0.5.0",
       "artifactRole": "architecture-dynamics-output",
       "ownerPhase": "D5-D6",
       "status": "implemented",
       "primaryDocs": [
-        "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
+        "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-schema050",
         "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics"
       ],
       "downstreamIssues": [
@@ -1019,7 +1019,7 @@
     {
       "artifactId": "ai-proposal-governance",
       "artifactName": "AI Proposal Governance",
-      "schemaVersionName": "ai-proposal-governance-v0",
+      "schemaName": "ai-proposal-governance/v0.5.0",
       "artifactRole": "review-governance-output",
       "ownerPhase": "B14",
       "status": "implemented",
@@ -1050,10 +1050,10 @@
     }
   ],
   "compatibilityPolicy": {
-    "schemaVersion": "schema-compatibility-policy-v0",
+    "schema": "schema-compatibility-policy/v0.5.0",
     "policyId": "archsig-b9-schema-compatibility-policy",
-    "policyVersion": "b9-compatibility-policy-v0",
-    "appliesToCatalogVersion": "b10-schema-catalog-v0",
+    "policyVersion": "b9-compatibility-policy/v0.5.0",
+    "appliesToCatalogVersion": "b10-schema-catalog/v0.5.0",
     "dimensions": [
       {
         "dimension": "field_mapping",
@@ -1106,7 +1106,7 @@
       }
     ],
     "requiredChecks": [
-      "known schemaVersion in catalog",
+      "known schema in catalog",
       "field mapping entries are explicit for renamed or removed fields",
       "deprecated fields declare replacement or removal behavior",
       "new required assumptions are surfaced as missing until discharged",

@@ -62,18 +62,18 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
         "pr-force-report",
         "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         Some(PR_FORCE_REPORT_SCHEMA_VERSION),
-        Some("fixture-pr-force-report-v0"),
+        Some("fixture-pr-force-report/v0.5.0"),
     );
     let archsig_analysis_ref = artifact_ref(
         "archsig-analysis-packet",
         "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-        Some("archsig-analysis-packet/v1"),
+        Some("archsig-analysis-packet/v0.5.0"),
         Some("archsig-analysis-fixture"),
     );
     let drift_ref = artifact_ref(
         "architecture-drift-ledger",
         "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
-        Some("architecture-drift-ledger-v0"),
+        Some("architecture-drift-ledger/v0.5.0"),
         Some("fixture-architecture-drift-ledger"),
     );
 
@@ -85,7 +85,7 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
 
     SignatureTrajectoryReportV0 {
         schema_version: SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION.to_string(),
-        report_id: "fixture-signature-trajectory-report-v0".to_string(),
+        report_id: "fixture-signature-trajectory-report/v0.5.0".to_string(),
         repository: RepositoryRef {
             owner: "iroha1203".to_string(),
             name: "AlgebraicArchitectureTheoryV2".to_string(),
@@ -348,7 +348,7 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
             ],
             source_artifact_refs: vec![before_ref, middle_ref, after_ref, force_ref, drift_ref],
             extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-            policy_version: Some("fixture-policy-v0".to_string()),
+            policy_version: Some("fixture-policy/v0.5.0".to_string()),
             schema_version: Some(SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION.to_string()),
             aggregation_window: Some(window),
             selected_region_refs: vec![
@@ -533,7 +533,7 @@ fn boundary(
         measured_axes: strings(measured_axes),
         source_artifact_refs,
         extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-        policy_version: Some("fixture-policy-v0".to_string()),
+        policy_version: Some("fixture-policy/v0.5.0".to_string()),
         schema_version: Some(SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION.to_string()),
         aggregation_window,
         selected_region_refs: vec!["fixture:selected-trajectory-window".to_string()],
@@ -605,7 +605,7 @@ fn check_schema_version(report: &SignatureTrajectoryReportV0) -> ValidationCheck
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported signature-trajectory-report schemaVersion: {}",
+            "unsupported signature-trajectory-report schema: {}",
             report.schema_version
         ));
     }

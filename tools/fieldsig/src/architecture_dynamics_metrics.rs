@@ -127,30 +127,30 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
         "pr-force-report",
         "tools/fieldsig/tests/fixtures/minimal/pr_force_report.json",
         Some(PR_FORCE_REPORT_SCHEMA_VERSION),
-        Some("fixture-pr-force-report-v0"),
+        Some("fixture-pr-force-report/v0.5.0"),
     );
     let trajectory_ref = artifact_ref(
         "signature-trajectory-report",
         "tools/fieldsig/tests/fixtures/minimal/signature_trajectory_report.json",
-        Some("signature-trajectory-report-v0"),
-        Some("fixture-signature-trajectory-report-v0"),
+        Some("signature-trajectory-report/v0.5.0"),
+        Some("fixture-signature-trajectory-report/v0.5.0"),
     );
     let drift_ref = artifact_ref(
         "architecture-drift-ledger",
         "tools/fieldsig/tests/fixtures/minimal/architecture_drift_ledger.json",
-        Some("architecture-drift-ledger-v0"),
+        Some("architecture-drift-ledger/v0.5.0"),
         Some("fixture-architecture-drift-ledger"),
     );
     let outcome_ref = artifact_ref(
         "outcome-linkage-dataset",
         "tools/fieldsig/tests/fixtures/minimal/external/outcome_linkage_dataset.json",
-        Some("outcome-linkage-dataset-v0"),
+        Some("outcome-linkage-dataset/v0.5.0"),
         Some("fixture-outcome-linkage-dataset"),
     );
     let policy_ref = artifact_ref(
         "policy-decision-report",
         "tools/fieldsig/tests/fixtures/minimal/external/policy_decision_report.json",
-        Some("policy-decision-report-v0"),
+        Some("policy-decision-report/v0.5.0"),
         Some("fixture-policy-decision-report"),
     );
     let ai_ref = artifact_ref(
@@ -163,13 +163,13 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
         "architecture-field-snapshot",
         "tools/fieldsig/tests/fixtures/minimal/architecture_field_snapshot.json",
         Some(ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION),
-        Some("fixture-architecture-field-snapshot-v0"),
+        Some("fixture-architecture-field-snapshot/v0.5.0"),
     );
     let proposal_log_ref = artifact_ref(
         "operation-proposal-log",
         "tools/fieldsig/tests/fixtures/minimal/operation_proposal_log.json",
         Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
-        Some("fixture-operation-proposal-log-v0"),
+        Some("fixture-operation-proposal-log/v0.5.0"),
     );
     let canonical_example_ref = artifact_ref(
         "canonical-example-ref",
@@ -192,7 +192,7 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
 
     ArchitectureDynamicsMetricsReportV0 {
         schema_version: ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION.to_string(),
-        report_id: "fixture-architecture-dynamics-metrics-report-v0".to_string(),
+        report_id: "fixture-architecture-dynamics-metrics-report/v0.5.0".to_string(),
         repository: RepositoryRef {
             owner: "iroha1203".to_string(),
             name: "AlgebraicArchitectureTheoryV2".to_string(),
@@ -460,7 +460,7 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 proposal_log_ref,
             ],
             extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-            policy_version: Some("fixture-policy-v0".to_string()),
+            policy_version: Some("fixture-policy/v0.5.0".to_string()),
             schema_version: Some(ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION.to_string()),
             aggregation_window: Some(window),
             selected_region_refs: vec!["fixture:selected-dynamics-window".to_string()],
@@ -1902,7 +1902,7 @@ fn boundary(
         measured_axes: strings(measured_axes),
         source_artifact_refs,
         extractor_version: Some(EXTRACTOR_VERSION.to_string()),
-        policy_version: Some("fixture-policy-v0".to_string()),
+        policy_version: Some("fixture-policy/v0.5.0".to_string()),
         schema_version: Some(ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION.to_string()),
         aggregation_window,
         selected_region_refs: vec!["fixture:selected-dynamics-window".to_string()],
@@ -1974,7 +1974,7 @@ fn check_schema_version(report: &ArchitectureDynamicsMetricsReportV0) -> Validat
     );
     if check.result == "fail" {
         check.reason = Some(format!(
-            "unsupported architecture-dynamics-metrics-report schemaVersion: {}",
+            "unsupported architecture-dynamics-metrics-report schema: {}",
             report.schema_version
         ));
     }

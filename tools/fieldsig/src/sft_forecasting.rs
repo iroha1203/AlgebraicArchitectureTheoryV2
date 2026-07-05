@@ -97,11 +97,11 @@ pub fn static_forecast_cone_skeleton() -> ForecastConeSkeletonV0 {
 
     ForecastConeSkeletonV0 {
         schema_version: FORECAST_CONE_SKELETON_SCHEMA_VERSION.to_string(),
-        cone_id: "fixture-forecast-cone-skeleton-v0".to_string(),
+        cone_id: "fixture-forecast-cone-skeleton/v0.5.0".to_string(),
         operation_support_ref: ForecastOperationSupportRefV0 {
             estimate_schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
-            estimate_id: "fixture-operation-support-estimate-v0".to_string(),
-            descriptor_id: "fixture-artifact-descriptor-v0".to_string(),
+            estimate_id: "fixture-operation-support-estimate/v0.5.0".to_string(),
+            descriptor_id: "fixture-artifact-descriptor/v0.5.0".to_string(),
             candidate_operation_family_ids: family_ids.clone(),
             source_ref_ids: source_ref_ids.clone(),
             non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
@@ -433,11 +433,11 @@ pub fn static_consequence_envelope_report() -> ConsequenceEnvelopeReportV0 {
 
     ConsequenceEnvelopeReportV0 {
         schema_version: CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION.to_string(),
-        envelope_id: "fixture-consequence-envelope-report-v0".to_string(),
+        envelope_id: "fixture-consequence-envelope-report/v0.5.0".to_string(),
         forecast_cone_ref: ConsequenceForecastConeRefV0 {
             forecast_cone_schema_version: FORECAST_CONE_SKELETON_SCHEMA_VERSION.to_string(),
-            cone_id: "fixture-forecast-cone-skeleton-v0".to_string(),
-            operation_support_estimate_id: "fixture-operation-support-estimate-v0".to_string(),
+            cone_id: "fixture-forecast-cone-skeleton/v0.5.0".to_string(),
+            operation_support_estimate_id: "fixture-operation-support-estimate/v0.5.0".to_string(),
             source_ref_ids: source_ref_ids.clone(),
             forecast_boundary_refs: vec!["boundary:b12.3-forecast-cone-skeleton".to_string()],
             non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
@@ -933,11 +933,11 @@ pub fn static_forecast_calibration_hook() -> ForecastCalibrationHookV0 {
 
     ForecastCalibrationHookV0 {
         schema_version: FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION.to_string(),
-        hook_id: "fixture-forecast-calibration-hook-v0".to_string(),
+        hook_id: "fixture-forecast-calibration-hook/v0.5.0".to_string(),
         envelope_ref: CalibrationEnvelopeRefV0 {
             envelope_schema_version: CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION.to_string(),
-            envelope_id: "fixture-consequence-envelope-report-v0".to_string(),
-            cone_id: "fixture-forecast-cone-skeleton-v0".to_string(),
+            envelope_id: "fixture-consequence-envelope-report/v0.5.0".to_string(),
+            cone_id: "fixture-forecast-cone-skeleton/v0.5.0".to_string(),
             source_ref_ids: source_ref_ids.clone(),
             non_conclusions: strings(&CALIBRATION_NON_CONCLUSIONS),
         },
@@ -1010,12 +1010,12 @@ pub fn static_forecast_calibration_hook() -> ForecastCalibrationHookV0 {
         ],
         reference_boundaries: CalibrationReferenceBoundariesV0 {
             b10_refs: vec![
-                "outcome-linkage-dataset-v0".to_string(),
-                "report-outcome-daily-ledger-v0".to_string(),
+                "outcome-linkage-dataset/v0.5.0".to_string(),
+                "report-outcome-daily-ledger/v0.5.0".to_string(),
             ],
             b11_refs: vec![
-                "signature-trajectory-report-v0".to_string(),
-                "architecture-dynamics-metrics-report-v0".to_string(),
+                "signature-trajectory-report/v0.5.0".to_string(),
+                "architecture-dynamics-metrics-report/v0.5.0".to_string(),
             ],
             unavailable_refs: vec!["observed:future-review-outcome".to_string()],
             private_refs: vec!["observed:b11-trajectory-private".to_string()],
@@ -1745,7 +1745,7 @@ fn check_forecast_schema(cone: &ForecastConeSkeletonV0) -> ValidationCheck {
     );
     if invalid {
         check.reason = Some(
-            "schemaVersion, coneId, operation support estimate schema, estimate id, and source refs are required"
+            "schema, coneId, operation support estimate schema, estimate id, and source refs are required"
                 .to_string(),
         );
     }
@@ -2046,7 +2046,7 @@ fn check_envelope_schema(envelope: &ConsequenceEnvelopeReportV0) -> ValidationCh
     );
     if invalid {
         check.reason = Some(
-            "schemaVersion, envelopeId, forecast cone schema, cone id, and source refs are required"
+            "schema, envelopeId, forecast cone schema, cone id, and source refs are required"
                 .to_string(),
         );
     }
@@ -2276,7 +2276,7 @@ fn check_review_summary_schema(summary: &SftReviewSummaryV0) -> ValidationCheck 
     );
     if invalid {
         check.reason = Some(
-            "schemaVersion, summaryId, envelope schema, envelope id, and source refs are required"
+            "schema, summaryId, envelope schema, envelope id, and source refs are required"
                 .to_string(),
         );
     }
@@ -2463,7 +2463,7 @@ fn check_calibration_schema(hook: &ForecastCalibrationHookV0) -> ValidationCheck
     );
     if invalid {
         check.reason = Some(
-            "schemaVersion, hookId, envelope schema, envelope id, and source refs are required"
+            "schema, hookId, envelope schema, envelope id, and source refs are required"
                 .to_string(),
         );
     }
