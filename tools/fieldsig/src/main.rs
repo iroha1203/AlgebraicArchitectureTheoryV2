@@ -50,7 +50,6 @@ use fieldsig::{
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_law_violation_report, build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_archsig_analysis_packet,
     build_operation_support_estimate_from_archsig_measurement_packet,
     build_operation_support_estimate_from_descriptor,
     build_operation_support_estimate_from_intent_alignment,
@@ -559,11 +558,7 @@ enum Command {
     ArchsigAnalysisSftInput {
         /// Input archsig-measurement-packet/v0.5.0 JSON path.
         #[arg(long = "measurement-packet")]
-        measurement_packet: Option<PathBuf>,
-
-        /// Legacy input archsig-analysis-packet/v0.5.0 JSON path.
-        #[arg(long = "analysis-packet")]
-        analysis_packet: Option<PathBuf>,
+        measurement_packet: PathBuf,
 
         /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -1670,36 +1665,13 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::ArchsigAnalysisSftInput {
             measurement_packet,
-            analysis_packet,
             out,
         }) => {
-            let estimate = match (measurement_packet, analysis_packet) {
-                (Some(measurement_packet), None) => {
-                    let packet: serde_json::Value = read_json(&measurement_packet)?;
-                    build_operation_support_estimate_from_archsig_measurement_packet(
-                        &packet,
-                        &measurement_packet.display().to_string(),
-                    )?
-                }
-                (None, Some(analysis_packet)) => {
-                    let packet: serde_json::Value = read_json(&analysis_packet)?;
-                    build_operation_support_estimate_from_archsig_analysis_packet(
-                        &packet,
-                        &analysis_packet.display().to_string(),
-                    )?
-                }
-                (Some(_), Some(_)) => {
-                    return Err(
-                        "--measurement-packet and --analysis-packet are mutually exclusive".into(),
-                    );
-                }
-                (None, None) => {
-                    return Err(
-                        "archsig-analysis-sft-input requires --measurement-packet or --analysis-packet"
-                            .into(),
-                    );
-                }
-            };
+            let packet: serde_json::Value = read_json(&measurement_packet)?;
+            let estimate = build_operation_support_estimate_from_archsig_measurement_packet(
+                &packet,
+                &measurement_packet.display().to_string(),
+            )?;
             write_json(out, &estimate)?;
             Ok(ExitCode::SUCCESS)
         }

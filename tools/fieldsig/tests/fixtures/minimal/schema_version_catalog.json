@@ -354,38 +354,6 @@
       }
     },
     {
-      "artifactId": "archsig-analysis-packet/v0.5.0",
-      "artifactName": "ArchSig v1 typed evaluator analysis packet",
-      "schemaName": "archsig-analysis-packet/v0.5.0",
-      "artifactRole": "current-state-handoff",
-      "ownerPhase": "ArchSig v1 / FieldSig handoff",
-      "status": "implemented",
-      "primaryDocs": [
-        "docs/tool/archmap_minimal_observation_contract_prd.md",
-        "docs/tool/llm_native_e2e_workflow.md",
-        "tools/fieldsig/README.md"
-      ],
-      "downstreamIssues": [
-        "#1842"
-      ],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map schema, inputRefs, typed evaluator results, architecture distance, generated packet refs, spectrum, homotopy, structural reading refs, bounded conclusions, detail refs, and non-conclusions explicitly.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "New ArchSig handoff readings must preserve packet refs and keep unmeasured / blocked / unknown statuses distinct from measured zero.",
-          "FieldSig must not treat raw ArchMap atoms or ArchSig current-state refs as forecast truth."
-        ],
-        "coverageExactnessBoundary": [
-          "ArchSig v1 packet compatibility is a FieldSig handoff JSON contract, not a semantic-preservation theorem, Lean proof, forecast correctness claim, or repair safety proof."
-        ],
-        "nonConclusions": [
-          "field mapping does not prove semantic preservation",
-          "missing coverage is not measured zero",
-          "renamed fields do not discharge new required assumptions"
-        ]
-      }
-    },
-    {
       "artifactId": "forecast-cone-skeleton",
       "artifactName": "ForecastCone skeleton",
       "schemaName": "forecast-cone-skeleton/v0.5.0",

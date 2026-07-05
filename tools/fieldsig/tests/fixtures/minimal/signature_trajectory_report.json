@@ -42,10 +42,10 @@
               "artifactId": "fixture-trajectory-before-signature"
             },
             {
-              "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-              "schema": "archsig-analysis-packet/v0.5.0",
-              "artifactId": "archsig-analysis-fixture"
+              "kind": "archsig-measurement-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+              "schema": "archsig-measurement-packet/v0.5.0",
+              "artifactId": "archsig-measurement-fixture"
             }
           ],
           "measurementBoundary": {
@@ -61,13 +61,13 @@
                 "artifactId": "fixture-trajectory-before-signature"
               },
               {
-                "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-                "schema": "archsig-analysis-packet/v0.5.0",
-                "artifactId": "archsig-analysis-fixture"
+                "kind": "archsig-measurement-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+                "schema": "archsig-measurement-packet/v0.5.0",
+                "artifactId": "archsig-measurement-fixture"
               }
             ],
-            "extractorVersion": "0.1.0",
+            "extractorVersion": "0.5.0",
             "policyVersion": "fixture-policy/v0.5.0",
             "schema": "signature-trajectory-report/v0.5.0",
             "aggregationWindow": {
@@ -108,7 +108,7 @@
             "measuredLayer": "signature-trajectory",
             "measuredAxes": [],
             "sourceArtifactRefs": [],
-            "extractorVersion": "0.1.0",
+            "extractorVersion": "0.5.0",
             "schema": "signature-trajectory-report/v0.5.0",
             "selectedRegionRefs": [],
             "assumptions": [
@@ -150,7 +150,7 @@
             "artifactId": "fixture-trajectory-before-signature"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "selectedRegionRefs": [
@@ -211,10 +211,10 @@
               "artifactId": "fixture-pr-force-report/v0.5.0"
             },
             {
-              "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-              "schema": "archsig-analysis-packet/v0.5.0",
-              "artifactId": "archsig-analysis-fixture"
+              "kind": "archsig-measurement-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+              "schema": "archsig-measurement-packet/v0.5.0",
+              "artifactId": "archsig-measurement-fixture"
             }
           ],
           "measurementBoundary": {
@@ -236,13 +236,13 @@
                 "artifactId": "fixture-pr-force-report/v0.5.0"
               },
               {
-                "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-                "schema": "archsig-analysis-packet/v0.5.0",
-                "artifactId": "archsig-analysis-fixture"
+                "kind": "archsig-measurement-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+                "schema": "archsig-measurement-packet/v0.5.0",
+                "artifactId": "archsig-measurement-fixture"
               }
             ],
-            "extractorVersion": "0.1.0",
+            "extractorVersion": "0.5.0",
             "policyVersion": "fixture-policy/v0.5.0",
             "schema": "signature-trajectory-report/v0.5.0",
             "aggregationWindow": {
@@ -304,7 +304,7 @@
             "artifactId": "fixture-pr-force-report/v0.5.0"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "selectedRegionRefs": [
@@ -365,10 +365,10 @@
               "artifactId": "fixture-pr-force-report/v0.5.0"
             },
             {
-              "kind": "archsig-analysis-packet",
-              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-              "schema": "archsig-analysis-packet/v0.5.0",
-              "artifactId": "archsig-analysis-fixture"
+              "kind": "archsig-measurement-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+              "schema": "archsig-measurement-packet/v0.5.0",
+              "artifactId": "archsig-measurement-fixture"
             }
           ],
           "measurementBoundary": {
@@ -390,13 +390,13 @@
                 "artifactId": "fixture-pr-force-report/v0.5.0"
               },
               {
-                "kind": "archsig-analysis-packet",
-                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_analysis_packet_v1.json",
-                "schema": "archsig-analysis-packet/v0.5.0",
-                "artifactId": "archsig-analysis-fixture"
+                "kind": "archsig-measurement-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+                "schema": "archsig-measurement-packet/v0.5.0",
+                "artifactId": "archsig-measurement-fixture"
               }
             ],
-            "extractorVersion": "0.1.0",
+            "extractorVersion": "0.5.0",
             "policyVersion": "fixture-policy/v0.5.0",
             "schema": "signature-trajectory-report/v0.5.0",
             "aggregationWindow": {
@@ -458,7 +458,7 @@
             "artifactId": "fixture-pr-force-report/v0.5.0"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "selectedRegionRefs": [
@@ -530,7 +530,7 @@
             "artifactId": "fixture-trajectory-after-signature"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -578,7 +578,7 @@
         "measuredLayer": "signature-trajectory",
         "measuredAxes": [],
         "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "selectedRegionRefs": [],
         "assumptions": [
@@ -658,7 +658,7 @@
             "artifactId": "fixture-trajectory-after-signature"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -720,7 +720,7 @@
             "artifactId": "fixture-trajectory-middle-signature"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -806,7 +806,7 @@
             "artifactId": "fixture-trajectory-after-signature"
           }
         ],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -861,7 +861,7 @@
           "boundaryViolationCount"
         ],
         "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -910,7 +910,7 @@
           "boundaryViolationCount"
         ],
         "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -959,7 +959,7 @@
           "boundaryViolationCount"
         ],
         "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -1008,7 +1008,7 @@
           "boundaryViolationCount"
         ],
         "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
+        "extractorVersion": "0.5.0",
         "policyVersion": "fixture-policy/v0.5.0",
         "schema": "signature-trajectory-report/v0.5.0",
         "aggregationWindow": {
@@ -1081,7 +1081,7 @@
         "artifactId": "fixture-architecture-drift-ledger"
       }
     ],
-    "extractorVersion": "0.1.0",
+    "extractorVersion": "0.5.0",
     "policyVersion": "fixture-policy/v0.5.0",
     "schema": "signature-trajectory-report/v0.5.0",
     "aggregationWindow": {

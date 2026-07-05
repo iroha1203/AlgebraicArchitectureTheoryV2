@@ -1,6 +1,5 @@
 use super::registry::{
-    expand_law_policy_v1, is_known_evaluator, is_known_v1_basis, is_known_v1_distance_profile,
-    is_known_v1_pack, static_law_evaluator_registry_v1,
+    expand_law_policy_v1, is_known_evaluator, is_known_v1_basis, is_known_v1_pack,
 };
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -20,11 +19,9 @@ pub fn validate_law_policy_v1_report(
         check_v1_policy_entries(policy),
         check_v1_basis(policy),
         check_v1_pack_and_evaluator_vocabulary(policy),
-        check_v1_distance_profile_selector(policy),
         check_v1_measurement_profile_selector(policy),
         check_v1_measurement_profiles(policy),
         check_v1_ag_evaluators_require_profile(policy),
-        check_v1_replacement_registry_manifest(),
     ];
     let failed_check_count = count_checks(&checks, "fail");
     let warning_check_count = count_checks(&checks, "warn");
@@ -215,30 +212,6 @@ fn check_v1_pack_and_evaluator_vocabulary(policy: &LawPolicyDocumentV1) -> Valid
     )
 }
 
-fn check_v1_distance_profile_selector(policy: &LawPolicyDocumentV1) -> ValidationCheck {
-    let mut examples = Vec::new();
-    if let Some(profile_ref) = policy.distance_profile_ref.as_deref() {
-        if profile_ref.trim().is_empty() {
-            examples.push(generic_validation_example(
-                "distanceProfileRef",
-                "empty",
-                "distance profile ref must be non-empty when present",
-            ));
-        } else if !is_known_v1_distance_profile(profile_ref) {
-            examples.push(generic_validation_example(
-                "distanceProfileRef",
-                profile_ref,
-                "distance profile ref must resolve to the v1 distance profile registry",
-            ));
-        }
-    }
-    check_examples(
-        "law-policy-schema050-distance-profile-selector",
-        "LawPolicy v1 selects an optional distance profile by ref instead of embedding a distance DSL",
-        examples,
-    )
-}
-
 fn check_v1_measurement_profile_selector(policy: &LawPolicyDocumentV1) -> ValidationCheck {
     let mut examples = Vec::new();
     if let Some(profile_ref) = policy.measurement_profile_ref.as_deref() {
@@ -373,53 +346,6 @@ fn check_v1_ag_evaluators_require_profile(policy: &LawPolicyDocumentV1) -> Valid
 
 fn is_ag_measurement_evaluator(evaluator: &str) -> bool {
     evaluator.starts_with("ag.")
-}
-
-fn check_v1_replacement_registry_manifest() -> ValidationCheck {
-    let registry = static_law_evaluator_registry_v1();
-    let mut examples = Vec::new();
-    for manifest in &registry.replacement_registry {
-        if manifest.replacement_id.trim().is_empty() {
-            examples.push(generic_validation_example(
-                "replacementRegistry[].replacementId",
-                "empty",
-                "replacement id must be non-empty",
-            ));
-        }
-        if manifest.replaced_v0_field.trim().is_empty() {
-            examples.push(generic_validation_example(
-                &manifest.replacement_id,
-                "replacedV0Field",
-                "replacement manifest must identify the removed v0 field",
-            ));
-        }
-        if manifest.typed_output_packet_refs.is_empty() {
-            examples.push(generic_validation_example(
-                &manifest.replacement_id,
-                "typedOutputPacketRefs",
-                "replacement manifest must declare typed output packet refs",
-            ));
-        }
-        if manifest.positive_fixtures.is_empty() {
-            examples.push(generic_validation_example(
-                &manifest.replacement_id,
-                "positiveFixtures",
-                "replacement manifest must declare positive fixture coverage",
-            ));
-        }
-        if manifest.negative_fixtures.is_empty() {
-            examples.push(generic_validation_example(
-                &manifest.replacement_id,
-                "negativeFixtures",
-                "replacement manifest must declare negative fixture coverage",
-            ));
-        }
-    }
-    check_examples(
-        "law-policy-schema050-replacement-registry-manifest",
-        "removed v0 field replacements resolve to registry manifests with output refs and fixture coverage",
-        examples,
-    )
 }
 
 fn check_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {

@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "ArchSig Manual",
-  "description": "Manual for reading ArchSig output: summary, viewer data, analysis packet, measurement families, coverage gaps, detail refs, and claim boundaries.",
+  "description": "Manual for reading ArchSig output: summary, viewer data, measurement packet, measurement families, coverage gaps, source refs, and claim boundaries.",
   "order": 40,
   "llmsLabel": "ArchSig Manual",
   "navSection": "archsig"
@@ -20,26 +20,25 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#artifacts">Artifacts</a></li><li><a href="#summary">Read summary first</a></li><li><a href="#packet">Open packet detail</a></li><li><a href="#families">Measurement families</a></li><li><a href="#basis">Measurement basis</a></li><li><a href="#statuses">Reading statuses</a></li><li><a href="#boundaries">Measurement scope</a></li></ol></nav>
+	          <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#artifacts">Artifacts</a></li><li><a href="#summary">Read summary first</a></li><li><a href="#packet">Open measurement detail</a></li><li><a href="#families">Measurement families</a></li><li><a href="#basis">Measurement basis</a></li><li><a href="#statuses">Reading statuses</a></li><li><a href="#boundaries">Measurement scope</a></li></ol></nav>
 {% include "series-nav.njk" %}
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../examples/">Examples</a></li><li><a href="./" aria-current="page">Manual</a></li><li><a href="../reference/">Reference</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="artifacts" class="article-section">
               <h2>Artifacts</h2>
-              <p>ArchSig reads ArchMap v1 atoms with a selected LawPolicy v1 evaluator policy, then emits typed evaluator results, a packet, and a compact summary for review.</p>
+              <p>ArchSig reads a finite-poset-site ArchMap with a selected LawPolicy measurement profile, then emits a measurement packet, summary, insight report, viewer data, and run manifest.</p>
               <ul class="status-list">
-                <li><strong><code>archmap/v1</code></strong><span>Source-grounded atoms and explicit molecule membership over a read source ledger.</span></li>
-                <li><strong><code>law-policy/v1</code></strong><span>The selected policy pack or evaluator ids, basis refs, scope, and severity.</span></li>
-                <li><strong><code>typed-evaluator-results/v1</code></strong><span>Evaluator status, support atom refs, support molecule refs, basis refs, detail refs, and bounded conclusions.</span></li>
-                <li><strong><code>architecture-distance.json</code></strong><span>The primary Part IV family bundle for <code>distanceInsights</code>, <code>distanceDiagnosis</code>, atom / configuration / signature / operation geometry, curvature, homotopy, and representation metric readings.</span></li>
-                <li><strong><code>archsig-analysis-packet/v1</code></strong><span>The typed detail store for distance diagnosis, findings, and raw handoff artifacts.</span></li>
-                <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface for Skills and human reviewers, including rich packet refs for spectrum, homotopy, and structural review.</span></li>
+                <li><strong><code>archmap/v0.5.0</code></strong><span>Source-grounded atoms, contexts, covers, declared sources, and extraction doctrine.</span></li>
+                <li><strong><code>law-policy/v0.5.0</code></strong><span>The selected evaluator manifests, laws, measurement profile, policies, basis refs, and non-conclusions.</span></li>
+                <li><strong><code>archsig-measurement-packet.json</code></strong><span>Structural verdicts, computed invariants, analytic readings, assumptions, and non-conclusions.</span></li>
+                <li><strong><code>archsig-analysis-summary.json</code></strong><span>The compact first reading surface for skills and human reviewers.</span></li>
+                <li><strong><code>archsig-run-manifest.json</code></strong><span>Generated artifact list, input digests, validation summary, and run metadata.</span></li>
               </ul>
             </section>
             <section id="summary" class="article-section">
               <h2>Read summary first</h2>
-              <p>The summary is designed to keep the review focused. It answers what was measured before the reader opens raw packet detail.</p>
+	              <p>The summary is designed to keep the review focused. It answers what was measured before the reader opens detailed measurement rows.</p>
               <ol class="numbered-status-list">
                 <li><strong><code>verdict</code></strong><span>The measured conclusion for the supplied ArchMap and LawPolicy.</span></li>
                 <li><strong><code>qualityMeasurement</code></strong><span>Counts for nonzero axes, hotspots, recurrent pressure, holes, holonomy loops, workflow risk, transfer bridges, and coverage gaps.</span></li>
@@ -47,19 +46,19 @@
                 <li><strong><code>distanceDiagnosis</code></strong><span>The measurement-state reading for Part IV distance families, including moved axes, blocked results, family summaries, and primary distance refs.</span></li>
                 <li><strong><code>trendDiagnosis</code></strong><span>Where pressure concentrates and which cross-axis insights appear.</span></li>
                 <li><strong><code>richDominantFindings</code></strong><span>Compact packet refs for spectrum hotspots, architectural holes, nonzero holonomy, and structural readings.</span></li>
-                <li><strong><code>richPacketRefs</code></strong><span>The bridge from summary to packet detail when raw artifacts are retained.</span></li>
+	                <li><strong><code>sourceRefs</code></strong><span>The bridge from summary to source evidence and selected measurement rows.</span></li>
                 <li><strong><code>actionQueue</code></strong><span>The prioritized review queue with detail refs, including generated, spectrum, homotopy, and structural refs.</span></li>
                 <li><strong><code>measurementBasis</code></strong><span>Input refs, validation results, coverage gaps, measured boundaries, and selected policy refs.</span></li>
               </ol>
             </section>
-            <section id="packet" class="article-section">
-              <h2>Open packet detail</h2>
-              <p>Open <code>archsig-analysis-packet/v1</code> when a finding needs support refs, basis refs, missing support, or an exact detail path.</p>
-              <ul class="status-list">
-                <li><strong><code>detailIndex</code></strong><span>Shows packet sections and <code>packet:&lt;json-pointer&gt;</code> refs for deeper reading.</span></li>
-                <li><strong><code>sourceRefs</code></strong><span>Point the agent back to files, symbols, docs, tests, traces, or other source evidence.</span></li>
-                <li><strong><code>missingEvidence</code> and coverage gaps</strong><span>Keep unknown evidence visible instead of treating absence as zero.</span></li>
-                <li><strong><code>nonConclusions</code></strong><span>State what the packet is not claiming.</span></li>
+	            <section id="packet" class="article-section">
+	              <h2>Open measurement detail</h2>
+	              <p>Open <code>archsig-measurement-packet.json</code> and the insight report when a finding needs source refs, assumptions, missing support, or a selected measurement row.</p>
+	              <ul class="status-list">
+	                <li><strong><code>structuralVerdict</code></strong><span>Shows measured, nonzero, unknown, unmeasured, and not-computed structural rows.</span></li>
+	                <li><strong><code>sourceRefs</code></strong><span>Point the agent back to files, symbols, docs, tests, traces, or other source evidence.</span></li>
+	                <li><strong><code>missingEvidence</code> and coverage gaps</strong><span>Keep unknown evidence visible instead of treating absence as zero.</span></li>
+	                <li><strong><code>nonConclusions</code></strong><span>State what the measurement output is not claiming.</span></li>
               </ul>
             </section>
             <section id="families" class="article-section">

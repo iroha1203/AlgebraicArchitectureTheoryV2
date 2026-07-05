@@ -49,10 +49,7 @@ impl AnalyzeRunContract {
     }
 }
 
-pub(crate) fn contract_profile_fingerprint(
-    law_policy: &Value,
-    archmap_is_v1: bool,
-) -> Result<Value, Box<dyn Error>> {
+pub(crate) fn contract_profile_fingerprint(law_policy: &Value) -> Result<Value, Box<dyn Error>> {
     let measurement_profile_ref = law_policy
         .get("measurementProfileRef")
         .cloned()
@@ -69,8 +66,7 @@ pub(crate) fn contract_profile_fingerprint(
         })
         .unwrap_or_default();
     let profile = serde_json::json!({
-        "archmapShape": if archmap_is_v1 { "structural" } else { "finite-poset-site" },
-        "distanceProfileRef": law_policy.get("distanceProfileRef").cloned().unwrap_or(Value::Null),
+        "archmapShape": "finite-poset-site",
         "measurementProfileRef": measurement_profile_ref,
         "selectedMeasurementProfiles": selected_measurement_profiles,
     });
@@ -81,18 +77,8 @@ pub(crate) fn contract_profile_fingerprint(
     }))
 }
 
-pub(crate) fn contract_site_cover_digest(
-    archmap: &Value,
-    archmap_is_v1: bool,
-) -> Result<Value, Box<dyn Error>> {
+pub(crate) fn contract_site_cover_digest(archmap: &Value) -> Result<Value, Box<dyn Error>> {
     let basis = "normalized contexts + covers + derived finite cover nerve";
-    if archmap_is_v1 {
-        return Ok(serde_json::json!({
-            "status": "not_applicable",
-            "basis": basis,
-            "reason": "structural ArchMap shape has no finite-poset-site contexts or covers"
-        }));
-    }
     let contexts = normalized_site_contexts(archmap);
     let covers = normalized_site_covers(archmap);
     let derived_nerve = derived_site_cover_nerve(&contexts, &covers);
@@ -323,97 +309,4 @@ fn sha256_hex(bytes: &[u8]) -> String {
         output.push_str(&format!("{byte:02x}"));
     }
     output
-}
-
-pub(crate) fn build_analyze_run_manifest_v1(
-    contract: &AnalyzeRunContract,
-    archmap: &Path,
-    law_policy: &Path,
-    mode: &str,
-    conclusion_code: Option<&str>,
-    emit_raw_artifacts: bool,
-    archmap_validation_summary: Value,
-    law_policy_validation_summary: Value,
-    analysis_validation_summary: Value,
-) -> serde_json::Value {
-    let mut generated_artifacts = vec![
-        "archmap-validation.json",
-        "law-policy-validation.json",
-        "normalized-archmap.json",
-        "typed-evaluator-results.json",
-        "architecture-distance.json",
-        "archsig-analysis-validation.json",
-        "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
-    ];
-    let mut omitted_artifacts = Vec::new();
-    if emit_raw_artifacts {
-        generated_artifacts.extend([
-            "archsig-analysis-packet.json",
-            "archsig-analysis-detail-index.json",
-            "llm-interpretation-packet.json",
-        ]);
-    } else {
-        omitted_artifacts.extend([
-            "archsig-analysis-packet.json",
-            "archsig-analysis-detail-index.json",
-            "llm-interpretation-packet.json",
-        ]);
-    }
-
-    let mut manifest = serde_json::json!({
-        "schema": "archsig-run-manifest/v0.5.0",
-        "toolVersion": contract.tool_version.clone(),
-        "runId": contract.run_id.clone(),
-        "inputDigests": contract.input_digests.clone(),
-        "commandName": "analyze",
-        "mode": mode,
-        "conclusionCode": conclusion_code,
-        "archmapInputPath": artifact_input_ref(archmap),
-        "lawPolicyInputPath": artifact_input_ref(law_policy),
-        "rawArtifactRetention": if emit_raw_artifacts { "full" } else { "omitted" },
-        "generatedArtifacts": generated_artifacts,
-        "omittedArtifacts": omitted_artifacts,
-        "artifactLinks": {
-            "summary": "archsig-analysis-summary.json",
-            "viewerData": "archsig-atom-viewer-data.json",
-            "typedEvaluatorResults": "typed-evaluator-results.json",
-            "architectureDistance": "architecture-distance.json"
-        },
-        "validationReports": {
-            "archmap": "archmap-validation.json",
-            "lawPolicy": "law-policy-validation.json",
-            "analysis": "archsig-analysis-validation.json"
-        },
-        "rawArtifactPaths": if emit_raw_artifacts {
-            serde_json::json!({
-                "analysisPacket": "archsig-analysis-packet.json",
-                "analysisDetailIndex": "archsig-analysis-detail-index.json",
-                "llmInterpretationPacket": "llm-interpretation-packet.json"
-            })
-        } else {
-            serde_json::Value::Null
-        },
-        "validationResultSummary": {
-            "archmap": archmap_validation_summary,
-            "lawPolicy": law_policy_validation_summary,
-            "analysis": analysis_validation_summary
-        },
-        "nonConclusions": [
-            "v1 run manifest records generated and omitted typed evaluator artifacts for this ArchSig analyze run",
-            "manifest paths are artifact navigation aids, not source completeness proof",
-            "ArchSig v1 run manifest does not claim Lean theorem discharge"
-        ]
-    });
-    if mode == "validation-failure" {
-        manifest["artifactLinks"] = serde_json::json!({
-            "insightReport": "archsig-insight-report.json",
-            "insightBrief": "archsig-insight-brief.md",
-            "viewerData": "archsig-atom-viewer-data.json"
-        });
-        manifest["rawArtifactRetention"] = Value::String("not-computed".to_string());
-        manifest["rawArtifactPaths"] = Value::Null;
-    }
-    manifest
 }

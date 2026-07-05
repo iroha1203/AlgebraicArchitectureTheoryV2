@@ -13,20 +13,8 @@ use archsig::{
 };
 use serde_json::{Value, json};
 
-fn fixture_root() -> PathBuf {
-    archmap_v1_root()
-}
-
-fn archmap_v1_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/archmap_v1")
-}
-
 fn practical_rust_service_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/practical-rust-service")
-}
-
-fn pr_review_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/pr_review")
 }
 
 fn ag_measurement_root() -> PathBuf {
@@ -3289,16 +3277,22 @@ fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
 #[test]
 fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
     let out_dir = temp_dir("ag-measurement-insight-validation-failure");
-    let root = archmap_v1_root();
+    let root = ag_measurement_root();
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["atoms"][0]["kind"] = Value::String("unknown-legacy-kind".to_string());
+    let archmap_path = out_dir.join("archmap_v2_bad_atom_kind.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
 
     let output = run_sig0_output(&[
         "analyze",
         "--archmap",
-        root.join("replacement_negative/archmap_label_only_semantic.json")
-            .to_str()
-            .expect("path is utf-8"),
+        archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
-        root.join("law_policy.json")
+        root.join("law_policy_ag.json")
             .to_str()
             .expect("path is utf-8"),
         "--out-dir",
@@ -6913,1536 +6907,6 @@ fn archmap_v2_cross_doctrine_comparison_rejects_noncanonical_input() {
 }
 
 #[test]
-fn cli_validates_archmap_v1_atom_contract() {
-    let out_dir = temp_dir("archmap-schema050-validation");
-    let root = archmap_v1_root();
-    let report = out_dir.join("archmap-validation.json");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
-    assert_eq!(json["inputSchema"], "archmap/v0.5.0");
-    assert_eq!(json["summary"]["result"], "pass");
-    assert_eq!(json["summary"]["atomCount"], 3);
-    assert_eq!(json["summary"]["moleculeCount"], 1);
-}
-
-#[test]
-fn cli_analyze_v1_writes_normalized_archmap_for_valid_input() {
-    let out_dir = temp_dir("analyze-schema050-normalized");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(json["schema"], "normalized-archmap/v0.5.0");
-    assert_eq!(json["normalizerId"], "archmap-schema050-aat-presentation@1");
-    assert_eq!(json["summary"]["atomCount"], 3);
-    assert_eq!(json["summary"]["normalizedAtomCount"], 3);
-    assert_eq!(json["summary"]["generatedMoleculeCandidateCount"], 1);
-    assert!(
-        json["atoms"]
-            .as_array()
-            .is_some_and(|atoms| atoms.iter().any(|atom| atom["sourceAtomId"]
-                == "atom:reservation-effect"
-                && atom["atomKind"] == "effect"
-                && atom["axis"] == "semantic"
-                && atom["predicate"]["constructor"] == "effect"
-                && atom["shapeCoordinateStatus"] == "resolved"
-                && atom["valenceTemplateId"] == "valence:effect@1"))
-    );
-}
-
-#[test]
-fn cli_analyze_v1_writes_typed_evaluator_results() {
-    let out_dir = temp_dir("analyze-schema050-typed-results");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&out_dir.join("typed-evaluator-results.json"));
-    assert_eq!(json["schema"], "typed-evaluator-results/v0.5.0");
-    assert_eq!(json["summary"]["resultCount"], 6);
-    assert!(
-        json["summary"]["measuredPassCount"].as_u64().unwrap_or(0) > 0
-            || json["summary"]["measuredViolationCount"]
-                .as_u64()
-                .unwrap_or(0)
-                > 0
-    );
-    assert!(json["results"].as_array().is_some_and(|results| {
-        results.iter().any(|result| {
-            result["law"] == "solid.single-responsibility"
-                && result["status"] == "measuredPass"
-                && result["supportAtomRefs"]
-                    .as_array()
-                    .is_some_and(|refs| !refs.is_empty())
-                && result["basisRefs"]
-                    .as_array()
-                    .is_some_and(|refs| !refs.is_empty())
-        })
-    }));
-    assert!(
-        json["positiveBoundedConclusions"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-    );
-    assert!(
-        json["positiveBoundedConclusions"]
-            .as_array()
-            .is_some_and(|items| items
-                .iter()
-                .any(|item| item.as_str().is_some_and(|text| text
-                    .starts_with("ACCEPTABLE_UNDER_EVIDENCE_CONTRACT")
-                    || text.starts_with("SELECTED_VIOLATION_MEASURED_UNDER_EVIDENCE_CONTRACT"))))
-    );
-}
-
-#[test]
-fn cli_analyze_v1_marks_incomplete_molecule_candidate_blocked() {
-    let out_dir = temp_dir("analyze-schema050-blocked-molecule");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_blocked_molecule.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&out_dir.join("normalized-archmap.json"));
-    assert_eq!(json["summary"]["blockedMoleculeCandidateCount"], 1);
-    assert!(
-        json["molecules"]
-            .as_array()
-            .is_some_and(|molecules| molecules
-                .iter()
-                .any(|molecule| molecule["sourceMoleculeId"] == "mol:single-atom"
-                    && molecule["generatedMoleculeCandidateStatus"] == "blockedForNormalization"
-                    && molecule["compositionStatus"] == "blockedForNormalization"))
-    );
-    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
-    assert_eq!(typed["summary"]["blockedCount"], 6);
-    assert!(
-        typed["results"]
-            .as_array()
-            .is_some_and(|results| { results.iter().all(|result| result["status"] == "blocked") })
-    );
-    assert!(
-        typed["replacementEvaluatorResults"]
-            .as_array()
-            .is_some_and(|results| {
-                results.iter().any(|result| {
-                    result["replacementId"] == "missing-evidence.reading"
-                        && result["replacementForV0Field"] == "observationGaps"
-                        && result["status"] == "blocked"
-                        && result["blockerReason"]
-                            .as_str()
-                            .is_some_and(|reason| reason.contains("selected evaluator result"))
-                })
-            }),
-        "missing evidence replacement must be derived from blocked evaluator requirements"
-    );
-    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-    assert!(
-        packet["generatedObstructions"]
-            .as_array()
-            .is_some_and(|items| {
-                items.len() == 6
-                    && items.iter().all(|item| {
-                        item["obstructionKind"] == "blockedObstructionCandidate"
-                            && item["typedEvaluatorResultRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                            && item["generatedLawInputRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                            && item["signatureAxisRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                    })
-            }),
-        "blocked typed evaluator results must materialize generated obstruction candidates"
-    );
-    assert!(
-        packet["generatedRepairTargets"]
-            .as_array()
-            .is_some_and(|items| {
-                items.len() == 6
-                    && items.iter().all(|item| {
-                        item["targetKind"] == "collectMissingEvidence"
-                            && item["registryBasisRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && item["basisRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && item["signatureAxisRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                            && item["localStatus"] == "locallyBlocked"
-                            && item["generatedObstructionRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                            && item["typedEvaluatorResultRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                    })
-            }),
-        "blocked generated obstructions must materialize collectMissingEvidence repair targets"
-    );
-    assert_eq!(
-        packet["architectureSpectrumReport"]["status"].as_str(),
-        Some("needsCoverageReview")
-    );
-    assert!(
-        packet["architectureSpectrumReport"]["coverageGaps"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && packet["curvatureSupportReadings"]
-                .as_array()
-                .is_some_and(|items| items.iter().all(|reading| {
-                    reading["curvatureValue"]["status"] == "blockedByCoverageGap"
-                        && reading["coverageGapRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })),
-        "blocked typed evaluator results must become coverage gaps, not measured zero spectrum"
-    );
-    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
-    assert!(
-        architecture_distance["distanceDiagnosis"]["curvatureInsights"]["blockedSupportCount"]
-            .as_u64()
-            == Some(6)
-            && architecture_distance["distanceDiagnosis"]["curvatureInsights"]
-                ["measuredZeroSupportCount"]
-                .as_u64()
-                == Some(0)
-            && architecture_distance["obstructionMeasureReadings"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.len() == 6
-                        && items.iter().all(|reading| {
-                            reading["status"] == "blocked"
-                                && reading["obstructionMeasure"]["measuredValue"].is_null()
-                                && reading["coverageGapRefs"]
-                                    .as_array()
-                                    .is_some_and(|refs| !refs.is_empty())
-                        })
-        }),
-        "primary curvature insights must preserve blocked support as blocked, not measured zero"
-    );
-    assert_eq!(
-        architecture_distance["distanceInsights"]["policyObstructionReading"]["status"].as_str(),
-        Some("selectedPolicyObstructionBlocked"),
-        "blocked selected signature-distance axes must not be reported as policy obstruction absence"
-    );
-    let blocked_evidence_count = architecture_distance["distanceInsights"]["blockedEvidence"]
-        .as_array()
-        .map(Vec::len)
-        .unwrap_or_default();
-    assert!(
-        blocked_evidence_count > 0
-            && architecture_distance["distanceInsights"]["distanceActionQueue"]
-                .as_array()
-                .is_some_and(|actions| {
-                    actions
-                        .iter()
-                        .filter(|action| {
-                            action["actionKind"] == "resolve-blocked-distance-evidence"
-                        })
-                        .count()
-                        == blocked_evidence_count
-                }),
-        "distance action queue must retain every blocked evidence item"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_spectrum_detects_nonzero_curvature_from_typed_violation() {
-    let out_dir = temp_dir("analyze-schema050-spectrum-nonzero");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_violation.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
-    ]);
-
-    assert!(output.status.success());
-    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-    assert!(
-        packet["curvatureSupportReadings"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|reading| {
-                    reading["law"] == "domain.no-direct-infra-dependency"
-                        && reading["curvatureValue"]["status"] == "measuredNonzero"
-                        && reading["curvatureValue"]["value"] == 1
-                        && reading["supportRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && reading["witnessRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })
-            }),
-        "typed measuredViolation must produce nonzero curvature support"
-    );
-    assert!(
-        packet["architectureSpectrumReport"]["topHotspots"]
-            .as_array()
-            .is_some_and(|hotspots| {
-                hotspots.iter().any(|hotspot| {
-                    hotspot["curvatureStatus"] == "measuredNonzero"
-                        && hotspot["supportReadingRef"]
-                            .as_str()
-                            .is_some_and(|reference| packet.pointer(reference).is_some())
-                })
-            }),
-        "ArchitectureSpectrumReport must surface nonzero hotspots with refs"
-    );
-    assert!(
-        packet["architectureSpectrumReport"]["recurrentObstructions"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| {
-                    item["transferEdgeRefs"].as_array().is_some_and(|refs| {
-                        !refs.is_empty()
-                            && refs.iter().all(|reference| {
-                                packet
-                                    .pointer(
-                                        reference.as_str().expect("transfer edge ref is string"),
-                                    )
-                                    .is_some()
-                            })
-                    })
-                })
-            }),
-        "nonzero transfer support must expose recurrent obstruction refs"
-    );
-    assert!(
-        packet["architectureSpectrumReport"]["topWitnessClusters"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| {
-                    item["transferEdgeRefs"].as_array().is_some_and(|refs| {
-                        !refs.is_empty()
-                            && refs.iter().all(|reference| {
-                                packet
-                                    .pointer(
-                                        reference.as_str().expect("transfer edge ref is string"),
-                                    )
-                                    .is_some()
-                            })
-                    })
-                })
-            }),
-        "nonzero witness clusters must reference existing transfer edges"
-    );
-    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
-    assert!(
-        architecture_distance["operationDistanceReadings"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|reading| {
-                    reading["law"] == "domain.no-direct-infra-dependency"
-                        && reading["distanceFamily"] == "operationGeometry"
-                        && reading["status"] == "blocked"
-                        && reading["operationCost"]["status"] == "measured"
-                        && reading["operationCost"]["measuredValue"] == 5
-                        && reading["operationCost"]["sourceRef"]
-                            == "distanceProfile.operationCosts.domain.no-direct-infra-dependency"
-                        && reading["operationCost"]["includedInMeasuredValue"] == true
-                        && reading["targetDistanceDecrease"]["status"] == "measured"
-                        && reading["targetDistanceDecrease"]["measuredValue"] == 1
-                        && reading["targetDistanceDecrease"]["signatureDistanceReadingRef"]
-                            == "signature-distance:domain-no-direct-infra-dependency"
-                        && reading["distanceToSelectedFlat"]["status"] == "measured"
-                        && reading["distanceToSelectedFlat"]["measuredValue"] == 0
-                        && reading["repairRoute"]["status"]
-                            == "candidate-blocked-by-missing-transfer-risk-evidence"
-                        && reading["repairRoute"]["preconditionRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && reading["repairRoute"]["transferRiskBlockerRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                        && reading["sideEffectBound"]["status"] == "blocked"
-                        && reading["sideEffectBound"]["measuredValue"].is_null()
-                        && reading["sideEffectBound"]["blockerRefs"]
-                            .as_array()
-                            .is_some_and(|refs| !refs.is_empty())
-                })
-            }),
-        "priced measuredViolation operationGeometry must keep operation cost and selected-flat distance while blocking missing side-effect evidence"
-    );
-    assert!(
-        architecture_distance["distanceDiagnosis"]["curvatureInsights"]
-            ["measuredNonzeroSupportCount"]
-            .as_u64()
-            == Some(1)
-            && architecture_distance["distanceDiagnosis"]["curvatureInsights"]
-                ["topCurvatureSupports"]
-                .as_array()
-                .is_some_and(|items| {
-                    items.iter().any(|support| {
-                        support["law"] == "domain.no-direct-infra-dependency"
-                            && support["curvatureValue"]["status"] == "measuredNonzero"
-                            && support["witnessRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                            && support["sourceRefs"]
-                                .as_array()
-                                .is_some_and(|refs| !refs.is_empty())
-                    })
-                }),
-        "primary curvature insights must expose measured nonzero support with witness and source refs"
-    );
-    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
-    assert_eq!(
-        llm_packet["architectureSpectrumReportSummary"]["reportRef"].as_str(),
-        Some("archsig-analysis-packet.json#/architectureSpectrumReport")
-    );
-    assert!(
-        llm_packet["architectureSpectrumReportSummary"]["topHotspotRefs"]
-            .as_array()
-            .is_some_and(|refs| {
-                refs.iter().any(|reference| {
-                    reference == "spectrum-hotspot:domain-no-direct-infra-dependency"
-                })
-            }),
-        "LLM spectrum summary must keep nonzero hotspot visible"
-    );
-    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
-    assert!(
-        validation["checks"].as_array().is_some_and(|checks| {
-            checks.iter().any(|check| {
-                check["checkId"] == "archsig.v1.architectureSpectrumReportSurface"
-                    && check["result"] == "pass"
-            })
-        }),
-        "analysis validation must lock v1 spectrum surface"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_homotopy_surfaces_zero_nonzero_and_missing_filler() {
-    let root = archmap_v1_root();
-    for (fixture, expected_status, expected_loop_status) in [
-        (
-            "archmap_homotopy_zero.json",
-            "measuredZeroWithinSelectedFillings",
-            "measuredZero",
-        ),
-        (
-            "archmap_homotopy_nonzero.json",
-            "actionable",
-            "measuredNonzero",
-        ),
-        (
-            "archmap_homotopy_unmeasured_axis.json",
-            "needsHomotopyEvidenceReview",
-            "unmeasuredSelectedAxisDifference",
-        ),
-        (
-            "archmap_homotopy_hole.json",
-            "needsHomotopyEvidenceReview",
-            "blockedByMissingFiller",
-        ),
-    ] {
-        let out_dir = temp_dir(&format!(
-            "analyze-schema050-homotopy-{expected_loop_status}"
-        ));
-        let output = run_sig0_output(&[
-            "analyze",
-            "--archmap",
-            root.join(fixture).to_str().expect("path is utf-8"),
-            "--law-policy",
-            root.join("law_policy.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-            "--emit-raw-artifacts",
-        ]);
-
-        assert!(output.status.success());
-        let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-        let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
-        let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-        let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-        let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
-        assert_eq!(
-            packet["architectureHomotopyReport"]["status"].as_str(),
-            Some(expected_status)
-        );
-        assert!(
-            architecture_distance["homotopyDistanceReadings"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-                && architecture_distance["architectureHomotopyReport"].is_object()
-                && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                    ["homotopyDistanceReadingCount"]
-                    .as_u64()
-                    .is_some_and(|count| count > 0),
-            "primary architecture-distance artifact must expose homotopy distance rows, HomotopyReport, and homotopy insights"
-        );
-        assert_eq!(
-            summary["distanceDiagnosis"]["homotopyInsights"],
-            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
-            "summary and primary architecture-distance artifact must read the same homotopy insight state"
-        );
-        assert_eq!(
-            viewer["reportPane"]["distanceDiagnosis"]["homotopyInsights"],
-            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
-            "viewer report pane must read the same homotopy insight state"
-        );
-        assert_eq!(
-            llm_packet["distanceDiagnosisSummary"]["homotopyInsights"],
-            architecture_distance["distanceDiagnosis"]["homotopyInsights"],
-            "LLM packet must read the same homotopy insight state"
-        );
-        assert!(
-            packet["homotopyHolonomyReadings"]
-                .as_array()
-                .is_some_and(|readings| {
-                    readings.iter().any(|reading| {
-                        reading["holonomyStatus"] == expected_loop_status
-                            && reading["pathHomotopyDiagramRef"]
-                                .as_str()
-                                .is_some_and(|reference| packet.pointer(reference).is_some())
-                    })
-                }),
-            "homotopy holonomy reading must expose expected status with refs"
-        );
-        let report = &packet["architectureHomotopyReport"];
-        if expected_loop_status == "blockedByMissingFiller" {
-            assert!(
-                report["unfilledLoops"]
-                    .as_array()
-                    .is_some_and(|items| !items.is_empty())
-                    && report["missingFillerEvidence"]
-                        .as_array()
-                        .is_some_and(|items| !items.is_empty())
-                    && packet["homotopyDistanceReadings"]
-                        .as_array()
-                        .is_some_and(|items| {
-                            items.iter().any(|reading| {
-                                reading["measurementStatus"] == "blockedByMissingFiller"
-                                    && reading["homotopyDistance"].is_null()
-                                    && reading["observationGapLowerBound"]
-                                        .as_i64()
-                                        .is_some_and(|value| value > 0)
-                            })
-                        }),
-                "missing filler must stay blocked and must not become measured zero"
-            );
-            assert!(
-                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                    ["blockedFillerCount"]
-                    .as_u64()
-                    .is_some_and(|count| count > 0)
-                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                        ["topMissingFillerBlockers"]
-                        .as_array()
-                        .is_some_and(|items| {
-                            items.iter().any(|item| {
-                                item["recommendedNextAction"]
-                                    .as_str()
-                                    .is_some_and(|action| action.contains("filler evidence"))
-                                    && item["blockerRefs"].as_array().is_some_and(|refs| {
-                                        refs.iter().any(|reference| {
-                                            reference == "homotopy:filler-evidence-required"
-                                        }) && !refs.is_empty()
-                                    })
-                                    && item["sourceRefs"]
-                                        .as_array()
-                                        .is_some_and(|refs| !refs.is_empty())
-                            })
-                        }),
-                "blocked filler evidence must become source-linked next action in primary homotopy insights"
-            );
-        } else if expected_loop_status == "unmeasuredSelectedAxisDifference" {
-            assert!(
-                report["nonzeroHolonomyLoops"]
-                    .as_array()
-                    .is_some_and(Vec::is_empty)
-                    && packet["homotopyDistanceReadings"]
-                        .as_array()
-                        .is_some_and(|items| {
-                            items.iter().any(|reading| {
-                                reading["measurementStatus"] == "blockedByCoverageGap"
-                                    && reading["homotopyDistance"].is_null()
-                                    && reading["observationGapLowerBound"]
-                                        .as_i64()
-                                        .is_some_and(|value| value > 0)
-                            })
-                        }),
-                "semantic/runtime axis presence without selected nonzero evaluator support must stay unmeasured"
-            );
-            assert!(
-                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                    ["blockedCoverageCount"]
-                    .as_u64()
-                    .is_some_and(|count| count > 0)
-                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                        ["topCoverageGapBlockers"]
-                        .as_array()
-                        .is_some_and(|items| {
-                            items.iter().any(|item| {
-                                item["blockerRefs"].as_array().is_some_and(|refs| {
-                                    refs.iter().any(|reference| {
-                                        reference
-                                            == "homotopy:selected-axis-coverage-required"
-                                    })
-                                })
-                            })
-                        }),
-                "selected-axis coverage gap must remain visible in primary homotopy insights"
-            );
-        } else if expected_loop_status == "measuredNonzero" {
-            assert!(
-                report["nonzeroHolonomyLoops"]
-                    .as_array()
-                    .is_some_and(|items| !items.is_empty())
-                    && report["topLocalCurvatureCells"]
-                        .as_array()
-                        .is_some_and(|items| !items.is_empty()),
-                "nonzero filled loop must surface holonomy and local curvature cells"
-            );
-            assert!(
-                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                    ["measuredNonzeroLoopCount"]
-                    .as_u64()
-                    .is_some_and(|count| count > 0)
-                    && architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                        ["topMeasuredLoops"]
-                        .as_array()
-                        .is_some_and(|items| !items.is_empty()),
-                "measured nonzero homotopy loop must be primary insight, not raw-only packet detail"
-            );
-        } else {
-            assert!(
-                report["filledLoops"]
-                    .as_array()
-                    .is_some_and(|items| !items.is_empty())
-                    && report["nonzeroHolonomyLoops"]
-                        .as_array()
-                        .is_some_and(Vec::is_empty),
-                "zero filled loop must remain measured zero within selected filling"
-            );
-            assert!(
-                architecture_distance["distanceDiagnosis"]["homotopyInsights"]
-                    ["measuredZeroLoopCount"]
-                    .as_u64()
-                    .is_some_and(|count| count > 0),
-                "measured zero loop must remain selected filled-loop zero in primary homotopy insights"
-            );
-        }
-        let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
-        assert!(
-            validation["checks"].as_array().is_some_and(|checks| {
-                checks.iter().any(|check| {
-                    check["checkId"] == "archsig.v1.architectureHomotopyReportSurface"
-                        && check["result"] == "pass"
-                })
-            }),
-            "analysis validation must lock v1 homotopy surface"
-        );
-    }
-}
-
-#[test]
-fn cli_analyze_v1_homotopy_accepts_empty_molecule_support() {
-    let out_dir = temp_dir("analyze-schema050-homotopy-empty-support");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_no_molecule.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
-    ]);
-
-    assert!(output.status.success());
-    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-    assert_eq!(
-        packet["architectureHomotopyReport"]["status"].as_str(),
-        Some("measuredZeroWithinSelectedFillings")
-    );
-    assert!(
-        packet["pathHomotopyDiagramReadings"]
-            .as_array()
-            .is_some_and(Vec::is_empty)
-            && packet["homotopyHolonomyReadings"]
-                .as_array()
-                .is_some_and(Vec::is_empty)
-            && packet["stokesStyleReadings"]
-                .as_array()
-                .is_some_and(Vec::is_empty)
-            && packet["homotopyDistanceReadings"]
-                .as_array()
-                .is_some_and(Vec::is_empty),
-        "empty molecule support must be a valid empty homotopy surface"
-    );
-    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
-    assert!(
-        validation["checks"].as_array().is_some_and(|checks| {
-            checks.iter().any(|check| {
-                check["checkId"] == "archsig.v1.architectureHomotopyReportSurface"
-                    && check["result"] == "pass"
-            })
-        }),
-        "empty molecule support must not fail homotopy validation"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_structural_reading_review_surface_uses_typed_refs() {
-    let out_dir = temp_dir("analyze-schema050-structural-reading-review");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
-    ]);
-
-    assert!(output.status.success());
-    let packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
-    let surface = &packet["structuralReadingReviewSurface"];
-    assert_eq!(
-        surface["schema"].as_str(),
-        Some("structural-reading-review-surface/v0.5.0")
-    );
-    assert!(
-        surface["connectedReadingRefs"]
-            .as_array()
-            .is_some_and(|refs| {
-                let expected = [
-                    "representationMetricReadings",
-                    "localCurvatureDiagramReadings",
-                    "threeLayerFlatnessReadings",
-                    "observationProjectionReadings",
-                    "stateTransitionAlgebraReadings",
-                    "effectRelationAlgebraReadings",
-                    "synthesisBlockageReadings",
-                    "operationPreconditionReadinessReadings",
-                    "pathMultiplicityLossReadings",
-                ]
-                .into_iter()
-                .flat_map(|field| {
-                    packet[field]
-                        .as_array()
-                        .into_iter()
-                        .flat_map(move |readings| {
-                            (0..readings.len()).map(move |index| format!("/{field}/{index}"))
-                        })
-                })
-                .collect::<Vec<_>>();
-                !expected.is_empty()
-                    && refs
-                        .iter()
-                        .filter_map(|reference| reference.as_str())
-                        .collect::<Vec<_>>()
-                        == expected
-                    && expected
-                        .iter()
-                        .all(|pointer| packet.pointer(pointer).is_some())
-            }),
-        "structural review surface must connect exactly the structural packet refs"
-    );
-    for field in [
-        "representationMetricReadings",
-        "localCurvatureDiagramReadings",
-        "threeLayerFlatnessReadings",
-        "observationProjectionReadings",
-        "stateTransitionAlgebraReadings",
-        "effectRelationAlgebraReadings",
-        "synthesisBlockageReadings",
-        "operationPreconditionReadinessReadings",
-        "pathMultiplicityLossReadings",
-    ] {
-        assert!(
-            packet[field].as_array().is_some_and(|readings| {
-                !readings.is_empty()
-                    && readings.iter().all(|reading| {
-                        reading["readingId"].as_str().is_some()
-                            && reading["measurementStatus"].as_str().is_some()
-                            && reading["normalizedAtomRefs"].as_array().is_some()
-                            && reading["normalizedMoleculeRefs"].as_array().is_some()
-                            && reading["typedEvaluatorResultRefs"]
-                                .as_array()
-                                .is_some_and(|refs| {
-                                    !refs.is_empty()
-                                        && refs.iter().all(|reference| {
-                                            reference.as_str().is_some_and(|pointer| {
-                                                packet.pointer(pointer).is_some()
-                                            })
-                                        })
-                                })
-                            && reading["coverageGapRefs"].as_array().is_some()
-                    })
-            }),
-            "structural field {field} must expose typed / normalized refs"
-        );
-    }
-    assert!(
-        [
-            "representationMetricReadings",
-            "localCurvatureDiagramReadings",
-            "threeLayerFlatnessReadings",
-            "observationProjectionReadings",
-            "stateTransitionAlgebraReadings",
-            "effectRelationAlgebraReadings",
-            "synthesisBlockageReadings",
-            "operationPreconditionReadinessReadings",
-            "pathMultiplicityLossReadings",
-        ]
-        .into_iter()
-        .flat_map(|field| packet[field].as_array().into_iter().flatten())
-        .all(|reading| {
-            reading["measurementStatus"].as_str().is_some_and(|status| {
-                status != "measuredZero"
-                    && (status != "measured"
-                        || reading["coverageGapRefs"]
-                            .as_array()
-                            .is_some_and(|refs| refs.is_empty()))
-            })
-        }),
-        "structural rows must not use missing/proxy evidence as measured"
-    );
-    let validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
-    assert!(
-        validation["checks"].as_array().is_some_and(|checks| {
-            checks.iter().any(|check| {
-                check["checkId"] == "archsig.v1.structuralReadingReviewSurface"
-                    && check["result"] == "pass"
-            })
-        }),
-        "analysis validation must lock v1 structural review surface"
-    );
-    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
-    assert!(
-        llm_packet["structuralReadingReviewSummary"]["topStructuralReadingRefs"]
-            .as_array()
-            .is_some_and(|refs| {
-                !refs.is_empty()
-                    && refs.iter().all(|reference| {
-                        reference
-                            .as_str()
-                            .is_some_and(|pointer| packet.pointer(pointer).is_some())
-                    })
-            }),
-        "LLM structural summary must keep resolvable packet refs"
-    );
-}
-
-#[test]
-fn cli_rejects_archmap_v1_unknown_atom_kind() {
-    let out_dir = temp_dir("archmap-schema050-unknown-kind");
-    let root = archmap_v1_root();
-    let report = out_dir.join("archmap-validation.json");
-
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        root.join("archmap_unknown_kind.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(
-        json["checks"]
-            .as_array()
-            .is_some_and(|checks| checks.iter().any(|check| check["id"]
-                == "archmap-schema050-atom-kind-vocabulary"
-                && check["result"] == "fail"))
-    );
-}
-
-#[test]
-fn cli_rejects_archmap_v1_unresolved_source_ref() {
-    let out_dir = temp_dir("archmap-schema050-bad-ref");
-    let root = archmap_v1_root();
-    let report = out_dir.join("archmap-validation.json");
-
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        root.join("archmap_bad_ref.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "archmap-schema050-atom-refs-resolve" && check["result"] == "fail"
-        })
-    }));
-}
-
-#[test]
-fn cli_rejects_archmap_v1_unknown_predicate() {
-    let out_dir = temp_dir("archmap-schema050-unknown-predicate");
-    let root = archmap_v1_root();
-    let report = out_dir.join("archmap-validation.json");
-
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        root.join("archmap_unknown_predicate.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(
-        json["checks"]
-            .as_array()
-            .is_some_and(|checks| checks.iter().any(|check| check["id"]
-                == "archmap-schema050-predicate-vocabulary"
-                && check["result"] == "fail"))
-    );
-}
-
-#[test]
-fn cli_rejects_archmap_v1_legacy_root_field() {
-    let out_dir = temp_dir("archmap-schema050-legacy-field");
-    let root = archmap_v1_root();
-    let report = out_dir.join("archmap-validation.json");
-
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        root.join("archmap_legacy_field.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    assert!(
-        !report.exists(),
-        "v1 legacy root field must stop before writing a validation report"
-    );
-}
-
-#[test]
-fn cli_validates_law_policy_v1_selector_contract() {
-    let out_dir = temp_dir("law-policy-schema050-validation");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-
-    run_sig0(&[
-        "law-policy",
-        "--input",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
-    assert_eq!(json["input"]["schema"], "law-policy/v0.5.0");
-    assert_eq!(json["summary"]["result"], "pass");
-    assert_eq!(json["summary"]["policyEntryCount"], 2);
-    assert_eq!(json["summary"]["packEntryCount"], 1);
-    assert_eq!(json["summary"]["expandedPolicyEntryCount"], 6);
-    assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "law-policy-schema050-replacement-registry-manifest"
-                && check["result"] == "pass"
-        })
-    }));
-    assert!(json["expandedPolicies"].as_array().is_some_and(|entries| {
-        entries.len() == 6
-            && entries.iter().any(|entry| {
-                entry["law"] == "solid.single-responsibility"
-                    && entry["evaluator"] == "solid.single-responsibility"
-            })
-            && entries.iter().any(|entry| {
-                entry["law"] == "solid.dependency-inversion"
-                    && entry["evaluator"] == "solid.dependency-inversion"
-            })
-            && entries.iter().any(|entry| {
-                entry["law"] == "domain.no-direct-infra-dependency"
-                    && entry["evaluator"] == "domain.no-direct-infra-dependency"
-            })
-    }));
-}
-
-#[test]
-fn cli_rejects_law_policy_v1_unknown_evaluator() {
-    let out_dir = temp_dir("law-policy-schema050-unknown-evaluator");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-
-    let output = run_sig0_output(&[
-        "law-policy",
-        "--input",
-        root.join("law_policy_unknown_evaluator.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(
-        json["checks"]
-            .as_array()
-            .is_some_and(|checks| checks.iter().any(|check| check["id"]
-                == "law-policy-schema050-registry-vocabulary"
-                && check["result"] == "fail"))
-    );
-}
-
-#[test]
-fn cli_rejects_law_policy_v1_unknown_pack() {
-    let out_dir = temp_dir("law-policy-schema050-unknown-pack");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-
-    let output = run_sig0_output(&[
-        "law-policy",
-        "--input",
-        root.join("law_policy_unknown_pack.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "law-policy-schema050-registry-vocabulary" && check["result"] == "fail"
-        })
-    }));
-}
-
-#[test]
-fn cli_rejects_law_policy_v1_unresolved_basis() {
-    let out_dir = temp_dir("law-policy-schema050-unknown-basis");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-
-    let output = run_sig0_output(&[
-        "law-policy",
-        "--input",
-        root.join("law_policy_unknown_basis.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "law-policy-schema050-basis-recorded" && check["result"] == "fail"
-        })
-    }));
-}
-
-#[test]
-fn cli_rejects_law_policy_v1_dsl_field() {
-    let out_dir = temp_dir("law-policy-schema050-dsl-field");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-
-    let output = run_sig0_output(&[
-        "law-policy",
-        "--input",
-        root.join("law_policy_dsl_field.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    assert!(
-        !report.exists(),
-        "LawPolicy v1 DSL fields must stop before writing a validation report"
-    );
-}
-
-#[test]
-fn cli_rejects_law_policy_v1_unknown_distance_profile_ref() {
-    let out_dir = temp_dir("law-policy-schema050-unknown-distance-profile");
-    let root = archmap_v1_root();
-    let report = out_dir.join("law-policy-validation.json");
-    let policy_path = out_dir.join("law_policy_unknown_distance_profile.json");
-    let mut policy = read_json(&root.join("law_policy.json"));
-    policy["distanceProfileRef"] = Value::from("distance-profile:unknown@1");
-    fs::write(
-        &policy_path,
-        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
-    )
-    .expect("policy fixture can be written");
-
-    let output = run_sig0_output(&[
-        "law-policy",
-        "--input",
-        policy_path.to_str().expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "law-policy-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "fail");
-    assert!(json["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "law-policy-schema050-distance-profile-selector"
-                && check["result"] == "fail"
-        })
-    }));
-}
-
-#[test]
-fn cli_analyze_v1_writes_summary_viewer_and_manifest_artifacts() {
-    let out_dir = temp_dir("analyze-schema050-preflight");
-    let root = archmap_v1_root();
-    for stale_artifact in [
-        "archsig-analysis-packet.json",
-        "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
-        "normalized-archmap.json",
-        "typed-evaluator-results.json",
-        "architecture-distance.json",
-    ] {
-        fs::write(out_dir.join(stale_artifact), "{}").expect("stale artifact can be written");
-    }
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(output.status.success());
-    assert_eq!(
-        read_json(&out_dir.join("archmap-validation.json"))["schema"],
-        "archmap-validation-report/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("law-policy-validation.json"))["schema"],
-        "law-policy-validation-report/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("normalized-archmap.json"))["schema"],
-        "normalized-archmap/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("typed-evaluator-results.json"))["schema"],
-        "typed-evaluator-results/v0.5.0"
-    );
-    let architecture_distance = read_json(&out_dir.join("architecture-distance.json"));
-    assert_eq!(
-        architecture_distance["schema"],
-        "archsig-architecture-distance/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-summary.json"))["schema"],
-        "archsig-analysis-summary/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-atom-viewer-data.json"))["schema"],
-        "archsig-atom-viewer-data/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-validation.json"))["schema"],
-        "archsig-analysis-validation-report/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-run-manifest.json"))["schema"],
-        "archsig-run-manifest/v0.5.0"
-    );
-    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    let viewer_data = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert!(
-        summary["richReadingGuide"]["readingOrder"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| item == "richDominantFindings")
-                    && items
-                        .iter()
-                        .any(|item| item == "structuralReadingReviewSummary")
-            })
-            && summary["richPacketRefs"]["structuralReadingRefs"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && summary["actionQueue"]
-                .as_array()
-                .is_some_and(|items| items.iter().any(|item| {
-                    item["kind"]
-                        .as_str()
-                        .is_some_and(|kind| kind == "spectrumHotspot")
-                })),
-        "v1 summary must expose rich packet refs and a conclusion-first reading guide"
-    );
-    assert_eq!(
-        viewer_data["reportPane"]["richPacketRefs"], summary["richPacketRefs"],
-        "viewer report pane must carry the same compact rich packet refs as summary"
-    );
-    assert!(
-        viewer_data["reportPane"]["omittedDetailCounts"]["rawPacketArrays"]
-            .as_str()
-            .is_some_and(|text| text.contains("omitted from viewer data")),
-        "viewer data must record that raw packet arrays are omitted from the projection"
-    );
-    assert!(
-        !out_dir.join("archsig-analysis-packet.json").exists(),
-        "raw v1 packet is omitted unless --emit-raw-artifacts is passed"
-    );
-    for reference in architecture_distance["primaryInsightsRefs"]
-        .as_array()
-        .expect("primary insight refs are emitted")
-    {
-        let Some(path) = reference
-            .as_str()
-            .expect("primary insight ref is string")
-            .split('#')
-            .next()
-        else {
-            panic!("primary insight ref has path before fragment");
-        };
-        assert!(
-            out_dir.join(path).exists(),
-            "default architecture-distance primary ref must point to generated artifact: {path}"
-        );
-    }
-    assert!(
-        architecture_distance["optionalRawArtifactRefs"]
-            .as_array()
-            .is_some_and(|refs| refs
-                .iter()
-                .any(|reference| reference
-                    == "llm-interpretation-packet.json#/distanceInsightsSummary")
-                && refs.iter().any(|reference| reference
-                    == "llm-interpretation-packet.json#/distanceDiagnosisSummary")),
-        "raw-only interpretation refs must be optional when raw artifacts are omitted"
-    );
-    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
-    assert_eq!(
-        manifest["artifactLinks"]["architectureDistance"].as_str(),
-        Some("architecture-distance.json")
-    );
-    assert_eq!(manifest["mode"], "measurement");
-    assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert!(
-        manifest["generatedArtifacts"]
-            .as_array()
-            .is_some_and(|items| items
-                .iter()
-                .any(|item| item == "architecture-distance.json")),
-        "manifest must record architecture-distance.json as a generated artifact"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_label_only_semantic_does_not_become_measured_replacement() {
-    let out_dir = temp_dir("analyze-schema050-label-only-semantic");
-    let root = archmap_v1_root();
-    let archmap_path = root.join("replacement_negative/archmap_label_only_semantic.json");
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    let validation = read_json(&out_dir.join("archmap-validation.json"));
-    assert_eq!(validation["summary"]["result"], "fail");
-    assert!(validation["checks"].as_array().is_some_and(|checks| {
-        checks.iter().any(|check| {
-            check["id"] == "archmap-schema050-atom-required-shapes" && check["result"] == "fail"
-        })
-    }));
-    assert!(
-        !out_dir.join("typed-evaluator-results.json").exists(),
-        "label-only semantic text must stop before replacement evaluator measurement"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_schema_only_input_does_not_become_measured_replacement() {
-    let out_dir = temp_dir("analyze-schema050-schema-only");
-    let root = archmap_v1_root();
-    let archmap_path = root.join("replacement_negative/archmap_schema_only.json");
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(
-        output.status.success(),
-        "schema-only v1 input is syntactically valid but must remain bounded incomplete"
-    );
-    let typed = read_json(&out_dir.join("typed-evaluator-results.json"));
-    assert_eq!(typed["schema"], "typed-evaluator-results/v0.5.0");
-    assert_eq!(
-        typed["summary"]["measuredPassCount"].as_u64().unwrap_or(0)
-            + typed["summary"]["measuredViolationCount"]
-                .as_u64()
-                .unwrap_or(0),
-        0,
-        "schema name alone must not become measured replacement evidence"
-    );
-    assert!(
-        typed["summary"]["blockedCount"].as_u64().unwrap_or(0)
-            + typed["summary"]["unknownCount"].as_u64().unwrap_or(0)
-            + typed["summary"]["unmeasuredCount"].as_u64().unwrap_or(0)
-            > 0,
-        "schema-only input must remain blocked, unknown, or unmeasured"
-    );
-    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    assert_eq!(
-        summary["verdict"].as_str(),
-        Some("BOUNDED_MEASUREMENT_INCOMPLETE"),
-        "schema-only input must not report an acceptable measured conclusion"
-    );
-}
-
-#[test]
-fn cli_analyze_v1_removed_field_only_artifacts_do_not_become_measured_results() {
-    let root = archmap_v1_root();
-    for (removed_field, fixture) in [
-        (
-            "projectionInfo",
-            "replacement_negative/archmap_projection_only_v0_field.json",
-        ),
-        (
-            "operationSquareEvidence",
-            "replacement_negative/archmap_operation_square_only_v0_field.json",
-        ),
-        (
-            "observationGaps",
-            "replacement_negative/archmap_observation_gaps_only_v0_field.json",
-        ),
-        (
-            "concernHints",
-            "replacement_negative/archmap_concern_only_v0_field.json",
-        ),
-        (
-            "nonConclusions",
-            "replacement_negative/archmap_non_conclusion_only_v0_field.json",
-        ),
-    ] {
-        let out_dir = temp_dir(&format!(
-            "analyze-schema050-removed-field-only-{}",
-            removed_field
-        ));
-        let archmap_path = root.join(fixture);
-
-        let output = run_sig0_output(&[
-            "analyze",
-            "--archmap",
-            archmap_path.to_str().expect("path is utf-8"),
-            "--law-policy",
-            root.join("law_policy.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            out_dir.to_str().expect("path is utf-8"),
-        ]);
-
-        assert!(
-            !output.status.success(),
-            "removed v0 field {removed_field} must not be accepted as v1 input"
-        );
-        assert!(
-            !out_dir.join("typed-evaluator-results.json").exists(),
-            "removed field {removed_field} must stop before measured typed evaluator output"
-        );
-    }
-}
-
-#[test]
-fn cli_analyze_v1_validation_failure_removes_stale_success_artifacts() {
-    let out_dir = temp_dir("analyze-schema050-stale-success-artifact-suppression");
-    let root = archmap_v1_root();
-    for stale_artifact in [
-        "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
-        "normalized-archmap.json",
-        "typed-evaluator-results.json",
-        "architecture-distance.json",
-        "archsig-insight-report.json",
-        "archsig-insight-brief.md",
-        "archsig-analysis-packet.json",
-        "archsig-analysis-detail-index.json",
-        "archsig-analysis-validation.json",
-        "llm-interpretation-packet.json",
-    ] {
-        fs::write(out_dir.join(stale_artifact), "{\"schema\":\"stale\"}")
-            .expect("stale success artifact can be written");
-    }
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("replacement_negative/archmap_label_only_semantic.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!output.status.success());
-    assert_eq!(
-        read_json(&out_dir.join("archmap-validation.json"))["summary"]["result"],
-        "fail"
-    );
-    for stale_artifact in [
-        "archsig-analysis-summary.json",
-        "normalized-archmap.json",
-        "typed-evaluator-results.json",
-        "architecture-distance.json",
-        "archsig-analysis-packet.json",
-        "archsig-analysis-detail-index.json",
-        "archsig-analysis-validation.json",
-        "llm-interpretation-packet.json",
-    ] {
-        assert!(
-            !out_dir.join(stale_artifact).exists(),
-            "v1 validation failure must remove stale success artifact {stale_artifact}"
-        );
-    }
-    assert_eq!(
-        read_json(&out_dir.join("archsig-insight-report.json"))["insightCards"][0]["kind"],
-        "validation_failure",
-        "validation failure should replace stale insight report with a validation blocker projection"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-run-manifest.json"))["mode"],
-        "validation-failure"
-    );
-}
-
-#[test]
 fn practical_rust_service_example_runs_current_analyze() {
     let out_dir = temp_dir("practical-rust-service-current-analyze");
     let root = practical_rust_service_root();
@@ -8459,7 +6923,6 @@ fn practical_rust_service_example_runs_current_analyze() {
             .expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
-        "--emit-raw-artifacts",
     ]);
 
     assert!(
@@ -8563,6 +7026,43 @@ fn practical_rust_service_example_runs_current_analyze() {
 }
 
 #[test]
+fn cli_analyze_current_run_removes_stale_retired_artifacts() {
+    let out_dir = temp_dir("current-analyze-removes-stale-retired-artifacts");
+    let root = ag_measurement_root();
+    let retired_artifacts = [
+        ["typed", "evaluator", "results.json"].join("-"),
+        ["architecture", "distance.json"].join("-"),
+        ["archsig", "analysis", "packet.json"].join("-"),
+        ["archsig", "analysis", "detail", "index.json"].join("-"),
+        ["llm", "interpretation", "packet.json"].join("-"),
+    ];
+    for artifact in &retired_artifacts {
+        fs::write(out_dir.join(artifact), "{}").expect("stale artifact fixture writes");
+    }
+
+    run_sig0(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("path is utf-8"),
+    ]);
+
+    for artifact in &retired_artifacts {
+        assert!(
+            !out_dir.join(artifact).exists(),
+            "current analyze must remove stale retired artifact {artifact}"
+        );
+    }
+}
+
+#[test]
 fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_digests() {
     let first_out = temp_dir("practical-rust-service-determinism-a");
     let second_out = temp_dir("practical-rust-service-determinism-b");
@@ -8612,18 +7112,18 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.0");
-    assert_eq!(manifest["runId"], "run:30ed54c09091");
+    assert_eq!(manifest["runId"], "run:a70b612343fe");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "f82eeac941529a9eadad8fd937d802f1c968fabb9d3564de0ef855ad85e82b82"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
-        "1403d4a313ae976b3fd042b3e85070540bb3c538d9649b16546d1407cbe1de31"
+        "5c2386560eef57501a01ca74583444b51738654fae5760244f2f8404df83de1c"
     );
     assert_eq!(
         manifest["inputDigests"]["profileFingerprint"]["sha256"],
-        "b69247b43a8639d00a8c62676d4abfe8ea70e3bc0c4112197009e08abd0959c2"
+        "4e5f4386ff058669ff75efef5088a3806656a3b35f102c88a826f65671a30b57"
     );
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["sha256"],
@@ -8746,341 +7246,8 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:30ed54c09091-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:a70b612343fe-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
-    );
-}
-
-#[test]
-fn cli_pr_review_accepts_v1_archmap_and_law_policy() {
-    let out_dir = temp_dir("pr-review/v0.5.0");
-    let root = archmap_v1_root();
-    let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-schema050.json");
-
-    let output = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "archsig-pr-review-report/v0.5.0");
-    assert_eq!(
-        json["reviewKind"],
-        "v1-output-replacement-structural-pr-review"
-    );
-    assert_eq!(
-        json["canonicalInputs"]["baseArchMap"]["schema"],
-        "archmap/v0.5.0"
-    );
-    assert_eq!(
-        json["canonicalInputs"]["lawPolicy"]["schema"],
-        "law-policy/v0.5.0"
-    );
-    assert_eq!(json["typedEvaluatorSummary"]["resultCount"], 6);
-    assert_eq!(
-        json["v1Analysis"]["base"]["packetSchema"],
-        "archsig-analysis-packet/v0.5.0"
-    );
-    assert!(
-        json["v1Analysis"]["base"]["structuralPacketRefs"]["structuralReadingReviewSurface"]
-            .as_str()
-            .is_some_and(|reference| reference == "/structuralReadingReviewSurface")
-            && json["v1Analysis"]["base"]["structuralReadingRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty()),
-        "pr-review must expose v1 derived structural packet refs"
-    );
-    assert!(
-        json["deltaPacketRefIntersections"]
-            .as_array()
-            .is_some_and(|items| items.iter().all(|item| {
-                item["matchedPacketRefCount"].as_u64().unwrap_or(0) > 0
-                    && item["status"] == "matchedDerivedPacketRefs"
-            })),
-        "v1 PR delta refs must intersect typed / derived packet refs"
-    );
-    assert!(
-        json["prStructuralDiagnosis"]["safeChangeBudget"]["status"]
-            .as_str()
-            .is_some_and(|status| status == "boundedNoNewSelectedObstruction"
-                || status == "blockedByIncompleteTypedSupport"),
-        "base-only PR review must not treat bounded incomplete support as measured zero"
-    );
-    assert_eq!(
-        json["prStructuralDiagnosis"]["endpointDistanceMovement"]["status"],
-        "blockedWithoutAfterArchMap",
-        "missing head ArchMap is blocked, not measured zero"
-    );
-}
-
-#[test]
-fn cli_pr_review_v1_reads_after_and_path_archmap_structural_diagnosis() {
-    let out_dir = temp_dir("pr-review-schema050-after-archmap");
-    let root = archmap_v1_root();
-    let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-schema050.json");
-
-    let output = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--after-archmap",
-        root.join("archmap_violation.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--path-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&report);
-    assert_eq!(
-        json["canonicalInputs"]["afterArchMap"]["schema"],
-        "archmap/v0.5.0"
-    );
-    assert_eq!(
-        json["v1Analysis"]["after"]["packetSchema"],
-        "archsig-analysis-packet/v0.5.0"
-    );
-    assert_eq!(
-        json["v1Analysis"]["path"]
-            .as_array()
-            .expect("path analyses are array")
-            .len(),
-        1
-    );
-    assert_eq!(
-        json["prStructuralDiagnosis"]["endpointDistanceMovement"]["status"],
-        "measuredFromSuppliedBaseAndAfterArchMap"
-    );
-    assert_eq!(
-        json["prStructuralDiagnosis"]["totalPathMovement"]["status"],
-        "measuredFromSuppliedIntermediateArchMaps"
-    );
-    assert_eq!(
-        json["prStructuralDiagnosis"]["hiddenExcursionBoundary"]["status"],
-        "boundedBySuppliedIntermediateArchMaps"
-    );
-    assert!(
-        json["prStructuralDiagnosis"]["safeChangeBudget"]["status"]
-            .as_str()
-            .is_some_and(|status| status == "needsReviewForIncreasedDistance"
-                || status == "blockedByIncompleteTypedSupport"),
-        "after/path review must surface distance movement or blocked typed support without claiming safety"
-    );
-}
-
-#[test]
-fn cli_pr_review_v1_matches_head_only_delta_refs() {
-    let out_dir = temp_dir("pr-review-schema050-after-only-delta");
-    let root = archmap_v1_root();
-    let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-schema050.json");
-
-    let output = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--after-archmap",
-        root.join("archmap_violation.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_after_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(output.status.success());
-    let json = read_json(&report);
-    let intersection = json["deltaPacketRefIntersections"]
-        .as_array()
-        .expect("intersections are array")
-        .first()
-        .expect("head-only delta has one ref");
-    assert_eq!(intersection["deltaRef"], "atom:direct-store-dependency");
-    assert_eq!(intersection["status"], "matchedDerivedPacketRefs");
-    assert!(
-        intersection["snapshotMatches"]
-            .as_array()
-            .is_some_and(|items| {
-                items.iter().any(|item| item["analysisLabel"] == "after")
-                    && !items.iter().any(|item| item["analysisLabel"] == "base")
-            }),
-        "head-only delta ref must match the after analysis snapshot, not only base"
-    );
-}
-
-#[test]
-fn cli_pr_review_v1_rejects_invalid_delta_refs_and_path_without_after() {
-    let out_dir = temp_dir("pr-review-schema050-invalid-delta");
-    let root = archmap_v1_root();
-    let malformed_delta = out_dir.join("archmap_delta_missing_refs.json");
-    fs::write(
-        &malformed_delta,
-        r#"{
-  "schema": "archmap-delta/v0.5.0",
-  "deltaId": "delta:missing-refs"
-}"#,
-    )
-    .expect("malformed delta fixture can be written");
-    let report = out_dir.join("archsig-pr-review-schema050.json");
-
-    let missing_refs = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--delta-archmap",
-        malformed_delta.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!missing_refs.status.success());
-    assert!(
-        String::from_utf8_lossy(&missing_refs.stderr)
-            .contains("changedObservationRefs must be a non-empty string array")
-    );
-
-    let review = pr_review_root();
-    let path_without_after = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--path-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-
-    assert!(!path_without_after.status.success());
-    assert!(
-        String::from_utf8_lossy(&path_without_after.stderr)
-            .contains("--path-archmap requires --after-archmap")
-    );
-}
-
-#[test]
-fn cli_pr_review_v1_rejects_invalid_archmap_or_law_policy_contract() {
-    let out_dir = temp_dir("pr-review-schema050-invalid-contract");
-    let root = archmap_v1_root();
-    let review = pr_review_root();
-    let report = out_dir.join("archsig-pr-review-schema050.json");
-
-    let invalid_archmap = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap_legacy_field.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-    assert!(!invalid_archmap.status.success());
-    assert!(
-        String::from_utf8_lossy(&invalid_archmap.stderr)
-            .contains("failed ArchMap v1 validation for pr-review")
-    );
-
-    let invalid_policy = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_dsl_field.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-    assert!(!invalid_policy.status.success());
-    assert!(
-        String::from_utf8_lossy(&invalid_policy.stderr)
-            .contains("failed LawPolicy v1 validation for pr-review")
-    );
-
-    let finite_poset_archmap = run_sig0_output(&[
-        "pr-review",
-        "--base-archmap",
-        ag_measurement_root()
-            .join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--delta-archmap",
-        review
-            .join("archmap_delta_v1_refs.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report.to_str().expect("path is utf-8"),
-    ]);
-    assert!(!finite_poset_archmap.status.success());
-    assert!(
-        String::from_utf8_lossy(&finite_poset_archmap.stderr)
-            .contains("finite-poset-site ArchMap shape")
     );
 }
 
@@ -9094,13 +7261,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "current v1 CLI help must describe architecture distance without Part IV public wording\n{stdout}"
     );
 
-    for command in [
-        "archmap",
-        "law-policy",
-        "pr-review",
-        "analyze",
-        "schema-catalog",
-    ] {
+    for command in ["archmap", "law-policy", "analyze", "schema-catalog"] {
         assert!(
             stdout.contains(command),
             "ArchSig help must expose retained command {command}\n{stdout}"
@@ -9138,7 +7299,7 @@ fn cli_rejects_implicit_scan_default() {
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("ArchMap/LawPolicy/analysis-packet primary")
+        stderr.contains("ArchMap/LawPolicy/measurement-packet primary")
             && stderr.contains("archsig analyze"),
         "implicit scan should be rejected with the analyze boundary\n{stderr}"
     );
@@ -9146,11 +7307,45 @@ fn cli_rejects_implicit_scan_default() {
 
 #[test]
 fn removed_legacy_commands_are_not_accepted() {
-    for command in removed_commands() {
+    for command in removed_commands().iter().copied().chain(["pr-review"]) {
         let output = run_sig0_output(&[command, "--help"]);
         assert!(
             !output.status.success(),
             "removed command {command} should not be accepted"
+        );
+    }
+}
+
+#[test]
+fn removed_legacy_analyze_flags_are_not_accepted() {
+    let root = ag_measurement_root();
+    for flag in [
+        ["--strict", "distance"].join("-"),
+        ["--emit", "raw", "artifacts"].join("-"),
+    ] {
+        let out_dir = temp_dir(&format!("removed-analyze-flag-{flag}"));
+        let output = run_sig0_output(&[
+            "analyze",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--law-policy",
+            root.join("law_policy_ag.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            out_dir.to_str().expect("path is utf-8"),
+            flag.as_str(),
+        ]);
+        assert!(
+            !output.status.success(),
+            "removed analyze flag {flag} should not be accepted"
+        );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            stderr.contains("unexpected argument") || stderr.contains("unrecognized option"),
+            "removed analyze flag {flag} should fail as an unknown flag\n{stderr}"
         );
     }
 }
@@ -9223,7 +7418,7 @@ fn archview_reads_insight_report_surface_contract() {
 #[test]
 fn cli_rejects_legacy_archmap_fields() {
     let out_dir = temp_dir("legacy-archmap-fields");
-    let mut archmap = read_json(&fixture_root().join("archmap.json"));
+    let mut archmap = read_json(&ag_measurement_root().join("archmap_v2.json"));
     archmap[["map", "Items"].concat()] = serde_json::json!([]);
     archmap[["homo", "morphism"].concat()] =
         serde_json::json!({"reading": "old compatibility input"});
@@ -9337,15 +7532,12 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "measurement-profile/v0.5.0",
             "law-evaluator-registry/v0.5.0",
             "normalized-archmap-current",
-            "typed-evaluator-results/v0.5.0",
-            "archsig-architecture-distance/v0.5.0",
             "archsig-measurement-packet/v0.5.0",
             "archsig-boundary-statement/v0.5.0",
             "archsig-gate-policy/v0.5.0",
             "archsig-gate-report/v0.5.0",
             "archmap-diff/v0.5.0",
             "archsig-comparison-report/v0.5.0",
-            "archsig-analysis-packet/v0.5.0",
             "archsig-run-manifest/v0.5.0",
             "archsig-atom-viewer-data/v0.5.0",
         ]
@@ -9399,39 +7591,6 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     })
         }),
         "schema catalog must describe the BoundaryStatement v1 artifact boundary"
-    );
-    assert!(
-        artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
-                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
-                    .as_str()
-                    .is_some_and(|description| {
-                        description.contains("primary curvature geometry readings")
-                    })
-        }),
-        "schema catalog must describe architecture-distance-schema050 curvature primary surface"
-    );
-    assert!(
-        artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
-                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
-                    .as_str()
-                    .is_some_and(|description| {
-                        description.contains("primary homotopy filling geometry readings")
-                    })
-        }),
-        "schema catalog must describe architecture-distance-schema050 homotopy primary surface"
-    );
-    assert!(
-        artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-architecture-distance/v0.5.0"
-                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
-                    .as_str()
-                    .is_some_and(|description| {
-                        description.contains("primary representation metric readings")
-                    })
-        }),
-        "schema catalog must describe architecture-distance-schema050 representation primary surface"
     );
 }
 
@@ -9759,121 +7918,6 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
             .any(|entry| entry["reasonCode"] == "empty_selected_scope"),
         "viewer/report boundary digest must expose empty scope as a blocker"
     );
-
-    let strict_out_dir = temp_dir("ag-measurement-cech-empty-selected-scope-strict");
-    let strict_output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        law_policy_path.to_str().expect("path is utf-8"),
-        "--out-dir",
-        strict_out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-    assert_eq!(
-        strict_output.status.code(),
-        Some(1),
-        "strict-distance must reject empty selected Cech scope\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&strict_output.stdout),
-        String::from_utf8_lossy(&strict_output.stderr)
-    );
-    let strict_stderr = String::from_utf8_lossy(&strict_output.stderr);
-    assert!(
-        strict_stderr.contains("unmeasured structural verdict rows")
-            && strict_stderr.contains("violated assumptions"),
-        "strict-distance stderr must identify non-terminal rows and violated assumptions\n{strict_stderr}"
-    );
-}
-
-#[test]
-fn cli_analyze_v2_strict_distance_rejects_not_computed_analytic_invariants() {
-    let out_dir = temp_dir("ag-measurement-strict-transfer-missing-cost");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_support_transfer.json"));
-    archmap["atoms"] = Value::Array(
-        archmap["atoms"]
-            .as_array()
-            .expect("atoms is array")
-            .iter()
-            .filter(|atom| atom["id"] != "atom:transfer-ground-data")
-            .cloned()
-            .collect(),
-    );
-    archmap["contexts"][0]["atoms"] = Value::Array(
-        archmap["contexts"][0]["atoms"]
-            .as_array()
-            .expect("context atoms is array")
-            .iter()
-            .filter(|atom| atom.as_str() != Some("atom:transfer-ground-data"))
-            .cloned()
-            .collect(),
-    );
-    let archmap_path = out_dir.join("archmap_v2_support_transfer_missing_cost.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_transfer.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-    assert_eq!(output.status.code(), Some(1));
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("not_computed analytic invariants")
-            && stderr.contains("violated assumptions"),
-        "strict-distance must reject incomplete analytic-only transfer evidence\n{stderr}"
-    );
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let invariant = invariant_by_id(&packet, "support-transfer:profile:ag-support-transfer@1");
-    assert_eq!(invariant["status"], "not_computed");
-}
-
-#[test]
-fn cli_analyze_v2_strict_distance_allows_implemented_analytic_only_evaluators() {
-    let out_dir = temp_dir("ag-measurement-strict-analytic-only");
-    let root = ag_measurement_root();
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_v2_support_transfer.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_transfer.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-
-    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    assert_eq!(
-        summary["conclusion"],
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
-    );
-    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 0);
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert!(
-        packet["analyticReadings"]
-            .as_array()
-            .expect("analytic readings is array")
-            .iter()
-            .any(|reading| reading["evaluator"] == "ag.support-transfer")
-    );
 }
 
 #[test]
@@ -9888,43 +7932,33 @@ fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
         (
             "docs/tool/golden_corpus.md",
             &[
-                "distanceInsights",
-                "distanceDiagnosis.homotopyInsights",
-                "homotopyDistanceReadings",
-                "representationMetricReadings",
-                "partial canonical Part IV family",
+                "archsig-measurement-packet/v0.5.0",
+                "archsig-gate-report/v0.5.0",
+                "archsig-comparison-report/v0.5.0",
             ][..],
         ),
         (
             "tools/archsig/skills/archsig-reader/SKILL.md",
             &[
-                "distanceInsights",
-                "distanceActionQueue",
-                "Distance Diagnosis",
+                "archsig-measurement-packet.json",
+                "archsig-comparison-report.json",
+                "archsig-gate-report.json",
             ][..],
         ),
         (
             "tools/archsig/skills/archsig-reader/references/output-reading-guide.md",
             &[
-                "distanceInsights",
-                "distanceActionQueue",
-                "homotopyDistanceReadings",
+                "archsig-measurement-packet.json",
+                "archsig-comparison-report.json",
+                "archsig-gate-report.json",
             ][..],
         ),
         (
             "website/src/archsig/manual/index.html",
             &[
-                "architecture-distance.json",
-                "distanceInsights",
-                "homotopyDistanceReadings",
-            ][..],
-        ),
-        (
-            "website/src/archsig/reference/index.html",
-            &[
-                "architecture-distance.json",
-                "archsig-architecture-distance/v0.5.0",
-                "--strict-distance",
+                "archsig-measurement-packet.json",
+                "archsig-analysis-summary.json",
+                "archsig-run-manifest.json",
             ][..],
         ),
         (
@@ -9945,127 +7979,6 @@ fn cli_locks_part4_output_contract_docs_and_skill_smoke() {
             );
         }
     }
-}
-
-#[test]
-fn cli_analyze_v1_strict_distance_rejects_missing_distance_profile_ref() {
-    let out_dir = temp_dir("analyze-schema050-strict-distance-missing-profile");
-    let root = archmap_v1_root();
-    let policy_path = out_dir.join("law_policy_without_distance_profile.json");
-    let mut policy = read_json(&root.join("law_policy.json"));
-    policy
-        .as_object_mut()
-        .expect("policy root is object")
-        .remove("distanceProfileRef");
-    fs::write(
-        &policy_path,
-        serde_json::to_vec_pretty(&policy).expect("policy serializes"),
-    )
-    .expect("policy fixture can be written");
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap.json").to_str().expect("path is utf-8"),
-        "--law-policy",
-        policy_path.to_str().expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-
-    assert!(!output.status.success());
-    assert_eq!(output.status.code(), Some(1));
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("without distanceProfileRef"),
-        "--strict-distance must require an explicit v1 distance profile selector\n{stderr}"
-    );
-    assert!(
-        !out_dir.join("architecture-distance.json").exists(),
-        "strict missing profile rejection must stop before architecture distance is emitted"
-    );
-    for artifact in [
-        "normalized-archmap.json",
-        "typed-evaluator-results.json",
-        "archsig-analysis-validation.json",
-        "archsig-analysis-summary.json",
-        "archsig-atom-viewer-data.json",
-        "archsig-run-manifest.json",
-    ] {
-        assert!(
-            !out_dir.join(artifact).exists(),
-            "strict missing profile rejection must stop before writing {artifact}"
-        );
-    }
-}
-
-#[test]
-fn cli_analyze_v1_strict_distance_rejects_blocked_typed_results() {
-    let out_dir = temp_dir("analyze-schema050-strict-distance-blocked");
-    let root = archmap_v1_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_blocked_molecule.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-
-    assert!(!output.status.success());
-    assert_eq!(output.status.code(), Some(1));
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("blocked, unknown, unmeasured, or replacement-blocked distance statuses"),
-        "--strict-distance must reject incomplete v1 typed distance support"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("typed-evaluator-results.json"))["summary"]["blockedCount"],
-        6
-    );
-}
-
-#[test]
-fn cli_analyze_current_strict_distance_accepts_practical_measurement_foundation() {
-    let out_dir = temp_dir("analyze-current-strict-distance-practical-foundation");
-    let root = practical_rust_service_root();
-
-    let output = run_sig0_output(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap/archmap.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy/law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-        "--strict-distance",
-    ]);
-
-    assert!(
-        output.status.success(),
-        "--strict-distance must accept the current practical measurement foundation\nstderr: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-measurement-packet.json"))["schema"],
-        "archsig-measurement-packet/v0.5.0"
-    );
-    assert_eq!(
-        read_json(&out_dir.join("archsig-analysis-summary.json"))["conclusion"],
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
-    );
 }
 
 #[test]
