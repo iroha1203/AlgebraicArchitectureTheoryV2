@@ -1347,3 +1347,68 @@ G2 / G3 / G4 audit summary:
 - G4 score audit: reduce。Cycle 23 gap の一部は埋めたが、一般 theorem ではなく canonical finite
   missed-conflict witness であり、refactor 側が obstruction witness でない。fail-closed に
   base 40、evidence multiplier 2.0、penalty 10、final +70 とする。
+
+## Cycle 25 — Communication-support assignment bridge
+
+candidate: `research/ideas/g-sft-conway-01-communication-support-assignment.md`
+candidate_type: `closure`
+evidence_stage: `proved-in-research`
+base_score: 30
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 50
+category: `communication-support`, `finite-assignment`,
+  `interface-closure`, `conway-obstruction`
+goal_delta: Cycle 23/24 の operation-shaped compatibility criteria と missed-conflict
+  witnesses を、一般の `CommunicationSupportAssignment` interface へ接続した。
+  任意の `TwoCoverAtlas` について、communication compatibility は各 communication block を
+  support する ownership block の explicit assignment が存在することと同値である。canonical
+  mismatch と Cycle 24 の missed-conflict edits は assignment を持たず、canonical reorg/refactor
+  repairs は explicit assignment、compatibility、zero selected Conway obstruction を持つ。
+project_value_delta: `forall comm, exists owner` を都度展開する段階から、後続の transition /
+  selector / preservation theorem が使える support-assignment carrier へ一段抽象化した。価値は
+  新しい obstruction 現象ではなく interface closure である。ただし compatibility-to-assignment
+  方向は存在命題からの choice であり、canonical assignment theorem や任意 repair calculus ではない。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  support owner の対応関係を経験的に提案できるが、この cycle は finite Conway atlas 上で
+  compatibility と explicit assignment data の同値、および canonical repairs / negative witnesses
+  への接続を Lean theorem として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayCommunicationSupportAssignment.lean`
+  が通過。`CommunicationSupportAssignment.ofCompatibility` は存在命題から assignment を作るため
+  `Classical.choice` を使い、finite Prop 証明の一部は標準 `propext` に依存する。`sorryAx` /
+  `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: assignment-preserving transition relation from `mismatchedAtlas` to canonical repairs,
+  finite conflict-set hitting predicate、selector-preserving refinement naturality、refactor-side
+  two-owner obstruction witness は未固定。Issue #2962 の active threshold 3000 にはこの cycle
+  単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayCommunicationSupportAssignment.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationSupportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationSupportAssignment.toCompatibility`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CommunicationSupportAssignment.ofCompatibility`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.communicationCoverCompatible_iff_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalReorgCoverEdit_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.canonicalRefactorOwnershipEdit_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation.supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.CanonicalRepairOperation.compatible_of_supportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.mismatchedAtlas_noCommunicationSupportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialReorgMissesDbConflict_noCommunicationSupportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.partialRefactorSupportsOnlyApi_noCommunicationSupportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedCommunicationSupportAssignmentPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduce。`CommunicationSupportAssignment` は後続の transition /
+  selector / preservation theorem の受け皿として有用だが、中核は既存
+  `CommunicationCoverCompatible := forall comm, exists owner, ...` の Skolemized interface 化であり、
+  新しい obstruction receiver、repair calculus、canonical assignment ではない。G2 は
+  base 30、multiplier 2.0、penalty 0、final +60 を推奨。
+- G3 formalization quality: pass。重大指摘なし。focused check と module build は通過し、
+  `sorry/admit/unsafe/axiom` は対象 Lean にない。axiom audit は `Classical.choice` と
+  標準 `propext` の範囲で、`sorryAx` や repo 独自 axiom はない。
+- G4 score audit: reduce。Cycle 23/24 の単なる restatement ではないが、一般 theorem の中核は
+  存在命題の carrier 化であり、canonical repair / missed-conflict への接続は既存 theorem を
+  assignment 側へ流している。fail-closed に G4 の下限を採用し、base 30、evidence multiplier 2.0、
+  penalty 10、final +50 とする。
