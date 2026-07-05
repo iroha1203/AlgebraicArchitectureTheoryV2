@@ -111,6 +111,7 @@ Forward design PRDs:
 - [ArchSig v0.5.0 PRD-2 — measurement packet 新形と CI 面(gate / compare)](archsig_v0_5_0_prd2_artifact_ci.md)
 - [ArchSig v0.5.0 PRD-3 — v1 path の破棄と全面同期(単一 path 宣言の成立)](archsig_v0_5_0_prd3_v1_retirement_and_sync.md)
 - [ArchSig v0.5.0 PRD-4 — LawPolicy Stage 1 と SAGA Stage 1(最初の SAGA 計測)](archsig_v0_5_0_prd4_lawpolicy_stage1_saga_stage1.md)
+- [ArchSig v0.5.0 PRD-5 — ArchMap 抽出 SKILL の再設計(漏れなく・再現性高く)](archsig_v0_5_0_prd5_archmap_skill.md)
 - [ArchMap Atom-to-AAT Presentation Contract PRD](archmap_minimal_observation_contract_prd.md)
 - [ArchSig v0.4.0 Algebraic Geometry Measurement PRD](archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
 - [ArchSig v0.4.0 改善 PRD(measured_zero 純度 / 行レベル assumption 依存 / 境界の機械可読化 / ArchMap atom 語彙 lint)](archsig_v0_4_0_improvement_prd.md)
