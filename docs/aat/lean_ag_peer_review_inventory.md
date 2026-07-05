@@ -249,7 +249,7 @@ docs/aat/proof_obligations_ag_aat.md
 | V-5 | mislabeled / content-free theorems | 削除 | finite_trace_certificate 等。必要なら正しい theorem へ差し替え。 |
 | V-6 | `HilbertSeries.lean` | 実質化 | `PowerSeries` または monomial basis count へ接続する。 |
 | VI-1 | Part VI toy models | 発火 | R7 で empty `TransportDescentToyModel` を `TransportDescentZeroToyModel` / `TransportDescentNonzeroToyModel` に分割し、selected finite zero/nonzero data から各 package が `Nonempty` になる surface と zero descent / nonzero non-descent を別々に読むように修正済み。残る IX-2 force candidate は AC5 の別側として未達に残す。 |
-| VI-2 | `OperationHomotopy.lean` pi1 | 昇格 | `PresentedGroup` と universal property へ。 |
+| VI-2 | `OperationHomotopy.lean` pi1 | 昇格 | R8 で `FreeEdgeWord.toFreeGroup` / `PresentedArchitectureFundamentalGroup.presentedRelators` / `pi1AAT` を追加し、Mathlib `PresentedGroup` の relator identity と `toGroup` universal property へ bridge 済み。既存 package API は compatibility surface として残る。 |
 | VI-3 | `ArchitectureStack.lean` | 実質化 | triple-overlap restriction と cocycle equality を実装する。 |
 | VI-4 | `CotangentInterface.lean` / `Kuranishi.lean` | 実質化 | cotangent data と IV-6 `DerOb_U` を接続する。 |
 | VI-5 | `Formal/AG/SingularityMonodromyStack/DecompositionGerbe.lean` | 宣言 | B項目。現 R0 では soundness / nonzero が supplied boundary であることを公理的境界として明示し、昇格可能性は後続 Issue の判断に残す。 |
@@ -287,7 +287,7 @@ docs/aat/proof_obligations_ag_aat.md
 | PRD-4 | AC11 / AC13 | flatness criterion and pseudo-circle H1 example are package/fixture-relative. | `packaged (assumption-relative)` | `Formal/AG/Cohomology/FlatnessCriterion.lean`, `Formal/AG/Cohomology/FiniteExamples.lean`, `CoverRelativeH1NonzeroWitness` |
 | PRD-5 | AC5 / AC6 | finite free / Taylor resolution exactness contains package assumptions to be hardened. | `packaged (assumption-relative)` | `Formal/AG/Derived/TaylorResolution.lean`, `Formal/AG/Derived/FreeResolution.lean` |
 | PRD-5 | AC16 | 例5.6 `Tor1` nonzero fixture is certificate-relative. | `packaged (assumption-relative)` | `Formal/AG/Derived/Counterexample.lean`, `Example56TorCalculation` |
-| PRD-6 | AC10 | `pi1^AAT` universal property needs `PresentedGroup` hardening. | `packaged (assumption-relative)` | `Formal/AG/SingularityMonodromyStack/OperationHomotopy.lean` |
+| PRD-6 | AC10 / PRD-R AC11 | `pi1^AAT` universal property is bridged to Mathlib `PresentedGroup` and `PresentedGroup.toGroup` uniqueness. | `proved PresentedGroup bridge` / `compatibility package` | `Formal/AG/SingularityMonodromyStack/OperationHomotopy.lean`, `PresentedArchitectureFundamentalGroup.pi1AAT`, `presentedGroupLift_unique` |
 | PRD-6 | AC20 | five finite toy models are selected finite witness packages. R7 で transport descent の空型 package は zero/nonzero case へ分割し、selected finite zero/nonzero data から `Nonempty` になる surface を追加済み。 | `proved example theorem` / `selected witness package` | `Formal/AG/Examples/SingularityMonodromyStackPart6.lean`, `TransportDescentZeroToyModel`, `TransportDescentNonzeroToyModel` |
 | PRD-7 | AC8 | strict period well-definedness is selected finite homology data relative. | `packaged (assumption-relative)` | `Formal/AG/RepresentationAnalysis/FiniteHomology.lean` |
 | PRD-7 | AC19 | AAT synthesis theorem is package-relative and lacks finite model firing. | `packaged (assumption-relative)` | `Formal/AG/RepresentationAnalysis/Synthesis.lean`, `AATSynthesisPackage` |
