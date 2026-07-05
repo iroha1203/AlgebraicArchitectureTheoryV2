@@ -518,6 +518,24 @@ theorem boundaryResidueTwoChartBoundaryAgreementSoundness
     Cohomology.BoundaryHolonomyVanishes D b :=
   D.boundaryHolonomy_zero_of_twoChartBoundaryAgreement s hb hs
 
+theorem finiteIntervalStokesBasis
+    (ω : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
+    (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
+    AAT.AG.Cohomology.IntervalBasisStokes.pair1
+        (AAT.AG.Cohomology.IntervalBasisStokes.d0 ω) γ =
+      AAT.AG.Cohomology.IntervalBasisStokes.pair0 ω
+        (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
+  AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
+
+theorem finiteIntervalConnectingStokesBasis
+    (b : AAT.AG.Cohomology.IntervalBasisStokes.Cochain 0)
+    (γ : AAT.AG.Cohomology.IntervalBasisStokes.Chain 1) :
+    AAT.AG.Cohomology.IntervalBasisStokes.pair1
+        (AAT.AG.Cohomology.IntervalBasisStokes.d0 b) γ =
+      AAT.AG.Cohomology.IntervalBasisStokes.pair0 b
+        (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
+  AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalConnectingStokes_basis b γ
+
 theorem gagaLowDegreePeriodStokesAccountingAdditive
     (x y :
       Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
@@ -879,6 +897,18 @@ info: 'AAT.AG.AxiomAudit.boundaryResidueTwoChartBoundaryAgreementSoundness' depe
 -/
 #guard_msgs in
 #print axioms boundaryResidueTwoChartBoundaryAgreementSoundness
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteIntervalStokesBasis' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteIntervalStokesBasis
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteIntervalConnectingStokesBasis' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteIntervalConnectingStokesBasis
 
 /--
 info: 'AAT.AG.AxiomAudit.gagaLowDegreePeriodStokesAccountingAdditive' depends on axioms: [propext,
