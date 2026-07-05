@@ -185,7 +185,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "archsig-contract:output-report",
                     "archsig-contract:command-guide",
                 ],
-                "Run manifest records the analyze command name, input artifact paths, output mode, generated and omitted artifact lists, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
+                "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated and omitted artifact lists, artifact links, validation report paths, optional raw artifact paths, and validation result summary for one ArchSig analyze run.",
                 vec![
                     "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
                     "Generated and omitted artifact lists describe this run only; omitted raw artifacts can be regenerated with explicit raw retention.",

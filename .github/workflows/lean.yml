@@ -78,8 +78,9 @@ jobs:
 
           jq -e '
             .schema == "archsig-run-manifest/v0.5.0"
+            and .mode == "measurement"
             and .rawArtifactRetention == "omitted"
-            and .typedEvaluatorResultsPath == "typed-evaluator-results.json"
+            and .artifactLinks.typedEvaluatorResults == "typed-evaluator-results.json"
             and ([.generatedArtifacts[]] | index("archsig-analysis-summary.json") != null)
             and ([.generatedArtifacts[]] | index("archsig-atom-viewer-data.json") != null)
             and ([.generatedArtifacts[]] | index("typed-evaluator-results.json") != null)
@@ -117,6 +118,7 @@ jobs:
 
           jq -e '
             .schema == "archsig-run-manifest/v0.5.0"
+            and .mode == "measurement"
             and .rawArtifactRetention == "full"
             and ([.generatedArtifacts[]] | index("archsig-analysis-packet.json") != null)
             and .rawArtifactPaths.analysisPacket == "archsig-analysis-packet.json"
@@ -127,7 +129,7 @@ jobs:
 
           jq -e '
             .schema == "archsig-analysis-packet/v0.5.0"
-            and .inputRefs.lawPolicy == "tools/archsig/tests/fixtures/archmap_v1/law_policy.json"
+            and .inputRefs.lawPolicy == "input:law_policy.json"
             and .inputRefs.normalizedArchMap == "normalized-archmap.json"
             and .inputRefs.typedEvaluatorResults == "typed-evaluator-results.json"
             and ((.typedEvaluatorResults | length) > 0)

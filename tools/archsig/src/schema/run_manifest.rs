@@ -1,19 +1,23 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchSigRunManifestV0 {
     #[serde(rename = "schema")]
     pub schema_version: String,
+    pub tool_version: String,
+    pub run_id: String,
+    pub input_digests: Value,
     pub command_name: String,
+    pub mode: String,
+    pub conclusion_code: Option<String>,
     pub archmap_input_path: String,
     pub law_policy_input_path: String,
-    pub output_mode: String,
     pub raw_artifact_retention: String,
     pub generated_artifacts: Vec<String>,
     pub omitted_artifacts: Vec<String>,
-    pub summary_path: String,
-    pub atom_viewer_data_path: String,
+    pub artifact_links: Value,
     pub validation_reports: ArchSigRunManifestValidationReportPathsV0,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub raw_artifact_paths: Option<ArchSigRunManifestRawArtifactPathsV0>,
@@ -26,7 +30,7 @@ pub struct ArchSigRunManifestV0 {
 pub struct ArchSigRunManifestValidationReportPathsV0 {
     pub archmap: String,
     pub law_policy: String,
-    pub analysis: String,
+    pub analysis: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

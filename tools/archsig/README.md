@@ -142,7 +142,7 @@ Open it in a browser through a local HTTP server next to an
 `archsig analyze` output directory, or copy it beside
 `archsig-atom-viewer-data.json` so same-directory fetch can load the packet.
 ArchView also supports file picker / drag-and-drop and sequence mode through
-`archview-sequence/v1`. It uses CDN Three.js and projects measured AAT geometry
+`archview-sequence/v0.5.0`. It uses CDN Three.js and projects measured AAT geometry
 without creating new structural verdicts.
 
 For large ArchMaps, prefer the optimized binary:
@@ -234,8 +234,8 @@ existing tag. The workflow uploads:
 Each binary archive contains the `archsig` executable, the repository license,
 the ArchSig README / command guide, and the ArchSig skills directory.
 
-Use version-only tags such as `v0.1.0` or prerelease tags such as
-`v0.1.0-rc.1`. Do not include `archsig` in the tag name; asset names already
+Use version-only tags such as `v0.5.0` or prerelease tags such as
+`v0.5.0-rc.1`. Do not include `archsig` in the tag name; asset names already
 carry the `archsig-` prefix.
 
 ## Docs
