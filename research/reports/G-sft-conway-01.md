@@ -1151,3 +1151,75 @@ G2 / G3 / G4 audit summary:
   selected defect を返すため、Cycle 17/20 への incremental cochain-style relabeling に近い。
   independent relative nerve / Cech incidence structure はまだ入っていない。G4 の low bound を採用し、
   base 35、evidence multiplier 2.0、penalty 10、final +60 とする。
+
+## Cycle 22 — Owner-uniform finite incidence receiver
+
+candidate: `research/ideas/g-sft-conway-01-owner-uniform-incidence-receiver.md`
+candidate_type: `bridge-obstruction`
+evidence_stage: `proved-in-research`
+base_score: 55
+evidence_multiplier: 2.0
+penalty: 0
+final_score: 110
+category: `finite-incidence-receiver`, `conway-obstruction`,
+  `local-global-boundary`, `finite-witness`
+goal_delta: Cycle 21 の `C0` wrapper 減点に対して、owner/fork incidence relation を
+  selected finite receiver として追加した。vertex は owner、edge は selected fork index、
+  incidence は owner が fork の communication block を support すること、global section は
+  一つの owner が全 edge に incident であることとして定義した。global section は
+  owner-uniform coherent support と同値であり、selected Conway class zero と比較できる。
+  selected singleton subfamily は global section を持ち、full restricted two-fork family は
+  local incidence support を持つが global section を持たない。
+project_value_delta: owner-uniform obstruction spine に、boundary-generator wrapper ではない
+  finite incidence carrier を追加した。ただしこれは線形な `C0 -> C1` boundary complex ではなく、
+  owner/fork incidence の global-section receiver である。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  owner mismatch や local/global failure を報告できるが、この cycle は selected owner/fork incidence
+  relation と local/global section gap を Lean theorem package として保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayOwnerUniformIncidenceReceiver.lean` と
+  `lake build Formal.AG.Research.SFT.ConwayOwnerUniformIncidenceReceiver` が通過。
+  `#print axioms` では `ownerUniformIncidenceGlobalSection_nonempty_iff_support` は axiom-free。
+  class 比較を含む theorem は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
+  `sorryAx` はない。
+open_questions: actual linear `C0 -> C1` incidence boundary、refinement naturality failure、
+  reorg/refactor obstruction-killing operation theorem、review-route comparison、true sheaf `H^1`
+  は未固定。Issue #2962 の active threshold 3000 にはこの cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayOwnerUniformIncidenceReceiver.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceVertex`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceEdge`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceIncident`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceGlobalSection`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocallySupported`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceLocalGlobalGap`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceGlobalSection.toOwnerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.OwnerUniformIncidenceGlobalSection.ofOwnerUniformSupport`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformIncidenceGlobalSection_nonempty_iff_support`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.ownerUniformConwayClass_eq_zero_iff_incidenceGlobalSection`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_incidenceLocallySupported`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedSingletonSubfamilies_incidenceGlobalSection`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocallySupported`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_no_incidenceGlobalSection`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_incidenceLocalGlobalGap`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.restrictedTwoForkFamily_conwayClass_nonzero_iff_no_incidenceGlobalSection`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedOwnerUniformIncidenceReceiverPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: accept with reduced score。Cycle 21 の boundary-generator wrapper より前進し、
+  owner/fork incidence relation と local/global section gap を追加している。ただし中核定理は
+  global section と既存 owner-uniform support criterion の同値であり、新しい obstruction criterion
+  というより incidence graph 表現である。G2 は base 65 / final +130 を推奨。
+- G3 formalization quality: pass。`OwnerUniformIncidenceIncident` は owner が fork の communication
+  block を support する条件で、`class = 0` を定義へ直接埋めていない。claim は selected finite
+  owner/fork incidence receiver に限定している。
+- G3 axiom audit: pass。core equivalence
+  `ownerUniformIncidenceGlobalSection_nonempty_iff_support` は axiom-free。
+  class comparison / package theorem は `propext`, `Classical.choice`, `Quot.sound` のみに依存し、
+  `sorryAx` はない。
+- G4 score audit: accept with reduced score。Cycle 21 より独立した incidence carrier だが、
+  actual linear `C0 -> C1` boundary、incidence matrix exactness、refinement failure、operation theorem は
+  まだ入っていない。fail-closed に G4 の low bound を採用し、base 55、evidence multiplier 2.0、
+  penalty 0、final +110 とする。
