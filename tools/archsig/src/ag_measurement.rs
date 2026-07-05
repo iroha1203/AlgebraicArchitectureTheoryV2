@@ -58,6 +58,161 @@ const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
     "not_applicable",
 ];
 
+struct SummaryTranslationRule {
+    conclusion_code: &'static str,
+    theorem_ref: Option<&'static str>,
+    principal_text: &'static str,
+    boundary: &'static str,
+    generated_discipline: &'static str,
+}
+
+fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
+    match conclusion {
+        ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+            theorem_ref: Some("part4/3.5"),
+            principal_text: "The selected complete-support SAGA residual is measured outside B1 with concrete residual support.",
+            boundary: "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
+            generated_discipline: "generated complete-support boundary-membership detection",
+        },
+        ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+            theorem_ref: Some("part4/3.4"),
+            principal_text: "The selected complete-support SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+            boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+            generated_discipline: "generated complete-support boundary-membership detection",
+        },
+        ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+            theorem_ref: Some("part4/12.4"),
+            principal_text: "The selected abelian cover shape and explicit restriction-surjectivity witnesses exclude a gluing obstruction in this Stage 1 profile.",
+            boundary: "Supply non-abelian torsor, stacky descent, or gerbe data before speaking outside the selected abelian coefficient sheaf.",
+            generated_discipline: "generated cover-shape detection",
+        },
+        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
+            conclusion_code: "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+            theorem_ref: Some("part4/12.3"),
+            principal_text: "The selected cover has a concrete H1 support measured by the finite F2 Cech detector.",
+            boundary: "Supply a different selected cover, coefficient sheaf, or restriction data before changing this profile-relative reading.",
+            generated_discipline: "generated Cech support detection",
+        },
+        ARCHSIG_REPAIR_TARGETS_IDENTIFIED => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+            theorem_ref: Some("part8/5.2"),
+            principal_text: "The selected square-free obstruction invariant identifies combinatorial repair target supports.",
+            boundary: "Supply semantic repair operations before treating hitting sets as automatic repairs.",
+            generated_discipline: "generated square-free hitting-set detection",
+        },
+        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
+            conclusion_code: "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE",
+            theorem_ref: None,
+            principal_text: "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim.",
+            boundary: "Supply the relevant theoremRef-bearing evaluator row before reading this as a proved theorem attribution.",
+            generated_discipline: "generated profile-relative detection",
+        },
+        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
+            conclusion_code: "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+            theorem_ref: Some("part4/12.3"),
+            principal_text: "No selected H1 glue mismatch was measured under the profile.",
+            boundary: "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
+            generated_discipline: "generated Cech zero detection",
+        },
+        _ => SummaryTranslationRule {
+            conclusion_code: "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+            theorem_ref: None,
+            principal_text: "ArchSig produced a profile-relative foundation result with non-terminal rows still visible.",
+            boundary: "Supply the missing evaluator support named by boundaryStatements before reading a terminal conclusion.",
+            generated_discipline: "generated foundation readiness surface",
+        },
+    }
+}
+
+fn summary_translation_rule_json(rule: &SummaryTranslationRule) -> Value {
+    json!({
+        "conclusionCode": rule.conclusion_code,
+        "theoremRef": rule.theorem_ref,
+        "principalText": rule.principal_text,
+        "boundary": rule.boundary,
+        "generatedDiscipline": rule.generated_discipline,
+        "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+        "emitsLawSatisfiedWithoutLawCheck": false
+    })
+}
+
+fn active_summary_translation_rule_json(
+    rule: &SummaryTranslationRule,
+    packet: &ArchSigMeasurementPacketV1,
+) -> Value {
+    let mut rule_json = summary_translation_rule_json(rule);
+    rule_json["concreteSupportRefs"] = json!(summary_concrete_support_refs(packet, rule));
+    rule_json
+}
+
+fn summary_concrete_support_refs(
+    packet: &ArchSigMeasurementPacketV1,
+    rule: &SummaryTranslationRule,
+) -> Vec<String> {
+    match rule.conclusion_code {
+        ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => {
+            let mut refs = Vec::new();
+            if let Some(residual_support) = packet
+                .computed_invariants
+                .iter()
+                .find(|invariant| invariant["invariantId"] == "saga-descent:boundary-membership")
+                .map(|invariant| &invariant["boundaryMembership"]["residualSupport"])
+            {
+                collect_json_string_leaves(residual_support, &mut refs);
+            }
+            refs
+        }
+        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => packet
+            .computed_invariants
+            .iter()
+            .find(|invariant| invariant["evaluator"] == "ag.cech-obstruction")
+            .and_then(|invariant| invariant["classSupport"]["supportAtomRefs"].as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .map(str::to_string)
+            .collect(),
+        ARCHSIG_REPAIR_TARGETS_IDENTIFIED => packet
+            .computed_invariants
+            .iter()
+            .find(|invariant| invariant["evaluator"] == "ag.square-free-repair")
+            .and_then(|invariant| invariant["alexanderDualRepair"]["minimalHittingSets"].as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|set| {
+                set.as_array().map(|items| {
+                    items
+                        .iter()
+                        .filter_map(Value::as_str)
+                        .collect::<Vec<_>>()
+                        .join("+")
+                })
+            })
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn collect_json_string_leaves(value: &Value, output: &mut Vec<String>) {
+    match value {
+        Value::String(text) => output.push(text.clone()),
+        Value::Array(items) => {
+            for item in items {
+                collect_json_string_leaves(item, output);
+            }
+        }
+        Value::Object(object) => {
+            for item in object.values() {
+                collect_json_string_leaves(item, output);
+            }
+        }
+        _ => {}
+    }
+}
+
 pub fn selected_measurement_profile_v1<'a>(
     policy: &LawPolicyDocumentV1,
     measurement_profile: &'a MeasurementProfileV1,
@@ -3114,9 +3269,21 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     } else {
         "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
     };
+    let translation_rule = summary_translation_rule(conclusion);
     json!({
         "schema": "archsig-analysis-summary/v0.5.0",
         "conclusion": conclusion,
+        "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
+        "translationRuleTable": [
+            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)),
+            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)),
+            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION)),
+            summary_translation_rule_json(&summary_translation_rule("MEASURED_H1_OBSTRUCTION_UNDER_PROFILE")),
+            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_REPAIR_TARGETS_IDENTIFIED)),
+            summary_translation_rule_json(&summary_translation_rule("MEASURED_AG_OBSTRUCTION_UNDER_PROFILE")),
+            summary_translation_rule_json(&summary_translation_rule("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE")),
+            summary_translation_rule_json(&summary_translation_rule("AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"))
+        ],
         "readThisFirst": {
             "heading": "Read this first",
             "conclusion": conclusion,
@@ -3127,7 +3294,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             } else if cech_nonzero {
                 "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
             } else if nonzero_count > 0 {
-                "ArchSig measured a selected AG obstruction under the profile."
+                "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim."
             } else if cech_zero {
                 "No selected H1 glue mismatch was measured under the profile."
             } else if unmeasured_count > 0 {

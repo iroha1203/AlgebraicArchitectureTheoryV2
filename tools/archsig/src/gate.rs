@@ -653,14 +653,23 @@ fn verdict_ref_string(row: &Value) -> String {
         .unwrap_or_else(|| {
             format!(
                 "structuralVerdict/{}/{}/{}",
-                row["evaluator"].as_str().unwrap_or("unknown-evaluator"),
-                row["law"].as_str().unwrap_or("unknown-law"),
-                row["verdictData"]["methodStatus"]
-                    .as_str()
-                    .or_else(|| row["methodStatus"].as_str())
-                    .unwrap_or("unknown-status")
+                gate_ref_segment(row["evaluator"].as_str().unwrap_or("unknown-evaluator")),
+                gate_ref_segment(row["law"].as_str().unwrap_or("unknown-law")),
+                gate_ref_segment(
+                    row["verdictData"]["methodStatus"]
+                        .as_str()
+                        .or_else(|| row["methodStatus"].as_str())
+                        .unwrap_or("unknown-status")
+                )
             )
         })
+}
+
+fn gate_ref_segment(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+        .collect()
 }
 
 fn not_evaluable_report(
