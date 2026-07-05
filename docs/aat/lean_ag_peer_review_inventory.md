@@ -348,10 +348,24 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.derObUOfConDefCoefficientCoefficient` | `AAT.AG.Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_coefficient` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.example56LawConflictPackageFiringLawConflict1Nonzero` | `AAT.AG.FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.lawConflict1_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.example56LawConflictPackageFiringTor1Nonzero` | `AAT.AG.FiniteModel.DerivedPart5.Example56LawConflictPackageFiring.tor1_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupRelatorMapsToIdentity` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelator_maps_to_identity` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftOf` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_of` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftUnique` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_unique` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero` | direct source guard for zero transport-descent toy model inhabitation | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero` | direct source guard for nonzero transport-descent toy model inhabitation | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteSynthesisAATSynthesisPackageEqToPackage` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisPackage_eq_toPackage` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.finiteSynthesisFires` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.lowDegreeRealKernelEquivHarmonic` | `AAT.AG.Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden` | `AAT.AG.Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.squareFreeSingletonQMinimalRepairHittingSet` | `AAT.AG.Measurement.squareFree_singletonQ_minimalRepairHittingSet` | `propext`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.replayZeroTheorem42GlobalTransitionExists` | `AAT.AG.Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.toyForceIntegrable` | `AAT.AG.Examples.EvolutionPart9.toy_force_integrable` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.forceCandidateSelectedNonzeroBackedByConcrete` | `AAT.AG.Examples.EvolutionPart9.force_candidate_selected_nonzero_backed_by_concrete` | `propext`, `Classical.choice`, `Quot.sound` |
 
-The audit list is intentionally additive. Later PRD-R hardening PRs must add
-new wrappers when they promote theorem-package or firing-instance declarations
-into the kernel-audited surface.
+The audit list is intentionally additive. AC19 synchronizes the PRD-R
+completion evidence surface through IX-2. Later PRD-R or post-PRD hardening PRs
+must add new wrappers when they promote theorem-package or firing-instance
+declarations into the kernel-audited surface.
 
 ## R2 Atom hardening
 

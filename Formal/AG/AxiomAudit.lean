@@ -330,6 +330,30 @@ theorem derObUOfConDefCoefficientCoefficient
       (A := A) c m).coefficient = m :=
   Cohomology.StandardObstruction.DerOb_U.ofConDefCoefficient_coefficient c m
 
+def finiteSynthesisAATSynthesisPackageEqToPackage :=
+  FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisPackage_eq_toPackage
+
+def finiteSynthesisFires :=
+  FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires
+
+def lowDegreeRealKernelEquivHarmonic :=
+  Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology
+
+def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
+  Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
+
+def squareFreeSingletonQMinimalRepairHittingSet :=
+  Measurement.squareFree_singletonQ_minimalRepairHittingSet
+
+def replayZeroTheorem42GlobalTransitionExists :=
+  Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists
+
+def toyForceIntegrable :=
+  Examples.EvolutionPart9.toy_force_integrable
+
+def forceCandidateSelectedNonzeroBackedByConcrete :=
+  Examples.EvolutionPart9.force_candidate_selected_nonzero_backed_by_concrete
+
 /--
 info: 'AAT.AG.AxiomAudit.boundaryCocycleNonzero' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
@@ -563,5 +587,75 @@ info: 'AAT.AG.AxiomAudit.derObUOfConDefCoefficientCoefficient' depends on axioms
 -/
 #guard_msgs in
 #print axioms derObUOfConDefCoefficientCoefficient
+
+/--
+info: 'AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero
+
+/--
+info: 'AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteSynthesisAATSynthesisPackageEqToPackage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteSynthesisAATSynthesisPackageEqToPackage
+
+/--
+info: 'AAT.AG.AxiomAudit.finiteSynthesisFires' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms finiteSynthesisFires
+
+/--
+info: 'AAT.AG.AxiomAudit.lowDegreeRealKernelEquivHarmonic' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms lowDegreeRealKernelEquivHarmonic
+
+/--
+info: 'AAT.AG.AxiomAudit.squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden
+
+/--
+info: 'AAT.AG.AxiomAudit.squareFreeSingletonQMinimalRepairHittingSet' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms squareFreeSingletonQMinimalRepairHittingSet
+
+/--
+info: 'AAT.AG.AxiomAudit.replayZeroTheorem42GlobalTransitionExists' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms replayZeroTheorem42GlobalTransitionExists
+
+/--
+info: 'AAT.AG.AxiomAudit.toyForceIntegrable' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms toyForceIntegrable
+
+/--
+info: 'AAT.AG.AxiomAudit.forceCandidateSelectedNonzeroBackedByConcrete' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms forceCandidateSelectedNonzeroBackedByConcrete
 
 end AAT.AG.AxiomAudit
