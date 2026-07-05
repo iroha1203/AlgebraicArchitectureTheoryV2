@@ -1702,3 +1702,63 @@ G2 / G3 / G4 audit summary:
   wording を修正した。新規性は Cycle 29 predicate と Cycle 23/25/28 の既存 iff を finite table 経由で
   合成した bounded bridge に留まる。fail-closed に G4 の下限を採用し、base 25、
   evidence multiplier 2.0、penalty 10、final +40 とする。
+
+## Cycle 31 — Refactor two-owner obstruction witness
+
+candidate: `research/ideas/g-sft-conway-01-refactor-two-owner-obstruction.md`
+candidate_type: `witness`
+evidence_stage: `proved-in-research`
+base_score: 35
+evidence_multiplier: 2.0
+penalty: 10
+final_score: 60
+category: `conway-obstruction`, `refactor-failure`,
+  `two-owner-witness`, `obstruction-preserving-transition`
+goal_delta: Cycle 24 で single-owner refactor shape のため未固定だった refactor-side two-owner
+  obstruction witness を追加した。all-communication block を保ちながら split two-owner ownership を
+  保持する selected refactor failure shape を置き、その post-edit atlas が `mismatchedAtlas` と同じで、
+  compatibility failure、support-assignment nonexistence、actual selected Conway obstruction、
+  obstruction-preserving transition を持つことを Lean theorem として固定した。
+project_value_delta: 以前の refactor negative witness は hitting / compatibility failure に留まったが、
+  この cycle は refactor-side でも actual two-owner obstruction preservation を表現できる bounded
+  edit shape を追加した。transition vocabulary とも接続し、selected bounded shape の範囲で
+  open question を 1 つ閉じる。
+rival_delta: Team Topologies / mirroring research、CODEOWNERS、org-network analysis、AI review は
+  failed refactor や split ownership retention を説明できるが、この cycle は selected two-module Conway
+  witness として obstruction-preserving transition まで Lean theorem で保存する。
+formalization_quality: `lake env lean Formal/AG/Research/SFT/ConwayRefactorTwoOwnerObstruction.lean` が通過。
+  `sorryAx` / `admit` / `unsafe` / 追加 axiom は使わない。
+open_questions: arbitrary refactor calculus、general transition composition、selector-preserving refinement
+  naturality、arbitrary conflict enumeration は未固定。Issue #2962 の active threshold 3000 には
+  この cycle 単独では未到達。
+
+Lean evidence:
+
+- `Formal/AG/Research/SFT/ConwayRefactorTwoOwnerObstruction.lean`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorTwoOwnerFailureEdit`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.RefactorTwoOwnerFailureEdit.postAtlas`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership_postAtlas_eq_mismatchedAtlas`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership_not_compatible`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership_nonzeroConwayObstruction`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership_noCommunicationSupportAssignment`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.refactorKeepsSplitOwnership_obstructionPreservingTransition`
+- `Formal.AG.Research.SFT.ConwayTwoTopology.selectedRefactorTwoOwnerObstructionPackage`
+
+G2 / G3 / G4 audit summary:
+
+- G2 audit: pass with reduce。Cycle 24 の single-owner refactor shape では置けなかった two-owner
+  obstruction witness を、selected finite / bounded witness として閉じている。ただし中核は
+  `refactorKeepsSplitOwnership.postAtlas = mismatchedAtlas` の definitional equality から既存の
+  `mismatchedAtlas` obstruction / incompatibility / no-support 証拠を再包装する構成であり、
+  新しい refactor calculus、分類定理、minimality、任意 partial refactor theorem、transition composition
+  ではない。G2 は base 35、multiplier 2.0、penalty 10、final +60 を推奨。
+- G3 formalization quality: pass。focused check、module build、`FormalAGResearch` は通過し、
+  `sorry/admit/unsafe/axiom` は対象 Lean にない。axiom audit は対象 theorem が標準 `propext` に収まる。
+  `Owner` には `productOwner` もあるが、この witness は `splitOwnership` の bounded two-owner shape を
+  保存する claim として書かれている。
+- G4 score audit: reduce。open question の selected finite closure として価値はあるが、
+  obstruction-preserving transition も実質的には `mismatchedAtlas` から定義上同じ post-atlas への
+  bounded record であり、+70/+80 水準の新しい obstruction / invariant / general criterion ではない。
+  fail-closed に G2/G4 の一致した下限を採用し、base 35、evidence multiplier 2.0、penalty 10、
+  final +60 とする。
