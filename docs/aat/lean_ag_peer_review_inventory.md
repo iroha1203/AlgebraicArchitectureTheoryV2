@@ -32,14 +32,25 @@ Formal/AG --glob '!Formal/AG/Research/**'
 
 | Pattern | Count | R0 reading |
 | --- | ---: | --- |
-| `^\s*[A-Za-z0-9_]+\s*:\s*Prop\b` | 415 | `Prop` field / argument candidate。PRD 表に載る対象は昇格・実質化・宣言・削除へ分類し、その他は後続 R0 refinement の監査対象として残す。 |
-| `_holds\b\|_cert\b` | 1208 | certificate/accessor surface。結論 field theorem か実述語 witness かをレビュー層で分ける。 |
-| `\bNonempty\b` | 48 | `Nonempty` だけを返す theorem/package candidate。空型 package と witness package を分ける。 |
+| `^\s*[A-Za-z0-9_]+\s*:\s*Prop\b` | 415 | Pattern-level classification: `Prop` field / argument candidate は、PRD 表 item に対応するものを item-level に昇格・実質化・宣言・削除へ分類し、それ以外の theorem 系 row は三分化 overlay で `packaged (assumption-relative)` / `statement-only` / `defined only` boundary として分類する。 |
+| `_holds\b\|_cert\b` | 1208 | Pattern-level classification: certificate/accessor surface。結論 field theorem は `packaged (assumption-relative)`、実述語 witness / finite firing は `proved`、candidate certificate は `statement-only` として二台帳 overlay と review layer 表で読む。 |
+| `\bNonempty\b` | 48 | Pattern-level classification: `Nonempty` package candidate。空型 package は AC5/AC12/AC18 の item-level 補強で inhabitable selected fixture に置換し、witness package は selected finite fixture / packaged boundary として分類する。 |
 | `native_decide` | 6 | R1 で全廃する kernel axiom audit gap。 |
 | `comparisonName\s*:\s*String` | 1 | R0(d) 候補。semantic payload になっていない表示名 field。 |
 | `\bHEq\b` | 8 | AATCore / comparison provenance 周辺の review target。 |
 | `∃\s*_,\s*True` | 0 | 現 pattern では no match。`Nonempty` / explicit `True` field 側で追跡する。 |
 | combined pattern | 1685 | 上記を一つの alternation で数えた重複除去後のヒット行数。同一行が複数 pattern に該当するため、個別 count の単純和とは一致しない。 |
+
+AC1/AC2 reproducibility note: the 1685 mechanical-hit lines are not copied into
+this document one row at a time. They are classified by the pattern-level rules
+above, by the Research freeze list, by the review-layer item table I-* through
+IX-*, and by the row-level status overlay in `lean_theorem_index_ag_aat.md` and
+`proof_obligations_ag_aat.md`. A theorem-row status in either AG ledger is read
+through the R0 vocabulary table at the top of this inventory: actual theorem /
+finite firing surfaces are `proved`; assumption/certificate/accessor packages
+are `packaged (assumption-relative)`; candidate theorem statements are
+`statement-only`; non-theorem carriers remain `defined only` or explicit future
+proof obligations. This is the PRD-R AC1/AC2 classification ledger.
 
 `native_decide` の全件:
 
@@ -356,11 +367,14 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.finiteSynthesisAATSynthesisPackageEqToPackage` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisPackage_eq_toPackage` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSynthesisFires` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.lowDegreeRealKernelEquivHarmonic` | `AAT.AG.Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.nonzeroBoundaryRealComplexDPrevNonzero` | `AAT.AG.Measurement.nonzeroBoundaryRealComplex_dPrev_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.nonzeroBoundaryRealHodgeDecompositionFires` | `AAT.AG.Measurement.nonzeroBoundaryRealHodgeDecomposition_fires` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden` | `AAT.AG.Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.squareFreeSingletonQMinimalRepairHittingSet` | `AAT.AG.Measurement.squareFree_singletonQ_minimalRepairHittingSet` | `propext`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.replayZeroTheorem42GlobalTransitionExists` | `AAT.AG.Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.toyForceIntegrable` | `AAT.AG.Examples.EvolutionPart9.toy_force_integrable` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.forceCandidateSelectedNonzeroBackedByConcrete` | `AAT.AG.Examples.EvolutionPart9.force_candidate_selected_nonzero_backed_by_concrete` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.forceCandidatePackageInhabited` | `AAT.AG.Examples.EvolutionPart9.force_candidate_package_inhabited` | `propext`, `Classical.choice`, `Quot.sound` |
 
 The audit list is intentionally additive. AC19 synchronizes the PRD-R
 completion evidence surface through IX-2. Later PRD-R or post-PRD hardening PRs
@@ -442,12 +456,12 @@ surfaces.
 | VII-1 | 発火済み | `AATSynthesisPackage` fires on the finite singleton predecessor tower. | #3046 |
 | VII-2 | 実装済み | `AATSch` has a `Category` instance and `AnalyticRepresentation.toFunctor` bridge. | #3051 |
 | VII-3, VII-4, VII-5, VII-6 | 昇格 / 実質化 / 宣言 | Period, analytic adequacy, metric GLB, and graph/matrix walk surfaces are closed by the Part VII ledger as selected theorem/accessor/boundary surfaces; general homology / measure / completeness remain future obligations. | #3086 |
-| VIII-1 | 実装済み | Finite Hodge decomposition, harmonic debt, and lower-bound fire on real finite inner-product complex data. | #3057 |
+| VIII-1 | 実装済み | Finite Hodge decomposition, harmonic debt, and lower-bound fire on real finite inner-product complex data; #3091 adds a nonzero-boundary real fixture so AC15 is not witnessed only by the zero differential complex. | #3057 / #3091 |
 | VIII-2 | 実装済み | Theorem 5.2 reuses PRD-3 Stanley-Reisner assets and finite Alexander dual / hitting-set bridge. | #3063 |
 | VIII-3, VIII-4, VIII-5 | 実質化 / 宣言 | Finite regime, computability, law-conflict, packet, and GAGA surfaces are ledgered as selected theorem packages or statement-only candidate boundaries. | #3086 |
-| VIII-6 | 実装済み | Hodge and Alexander dual fixtures fire as selected finite examples. | #3057 / #3063 |
+| VIII-6 | 実装済み | Hodge and Alexander dual fixtures fire as selected finite examples; Hodge now has both the original real 3D zero-differential fixture and the nonzero-boundary real fixture. | #3057 / #3063 / #3091 |
 | IX-1 | 実装済み | Temporal descent theorem 4.2 fires through selected realization and nondegenerate replay fixture. | #3070 |
-| IX-2 | 実装済み | `IntegrableForce` is a selected integration interface, and candidate 7.2 has inhabitable concrete-value-backed data while the non-integrability theorem remains statement-only. | #3073 |
+| IX-2 | 実装済み | `IntegrableForce` is a selected integration interface, and candidate 7.2 has inhabitable concrete-value-backed data plus an inhabitable literal `ForceIntegrabilityObstructionCandidate` package while the non-integrability implication remains statement-only. | #3073 / #3091 |
 | IX-3, IX-4, IX-5 | 昇格 / 実質化 / 発火 | Temporal product/coefficient/law surfaces and finite temporal examples are closed as selected fixtures and theorem/accessor surfaces in the Part IX ledger; general trace semantics and forecast claims remain future/non-goals. | #3086 |
 
 AC21 conclusion: every PRD-R inventory item I-* through IX-* has a final
