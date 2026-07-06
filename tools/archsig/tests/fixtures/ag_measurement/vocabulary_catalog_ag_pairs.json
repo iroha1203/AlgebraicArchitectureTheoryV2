@@ -35,9 +35,11 @@
     {
       "axis": "cech",
       "predicates": [
+        "cocycleValue",
         "sectionValue"
       ],
       "sourceSnippets": [
+        "atom.axis == \"cech\" && atom.predicate == \"cocycleValue\"",
         "atom.axis == \"cech\" && atom.predicate == \"sectionValue\""
       ]
     },

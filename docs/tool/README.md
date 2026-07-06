@@ -43,9 +43,9 @@ Forward design PRDs:
 - [ArchSig v0.5.0 PRD-3](archsig_v0_5_0_prd3_v1_retirement_and_sync.md)
 - [ArchSig v0.5.0 PRD-4](archsig_v0_5_0_prd4_lawpolicy_stage1_saga_stage1.md)
 - [ArchSig v0.5.0 PRD-5](archsig_v0_5_0_prd5_archmap_skill.md)
-- [ArchMap observation purity PRD](archmap_observation_purity_prd.md)
-- [ArchMap Atom-to-AAT Presentation Contract PRD](archmap_minimal_observation_contract_prd.md)
-- [ArchSig v0.4.0 Algebraic Geometry Measurement PRD](archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
+- [Archived ArchMap observation purity PRD](../archive/2026-07-07-archsig-v0-legacy-prds/archmap_observation_purity_prd.md)
+- [Archived ArchMap Atom-to-AAT Presentation Contract PRD](../archive/2026-07-07-archsig-v0-legacy-prds/archmap_minimal_observation_contract_prd.md)
+- [Archived ArchSig v0.4.0 Algebraic Geometry Measurement PRD](../archive/2026-07-07-archsig-v0-legacy-prds/archsig_v0_4_0_algebraic_geometry_measurement_prd.md)
 
 New implementation-facing specification documents should be added here only
 when they match implementation and keep AAT, ArchSig, FieldSig, and website

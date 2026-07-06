@@ -6,10 +6,11 @@ use std::process::ExitCode;
 use archsig::{
     ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
     ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
-    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, ArchMapValidationReportV2,
-    ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1,
-    ArchmapScopeManifestV1, AuthoringAuditInputV1, ExtractionDiffOptions, LAW_POLICY_V1_SCHEMA,
-    LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, ArchMapDocumentV2,
+    ArchMapValidationReportV2, ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1,
+    ArchmapExtractionConsistencyV1, ArchmapScopeManifestV1, AuthoringAuditInputV1,
+    ExtractionDiffOptions, LAW_POLICY_V1_SCHEMA, LawPolicyDocumentV1,
+    MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
     SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
     build_comparison_artifacts_v1, build_extraction_consistency_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
@@ -257,9 +258,27 @@ fn main() -> ExitCode {
         Ok(code) => code,
         Err(error) => {
             eprintln!("{error}");
-            ExitCode::from(2)
+            if is_internal_runtime_error(&error.to_string()) {
+                ExitCode::from(3)
+            } else {
+                ExitCode::from(2)
+            }
         }
     }
+}
+
+fn is_internal_runtime_error(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    [
+        "is a directory",
+        "permission denied",
+        "read-only file system",
+        "no space left on device",
+        "too many open files",
+        "broken pipe",
+    ]
+    .iter()
+    .any(|needle| lower.contains(needle))
 }
 
 fn validate_archmap_command_input(
@@ -736,6 +755,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let archmap_input_ref = artifact_input_ref(&archmap);
             let law_policy_input_ref = artifact_input_ref(&law_policy);
             let measurement_profile_input_ref = artifact_input_ref(&measurement_profile);
+            let repair_plan_input_ref = repair_plan.as_ref().map(|path| artifact_input_ref(path));
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
             let measurement_profile_contract_input: Value = read_json(&measurement_profile)?;
@@ -813,7 +833,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "inputDigests": run_contract.input_digests.clone(),
                         "commandName": "analyze",
                         "mode": "validation-failure",
-                        "conclusionCode": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+                        "conclusionCode": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
                         "archmapInputPath": archmap_input_ref,
                         "lawPolicyInputPath": law_policy_input_ref,
                         "measurementProfileInputPath": measurement_profile_input_ref,
@@ -869,6 +889,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 repair_plan_document.as_ref(),
                 &archmap_input_ref,
                 &law_policy_input_ref,
+                &measurement_profile_input_ref,
+                repair_plan_input_ref.as_deref(),
             )
             .map_err(|message| -> Box<dyn Error> { message.into() })?;
             let packet_validation = validate_measurement_packet_v1(&measurement_packet);
@@ -1040,7 +1062,7 @@ fn build_validation_failure_insight_report(
             "viewerDataRef": "archsig-atom-viewer-data.json"
         },
         "headline": {
-            "conclusionCode": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+            "conclusionCode": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
             "title": "Validation failed before measurement",
             "summary": "ArchSig stopped before normalization because an input validation check failed.",
             "decisionState": "blocked",
@@ -1049,7 +1071,7 @@ fn build_validation_failure_insight_report(
         },
         "readThisFirst": {
             "heading": "Read this first",
-            "conclusion": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+                "conclusion": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
             "whatItMeans": "No measurement packet or AG invariant was computed. Fix the failing ArchMap, LawPolicy, or RepairPlan validation first.",
             "whereToLookFirst": failed_refs,
             "nextAction": "Inspect failed validation checks",
@@ -1174,7 +1196,7 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
             "insightBrief": "archsig-insight-brief.md"
         },
         "decisionBar": {
-            "conclusion": "VALIDATION_FAILED_BEFORE_MEASUREMENT",
+            "conclusion": ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT,
             "validation": "see archmap-validation.json and law-policy-validation.json",
             "boundaryDigest": insight_report["boundaryDigest"]["shortText"],
             "artifactLinks": insight_report["outputArtifacts"]

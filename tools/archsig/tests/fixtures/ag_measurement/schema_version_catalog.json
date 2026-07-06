@@ -401,7 +401,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Gate report v1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, or NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+        "fieldMappingPolicy": "Gate report v1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, and NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -485,7 +485,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run.",
+        "fieldMappingPolicy": "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are MEASURED_NONGLUING_RESIDUAL, REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, REPAIR_TARGETS_IDENTIFIED, MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, and VALIDATION_FAILED_BEFORE_MEASUREMENT.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

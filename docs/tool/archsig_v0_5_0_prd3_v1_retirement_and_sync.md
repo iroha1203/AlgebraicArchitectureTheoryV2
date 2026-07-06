@@ -188,8 +188,9 @@ hidden Unicode scan、**PR 説明に「どの反例((a)〜(d))をゼロにした
 2. **残存ゼロ検査(語り面)**: `rg -n "archmap/v1|law-policy/v1|typed evaluator|distanceProfileRef|
    molecule|analysis-packet|pr-review" docs/tool tools/archsig/docs tools/fieldsig/docs
    tools/archsig/skills tools/archsig/README.md CLAUDE.md AGENTS.md` が残存ゼロ
-   (docs/archive 内と README 移行表の行、および viewer data emitter 内の
-   `moleculeGroups` / `atomEdges` 2 識別子〔0.5.x V-B2 で削除、Design Principles 5〕のみ除外)。
+   (docs/archive 内と README 移行表の行、現行 v0.5.0 PRD 5 本が retired 語を参照する
+   自己言及行、および viewer data emitter 内の `moleculeGroups` / `atomEdges` 2 識別子
+   〔0.5.x V-B2 で削除、Design Principles 5〕のみ除外)。
 3. **判定語残滓ゼロ**: `tripleMismatch` / `mismatchSection` / `obstructionGenerator` /
    `witness-counting` が src / fixtures / docs(archive 除く)に残存しない。
 4. **CLI 面**: `archsig pr-review` が unknown subcommand で fail する。`--strict-distance` /

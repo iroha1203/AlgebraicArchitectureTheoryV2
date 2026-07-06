@@ -2,7 +2,7 @@
 
 この文書は、ArchMap / LawPolicy / ArchSig の三層が **何を語り、何を語らないか** の責務境界を述べる。
 個々の schema 仕様や編集手順ではなく、なぜこの三分割なのかという理論的根拠を述べる。
-具体的な改修要件は [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) を、編集方針は [guideline.md](guideline.md) を、
+具体的な改修要件の履歴は [Archived ArchMap 観測純化 PRD](../archive/2026-07-07-archsig-v0-legacy-prds/archmap_observation_purity_prd.md) を、編集方針は [guideline.md](guideline.md) を、
 入力契約の一覧は [README.md](README.md) を見る。AAT 数学本文(`docs/aat/algebraic_geometric_theory/`)が正であり、本文書はそれに相対化される。
 
 ## 問い
@@ -156,7 +156,7 @@ source extraction の健全性、semantic の正しさ、global lawfulness、未
 
 ## 関連文書
 
-- [ArchMap 観測純化 PRD](archmap_observation_purity_prd.md) —— 本憲章の境界を schema・validation・AG パス・規律で回復する具体要件。
+- [Archived ArchMap 観測純化 PRD](../archive/2026-07-07-archsig-v0-legacy-prds/archmap_observation_purity_prd.md) —— 本憲章の境界を schema・validation・AG パス・規律で回復した履歴。
 - [guideline.md](guideline.md) —— tooling の編集方針と検証コマンド。
 - [README.md](README.md) —— 入力契約と現行 boundary statement の一覧。
 - [PHILOSOPHY.md](../../PHILOSOPHY.md) —— プロジェクト全体の思想基盤。

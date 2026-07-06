@@ -5,14 +5,15 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{
-    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_ANALYSIS_CONCLUSION_CODES, ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
-    ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV0,
-    compare_archmap_v2_doctrine,
+    ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
+    ARCHSIG_PRD4_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine,
 };
 use serde_json::{Value, json};
 
@@ -29,11 +30,13 @@ fn cli_scope_manifest_is_deterministic_and_records_author_evidence() {
     let repo = temp_dir("scope-manifest-repo");
     fs::create_dir_all(repo.join("src/generated")).expect("generated dir");
     fs::create_dir_all(repo.join("docs")).expect("docs dir");
+    fs::create_dir_all(repo.join("docs/restricted")).expect("restricted docs dir");
     fs::create_dir_all(repo.join("traces")).expect("traces dir");
     fs::write(repo.join("src/b.rs"), "pub fn b() {}\n").expect("write b");
     fs::write(repo.join("src/a.rs"), "pub fn a() {}\n").expect("write a");
     fs::write(repo.join("src/generated/skip.rs"), "pub fn skip() {}\n").expect("write skip");
     fs::write(repo.join("docs/arch.md"), "# Architecture\n").expect("write doc");
+    fs::write(repo.join("docs/restricted/secret.md"), "# Secret\n").expect("write private doc");
     fs::write(repo.join("traces/happy.json"), "{\"ok\":true}\n").expect("write trace");
 
     let first = repo.join("scope-first.json");
@@ -48,6 +51,8 @@ fn cli_scope_manifest_is_deterministic_and_records_author_evidence() {
         "docs/**/*.md".to_string(),
         "--exclude".to_string(),
         "src/generated/**".to_string(),
+        "--exclude".to_string(),
+        "private:docs/restricted/**".to_string(),
         "--add-evidence".to_string(),
         "trace:happy=traces/happy.json".to_string(),
         "--id".to_string(),
@@ -89,6 +94,10 @@ fn cli_scope_manifest_is_deterministic_and_records_author_evidence() {
     assert_eq!(
         first_json["exclusions"][0],
         json!({ "path": "src/generated/**", "reason": "user-excluded" })
+    );
+    assert_eq!(
+        first_json["exclusions"][1],
+        json!({ "path": "docs/restricted/**", "reason": "private" })
     );
     let worklist = first_json["worklist"].as_array().expect("worklist array");
     let paths = worklist
@@ -1725,8 +1734,84 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "pass"
     );
     assert_eq!(
+        check_by_id(&valid, "repair-plan-schema050-overlap-primitive-bijection")["result"],
+        "pass"
+    );
+    assert_eq!(
         valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
         "enumerationComplete is recorded as author assumption, not verified"
+    );
+
+    let mut missing_primitive = read_json(&repair_plan_path);
+    missing_primitive["primitives"]
+        .as_array_mut()
+        .expect("primitives array")
+        .pop();
+    let missing_primitive_path = out_dir.join("repair_plan_missing_primitive.json");
+    fs::write(
+        &missing_primitive_path,
+        serde_json::to_vec_pretty(&missing_primitive).expect("repair plan serializes"),
+    )
+    .expect("missing primitive repair plan writes");
+    let missing_primitive_report = out_dir.join("repair-plan-missing-primitive.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            missing_primitive_path.to_str().expect("path is utf-8"),
+            "--out",
+            missing_primitive_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let missing_primitive_json = read_json(&missing_primitive_report);
+    assert_eq!(
+        check_by_id(
+            &missing_primitive_json,
+            "repair-plan-schema050-overlap-primitive-bijection"
+        )["result"],
+        "fail"
+    );
+
+    let mut duplicate_primitive = read_json(&repair_plan_path);
+    let first_primitive = duplicate_primitive["primitives"][0].clone();
+    duplicate_primitive["primitives"]
+        .as_array_mut()
+        .expect("primitives array")
+        .push(first_primitive);
+    duplicate_primitive["primitives"][3]["id"] = json!("primitive:duplicate-overlap");
+    let duplicate_primitive_path = out_dir.join("repair_plan_duplicate_primitive.json");
+    fs::write(
+        &duplicate_primitive_path,
+        serde_json::to_vec_pretty(&duplicate_primitive).expect("repair plan serializes"),
+    )
+    .expect("duplicate primitive repair plan writes");
+    let duplicate_primitive_report = out_dir.join("repair-plan-duplicate-primitive.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--repair-plan",
+            duplicate_primitive_path.to_str().expect("path is utf-8"),
+            "--out",
+            duplicate_primitive_report.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let duplicate_primitive_json = read_json(&duplicate_primitive_report);
+    assert_eq!(
+        check_by_id(
+            &duplicate_primitive_json,
+            "repair-plan-schema050-overlap-primitive-bijection"
+        )["result"],
+        "fail"
     );
 
     let mut reserved = read_json(&repair_plan_path);
@@ -1982,7 +2067,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["conclusionCode"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert_eq!(summary["translationRule"]["theoremRef"], "part4/3.4");
+    assert_eq!(summary["translationRule"]["theoremRef"], "part10/3.5");
     assert_eq!(
         summary["translationRule"]["emitsLawSatisfiedWithoutLawCheck"],
         false
@@ -2545,7 +2630,7 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
     let positive_summary = read_json(&saga_positive_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         positive_summary["translationRule"]["theoremRef"],
-        "part4/3.4"
+        "part10/3.5"
     );
     assert_eq!(
         positive_summary["translationRule"]["concreteSupportRefs"],
@@ -2580,7 +2665,7 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
     let negative_summary = read_json(&saga_negative_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         negative_summary["translationRule"]["theoremRef"],
-        "part4/3.5"
+        "part10/3.4"
     );
     assert!(
         negative_summary["translationRule"]["concreteSupportRefs"]
@@ -2631,13 +2716,13 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
 
     let cech_a = run_analyze_fixture_lock(
         "prd4-r12-cech-b8-a",
-        "archmap_v2_cech_h1_visible.json",
+        "archmap_v2_cech_b8_toy.json",
         "law_policy_ag.json",
         None,
     );
     let cech_b = run_analyze_fixture_lock(
         "prd4-r12-cech-b8-b",
-        "archmap_v2_cech_h1_visible.json",
+        "archmap_v2_cech_b8_toy.json",
         "law_policy_ag.json",
         None,
     );
@@ -2647,20 +2732,24 @@ fn cli_analyze_prd4_r12_fixture_locks_are_byte_deterministic() {
     let cech_summary = read_json(&cech_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         cech["observedCocycle"]["mismatchSupportRefs"],
-        json!([
-            "atom:bottom-cech-section-value",
-            "atom:left-cech-section-value"
-        ])
+        json!(["atom:b8-cocycle-P"])
+    );
+    assert_eq!(
+        cech["observedCocycle"]["representative"],
+        json!([{
+            "edge": "ctx:W_dep->ctx:W_state",
+            "sourceContext": "ctx:W_dep",
+            "targetContext": "ctx:W_state",
+            "value": 1,
+            "supportAtomRefs": ["atom:b8-cocycle-P"]
+        }])
     );
     assert_eq!(cech["dimensions"]["H1"], Value::from(1));
     assert_eq!(cech["observedCocycle"]["classNonzero"], true);
     assert_eq!(cech_summary["translationRule"]["theoremRef"], "part4/12.3");
     assert_eq!(
         cech_summary["translationRule"]["concreteSupportRefs"],
-        json!([
-            "atom:bottom-cech-section-value",
-            "atom:left-cech-section-value"
-        ])
+        json!(["atom:b8-cocycle-P"])
     );
 
     let repair_a = run_analyze_fixture_lock(
@@ -3042,8 +3131,20 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
     assert_eq!(
         stable_cech_row,
         json!({
+            "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
             "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
+            "target": {
+                "kind": "cover-relative-cech-h1-class",
+                "coverRef": "ag.cech-obstruction",
+                "coefficient": "F2",
+                "scopeSize": {
+                    "contexts": 1,
+                    "edges": 1,
+                    "triangles": 0
+                },
+                "classRef": "computedInvariants/cech-cohomology:profile:ag-default@1"
+            },
             "verdict": "measured_nonzero",
             "verdictData": {
                 "inScope": true,
@@ -3052,9 +3153,13 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "methodStatus": "finite_f2_cech_computed",
                 "certRef": "computedInvariants/cech-cohomology:profile:ag-default@1"
             },
+            "evidence": {
+                "computedInvariantRefs": ["cech-cohomology:profile:ag-default@1"],
+                "sourceRefs": []
+            },
             "reason": "finite F2 Cech 1-cocycle is not a coboundary on the selected cover"
         }),
-        "ledger transparency must not change the Cech structural verdict payload except assumption refs"
+        "ledger transparency must keep the Cech structural verdict payload stable apart from the v0.5.0 target/evidence additions"
     );
     let cech_fixture_path = "input:archmap_v2_cech_h1_visible.json";
     let computed_without_capacity = Value::Array(
@@ -3063,7 +3168,20 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             .expect("computedInvariants is array")
             .iter()
             .filter(|row| row["invariantId"] != "topological-debt-capacity:profile:ag-default@1")
-            .cloned()
+            .map(|row| {
+                let mut row = row.clone();
+                let object = row.as_object_mut().expect("computed invariant is object");
+                assert!(
+                    object.contains_key("kind")
+                        && object.contains_key("value")
+                        && object.contains_key("representation"),
+                    "computed invariant must expose PRD-2 typed invariant fields"
+                );
+                object.remove("kind");
+                object.remove("value");
+                object.remove("representation");
+                row
+            })
             .collect(),
     );
     assert_eq!(
@@ -3216,6 +3334,42 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
         ]),
         "ledger transparency must not change computed invariants for the same Cech input"
     );
+    assert_eq!(
+        packet["suppliedData"],
+        json!([
+            {
+                "suppliedId": "supplied:archmap",
+                "kind": "archmap",
+                "sourceArtifactRef": "input:archmap_v2_cech_h1_visible.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "archmap-v2-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            },
+            {
+                "suppliedId": "supplied:law-policy",
+                "kind": "law-policy",
+                "sourceArtifactRef": "input:law_policy_ag.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "law-policy-v0.5.0-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            },
+            {
+                "suppliedId": "supplied:measurement-profile",
+                "kind": "measurement-profile",
+                "sourceArtifactRef": "input:measurement_profile_ag.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "measurement-profile-v0.5.0-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            }
+        ]),
+        "measurement packet must carry non-empty suppliedData ledger for all supplied input artifacts"
+    );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
     assert_eq!(capacity["evaluator"], "ag.cech-obstruction");
     assert_eq!(capacity["status"], "computed");
@@ -3261,6 +3415,8 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             {
                 "readingId": "candidate-regime:stability-placeholder",
                 "evaluator": "ag.foundation",
+                "claimStatus": "candidate",
+                "fidelity": "proxy",
                 "value": {
                     "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
                     "state": "not_evaluated"
@@ -6858,7 +7014,9 @@ fn cli_analyze_v2_law_conflict_tor_outputs_conflict_classes() {
             .as_array()
             .expect("dependsOnAssumptions is array")
             .iter()
-            .any(|theorem_ref| theorem_ref == "part8/9.1-coefficient-compatibility"),
+            .any(|assumption_id| assumption_id.as_str().is_some_and(
+                |id| id.starts_with("assumption:part8-9-1-coefficient-compatibility:")
+            )),
         "Tor verdict must depend on the common ambient coefficient compatibility ledger row"
     );
     assert_eq!(
@@ -7326,7 +7484,9 @@ fn cli_analyze_v2_law_conflict_tor_without_common_ambient_is_not_computed() {
             .as_array()
             .expect("dependsOnAssumptions is array")
             .iter()
-            .any(|theorem_ref| theorem_ref == "part8/9.1-coefficient-compatibility"),
+            .any(|assumption_id| assumption_id.as_str().is_some_and(
+                |id| id.starts_with("assumption:part8-9-1-coefficient-compatibility:")
+            )),
         "not-computed Tor verdict still records the coefficient compatibility dependency"
     );
     let tor = invariant_by_id(&packet, "law-conflict-tor:profile:ag-law-conflict-tor@1");
@@ -10643,14 +10803,51 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
-                        description.contains(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)
-                            && description.contains(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)
-                            && description
-                                .contains(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION)
-                            && description.contains(ARCHSIG_REPAIR_TARGETS_IDENTIFIED)
+                        ARCHSIG_PRD4_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
                     })
         }),
         "schema catalog must register PRD-4 conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-gate-report/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_GATE_REPORT_DECISIONS
+                            .iter()
+                            .all(|decision| description.contains(decision))
+                    })
+        }),
+        "schema catalog must register gate decision values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-comparison-report/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_COMPARISON_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
+                    })
+        }),
+        "schema catalog must register comparison conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-run-manifest/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_ANALYSIS_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
+                    })
+        }),
+        "schema catalog must register analyze conclusionCode values"
     );
 }
 
@@ -10683,6 +10880,11 @@ fn cli_locks_archmap_creater_vocabulary_catalog_against_ag_filters() {
     assert_eq!(
         ag_consumed_axes, fixture_axes,
         "vocabulary-catalog AG-consumed axis table must match the lint fixture"
+    );
+    let source_axes = ag_source_axis_filters(ag_source);
+    assert_eq!(
+        source_axes, fixture_axes,
+        "every ag_measurement.rs atom.axis filter must be represented in vocabulary_catalog_ag_pairs.json"
     );
     assert!(
         !ag_consumed_axes.contains("support"),
@@ -10747,6 +10949,15 @@ fn cli_locks_archmap_creater_vocabulary_catalog_against_ag_filters() {
             "vocabulary catalog must explicitly document that {predicate} is not an axis"
         );
     }
+}
+
+fn ag_source_axis_filters(source: &str) -> BTreeSet<String> {
+    source
+        .split("atom.axis == \"")
+        .skip(1)
+        .filter_map(|tail| tail.split_once('"').map(|(axis, _)| axis.to_string()))
+        .filter(|axis| axis != "unknown")
+        .collect()
 }
 
 #[test]
@@ -10937,7 +11148,9 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
             .as_array()
             .unwrap()
             .iter()
-            .any(|theorem_ref| theorem_ref == "part8/B.8.2-empty-selected-scope"),
+            .any(|assumption_id| assumption_id
+                .as_str()
+                .is_some_and(|id| id.starts_with("assumption:part8-B-8-2-empty-selected-scope:"))),
         "Cech verdict must depend on its empty-scope precondition"
     );
     assert_eq!(cech_row["verdictData"].get("certRef"), None);
@@ -11003,7 +11216,9 @@ fn cli_analyze_v2_cech_empty_selected_scope_is_not_computed() {
                     .as_array()
                     .unwrap()
                     .iter()
-                    .any(|scope_ref| scope_ref == "part8/B.8.2-empty-selected-scope")
+                    .any(|scope_ref| scope_ref.as_str().is_some_and(|value| {
+                        value.starts_with("assumption:part8-B-8-2-empty-selected-scope:")
+                    }))
                 && statement["scopeRefs"]
                     .as_array()
                     .unwrap()
@@ -11541,6 +11756,10 @@ fn cli_gate_records_applied_mapping_and_exit_codes_without_fail_vocab() {
         !json_contains_exact_string(&pass_json, "fail"),
         "gate output must not use fail as a mapping or output vocabulary"
     );
+    assert_eq!(
+        pass_json["ruleOutcomes"][1]["status"], "not_applicable",
+        "introduced-by-change rules without --comparison must be skipped, not silently passed"
+    );
 
     let block_packet = out_dir.join("block-packet.json");
     write_gate_packet(&block_packet, "measured_nonzero");
@@ -11560,6 +11779,19 @@ fn cli_gate_records_applied_mapping_and_exit_codes_without_fail_vocab() {
     assert_eq!(
         read_json(&block_report)["decision"],
         "BLOCKED_BY_GATE_POLICY"
+    );
+
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            pass_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--out",
+            out_dir.to_str().expect("directory path is utf-8"),
+        ],
+        3,
     );
 }
 
@@ -11686,6 +11918,16 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
     assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.0");
+    assert_eq!(
+        comparison["discipline"],
+        "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim class transport, causal repair, semantic equivalence, or preserved obstruction identity."
+    );
+    assert!(
+        comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"]
+            .as_str()
+            .is_some_and(|digest| !digest.is_empty()),
+        "comparison report must lock the head measurement-packet digest for gate handoff"
+    );
     assert!(
         allowed_record_codes.contains(
             comparison["conclusionCode"]
@@ -11788,6 +12030,33 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
             .any(|mapping| mapping["transition"] == "other_transition"
                 && mapping["mappingKey"] == "other"
                 && mapping["action"] == "pass_with_boundary")
+    );
+
+    let unrelated_packet = out_dir.join("unrelated-gate-packet.json");
+    write_gate_packet(&unrelated_packet, "measured_zero");
+    let digest_mismatch_report = out_dir.join("gate-digest-mismatch-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            unrelated_packet.to_str().expect("path is utf-8"),
+            "--policy",
+            gate_policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            compare_a
+                .join("archsig-comparison-report.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out",
+            digest_mismatch_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let mismatch = read_json(&digest_mismatch_report);
+    assert_eq!(mismatch["decision"], "NOT_EVALUABLE");
+    assert_eq!(
+        mismatch["reason"],
+        "comparison report headRun measurement packet digest does not match --packet"
     );
 }
 
@@ -11935,26 +12204,59 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                 }
             },
             "structuralVerdict": [{
+                "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-h1/computed",
                 "evaluator": "ag.cech-obstruction",
                 "law": "ag.cech-h1",
+                "target": {
+                    "kind": "cover-relative-cech-h1-class",
+                    "coverRef": "cover:gate-test",
+                    "coefficient": "constant:Z",
+                    "scopeSize": {
+                        "contexts": 1,
+                        "edges": 1,
+                        "triangles": 0
+                    },
+                    "classRef": "computedInvariants/gate-test:computed"
+                },
                 "verdict": verdict,
                 "verdictData": {
                     "inScope": true,
                     "zero": verdict == "measured_zero",
                     "nonZero": verdict == "measured_nonzero",
                     "methodStatus": "computed",
-                    "certRef": "cert:gate-test"
+                    "certRef": "computedInvariants/gate-test:computed"
                 },
-                "dependsOnAssumptions": []
+                "dependsOnAssumptions": [],
+                "evidence": {
+                    "computedInvariantRefs": ["gate-test:computed"],
+                    "sourceRefs": []
+                }
             }],
-            "computedInvariants": [],
+            "computedInvariants": [{
+                "invariantId": "gate-test:computed",
+                "kind": "cech-h1-rank",
+                "evaluator": "ag.cech-obstruction",
+                "value": 0,
+                "representation": {
+                    "coefficient": "constant:Z"
+                }
+            }],
             "analyticReadings": [],
             "assumptions": [],
+            "suppliedData": [{
+                "suppliedId": "supplied:archmap",
+                "kind": "archmap",
+                "sourceArtifactRef": "input:archmap.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "archmap-v2-validation"
+                }
+            }],
             "boundaryStatements": [{
                 "id": "boundary:gate-test",
                 "kind": "silence_by_design",
                 "scopeRefs": [
-                    "ag.cech-obstruction"
+                    "measurement:gate-test"
                 ],
                 "reason": "gate_test_fixture",
                 "text": "gate test packet is a minimal measurement packet fixture"

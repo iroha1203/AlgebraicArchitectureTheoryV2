@@ -74,7 +74,7 @@ listed predicate fit the observed source use. This is not an axis extension.
 
 | axis | predicates consumed by AG paths |
 | --- | --- |
-| `cech` | `sectionValue` |
+| `cech` | `sectionValue`, `cocycleValue` |
 | `square-free` | `support`, `cooccurrence` |
 | `section-factorization` | `support`, `cooccurrence`, `witnessAssignment` |
 | `laplacian` | `cellularCochain`, `cellularBoundary` |
