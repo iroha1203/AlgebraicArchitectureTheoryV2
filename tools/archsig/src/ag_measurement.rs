@@ -5,13 +5,17 @@ use serde_json::{Value, json};
 use crate::saga::evaluate_saga_descent_v1;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
-    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
+    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, AgAnalyticReadingV1,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     ArchSigMeasurementPacketV1, BoundaryStatementV1, LawPolicyDocumentV1, MeasurementProfileV1,
     NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
-    RepairPlanDocumentV1, ValidationCheck, ValidationExample, assumption_id_for_schema,
+    RepairPlanDocumentV1, SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample,
+    assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -32,6 +36,23 @@ const STRUCTURAL_VERDICT_EVALUATORS: [&str; 10] = [
     "ag.sheaf-laplacian",
     "ag.period-stokes-audit",
     "ag.saga-descent",
+];
+const COMPUTED_INVARIANT_KINDS: [&str; 15] = [
+    "measurement-invariant",
+    "cech-h1-rank",
+    "minimal-forbidden-supports",
+    "tor1-class-support",
+    "boundary-residue-rank",
+    "residual-boundary-membership",
+    "selected-cover-edge-support",
+    "coherence-obstruction-count",
+    "restriction-compatibility-rank",
+    "section-factorization-rank",
+    "sheaf-laplacian-spectrum",
+    "period-stokes-pairing",
+    "period-stokes-audit",
+    "support-transfer-rank",
+    "topological-debt-capacity",
 ];
 const MAX_SQUARE_FREE_WITNESS_VARIABLES: usize = 12;
 const MAX_COHERENCE_CONTEXTS: usize = 12;
@@ -89,8 +110,8 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             boundary: "Supply non-abelian torsor, stacky descent, or gerbe data before speaking outside the selected abelian coefficient sheaf.",
             generated_discipline: "generated cover-shape detection",
         },
-        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
-            conclusion_code: "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+        ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
             theorem_ref: Some("part4/12.3"),
             principal_text: "The selected cover has a concrete H1 support measured by the finite F2 Cech detector.",
             boundary: "Supply a different selected cover, coefficient sheaf, or restriction data before changing this profile-relative reading.",
@@ -103,22 +124,22 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             boundary: "Supply semantic repair operations before treating hitting sets as automatic repairs.",
             generated_discipline: "generated square-free hitting-set detection",
         },
-        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
-            conclusion_code: "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE",
+        ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
             theorem_ref: None,
             principal_text: "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim.",
             boundary: "Supply the relevant theoremRef-bearing evaluator row before reading this as a proved theorem attribution.",
             generated_discipline: "generated profile-relative detection",
         },
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => SummaryTranslationRule {
-            conclusion_code: "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+        ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
+            conclusion_code: ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
             theorem_ref: Some("part4/12.3"),
             principal_text: "No selected H1 glue mismatch was measured under the profile.",
             boundary: "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
             generated_discipline: "generated Cech zero detection",
         },
         _ => SummaryTranslationRule {
-            conclusion_code: "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+            conclusion_code: ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE,
             theorem_ref: None,
             principal_text: "ArchSig produced a profile-relative foundation result with non-terminal rows still visible.",
             boundary: "Supply the missing evaluator support named by boundaryStatements before reading a terminal conclusion.",
@@ -165,7 +186,7 @@ fn summary_concrete_support_refs(
             }
             refs
         }
-        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE" => packet
+        ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE => packet
             .computed_invariants
             .iter()
             .find(|invariant| invariant["evaluator"] == "ag.cech-obstruction")
@@ -418,6 +439,8 @@ pub fn build_foundation_measurement_packet_v1(
     repair_plan: Option<&RepairPlanDocumentV1>,
     archmap_ref: &str,
     law_policy_ref: &str,
+    measurement_profile_ref: &str,
+    repair_plan_ref: Option<&str>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
     let profile = selected_measurement_profile_v1(policy, measurement_profile)
         .ok_or_else(|| "AG measurement packet requires measurementProfileRef".to_string())?
@@ -774,12 +797,78 @@ pub fn build_foundation_measurement_packet_v1(
         computed_invariants,
         analytic_readings,
         assumptions,
+        supplied_data: supplied_data_ledger(
+            archmap_ref,
+            law_policy_ref,
+            measurement_profile_ref,
+            repair_plan_ref,
+        ),
         boundary_statements: Vec::new(),
         non_conclusions,
     };
     apply_assumption_dependency_propagation(&mut packet);
     packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
     Ok(packet)
+}
+
+fn supplied_data_ledger(
+    archmap_ref: &str,
+    law_policy_ref: &str,
+    measurement_profile_ref: &str,
+    repair_plan_ref: Option<&str>,
+) -> Vec<SuppliedDataLedgerEntryV1> {
+    let mut entries = vec![
+        supplied_data_entry(
+            "supplied:archmap",
+            "archmap",
+            archmap_ref,
+            "archmap-v2-validation",
+            "validated",
+        ),
+        supplied_data_entry(
+            "supplied:law-policy",
+            "law-policy",
+            law_policy_ref,
+            "law-policy-v0.5.0-validation",
+            "validated",
+        ),
+        supplied_data_entry(
+            "supplied:measurement-profile",
+            "measurement-profile",
+            measurement_profile_ref,
+            "measurement-profile-v0.5.0-validation",
+            "validated",
+        ),
+    ];
+    if let Some(repair_plan_ref) = repair_plan_ref {
+        entries.push(supplied_data_entry(
+            "supplied:repair-plan",
+            "repair-plan",
+            repair_plan_ref,
+            "repair-plan-v0.5.0-validation",
+            "validated",
+        ));
+    }
+    entries
+}
+
+fn supplied_data_entry(
+    supplied_id: &str,
+    kind: &str,
+    source_artifact_ref: &str,
+    check_ref: &str,
+    status: &str,
+) -> SuppliedDataLedgerEntryV1 {
+    SuppliedDataLedgerEntryV1 {
+        supplied_id: supplied_id.to_string(),
+        kind: kind.to_string(),
+        source_artifact_ref: source_artifact_ref.to_string(),
+        conformance: json!({
+            "status": status,
+            "checkRef": check_ref,
+            "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+        }),
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -3254,37 +3343,31 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     } else if cech_cover_shape_excludes {
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION
     } else if cech_nonzero {
-        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+        ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
     } else if repair_targets_identified {
         ARCHSIG_REPAIR_TARGETS_IDENTIFIED
     } else if nonzero_count > 0 {
-        "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE"
+        ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE
     } else if cech_zero {
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+        ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
     } else if unmeasured_count > 0 {
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+        ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     } else if packet.structural_verdict.is_empty() {
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+        ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     } else if nonzero_count == 0 {
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+        ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
     } else {
-        "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
+        ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     };
     let translation_rule = summary_translation_rule(conclusion);
     json!({
         "schema": "archsig-analysis-summary/v0.5.0",
         "conclusion": conclusion,
         "translationRule": active_summary_translation_rule_json(&translation_rule, packet),
-        "translationRuleTable": [
-            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)),
-            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)),
-            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION)),
-            summary_translation_rule_json(&summary_translation_rule("MEASURED_H1_OBSTRUCTION_UNDER_PROFILE")),
-            summary_translation_rule_json(&summary_translation_rule(ARCHSIG_REPAIR_TARGETS_IDENTIFIED)),
-            summary_translation_rule_json(&summary_translation_rule("MEASURED_AG_OBSTRUCTION_UNDER_PROFILE")),
-            summary_translation_rule_json(&summary_translation_rule("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE")),
-            summary_translation_rule_json(&summary_translation_rule("AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"))
-        ],
+        "translationRuleTable": ARCHSIG_ANALYSIS_CONCLUSION_CODES
+            .iter()
+            .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
+            .collect::<Vec<_>>(),
         "readThisFirst": {
             "heading": "Read this first",
             "conclusion": conclusion,
@@ -11557,6 +11640,15 @@ fn check_computed_invariant_shape(packet: &ArchSigMeasurementPacketV1) -> Valida
                 ));
             }
         }
+        if let Some(kind) = invariant["kind"].as_str() {
+            if !COMPUTED_INVARIANT_KINDS.contains(&kind) {
+                examples.push(generic_validation_example(
+                    &label,
+                    kind,
+                    "computed invariant kind must be one of the closed PRD-2 v0.5.0 kinds",
+                ));
+            }
+        }
         if invariant.get("value").is_none() || invariant.get("representation").is_none() {
             examples.push(generic_validation_example(
                 &label,
@@ -11647,6 +11739,15 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             "missing",
             "measurement packet must expose suppliedData ledger",
         ));
+    } else if packet_value["suppliedData"]
+        .as_array()
+        .is_some_and(Vec::is_empty)
+    {
+        examples.push(generic_validation_example(
+            "suppliedData",
+            "empty",
+            "measurement packet must record supplied input artifacts",
+        ));
     }
     for (index, supplied) in packet_value["suppliedData"]
         .as_array()
@@ -11664,11 +11765,36 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                 ));
             }
         }
+        if let Some(kind) = supplied["kind"].as_str() {
+            if !matches!(
+                kind,
+                "archmap"
+                    | "law-policy"
+                    | "measurement-profile"
+                    | "repair-plan"
+                    | "residual-packet"
+            ) {
+                examples.push(generic_validation_example(
+                    &label,
+                    kind,
+                    "suppliedData kind must be one of the input artifact ledger kinds",
+                ));
+            }
+        }
         if !supplied["conformance"].is_object() {
             examples.push(generic_validation_example(
                 &label,
                 "conformance",
                 "suppliedData entries must carry conformance object",
+            ));
+        } else if supplied["conformance"]["status"]
+            .as_str()
+            .is_none_or(str::is_empty)
+        {
+            examples.push(generic_validation_example(
+                &label,
+                "conformance.status",
+                "suppliedData conformance must record validation status",
             ));
         }
     }
@@ -11855,6 +11981,12 @@ fn measurement_packet_scope_refs(packet: &ArchSigMeasurementPacketV1) -> BTreeSe
             .map(|reading| reading.reading_id.clone()),
     );
     refs.extend(packet.assumptions.iter().map(assumption_id_for_schema));
+    refs.extend(
+        packet
+            .supplied_data
+            .iter()
+            .map(|entry| entry.supplied_id.clone()),
+    );
     for row in &packet.structural_verdict {
         refs.insert(row.evaluator.clone());
         refs.insert(row.law.clone());
@@ -12002,6 +12134,15 @@ mod tests {
                 "status": "checked",
                 "checkedBy": "test"
             }],
+            "suppliedData": [{
+                "suppliedId": "supplied:archmap",
+                "kind": "archmap",
+                "sourceArtifactRef": "input:archmap.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "archmap-v2-validation"
+                }
+            }],
             "nonConclusions": ["test fixture"]
         }))
         .expect("packet fixture parses");
@@ -12120,6 +12261,33 @@ mod tests {
         let checks = validate_measurement_packet_v1(&packet);
         assert!(checks.iter().any(|check| {
             check.id == "measurement-packet-schema050-structural-verdict-evaluators"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn unknown_computed_invariant_kind_fails_validation() {
+        let mut packet = packet_fixture();
+        packet.computed_invariants.push(json!({
+            "invariantId": "invariant:unknown-kind",
+            "kind": "unregistered-freeform-kind",
+            "value": 1,
+            "representation": {"basis": "test"}
+        }));
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-computed-invariants-typed"
+                && check.result == "fail"
+        }));
+    }
+
+    #[test]
+    fn empty_supplied_data_ledger_fails_validation() {
+        let mut packet = packet_fixture();
+        packet.supplied_data.clear();
+        let checks = validate_measurement_packet_v1(&packet);
+        assert!(checks.iter().any(|check| {
+            check.id == "measurement-packet-schema050-supplied-data-ledger"
                 && check.result == "fail"
         }));
     }

@@ -5,14 +5,15 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use archsig::{
-    ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_ANALYSIS_CONCLUSION_CODES, ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
+    ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
-    ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV0,
-    compare_archmap_v2_doctrine,
+    ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
+    ARCHSIG_PRD4_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine,
 };
 use serde_json::{Value, json};
 
@@ -3332,6 +3333,42 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             }
         ]),
         "ledger transparency must not change computed invariants for the same Cech input"
+    );
+    assert_eq!(
+        packet["suppliedData"],
+        json!([
+            {
+                "suppliedId": "supplied:archmap",
+                "kind": "archmap",
+                "sourceArtifactRef": "input:archmap_v2_cech_h1_visible.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "archmap-v2-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            },
+            {
+                "suppliedId": "supplied:law-policy",
+                "kind": "law-policy",
+                "sourceArtifactRef": "input:law_policy_ag.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "law-policy-v0.5.0-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            },
+            {
+                "suppliedId": "supplied:measurement-profile",
+                "kind": "measurement-profile",
+                "sourceArtifactRef": "input:measurement_profile_ag.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "measurement-profile-v0.5.0-validation",
+                    "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
+                }
+            }
+        ]),
+        "measurement packet must carry non-empty suppliedData ledger for all supplied input artifacts"
     );
     let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
     assert_eq!(capacity["evaluator"], "ag.cech-obstruction");
@@ -10766,14 +10803,51 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
-                        description.contains(ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX)
-                            && description.contains(ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL)
-                            && description
-                                .contains(ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION)
-                            && description.contains(ARCHSIG_REPAIR_TARGETS_IDENTIFIED)
+                        ARCHSIG_PRD4_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
                     })
         }),
         "schema catalog must register PRD-4 conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-gate-report/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_GATE_REPORT_DECISIONS
+                            .iter()
+                            .all(|decision| description.contains(decision))
+                    })
+        }),
+        "schema catalog must register gate decision values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-comparison-report/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_COMPARISON_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
+                    })
+        }),
+        "schema catalog must register comparison conclusionCode values"
+    );
+    assert!(
+        artifacts.iter().any(|entry| {
+            entry["artifactId"] == "archsig-run-manifest/v0.5.0"
+                && entry["compatibilityBoundary"]["fieldMappingPolicy"]
+                    .as_str()
+                    .is_some_and(|description| {
+                        ARCHSIG_ANALYSIS_CONCLUSION_CODES
+                            .iter()
+                            .all(|code| description.contains(code))
+                    })
+        }),
+        "schema catalog must register analyze conclusionCode values"
     );
 }
 
@@ -12169,6 +12243,15 @@ fn write_gate_packet(path: &Path, verdict: &str) {
             }],
             "analyticReadings": [],
             "assumptions": [],
+            "suppliedData": [{
+                "suppliedId": "supplied:archmap",
+                "kind": "archmap",
+                "sourceArtifactRef": "input:archmap.json",
+                "conformance": {
+                    "status": "validated",
+                    "checkRef": "archmap-v2-validation"
+                }
+            }],
             "boundaryStatements": [{
                 "id": "boundary:gate-test",
                 "kind": "silence_by_design",

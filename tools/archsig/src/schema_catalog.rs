@@ -1,10 +1,12 @@
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
     ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
-    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
-    ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION, ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA,
+    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
+    ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
+    ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
-    ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_PRD4_CONCLUSION_CODES,
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, LAW_POLICY_V1_SCHEMA,
     MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
@@ -176,7 +178,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.4.0 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.4.0-ag-measurement"],
-                "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered PRD-4 conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, and REPAIR_TARGETS_IDENTIFIED.",
+                &format!(
+                    "ArchSig measurement packet v1 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Registered PRD-4 conclusionCode values include {}.",
+                    registry_sentence(&ARCHSIG_PRD4_CONCLUSION_CODES),
+                ),
                 vec![
                     "Structural verdicts are limited to measured_zero, measured_nonzero, unmeasured, unknown, and not_computed.",
                     "dependsOnAssumptions records row-level refs into the packet assumption ledger; violated assumptions only normalize dependent measured rows to not_computed.",
@@ -219,7 +224,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
-                "Gate report v1 records PASS_WITHIN_GATE_POLICY, BLOCKED_BY_GATE_POLICY, or NOT_EVALUABLE together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+                &format!(
+                    "Gate report v1 records {} together with ruleOutcomes[].appliedMapping rows that preserve original measurement verdict vocabulary.",
+                    registry_sentence(&ARCHSIG_GATE_REPORT_DECISIONS),
+                ),
                 vec![
                     "Gate report does not mutate measurement verdicts.",
                     "Gate report does not infer improvement, repair, class identity, or transport between runs.",
@@ -246,7 +254,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:v0.5.0-prd2-artifact-ci"],
-                "Comparison report v1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+                &format!(
+                    "Comparison report v1 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. Registered conclusionCode values are {}.",
+                    registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
+                ),
                 vec![
                     "Comparison report does not implement class transport, obstruction identity transport, repair causality, or semantic equivalence.",
                     "Comparison report conclusion codes are record-level names only.",
@@ -263,7 +274,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "archsig-contract:output-report",
                     "archsig-contract:command-guide",
                 ],
-                "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run.",
+                &format!(
+                    "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are {}.",
+                    registry_sentence(&ARCHSIG_ANALYSIS_CONCLUSION_CODES),
+                ),
                 vec![
                     "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
                     "Generated artifact lists describe this run only and do not imply any unlisted artifact was produced.",
@@ -355,6 +369,19 @@ fn artifact(
             ],
             non_conclusions: non_conclusions.into_iter().map(str::to_string).collect(),
         },
+    }
+}
+
+fn registry_sentence(values: &[&str]) -> String {
+    match values {
+        [] => String::new(),
+        [only] => (*only).to_string(),
+        [first, second] => format!("{first} and {second}"),
+        _ => {
+            let mut items = values.to_vec();
+            let last = items.pop().unwrap_or_default();
+            format!("{}, and {}", items.join(", "), last)
+        }
     }
 }
 

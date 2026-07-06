@@ -6,9 +6,11 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 use crate::{
-    ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
-    ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
-    ArchSigMeasurementPacketV1, validate_measurement_packet_v1,
+    ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_BLOCKED_BY_GATE_POLICY,
+    ARCHSIG_GATE_NOT_EVALUABLE, ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY,
+    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ArchSigMeasurementPacketV1,
+    validate_measurement_packet_v1,
 };
 
 const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
@@ -293,9 +295,9 @@ pub fn build_gate_report_v1(
     }
 
     let decision = if any_block {
-        "BLOCKED_BY_GATE_POLICY"
+        ARCHSIG_GATE_BLOCKED_BY_GATE_POLICY
     } else {
-        "PASS_WITHIN_GATE_POLICY"
+        ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY
     };
     let exit_code = if any_block { 1 } else { 0 };
     let report = json!({
@@ -698,7 +700,7 @@ fn not_evaluable_report(
 ) -> Result<Value, Box<dyn Error>> {
     Ok(json!({
         "schema": ARCHSIG_GATE_REPORT_V1_SCHEMA,
-        "decision": "NOT_EVALUABLE",
+        "decision": ARCHSIG_GATE_NOT_EVALUABLE,
         "toolVersion": env!("CARGO_PKG_VERSION"),
         "inputDigests": {
             "measurementPacket": {

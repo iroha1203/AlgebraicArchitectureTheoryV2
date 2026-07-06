@@ -430,6 +430,31 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "status": "violated",
             "scopeRefs": ["part8/11.1"]
         }],
+        "suppliedData": [{
+            "suppliedId": "supplied:archmap",
+            "kind": "archmap",
+            "sourceArtifactRef": "input:archmap.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "archmap-v2-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-policy",
+            "kind": "law-policy",
+            "sourceArtifactRef": "input:law-policy.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-policy-v0.5.0-validation"
+            }
+        }, {
+            "suppliedId": "supplied:measurement-profile",
+            "kind": "measurement-profile",
+            "sourceArtifactRef": "input:measurement-profile.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "measurement-profile-v0.5.0-validation"
+            }
+        }],
         "boundaryStatements": [{
             "id": "boundary:assumption:part8-11-1",
             "kind": "violated_assumption_dependency",
@@ -642,12 +667,23 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
             "evaluator": "ag.cech-obstruction",
             "law": "ag.cech-obstruction",
+            "target": {
+                "kind": "cover-relative-cech-h1-class",
+                "coverRef": "cover:test",
+                "coefficient": "F2",
+                "scopeSize": {"contexts": 1, "edges": 1, "triangles": 0},
+                "classRef": "computedInvariants/topological-debt-capacity:profile:capacity-not-cert"
+            },
             "verdict": "measured_nonzero",
             "verdictData": {
                 "inScope": true,
                 "zero": false,
                 "nonZero": true,
                 "methodStatus": "finite_f2_cech_computed"
+            },
+            "evidence": {
+                "computedInvariantRefs": [],
+                "sourceRefs": []
             }
         }],
         "computedInvariants": [{
@@ -659,7 +695,15 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "value": 1,
             "representation": {"capacityLowerBound": 1}
         }],
-        "analyticReadings": [],
+        "analyticReadings": [{
+            "readingId": "candidate:semantic-validation",
+            "evaluator": "ag.foundation",
+            "claimStatus": "candidate",
+            "fidelity": "proxy",
+            "value": {"state": "not_evaluated"},
+            "regime": "theorem-candidate",
+            "structuralVerdictRef": null
+        }],
         "assumptions": [{
             "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
             "theoremRef": "part4/12.3",
@@ -667,6 +711,15 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "status": "checked",
             "checkedBy": "measurement-profile:profile:capacity-not-cert.coefficient=F2",
             "scopeRefs": ["part4/12.3"]
+        }],
+        "suppliedData": [{
+            "suppliedId": "supplied:archmap",
+            "kind": "archmap",
+            "sourceArtifactRef": "input:archmap.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "archmap-v2-validation"
+            }
         }],
         "boundaryStatements": [],
         "nonConclusions": []
@@ -687,7 +740,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
     assert!(!output.status.success());
     assert!(
         String::from_utf8_lossy(&output.stderr)
-            .contains("requires certRef or matching computed invariant evidence"),
+            .contains("requires non-empty evidence.computedInvariantRefs"),
         "M7 capacity reading must not act as fallback certificate for a measured Cech verdict"
     );
 }
@@ -800,6 +853,13 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "verdictRef": "structuralVerdict/ag-square-free-repair/ag-square-free-repair/nsdepth-certificate-verified",
             "evaluator": "ag.square-free-repair",
             "law": "ag.square-free-repair",
+            "target": {
+                "kind": "square-free-repair-support",
+                "coverRef": "ag.square-free-repair",
+                "coefficient": "F2",
+                "scopeSize": {"contexts": 1, "edges": 0, "triangles": 0},
+                "classRef": "computedInvariants/square-free-repair:profile:semantic-validation"
+            },
             "verdict": "measured_nonzero",
             "verdictData": {
                 "inScope": true,
@@ -822,7 +882,15 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "value": [],
             "representation": {}
         }],
-        "analyticReadings": [],
+        "analyticReadings": [{
+            "readingId": "candidate:semantic-validation",
+            "evaluator": "ag.foundation",
+            "claimStatus": "candidate",
+            "fidelity": "proxy",
+            "value": {"state": "not_evaluated"},
+            "regime": "theorem-candidate",
+            "structuralVerdictRef": null
+        }],
         "assumptions": [{
             "assumptionId": "assumption:part3-7-2B:finite-certificate-verified",
             "theoremRef": "part3/7.2B",
@@ -830,6 +898,15 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "status": "checked",
             "checkedBy": "ag.square-free-repair",
             "scopeRefs": ["part3/7.2B"]
+        }],
+        "suppliedData": [{
+            "suppliedId": "supplied:archmap",
+            "kind": "archmap",
+            "sourceArtifactRef": "input:archmap.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "archmap-v2-validation"
+            }
         }],
         "boundaryStatements": [],
         "nonConclusions": []
@@ -901,7 +978,8 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         .as_object_mut()
         .expect("verdictData is object")
         .remove("certRef");
-    missing_evidence_json["computedInvariants"] = serde_json::json!([]);
+    missing_evidence_json["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] =
+        serde_json::json!([]);
     fs::write(
         &missing_evidence_packet,
         serde_json::to_string_pretty(&missing_evidence_json)
@@ -923,8 +1001,277 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!missing_evidence.status.success());
     assert!(
         String::from_utf8_lossy(&missing_evidence.stderr)
-            .contains("requires certRef or matching computed invariant evidence"),
+            .contains("requires non-empty evidence.computedInvariantRefs"),
         "measurement-packet handoff must reject measured verdicts without evidence linkage"
+    );
+
+    let missing_supplied_packet = out_dir.join("missing-supplied-data-measurement-packet.json");
+    let mut missing_supplied_json = valid_measurement_packet.clone();
+    missing_supplied_json
+        .as_object_mut()
+        .expect("packet is object")
+        .remove("suppliedData");
+    fs::write(
+        &missing_supplied_packet,
+        serde_json::to_string_pretty(&missing_supplied_json)
+            .expect("missing suppliedData packet serializes"),
+    )
+    .expect("missing suppliedData packet fixture is written");
+    let missing_supplied = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_supplied_packet
+            .to_str()
+            .expect("missing suppliedData packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-supplied-data.json")
+            .to_str()
+            .expect("missing suppliedData output path is utf-8"),
+    ]);
+    assert!(!missing_supplied.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_supplied.stderr).contains("requires suppliedData array"),
+        "measurement-packet handoff must reject packets without suppliedData ledger"
+    );
+
+    let missing_target_packet = out_dir.join("missing-target-measurement-packet.json");
+    let mut missing_target_json = valid_measurement_packet.clone();
+    missing_target_json["structuralVerdict"][0]
+        .as_object_mut()
+        .expect("structural verdict row is object")
+        .remove("target");
+    fs::write(
+        &missing_target_packet,
+        serde_json::to_string_pretty(&missing_target_json)
+            .expect("missing target packet serializes"),
+    )
+    .expect("missing target packet fixture is written");
+    let missing_target = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_target_packet
+            .to_str()
+            .expect("missing target packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-target.json")
+            .to_str()
+            .expect("missing target output path is utf-8"),
+    ]);
+    assert!(!missing_target.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_target.stderr).contains("requires target object"),
+        "measurement-packet handoff must reject structural verdicts without PRD-2 target"
+    );
+
+    let unresolved_evidence_packet = out_dir.join("unresolved-evidence-measurement-packet.json");
+    let mut unresolved_evidence_json = valid_measurement_packet.clone();
+    unresolved_evidence_json["structuralVerdict"][0]["evidence"]["computedInvariantRefs"] =
+        serde_json::json!(["missing-invariant"]);
+    fs::write(
+        &unresolved_evidence_packet,
+        serde_json::to_string_pretty(&unresolved_evidence_json)
+            .expect("unresolved evidence packet serializes"),
+    )
+    .expect("unresolved evidence packet fixture is written");
+    let unresolved_evidence = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unresolved_evidence_packet
+            .to_str()
+            .expect("unresolved evidence packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unresolved-evidence.json")
+            .to_str()
+            .expect("unresolved evidence output path is utf-8"),
+    ]);
+    assert!(!unresolved_evidence.status.success());
+    assert!(
+        String::from_utf8_lossy(&unresolved_evidence.stderr)
+            .contains("does not resolve to computedInvariants[].invariantId"),
+        "measurement-packet handoff must reject unresolved computedInvariantRefs"
+    );
+
+    let unresolved_class_ref_packet = out_dir.join("unresolved-class-ref-measurement-packet.json");
+    let mut unresolved_class_ref_json = valid_measurement_packet.clone();
+    unresolved_class_ref_json["structuralVerdict"][0]["target"]["classRef"] =
+        serde_json::json!("computedInvariants/missing-invariant");
+    fs::write(
+        &unresolved_class_ref_packet,
+        serde_json::to_string_pretty(&unresolved_class_ref_json)
+            .expect("unresolved classRef packet serializes"),
+    )
+    .expect("unresolved classRef packet fixture is written");
+    let unresolved_class_ref = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unresolved_class_ref_packet
+            .to_str()
+            .expect("unresolved classRef packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unresolved-class-ref.json")
+            .to_str()
+            .expect("unresolved classRef output path is utf-8"),
+    ]);
+    assert!(!unresolved_class_ref.status.success());
+    assert!(
+        String::from_utf8_lossy(&unresolved_class_ref.stderr).contains("target.classRef")
+            && String::from_utf8_lossy(&unresolved_class_ref.stderr).contains("does not resolve"),
+        "measurement-packet handoff must reject unresolved measured_nonzero classRef"
+    );
+
+    let opaque_cert_ref_packet = out_dir.join("opaque-cert-ref-measurement-packet.json");
+    let mut opaque_cert_ref_json = valid_measurement_packet.clone();
+    opaque_cert_ref_json["structuralVerdict"][0]["verdictData"]["certRef"] =
+        serde_json::json!("opaque:non-computed-cert");
+    fs::write(
+        &opaque_cert_ref_packet,
+        serde_json::to_string_pretty(&opaque_cert_ref_json)
+            .expect("opaque certRef packet serializes"),
+    )
+    .expect("opaque certRef packet fixture is written");
+    let opaque_cert_ref = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        opaque_cert_ref_packet
+            .to_str()
+            .expect("opaque certRef packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("opaque-cert-ref.json")
+            .to_str()
+            .expect("opaque certRef output path is utf-8"),
+    ]);
+    assert!(!opaque_cert_ref.status.success());
+    assert!(
+        String::from_utf8_lossy(&opaque_cert_ref.stderr)
+            .contains("requires certRef or matching computed invariant evidence"),
+        "measurement-packet handoff must reject opaque certRef values that do not resolve to computedInvariants"
+    );
+
+    let unknown_invariant_kind_packet =
+        out_dir.join("unknown-invariant-kind-measurement-packet.json");
+    let mut unknown_invariant_kind_json = valid_measurement_packet.clone();
+    unknown_invariant_kind_json["computedInvariants"][0]["kind"] =
+        serde_json::json!("unregistered-freeform-kind");
+    fs::write(
+        &unknown_invariant_kind_packet,
+        serde_json::to_string_pretty(&unknown_invariant_kind_json)
+            .expect("unknown invariant kind packet serializes"),
+    )
+    .expect("unknown invariant kind packet fixture is written");
+    let unknown_invariant_kind = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unknown_invariant_kind_packet
+            .to_str()
+            .expect("unknown invariant kind packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unknown-invariant-kind.json")
+            .to_str()
+            .expect("unknown invariant kind output path is utf-8"),
+    ]);
+    assert!(!unknown_invariant_kind.status.success());
+    assert!(
+        String::from_utf8_lossy(&unknown_invariant_kind.stderr)
+            .contains("unsupported kind unregistered-freeform-kind"),
+        "measurement-packet handoff must reject unknown computed invariant kinds"
+    );
+
+    let unknown_supplied_kind_packet =
+        out_dir.join("unknown-supplied-kind-measurement-packet.json");
+    let mut unknown_supplied_kind_json = valid_measurement_packet.clone();
+    unknown_supplied_kind_json["suppliedData"][0]["kind"] =
+        serde_json::json!("unregistered-supplied-kind");
+    fs::write(
+        &unknown_supplied_kind_packet,
+        serde_json::to_string_pretty(&unknown_supplied_kind_json)
+            .expect("unknown supplied kind packet serializes"),
+    )
+    .expect("unknown supplied kind packet fixture is written");
+    let unknown_supplied_kind = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unknown_supplied_kind_packet
+            .to_str()
+            .expect("unknown supplied kind packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unknown-supplied-kind.json")
+            .to_str()
+            .expect("unknown supplied kind output path is utf-8"),
+    ]);
+    assert!(!unknown_supplied_kind.status.success());
+    assert!(
+        String::from_utf8_lossy(&unknown_supplied_kind.stderr)
+            .contains("unsupported kind unregistered-supplied-kind"),
+        "measurement-packet handoff must reject unknown suppliedData kinds"
+    );
+
+    let missing_conformance_status_packet =
+        out_dir.join("missing-conformance-status-measurement-packet.json");
+    let mut missing_conformance_status_json = valid_measurement_packet.clone();
+    missing_conformance_status_json["suppliedData"][0]["conformance"]
+        .as_object_mut()
+        .expect("conformance is object")
+        .remove("status");
+    fs::write(
+        &missing_conformance_status_packet,
+        serde_json::to_string_pretty(&missing_conformance_status_json)
+            .expect("missing conformance status packet serializes"),
+    )
+    .expect("missing conformance status packet fixture is written");
+    let missing_conformance_status = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_conformance_status_packet
+            .to_str()
+            .expect("missing conformance status packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-conformance-status.json")
+            .to_str()
+            .expect("missing conformance status output path is utf-8"),
+    ]);
+    assert!(!missing_conformance_status.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_conformance_status.stderr)
+            .contains("requires conformance.status"),
+        "measurement-packet handoff must reject suppliedData without conformance.status"
+    );
+
+    let missing_claim_status_packet = out_dir.join("missing-claim-status-measurement-packet.json");
+    let mut missing_claim_status_json = valid_measurement_packet;
+    missing_claim_status_json["analyticReadings"][0]
+        .as_object_mut()
+        .expect("analytic reading row is object")
+        .remove("claimStatus");
+    fs::write(
+        &missing_claim_status_packet,
+        serde_json::to_string_pretty(&missing_claim_status_json)
+            .expect("missing claimStatus packet serializes"),
+    )
+    .expect("missing claimStatus packet fixture is written");
+    let missing_claim_status = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_claim_status_packet
+            .to_str()
+            .expect("missing claimStatus packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-claim-status.json")
+            .to_str()
+            .expect("missing claimStatus output path is utf-8"),
+    ]);
+    assert!(!missing_claim_status.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_claim_status.stderr).contains("claimStatus"),
+        "measurement-packet handoff must reject analytic readings without PRD-2 claimStatus"
     );
 }
 

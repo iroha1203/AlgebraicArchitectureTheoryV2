@@ -15,6 +15,8 @@ pub struct ArchSigMeasurementPacketV1 {
     pub analytic_readings: Vec<AgAnalyticReadingV1>,
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
     #[serde(default)]
+    pub supplied_data: Vec<SuppliedDataLedgerEntryV1>,
+    #[serde(default)]
     pub boundary_statements: Vec<BoundaryStatementV1>,
     pub non_conclusions: Vec<String>,
 }
@@ -42,12 +44,20 @@ impl Serialize for ArchSigMeasurementPacketV1 {
         state.serialize_field("computedInvariants", &invariants)?;
         state.serialize_field("analyticReadings", &self.analytic_readings)?;
         state.serialize_field("assumptions", &self.assumptions)?;
-        let supplied_data: Vec<Value> = Vec::new();
-        state.serialize_field("suppliedData", &supplied_data)?;
+        state.serialize_field("suppliedData", &self.supplied_data)?;
         state.serialize_field("boundaryStatements", &self.boundary_statements)?;
         state.serialize_field("nonConclusions", &self.non_conclusions)?;
         state.end()
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuppliedDataLedgerEntryV1 {
+    pub supplied_id: String,
+    pub kind: String,
+    pub source_artifact_ref: String,
+    pub conformance: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
