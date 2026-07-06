@@ -167,13 +167,6 @@ def read {U : AtomCarrier.{u}} (signature : ArchitectureSignature U)
     signature.Coordinate axis :=
   signature.coordinate A axis
 
-/-- I.定義10.3: selected axes are exactly the recorded signature axes. -/
-theorem selected_axis {U : AtomCarrier.{u}}
-    (signature : ArchitectureSignature U) {axis : signature.Axis}
-    (hselected : signature.selected axis) :
-    signature.selected axis :=
-  hselected
-
 /-- I.定義10.3: `read` is the recorded coordinate reading. -/
 theorem read_eq_coordinate {U : AtomCarrier.{u}}
     (signature : ArchitectureSignature U) (A : ArchitectureObject U)

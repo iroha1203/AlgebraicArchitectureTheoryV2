@@ -305,6 +305,55 @@ theorem boundary_comp_zero
     C.boundaryOp n (C.boundaryOp (n + 1) γ) = 0 :=
   C.boundary_comp_zero n γ
 
+/--
+VII.定理5.3 hypothesis: the selected finite Cech pairing sends a zero chain to
+zero in the period target.
+
+The base `CechCochainChainPairing` deliberately does not require additivity in
+the chain argument, so strict-period coboundary invariance must record this
+equation explicitly.
+-/
+structure ZeroChainCompatiblePairing
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {C : Cohomology.FiniteCechChainComplex.{u}}
+    (P : Cohomology.CechCochainChainPairing K C) where
+  pair_zero_chain : ∀ (n : Nat) (ω : K.Cn n), P.pair n ω 0 = 0
+
+namespace ZeroChainCompatiblePairing
+
+variable {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+variable {C : Cohomology.FiniteCechChainComplex.{u}}
+variable {P : Cohomology.CechCochainChainPairing K C}
+
+/-- VII.定理5.3: expose the selected zero-chain pairing equation. -/
+theorem pair_zero
+    (Z : ZeroChainCompatiblePairing P)
+    (n : Nat) (ω : K.Cn n) :
+    P.pair n ω 0 = 0 :=
+  Z.pair_zero_chain n ω
+
+end ZeroChainCompatiblePairing
+
+/--
+VII.定理5.3: a selected Stokes-compatible finite Cech pairing kills
+coboundaries on closed chains.
+
+This is the load-bearing coboundary invariance used by strict-period
+well-definedness: it is an equation in the selected pairing target, not a
+separate `Prop` token.
+-/
+theorem coboundary_pair_eq_zero_on_closed_chain
+    {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
+    {C : Cohomology.FiniteCechChainComplex.{u}}
+    {P : Cohomology.CechCochainChainPairing K C}
+    (H : Cohomology.StokesCompatiblePairing P)
+    (Z : ZeroChainCompatiblePairing P)
+    (n : Nat) (ω : K.Cn n) (γ : C.Chain (n + 1))
+    (hγ : C.boundaryOp n γ = 0) :
+    P.pair (n + 1) (K.d n ω) γ = 0 := by
+  rw [H.cechStokes n ω γ, hγ]
+  exact Z.pair_zero n ω
+
 end FiniteCechBoundary
 
 /--

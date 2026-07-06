@@ -1,4 +1,5 @@
 import Formal.AG.SemanticRepair.SagaComparison
+import Mathlib.Data.ZMod.Basic
 
 noncomputable section
 
@@ -165,6 +166,17 @@ theorem typedComparisonTarget_not_unconditional_for_emptyTarget :
   refine ⟨?_⟩
   intro comparison
   exact Empty.elim (comparison.toTarget PUnit.unit)
+
+/--
+X.定理8.4 carrier non-uniformity witness: a singleton carrier and the
+nontrivial `ZMod 2` carrier are materially different comparison targets.
+-/
+theorem typedComparisonTarget_carrier_nonuniformity_punit_zmod2 :
+    Nonempty (SemanticRepairTypedComparisonTarget PUnit (ZMod 2)) ∧
+      Nontrivial (ZMod 2) := by
+  constructor
+  · exact ⟨{ toTarget := fun _ => 0 }⟩
+  · infer_instance
 
 /-- X.定理8.5 typed refinement comparison with explicit zero preservation. -/
 structure SemanticRepairRefinementZeroComparison

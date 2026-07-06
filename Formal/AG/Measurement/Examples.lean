@@ -18,7 +18,7 @@ and a separate unmeasured axis. -/
 inductive PseudoCircleMeasurementDomain where
   | boundaryCocycle
   | unmeasuredAxis
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(b): a three-vertex support universe for square-free hitting examples. -/
 inductive SquareFreeSupportVertex where
@@ -31,20 +31,20 @@ inductive SquareFreeSupportVertex where
 inductive SquareFreeRepairTarget where
   | singletonQ
   | pairPR
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(c): a two-object finite site used by the computability fixture. -/
 inductive TinyMeasurementSite where
   | u
   | v
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(e): low-degree cochains used by the Hodge fixture. -/
 inductive LowDegreeCochain where
   | exact
   | harmonic
   | coexact
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(e): concrete one-dimensional boundary cochains for the Hodge fixture. -/
 abbrev LowDegreeBoundaryCochain : Type :=
@@ -58,7 +58,7 @@ abbrev LowDegreeRealCochain : Type :=
 inductive TransferResidueFlag where
   | zero
   | nontrivial
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 /-- R11(a): the profile separates measured nonzero from unmeasured axes. -/
 def pseudoCircleMeasurementProfile : MeasurementProfile where
@@ -146,6 +146,12 @@ def tinyEffCoeff : EffCoeff pseudoCircleMeasurementProfile where
   IdealMembershipObject := Unit
   FinitePresentationObject := Unit
   ResolutionObject := Unit
+  kernelObjectFintype := inferInstance
+  imageObjectFintype := inferInstance
+  quotientObjectFintype := inferInstance
+  idealMembershipObjectFintype := inferInstance
+  finitePresentationObjectFintype := inferInstance
+  resolutionObjectFintype := inferInstance
   kernelFor := fun _ _ => True
   imageFor := fun _ _ => True
   quotientFor := fun _ _ => True
@@ -187,42 +193,49 @@ def tinyFiniteMeasurementRegime :
 def tinyFiniteCechComplex :
     FiniteCechComplexRepresentation pseudoCircleMeasurementProfile where
   carrier := TinyMeasurementSite
+  carrierFintype := inferInstance
   finiteRepresentation := True
   finiteRepresentation_cert := trivial
 
 def tinyFiniteCocycle :
     FiniteCocycleRepresentative pseudoCircleMeasurementProfile where
   carrier := PseudoCircleMeasurementDomain
+  carrierFintype := inferInstance
   finiteRepresentative := True
   finiteRepresentative_cert := trivial
 
 def tinyFiniteVerdictComputation :
     FiniteVerdictComputationObject pseudoCircleMeasurementProfile where
   carrier := PseudoCircleMeasurementDomain
+  carrierFintype := inferInstance
   computesSelectedVerdict := True
   computesSelectedVerdict_cert := trivial
 
 def tinyFiniteSquareFreeIdeal :
     FiniteSquareFreeObstructionIdeal pseudoCircleMeasurementProfile where
   carrier := SquareFreeSupportVertex
+  carrierFintype := inferInstance
   finiteSquareFree := True
   finiteSquareFree_cert := trivial
 
 def tinyFiniteStanleyReisnerComplex :
     FiniteStanleyReisnerComplex pseudoCircleMeasurementProfile where
   carrier := SquareFreeSupportVertex
+  carrierFintype := inferInstance
   finiteComplex := True
   finiteComplex_cert := trivial
 
 def tinyFiniteMonomialTorComplex :
     FiniteMonomialTorComplex pseudoCircleMeasurementProfile where
   carrier := Unit
+  carrierFintype := inferInstance
   finiteTorComplex := True
   finiteTorComplex_cert := trivial
 
 def tinyFiniteConflictSupport :
     FiniteConflictSupport pseudoCircleMeasurementProfile where
   carrier := SquareFreeSupportVertex
+  carrierFintype := inferInstance
   finiteSupport := True
   finiteSupport_cert := trivial
 
@@ -1214,6 +1227,96 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
+/-- R11(g): GAGA certified fields carry the concrete finite Hodge theorem package. -/
+def lowDegreeSelectedHodgeTheoremPackage :
+    SelectedFiniteHodgeTheoremPackage pseudoCircleMeasurementProfile where
+  cellularModel := lowDegreeCellularModel
+  laplacianReading := lowDegreeLaplacianReading
+  hodgeData := lowDegreeHodgeData
+  hodgePackage := lowDegreeHodgePackage
+
+/-- R11(g) / VIII-5: concrete extension accounting used by the GAGA Period/Stokes route. -/
+def lowDegreePeriodStokesAccounting :
+    Cohomology.ExtensionHolonomyAccounting where
+  ExtensionEvent := Unit
+  Accounting := Unit
+  eventAddCommGroup := inferInstance
+  accountingAddCommGroup := inferInstance
+  kappa_U := 0
+
+/-- R11(g) / VIII-5: selected Period/Stokes theorem package for GAGA. -/
+def lowDegreePeriodStokesTheoremPackage :
+    SelectedPeriodStokesTheoremPackage pseudoCircleMeasurementProfile where
+  selectedAccounting := PseudoCircleMeasurementDomain.boundaryCocycle
+  measuredAccounting := {
+    inScope := rfl
+    method := ()
+    certificate := ()
+  }
+  extensionAccounting := lowDegreePeriodStokesAccounting
+
+/-- R11(g) / VIII-5: one-chart finite nerve used by the GAGA topological-debt route. -/
+def lowDegreeTopologicalDebtNerve :
+    Cohomology.CoverNerve where
+  Chart := Unit
+  EdgeComponent := Empty
+  FaceComponent := Empty
+  edgeLeft := Empty.elim
+  edgeRight := Empty.elim
+  faceEdge0 := Empty.elim
+  faceEdge1 := Empty.elim
+  faceEdge2 := Empty.elim
+  edgeOverlapComponent := fun e => nomatch e
+  faceTripleOverlapComponent := fun f => nomatch f
+  edgeOverlapComponent_holds := fun e => nomatch e
+  faceTripleOverlapComponent_holds := fun f => nomatch f
+
+/--
+R11(g) / VIII-5: concrete finite nerve cochain complex for topological debt.
+
+The example is intentionally low-degree and zero-differential; the certified
+field below is backed by `topologicalDebtCapacity_fromComplex`, not by an
+unrelated `True` field.
+-/
+def lowDegreeTopologicalDebtComplex :
+    Cohomology.FiniteNerveCochainComplex lowDegreeTopologicalDebtNerve where
+  k := ℚ
+  C0 := Unit
+  C1 := Unit
+  C2 := Unit
+  add_C0 := inferInstance
+  add_C1 := inferInstance
+  add_C2 := inferInstance
+  module_C0 := inferInstance
+  module_C1 := inferInstance
+  module_C2 := inferInstance
+  finiteDimensional_C0 := inferInstance
+  finiteDimensional_C1 := inferInstance
+  finiteDimensional_C2 := inferInstance
+  d0 := 0
+  d1 := 0
+  d1_comp_d0 := by
+    intro c
+    simp
+
+/-- R11(g) / VIII-5: selected topological-debt theorem package for GAGA. -/
+def lowDegreeTopologicalDebtTheoremPackage :
+    SelectedTopologicalDebtTheoremPackage pseudoCircleMeasurementProfile where
+  selectedDebtData := PseudoCircleMeasurementDomain.boundaryCocycle
+  measuredDebtData := {
+    inScope := rfl
+    method := ()
+    certificate := ()
+  }
+  nerve := lowDegreeTopologicalDebtNerve
+  nerveComplex := lowDegreeTopologicalDebtComplex
+
+/-- R11(g) / VIII-5: selected derived-conflict theorem package for GAGA. -/
+def lowDegreeDerivedConflictTheoremPackage :
+    SelectedDerivedConflictTheoremPackage pseudoCircleMeasurementProfile where
+  commonAmbient := transferCommonAmbient
+  lawConflictMeasurement := transferLawConflict
+
 /-- R11(g): certified finite AAT-GAGA readings. -/
 def gagaCertifiedFields :
     AATGAGACertifiedFields pseudoCircleMeasurementProfile where
@@ -1227,6 +1330,10 @@ def gagaCertifiedFields :
   selectedPeriodStokesAccounting := ()
   selectedTopologicalDebtCapacity := ()
   selectedDerivedConflictAccounting := ()
+  finiteHodgeTheoremPackage := lowDegreeSelectedHodgeTheoremPackage
+  periodStokesTheoremPackage := lowDegreePeriodStokesTheoremPackage
+  topologicalDebtTheoremPackage := lowDegreeTopologicalDebtTheoremPackage
+  derivedConflictTheoremPackage := lowDegreeDerivedConflictTheoremPackage
   hodgeComparisonCertified := True
   hodgeComparisonCertified_cert := trivial
   harmonicDecompositionCertified := True
