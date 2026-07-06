@@ -1,8 +1,7 @@
-# LawPolicy v1 Schema Guide
+# LawPolicy Schema Guide
 
-LawPolicy v1 is a selector over ArchSig evaluator registry entries. The AG
-measurement path also uses LawPolicy v1 to select a first-class
-MeasurementProfile.
+LawPolicy is a selector over ArchSig evaluator registry entries. The AG
+measurement path also uses LawPolicy to select a first-class MeasurementProfile.
 
 ## Root
 
@@ -36,18 +35,8 @@ declared `path` exists.
 
 ## Policy Entry
 
-Use either a pack selector:
-
-```json
-{
-  "pack": "solid",
-  "basis": ["policy-basis:solid"],
-  "scope": ["src."],
-  "severity": "review"
-}
-```
-
-Or an individual evaluator selector:
+Use individual evaluator selectors. Pack selectors are not part of the current
+authoring surface.
 
 ```json
 {
@@ -64,17 +53,8 @@ when present.
 
 ## Known Built-In Selectors
 
-Packs:
-
-- `solid`
-
 Evaluator ids:
 
-- `solid.single-responsibility`
-- `solid.open-closed`
-- `solid.liskov-substitution`
-- `solid.interface-segregation`
-- `solid.dependency-inversion`
 - `domain.no-direct-infra-dependency`
 - `ag.cech-obstruction`
 - `ag.coherence-obstruction`
@@ -155,6 +135,7 @@ Do not emit:
 - legacy signature-axis definition fields
 - `measurementPolicy`
 - legacy distance-profile fields
+- policy pack selectors
 - legacy spectrum-profile fields
 - `homotopyMeasurementProfile`
 - `coverageRequirements`

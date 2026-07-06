@@ -436,7 +436,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap-v2-validation"
+                "checkRef": "archmap/v0.5.0-validation"
             }
         }, {
             "suppliedId": "supplied:law-policy",
@@ -444,7 +444,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:law-policy.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "law-policy-v0.5.0-validation"
+                "checkRef": "law-policy/v0.5.0-validation"
             }
         }, {
             "suppliedId": "supplied:measurement-profile",
@@ -452,7 +452,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "sourceArtifactRef": "input:measurement-profile.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "measurement-profile-v0.5.0-validation"
+                "checkRef": "measurement-profile/v0.5.0-validation"
             }
         }],
         "boundaryStatements": [{
@@ -718,7 +718,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap-v2-validation"
+                "checkRef": "archmap/v0.5.0-validation"
             }
         }],
         "boundaryStatements": [],
@@ -905,7 +905,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "sourceArtifactRef": "input:archmap.json",
             "conformance": {
                 "status": "validated",
-                "checkRef": "archmap-v2-validation"
+                "checkRef": "archmap/v0.5.0-validation"
             }
         }],
         "boundaryStatements": [],

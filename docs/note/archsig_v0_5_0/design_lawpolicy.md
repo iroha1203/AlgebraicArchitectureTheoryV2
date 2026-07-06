@@ -59,7 +59,7 @@ v0.5.0 のユーザー方針「Law ポリシーは設計を見直した方がい
 | P2 | **記述力の欠如**。basis registry は `policy-basis:solid` / `policy-basis:layering` の 2 種のみ(registry.rs:81-83)。PRD の例示 `"basis": ["docs.architecture.layering"]` すら検証を通らない。リポジトリ固有の設計文書を根拠として指す道がない | archmap-lawpolicy 調査 §2.3 |
 | P3 | **MeasurementProfile の非対称と意味論不在**。profile 本体が LawPolicy に埋め込み(distanceProfileRef の ref 方式と非対称)。siteRef / domain / zeroPredicate 等は非空検査のみで意味は実装内解釈。有限上限(12/16、7 定数)は実装定数で profile から選べない | law_policy.rs:20-44、validate.rs:312-355、ag_measurement.rs:31-37 |
 | P4 | **witnessFamily の置き場所が law-equation realization 構造とずれる**。witness 変数は定理11.4 の law equation realization では violation coordinates として law 側成分(第III部 定義11.3)だが、現行は計測手段側の profile に置かれ、変数名は自由文字列で ArchMap との突合せ規約がない。なお第VIII部 定義2.1 は selected witness variables E を measurement profile M の成分として明記しており、「E を law 側 artifact に置く」こと自体は theory 由来ではなく **theory 整合的な tool 設計選択**である(M は law 側データも束ねる包括 profile であり、artifact 分割は M の細分という設計。§5 参照) | part_3 定義11.3、part_8 定義2.1(part_8:60-79)、fixture `law_policy_square_free.json`、skills-workflow 調査 |
-| P5 | **v1 レガシーの同居**。`distanceProfileRef` + コンパイル内蔵 distance profile 2 種は古典 AAT(Part IV 距離)経路専用。solid pack / domain evaluator も v1 typed evaluator 専用。registry manifest には観測純化前の判定語 predicate 名(`tripleMismatch` / `mismatchSection` / `obstructionGenerator`)が残存 | registry.rs:85-90, 184-207, 284, 318, 388 |
+| P5 | **v1 レガシーの同居**。`distanceProfileRef` + コンパイル内蔵 distance profile 2 種は古典 AAT(Part IV 距離)経路専用。solid pack / domain evaluator も v1 typed evaluator 専用。registry manifest には観測純化前の判定語 predicate 名(`legacy-coherence-token` / `legacy-boundary-token` / `legacy-section-token`)が残存 | registry.rs:85-90, 184-207, 284, 318, 388 |
 | P6 | **CI 連携の台紙がない**。SAGA 定理8.4(cover-relative Čech H^1 と sheaf cohomology の比較)/ 定理8.5(refinement に沿う自然性)は「比較可能性はデータである」を定理水準で確定している。その示唆を受けた **tool 設計選択**として、計測間比較には profile / 政策の同一性・差分を fingerprint 付き artifact として持ち回るのが自然だが、埋め込み構造では政策変更と計測手段変更が単一文書に混ざり、指紋が分離できない。fingerprint は比較の前提(どの成分が固定されたか)の記録であって 8.4/8.5 が要求する comparison / refinement data そのものではない(comparison data 本体、および 8.4/8.5 の射程外である版間差分の比較は設計次元4 の管轄) | part_10:837-857、saga 調査 §6.4.7 |
 
 ---
@@ -729,7 +729,7 @@ PRD 化時の acceptance criteria は Stage 単位で切る。
 - **Stage 1(= 案1 相当の掃除)**: `law-policy/v2` 新設(distanceProfileRef / pack 削除、
   basisLedger 新設、`lawSurfaceRef` は未使用の任意フィールドとして予約)、
   `measurement-profile/v2` の独立ファイル化と finiteBounds 昇格(7 定数対応表 + registry hard cap)、
-  registry から solid/domain 系と判定語 predicate manifest(`tripleMismatch` 等)を除去、
+  registry から solid/domain 系と判定語 predicate manifest(`legacy-coherence-token` 等)を除去、
   `witness_violation_support_refs` 残置コード削除。v1 経路削除(設計次元1)と同一 PR 群で実施。
   **schema catalog**: `src/schema_catalog.rs` に law-policy/v2・measurement-profile/v2 を登録し、
   lock fixture `tests/fixtures/minimal/schema_version_catalog.json` を改訂。
