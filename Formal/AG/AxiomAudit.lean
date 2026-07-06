@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.Util.AssertStandardAxioms
@@ -730,6 +731,12 @@ def forceCandidateSelectedNonzeroBackedByConcrete :=
 
 def forceCandidatePackageInhabited :=
   Examples.EvolutionPart9.force_candidate_package_inhabited
+
+def zmod2TemporalProductIncidenceD0StepNonzero :=
+  AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductIncidence_d0_step_nonzero
+
+def zmod2TemporalProductIncidenceD0StepNeZero :=
+  AAT.AG.Examples.EvolutionPart9.zmod2TemporalProductIncidence_d0_step_ne_zero
 
 def transportDescentZeroToyModelNonempty :=
   @FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero

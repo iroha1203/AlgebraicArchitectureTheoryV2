@@ -263,12 +263,11 @@ structure SemanticRepairGeneratedEndToEndSAGAPacket
 /--
 X.定理7.5 generated-input surface.
 
-This is the theorem-7.5 input boundary after #3102: the coefficient presheaf is
-identified with the law-equation-generated obstruction quotient
-`O/I_Ob`, the selected cover is recorded as generated/admissible in the AAT
-topology, and the H1 comparison is generated from cochain-level realization.
-The end-to-end theorem below consumes this record instead of accepting a
-standalone `SemanticRepairCoverRelativeH1Comparison`.
+This theorem-7.5 input boundary records a law-equation-generated coefficient
+surface and a cochain-level realization. It is stronger than accepting a
+standalone `SemanticRepairCoverRelativeH1Comparison`, but the realization is
+still selected input data; it is not a certificate-free construction of the
+comparison from law equations alone.
 -/
 structure SemanticRepairGeneratedEndToEndInputs
     {P : SemanticAtomProjection.{u, v}}
@@ -332,9 +331,10 @@ end SemanticRepairGeneratedEndToEndInputs
 X.定理7.5 native generated-input surface.
 
 This stricter boundary fixes the downstream coefficient to the obstruction
-quotient presheaf produced by the law-equation witness-ideal core itself.  It is
-the audit-facing form of theorem 7.5: the end-to-end packet can no longer be
-formed with an arbitrary coefficient presheaf and a merely parallel witness.
+quotient presheaf produced by the law-equation witness-ideal core itself. The
+end-to-end packet can no longer be formed with an arbitrary coefficient
+presheaf, but comparison provenance is still carried by the selected cochain
+realization field.
 -/
 structure SemanticRepairNativeGeneratedEndToEndInputs
     {P : SemanticAtomProjection.{u, v}}

@@ -962,9 +962,9 @@ theorem lawfulFiring_endToEndPacket_fromRealization :
 X.例9.1 / #3102: theorem 7.5 fires through the generated `F₂` quotient
 coefficient and a theorem-generated H1 comparison.
 
-This is the non-`PUnit` completion witness for example 9.1: the quotient
+This is non-`PUnit` compatibility evidence for example 9.1: the quotient
 coefficient is `ZMod 2`, the sheaf condition is `generatedF2QuotientIsSheaf`,
-and the comparison is produced from `generatedF2EndToEndInputs`.
+and the comparison is produced from selected cochain-realization input.
 -/
 theorem lawfulFiring_generatedF2_endToEndPacket_fromGeneratedInputs :
     Nonempty
@@ -988,10 +988,10 @@ theorem lawfulFiring_generatedF2_endToEndPacket_fromGeneratedInputs :
 X.例9.1 / #3102: theorem 7.5 fires over the native law-equation-generated
 obstruction quotient coefficient.
 
-This is the audit-facing completion witness: the coefficient presheaf is
+This is audit-facing compatibility evidence: the coefficient presheaf is
 `lawEquationCore.obstructionQuotientPresheaf`, the sheaf condition is proved by
-`generatedLawQuotientIsSheaf`, and the comparison is generated from
-`generatedLawNativeEndToEndInputs`.
+`generatedLawQuotientIsSheaf`, and the comparison is generated from the selected
+cochain realization stored in `generatedLawNativeEndToEndInputs`.
 -/
 theorem lawfulFiring_generatedLawQuotient_endToEndPacket_fromNativeGeneratedInputs :
     Nonempty

@@ -315,6 +315,89 @@ theorem unitTemporalProductIncidence_d0_id
     unitTemporalProductIncidenceComplex.d0 c (temporalSite.idLeg p) = 0 :=
   unitTemporalProductIncidenceComplex.d0_id c p
 
+/-! ### Nondegenerate product-incidence fixture for IX-3 / #3100 -/
+
+/--
+IX-3 / #3100: nontrivial temporal coefficient over the same finite product
+site.
+
+Unlike the singleton compatibility fixture, this coefficient has `ZMod 2`
+fibers.  Restrictions are identity maps, so a cochain separating `t0` and `t1`
+has a genuinely nonzero incidence differential on the selected temporal step.
+-/
+def zmod2TemporalCoefficient : TemporalCoefficient temporalSite where
+  coefficientProfile := ()
+  obstructionSheaf := unitObstructionSheaf
+  fiber := fun _ => ZMod 2
+  fiberAddCommGroup := by
+    intro _p
+    infer_instance
+  restrict := by
+    intro _p _q _leg
+    exact AddMonoidHom.id (ZMod 2)
+  restrict_id := by
+    intro _p _x
+    rfl
+  restrict_comp := by
+    intro _p _q _r _f _g _x
+    rfl
+  toObstructionSection := by
+    intro _p
+    exact {
+      toFun := fun _ => PUnit.unit
+      map_zero' := rfl
+      map_add' := by
+        intro _x _y
+        rfl
+    }
+
+/-- IX-3 / #3100: nondegenerate product-incidence complex with `ZMod 2` fibers. -/
+def zmod2TemporalProductIncidenceComplex :
+    TemporalCoefficient.ProductIncidenceComplex zmod2TemporalCoefficient where
+  zeroCochain := zmod2TemporalCoefficient.FiberZeroCochain
+  oneCochain := zmod2TemporalCoefficient.FiberIncidenceOneCochain
+  zero_eq := rfl
+  one_eq := rfl
+  d0 := zmod2TemporalCoefficient.incidenceDifferential
+  d0_eq := rfl
+
+/--
+IX-3 / #3100: a nonconstant temporal zero-cochain on the two-point trace.
+
+It reads `0` at `t0` and `1` at `t1`, so its product-incidence differential
+detects the selected temporal step.
+-/
+def zmod2TemporalSeparatedCochain :
+    zmod2TemporalCoefficient.FiberZeroCochain
+  | (TinyTime.t0, _) => (show ZMod 2 from 0)
+  | (TinyTime.t1, _) => (show ZMod 2 from 1)
+
+/--
+IX-3 / #3100: the product-incidence differential is nonzero on the selected
+`t0 -> t1` step for the `ZMod 2` temporal coefficient.
+
+This is the nondegenerate replacement evidence for the previous singleton
+`PUnit` compatibility fixture: the carrier is nontrivial and the value is a
+specific nonzero element of `ZMod 2`.
+-/
+theorem zmod2TemporalProductIncidence_d0_step_nonzero :
+    zmod2TemporalProductIncidenceComplex.d0
+        zmod2TemporalSeparatedCochain stepLeg = (1 : ZMod 2) := by
+  rfl
+
+/--
+IX-3 / #3100: the same selected product-incidence differential is explicitly
+nonzero, so the audit does not rely on reading `1 : ZMod 2` by convention.
+-/
+theorem zmod2TemporalProductIncidence_d0_step_ne_zero :
+    zmod2TemporalProductIncidenceComplex.d0
+        zmod2TemporalSeparatedCochain stepLeg ≠ 0 := by
+  rw [zmod2TemporalProductIncidence_d0_step_nonzero]
+  intro h
+  have hv : (1 : ZMod 2).val = (0 : ZMod 2).val := congrArg ZMod.val h
+  rw [ZMod.val_one] at hv
+  simp at hv
+
 /-- R10(b): selected two-chart temporal cover for the zero replay descent fixture. -/
 def replayTemporalCover : TemporalCover temporalSite where
   baseTrace := TinyTime.t1
