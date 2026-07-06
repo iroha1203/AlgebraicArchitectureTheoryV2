@@ -61,10 +61,11 @@ def toyDeformationTheory :
 def toyBoundaryObstruction :
     BoundaryObstructionFamily.{0, 0, 0, 0, 0, 0} toyDeformationTheory where
   boundaryTest := true
-  h1NonzeroClass := True
+  h1NonzeroClass :=
+    toyDeformationTheory.ob true ≠ toyTangentData.zeroObstruction
   realizes_nonzero_obstruction := by
-    intro _h h
-    cases h
+    intro h
+    exact h
 
 /--
 VI.R12(a): finite singular-boundary toy model.
@@ -324,33 +325,44 @@ def concreteSingularBoundaryToyModel :
     change Fintype Bool
     infer_instance
   boundary := toyBoundaryObstruction
-  nonzeroBoundaryClass := trivial
+  nonzeroBoundaryClass := by
+    intro h
+    cases h
 
 theorem concreteSingularBoundaryToyModel_fires :
     USingularBoundary toyDeformationTheory :=
   SingularBoundaryToyModel.verifies_singular_boundary concreteSingularBoundaryToyModel
 
+theorem toyBoundaryObstruction_nonzero :
+    toyBoundaryObstruction.h1NonzeroClass :=
+  concreteSingularBoundaryToyModel.nonzeroBoundaryClass
+
 def toyOperationCategory :
     OperationCategoryData.{0, 0, 0, 0, 0, 0} ToyStratum where
   State := Bool
-  Operation _ _ := PUnit
+  Operation _ _ := Bool
   selectedState _ := false
-  operationRespectsLawUniverse _ := True
+  operationRespectsLawUniverse op := op = true
 
 def toyEndpointReading :
     RefactorEndpointReading.{0, 0, 0, 0, 0, 0} toyOperationCategory where
-  RefactorEquivalent _ _ := True
-  refl _ := trivial
-  symm _ := trivial
-  trans _ _ := trivial
-  preservesSelectedInvariants _ := True
-  preservesSelectedEssence _ := True
-  invariantCertificate _ := trivial
-  essenceCertificate _ := trivial
+  RefactorEquivalent a b := a = b
+  refl _ := rfl
+  symm h := h.symm
+  trans h₁ h₂ := h₁.trans h₂
+  preservesSelectedInvariants h := h = h
+  preservesSelectedEssence h := h = h
+  invariantCertificate _h := rfl
+  essenceCertificate _h := rfl
 
 def toySelectedOperation : SelectedOperation toyOperationCategory false true where
-  op := PUnit.unit
-  respectsLawUniverse := trivial
+  op := true
+  respectsLawUniverse := rfl
+
+theorem toyOperationCategory_operation_nontrivial :
+    Nontrivial (toyOperationCategory.Operation false true) := by
+  change Nontrivial Bool
+  infer_instance
 
 def toyHomotopyGenerators :
     HomotopyGeneratorFamily.{0, 0, 0, 0, 0, 0} toyEndpointReading where
@@ -385,7 +397,11 @@ def toyEmptyFreeWord : ToyFreeWord where
   startsAtBase := True
 
 abbrev ToyLoopGroup :=
-  PUnit
+  Multiplicative (ZMod 2)
+
+theorem toyPresentedPi_pi1_nontrivial :
+    Nontrivial ToyLoopGroup := by
+  infer_instance
 
 abbrev ToyRefactorHom (a b : Bool) :=
   ULift.{0} (PLift (a = b))
@@ -405,7 +421,7 @@ def toyPresentedPi :
     intro w h
     exact Or.inl ⟨(show toyHomotopyGenerators.PathCell from false), h.symm⟩
   Pi1 := ToyLoopGroup
-  quotientMap _ := PUnit.unit
+  quotientMap _ := 1
   relator_maps_to_identity _ _ := rfl
   FreeTransport := Bool
   QuotientTransport := Bool
@@ -432,7 +448,7 @@ def toyMeasuredSquareZero :
       toyPresentationTwoComplex where
   Axis := Bool
   square := false
-  boundaryElement := PUnit.unit
+  boundaryElement := 1
   boundaryTransport := CoefficientAutomorphism.id _
   boundaryTransport_eq_monodromy := rfl
   equalityDefect _ := 0
@@ -446,7 +462,7 @@ def toyMeasuredSquareNonzero :
       toyPresentationTwoComplex where
   Axis := Bool
   square := true
-  boundaryElement := PUnit.unit
+  boundaryElement := 1
   boundaryTransport := CoefficientAutomorphism.id _
   boundaryTransport_eq_monodromy := rfl
   equalityDefect axis := if axis then 0 else 1
@@ -480,35 +496,38 @@ theorem concreteOperationSquareToyModel_fires :
 def toyTransportDescentZero :
     TransportDescentProblem.{0, 0, 0, 0, 0, 0}
       (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) true where
-  Square := PUnit
+  Square := Bool
   measured _ := toyMeasuredSquareZero
   relationBoundaryZero_iff_sendsRelators := by
     constructor
     · intro _h
       rfl
     · intro _h square axis
-      cases square
       cases axis <;> rfl
 
 def toyTransportDescentNonzero :
     TransportDescentProblem.{0, 0, 0, 0, 0, 0}
       (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) false where
-  Square := PUnit
+  Square := Bool
   measured _ := toyMeasuredSquareNonzero
   relationBoundaryZero_iff_sendsRelators := by
     constructor
     · intro h
-      have hfalse := h PUnit.unit false
+      have hfalse := h false false
       cases hfalse
     · intro hfalse
       cases hfalse
+
+theorem toyTransportDescent_square_nontrivial :
+    Nontrivial toyTransportDescentNonzero.Square := by
+  change Nontrivial Bool
+  infer_instance
 
 def concreteTransportDescentZeroToyModel :
     TransportDescentZeroToyModel.{0, 0, 0, 0, 0, 0} toyTransportDescentZero where
   finiteSquares := inferInstance
   zeroBoundaryCase := by
     intro square axis
-    cases square
     cases axis <;> rfl
 
 def concreteTransportDescentNonzeroToyModel :
@@ -516,7 +535,7 @@ def concreteTransportDescentNonzeroToyModel :
   finiteSquares := inferInstance
   nonzeroBoundaryCase := by
     intro h
-    have hfalse := h PUnit.unit false
+    have hfalse := h false false
     cases hfalse
 
 theorem concreteTransportDescentZero_descends :
@@ -534,7 +553,7 @@ def toyRefactorGroupoid :
   Object := Bool
   state := id
   Hom := ToyRefactorHom
-  toRefactorEquivalent _ := trivial
+  toRefactorEquivalent h := h.down.down
   id a := ULift.up ⟨rfl⟩
   inv h := ULift.up ⟨h.down.down.symm⟩
   comp h g := ULift.up ⟨h.down.down.trans g.down.down⟩
@@ -561,6 +580,11 @@ def toyRefactorGroupoid :
     cases f
     rfl
 
+theorem toyRefactorGroupoid_hom_carries_state_equality
+    {a b : toyRefactorGroupoid.Object} (f : toyRefactorGroupoid.Hom a b) :
+    toyRefactorGroupoid.state a = toyRefactorGroupoid.state b :=
+  f.down.down
+
 def toyGaloisData :
     OperationInvariantGaloisData.{0, 0, 0, 0, 0, 0} toyRefactorGroupoid where
   Invariant := Bool
@@ -583,7 +607,7 @@ def concreteRefactorGaloisToyModel :
   finiteInvariant := by
     change Fintype Bool
     infer_instance
-  selectedOperations := fun {_a _b} _g => True
+  selectedOperations := fun {_a _b} g => toyGaloisData.Preserves g true
   selectedInvariants := fun i => i = true
 
 theorem concreteRefactorGaloisToyModel_fires :
@@ -613,16 +637,38 @@ def toyArchitectureStackBase : ArchitectureStackBase.{0} where
 
 def toyDecompositionGroupoid : DecompositionGroupoid.{0} where
   Object := Bool
-  Hom _ _ := PUnit
+  Hom a b := ULift.{0} (PLift (a = b))
   equivalenceKind _ := DecompositionEquivalenceKind.refactor
-  id _ := PUnit.unit
-  inv _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
-  inv_comp _ := rfl
-  comp_inv _ := rfl
+  id _ := ULift.up ⟨rfl⟩
+  inv h := ULift.up ⟨h.down.down.symm⟩
+  comp h g := ULift.up ⟨h.down.down.trans g.down.down⟩
+  id_comp := by
+    intro a b f
+    cases f
+    apply Subsingleton.elim
+  comp_id := by
+    intro a b f
+    cases f
+    rfl
+  assoc := by
+    intro a b c d f g h
+    cases f
+    cases g
+    cases h
+    rfl
+  inv_comp := by
+    intro a b f
+    cases f
+    rfl
+  comp_inv := by
+    intro a b f
+    cases f
+    rfl
+
+theorem toyDecompositionGroupoid_hom_carries_object_equality
+    {a b : toyDecompositionGroupoid.Object} (f : toyDecompositionGroupoid.Hom a b) :
+    a = b :=
+  f.down.down
 
 def toyDecompositionPresheaf : DecompositionPresheaf.{0} toyArchitectureStackBase where
   fiber _ := toyDecompositionGroupoid
