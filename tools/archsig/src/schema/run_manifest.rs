@@ -3,7 +3,7 @@ use serde_json::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArchSigRunManifestV0 {
+pub struct ArchSigRunManifestV1 {
     #[serde(rename = "schema")]
     pub schema_version: String,
     pub tool_version: String,
@@ -18,16 +18,16 @@ pub struct ArchSigRunManifestV0 {
     pub generated_artifacts: Vec<String>,
     pub omitted_artifacts: Vec<String>,
     pub artifact_links: Value,
-    pub validation_reports: ArchSigRunManifestValidationReportPathsV0,
+    pub validation_reports: ArchSigRunManifestValidationReportPathsV1,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub raw_artifact_paths: Option<ArchSigRunManifestRawArtifactPathsV0>,
-    pub validation_result_summary: ArchSigRunManifestValidationResultSummaryV0,
+    pub raw_artifact_paths: Option<ArchSigRunManifestRawArtifactPathsV1>,
+    pub validation_result_summary: ArchSigRunManifestValidationResultSummaryV1,
     pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArchSigRunManifestValidationReportPathsV0 {
+pub struct ArchSigRunManifestValidationReportPathsV1 {
     pub archmap: String,
     pub law_policy: String,
     pub analysis: Option<String>,
@@ -35,7 +35,7 @@ pub struct ArchSigRunManifestValidationReportPathsV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArchSigRunManifestRawArtifactPathsV0 {
+pub struct ArchSigRunManifestRawArtifactPathsV1 {
     pub analysis_packet: String,
     pub analysis_detail_index: String,
     pub llm_interpretation_packet: String,
@@ -43,15 +43,15 @@ pub struct ArchSigRunManifestRawArtifactPathsV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArchSigRunManifestValidationResultSummaryV0 {
-    pub archmap: ArchSigArtifactValidationResultV0,
-    pub law_policy: ArchSigArtifactValidationResultV0,
-    pub analysis: ArchSigArtifactValidationResultV0,
+pub struct ArchSigRunManifestValidationResultSummaryV1 {
+    pub archmap: ArchSigArtifactValidationResultV1,
+    pub law_policy: ArchSigArtifactValidationResultV1,
+    pub analysis: ArchSigArtifactValidationResultV1,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArchSigArtifactValidationResultV0 {
+pub struct ArchSigArtifactValidationResultV1 {
     pub result: String,
     pub failed_check_count: usize,
     pub warning_check_count: usize,

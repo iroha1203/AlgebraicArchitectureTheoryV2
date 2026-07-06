@@ -1,4 +1,4 @@
-# LawPolicy v1 Question Bank
+# LawPolicy Question Bank
 
 Ask only what is needed to select evaluator manifests.
 
@@ -10,7 +10,6 @@ Ask only what is needed to select evaluator manifests.
 
 ## Policy Selection
 
-- Does the repository explicitly adopt SOLID? If yes, use `pack: "solid"`.
 - Is domain-to-infrastructure dependency forbidden? If yes, use `domain.no-direct-infra-dependency`.
 - Are there project-specific policies that need a registry evaluator before they can be selected?
 - Is this an AG measurement run? If yes, which AG evaluator(s) should be
@@ -35,7 +34,7 @@ Ask only what is needed to select evaluator manifests.
 ## Basis
 
 - Which docs, ADRs, standards, or direct user decisions justify the policy?
-- Should the basis be `policy-basis:solid`, `policy-basis:layering`, or a future registry basis ref?
+- Should the basis be `policy-basis:layering` or a future registry basis ref?
 
 ## Severity
 

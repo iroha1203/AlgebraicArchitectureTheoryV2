@@ -618,7 +618,7 @@ philosophy レポートのチェックリスト(C 群 / D 群)に対する自己
 | ArchMap が alias を潰す抽出をすると SAGA 十分性が退化 | aliasWitnesses 出力を ArchMap SKILL 次元への計測フィードバックとして供給。SKILL 側に「同一 subject に複数 semantic atom を許す(潰さない)」規律を要求(次元間 interface) |
 | ag_measurement.rs(11,840行)への増築が破綻 | SAGA ファミリは新モジュール(例 `src/ag/saga.rs`)として追加し、dispatch の if-else 連鎖には乗せない。モジュール分割はコード次元の再設計と同時に行う |
 | profile v2 版上げが LawPolicy 再設計と衝突 | 本設計の要求は「lawEquation ブロック + generated 係数語彙」の2点のみに絞ってあり、v1 拡張でも v2 新設でも載る。決定は LawPolicy 次元に委ねる(ただし policy 行ごと profileRef 化は blocking 依存) |
-| registry manifest に残る判定語 predicate 名(tripleMismatch 等の残存ドリフト) | Stage 1 のレガシー整理と同時に一掃(観測純化 PRD の残件消化と同一 PR で) |
+| registry manifest に残る判定語 predicate 名(legacy-coherence-token 等の残存ドリフト) | Stage 1 のレガシー整理と同時に一掃(観測純化 PRD の残件消化と同一 PR で) |
 | candidate 系(stability / Wasserstein)を求められて境界が緩む | C1 行の通り v0.5.0 では見送り推奨。入れる場合も `regime: "candidate"` を schema 必須にし structural verdict への参照を禁止する検査を先に入れる |
 | strict CI と沈黙の手続き化の衝突(層 B 正常系 run が strict で常に fail) | silence_by_design 行の strict 集計 carve-out を本設計で固定(§3.5)。実装詳細は artifact/CI 次元と共有 |
 

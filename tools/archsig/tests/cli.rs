@@ -13,7 +13,7 @@ use archsig::{
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
     ARCHSIG_PRD4_CONCLUSION_CODES, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-    ArchMapDocumentV2, ArchSigRunManifestV0, compare_archmap_v2_doctrine,
+    ArchMapDocumentV2, ArchSigRunManifestV1, compare_archmap_v2_doctrine,
 };
 use serde_json::{Value, json};
 
@@ -2083,7 +2083,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["principalText"]
             .as_str()
             .is_some_and(|text| {
-                text.contains("selected complete-support SAGA residual")
+                text.contains("selected SAGA residual")
                     && text.contains("covered and faithful")
             }),
         "translation principal text must stay inside the selected profile"
@@ -3343,7 +3343,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:archmap_v2_cech_h1_visible.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap-v2-validation",
+                    "checkRef": "archmap/v0.5.0-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             },
@@ -3353,7 +3353,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:law_policy_ag.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "law-policy-v0.5.0-validation",
+                    "checkRef": "law-policy/v0.5.0-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             },
@@ -3363,7 +3363,7 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "sourceArtifactRef": "input:measurement_profile_ag.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "measurement-profile-v0.5.0-validation",
+                    "checkRef": "measurement-profile/v0.5.0-validation",
                     "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim"
                 }
             }
@@ -10385,7 +10385,7 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
     }
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
-    let _: ArchSigRunManifestV0 =
+    let _: ArchSigRunManifestV1 =
         serde_json::from_value(manifest.clone()).expect("v2 manifest matches schema struct");
     assert_eq!(manifest["archmapInputPath"], "input:archmap.json");
     assert_eq!(manifest["lawPolicyInputPath"], "input:law_policy.json");
@@ -10986,6 +10986,12 @@ fn archview_static_app_is_packaged_asset() {
         "ArchView must support same-directory fetch, file picker, and drag-and-drop"
     );
     assert!(
+        html.contains("const EXPECTED_VIEWER_SCHEMA = \"archsig-atom-viewer-data/v0.5.0\"")
+            && html.contains("data.schema !== EXPECTED_VIEWER_SCHEMA")
+            && html.contains("expected ${EXPECTED_VIEWER_SCHEMA}"),
+        "ArchView must fail closed on non-current viewer data schema"
+    );
+    assert!(
         html.contains("./archview-sequence.json")
             && html.contains("function loadSequence")
             && html.contains("function showFrame")
@@ -11470,7 +11476,7 @@ fn repair_plan_creater_skill_is_complete_support_only() {
         fs::read_to_string(repo_root.join("tools/archsig/skills/repair-plan-creater/SKILL.md"))
             .expect("repair-plan-creater skill exists");
     for required in [
-        "repair-plan/v0.5.0",
+        "archsig-repair-plan/v0.5.0",
         "complete-support",
         "existing ArchMap evidence",
         "Validate first:",
@@ -12249,7 +12255,7 @@ fn write_gate_packet(path: &Path, verdict: &str) {
                 "sourceArtifactRef": "input:archmap.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap-v2-validation"
+                    "checkRef": "archmap/v0.5.0-validation"
                 }
             }],
             "boundaryStatements": [{

@@ -92,14 +92,14 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
             theorem_ref: Some("part10/3.4"),
-            principal_text: "The selected complete-support SAGA residual is measured outside B1 with concrete residual support.",
+            principal_text: "The selected SAGA residual is measured outside B1 with concrete residual support; complete-support faithfulness is reported separately.",
             boundary: "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
             generated_discipline: "generated complete-support boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
             theorem_ref: Some("part10/3.5"),
-            principal_text: "The selected complete-support SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+            principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
         },
@@ -822,21 +822,21 @@ fn supplied_data_ledger(
             "supplied:archmap",
             "archmap",
             archmap_ref,
-            "archmap-v2-validation",
+            "archmap/v0.5.0-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:law-policy",
             "law-policy",
             law_policy_ref,
-            "law-policy-v0.5.0-validation",
+            "law-policy/v0.5.0-validation",
             "validated",
         ),
         supplied_data_entry(
             "supplied:measurement-profile",
             "measurement-profile",
             measurement_profile_ref,
-            "measurement-profile-v0.5.0-validation",
+            "measurement-profile/v0.5.0-validation",
             "validated",
         ),
     ];
@@ -845,7 +845,7 @@ fn supplied_data_ledger(
             "supplied:repair-plan",
             "repair-plan",
             repair_plan_ref,
-            "repair-plan-v0.5.0-validation",
+            "repair-plan/v0.5.0-validation",
             "validated",
         ));
     }
@@ -12140,7 +12140,7 @@ mod tests {
                 "sourceArtifactRef": "input:archmap.json",
                 "conformance": {
                     "status": "validated",
-                    "checkRef": "archmap-v2-validation"
+                    "checkRef": "archmap/v0.5.0-validation"
                 }
             }],
             "nonConclusions": ["test fixture"]
