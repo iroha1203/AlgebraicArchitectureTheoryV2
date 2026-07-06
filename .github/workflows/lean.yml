@@ -18,7 +18,10 @@ jobs:
         uses: leanprover/lean-action@v1
 
       - name: Kernel axiom audit
-        run: lake env lean Formal/AG/AxiomAudit.lean
+        run: |
+          lake env lean Formal/Util/AssertStandardAxiomsTest.lean
+          lake env lean Formal/AG/AxiomAudit.lean
+          test "$(grep -v '^[[:space:]]*$' Formal/AG/AxiomAudit.lean | tail -n 1)" = '#assert_standard_axioms_only AAT.AG.AxiomAudit'
 
   archsig:
     name: archsig cargo test

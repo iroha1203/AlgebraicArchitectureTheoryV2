@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.Arch.Core.Category
+import Formal.Util.AssertStandardAxioms
 import Formal.Arch.Core.Graph
 import Formal.Arch.Core.Reachability
 import Formal.Arch.Core.ThinCategory
