@@ -96,9 +96,19 @@ Codex は明示しない限りサブエージェントを使わない。この S
   - 完了条件の checklist(PRD の Acceptance Criteria を1項目1行で写す)
   - 各項目の分類: `実装検証系`(コード・テスト・fixture で検証する)/
     `PRD 記述系`(PRD 本文自体が満たしている。初回に check 済みにする)
+  - **requirement matrix**: PRD の `改修`(R 番号)と `Implementation Plan`(PR 区分)を
+    1項目1行で写し、各 AC がどの R / PR 区分に依存するかを併記する。R 群は AC を
+    置き換える合否条件ではなく、周回の対象選定と「実装計画の丸ごと欠落」の検出に使う。
+    どの周回にも接続していない R / PR 区分が残ったまま全 AC が check される状態は、
+    checklist の写し漏れか充足の空洞化を疑うシグナルとして扱う。
+  - **must-not-remain リスト**: PRD の `現状診断` が解消対象として名指しした
+    旧構造・旧挙動を1項目1行で写す。PRD が明示的に別 PRD の管轄・既知の残置とした
+    項目は除外し、除外理由を併記する。
 - 各周回の終わりに、tracking Issue へコメントを1件追加する。
   - 形式: `iteration N: <対象完了条件> → Issue #X → PR #Y → merged | needs-changes | blocked`
 - 完了条件を満たした項目は checklist を check する。根拠(PR 番号、テスト、fixture)を併記する。
+  テストを根拠にする場合はテスト名でなく「何を assert しているか」を書く。
+  条件文言と assertion 内容の対応が書けないテストは根拠にしない。
 - すべて check されても、`$prd-completion-review` の総合判定が `達成済み` になるまでは
   tracking Issue を close しない。
 - 最終達成条件レビューの結果は tracking Issue にコメントする。
@@ -112,7 +122,10 @@ Codex は明示しない限りサブエージェントを使わない。この S
    - `git status --short --branch` で作業ツリーを確認する。未コミット変更があれば
      ループを開始せず報告する(ユーザー変更を勝手に戻さない)。
    - `git switch main` と `git pull --ff-only` で最新化する。
-   - PRD ファイルを読み、Acceptance Criteria / 完了条件の節を抽出する。
+   - PRD ファイルを読み、Acceptance Criteria / 完了条件の節に加えて、
+     `改修` / `Implementation Plan` / `現状診断` / `Failure Contract` /
+     `Changed / Removed Fields` を抽出する(台帳の requirement matrix と
+     must-not-remain リストの材料)。
    - ループ台帳(tracking Issue)を確認または作成する。
 
 1. ギャップ分析(プランニング)。
@@ -122,6 +135,13 @@ Codex は明示しない限りサブエージェントを使わない。この S
      実際に存在し、通ることを確認する(必要なら `cargo test` 等を実行する)。
    - tracking Issue の checklist が check 済みであることを `満たした` の根拠にしない。
      check は「過去の周回がそう主張した」ことしか意味しない。疑いがあれば実体を再確認する。
+   - requirement matrix を突合し、どの周回にも接続していない R / PR 区分が残っていないかを
+     確認する。未接続の R 群が依存先 AC の充足を空洞化している場合、その AC は
+     check 済みでも `未達` に戻す。
+   - すべて `満たした` と分類できた周回では、close 前に **must-not-remain 検査**を行う:
+     台帳の must-not-remain リストの各項目を `rg` と実読で再検査し、PRD が解消を宣言した
+     旧構造・旧挙動(旧挙動を「正」として固定し続けるテストを含む)が残存していれば、
+     対応する完了条件を `未達` に戻す。
    - すべて `満たした` なら: tracking Issue を close せず、手順6の最終達成条件レビューへ進む。
    - 未達項目から次の1周で扱う対象を選ぶ。選定基準は、他の完了条件の前提になるもの
      (schema・入力契約が evaluator より先)、依存が少ないもの、の順。
