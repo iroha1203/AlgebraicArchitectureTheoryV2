@@ -324,9 +324,21 @@ CI command:
 lake env lean Formal/AG/AxiomAudit.lean
 ```
 
-R1 tracked declarations:
+Audit mechanism: every declaration in the `AAT.AG.AxiomAudit` namespace is
+checked by the `#assert_standard_axioms_only` command
+(`Formal/Util/AssertStandardAxioms.lean`) at the end of the file. The machine
+guarantee is an allowlist: each entry depends on at most
+`propext`, `Classical.choice`, `Quot.sound` (in particular no `sorryAx`,
+no `Lean.ofReduceBool`, no custom `axiom`). Adding a declaration to the
+namespace is sufficient to place it under the audit; per-entry
+`#guard_msgs in #print axioms` blocks are not used. CI also checks textually
+that the command remains the last non-empty line of the file.
 
-| Audit wrapper | Source declaration | Allowed axiom set |
+R1 tracked declarations. The axiom-set column records the exact set observed
+when the entry was introduced; the machine-enforced invariant is
+"within the standard three axioms", not the exact per-entry set:
+
+| Audit wrapper | Source declaration | Axiom set at introduction |
 | --- | --- | --- |
 | `AAT.AG.AxiomAudit.boundaryCocycleNonzero` | `AAT.AG.Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle_AB_nonzero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.derivedG5AllDegree` | `AAT.AG.FiniteModel.DerivedPart5.sharedWitnessG5_all_degree_coefficient_identity` | `propext`, `Classical.choice`, `Quot.sound` |
@@ -362,8 +374,8 @@ R1 tracked declarations:
 | `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupRelatorMapsToIdentity` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelator_maps_to_identity` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftOf` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_of` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.presentedArchitectureFundamentalGroupLiftUnique` | `AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_unique` | `propext`, `Classical.choice`, `Quot.sound` |
-| `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero` | direct source guard for zero transport-descent toy model inhabitation | `propext`, `Classical.choice`, `Quot.sound` |
-| `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero` | direct source guard for nonzero transport-descent toy model inhabitation | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.transportDescentZeroToyModelNonempty` | `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentZeroToyModel.nonempty_of_relationBoundaryZero` | `propext`, `Classical.choice`, `Quot.sound` |
+| `AAT.AG.AxiomAudit.transportDescentNonzeroToyModelNonempty` | `AAT.AG.FiniteModel.SingularityMonodromyStackPart6.TransportDescentNonzeroToyModel.nonempty_of_not_relationBoundaryZero` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSynthesisAATSynthesisPackageEqToPackage` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisPackage_eq_toPackage` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.finiteSynthesisFires` | `AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires` | `propext`, `Classical.choice`, `Quot.sound` |
 | `AAT.AG.AxiomAudit.lowDegreeRealKernelEquivHarmonic` | `AAT.AG.Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology` | `propext`, `Classical.choice`, `Quot.sound` |
